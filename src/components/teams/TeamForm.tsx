@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,8 +15,8 @@ interface TeamFormProps {
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [name, setName] = useState(team?.name || "");
   const [logoUrl, setLogoUrl] = useState(team?.logoUrl || "");
-  const [players, setPlayers] = useState<Omit<Player, "id">[]>(
-    team?.players.map(p => ({ name: p.name, email: p.email, avatar: p.avatar })) || [{ name: "", email: "" }]
+  const [players, setPlayers] = useState<Player[]>(
+    team?.players || [{ name: "", email: "" }]
   );
   const [wins, setWins] = useState(team?.wins || 0);
   const [losses, setLosses] = useState(team?.losses || 0);

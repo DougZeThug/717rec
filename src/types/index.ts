@@ -1,6 +1,6 @@
 
 export interface Player {
-  id: string;
+  id?: string;
   name: string;
   email?: string;
   avatar?: string;
