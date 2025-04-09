@@ -25,10 +25,10 @@ const Navbar = () => {
         <div className="flex items-center space-x-2">
           <Link to="/" className="flex items-center">
             <div className="h-8 w-8 rounded-full bg-cornhole-navy flex items-center justify-center">
-              <span className="text-white font-bold">B</span>
+              <span className="text-white font-bold">7</span>
             </div>
             <span className="ml-2 text-xl font-bold text-cornhole-navy hidden md:inline-block">
-              Bag It Up League
+              717 Rec
             </span>
           </Link>
         </div>

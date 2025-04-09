@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4">Bag It Up League</h3>
+            <h3 className="text-lg font-bold mb-4">717 Rec</h3>
             <p className="text-sm text-gray-300">
               Managing recreational cornhole leagues with ease.
             </p>
@@ -45,7 +45,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
-          &copy; {currentYear} Bag It Up League. All rights reserved.
+          &copy; {currentYear} 717 Rec. All rights reserved.
         </div>
       </div>
     </footer>

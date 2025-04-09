@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,10 +47,10 @@ const Index = () => {
       <section className="bg-cornhole-navy text-white py-16 md:py-24 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Bag It Up League
+            717 Rec
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-            The premier platform for managing recreational Cornhole leagues, tournaments, and events.
+            The premier platform for managing recreational Cornhole leagues, tournaments, and events in the 717 area.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="bg-cornhole-green hover:bg-cornhole-green/90">
