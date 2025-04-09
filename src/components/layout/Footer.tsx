@@ -9,8 +9,12 @@ const Footer = () => {
     <footer className="bg-cornhole-navy text-white py-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-lg font-bold mb-4">717 Rec</h3>
+          <div className="flex flex-col items-center md:items-start">
+            <img 
+              src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
+              alt="717 Rec Logo" 
+              className="h-16 w-auto mb-4"
+            />
             <p className="text-sm text-gray-300">
               Managing recreational cornhole leagues with ease.
             </p>
@@ -39,7 +43,7 @@ const Footer = () => {
             <p className="text-sm text-gray-300">
               Have questions or suggestions?
               <br />
-              Email us at: <a href="mailto:info@bagitupleague.com" className="underline hover:text-white">info@bagitupleague.com</a>
+              Email us at: <a href="mailto:info@717rec.com" className="underline hover:text-white">info@717rec.com</a>
             </p>
           </div>
         </div>

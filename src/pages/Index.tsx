@@ -13,8 +13,8 @@ const Index = () => {
   // Get top teams by win percentage
   const topTeams = [...mockTeams]
     .sort((a, b) => {
-      const aWinPerc = a.wins / (a.wins + a.losses);
-      const bWinPerc = b.wins / (b.wins + b.losses);
+      const aWinPerc = a.wins / (a.wins + a.losses) || 0;
+      const bWinPerc = b.wins / (b.wins + b.losses) || 0;
       return bWinPerc - aWinPerc;
     })
     .slice(0, 4);
@@ -46,6 +46,13 @@ const Index = () => {
       {/* Hero Section */}
       <section className="bg-cornhole-navy text-white py-16 md:py-24 px-4">
         <div className="max-w-7xl mx-auto text-center">
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
+              alt="717 Rec Logo" 
+              className="h-32 md:h-40 w-auto"
+            />
+          </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             717 Rec
           </h1>

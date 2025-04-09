@@ -24,9 +24,11 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Link to="/" className="flex items-center">
-            <div className="h-8 w-8 rounded-full bg-cornhole-navy flex items-center justify-center">
-              <span className="text-white font-bold">7</span>
-            </div>
+            <img 
+              src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
+              alt="717 Rec Logo" 
+              className="h-10 w-auto"
+            />
             <span className="ml-2 text-xl font-bold text-cornhole-navy hidden md:inline-block">
               717 Rec
             </span>
@@ -60,7 +62,17 @@ const Navbar = () => {
               </Button>
             </SheetTrigger>
             <SheetContent className="w-[240px] sm:w-[300px]">
-              <div className="flex flex-col space-y-4 mt-8">
+              <div className="flex items-center mb-8">
+                <img 
+                  src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
+                  alt="717 Rec Logo" 
+                  className="h-10 w-auto mr-2"
+                />
+                <span className="text-xl font-bold text-cornhole-navy">
+                  717 Rec
+                </span>
+              </div>
+              <div className="flex flex-col space-y-4">
                 {NAV_ITEMS.map((item) => (
                   <Link
                     key={item.name}
