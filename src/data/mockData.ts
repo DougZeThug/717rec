@@ -1,5 +1,4 @@
-
-import { Team, Match, PlayoffBracket, Ranking } from "../types";
+import { Team, Match, PlayoffBracket, Ranking, PlayoffGame } from "../types";
 
 export const mockTeams: Team[] = [
   {
@@ -12,7 +11,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 3, 15).toISOString()
+    created_at: new Date(2023, 3, 15).toISOString(),
+    division: "Recreational"
   },
   {
     id: "2",
@@ -24,7 +24,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 2).toISOString()
+    created_at: new Date(2023, 4, 2).toISOString(),
+    division: "Recreational"
   },
   {
     id: "3",
@@ -36,7 +37,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 3, 28).toISOString()
+    created_at: new Date(2023, 3, 28).toISOString(),
+    division: "Recreational"
   },
   {
     id: "4",
@@ -48,7 +50,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 10).toISOString()
+    created_at: new Date(2023, 4, 10).toISOString(),
+    division: "Competitive"
   },
   {
     id: "5",
@@ -60,7 +63,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 3, 20).toISOString()
+    created_at: new Date(2023, 3, 20).toISOString(),
+    division: "Recreational"
   },
   {
     id: "6",
@@ -72,7 +76,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 3, 25).toISOString()
+    created_at: new Date(2023, 3, 25).toISOString(),
+    division: "Competitive"
   },
   {
     id: "7",
@@ -84,7 +89,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 5).toISOString()
+    created_at: new Date(2023, 4, 5).toISOString(),
+    division: "Intermediate"
   },
   {
     id: "8",
@@ -96,7 +102,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 8).toISOString()
+    created_at: new Date(2023, 4, 8).toISOString(),
+    division: "Intermediate"
   },
   {
     id: "9",
@@ -108,7 +115,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 12).toISOString()
+    created_at: new Date(2023, 4, 12).toISOString(),
+    division: "Intermediate"
   },
   {
     id: "10",
@@ -120,7 +128,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 15).toISOString()
+    created_at: new Date(2023, 4, 15).toISOString(),
+    division: "Competitive"
   },
   {
     id: "11",
@@ -132,7 +141,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 18).toISOString()
+    created_at: new Date(2023, 4, 18).toISOString(),
+    division: "Competitive"
   },
   {
     id: "12",
@@ -144,7 +154,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 20).toISOString()
+    created_at: new Date(2023, 4, 20).toISOString(),
+    division: "Competitive"
   },
   {
     id: "13",
@@ -156,7 +167,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 22).toISOString()
+    created_at: new Date(2023, 4, 22).toISOString(),
+    division: "Intermediate"
   },
   {
     id: "14",
@@ -168,7 +180,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 25).toISOString()
+    created_at: new Date(2023, 4, 25).toISOString(),
+    division: "Intermediate"
   },
   {
     id: "15",
@@ -180,7 +193,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 4, 28).toISOString()
+    created_at: new Date(2023, 4, 28).toISOString(),
+    division: "Competitive"
   },
   {
     id: "16",
@@ -192,7 +206,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 5, 1).toISOString()
+    created_at: new Date(2023, 5, 1).toISOString(),
+    division: "Recreational"
   },
   {
     id: "17",
@@ -204,7 +219,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 5, 3).toISOString()
+    created_at: new Date(2023, 5, 3).toISOString(),
+    division: "Recreational"
   },
   {
     id: "18",
@@ -216,7 +232,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 5, 5).toISOString()
+    created_at: new Date(2023, 5, 5).toISOString(),
+    division: "Intermediate"
   },
   {
     id: "19",
@@ -228,7 +245,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 5, 8).toISOString()
+    created_at: new Date(2023, 5, 8).toISOString(),
+    division: "Intermediate"
   },
   {
     id: "20",
@@ -240,7 +258,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 5, 10).toISOString()
+    created_at: new Date(2023, 5, 10).toISOString(),
+    division: "Competitive"
   },
   {
     id: "21",
@@ -252,7 +271,8 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 5, 12).toISOString()
+    created_at: new Date(2023, 5, 12).toISOString(),
+    division: "Competitive"
   },
   {
     id: "22",
@@ -264,11 +284,11 @@ export const mockTeams: Team[] = [
     ],
     wins: 0,
     losses: 0,
-    created_at: new Date(2023, 5, 15).toISOString()
+    created_at: new Date(2023, 5, 15).toISOString(),
+    division: "Competitive"
   }
 ];
 
-// Now let's update the matches to use our new team IDs
 export const mockMatches: Match[] = [
   {
     id: "m1",
@@ -352,90 +372,249 @@ export const mockMatches: Match[] = [
   }
 ];
 
-// Update the playoff bracket to use our new team IDs
+const createBestOf3Games = (team1Id: string, team2Id: string, winningTeamId: string): PlayoffGame[] => {
+  if (winningTeamId === team1Id) {
+    return [
+      {
+        id: `game-${Math.random().toString(36).substr(2, 9)}`,
+        team1Score: 21,
+        team2Score: 15,
+        winner: team1Id
+      },
+      {
+        id: `game-${Math.random().toString(36).substr(2, 9)}`,
+        team1Score: 18,
+        team2Score: 21,
+        winner: team2Id
+      },
+      {
+        id: `game-${Math.random().toString(36).substr(2, 9)}`,
+        team1Score: 21,
+        team2Score: 17,
+        winner: team1Id
+      }
+    ];
+  } else {
+    return [
+      {
+        id: `game-${Math.random().toString(36).substr(2, 9)}`,
+        team1Score: 18,
+        team2Score: 21,
+        winner: team2Id
+      },
+      {
+        id: `game-${Math.random().toString(36).substr(2, 9)}`,
+        team1Score: 21,
+        team2Score: 15,
+        winner: team1Id
+      },
+      {
+        id: `game-${Math.random().toString(36).substr(2, 9)}`,
+        team1Score: 17,
+        team2Score: 21,
+        winner: team2Id
+      }
+    ];
+  }
+};
+
 export const mockPlayoffBracket: PlayoffBracket = {
   id: "pb1",
   name: "Summer 2023 Playoffs",
   division: "Recreational",
+  format: "Double Elimination",
   matches: [
-    // Quarter Finals
+    // Winners Round 1
     {
       id: "pm1",
       round: 1,
       position: 1,
       team1Id: "1",
-      team2Id: "8",
+      team2Id: "2",
       winnerId: "1",
-      team1Score: 21,
-      team2Score: 10
+      team1Score: 2,
+      team2Score: 1,
+      matchType: "Winners",
+      bestOf: 3,
+      games: createBestOf3Games("1", "2", "1")
     },
     {
       id: "pm2",
       round: 1,
       position: 2,
-      team1Id: "4",
+      team1Id: "3",
       team2Id: "5",
-      winnerId: "4",
-      team1Score: 21,
-      team2Score: 18
+      winnerId: "3",
+      team1Score: 2,
+      team2Score: 0,
+      matchType: "Winners",
+      bestOf: 3,
+      games: [
+        {
+          id: "game-1a",
+          team1Score: 21,
+          team2Score: 15,
+          winner: "3"
+        },
+        {
+          id: "game-1b",
+          team1Score: 21,
+          team2Score: 18,
+          winner: "3"
+        }
+      ]
     },
+    
+    // Winners Round 2
     {
       id: "pm3",
-      round: 1,
-      position: 3,
-      team1Id: "2",
-      team2Id: "7",
-      winnerId: "2",
-      team1Score: 21,
-      team2Score: 15
-    },
-    {
-      id: "pm4",
-      round: 1,
-      position: 4,
-      team1Id: "3",
-      team2Id: "6",
-      winnerId: "6",
-      team1Score: 21,
-      team2Score: 20
-    },
-    // Semi Finals
-    {
-      id: "pm5",
       round: 2,
       position: 1,
       team1Id: "1",
-      team2Id: "4",
+      team2Id: "3",
       winnerId: "1",
-      team1Score: 21,
-      team2Score: 17
+      team1Score: 2,
+      team2Score: 1,
+      matchType: "Winners",
+      bestOf: 3,
+      games: createBestOf3Games("1", "3", "1")
     },
+    
+    // Losers Round 1
     {
-      id: "pm6",
+      id: "pm4",
+      round: 1,
+      position: 3,
+      team1Id: "2",
+      team2Id: "5",
+      winnerId: "2",
+      team1Score: 2,
+      team2Score: 0,
+      matchType: "Losers",
+      bestOf: 3,
+      games: [
+        {
+          id: "game-2a",
+          team1Score: 21,
+          team2Score: 14,
+          winner: "2"
+        },
+        {
+          id: "game-2b",
+          team1Score: 21,
+          team2Score: 19,
+          winner: "2"
+        }
+      ]
+    },
+    
+    // Losers Round 2
+    {
+      id: "pm5",
       round: 2,
       position: 2,
       team1Id: "2",
-      team2Id: "6",
+      team2Id: "3",
       winnerId: "2",
-      team1Score: 21,
-      team2Score: 19
+      team1Score: 2,
+      team2Score: 1,
+      matchType: "Losers",
+      bestOf: 3,
+      games: createBestOf3Games("2", "3", "2")
     },
+    
     // Finals
     {
-      id: "pm7",
+      id: "pm6",
       round: 3,
       position: 1,
       team1Id: "1",
       team2Id: "2",
       winnerId: "1",
-      team1Score: 21,
-      team2Score: 15
+      team1Score: 2,
+      team2Score: 0,
+      matchType: "Finals",
+      bestOf: 3,
+      games: [
+        {
+          id: "game-3a",
+          team1Score: 21,
+          team2Score: 15,
+          winner: "1"
+        },
+        {
+          id: "game-3b",
+          team1Score: 21,
+          team2Score: 19,
+          winner: "1"
+        }
+      ]
     }
   ],
   champion: "1"
 };
 
-// Generate rankings based on the updated teams
+export const mockIntermediatePlayoffBracket: PlayoffBracket = {
+  id: "pb2",
+  name: "Summer 2023 Intermediate Playoffs",
+  division: "Intermediate",
+  format: "Double Elimination",
+  matches: [
+    // Just one example match
+    {
+      id: "pm-int1",
+      round: 1,
+      position: 1,
+      team1Id: "7",
+      team2Id: "8",
+      winnerId: "7",
+      team1Score: 2,
+      team2Score: 1,
+      matchType: "Winners",
+      bestOf: 3,
+      games: createBestOf3Games("7", "8", "7")
+    }
+  ],
+  champion: "7"
+};
+
+export const mockCompetitivePlayoffBracket: PlayoffBracket = {
+  id: "pb3",
+  name: "Summer 2023 Competitive Playoffs",
+  division: "Competitive",
+  format: "Double Elimination",
+  matches: [
+    // Just one example match
+    {
+      id: "pm-comp1",
+      round: 1,
+      position: 1,
+      team1Id: "4",
+      team2Id: "6",
+      winnerId: "4",
+      team1Score: 2,
+      team2Score: 0,
+      matchType: "Winners",
+      bestOf: 3,
+      games: [
+        {
+          id: "game-comp1a",
+          team1Score: 21,
+          team2Score: 15,
+          winner: "4"
+        },
+        {
+          id: "game-comp1b",
+          team1Score: 21,
+          team2Score: 18,
+          winner: "4"
+        }
+      ]
+    }
+  ],
+  champion: "4"
+};
+
 export const mockRankings: Ranking[] = mockTeams.map(team => {
   const winPercentage = team.wins + team.losses > 0 
     ? Number((team.wins / (team.wins + team.losses)).toFixed(3)) 

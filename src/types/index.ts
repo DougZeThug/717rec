@@ -14,6 +14,7 @@ export interface Team {
   wins: number;
   losses: number;
   created_at: string;
+  division?: string;
 }
 
 export interface Match {
@@ -35,6 +36,7 @@ export interface PlayoffBracket {
   division: string;
   matches: PlayoffMatch[];
   champion?: string;
+  format: "Single Elimination" | "Double Elimination";
 }
 
 export interface PlayoffMatch {
@@ -46,6 +48,16 @@ export interface PlayoffMatch {
   winnerId?: string;
   team1Score?: number;
   team2Score?: number;
+  matchType?: "Winners" | "Losers" | "Finals";
+  games?: PlayoffGame[];
+  bestOf: number;
+}
+
+export interface PlayoffGame {
+  id: string;
+  team1Score: number;
+  team2Score: number;
+  winner: string;
 }
 
 export interface Ranking {
