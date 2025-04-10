@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffBracket, Team, PlayoffMatch } from "@/types";
+import { PlayoffBracket, Team, PlayoffMatch, Player } from "@/types";
 
 export const useBracketData = (bracketId?: string) => {
   const fetchTeams = async () => {
@@ -18,7 +18,10 @@ export const useBracketData = (bracketId?: string) => {
       id: team.id,
       name: team.name,
       logoUrl: team.logo_url,
-      players: team.players || [],
+      // Convert string[] to Player[] by mapping each string to a Player object
+      players: team.players ? team.players.map((playerName: string): Player => ({
+        name: playerName
+      })) : [],
       wins: 0, // We'll calculate this from matches later
       losses: 0, // We'll calculate this from matches later
       created_at: team.created_at,
@@ -50,7 +53,7 @@ export const useBracketData = (bracketId?: string) => {
     const matches = matchesData.map((match): PlayoffMatch => ({
       id: match.id,
       round: match.round_number,
-      position: match.position,
+      position: match.position || 0, // Default to 0 if position is not present
       team1Id: match.team1_id,
       team2Id: match.team2_id,
       winnerId: match.winner_id,

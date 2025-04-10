@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Trophy, Users, Edit, Loader2 } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
-import { PlayoffBracket, Team } from "@/types";
+import { PlayoffBracket, Team, Player } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -84,12 +84,15 @@ const Playoffs = () => {
         id: team.id,
         name: team.name,
         logoUrl: team.logo_url,
-        players: team.players || [],
+        // Convert string[] to Player[] by mapping each string to a Player object
+        players: team.players ? team.players.map((playerName: string): Player => ({
+          name: playerName
+        })) : [],
         wins: 0, // We would calculate this from matches
         losses: 0, // We would calculate this from matches
         created_at: team.created_at,
         division: team.divisions?.name // Use the name from the joined table
-      }));
+      }) as Team);
     }
   });
 

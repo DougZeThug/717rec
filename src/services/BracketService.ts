@@ -254,52 +254,54 @@ export class BracketService {
    */
   private static async advanceTeamToNextMatch(matchId: string, winnerId: string): Promise<void> {
     // Get the current match to find the next match
-    const { data: currentMatch, error: matchError } = await supabase
-      .from('matches')
-      .select('bracket_id, round_number, position, match_type')
-      .eq('id', matchId)
-      .single();
-      
-    if (matchError) throw matchError;
-    
-    // Find the next match based on the current match's position
-    // This is a simplified approach and would need to be more sophisticated in a real app
-    
-    // If it's a winners match, find the next winners match
-    if (currentMatch.match_type === 'winners') {
-      const nextRound = currentMatch.round_number + 1;
-      const nextPosition = Math.ceil(currentMatch.position / 2);
-      
-      const { data: nextMatches, error: nextMatchError } = await supabase
+    try {
+      const { data: currentMatch, error: matchError } = await supabase
         .from('matches')
-        .select('id, team1_id, team2_id')
-        .eq('bracket_id', currentMatch.bracket_id)
-        .eq('round_number', nextRound)
-        .eq('position', nextPosition)
-        .eq('match_type', 'winners');
+        .select('bracket_id, round_number, position, match_type')
+        .eq('id', matchId)
+        .single();
         
-      if (nextMatchError) throw nextMatchError;
+      if (matchError) throw matchError;
       
-      if (nextMatches.length > 0) {
-        const nextMatch = nextMatches[0];
+      // Find the next match based on the current match's position
+      // This is a simplified approach and would need to be more sophisticated in a real app
+      
+      // If it's a winners match, find the next winners match
+      if (currentMatch.match_type === 'winners') {
+        const nextRound = currentMatch.round_number + 1;
+        const nextPosition = Math.ceil(currentMatch.position / 2);
         
-        // Update the appropriate team slot
-        const isEvenPosition = currentMatch.position % 2 === 0;
-        const updateData = isEvenPosition 
-          ? { team2_id: winnerId } 
-          : { team1_id: winnerId };
-          
-        await supabase
+        const { data: nextMatches, error: nextMatchError } = await supabase
           .from('matches')
-          .update(updateData)
-          .eq('id', nextMatch.id);
+          .select('id, team1_id, team2_id')
+          .eq('bracket_id', currentMatch.bracket_id)
+          .eq('round_number', nextRound)
+          .eq('position', nextPosition)
+          .eq('match_type', 'winners');
+          
+        if (nextMatchError) throw nextMatchError;
+        
+        if (nextMatches && nextMatches.length > 0) {
+          const nextMatch = nextMatches[0];
+          
+          // Update the appropriate team slot
+          const isEvenPosition = currentMatch.position % 2 === 0;
+          const updateData = isEvenPosition 
+            ? { team2_id: winnerId } 
+            : { team1_id: winnerId };
+            
+          await supabase
+            .from('matches')
+            .update(updateData)
+            .eq('id', nextMatch.id);
+        }
       }
       
-      // Also, the loser should go to losers bracket
-      // This is omitted for simplicity but would be implemented in a real app
+      // Similar logic for losers bracket and finals
+      // Omitted for brevity
+    } catch (error) {
+      console.error("Error advancing team to next match:", error);
+      throw error;
     }
-    
-    // Similar logic for losers bracket and finals
-    // Omitted for brevity
   }
 }
