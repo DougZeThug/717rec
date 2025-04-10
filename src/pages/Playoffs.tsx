@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { 
   Card,
   CardContent, 
@@ -21,9 +21,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Plus, Trophy, Users, Edit } from "lucide-react";
 import { 
   mockPlayoffBracket, 
@@ -45,15 +43,32 @@ const Playoffs = () => {
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  // Group teams by division
-  const teamsByDivision = teams.reduce((acc, team) => {
-    const division = team.division || "Unassigned";
-    if (!acc[division]) {
-      acc[division] = [];
-    }
-    acc[division].push(team);
-    return acc;
-  }, {} as Record<string, Team[]>);
+  // Group teams by division with proper sorting
+  const teamsByDivision = useMemo(() => {
+    const grouped = teams.reduce((acc, team) => {
+      const division = team.division || "Unassigned";
+      if (!acc[division]) {
+        acc[division] = [];
+      }
+      acc[division].push(team);
+      return acc;
+    }, {} as Record<string, Team[]>);
+    
+    // Sort teams within each division by name
+    Object.keys(grouped).forEach(division => {
+      grouped[division].sort((a, b) => a.name.localeCompare(b.name));
+    });
+    
+    return grouped;
+  }, [teams]);
+
+  // Filter brackets by division
+  const bracketsByDivision = useMemo(() => {
+    return divisions.reduce((acc, division) => {
+      acc[division] = brackets.filter(bracket => bracket.division === division);
+      return acc;
+    }, {} as Record<string, PlayoffBracket[]>);
+  }, [brackets]);
 
   const handleCreateBracket = () => {
     // This would open a dialog in a real implementation
@@ -109,7 +124,7 @@ const Playoffs = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {divisions.map((division) => {
-            const divisionBrackets = brackets.filter(b => b.division === division);
+            const divisionBrackets = bracketsByDivision[division] || [];
             
             return (
               <Card key={division}>
@@ -167,7 +182,7 @@ const Playoffs = () => {
             <CardContent className="overflow-x-auto">
               <BracketView 
                 bracket={bracket} 
-                teams={teams}
+                teams={teams.filter(team => team.division === bracket.division || !team.division)}
                 onEditMatch={handleEditMatch}
               />
               
@@ -255,45 +270,47 @@ const Playoffs = () => {
               ))}
 
               {/* Unassigned Teams */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">Unassigned Teams</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {teamsByDivision["Unassigned"]?.map(team => (
-                    <Card key={team.id} className="bg-gray-50">
-                      <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                              {team.logoUrl && (
-                                <img 
-                                  src={team.logoUrl} 
-                                  alt={team.name} 
-                                  className="w-full h-full object-cover"
-                                />
-                              )}
+              {teamsByDivision["Unassigned"]?.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold">Unassigned Teams</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {teamsByDivision["Unassigned"]?.map(team => (
+                      <Card key={team.id} className="bg-gray-50">
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
+                                {team.logoUrl && (
+                                  <img 
+                                    src={team.logoUrl} 
+                                    alt={team.name} 
+                                    className="w-full h-full object-cover"
+                                  />
+                                )}
+                              </div>
+                              <span className="truncate">{team.name}</span>
                             </div>
-                            <span className="truncate">{team.name}</span>
+                            <Select
+                              value={team.division || "Unassigned"}
+                              onValueChange={(value) => handleTeamDivisionChange(team.id, value)}
+                            >
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="Division..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {divisions.map(d => (
+                                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                                ))}
+                                <SelectItem value="Unassigned">Unassigned</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                          <Select
-                            value={team.division || "Unassigned"}
-                            onValueChange={(value) => handleTeamDivisionChange(team.id, value)}
-                          >
-                            <SelectTrigger className="w-[140px]">
-                              <SelectValue placeholder="Division..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {divisions.map(d => (
-                                <SelectItem key={d} value={d}>{d}</SelectItem>
-                              ))}
-                              <SelectItem value="Unassigned">Unassigned</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           
