@@ -22,29 +22,83 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Trophy, Users, Edit } from "lucide-react";
-import { 
-  mockPlayoffBracket, 
-  mockTeams, 
-  mockIntermediatePlayoffBracket, 
-  mockCompetitivePlayoffBracket 
-} from "@/data/mockData";
+import { Plus, Trophy, Users, Edit, Loader2 } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
 import { PlayoffBracket, Team } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
-
-// Placeholder for future features
-const currentBrackets = [mockPlayoffBracket, mockIntermediatePlayoffBracket, mockCompetitivePlayoffBracket];
-const divisions = ["Recreational", "Intermediate", "Competitive"];
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useBracketData } from "@/hooks/useBracketData";
 
 const Playoffs = () => {
-  const [brackets, setBrackets] = useState<PlayoffBracket[]>(currentBrackets);
-  const [teams, setTeams] = useState<Team[]>(mockTeams);
+  const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  // Fetch all brackets
+  const { data: allBrackets, isLoading: bracketsLoading } = useQuery({
+    queryKey: ['brackets'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('brackets')
+        .select('*, divisions(name)');
+      
+      if (error) throw error;
+      
+      return data.map(bracket => ({
+        id: bracket.id,
+        title: bracket.title,
+        division: bracket.divisions?.name || 'Unknown',
+        format: bracket.format || 'Single Elimination'
+      }));
+    }
+  });
+  
+  // Fetch all divisions
+  const { data: divisions, isLoading: divisionsLoading } = useQuery({
+    queryKey: ['divisions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('divisions')
+        .select('*');
+      
+      if (error) throw error;
+      
+      return data.map(div => div.name);
+    }
+  });
+  
+  // Fetch teams, optionally filtered by division
+  const { data: teams, isLoading: teamsLoading } = useQuery({
+    queryKey: ['teams'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*, divisions(name)')
+        .order('seed', { ascending: true })
+        .order('name');
+      
+      if (error) throw error;
+      
+      return data.map(team => ({
+        id: team.id,
+        name: team.name,
+        logoUrl: team.logo_url,
+        players: team.players || [],
+        wins: 0, // We would calculate this from matches
+        losses: 0, // We would calculate this from matches
+        created_at: team.created_at,
+        division: team.divisions?.name // Use the name from the joined table
+      }));
+    }
+  });
+
+  const { bracket, isLoading: bracketLoading } = useBracketData(selectedBracketId || undefined);
+
   // Group teams by division with proper sorting
   const teamsByDivision = useMemo(() => {
+    if (!teams) return {};
+    
     const grouped = teams.reduce((acc, team) => {
       const division = team.division || "Unassigned";
       if (!acc[division]) {
@@ -64,14 +118,15 @@ const Playoffs = () => {
 
   // Filter brackets by division
   const bracketsByDivision = useMemo(() => {
-    return divisions.reduce((acc, division) => {
-      acc[division] = brackets.filter(bracket => bracket.division === division);
+    if (!allBrackets || !divisions) return {};
+    
+    return (divisions || []).reduce((acc, division) => {
+      acc[division] = (allBrackets || []).filter(bracket => bracket.division === division);
       return acc;
-    }, {} as Record<string, PlayoffBracket[]>);
-  }, [brackets]);
+    }, {} as Record<string, any[]>);
+  }, [allBrackets, divisions]);
 
   const handleCreateBracket = () => {
-    // This would open a dialog in a real implementation
     toast({
       title: "Coming Soon",
       description: "Bracket creation functionality will be available soon.",
@@ -79,24 +134,62 @@ const Playoffs = () => {
   };
   
   const handleEditMatch = (matchId: string) => {
-    // This would open a dialog to edit the match in a real implementation
     toast({
       title: "Coming Soon",
       description: `Match editing functionality will be available soon. (Match ID: ${matchId})`,
     });
   };
 
-  const handleTeamDivisionChange = (teamId: string, newDivision: string) => {
-    const updatedTeams = teams.map(team => 
-      team.id === teamId ? { ...team, division: newDivision } : team
-    );
-    setTeams(updatedTeams);
-    
-    toast({
-      title: "Division Updated",
-      description: `Team division has been updated to ${newDivision}.`,
-    });
+  const handleTeamDivisionChange = async (teamId: string, newDivisionName: string) => {
+    try {
+      // First get the division ID from the name
+      const { data: divisionData } = await supabase
+        .from('divisions')
+        .select('id')
+        .eq('name', newDivisionName)
+        .single();
+      
+      if (!divisionData) {
+        throw new Error('Division not found');
+      }
+      
+      // Update the team with the division ID
+      const { error } = await supabase
+        .from('teams')
+        .update({ division_id: divisionData.id })
+        .eq('id', teamId);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Division Updated",
+        description: `Team division has been updated to ${newDivisionName}.`,
+      });
+    } catch (error) {
+      console.error('Error updating team division:', error);
+      toast({
+        title: "Update Failed",
+        description: "There was an error updating the team division.",
+        variant: "destructive",
+      });
+    }
   };
+
+  const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
+  
+  if (isLoading && !allBrackets && !divisions && !teams) {
+    return (
+      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-8 h-8 text-cornhole-navy animate-spin mb-2" />
+          <p>Loading tournament data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const availableDivisions = divisions || [];
+  const allBracketsData = allBrackets || [];
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
@@ -123,7 +216,7 @@ const Playoffs = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          {divisions.map((division) => {
+          {availableDivisions.map((division) => {
             const divisionBrackets = bracketsByDivision[division] || [];
             
             return (
@@ -145,11 +238,15 @@ const Playoffs = () => {
                     divisionBrackets.map(bracket => (
                       <div key={bracket.id} className="flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span>{bracket.name}</span>
+                          <span>{bracket.title}</span>
                           <span className="text-xs text-gray-500">{bracket.format}</span>
                         </div>
-                        <Button size="sm" variant="ghost" asChild>
-                          <a href={`#bracket-${bracket.id}`}>View</a>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => setSelectedBracketId(bracket.id)}
+                        >
+                          View
                         </Button>
                       </div>
                     ))
@@ -164,8 +261,8 @@ const Playoffs = () => {
           })}
         </div>
         
-        {brackets.map((bracket) => (
-          <Card key={bracket.id} className="mb-8" id={`bracket-${bracket.id}`}>
+        {selectedBracketId && bracket && (
+          <Card className="mb-8" id={`bracket-${selectedBracketId}`}>
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
@@ -180,11 +277,17 @@ const Playoffs = () => {
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto">
-              <BracketView 
-                bracket={bracket} 
-                teams={teams.filter(team => team.division === bracket.division || !team.division)}
-                onEditMatch={handleEditMatch}
-              />
+              {bracketLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
+                </div>
+              ) : (
+                <BracketView 
+                  bracket={bracket}
+                  teams={teams || []}
+                  onEditMatch={handleEditMatch}
+                />
+              )}
               
               {bracket.champion && (
                 <div className="mt-8 text-center">
@@ -192,16 +295,16 @@ const Playoffs = () => {
                   <div className="inline-flex items-center bg-cornhole-cream rounded-full px-6 py-3">
                     <Trophy className="h-6 w-6 mr-2 text-cornhole-wood" />
                     <span className="text-lg font-bold">
-                      {teams.find(t => t.id === bracket.champion)?.name || "Unknown Team"}
+                      {teams?.find(t => t.id === bracket.champion)?.name || "Unknown Team"}
                     </span>
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
-        ))}
+        )}
         
-        {brackets.length === 0 && (
+        {allBracketsData.length === 0 && !isLoading && (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
             <Trophy className="h-12 w-12 mx-auto text-gray-300 mb-4" />
             <h3 className="text-xl font-bold text-gray-500 mb-2">No Playoff Brackets</h3>
@@ -226,92 +329,98 @@ const Playoffs = () => {
           </DialogHeader>
           
           <div className="max-h-[60vh] overflow-y-auto pr-2">
-            <div className="space-y-6">
-              {divisions.map(division => (
-                <div key={division} className="space-y-3">
-                  <h3 className="text-lg font-semibold">{division} Division</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {teamsByDivision[division]?.map(team => (
-                      <Card key={team.id} className="bg-gray-50">
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                                {team.logoUrl && (
-                                  <img 
-                                    src={team.logoUrl} 
-                                    alt={team.name} 
-                                    className="w-full h-full object-cover"
-                                  />
-                                )}
+            {teamsLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {availableDivisions.map(division => (
+                  <div key={division} className="space-y-3">
+                    <h3 className="text-lg font-semibold">{division} Division</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {teamsByDivision[division]?.map(team => (
+                        <Card key={team.id} className="bg-gray-50">
+                          <CardContent className="p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
+                                  {team.logoUrl && (
+                                    <img 
+                                      src={team.logoUrl} 
+                                      alt={team.name} 
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )}
+                                </div>
+                                <span className="truncate">{team.name}</span>
                               </div>
-                              <span className="truncate">{team.name}</span>
+                              <Select
+                                value={team.division || "Unassigned"}
+                                onValueChange={(value) => handleTeamDivisionChange(team.id!, value)}
+                              >
+                                <SelectTrigger className="w-[140px]">
+                                  <SelectValue placeholder="Division..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableDivisions.map(d => (
+                                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                                  ))}
+                                  <SelectItem value="Unassigned">Unassigned</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
-                            <Select
-                              value={team.division || "Unassigned"}
-                              onValueChange={(value) => handleTeamDivisionChange(team.id, value)}
-                            >
-                              <SelectTrigger className="w-[140px]">
-                                <SelectValue placeholder="Division..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {divisions.map(d => (
-                                  <SelectItem key={d} value={d}>{d}</SelectItem>
-                                ))}
-                                <SelectItem value="Unassigned">Unassigned</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {/* Unassigned Teams */}
-              {teamsByDivision["Unassigned"]?.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold">Unassigned Teams</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {teamsByDivision["Unassigned"]?.map(team => (
-                      <Card key={team.id} className="bg-gray-50">
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                                {team.logoUrl && (
-                                  <img 
-                                    src={team.logoUrl} 
-                                    alt={team.name} 
-                                    className="w-full h-full object-cover"
-                                  />
-                                )}
+                {/* Unassigned Teams */}
+                {teamsByDivision["Unassigned"]?.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">Unassigned Teams</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {teamsByDivision["Unassigned"]?.map(team => (
+                        <Card key={team.id} className="bg-gray-50">
+                          <CardContent className="p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
+                                  {team.logoUrl && (
+                                    <img 
+                                      src={team.logoUrl} 
+                                      alt={team.name} 
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )}
+                                </div>
+                                <span className="truncate">{team.name}</span>
                               </div>
-                              <span className="truncate">{team.name}</span>
+                              <Select
+                                value={team.division || "Unassigned"}
+                                onValueChange={(value) => handleTeamDivisionChange(team.id!, value)}
+                              >
+                                <SelectTrigger className="w-[140px]">
+                                  <SelectValue placeholder="Division..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableDivisions.map(d => (
+                                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                                  ))}
+                                  <SelectItem value="Unassigned">Unassigned</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
-                            <Select
-                              value={team.division || "Unassigned"}
-                              onValueChange={(value) => handleTeamDivisionChange(team.id, value)}
-                            >
-                              <SelectTrigger className="w-[140px]">
-                                <SelectValue placeholder="Division..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {divisions.map(d => (
-                                  <SelectItem key={d} value={d}>{d}</SelectItem>
-                                ))}
-                                <SelectItem value="Unassigned">Unassigned</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="flex justify-end">

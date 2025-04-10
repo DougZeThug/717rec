@@ -38,7 +38,7 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
   const roundsAndTypes = Object.keys(matchesByRoundAndType).sort((a, b) => {
     const [roundA, typeA] = a.split('-');
     const [roundB, typeB] = b.split('-');
-    if (roundA === roundB) {
+    if (parseInt(roundA) === parseInt(roundB)) {
       // Winners bracket comes first, then losers, then finals
       if (typeA === 'Finals') return 1;
       if (typeB === 'Finals') return -1;
@@ -49,19 +49,39 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
 
   // Function to get the next match based on current match's winner
   const getNextMatch = (match: PlayoffMatch): PlayoffMatch | null => {
+    // In a real implementation, we would use the next_match_id from the database
+    // For now, we'll find it based on rounds
     if (!match.winnerId) return null;
     
-    return bracket.matches.find(m => 
-      (m.team1Id === match.winnerId || m.team2Id === match.winnerId) && 
-      m.round > match.round
-    ) || null;
+    // For each match in higher rounds, check if it could be the next match
+    for (const nextRoundMatch of bracket.matches.filter(m => m.round > match.round)) {
+      // If this match is from winners bracket and the next match is for winners
+      if (match.matchType === "Winners" && nextRoundMatch.matchType === "Winners") {
+        // Check if this match feeds into that one (simplified logic)
+        if (nextRoundMatch.team1Id === null || nextRoundMatch.team2Id === null) {
+          return nextRoundMatch;
+        }
+      }
+      
+      // For losers bracket, similar logic would apply
+      // This is simplified, a real implementation would use the next_match_id from the database
+    }
+    
+    return null;
+  };
+
+  // Function to calculate vertical spacing for teams
+  const getVerticalSpacing = (roundIndex: number): number => {
+    // Exponential spacing based on round
+    // First round: 12, second: 24, third: 48, etc.
+    return Math.pow(2, roundIndex) * 12;
   };
 
   return (
     <div className="overflow-auto">
       <div className="flex flex-col space-y-6 min-w-max p-4">
         <div className="flex space-x-16 relative">
-          {roundsAndTypes.map((key) => {
+          {roundsAndTypes.map((key, roundIndex) => {
             const [round, type] = key.split('-');
             const roundMatches = matchesByRoundAndType[key];
             
@@ -74,8 +94,15 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
               parseInt(round) === maxRound - 1 && type === 'Losers' ? "Losers Semifinals" : 
               `${type} Round ${round}`;
               
+            // Calculate vertical spacing between matches based on round
+            const verticalSpacing = getVerticalSpacing(roundIndex);
+              
             return (
-              <div key={key} className="flex flex-col space-y-4 relative" style={{ zIndex: 10 }}>
+              <div 
+                key={key} 
+                className="flex flex-col space-y-4 relative" 
+                style={{ zIndex: 10 }}
+              >
                 <div className="text-center">
                   <Badge 
                     variant={type === 'Winners' ? 'default' : type === 'Losers' ? 'secondary' : 'outline'}
@@ -85,30 +112,18 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
                   </Badge>
                 </div>
                 
-                <div className="flex flex-col space-y-24">
+                <div className="flex flex-col" style={{ gap: `${verticalSpacing}px` }}>
                   {roundMatches.map((match, index) => {
                     const team1 = getTeamById(match.team1Id);
                     const team2 = getTeamById(match.team2Id);
                     const winner = getTeamById(match.winnerId);
                     const nextMatch = getNextMatch(match);
                     
+                    // Calculate the connecting line parameters
+                    const hasNextMatch = nextMatch !== null;
+                    
                     return (
-                      <div key={match.id} className="relative">
-                        {/* Draw connecting lines to next match (if there is one) */}
-                        {nextMatch && (
-                          <svg 
-                            className="absolute top-0 left-full h-full w-16"
-                            style={{ pointerEvents: 'none', zIndex: 1 }}
-                          >
-                            <path
-                              d={`M 0,${40} L 32,${40} L 32,${nextMatch.position > match.position ? -30 : 110} L 64,${nextMatch.position > match.position ? -30 : 110}`}
-                              stroke="#9ca3af"
-                              strokeWidth="2"
-                              fill="transparent"
-                            />
-                          </svg>
-                        )}
-                        
+                      <div key={match.id} className="relative flex">
                         <Card 
                           className={`w-80 hover:shadow-md transition-shadow ${onEditMatch ? 'cursor-pointer' : ''}`}
                           onClick={() => onEditMatch && onEditMatch(match.id)}
@@ -191,7 +206,7 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
                                 </div>
                               )}
                               
-                              {winner && type === 'Finals' && (
+                              {winner && match.matchType === 'Finals' && (
                                 <div className="mt-3 pt-3 border-t text-center">
                                   <div className="text-sm text-gray-500">Champion</div>
                                   <div className="font-bold text-cornhole-green">{winner.name}</div>
@@ -200,6 +215,27 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
                             </div>
                           </CardContent>
                         </Card>
+                        
+                        {/* Bracket connecting lines */}
+                        {hasNextMatch && (
+                          <svg 
+                            className="absolute top-1/2 -right-16 h-full w-16"
+                            style={{ 
+                              pointerEvents: 'none', 
+                              zIndex: 1,
+                              transform: 'translateY(-50%)'
+                            }}
+                          >
+                            <line
+                              x1="0"
+                              y1="40"
+                              x2="64"
+                              y2="40"
+                              stroke="#9ca3af"
+                              strokeWidth="2"
+                            />
+                          </svg>
+                        )}
                       </div>
                     );
                   })}

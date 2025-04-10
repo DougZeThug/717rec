@@ -13,18 +13,21 @@ export type Database = {
         Row: {
           created_at: string | null
           division_id: string | null
+          format: string | null
           id: string
           title: string
         }
         Insert: {
           created_at?: string | null
           division_id?: string | null
+          format?: string | null
           id?: string
           title: string
         }
         Update: {
           created_at?: string | null
           division_id?: string | null
+          format?: string | null
           id?: string
           title?: string
         }
@@ -97,6 +100,10 @@ export type Database = {
           bracket_id: string | null
           created_at: string | null
           id: string
+          match_type: Database["public"]["Enums"]["match_type"] | null
+          next_loser_match_id: string | null
+          next_match_id: string | null
+          position: number | null
           round_number: number
           team1_id: string | null
           team2_id: string | null
@@ -107,6 +114,10 @@ export type Database = {
           bracket_id?: string | null
           created_at?: string | null
           id?: string
+          match_type?: Database["public"]["Enums"]["match_type"] | null
+          next_loser_match_id?: string | null
+          next_match_id?: string | null
+          position?: number | null
           round_number: number
           team1_id?: string | null
           team2_id?: string | null
@@ -117,6 +128,10 @@ export type Database = {
           bracket_id?: string | null
           created_at?: string | null
           id?: string
+          match_type?: Database["public"]["Enums"]["match_type"] | null
+          next_loser_match_id?: string | null
+          next_match_id?: string | null
+          position?: number | null
           round_number?: number
           team1_id?: string | null
           team2_id?: string | null
@@ -161,6 +176,7 @@ export type Database = {
           logo_url: string | null
           name: string
           players: string[] | null
+          seed: number | null
         }
         Insert: {
           created_at?: string | null
@@ -169,6 +185,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           players?: string[] | null
+          seed?: number | null
         }
         Update: {
           created_at?: string | null
@@ -177,6 +194,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           players?: string[] | null
+          seed?: number | null
         }
         Relationships: [
           {
@@ -196,7 +214,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      match_type: "winners" | "losers" | "finals"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -311,6 +329,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      match_type: ["winners", "losers", "finals"],
+    },
   },
 } as const
