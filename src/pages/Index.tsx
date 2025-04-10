@@ -1,13 +1,14 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { mockTeams, mockMatches } from "@/data/mockData";
 
 const Index = () => {
-  // Get upcoming matches (not completed)
-  const upcomingMatches = mockMatches
-    .filter(match => !match.isCompleted)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  // Change to show completed matches instead of upcoming
+  const completedMatches = mockMatches
+    .filter(match => match.isCompleted)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
 
   // Get top teams by win percentage
@@ -57,7 +58,7 @@ const Index = () => {
             717 Rec
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-            The premier platform for managing recreational Cornhole leagues, tournaments, and events in the 717 area.
+            Where Bags Fly and Beers Flow.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button asChild size="lg" className="bg-cornhole-green hover:bg-cornhole-green/90">
@@ -71,17 +72,17 @@ const Index = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Upcoming Matches */}
+        {/* Completed Matches */}
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy">Upcoming Matches</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy">Recent Matches</h2>
             <Button asChild variant="outline" className="text-cornhole-navy border-cornhole-navy hover:bg-cornhole-navy hover:text-white">
               <Link to="/schedule">View All</Link>
             </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingMatches.map((match) => {
+            {completedMatches.map((match) => {
               const team1 = getTeamById(match.team1Id);
               const team2 = getTeamById(match.team2Id);
               
@@ -115,8 +116,8 @@ const Index = () => {
                         <p><strong>Time:</strong> {formatTime(match.date)}</p>
                       </div>
                       <div className="text-right">
-                        <p><strong>Location:</strong></p>
-                        <p>{match.location}</p>
+                        <p><strong>Score:</strong></p>
+                        <p>{team1.name}: {match.team1Score}, {team2.name}: {match.team2Score}</p>
                       </div>
                     </div>
                   </div>
