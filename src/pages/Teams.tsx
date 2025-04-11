@@ -42,17 +42,17 @@ const Teams: React.FC = () => {
         throw error;
       }
 
-      // Transform the database data to our Team type
+      // Transform the database data to our Team type and ensure all required fields exist
       const teamsData = data.map((team: any): Team => ({
         id: team.id,
         name: team.name,
-        logoUrl: team.logo_url,
-        imageUrl: team.image_url,
+        logoUrl: team.logo_url || undefined,
+        imageUrl: team.image_url || undefined,
         players: team.players ? team.players.map((playerName: string) => ({
           name: playerName
         })) : [],
-        wins: 0,
-        losses: 0,
+        wins: team.wins || 0,
+        losses: team.losses || 0,
         created_at: team.created_at,
         division: team.division_id
       }));
