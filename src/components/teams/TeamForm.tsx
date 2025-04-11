@@ -1,9 +1,11 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Team, Player } from "@/types";
+import { uploadTeamImage } from "@/utils/imageUpload";
+import { Upload, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface TeamFormProps {
   team?: Team;
@@ -13,12 +15,13 @@ interface TeamFormProps {
 
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [name, setName] = useState<string>(team?.name || '');
-  const [logoUrl, setLogoUrl] = useState<string>(team?.logoUrl || '');
   const [imageUrl, setImageUrl] = useState<string | undefined>(team?.imageUrl);
   const [players, setPlayers] = useState<Player[]>(
     team?.players || [{ name: '' }]
   );
-  const [previewImage, setPreviewImage] = useState<string | undefined>(team?.logoUrl);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   const [wins] = useState<number>(team?.wins || 0);
   const [losses] = useState<number>(team?.losses || 0);
 
@@ -36,12 +39,37 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
     setPlayers(players.filter((_, i) => i !== index));
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const uploadedImageUrl = await uploadTeamImage(file);
+      setImageUrl(uploadedImageUrl);
+    } catch (error) {
+      toast({
+        title: "Image Upload Failed",
+        description: "Could not upload the image. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl(undefined);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     onSubmit({
       name,
-      logoUrl: previewImage || undefined,
       imageUrl: imageUrl || undefined, // Use undefined if no image
       players: players.filter(p => p.name.trim() !== ""),
       wins,
@@ -65,16 +93,44 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="logoUrl">Team Logo URL</Label>
-          <Input
-            id="logoUrl"
-            value={logoUrl}
-            onChange={(e) => {
-              setLogoUrl(e.target.value);
-              setPreviewImage(e.target.value);
-            }}
-            placeholder="Enter URL for team logo"
+          <Label>Team Image</Label>
+          <input 
+            type="file" 
+            ref={fileInputRef}
+            accept="image/*" 
+            onChange={handleImageUpload} 
+            className="hidden"
+            disabled={isUploading}
           />
+          <div className="flex items-center gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="flex items-center gap-2"
+            >
+              <Upload size={16} /> Upload Image
+            </Button>
+            {imageUrl && (
+              <div className="relative">
+                <img 
+                  src={imageUrl} 
+                  alt="Team preview" 
+                  className="h-20 w-20 object-cover rounded"
+                />
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  size="icon" 
+                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                  onClick={handleRemoveImage}
+                >
+                  <X size={12} />
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Players section */}
@@ -112,7 +168,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">
+          <Button type="submit" disabled={isUploading}>
             {team ? 'Update Team' : 'Create Team'}
           </Button>
         </div>
