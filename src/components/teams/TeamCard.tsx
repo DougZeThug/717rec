@@ -16,14 +16,27 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
     ? ((team.wins / (team.wins + team.losses)) * 100).toFixed(1) 
     : "0.0";
 
+  // Use imageUrl first, then fall back to logoUrl, otherwise use first letter
+  const hasImage = team.imageUrl || team.logoUrl;
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
       <div className="h-48 bg-gray-100 relative overflow-hidden">
-        {team.logoUrl ? (
+        {hasImage ? (
           <img 
-            src={team.logoUrl} 
+            src={team.imageUrl || team.logoUrl} 
             alt={`${team.name} logo`} 
             className="w-full h-full object-contain p-4"
+            onError={(e) => {
+              // If image fails to load, show first letter instead
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                parent.classList.add('bg-cornhole-navy', 'text-white');
+                parent.innerHTML += `<div class="w-full h-full flex items-center justify-center text-4xl font-bold">${team.name.charAt(0)}</div>`;
+              }
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-cornhole-navy text-white text-4xl font-bold">
@@ -45,8 +58,8 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
           <div className="mt-3">
             <p className="text-gray-600 mb-1">Players:</p>
             <ul className="list-disc list-inside">
-              {team.players.map(player => (
-                <li key={player.id} className="truncate">{player.name}</li>
+              {team.players.map((player, index) => (
+                <li key={index} className="truncate">{player.name}</li>
               ))}
             </ul>
           </div>

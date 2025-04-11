@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -19,75 +19,227 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Search } from "lucide-react";
-import { mockTeams } from "@/data/mockData";
 import TeamCard from "@/components/teams/TeamCard";
 import TeamForm from "@/components/teams/TeamForm";
-import { Team } from "@/types";
+import type { Team } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Teams = () => {
-  const [teams, setTeams] = useState<Team[]>(mockTeams);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | undefined>(undefined);
   const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Fetch teams from Supabase
+  useEffect(() => {
+    const fetchTeams = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('teams')
+          .select('*')
+          .order('name');
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          // Transform to our application Team type
+          const transformedTeams: Team[] = data.map(team => ({
+            id: team.id,
+            name: team.name,
+            logoUrl: team.logo_url,
+            imageUrl: team.image_url,
+            // Convert string[] to Player[] by mapping each string to a Player object
+            players: team.players ? team.players.map((playerName: string) => ({
+              name: playerName
+            })) : [],
+            wins: 0, // We'll calculate this from matches later
+            losses: 0, // We'll calculate this from matches later
+            created_at: team.created_at,
+            division: team.division_id // This will be the division ID from Supabase
+          }));
+          
+          setTeams(transformedTeams);
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load teams. Please try again later.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTeams();
+  }, [toast]);
 
   const filteredTeams = teams.filter(team =>
     team.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateTeam = (teamData: Omit<Team, "id" | "created_at">) => {
-    const newTeam: Team = {
-      ...teamData,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString()
-    };
-    
-    setTeams([...teams, newTeam]);
-    setIsFormOpen(false);
-    toast({
-      title: "Team Created",
-      description: `${newTeam.name} has been successfully created.`,
-    });
-  };
-
-  const handleUpdateTeam = (teamData: Omit<Team, "id" | "created_at">) => {
-    if (!editingTeam) return;
-    
-    const updatedTeams = teams.map(team => {
-      if (team.id === editingTeam.id) {
-        return {
-          ...team,
-          ...teamData
-        };
+  const handleCreateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
+    try {
+      // Prepare data for Supabase
+      const { data, error } = await supabase
+        .from('teams')
+        .insert({
+          name: teamData.name,
+          logo_url: teamData.logoUrl,
+          image_url: teamData.imageUrl,
+          players: teamData.players.map(p => p.name),
+          seed: null, // Default
+          division_id: teamData.division
+        })
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
       }
-      return team;
-    });
-    
-    setTeams(updatedTeams);
-    setEditingTeam(undefined);
-    toast({
-      title: "Team Updated",
-      description: `${teamData.name} has been successfully updated.`,
-    });
-  };
-
-  const handleDeleteTeam = () => {
-    if (!deleteTeamId) return;
-    
-    const teamToDelete = teams.find(team => team.id === deleteTeamId);
-    const updatedTeams = teams.filter(team => team.id !== deleteTeamId);
-    
-    setTeams(updatedTeams);
-    setDeleteTeamId(null);
-    
-    if (teamToDelete) {
+      
+      // Transform the new team to our application Team type
+      const newTeam: Team = {
+        id: data.id,
+        name: data.name,
+        logoUrl: data.logo_url,
+        imageUrl: data.image_url,
+        players: data.players ? data.players.map((playerName: string) => ({
+          name: playerName
+        })) : [],
+        wins: teamData.wins,
+        losses: teamData.losses,
+        created_at: data.created_at,
+        division: data.division_id
+      };
+      
+      setTeams([...teams, newTeam]);
+      setIsFormOpen(false);
       toast({
-        title: "Team Deleted",
-        description: `${teamToDelete.name} has been successfully deleted.`,
+        title: "Team Created",
+        description: `${newTeam.name} has been successfully created.`,
+      });
+    } catch (error) {
+      console.error("Error creating team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create team. Please try again.",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleUpdateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
+    if (!editingTeam) return;
+    
+    try {
+      // Prepare data for Supabase
+      const { error } = await supabase
+        .from('teams')
+        .update({
+          name: teamData.name,
+          logo_url: teamData.logoUrl,
+          image_url: teamData.imageUrl,
+          players: teamData.players.map(p => p.name),
+          division_id: teamData.division
+        })
+        .eq('id', editingTeam.id);
+        
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      const updatedTeams = teams.map(team => {
+        if (team.id === editingTeam.id) {
+          return {
+            ...team,
+            ...teamData
+          };
+        }
+        return team;
+      });
+      
+      setTeams(updatedTeams);
+      setEditingTeam(undefined);
+      toast({
+        title: "Team Updated",
+        description: `${teamData.name} has been successfully updated.`,
+      });
+    } catch (error) {
+      console.error("Error updating team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update team. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!deleteTeamId) return;
+    
+    try {
+      const teamToDelete = teams.find(team => team.id === deleteTeamId);
+      
+      // Delete the team from Supabase
+      const { error } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', deleteTeamId);
+        
+      if (error) {
+        throw error;
+      }
+
+      // If team had an image in storage, delete it
+      if (teamToDelete?.imageUrl && teamToDelete.imageUrl.includes('team-images')) {
+        try {
+          // Extract the file path from the URL
+          const filePathMatch = teamToDelete.imageUrl.match(/team-images\/([^?]+)/);
+          if (filePathMatch && filePathMatch[1]) {
+            const filePath = filePathMatch[1];
+            
+            // Delete the file from storage
+            await supabase.storage
+              .from('team-images')
+              .remove([filePath]);
+          }
+        } catch (storageError) {
+          console.error("Error removing team image:", storageError);
+          // Continue with team deletion even if image deletion fails
+        }
+      }
+      
+      // Update local state
+      const updatedTeams = teams.filter(team => team.id !== deleteTeamId);
+      
+      setTeams(updatedTeams);
+      setDeleteTeamId(null);
+      
+      if (teamToDelete) {
+        toast({
+          title: "Team Deleted",
+          description: `${teamToDelete.name} has been successfully deleted.`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete team. Please try again.",
+        variant: "destructive"
+      });
+      setDeleteTeamId(null);
     }
   };
 
@@ -121,7 +273,12 @@ const Teams = () => {
           </div>
         </div>
 
-        {filteredTeams.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-cornhole-navy"></div>
+            <p className="mt-2 text-gray-500">Loading teams...</p>
+          </div>
+        ) : filteredTeams.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredTeams.map(team => (
               <TeamCard 

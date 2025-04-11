@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { XCircle, Plus, Upload, Link as LinkIcon } from "lucide-react";
 import type { Team, Player } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface TeamFormProps {
   team?: Team;
@@ -15,21 +17,25 @@ interface TeamFormProps {
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [name, setName] = useState(team?.name || "");
   const [logoUrl, setLogoUrl] = useState(team?.logoUrl || "");
+  const [imageUrl, setImageUrl] = useState(team?.imageUrl || "");
   const [players, setPlayers] = useState<Player[]>(
     team?.players || [{ name: "", email: "" }]
   );
   const [wins, setWins] = useState(team?.wins || 0);
   const [losses, setLosses] = useState(team?.losses || 0);
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'upload'>(logoUrl ? 'url' : 'upload');
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewImage, setPreviewImage] = useState<string | undefined>(logoUrl);
+  const [previewImage, setPreviewImage] = useState<string | undefined>(imageUrl || logoUrl);
+  const { toast } = useToast();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     onSubmit({
       name,
       logoUrl: previewImage || undefined,
+      imageUrl: imageUrl || undefined,
       players: players.filter(p => p.name.trim() !== ""),
       wins,
       losses
@@ -52,7 +58,57 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
     setPlayers(updatedPlayers);
   };
 
-  const compressImage = (file: File): Promise<string> => {
+  const uploadImageToStorage = async (file: File) => {
+    setIsUploading(true);
+    try {
+      // Generate a unique file name to prevent conflicts
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Upload the file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('team-images')
+        .upload(filePath, file);
+
+      if (error) {
+        toast({
+          title: "Upload Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      // Get the public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('team-images')
+        .getPublicUrl(filePath);
+
+      // Set the image URL
+      setImageUrl(publicUrlData.publicUrl);
+      setPreviewImage(publicUrlData.publicUrl);
+      
+      toast({
+        title: "Upload Successful",
+        description: "Team image has been uploaded successfully",
+      });
+
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Upload Error",
+        description: "An unexpected error occurred while uploading your image.",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const compressImage = (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -90,10 +146,21 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
           
           ctx.drawImage(img, 0, 0, width, height);
           
-          // Convert to base64 with reduced quality (0.3 = 30% quality)
-          const compressed = canvas.toDataURL('image/jpeg', 0.3);
-          console.log(`Original size: ~${Math.round((e.target?.result as string).length / 1024)}KB, Compressed size: ~${Math.round(compressed.length / 1024)}KB`);
-          resolve(compressed);
+          // Convert to blob with reduced quality
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to create blob from canvas'));
+              return;
+            }
+            
+            // Create a new file from the blob
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            
+            resolve(compressedFile);
+          }, 'image/jpeg', 0.6);
         };
         
         img.onerror = () => reject(new Error('Failed to load image'));
@@ -110,23 +177,53 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
     if (!file) return;
     
     try {
-      // Compress the image before setting it
-      const compressedImage = await compressImage(file);
-      setPreviewImage(compressedImage);
-    } catch (error) {
-      console.error("Error compressing image:", error);
-      // Fallback to original method if compression fails
+      // Show a temporary preview before upload completes
       const reader = new FileReader();
       reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setPreviewImage(result);
+        setPreviewImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Compress and upload the image
+      const compressedFile = await compressImage(file);
+      await uploadImageToStorage(compressedFile);
+    } catch (error) {
+      console.error("Error handling file:", error);
+      toast({
+        title: "Error Processing Image",
+        description: "There was an error processing your image. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleRemoveImage = async () => {
+    // If there's an existing image in storage, try to delete it
+    if (imageUrl && imageUrl.includes('team-images')) {
+      try {
+        // Extract the file path from the URL
+        const filePathMatch = imageUrl.match(/team-images\/([^?]+)/);
+        if (filePathMatch && filePathMatch[1]) {
+          const filePath = filePathMatch[1];
+          
+          // Delete the file from storage
+          await supabase.storage
+            .from('team-images')
+            .remove([filePath]);
+        }
+      } catch (error) {
+        console.error("Error removing image from storage:", error);
+      }
+    }
+    
+    setPreviewImage(undefined);
+    setImageUrl("");
+    setLogoUrl("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -179,9 +276,19 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                 variant="outline" 
                 onClick={triggerFileInput}
                 className="w-full h-24 border-dashed flex flex-col items-center justify-center"
+                disabled={isUploading}
               >
-                <Upload className="h-6 w-6 mb-2" />
-                <span>{previewImage ? "Change Image" : "Select Image"}</span>
+                {isUploading ? (
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cornhole-navy mb-2"></div>
+                    <span>Uploading...</span>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-6 w-6 mb-2" />
+                    <span>{previewImage ? "Change Image" : "Select Image"}</span>
+                  </>
+                )}
               </Button>
             </div>
           ) : (
@@ -213,11 +320,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                 type="button" 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => {
-                  setPreviewImage(undefined);
-                  setLogoUrl("");
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
+                onClick={handleRemoveImage}
                 className="w-full mt-1 text-red-500 hover:text-red-700 hover:bg-red-50"
               >
                 <XCircle className="h-4 w-4 mr-1" /> Remove Image
@@ -294,7 +397,11 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" className="bg-cornhole-navy hover:bg-cornhole-navy/90">
+        <Button 
+          type="submit" 
+          className="bg-cornhole-navy hover:bg-cornhole-navy/90"
+          disabled={isUploading}
+        >
           {team ? "Update Team" : "Create Team"}
         </Button>
       </div>

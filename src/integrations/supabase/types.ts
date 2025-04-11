@@ -173,6 +173,7 @@ export type Database = {
           created_at: string | null
           division_id: string | null
           id: string
+          image_url: string | null
           logo_url: string | null
           name: string
           players: string[] | null
@@ -182,6 +183,7 @@ export type Database = {
           created_at?: string | null
           division_id?: string | null
           id?: string
+          image_url?: string | null
           logo_url?: string | null
           name: string
           players?: string[] | null
@@ -191,6 +193,7 @@ export type Database = {
           created_at?: string | null
           division_id?: string | null
           id?: string
+          image_url?: string | null
           logo_url?: string | null
           name?: string
           players?: string[] | null

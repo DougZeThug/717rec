@@ -10,6 +10,7 @@ export interface Team {
   id: string;
   name: string;
   logoUrl?: string;
+  imageUrl?: string;
   players: Player[];
   wins: number;
   losses: number;

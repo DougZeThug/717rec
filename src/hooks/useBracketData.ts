@@ -18,6 +18,7 @@ export const useBracketData = (bracketId?: string) => {
       id: team.id,
       name: team.name,
       logoUrl: team.logo_url,
+      imageUrl: team.image_url,
       // Convert string[] to Player[] by mapping each string to a Player object
       players: team.players ? team.players.map((playerName: string): Player => ({
         name: playerName
