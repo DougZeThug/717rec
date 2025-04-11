@@ -7,11 +7,24 @@ import TeamCard from "@/components/teams/TeamCard";
 import TeamForm from "@/components/teams/TeamForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Teams: React.FC = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+  const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
+  const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,6 +58,7 @@ const Teams: React.FC = () => {
       }));
 
       setTeams(teamsData);
+      console.log("Fetched teams:", teamsData);
     } catch (error) {
       console.error("Error fetching teams:", error);
       toast({
@@ -108,6 +122,88 @@ const Teams: React.FC = () => {
     }
   };
 
+  const handleUpdateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
+    if (!teamToEdit) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('teams')
+        .update({
+          name: teamData.name,
+          logo_url: teamData.logoUrl,
+          image_url: teamData.imageUrl || null,
+          players: teamData.players.map(p => p.name),
+          division_id: teamData.division
+        })
+        .eq('id', teamToEdit.id)
+        .select()
+        .single();
+        
+      if (error) {
+        throw error;
+      }
+
+      // Update the teams state with the updated team
+      const updatedTeam: Team = {
+        id: data.id,
+        name: data.name,
+        logoUrl: data.logo_url,
+        imageUrl: data.image_url,
+        players: data.players ? data.players.map((playerName: string) => ({
+          name: playerName
+        })) : [],
+        wins: teamToEdit.wins,
+        losses: teamToEdit.losses,
+        created_at: data.created_at,
+        division: data.division_id
+      };
+      
+      setTeams(teams.map(team => team.id === updatedTeam.id ? updatedTeam : team));
+      setTeamToEdit(null);
+      toast({
+        title: "Team Updated",
+        description: `${updatedTeam.name} has been successfully updated.`,
+      });
+    } catch (error) {
+      console.error("Error updating team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update team. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!deleteTeamId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', deleteTeamId);
+        
+      if (error) {
+        throw error;
+      }
+      
+      setTeams(teams.filter(team => team.id !== deleteTeamId));
+      setDeleteTeamId(null);
+      toast({
+        title: "Team Deleted",
+        description: "The team has been successfully deleted.",
+      });
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete team. Please try again.",
+        variant: "destructive"
+      });
+      setDeleteTeamId(null);
+    }
+  };
+
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
@@ -120,19 +216,35 @@ const Teams: React.FC = () => {
         </Button>
       </div>
 
-      {isFormOpen && (
+      {(isFormOpen || teamToEdit) && (
         <div className="mb-8 p-6 bg-card border rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Create New Team</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            {teamToEdit ? "Edit Team" : "Create New Team"}
+          </h2>
           <TeamForm 
-            onSubmit={handleCreateTeam} 
-            onCancel={() => setIsFormOpen(false)}
+            team={teamToEdit || undefined}
+            onSubmit={teamToEdit ? handleUpdateTeam : handleCreateTeam} 
+            onCancel={() => {
+              setIsFormOpen(false);
+              setTeamToEdit(null);
+            }}
           />
         </div>
       )}
 
       {isLoading ? (
-        <div className="flex justify-center">
-          <p>Loading teams...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="border rounded-lg overflow-hidden">
+              <Skeleton className="h-48 w-full" />
+              <div className="p-6">
+                <Skeleton className="h-6 w-32 mb-4" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-20 w-full mt-4" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : teams.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -140,12 +252,8 @@ const Teams: React.FC = () => {
             <TeamCard 
               key={team.id} 
               team={team}
-              onDelete={() => {
-                // Handle team deletion
-              }}
-              onEdit={() => {
-                // Handle team editing
-              }}
+              onDelete={(teamId) => setDeleteTeamId(teamId)}
+              onEdit={(team) => setTeamToEdit(team)}
             />
           ))}
         </div>
@@ -154,6 +262,23 @@ const Teams: React.FC = () => {
           <p className="text-muted-foreground">No teams available. Add a team to get started.</p>
         </div>
       )}
+
+      <AlertDialog open={!!deleteTeamId} onOpenChange={() => setDeleteTeamId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Team</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this team? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTeam} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

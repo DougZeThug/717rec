@@ -2,8 +2,9 @@
 import React from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Image } from "lucide-react";
 import type { Team } from "@/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TeamCardProps {
   team: Team;
@@ -16,13 +17,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
     ? ((team.wins / (team.wins + team.losses)) * 100).toFixed(1) 
     : "0.0";
 
-  // Use imageUrl first, then fall back to logoUrl, otherwise use first letter
-  const hasImage = team.imageUrl || team.logoUrl;
-
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
-      <div className="h-48 bg-gray-100 relative overflow-hidden">
-        {hasImage ? (
+      <div className="h-48 bg-card relative overflow-hidden flex items-center justify-center">
+        {(team.imageUrl || team.logoUrl) ? (
           <img 
             src={team.imageUrl || team.logoUrl} 
             alt={`${team.name} logo`} 
@@ -39,8 +37,11 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-cornhole-navy text-white text-4xl font-bold">
-            {team.name.charAt(0)}
+          <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+            <div className="flex flex-col items-center justify-center">
+              <Image className="h-16 w-16 mb-2 opacity-20" />
+              <div className="text-4xl font-bold">{team.name.charAt(0)}</div>
+            </div>
           </div>
         )}
       </div>
@@ -57,11 +58,15 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
           </div>
           <div className="mt-3">
             <p className="text-gray-600 mb-1">Players:</p>
-            <ul className="list-disc list-inside">
-              {team.players.map((player, index) => (
-                <li key={index} className="truncate">{player.name}</li>
-              ))}
-            </ul>
+            {team.players && team.players.length > 0 ? (
+              <ul className="list-disc list-inside">
+                {team.players.map((player, index) => (
+                  <li key={index} className="truncate">{player.name}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground italic">No players listed</p>
+            )}
           </div>
         </div>
       </CardContent>
