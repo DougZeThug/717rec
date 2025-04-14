@@ -21,11 +21,22 @@ export function useTeams() {
   const fetchTeams = async () => {
     try {
       setIsLoading(true);
+      console.log("Fetching teams...");
       
       const teamsData = await fetchTeamsFromApi();
 
+      console.log("Teams data received:", teamsData);
       setTeams(teamsData);
-      console.log("Teams fetched successfully:", teamsData);
+      
+      if (teamsData.length === 0) {
+        toast({
+          title: "No Teams Found",
+          description: "No teams were found in the database.",
+          variant: "destructive"
+        });
+      } else {
+        console.log(`Successfully loaded ${teamsData.length} teams`);
+      }
     } catch (error) {
       console.error("Error fetching teams:", error);
       toast({
@@ -107,6 +118,7 @@ export function useTeams() {
   return {
     teams,
     isLoading,
+    fetchTeams,
     createTeam,
     updateTeam,
     deleteTeam

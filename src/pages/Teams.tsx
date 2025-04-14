@@ -1,46 +1,87 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Team } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import TeamForm from "@/components/teams/TeamForm";
 import { TeamList } from "@/components/teams/TeamList";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
 import { useTeams } from "@/hooks/useTeams";
+import { useToast } from "@/hooks/use-toast";
 
 const Teams: React.FC = () => {
-  const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { teams, isLoading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const { toast } = useToast();
 
   const handleCreateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
-    await createTeam(teamData);
-    setIsFormOpen(false);
+    try {
+      await createTeam(teamData);
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error("Error creating team:", error);
+    }
   };
 
   const handleUpdateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
     if (!teamToEdit) return;
-    await updateTeam(teamToEdit.id, teamData);
-    setTeamToEdit(null);
+    try {
+      await updateTeam(teamToEdit.id, teamData);
+      setTeamToEdit(null);
+    } catch (error) {
+      console.error("Error updating team:", error);
+    }
   };
 
   const handleDeleteTeam = async () => {
     if (!deleteTeamId) return;
-    await deleteTeam(deleteTeamId);
-    setDeleteTeamId(null);
+    try {
+      await deleteTeam(deleteTeamId);
+      setDeleteTeamId(null);
+    } catch (error) {
+      console.error("Error deleting team:", error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchTeams();
+      toast({
+        title: "Teams Refreshed",
+        description: "Team list has been refreshed successfully.",
+      });
+    } catch (error) {
+      console.error("Error refreshing teams:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Teams</h1>
-        <Button 
-          onClick={() => setIsFormOpen(true)} 
-          className="flex items-center gap-2"
-        >
-          <Plus size={16} /> Add Team
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline"
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} /> 
+            {isRefreshing ? "Refreshing..." : "Refresh"}
+          </Button>
+          <Button 
+            onClick={() => setIsFormOpen(true)} 
+            className="flex items-center gap-2"
+          >
+            <Plus size={16} /> Add Team
+          </Button>
+        </div>
       </div>
 
       {(isFormOpen || teamToEdit) && (

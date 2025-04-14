@@ -48,7 +48,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
         )}
       </div>
       <CardContent className="pt-4">
-        <h3 className="text-xl font-bold mb-2">{team.name}</h3>
+        <h3 className="text-xl font-bold mb-2">{team.name || 'Unnamed Team'}</h3>
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-600">Record:</span>
