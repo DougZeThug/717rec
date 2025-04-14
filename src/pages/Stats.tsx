@@ -35,6 +35,7 @@ const Stats = () => {
         teamId: team.id,
         teamName: team.name,
         logoUrl: team.logoUrl,
+        imageUrl: team.imageUrl,
         wins: team.wins,
         losses: team.losses,
         winPercentage: winPercentage,

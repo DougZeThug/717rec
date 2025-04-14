@@ -1,3 +1,4 @@
+
 export interface Player {
   id?: string;
   name: string;
@@ -65,6 +66,7 @@ export interface Ranking {
   teamId: string;
   teamName: string;
   logoUrl?: string;
+  imageUrl?: string;
   wins: number;
   losses: number;
   winPercentage: number;

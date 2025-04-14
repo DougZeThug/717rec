@@ -34,9 +34,9 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
               <TableCell>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
-                    {ranking.logoUrl ? (
+                    {ranking.imageUrl ? (
                       <img 
-                        src={ranking.logoUrl} 
+                        src={ranking.imageUrl} 
                         alt={ranking.teamName} 
                         className="w-full h-full object-contain"
                       />

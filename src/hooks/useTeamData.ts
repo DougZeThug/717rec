@@ -26,10 +26,8 @@ export const useTeamData = () => {
         players: Array.isArray(team.players) 
           ? team.players.map((playerName: string) => ({ name: playerName })) 
           : [],
-        // Since wins and losses fields don't exist in the database,
-        // we default to 0 for both values
-        wins: 0,
-        losses: 0,
+        wins: team.wins || 0,
+        losses: team.losses || 0,
         created_at: team.created_at || new Date().toISOString(),
         division: team.division_id || null,
         divisionName: team.divisions?.name || null

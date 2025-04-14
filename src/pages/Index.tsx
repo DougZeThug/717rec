@@ -111,9 +111,9 @@ const Index = () => {
                     <div className="flex justify-between items-center mb-4">
                       <div className="flex items-center">
                         <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                          {team1.logoUrl ? (
+                          {team1.imageUrl ? (
                             <img 
-                              src={team1.logoUrl} 
+                              src={team1.imageUrl} 
                               alt={team1.name} 
                               className="w-full h-full object-contain"
                             />
@@ -129,9 +129,9 @@ const Index = () => {
                       <div className="flex items-center">
                         <span className="mr-3 font-medium">{team2.name}</span>
                         <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                          {team2.logoUrl ? (
+                          {team2.imageUrl ? (
                             <img 
-                              src={team2.logoUrl} 
+                              src={team2.imageUrl} 
                               alt={team2.name} 
                               className="w-full h-full object-contain"
                             />
@@ -173,9 +173,9 @@ const Index = () => {
             {topTeams.map((team) => (
               <div key={team.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="h-40 bg-gray-200 relative flex items-center justify-center p-4">
-                  {team.logoUrl ? (
+                  {team.imageUrl ? (
                     <img 
-                      src={team.logoUrl} 
+                      src={team.imageUrl} 
                       alt={team.name} 
                       className="max-w-full max-h-full object-contain"
                     />

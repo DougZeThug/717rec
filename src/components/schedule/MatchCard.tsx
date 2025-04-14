@@ -43,9 +43,9 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
         <div className="flex items-center justify-between mb-4">
           <div className="flex-1 text-center">
             <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-gray-200 mb-2">
-              {team1.logoUrl ? (
+              {team1.imageUrl ? (
                 <img 
-                  src={team1.logoUrl} 
+                  src={team1.imageUrl} 
                   alt={team1.name} 
                   className="w-full h-full object-contain"
                 />
@@ -68,9 +68,9 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
           
           <div className="flex-1 text-center">
             <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-gray-200 mb-2">
-              {team2.logoUrl ? (
+              {team2.imageUrl ? (
                 <img 
-                  src={team2.logoUrl} 
+                  src={team2.imageUrl} 
                   alt={team2.name} 
                   className="w-full h-full object-contain"
                 />
