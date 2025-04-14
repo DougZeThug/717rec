@@ -4,7 +4,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Image } from "lucide-react";
 import type { Team } from "@/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TeamCardProps {
   team: Team;
@@ -13,8 +12,11 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
-  const winPercentage = team.wins + team.losses > 0 
-    ? ((team.wins / (team.wins + team.losses)) * 100).toFixed(1) 
+  // Safely calculate win percentage even if wins/losses are missing
+  const wins = team.wins || 0;
+  const losses = team.losses || 0;
+  const winPercentage = wins + losses > 0 
+    ? ((wins / (wins + losses)) * 100).toFixed(1) 
     : "0.0";
 
   return (
@@ -50,7 +52,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
         <div className="space-y-1 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-600">Record:</span>
-            <span className="font-medium">{team.wins} - {team.losses}</span>
+            <span className="font-medium">{wins} - {losses}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Win %:</span>

@@ -34,31 +34,35 @@ const Teams: React.FC = () => {
   const fetchTeams = async () => {
     try {
       setIsLoading(true);
+      
+      // Simple fetch that only gets the essential fields
       const { data, error } = await supabase
         .from('teams')
-        .select('*');
+        .select('id, name, logo_url, image_url, players, created_at, division_id, seed')
+        .order('name');
 
       if (error) {
         throw error;
       }
 
-      // Transform the database data to our Team type and ensure all required fields exist
+      // Process the data to match our Team type, with safe fallbacks for missing fields
       const teamsData = data.map((team: any): Team => ({
         id: team.id,
-        name: team.name,
+        name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || undefined,
         imageUrl: team.image_url || undefined,
-        players: team.players ? team.players.map((playerName: string) => ({
-          name: playerName
-        })) : [],
-        wins: team.wins || 0,
-        losses: team.losses || 0,
+        // Handle missing players array safely
+        players: Array.isArray(team.players) 
+          ? team.players.map((playerName: string) => ({ name: playerName })) 
+          : [],
+        wins: 0, // These will be populated separately if needed
+        losses: 0,
         created_at: team.created_at,
         division: team.division_id
       }));
 
       setTeams(teamsData);
-      console.log("Fetched teams:", teamsData);
+      console.log("Teams fetched successfully:", teamsData);
     } catch (error) {
       console.error("Error fetching teams:", error);
       toast({
