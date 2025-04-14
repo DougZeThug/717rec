@@ -48,7 +48,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       setIsUploading(true);
       toast({
         title: "Processing Image",
-        description: "Compressing, verifying, and uploading your image...",
+        description: "Compressing, validating, and uploading your image...",
       });
       
       // Pass team ID if available (for editing an existing team)

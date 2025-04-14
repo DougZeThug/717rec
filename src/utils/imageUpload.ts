@@ -9,8 +9,8 @@ import imageCompression from 'browser-image-compression';
  * @returns Promise<boolean> True if valid, false otherwise
  */
 const isValidCompressedImage = async (file: File): Promise<boolean> => {
-  // Check file size (minimum 5KB)
-  const minSizeKB = 5;
+  // Check file size (minimum 10KB)
+  const minSizeKB = 10;
   const fileSizeKB = file.size / 1024;
   if (fileSizeKB < minSizeKB) {
     console.warn(`Compressed image too small (${fileSizeKB.toFixed(2)}KB < ${minSizeKB}KB)`);
