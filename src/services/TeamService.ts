@@ -105,6 +105,8 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
 
   console.log("Team updated successfully:", data);
 
+  // The database response doesn't include wins/losses fields, so we need to use
+  // the values passed in teamData or default to 0
   return {
     id: data.id,
     name: data.name,
@@ -113,8 +115,9 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     players: data.players ? data.players.map((playerName: string) => ({
       name: playerName
     })) : [],
-    wins: data.wins || 0,
-    losses: data.losses || 0,
+    // Use the values from teamData since they're not in the database schema
+    wins: teamData.wins || 0,
+    losses: teamData.losses || 0,
     created_at: data.created_at,
     division: data.division_id
   };
