@@ -96,21 +96,18 @@ export function useTeams() {
 
   const deleteTeam = async (teamId: string) => {
     try {
+      // Find team to get name before deletion
+      const teamToDelete = teams.find(team => team.id === teamId);
+      
+      // Delete team from database and storage
       await deleteTeamApi(teamId);
       
-      setTeams(teams.filter(team => team.id !== teamId));
+      // Update UI by removing the deleted team
+      setTeams(prevTeams => prevTeams.filter(team => team.id !== teamId));
       
-      toast({
-        title: "Team Deleted",
-        description: "The team has been successfully deleted.",
-      });
+      return true;
     } catch (error) {
       console.error("Error deleting team:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete team. Please try again.",
-        variant: "destructive"
-      });
       throw error;
     }
   };

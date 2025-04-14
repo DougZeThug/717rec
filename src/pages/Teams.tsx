@@ -15,6 +15,7 @@ const Teams: React.FC = () => {
   const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const { toast } = useToast();
 
   const handleCreateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
@@ -38,11 +39,24 @@ const Teams: React.FC = () => {
 
   const handleDeleteTeam = async () => {
     if (!deleteTeamId) return;
+    
+    setIsDeleting(true);
     try {
       await deleteTeam(deleteTeamId);
       setDeleteTeamId(null);
+      toast({
+        title: "Team Deleted",
+        description: "The team has been successfully deleted.",
+      });
     } catch (error) {
       console.error("Error deleting team:", error);
+      toast({
+        title: "Deletion Failed",
+        description: "There was a problem deleting the team. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -111,6 +125,7 @@ const Teams: React.FC = () => {
         isOpen={!!deleteTeamId}
         onClose={() => setDeleteTeamId(null)}
         onConfirm={handleDeleteTeam}
+        isDeleting={isDeleting}
       />
     </div>
   );
