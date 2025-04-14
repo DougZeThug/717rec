@@ -17,27 +17,28 @@ export function useTeams() {
     try {
       setIsLoading(true);
       
-      // Simple fetch that only gets the essential fields
+      // Simplifying the fetch to retrieve all teams without filters
       const { data, error } = await supabase
         .from('teams')
-        .select('id, name, logo_url, image_url, players, created_at, division_id, seed')
+        .select('*')
         .order('name');
 
       if (error) {
         throw error;
       }
 
-      // Process the data to match our Team type, with safe fallbacks for missing fields
+      // Process the data to match our Team type, safely handling missing fields
       const teamsData = data.map((team: any): Team => ({
         id: team.id,
         name: team.name || 'Unnamed Team',
-        logoUrl: team.logo_url || undefined,
-        imageUrl: team.image_url || undefined,
-        // Handle missing players array safely
+        logoUrl: team.logo_url || null,
+        imageUrl: team.image_url || null,
+        // Safely handle players array which might be null/undefined
         players: Array.isArray(team.players) 
           ? team.players.map((playerName: string) => ({ name: playerName })) 
           : [],
-        wins: 0, // These will be populated separately if needed
+        // Default values for optional fields
+        wins: 0,
         losses: 0,
         created_at: team.created_at,
         division: team.division_id
