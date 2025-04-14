@@ -73,6 +73,8 @@ export function useTeams() {
 
   const updateTeam = async (teamId: string, teamData: Omit<Team, "id" | "created_at">) => {
     try {
+      console.log("Updating team:", teamId, teamData);
+      
       const updatedTeam = await updateTeamApi(teamId, teamData);
       
       setTeams(teams.map(team => team.id === updatedTeam.id ? updatedTeam : team));
@@ -83,11 +85,23 @@ export function useTeams() {
       });
       
       return updatedTeam;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating team:", error);
+      
+      // Enhanced error message based on the error details
+      let errorMessage = "Failed to update team. Please try again.";
+      
+      if (error?.message) {
+        if (error.message.includes("division_id") || error.message.includes("division")) {
+          errorMessage = "Invalid division selected. Please choose a valid division.";
+        } else if (error.message.includes("foreign key constraint")) {
+          errorMessage = "The selected division does not exist.";
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to update team. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
       throw error;

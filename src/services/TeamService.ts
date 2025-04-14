@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
@@ -39,6 +40,8 @@ export const fetchTeamsFromApi = async () => {
  * Create a new team
  */
 export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) => {
+  console.log("Creating team with data:", teamData);
+  
   const { data, error } = await supabase
     .from('teams')
     .insert({
@@ -47,7 +50,7 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
       image_url: teamData.imageUrl || null, // Use null if no image
       players: teamData.players.map(p => p.name),
       seed: null, // Default
-      division_id: teamData.division
+      division_id: teamData.division || null
     })
     .select()
     .single();
@@ -79,6 +82,9 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
  * Update an existing team
  */
 export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | "created_at">) => {
+  console.log("Updating team with ID:", teamId);
+  console.log("Update data:", teamData);
+  
   const { data, error } = await supabase
     .from('teams')
     .update({
@@ -86,15 +92,18 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
       logo_url: teamData.logoUrl,
       image_url: teamData.imageUrl || null,
       players: teamData.players.map(p => p.name),
-      division_id: teamData.division
+      division_id: teamData.division || null
     })
     .eq('id', teamId)
     .select()
     .single();
     
   if (error) {
+    console.error("Error updating team:", error, error.details, error.hint);
     throw error;
   }
+
+  console.log("Team updated successfully:", data);
 
   return {
     id: data.id,
@@ -104,8 +113,8 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     players: data.players ? data.players.map((playerName: string) => ({
       name: playerName
     })) : [],
-    wins: 0,
-    losses: 0,
+    wins: data.wins || 0,
+    losses: data.losses || 0,
     created_at: data.created_at,
     division: data.division_id
   };

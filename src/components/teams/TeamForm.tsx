@@ -85,13 +85,16 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Convert division to null if "none" is selected
+    const divisionId = division === "none" ? null : division;
+    
     onSubmit({
       name,
       imageUrl: imageUrl || undefined, // Use undefined if no image
       players: players.filter(p => p.name.trim() !== ""),
       wins,
       losses,
-      division
+      division: divisionId
     });
   };
 
