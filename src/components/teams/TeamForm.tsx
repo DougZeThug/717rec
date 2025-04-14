@@ -116,11 +116,11 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               <SelectValue placeholder="Select division" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">None</SelectItem>
+              <SelectItem value="none">None</SelectItem>
               {isDivisionsLoading ? (
-                <SelectItem value="" disabled>Loading divisions...</SelectItem>
+                <SelectItem value="loading" disabled>Loading divisions...</SelectItem>
               ) : divisions.length === 0 ? (
-                <SelectItem value="" disabled>No divisions available</SelectItem>
+                <SelectItem value="no-divisions" disabled>No divisions available</SelectItem>
               ) : (
                 divisions.map((div) => (
                   <SelectItem key={div.id} value={div.id}>{div.name}</SelectItem>
