@@ -33,15 +33,17 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
               <TableCell className="font-medium">{index + 1}</TableCell>
               <TableCell>
                 <div className="flex items-center space-x-3">
-                  {ranking.logoUrl && (
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
+                    {ranking.logoUrl ? (
                       <img 
                         src={ranking.logoUrl} 
                         alt={ranking.teamName} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
-                    </div>
-                  )}
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs">No Logo</div>
+                    )}
+                  </div>
                   <span>{ranking.teamName}</span>
                 </div>
               </TableCell>

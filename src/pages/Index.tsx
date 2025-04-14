@@ -110,19 +110,35 @@ const Index = () => {
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-4">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                          {team1.logoUrl && (
-                            <img src={team1.logoUrl} alt={team1.name} className="w-full h-full object-cover" />
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                          {team1.logoUrl ? (
+                            <img 
+                              src={team1.logoUrl} 
+                              alt={team1.name} 
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                              <span className="text-xs">No Logo</span>
+                            </div>
                           )}
                         </div>
-                        <span className="ml-2 font-medium">{team1.name}</span>
+                        <span className="ml-3 font-medium">{team1.name}</span>
                       </div>
-                      <span className="text-lg font-bold">VS</span>
+                      <span className="text-lg font-bold mx-2">VS</span>
                       <div className="flex items-center">
-                        <span className="mr-2 font-medium">{team2.name}</span>
-                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                          {team2.logoUrl && (
-                            <img src={team2.logoUrl} alt={team2.name} className="w-full h-full object-cover" />
+                        <span className="mr-3 font-medium">{team2.name}</span>
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                          {team2.logoUrl ? (
+                            <img 
+                              src={team2.logoUrl} 
+                              alt={team2.name} 
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                              <span className="text-xs">No Logo</span>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -134,7 +150,7 @@ const Index = () => {
                       </div>
                       <div className="text-right">
                         <p><strong>Score:</strong></p>
-                        <p>{team1.name}: {match.team1Score}, {team2.name}: {match.team2Score}</p>
+                        <p>{match.team1Score} - {match.team2Score}</p>
                       </div>
                     </div>
                   </div>
@@ -156,17 +172,21 @@ const Index = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {topTeams.map((team) => (
               <div key={team.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="h-40 bg-gray-200 relative">
-                  {team.logoUrl && (
+                <div className="h-40 bg-gray-200 relative flex items-center justify-center p-4">
+                  {team.logoUrl ? (
                     <img 
                       src={team.logoUrl} 
                       alt={team.name} 
-                      className="w-full h-full object-contain p-2"
+                      className="max-w-full max-h-full object-contain"
                     />
+                  ) : (
+                    <div className="text-gray-400 text-center">
+                      <span>No Logo Available</span>
+                    </div>
                   )}
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-bold mb-2">{team.name}</h3>
+                  <h3 className="text-lg font-bold mb-2 truncate" title={team.name}>{team.name}</h3>
                   <div className="flex justify-between text-sm">
                     <span>Record:</span>
                     <span className="font-medium">{team.wins} - {team.losses}</span>
@@ -177,6 +197,12 @@ const Index = () => {
                       {((team.wins / (team.wins + team.losses || 1)) * 100).toFixed(1)}%
                     </span>
                   </div>
+                  {team.divisionName && (
+                    <div className="flex justify-between text-sm mt-1">
+                      <span>Division:</span>
+                      <span className="font-medium">{team.divisionName}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

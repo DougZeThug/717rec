@@ -36,7 +36,6 @@ const Playoffs = () => {
   
   const { data: teams, isLoading: teamsLoading } = useTeamData();
 
-  // Fetch all brackets
   const { data: allBrackets, isLoading: bracketsLoading } = useQuery({
     queryKey: ['brackets'],
     queryFn: async () => {
@@ -55,7 +54,6 @@ const Playoffs = () => {
     }
   });
   
-  // Fetch all divisions
   const { data: divisions, isLoading: divisionsLoading } = useQuery({
     queryKey: ['divisions'],
     queryFn: async () => {
@@ -71,7 +69,6 @@ const Playoffs = () => {
   
   const { bracket, isLoading: bracketLoading } = useBracketData(selectedBracketId || undefined);
 
-  // Group teams by division with proper sorting
   const teamsByDivision = useMemo(() => {
     if (!teams) return {};
     
@@ -84,7 +81,6 @@ const Playoffs = () => {
       return acc;
     }, {} as Record<string, any[]>);
     
-    // Sort teams within each division by name
     Object.keys(grouped).forEach(division => {
       grouped[division].sort((a, b) => a.name.localeCompare(b.name));
     });
@@ -92,7 +88,6 @@ const Playoffs = () => {
     return grouped;
   }, [teams]);
 
-  // Filter brackets by division
   const bracketsByDivision = useMemo(() => {
     if (!allBrackets || !divisions) return {};
     
@@ -118,7 +113,6 @@ const Playoffs = () => {
 
   const handleTeamDivisionChange = async (teamId: string, newDivisionName: string) => {
     try {
-      // First get the division ID from the name
       const { data: divisionData } = await supabase
         .from('divisions')
         .select('id')
@@ -129,7 +123,6 @@ const Playoffs = () => {
         throw new Error('Division not found');
       }
       
-      // Update the team with the division ID
       const { error } = await supabase
         .from('teams')
         .update({ division_id: divisionData.id })
@@ -294,7 +287,6 @@ const Playoffs = () => {
         )}
       </div>
 
-      {/* Team Division Management Dialog */}
       <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
@@ -320,19 +312,21 @@ const Playoffs = () => {
                           <CardContent className="p-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                                  {team.logoUrl && (
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-2">
+                                  {team.logoUrl ? (
                                     <img 
                                       src={team.logoUrl} 
                                       alt={team.name} 
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-contain"
                                     />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">No Logo</div>
                                   )}
                                 </div>
-                                <span className="truncate">{team.name}</span>
+                                <span className="truncate max-w-[120px]" title={team.name}>{team.name}</span>
                               </div>
                               <Select
-                                value={team.division || "Unassigned"}
+                                value={team.divisionName || "Unassigned"}
                                 onValueChange={(value) => handleTeamDivisionChange(team.id!, value)}
                               >
                                 <SelectTrigger className="w-[140px]">
@@ -353,7 +347,6 @@ const Playoffs = () => {
                   </div>
                 ))}
 
-                {/* Unassigned Teams */}
                 {teamsByDivision["Unassigned"]?.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold">Unassigned Teams</h3>
@@ -363,19 +356,21 @@ const Playoffs = () => {
                           <CardContent className="p-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                                  {team.logoUrl && (
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-2">
+                                  {team.logoUrl ? (
                                     <img 
                                       src={team.logoUrl} 
                                       alt={team.name} 
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-contain"
                                     />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">No Logo</div>
                                   )}
                                 </div>
-                                <span className="truncate">{team.name}</span>
+                                <span className="truncate max-w-[120px]" title={team.name}>{team.name}</span>
                               </div>
                               <Select
-                                value={team.division || "Unassigned"}
+                                value={team.divisionName || "Unassigned"}
                                 onValueChange={(value) => handleTeamDivisionChange(team.id!, value)}
                               >
                                 <SelectTrigger className="w-[140px]">
