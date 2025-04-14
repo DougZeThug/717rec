@@ -28,8 +28,11 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   return (
     <Card className="overflow-hidden">
       <div 
-        className="h-36 bg-cover bg-center bg-gray-100" 
+        className="h-36 bg-gray-100 flex items-center justify-center" 
         style={{ 
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           backgroundImage: team.imageUrl ? `url(${team.imageUrl})` : 'none',
         }}
       >
