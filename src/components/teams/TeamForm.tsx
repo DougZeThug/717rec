@@ -48,7 +48,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       setIsUploading(true);
       toast({
         title: "Processing Image",
-        description: "Compressing and uploading your image...",
+        description: "Compressing, verifying, and uploading your image...",
       });
       
       // Pass team ID if available (for editing an existing team)
@@ -57,12 +57,13 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       
       toast({
         title: "Image Uploaded",
-        description: "Image successfully compressed and uploaded.",
+        description: "Image successfully processed and uploaded.",
       });
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Image Upload Failed",
-        description: "Could not upload the image. Please try again.",
+        description: "Could not upload the image. Please try again with a different image.",
         variant: "destructive"
       });
     } finally {
@@ -123,7 +124,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               className="flex items-center gap-2"
             >
               <Upload size={16} /> 
-              {isUploading ? "Uploading..." : "Upload Image"}
+              {isUploading ? "Processing..." : "Upload Image"}
             </Button>
             {imageUrl && (
               <div className="relative">
