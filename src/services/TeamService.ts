@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
@@ -6,7 +5,7 @@ import { Team } from "@/types";
  * Fetch all teams from the database
  */
 export const fetchTeamsFromApi = async () => {
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('teams')
     .select('*')
     .order('name');
