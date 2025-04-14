@@ -175,9 +175,11 @@ export type Database = {
           id: string
           image_url: string | null
           logo_url: string | null
+          losses: number
           name: string
           players: string[] | null
           seed: number | null
+          wins: number
         }
         Insert: {
           created_at?: string | null
@@ -185,9 +187,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           logo_url?: string | null
+          losses?: number
           name: string
           players?: string[] | null
           seed?: number | null
+          wins?: number
         }
         Update: {
           created_at?: string | null
@@ -195,9 +199,11 @@ export type Database = {
           id?: string
           image_url?: string | null
           logo_url?: string | null
+          losses?: number
           name?: string
           players?: string[] | null
           seed?: number | null
+          wins?: number
         }
         Relationships: [
           {

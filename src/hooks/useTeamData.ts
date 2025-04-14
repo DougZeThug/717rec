@@ -26,8 +26,8 @@ export const useTeamData = () => {
         players: Array.isArray(team.players) 
           ? team.players.map((playerName: string) => ({ name: playerName })) 
           : [],
-        wins: 0, // Default to 0 since wins is not in the database
-        losses: 0, // Default to 0 since losses is not in the database
+        wins: team.wins || 0,
+        losses: team.losses || 0,
         created_at: team.created_at || new Date().toISOString(),
         division: team.division_id || null,
         divisionName: team.divisions?.name || null
