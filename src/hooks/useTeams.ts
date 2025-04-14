@@ -2,7 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { 
+  fetchTeamsFromApi, 
+  createTeamApi, 
+  updateTeamApi, 
+  deleteTeamApi 
+} from "@/services/TeamService";
 
 export function useTeams() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -17,32 +22,7 @@ export function useTeams() {
     try {
       setIsLoading(true);
       
-      // Simplifying the fetch to retrieve all teams without filters
-      const { data, error } = await supabase
-        .from('teams')
-        .select('*')
-        .order('name');
-
-      if (error) {
-        throw error;
-      }
-
-      // Process the data to match our Team type, safely handling missing fields
-      const teamsData = data.map((team: any): Team => ({
-        id: team.id,
-        name: team.name || 'Unnamed Team',
-        logoUrl: team.logo_url || null,
-        imageUrl: team.image_url || null,
-        // Safely handle players array which might be null/undefined
-        players: Array.isArray(team.players) 
-          ? team.players.map((playerName: string) => ({ name: playerName })) 
-          : [],
-        // Default values for optional fields
-        wins: 0,
-        losses: 0,
-        created_at: team.created_at,
-        division: team.division_id
-      }));
+      const teamsData = await fetchTeamsFromApi();
 
       setTeams(teamsData);
       console.log("Teams fetched successfully:", teamsData);
@@ -60,38 +40,7 @@ export function useTeams() {
 
   const createTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
     try {
-      // Prepare data for Supabase
-      const { data, error } = await supabase
-        .from('teams')
-        .insert({
-          name: teamData.name,
-          logo_url: teamData.logoUrl,
-          image_url: teamData.imageUrl || null, // Use null if no image
-          players: teamData.players.map(p => p.name),
-          seed: null, // Default
-          division_id: teamData.division
-        })
-        .select()
-        .single();
-        
-      if (error) {
-        throw error;
-      }
-      
-      // Transform the new team to our application Team type
-      const newTeam: Team = {
-        id: data.id,
-        name: data.name,
-        logoUrl: data.logo_url,
-        imageUrl: data.image_url,
-        players: data.players ? data.players.map((playerName: string) => ({
-          name: playerName
-        })) : [],
-        wins: 0,
-        losses: 0,
-        created_at: data.created_at,
-        division: data.division_id
-      };
+      const newTeam = await createTeamApi(teamData);
       
       setTeams([...teams, newTeam]);
       toast({
@@ -113,37 +62,7 @@ export function useTeams() {
 
   const updateTeam = async (teamId: string, teamData: Omit<Team, "id" | "created_at">) => {
     try {
-      const { data, error } = await supabase
-        .from('teams')
-        .update({
-          name: teamData.name,
-          logo_url: teamData.logoUrl,
-          image_url: teamData.imageUrl || null,
-          players: teamData.players.map(p => p.name),
-          division_id: teamData.division
-        })
-        .eq('id', teamId)
-        .select()
-        .single();
-        
-      if (error) {
-        throw error;
-      }
-
-      // Update the teams state with the updated team
-      const updatedTeam: Team = {
-        id: data.id,
-        name: data.name,
-        logoUrl: data.logo_url,
-        imageUrl: data.image_url,
-        players: data.players ? data.players.map((playerName: string) => ({
-          name: playerName
-        })) : [],
-        wins: 0,
-        losses: 0,
-        created_at: data.created_at,
-        division: data.division_id
-      };
+      const updatedTeam = await updateTeamApi(teamId, teamData);
       
       setTeams(teams.map(team => team.id === updatedTeam.id ? updatedTeam : team));
       
@@ -166,14 +85,7 @@ export function useTeams() {
 
   const deleteTeam = async (teamId: string) => {
     try {
-      const { error } = await supabase
-        .from('teams')
-        .delete()
-        .eq('id', teamId);
-        
-      if (error) {
-        throw error;
-      }
+      await deleteTeamApi(teamId);
       
       setTeams(teams.filter(team => team.id !== teamId));
       
