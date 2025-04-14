@@ -16,16 +16,16 @@ export const useBracketData = (bracketId?: string) => {
     // Transform to our application Team type
     return data.map((team): Team => ({
       id: team.id,
-      name: team.name,
-      logoUrl: team.logo_url,
-      imageUrl: team.image_url,
+      name: team.name || 'Unnamed Team',
+      logoUrl: team.logo_url || null,
+      imageUrl: team.image_url || null,
       // Convert string[] to Player[] by mapping each string to a Player object
       players: team.players ? team.players.map((playerName: string): Player => ({
         name: playerName
       })) : [],
-      wins: 0, // We'll calculate this from matches later
-      losses: 0, // We'll calculate this from matches later
-      created_at: team.created_at,
+      wins: 0, // We'll calculate this from matches later if needed
+      losses: 0, // We'll calculate this from matches later if needed
+      created_at: team.created_at || new Date().toISOString(),
       division: team.division_id // This will be the division ID from Supabase
     }));
   };

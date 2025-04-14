@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Image } from "lucide-react";
+import { Edit, Trash2, Image, UserX } from "lucide-react";
 import type { Team } from "@/types";
 
 interface TeamCardProps {
@@ -28,7 +28,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
             alt={`${team.name} logo`} 
             className="w-full h-full object-contain p-4"
             onError={(e) => {
-              // If image fails to load, show first letter instead
+              // If image fails to load, show fallback
               const target = e.target as HTMLImageElement;
               target.style.display = 'none';
               const parent = target.parentElement;
@@ -67,7 +67,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onEdit, onDelete }) => {
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground italic">No players listed</p>
+              <div className="flex items-center gap-2 text-muted-foreground italic">
+                <UserX className="h-4 w-4" />
+                <span>No players listed</span>
+              </div>
             )}
           </div>
         </div>
