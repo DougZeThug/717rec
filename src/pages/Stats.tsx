@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -17,11 +17,40 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { mockRankings } from "@/data/mockData";
+import { useTeamData } from "@/hooks/useTeamData";
 import RankingsTable from "@/components/stats/RankingsTable";
+import { Ranking, Team } from "@/types";
+import { Loader2 } from "lucide-react";
 
 const Stats = () => {
-  const [rankings] = useState(mockRankings);
+  const { data: teams, isLoading } = useTeamData();
+
+  // Transform teams into rankings
+  const calculateRankings = (teams: Team[]): Ranking[] => {
+    return teams.map(team => {
+      const totalGames = team.wins + team.losses;
+      const winPercentage = totalGames > 0 ? team.wins / totalGames : 0;
+      
+      return {
+        teamId: team.id,
+        teamName: team.name,
+        logoUrl: team.logoUrl,
+        wins: team.wins,
+        losses: team.losses,
+        winPercentage: winPercentage,
+        sos: Math.random() * 0.5 + 0.5 // Placeholder SOS value (would be calculated from opponent strength)
+      };
+    }).sort((a, b) => {
+      // Sort by win percentage (descending)
+      if (b.winPercentage !== a.winPercentage) {
+        return b.winPercentage - a.winPercentage;
+      }
+      // If win percentages are equal, sort by total wins (descending)
+      return b.wins - a.wins;
+    });
+  };
+
+  const rankings = teams ? calculateRankings(teams) : [];
 
   // Prepare data for charts
   const topTeamsData = rankings.slice(0, 8).map(team => ({
@@ -30,6 +59,17 @@ const Stats = () => {
     losses: team.losses,
     winPercentage: Number((team.winPercentage * 100).toFixed(1))
   }));
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
+          <p className="text-lg">Loading team statistics...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
@@ -55,10 +95,10 @@ const Stats = () => {
             <CardContent>
               <div className="flex flex-col">
                 <span className="text-4xl font-bold text-cornhole-green">
-                  {(rankings[0]?.winPercentage * 100).toFixed(1)}%
+                  {rankings.length > 0 ? (rankings[0]?.winPercentage * 100).toFixed(1) : 0}%
                 </span>
                 <span className="text-sm text-gray-500">
-                  {rankings[0]?.teamName}
+                  {rankings.length > 0 ? rankings[0]?.teamName : 'No teams'}
                 </span>
               </div>
             </CardContent>
@@ -72,10 +112,14 @@ const Stats = () => {
             <CardContent>
               <div className="flex flex-col">
                 <span className="text-4xl font-bold text-cornhole-navy">
-                  {rankings.reduce((max, team) => Math.max(max, team.wins), 0)}
+                  {rankings.length > 0 ? 
+                    rankings.reduce((max, team) => Math.max(max, team.wins), 0) : 
+                    0}
                 </span>
                 <span className="text-sm text-gray-500">
-                  {rankings.reduce((maxTeam, team) => team.wins > maxTeam.wins ? team : maxTeam, rankings[0]).teamName}
+                  {rankings.length > 0 ? 
+                    rankings.reduce((maxTeam, team) => team.wins > maxTeam.wins ? team : maxTeam, rankings[0]).teamName : 
+                    'No teams'}
                 </span>
               </div>
             </CardContent>
@@ -129,7 +173,7 @@ const Stats = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     layout="vertical"
-                    data={topTeamsData.slice(0, 8)}
+                    data={topTeamsData}
                     margin={{
                       top: 5,
                       right: 30,

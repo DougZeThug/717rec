@@ -2,9 +2,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { mockTeams, mockMatches } from "@/data/mockData";
+import { useTeamData } from "@/hooks/useTeamData";
+import { mockMatches } from "@/data/mockData";
+import { Loader2 } from "lucide-react";
 
 const Index = () => {
+  const { data: teams, isLoading } = useTeamData();
+
   // Change to show completed matches instead of upcoming
   const completedMatches = mockMatches
     .filter(match => match.isCompleted)
@@ -12,16 +16,18 @@ const Index = () => {
     .slice(0, 3);
 
   // Get top teams by win percentage
-  const topTeams = [...mockTeams]
-    .sort((a, b) => {
-      const aWinPerc = a.wins / (a.wins + a.losses) || 0;
-      const bWinPerc = b.wins / (b.wins + b.losses) || 0;
-      return bWinPerc - aWinPerc;
-    })
-    .slice(0, 4);
+  const topTeams = teams 
+    ? [...teams]
+        .sort((a, b) => {
+          const aWinPerc = a.wins / (a.wins + a.losses) || 0;
+          const bWinPerc = b.wins / (b.wins + b.losses) || 0;
+          return bWinPerc - aWinPerc;
+        })
+        .slice(0, 4)
+    : [];
 
   const getTeamById = (id: string) => {
-    return mockTeams.find(team => team.id === id);
+    return teams?.find(team => team.id === id);
   };
 
   const formatDate = (dateString: string) => {
@@ -41,6 +47,17 @@ const Index = () => {
       hour12: true
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen cornhole-bg flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
+          <p className="text-lg">Loading team data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen cornhole-bg">
@@ -157,7 +174,7 @@ const Index = () => {
                   <div className="flex justify-between text-sm mt-1">
                     <span>Win %:</span>
                     <span className="font-medium">
-                      {((team.wins / (team.wins + team.losses)) * 100).toFixed(1)}%
+                      {((team.wins / (team.wins + team.losses || 1)) * 100).toFixed(1)}%
                     </span>
                   </div>
                 </div>

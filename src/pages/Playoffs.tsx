@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { 
   Card,
@@ -24,16 +23,18 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Trophy, Users, Edit, Loader2 } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
-import { PlayoffBracket, Team, Player } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useBracketData } from "@/hooks/useBracketData";
+import { useTeamData } from "@/hooks/useTeamData";
 
 const Playoffs = () => {
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  const { data: teams, isLoading: teamsLoading } = useTeamData();
 
   // Fetch all brackets
   const { data: allBrackets, isLoading: bracketsLoading } = useQuery({
@@ -68,34 +69,6 @@ const Playoffs = () => {
     }
   });
   
-  // Fetch teams, optionally filtered by division
-  const { data: teams, isLoading: teamsLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('teams')
-        .select('*, divisions(name)')
-        .order('seed', { ascending: true })
-        .order('name');
-      
-      if (error) throw error;
-      
-      return data.map(team => ({
-        id: team.id,
-        name: team.name,
-        logoUrl: team.logo_url,
-        // Convert string[] to Player[] by mapping each string to a Player object
-        players: team.players ? team.players.map((playerName: string): Player => ({
-          name: playerName
-        })) : [],
-        wins: 0, // We would calculate this from matches
-        losses: 0, // We would calculate this from matches
-        created_at: team.created_at,
-        division: team.divisions?.name // Use the name from the joined table
-      }) as Team);
-    }
-  });
-
   const { bracket, isLoading: bracketLoading } = useBracketData(selectedBracketId || undefined);
 
   // Group teams by division with proper sorting
@@ -103,13 +76,13 @@ const Playoffs = () => {
     if (!teams) return {};
     
     const grouped = teams.reduce((acc, team) => {
-      const division = team.division || "Unassigned";
+      const division = team.divisionName || "Unassigned";
       if (!acc[division]) {
         acc[division] = [];
       }
       acc[division].push(team);
       return acc;
-    }, {} as Record<string, Team[]>);
+    }, {} as Record<string, any[]>);
     
     // Sort teams within each division by name
     Object.keys(grouped).forEach(division => {

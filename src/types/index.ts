@@ -1,4 +1,3 @@
-
 export interface Player {
   id?: string;
   name: string;
@@ -16,6 +15,7 @@ export interface Team {
   losses: number;
   created_at: string;
   division?: string;
+  divisionName?: string; // Added divisionName to store the actual division name
 }
 
 export interface Match {

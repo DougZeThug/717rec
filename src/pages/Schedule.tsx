@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,31 +23,32 @@ import {
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
-import { Plus, Search, Calendar, CheckCircle } from "lucide-react";
-import { mockTeams, mockMatches } from "@/data/mockData";
+import { Plus, Search, Calendar, CheckCircle, Loader2 } from "lucide-react";
 import MatchCard from "@/components/schedule/MatchCard";
 import MatchForm from "@/components/schedule/MatchForm";
-import { Match } from "@/types";
+import { Match, Team } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { useTeamData } from "@/hooks/useTeamData";
+import { mockMatches } from "@/data/mockData";
 
 const Schedule = () => {
   const [matches, setMatches] = useState<Match[]>(mockMatches);
-  const [teams] = useState(mockTeams);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("upcoming");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMatch, setEditingMatch] = useState<Match | undefined>(undefined);
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const { data: teams, isLoading: teamsLoading } = useTeamData();
 
   const getTeamName = (teamId: string) => {
-    const team = teams.find(t => t.id === teamId);
+    const team = teams?.find(t => t.id === teamId);
     return team ? team.name : "Unknown Team";
   };
 
   const filteredMatches = matches
     .filter(match => {
-      // Filter based on active tab
       if (activeTab === "upcoming") {
         return !match.isCompleted;
       } else if (activeTab === "completed") {
@@ -57,7 +57,6 @@ const Schedule = () => {
       return true;
     })
     .filter(match => {
-      // Filter based on search term
       if (!searchTerm) return true;
       const searchLower = searchTerm.toLowerCase();
       return (
@@ -81,7 +80,6 @@ const Schedule = () => {
       description: `Match between ${getTeamName(newMatch.team1Id)} and ${getTeamName(newMatch.team2Id)} has been scheduled.`,
     });
 
-    // If match is completed, update team records
     if (newMatch.isCompleted && newMatch.winnerId && newMatch.loserId) {
       updateTeamRecords(newMatch.winnerId, newMatch.loserId);
     }
@@ -107,7 +105,6 @@ const Schedule = () => {
       description: `Match details have been successfully updated.`,
     });
 
-    // If match is newly completed, update team records
     const updatedMatch = { ...editingMatch, ...matchData };
     if (
       updatedMatch.isCompleted && 
@@ -138,8 +135,6 @@ const Schedule = () => {
     }
   };
 
-  // This function would actually update team records in a real database
-  // For now, it just shows a toast notification
   const updateTeamRecords = (winnerId: string, loserId: string) => {
     const winnerName = getTeamName(winnerId);
     const loserName = getTeamName(loserId);
@@ -149,6 +144,17 @@ const Schedule = () => {
       description: `${winnerName} (W) and ${loserName} (L) records have been updated.`,
     });
   };
+
+  if (teamsLoading) {
+    return (
+      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
+          <p className="text-lg">Loading team data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
@@ -199,7 +205,7 @@ const Schedule = () => {
                   <MatchCard 
                     key={match.id} 
                     match={match}
-                    teams={teams}
+                    teams={teams || []}
                     onEdit={match => {
                       setEditingMatch(match);
                       setIsFormOpen(true);
@@ -225,7 +231,7 @@ const Schedule = () => {
                   <MatchCard 
                     key={match.id} 
                     match={match}
-                    teams={teams}
+                    teams={teams || []}
                     onEdit={match => {
                       setEditingMatch(match);
                       setIsFormOpen(true);
@@ -246,7 +252,6 @@ const Schedule = () => {
         </Tabs>
       </div>
       
-      {/* Create/Edit Match Dialog */}
       <Dialog 
         open={isFormOpen} 
         onOpenChange={setIsFormOpen}
@@ -257,14 +262,13 @@ const Schedule = () => {
           </DialogHeader>
           <MatchForm 
             match={editingMatch}
-            teams={teams}
+            teams={teams || []}
             onSubmit={editingMatch ? handleUpdateMatch : handleCreateMatch}
             onCancel={() => setIsFormOpen(false)}
           />
         </DialogContent>
       </Dialog>
       
-      {/* Delete Confirmation */}
       <AlertDialog open={deleteMatchId !== null} onOpenChange={() => setDeleteMatchId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -6,7 +6,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Edit, Trash2, Trophy, X } from "lucide-react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { useDivisions } from "@/hooks/useDivisions";
 
 interface TeamCardProps {
   team: Team;
@@ -15,15 +14,8 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
-  const { divisions } = useDivisions();
-  
-  const getDivisionName = (divisionId: string | undefined): string => {
-    if (!divisionId) return "";
-    const division = divisions.find(d => d.id === divisionId);
-    return division ? division.name : "";
-  };
-
-  const divisionName = getDivisionName(team.division);
+  // Use the divisionName property if available, otherwise fall back to the original approach
+  const divisionName = team.divisionName || "";
 
   return (
     <Card className="overflow-hidden">
