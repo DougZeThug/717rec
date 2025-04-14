@@ -96,6 +96,8 @@ export function useTeams() {
           errorMessage = "Invalid division selected. Please choose a valid division.";
         } else if (error.message.includes("foreign key constraint")) {
           errorMessage = "The selected division does not exist.";
+        } else if (error.message.includes("not found")) {
+          errorMessage = error.message;
         }
       }
       

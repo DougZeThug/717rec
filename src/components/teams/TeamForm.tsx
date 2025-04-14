@@ -22,7 +22,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [players, setPlayers] = useState<Player[]>(
     team?.players || [{ name: '' }]
   );
-  const [division, setDivision] = useState<string | undefined>(team?.division);
+  const [division, setDivision] = useState<string | null>(team?.division || null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -85,8 +85,9 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Convert division to null if "none" is selected
-    const divisionId = division === "none" ? null : division;
+    // Handle the division value properly
+    // If "none" is selected, set the division to null (not a string)
+    const divisionValue = division === "none" ? null : division;
     
     onSubmit({
       name,
@@ -94,7 +95,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       players: players.filter(p => p.name.trim() !== ""),
       wins,
       losses,
-      division: divisionId
+      division: divisionValue
     });
   };
 
@@ -114,16 +115,19 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
         
         <div className="space-y-2">
           <Label htmlFor="division">Division</Label>
-          <Select value={division} onValueChange={setDivision}>
+          <Select 
+            value={division || "none"} 
+            onValueChange={(value) => setDivision(value === "none" ? null : value)}
+          >
             <SelectTrigger id="division" className="w-full">
               <SelectValue placeholder="Select division" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">None</SelectItem>
               {isDivisionsLoading ? (
-                <SelectItem value="loading" disabled>Loading divisions...</SelectItem>
+                <SelectItem value="loading-divisions">Loading divisions...</SelectItem>
               ) : divisions.length === 0 ? (
-                <SelectItem value="no-divisions" disabled>No divisions available</SelectItem>
+                <SelectItem value="no-divisions-available">No divisions available</SelectItem>
               ) : (
                 divisions.map((div) => (
                   <SelectItem key={div.id} value={div.id}>{div.name}</SelectItem>

@@ -50,7 +50,7 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
       image_url: teamData.imageUrl || null, // Use null if no image
       players: teamData.players.map(p => p.name),
       seed: null, // Default
-      division_id: teamData.division || null
+      division_id: teamData.division || null // Ensure null if no division
     })
     .select()
     .single();
@@ -84,6 +84,34 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
 export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | "created_at">) => {
   console.log("Updating team with ID:", teamId);
   console.log("Update data:", teamData);
+  console.log("Division value:", teamData.division, typeof teamData.division);
+  
+  // Validate the team exists before attempting an update
+  const { data: teamExists, error: checkError } = await supabase
+    .from('teams')
+    .select('id')
+    .eq('id', teamId)
+    .single();
+  
+  if (checkError || !teamExists) {
+    console.error("Team not found or error checking team:", checkError);
+    throw new Error(`Team with ID ${teamId} not found.`);
+  }
+  
+  // If division is provided, validate it exists in the divisions table
+  // (Skip validation if division is null - meaning no division assigned)
+  if (teamData.division !== null) {
+    const { data: divisionExists, error: divCheckError } = await supabase
+      .from('divisions')
+      .select('id')
+      .eq('id', teamData.division)
+      .single();
+    
+    if (divCheckError || !divisionExists) {
+      console.error("Division not found or error checking division:", divCheckError);
+      throw new Error(`Division with ID ${teamData.division} not found.`);
+    }
+  }
   
   const { data, error } = await supabase
     .from('teams')
@@ -92,7 +120,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
       logo_url: teamData.logoUrl,
       image_url: teamData.imageUrl || null,
       players: teamData.players.map(p => p.name),
-      division_id: teamData.division || null
+      division_id: teamData.division // This will be null when no division is selected
     })
     .eq('id', teamId)
     .select()
