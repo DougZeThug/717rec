@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,8 +46,19 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
 
     try {
       setIsUploading(true);
-      const uploadedImageUrl = await uploadTeamImage(file);
+      toast({
+        title: "Processing Image",
+        description: "Compressing and uploading your image...",
+      });
+      
+      // Pass team ID if available (for editing an existing team)
+      const uploadedImageUrl = await uploadTeamImage(file, team?.id);
       setImageUrl(uploadedImageUrl);
+      
+      toast({
+        title: "Image Uploaded",
+        description: "Image successfully compressed and uploaded.",
+      });
     } catch (error) {
       toast({
         title: "Image Upload Failed",
@@ -110,7 +122,8 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
               disabled={isUploading}
               className="flex items-center gap-2"
             >
-              <Upload size={16} /> Upload Image
+              <Upload size={16} /> 
+              {isUploading ? "Uploading..." : "Upload Image"}
             </Button>
             {imageUrl && (
               <div className="relative">
