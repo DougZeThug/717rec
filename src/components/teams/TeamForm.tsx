@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,8 @@ import { Team, Player } from "@/types";
 import { uploadTeamImage } from "@/utils/imageUpload";
 import { Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDivisions } from "@/hooks/useDivisions";
 
 interface TeamFormProps {
   team?: Team;
@@ -20,11 +22,13 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [players, setPlayers] = useState<Player[]>(
     team?.players || [{ name: '' }]
   );
+  const [division, setDivision] = useState<string | undefined>(team?.division);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [wins] = useState<number>(team?.wins || 0);
   const [losses] = useState<number>(team?.losses || 0);
+  const { divisions, isLoading: isDivisionsLoading } = useDivisions();
 
   const handleAddPlayer = () => {
     setPlayers([...players, { name: '' }]);
@@ -87,7 +91,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       players: players.filter(p => p.name.trim() !== ""),
       wins,
       losses,
-      division: team?.division // preserve existing division if editing
+      division
     });
   };
 
@@ -103,6 +107,27 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
             placeholder="Enter team name"
             required
           />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="division">Division</Label>
+          <Select value={division} onValueChange={setDivision}>
+            <SelectTrigger id="division" className="w-full">
+              <SelectValue placeholder="Select division" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">None</SelectItem>
+              {isDivisionsLoading ? (
+                <SelectItem value="" disabled>Loading divisions...</SelectItem>
+              ) : divisions.length === 0 ? (
+                <SelectItem value="" disabled>No divisions available</SelectItem>
+              ) : (
+                divisions.map((div) => (
+                  <SelectItem key={div.id} value={div.id}>{div.name}</SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
         </div>
         
         <div className="space-y-2">

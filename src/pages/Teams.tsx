@@ -2,21 +2,64 @@
 import React, { useState, useEffect } from 'react';
 import { Team } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, RefreshCw, Filter } from "lucide-react";
 import TeamForm from "@/components/teams/TeamForm";
 import { TeamList } from "@/components/teams/TeamList";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
 import { useTeams } from "@/hooks/useTeams";
+import { useDivisions } from "@/hooks/useDivisions";
 import { useToast } from "@/hooks/use-toast";
 
 const Teams: React.FC = () => {
   const { teams, isLoading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { divisions } = useDivisions();
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [selectedDivision, setSelectedDivision] = useState<string>("all");
   const { toast } = useToast();
+
+  // Group teams by division
+  const teamsByDivision = React.useMemo(() => {
+    const grouped: Record<string, Team[]> = {
+      unassigned: []
+    };
+    
+    // Initialize with all division IDs
+    divisions.forEach(division => {
+      grouped[division.id] = [];
+    });
+    
+    // Group teams
+    teams.forEach(team => {
+      if (!team.division) {
+        grouped.unassigned.push(team);
+      } else {
+        if (!grouped[team.division]) {
+          grouped[team.division] = [];
+        }
+        grouped[team.division].push(team);
+      }
+    });
+    
+    return grouped;
+  }, [teams, divisions]);
+
+  // Filter teams based on selection
+  const filteredTeams = React.useMemo(() => {
+    if (selectedDivision === "all") {
+      return teams;
+    }
+    
+    if (selectedDivision === "unassigned") {
+      return teams.filter(team => !team.division);
+    }
+    
+    return teams.filter(team => team.division === selectedDivision);
+  }, [teams, selectedDivision]);
 
   const handleCreateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
     try {
@@ -75,11 +118,33 @@ const Teams: React.FC = () => {
     }
   };
 
+  // Get division name by ID
+  const getDivisionName = (divisionId: string | undefined): string => {
+    if (!divisionId) return "Unassigned Division";
+    const division = divisions.find(d => d.id === divisionId);
+    return division ? division.name : "Unknown Division";
+  };
+
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Teams</h1>
         <div className="flex gap-2">
+          <Select value={selectedDivision} onValueChange={setSelectedDivision}>
+            <SelectTrigger className="w-[180px] flex items-center gap-2">
+              <Filter size={16} />
+              <SelectValue placeholder="Filter by Division" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Divisions</SelectItem>
+              <SelectItem value="unassigned">Unassigned Division</SelectItem>
+              {divisions.map(division => (
+                <SelectItem key={division.id} value={division.id}>
+                  {division.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button 
             onClick={handleRefresh} 
             variant="outline"
@@ -114,12 +179,37 @@ const Teams: React.FC = () => {
         </div>
       )}
 
-      <TeamList 
-        teams={teams}
-        isLoading={isLoading}
-        onEdit={(team) => setTeamToEdit(team)}
-        onDelete={(teamId) => setDeleteTeamId(teamId)}
-      />
+      {selectedDivision === "all" ? (
+        // Group display by divisions
+        <div className="space-y-8">
+          {Object.keys(teamsByDivision).map(divisionId => {
+            const divisionTeams = teamsByDivision[divisionId];
+            if (divisionTeams.length === 0) return null;
+            
+            return (
+              <div key={divisionId} className="space-y-4">
+                <h2 className="text-2xl font-semibold border-b pb-2">
+                  {getDivisionName(divisionId === "unassigned" ? undefined : divisionId)}
+                </h2>
+                <TeamList 
+                  teams={divisionTeams}
+                  isLoading={isLoading}
+                  onEdit={(team) => setTeamToEdit(team)}
+                  onDelete={(teamId) => setDeleteTeamId(teamId)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        // Show filtered teams
+        <TeamList 
+          teams={filteredTeams}
+          isLoading={isLoading}
+          onEdit={(team) => setTeamToEdit(team)}
+          onDelete={(teamId) => setDeleteTeamId(teamId)}
+        />
+      )}
 
       <TeamDeleteDialog 
         isOpen={!!deleteTeamId}
