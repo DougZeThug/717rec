@@ -3,6 +3,7 @@ import React from 'react';
 import { Team } from "@/types";
 import TeamCard from "@/components/teams/TeamCard";
 import { TeamListSkeleton } from "@/components/teams/TeamListSkeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TeamListProps {
   teams: Team[];
@@ -12,6 +13,8 @@ interface TeamListProps {
 }
 
 export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, onDelete }) => {
+  const isMobile = useIsMobile();
+  
   if (isLoading) {
     return <TeamListSkeleton />;
   }
@@ -25,7 +28,7 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {teams.map(team => (
         <TeamCard 
           key={team.id} 

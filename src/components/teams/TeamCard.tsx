@@ -18,9 +18,9 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionName = team.divisionName || "";
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden h-full flex flex-col">
       <div 
-        className="h-36 bg-gray-100 flex items-center justify-center" 
+        className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center" 
         style={{ 
           backgroundSize: 'contain',
           backgroundPosition: 'center',
@@ -34,12 +34,12 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </div>
         )}
       </div>
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 space-y-1">
         <div className="flex justify-between items-start">
-          <CardTitle className="truncate">{team.name}</CardTitle>
+          <CardTitle className="text-lg sm:text-xl truncate pr-2">{team.name}</CardTitle>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
                 <MoreHorizontal size={16} />
                 <span className="sr-only">Open menu</span>
               </Button>
@@ -60,12 +60,12 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </DropdownMenu>
         </div>
         {divisionName && (
-          <Badge variant="outline" className="mt-1">
+          <Badge variant="outline" className="mr-auto">
             {divisionName}
           </Badge>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-grow">
         <div className="text-sm text-muted-foreground">
           <div className="flex items-center gap-2 mb-2">
             <span className="font-medium">{team.players.length}</span> 
@@ -81,10 +81,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="pt-1 pb-4">
-        <div className="text-sm">
+      <CardFooter className="pt-1 pb-3">
+        <div className="text-sm w-full">
           <span className="font-semibold">Players:</span> 
-          <span className="text-muted-foreground ml-1">
+          <span className="text-muted-foreground ml-1 block truncate">
             {team.players.length > 0
               ? team.players.map(p => p.name).slice(0, 3).join(', ') 
                 + (team.players.length > 3 ? ` +${team.players.length - 3} more` : '')

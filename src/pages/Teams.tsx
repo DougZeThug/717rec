@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Team } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,6 +10,7 @@ import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
 import { useTeams } from "@/hooks/useTeams";
 import { useDivisions } from "@/hooks/useDivisions";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Teams: React.FC = () => {
   const { teams, isLoading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
@@ -21,6 +22,7 @@ const Teams: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [selectedDivision, setSelectedDivision] = useState<string>("all");
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Group teams by division
   const teamsByDivision = React.useMemo(() => {
@@ -126,10 +128,10 @@ const Teams: React.FC = () => {
   };
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Teams</h1>
-        <div className="flex gap-2">
+    <div className="container px-4 py-6 sm:py-8 mx-auto">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Teams</h1>
+        <div className="flex flex-wrap gap-2">
           <Select value={selectedDivision} onValueChange={setSelectedDivision}>
             <SelectTrigger className="w-[180px] flex items-center gap-2">
               <Filter size={16} />
@@ -150,6 +152,7 @@ const Teams: React.FC = () => {
             variant="outline"
             disabled={isRefreshing}
             className="flex items-center gap-2"
+            size={isMobile ? "sm" : "default"}
           >
             <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} /> 
             {isRefreshing ? "Refreshing..." : "Refresh"}
@@ -157,6 +160,7 @@ const Teams: React.FC = () => {
           <Button 
             onClick={() => setIsFormOpen(true)} 
             className="flex items-center gap-2"
+            size={isMobile ? "sm" : "default"}
           >
             <Plus size={16} /> Add Team
           </Button>
@@ -164,7 +168,7 @@ const Teams: React.FC = () => {
       </div>
 
       {(isFormOpen || teamToEdit) && (
-        <div className="mb-8 p-6 bg-card border rounded-lg shadow">
+        <div className="mb-6 p-4 sm:p-6 bg-card border rounded-lg shadow overflow-x-hidden">
           <h2 className="text-xl font-semibold mb-4">
             {teamToEdit ? "Edit Team" : "Create New Team"}
           </h2>
@@ -181,14 +185,14 @@ const Teams: React.FC = () => {
 
       {selectedDivision === "all" ? (
         // Group display by divisions
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {Object.keys(teamsByDivision).map(divisionId => {
             const divisionTeams = teamsByDivision[divisionId];
             if (divisionTeams.length === 0) return null;
             
             return (
               <div key={divisionId} className="space-y-4">
-                <h2 className="text-2xl font-semibold border-b pb-2">
+                <h2 className="text-xl sm:text-2xl font-semibold border-b pb-2">
                   {getDivisionName(divisionId === "unassigned" ? undefined : divisionId)}
                 </h2>
                 <TeamList 
