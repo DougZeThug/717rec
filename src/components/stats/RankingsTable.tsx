@@ -16,12 +16,13 @@ interface RankingsTableProps {
 
 const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-12">Rank</TableHead>
             <TableHead>Team</TableHead>
+            <TableHead className="hidden md:table-cell">Division</TableHead>
             <TableHead className="text-center">W-L</TableHead>
             <TableHead className="text-center">Win %</TableHead>
             <TableHead className="text-center">SOS</TableHead>
@@ -44,8 +45,11 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
                       <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs">No Logo</div>
                     )}
                   </div>
-                  <span>{ranking.teamName}</span>
+                  <span className="font-medium">{ranking.teamName}</span>
                 </div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell">
+                {ranking.divisionName || 'Not Assigned'}
               </TableCell>
               <TableCell className="text-center">
                 {ranking.wins}-{ranking.losses}

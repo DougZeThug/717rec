@@ -16,7 +16,7 @@ export interface Team {
   losses: number;
   created_at: string;
   division?: string | null;
-  divisionName?: string | null; // Added divisionName to store the actual division name
+  divisionName?: string | null;
 }
 
 export interface Match {
@@ -78,5 +78,6 @@ export interface Ranking {
   wins: number;
   losses: number;
   winPercentage: number;
+  divisionName?: string | null;
   sos?: number; // Strength of Schedule
 }

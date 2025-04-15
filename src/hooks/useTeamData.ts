@@ -3,14 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
-export const useTeamData = () => {
+export const useTeamData = (divisionId?: string | null) => {
   const query = useQuery<Team[], Error>({
-    queryKey: ['teams'],
+    queryKey: ['teams', divisionId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('teams')
         .select('*, divisions(name)')
         .order('name');
+      
+      // Apply division filter if provided
+      if (divisionId) {
+        query = query.eq('division_id', divisionId);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error('Error fetching teams:', error);

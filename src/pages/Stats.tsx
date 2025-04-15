@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,14 +18,49 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useTeamData } from "@/hooks/useTeamData";
+import { useDivisions } from "@/hooks/useDivisions";
 import RankingsTable from "@/components/stats/RankingsTable";
 import { Ranking, Team } from "@/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, Filter } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Stats = () => {
-  const { data: teams, isLoading } = useTeamData();
+  const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
+  const { divisions, isLoading: isLoadingDivisions } = useDivisions();
+  const { data: teams, isLoading: isLoadingTeams } = useTeamData(selectedDivision);
 
-  // Transform teams into rankings
+  // Calculate strength of schedule (SOS) - In a real app, this would be more sophisticated
+  // Here we'll use a simple algorithm that looks at the average win percentage of opponents
+  const calculateSOS = (team: Team, allTeams: Team[]) => {
+    // Get a list of all opponent IDs the team might have played against
+    // In a production app, this would come from actual match data
+    const otherTeams = allTeams.filter(t => t.id !== team.id);
+    
+    if (otherTeams.length === 0) return 0.5; // Default value if no opponents
+    
+    // Weight by division difficulty (Recreational: 0.7, Intermediate: 0.85, Competitive: 1.0)
+    let divisionWeight = 0.85; // Default to intermediate
+    if (team.divisionName === 'Recreational') divisionWeight = 0.7;
+    if (team.divisionName === 'Competitive') divisionWeight = 1.0;
+    
+    // Calculate average opponent win percentage, adjusted by division weight
+    const opponentWinRates = otherTeams.map(opponent => {
+      const totalGames = opponent.wins + opponent.losses;
+      return totalGames > 0 ? (opponent.wins / totalGames) : 0.5; // Default to 0.5 if no games
+    });
+    
+    const avgOpponentWinRate = opponentWinRates.reduce((sum, rate) => sum + rate, 0) / opponentWinRates.length;
+    
+    return avgOpponentWinRate * divisionWeight;
+  };
+
+  // Transform teams into rankings with SOS calculation
   const calculateRankings = (teams: Team[]): Ranking[] => {
     return teams.map(team => {
       const totalGames = team.wins + team.losses;
@@ -39,15 +74,16 @@ const Stats = () => {
         wins: team.wins,
         losses: team.losses,
         winPercentage: winPercentage,
-        sos: Math.random() * 0.5 + 0.5 // Placeholder SOS value (would be calculated from opponent strength)
+        divisionName: team.divisionName,
+        sos: calculateSOS(team, teams)
       };
     }).sort((a, b) => {
       // Sort by win percentage (descending)
       if (b.winPercentage !== a.winPercentage) {
         return b.winPercentage - a.winPercentage;
       }
-      // If win percentages are equal, sort by total wins (descending)
-      return b.wins - a.wins;
+      // If win percentages are equal, sort by SOS (descending)
+      return b.sos - a.sos;
     });
   };
 
@@ -61,7 +97,11 @@ const Stats = () => {
     winPercentage: Number((team.winPercentage * 100).toFixed(1))
   }));
 
-  if (isLoading) {
+  const handleDivisionChange = (value: string) => {
+    setSelectedDivision(value === "all" ? null : value);
+  };
+
+  if (isLoadingTeams || isLoadingDivisions) {
     return (
       <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
         <div className="flex flex-col items-center">
@@ -75,7 +115,28 @@ const Stats = () => {
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-cornhole-navy mb-8">Team Statistics</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <h1 className="text-3xl font-bold text-cornhole-navy">Team Statistics</h1>
+          
+          <div className="flex items-center gap-2">
+            <Filter size={18} />
+            <div className="w-[180px]">
+              <Select onValueChange={handleDivisionChange} defaultValue="all">
+                <SelectTrigger>
+                  <SelectValue placeholder="All Divisions" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Divisions</SelectItem>
+                  {divisions.map((division) => (
+                    <SelectItem key={division.id} value={division.id}>
+                      {division.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
