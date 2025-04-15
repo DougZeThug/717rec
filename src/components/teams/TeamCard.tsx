@@ -3,9 +3,10 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Trophy, X } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Trophy, X, ExternalLink } from "lucide-react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 interface TeamCardProps {
   team: Team;
@@ -19,24 +20,28 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   return (
     <Card className="overflow-hidden h-full flex flex-col">
-      <div 
-        className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center" 
-        style={{ 
-          backgroundSize: 'contain',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundImage: team.imageUrl ? `url(${team.imageUrl})` : 'none',
-        }}
-      >
-        {!team.imageUrl && (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No Team Image
-          </div>
-        )}
-      </div>
+      <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
+        <div 
+          className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center" 
+          style={{ 
+            backgroundSize: 'contain',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundImage: team.imageUrl ? `url(${team.imageUrl})` : 'none',
+          }}
+        >
+          {!team.imageUrl && (
+            <div className="flex items-center justify-center h-full text-gray-400">
+              No Team Image
+            </div>
+          )}
+        </div>
+      </Link>
       <CardHeader className="pb-2 space-y-1">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg sm:text-xl truncate pr-2">{team.name}</CardTitle>
+          <Link to={`/teams/${team.id}`} className="hover:underline">
+            <CardTitle className="text-lg sm:text-xl truncate pr-2">{team.name}</CardTitle>
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
@@ -55,6 +60,12 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to={`/teams/${team.id}`}>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

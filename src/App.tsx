@@ -10,6 +10,7 @@ import Schedule from "./pages/Schedule";
 import Stats from "./pages/Stats";
 import Playoffs from "./pages/Playoffs";
 import Timeslots from "./pages/Timeslots";
+import TeamDetails from "./pages/TeamDetails";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -28,6 +29,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/teams" element={<Teams />} />
+              <Route path="/teams/:teamId" element={<TeamDetails />} />
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/stats" element={<Stats />} />
               <Route path="/playoffs" element={<Playoffs />} />
