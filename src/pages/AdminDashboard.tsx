@@ -25,7 +25,10 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const { createTeam } = useTeams();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const { teams, isLoading: isLoadingTeams } = useTeamData();
+  const teamQuery = useTeamData();
+  const teams = teamQuery.data || [];
+  const isLoadingTeams = teamQuery.isLoading;
+  
   const { 
     timeslots, 
     isLoading: isLoadingTimeslots, 

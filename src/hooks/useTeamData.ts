@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
 export const useTeamData = () => {
-  return useQuery({
+  return useQuery<Team[], Error>({
     queryKey: ['teams'],
     queryFn: async () => {
       const { data, error } = await supabase

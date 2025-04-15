@@ -42,11 +42,26 @@ const EditScoresSection = () => {
         .order('date');
 
       if (error) throw error;
-      setMatches(data || []);
+      
+      // Transform database fields to match our frontend types
+      const transformedMatches: Match[] = (data || []).map(match => ({
+        id: match.id,
+        team1Id: match.team1_id || '',
+        team2Id: match.team2_id || '',
+        team1Score: match.team1_score,
+        team2Score: match.team2_score,
+        date: match.date || new Date().toISOString(),
+        location: match.location || '',
+        isCompleted: match.isCompleted || false,
+        winnerId: match.winner_id,
+        loserId: match.loser_id
+      }));
+      
+      setMatches(transformedMatches);
       
       // Initialize scores state
       const initialScores: Record<string, { team1Score: string, team2Score: string }> = {};
-      data?.forEach(match => {
+      transformedMatches.forEach(match => {
         initialScores[match.id] = { 
           team1Score: match.team1Score?.toString() || '', 
           team2Score: match.team2Score?.toString() || '' 
@@ -75,7 +90,21 @@ const EditScoresSection = () => {
       
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
-        teamsMap[team.id] = team as Team;
+        // Transform database team to match our Team interface
+        teamsMap[team.id] = {
+          id: team.id,
+          name: team.name,
+          logoUrl: team.logo_url,
+          imageUrl: team.image_url,
+          players: Array.isArray(team.players) 
+            ? team.players.map(playerName => ({ name: playerName })) 
+            : [],
+          wins: team.wins || 0,
+          losses: team.losses || 0,
+          created_at: team.created_at || '',
+          division: team.division_id || null,
+          divisionName: null
+        };
       });
       
       setTeams(teamsMap);
@@ -132,11 +161,11 @@ const EditScoresSection = () => {
       const { error } = await supabase
         .from('matches')
         .update({
-          team1Score,
-          team2Score,
+          team1_score: team1Score,
+          team2_score: team2Score,
           isCompleted: true,
-          winnerId,
-          loserId
+          winner_id: winnerId,
+          loser_id: loserId
         })
         .eq('id', matchId);
 

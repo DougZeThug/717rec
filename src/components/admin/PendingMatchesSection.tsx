@@ -37,11 +37,26 @@ const PendingMatchesSection = () => {
         .from('matches')
         .select('*')
         .eq('isCompleted', true)
-        .is('winnerId', null)
+        .is('winner_id', null)
         .order('date');
 
       if (error) throw error;
-      setMatches(data || []);
+
+      // Transform database fields to match our frontend types
+      const transformedMatches: Match[] = (data || []).map(match => ({
+        id: match.id,
+        team1Id: match.team1_id || '',
+        team2Id: match.team2_id || '',
+        team1Score: match.team1_score,
+        team2Score: match.team2_score,
+        date: match.date || new Date().toISOString(),
+        location: match.location || '',
+        isCompleted: match.isCompleted || false,
+        winnerId: match.winner_id,
+        loserId: match.loser_id
+      }));
+      
+      setMatches(transformedMatches);
     } catch (error) {
       console.error('Error fetching pending matches:', error);
       toast({
@@ -64,7 +79,21 @@ const PendingMatchesSection = () => {
       
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
-        teamsMap[team.id] = team as Team;
+        // Transform database team to match our Team interface
+        teamsMap[team.id] = {
+          id: team.id,
+          name: team.name,
+          logoUrl: team.logo_url,
+          imageUrl: team.image_url,
+          players: Array.isArray(team.players) 
+            ? team.players.map(playerName => ({ name: playerName })) 
+            : [],
+          wins: team.wins || 0,
+          losses: team.losses || 0,
+          created_at: team.created_at || '',
+          division: team.division_id || null,
+          divisionName: null
+        };
       });
       
       setTeams(teamsMap);
@@ -86,8 +115,8 @@ const PendingMatchesSection = () => {
       const { error } = await supabase
         .from('matches')
         .update({
-          winnerId,
-          loserId
+          winner_id: winnerId,
+          loser_id: loserId
         })
         .eq('id', match.id);
 
@@ -131,8 +160,8 @@ const PendingMatchesSection = () => {
       const { error } = await supabase
         .from('matches')
         .update({
-          winnerId: null,
-          loserId: null
+          winner_id: null,
+          loser_id: null
         })
         .eq('id', matchId);
 
