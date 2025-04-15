@@ -64,7 +64,7 @@ const Stats = () => {
           team2Score: match.team2_score,
           date: match.date || match.created_at,
           location: match.location || '',
-          isCompleted: match.is_completed || false,
+          isCompleted: match.isCompleted || false,
           winnerId: match.winner_id,
           loserId: match.loser_id
         }));
@@ -202,7 +202,8 @@ const Stats = () => {
         sos,
         streak,
         headToHead,
-        previousRank
+        previousRank,
+        rankChange: previousRank !== undefined ? previousRank - (index + 1) : 0
       };
     });
     
