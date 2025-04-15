@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Edit, Trash2 } from "lucide-react";
+import { Calendar, Edit, Trash2 } from "lucide-react";
 import { Match, Team } from "@/types";
 
 interface MatchCardProps {
@@ -88,13 +88,9 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
         </div>
         
         <div className="border-t border-gray-200 pt-4 mt-4">
-          <div className="flex items-center text-gray-600 mb-2">
+          <div className="flex items-center text-gray-600">
             <Calendar className="h-4 w-4 mr-2" />
             <span>{formatDate(match.date)} at {formatTime(match.date)}</span>
-          </div>
-          <div className="flex items-center text-gray-600">
-            <MapPin className="h-4 w-4 mr-2" />
-            <span>{match.location}</span>
           </div>
         </div>
       </CardContent>

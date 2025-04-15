@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,8 +62,7 @@ const Schedule = () => {
       const searchLower = searchTerm.toLowerCase();
       return (
         getTeamName(match.team1Id).toLowerCase().includes(searchLower) ||
-        getTeamName(match.team2Id).toLowerCase().includes(searchLower) ||
-        match.location.toLowerCase().includes(searchLower)
+        getTeamName(match.team2Id).toLowerCase().includes(searchLower)
       );
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());

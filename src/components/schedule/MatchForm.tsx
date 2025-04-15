@@ -24,7 +24,6 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
   const [team1Id, setTeam1Id] = useState(match?.team1Id || "");
   const [team2Id, setTeam2Id] = useState(match?.team2Id || "");
   const [date, setDate] = useState(match ? new Date(match.date) : new Date());
-  const [location, setLocation] = useState(match?.location || "");
   const [isCompleted, setIsCompleted] = useState(match?.isCompleted || false);
   const [team1Score, setTeam1Score] = useState<number | undefined>(match?.team1Score);
   const [team2Score, setTeam2Score] = useState<number | undefined>(match?.team2Score);
@@ -53,7 +52,7 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
       team1Id,
       team2Id,
       date: date.toISOString(),
-      location,
+      location: "", // Setting to empty string for legacy compatibility
       isCompleted,
       team1Score: isCompleted ? team1Score : undefined,
       team2Score: isCompleted ? team2Score : undefined,
@@ -112,28 +111,15 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="date">Date & Time</Label>
-          <Input
-            id="date"
-            type="datetime-local"
-            value={formatDateForInput(date)}
-            onChange={(e) => setDate(new Date(e.target.value))}
-            required
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="location">Location</Label>
-          <Input
-            id="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Match Location"
-            required
-          />
-        </div>
+      <div>
+        <Label htmlFor="date">Date & Time</Label>
+        <Input
+          id="date"
+          type="datetime-local"
+          value={formatDateForInput(date)}
+          onChange={(e) => setDate(new Date(e.target.value))}
+          required
+        />
       </div>
       
       <div className="flex items-center space-x-2 mb-4">
