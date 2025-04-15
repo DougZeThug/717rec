@@ -11,6 +11,7 @@ import Stats from "./pages/Stats";
 import Playoffs from "./pages/Playoffs";
 import Timeslots from "./pages/Timeslots";
 import TeamDetails from "./pages/TeamDetails";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/stats" element={<Stats />} />
               <Route path="/playoffs" element={<Playoffs />} />
               <Route path="/timeslots" element={<Timeslots />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
