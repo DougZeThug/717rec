@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,9 +50,9 @@ const PendingMatchesSection = () => {
         team2Id: match.team2_id || '',
         team1Score: match.team1_score,
         team2Score: match.team2_score,
-        date: match.date || new Date().toISOString(),
+        date: match.date || match.created_at || new Date().toISOString(),
         location: match.location || '',
-        isCompleted: Boolean(match.isCompleted),
+        isCompleted: match.isCompleted || false,
         winnerId: match.winner_id,
         loserId: match.loser_id
       }));

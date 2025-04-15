@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   const { createTeam } = useTeams();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
-  // Fix access to the teams data from the useTeamData hook
+  // Get team data from the useTeamData hook
   const teamQuery = useTeamData();
   const teams = teamQuery.data || [];
   const isLoadingTeams = teamQuery.isLoading;
