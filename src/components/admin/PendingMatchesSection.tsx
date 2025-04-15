@@ -51,7 +51,7 @@ const PendingMatchesSection = () => {
         team2Score: match.team2_score,
         date: match.date || new Date().toISOString(),
         location: match.location || '',
-        isCompleted: match.isCompleted || false,
+        isCompleted: Boolean(match.isCompleted),
         winnerId: match.winner_id,
         loserId: match.loser_id
       }));
@@ -86,7 +86,7 @@ const PendingMatchesSection = () => {
           logoUrl: team.logo_url,
           imageUrl: team.image_url,
           players: Array.isArray(team.players) 
-            ? team.players.map(playerName => ({ name: playerName })) 
+            ? team.players.map((playerName: string) => ({ name: playerName })) 
             : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
