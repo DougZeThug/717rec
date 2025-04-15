@@ -39,7 +39,8 @@ export const useTeamData = (divisionId?: string | null) => {
         division: team.division_id || null,
         divisionName: team.divisions?.name || null
       }));
-    }
+    },
+    staleTime: 60000, // Cache for 1 minute
   });
   
   return query;

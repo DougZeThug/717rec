@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -20,7 +20,7 @@ import {
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import RankingsTable from "@/components/stats/RankingsTable";
-import { Ranking, Team } from "@/types";
+import { Ranking, Team, Match } from "@/types";
 import { Loader2, Filter } from "lucide-react";
 import {
   Select,
@@ -29,17 +29,72 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { format, subDays } from "date-fns";
 
 const Stats = () => {
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
   const { data: teams, isLoading: isLoadingTeams } = useTeamData(selectedDivision);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [isLoadingMatches, setIsLoadingMatches] = useState(true);
+  const [previousRankings, setPreviousRankings] = useState<Record<string, number>>({});
+  const isMobile = useIsMobile();
 
-  // Calculate strength of schedule (SOS) - In a real app, this would be more sophisticated
-  // Here we'll use a simple algorithm that looks at the average win percentage of opponents
+  // Fetch match data for head-to-head records and streaks
+  useEffect(() => {
+    const fetchMatches = async () => {
+      setIsLoadingMatches(true);
+      try {
+        // For a real app, this would use pagination and proper API endpoints
+        const { data, error } = await supabase
+          .from('matches')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        // Transform the data to match our Match type
+        const matchData = data.map((match): Match => ({
+          id: match.id,
+          team1Id: match.team1_id || '',
+          team2Id: match.team2_id || '',
+          team1Score: match.team1_score,
+          team2Score: match.team2_score,
+          date: match.date || match.created_at,
+          location: match.location || '',
+          isCompleted: match.is_completed || false,
+          winnerId: match.winner_id,
+          loserId: match.loser_id
+        }));
+        
+        setMatches(matchData);
+      } catch (error) {
+        console.error('Error fetching matches:', error);
+      } finally {
+        setIsLoadingMatches(false);
+      }
+    };
+    
+    // Load previous week's rankings data from localStorage or implement a real DB solution
+    const loadPreviousRankings = () => {
+      try {
+        const storedRankings = localStorage.getItem('previousRankings');
+        if (storedRankings) {
+          setPreviousRankings(JSON.parse(storedRankings));
+        }
+      } catch (error) {
+        console.error('Error loading previous rankings:', error);
+      }
+    };
+    
+    fetchMatches();
+    loadPreviousRankings();
+  }, []);
+
+  // Calculate strength of schedule (SOS)
   const calculateSOS = (team: Team, allTeams: Team[]) => {
-    // Get a list of all opponent IDs the team might have played against
-    // In a production app, this would come from actual match data
     const otherTeams = allTeams.filter(t => t.id !== team.id);
     
     if (otherTeams.length === 0) return 0.5; // Default value if no opponents
@@ -52,7 +107,7 @@ const Stats = () => {
     // Calculate average opponent win percentage, adjusted by division weight
     const opponentWinRates = otherTeams.map(opponent => {
       const totalGames = opponent.wins + opponent.losses;
-      return totalGames > 0 ? (opponent.wins / totalGames) : 0.5; // Default to 0.5 if no games
+      return totalGames > 0 ? (opponent.wins / totalGames) : 0.5;
     });
     
     const avgOpponentWinRate = opponentWinRates.reduce((sum, rate) => sum + rate, 0) / opponentWinRates.length;
@@ -60,11 +115,80 @@ const Stats = () => {
     return avgOpponentWinRate * divisionWeight;
   };
 
-  // Transform teams into rankings with SOS calculation
+  // Calculate streak for a team
+  const calculateStreak = (teamId: string, matches: Match[]) => {
+    const teamMatches = matches
+      .filter(match => 
+        match.isCompleted && 
+        (match.team1Id === teamId || match.team2Id === teamId)
+      )
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    if (teamMatches.length === 0) return undefined;
+    
+    let streakCount = 1;
+    let isWin = teamMatches[0].winnerId === teamId;
+    
+    for (let i = 1; i < teamMatches.length; i++) {
+      const match = teamMatches[i];
+      const currentIsWin = match.winnerId === teamId;
+      
+      if (currentIsWin === isWin) {
+        streakCount++;
+      } else {
+        break;
+      }
+    }
+    
+    return isWin ? `W${streakCount}` : `L${streakCount}`;
+  };
+
+  // Calculate head-to-head records
+  const calculateHeadToHead = (teamId: string, allTeams: Team[], matches: Match[]) => {
+    const result: Record<string, { wins: number; losses: number; opponentName: string }> = {};
+    
+    // Initialize with all teams
+    allTeams.forEach(team => {
+      if (team.id !== teamId) {
+        result[team.id] = {
+          opponentName: team.name,
+          wins: 0,
+          losses: 0
+        };
+      }
+    });
+    
+    // Calculate wins and losses against each opponent
+    matches
+      .filter(match => 
+        match.isCompleted && 
+        (match.team1Id === teamId || match.team2Id === teamId)
+      )
+      .forEach(match => {
+        const isTeam1 = match.team1Id === teamId;
+        const opponentId = isTeam1 ? match.team2Id : match.team1Id;
+        
+        if (opponentId && result[opponentId]) {
+          if (match.winnerId === teamId) {
+            result[opponentId].wins += 1;
+          } else if (match.loserId === teamId) {
+            result[opponentId].losses += 1;
+          }
+        }
+      });
+    
+    return result;
+  };
+
+  // Transform teams into rankings with all the new data
   const calculateRankings = (teams: Team[]): Ranking[] => {
-    return teams.map(team => {
+    const rankings = teams.map(team => {
       const totalGames = team.wins + team.losses;
       const winPercentage = totalGames > 0 ? team.wins / totalGames : 0;
+      const sos = calculateSOS(team, teams);
+      const streak = calculateStreak(team.id, matches);
+      const headToHead = calculateHeadToHead(team.id, teams, matches);
+      const previousRank = previousRankings[team.id];
       
       return {
         teamId: team.id,
@@ -73,11 +197,17 @@ const Stats = () => {
         imageUrl: team.imageUrl,
         wins: team.wins,
         losses: team.losses,
-        winPercentage: winPercentage,
+        winPercentage,
         divisionName: team.divisionName,
-        sos: calculateSOS(team, teams)
+        sos,
+        streak,
+        headToHead,
+        previousRank
       };
-    }).sort((a, b) => {
+    });
+    
+    // Sort rankings
+    const sortedRankings = rankings.sort((a, b) => {
       // Sort by win percentage (descending)
       if (b.winPercentage !== a.winPercentage) {
         return b.winPercentage - a.winPercentage;
@@ -85,12 +215,38 @@ const Stats = () => {
       // If win percentages are equal, sort by SOS (descending)
       return b.sos - a.sos;
     });
+    
+    // Calculate rank changes
+    sortedRankings.forEach((ranking, index) => {
+      if (ranking.previousRank !== undefined) {
+        ranking.rankChange = ranking.previousRank - (index + 1);
+      }
+    });
+    
+    return sortedRankings;
   };
 
-  const rankings = teams ? calculateRankings(teams) : [];
+  // Save current rankings for next time
+  useEffect(() => {
+    if (teams && teams.length > 0 && !isLoadingTeams && !isLoadingMatches) {
+      const currentRankings = calculateRankings(teams);
+      const rankingsToSave: Record<string, number> = {};
+      
+      currentRankings.forEach((ranking, index) => {
+        rankingsToSave[ranking.teamId] = index + 1;
+      });
+      
+      // In a real app, this would be saved to a database on a weekly schedule
+      // For demo purposes, we'll save to localStorage
+      localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
+    }
+  }, [teams, isLoadingTeams, isLoadingMatches]);
 
-  // Prepare data for charts
-  const topTeamsData = rankings.slice(0, 8).map(team => ({
+  const rankings = (teams && !isLoadingMatches) ? calculateRankings(teams) : [];
+
+  // Prepare data for charts - limit to fewer teams on mobile
+  const chartLimit = isMobile ? 5 : 8;
+  const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
     name: team.teamName,
     wins: team.wins,
     losses: team.losses,
@@ -101,7 +257,7 @@ const Stats = () => {
     setSelectedDivision(value === "all" ? null : value);
   };
 
-  if (isLoadingTeams || isLoadingDivisions) {
+  if (isLoadingTeams || isLoadingDivisions || isLoadingMatches) {
     return (
       <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
         <div className="flex flex-col items-center">
@@ -189,10 +345,10 @@ const Stats = () => {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-          <Card className="xl:col-span-2">
+          <Card className={`${isMobile ? '' : 'xl:col-span-2'}`}>
             <CardHeader>
               <CardTitle>Win-Loss Records</CardTitle>
-              <CardDescription>Top 8 teams by win percentage</CardDescription>
+              <CardDescription>Top {chartLimit} teams by win percentage</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[350px]">
@@ -203,7 +359,7 @@ const Stats = () => {
                       top: 5,
                       right: 30,
                       left: 20,
-                      bottom: 60,
+                      bottom: isMobile ? 80 : 60,
                     }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -213,6 +369,7 @@ const Stats = () => {
                       textAnchor="end"
                       height={70}
                       interval={0}
+                      tick={{fontSize: isMobile ? 10 : 12}}
                     />
                     <YAxis />
                     <Tooltip />
@@ -225,46 +382,48 @@ const Stats = () => {
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Win Percentage</CardTitle>
-              <CardDescription>Top 8 teams by percentage</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[350px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    layout="vertical"
-                    data={topTeamsData}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 60,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" domain={[0, 100]} />
-                    <YAxis 
-                      type="category" 
-                      dataKey="name" 
-                      width={80}
-                      tickFormatter={(value) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-                    />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="winPercentage" fill="#9E7E5A" name="Win %" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          {!isMobile && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Win Percentage</CardTitle>
+                <CardDescription>Top {chartLimit} teams by percentage</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      layout="vertical"
+                      data={topTeamsData}
+                      margin={{
+                        top: 5,
+                        right: 30,
+                        left: 60,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" domain={[0, 100]} />
+                      <YAxis 
+                        type="category" 
+                        dataKey="name" 
+                        width={80}
+                        tickFormatter={(value) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
+                      />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="winPercentage" fill="#9E7E5A" name="Win %" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Team Rankings</CardTitle>
-            <CardDescription>Based on win percentage and strength of schedule (SOS)</CardDescription>
+            <CardDescription>Based on win percentage, strength of schedule (SOS), and current streak</CardDescription>
           </CardHeader>
           <CardContent>
             <RankingsTable rankings={rankings} />

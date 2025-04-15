@@ -80,4 +80,15 @@ export interface Ranking {
   winPercentage: number;
   divisionName?: string | null;
   sos?: number; // Strength of Schedule
+  streak?: string; // Current streak (e.g., "W3", "L2")
+  previousRank?: number; // Previous week's rank
+  rankChange?: number; // Change in rank (positive = improved, negative = declined)
+  headToHead?: { [opponentId: string]: { wins: number; losses: number; opponentName: string } }; // Head-to-head records
+}
+
+export interface HeadToHeadRecord {
+  opponentId: string;
+  opponentName: string;
+  wins: number;
+  losses: number;
 }
