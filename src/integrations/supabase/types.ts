@@ -168,6 +168,38 @@ export type Database = {
           },
         ]
       }
+      team_timeslots: {
+        Row: {
+          created_at: string | null
+          id: string
+          match_date: string
+          team_id: string | null
+          timeslot: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          match_date: string
+          team_id?: string | null
+          timeslot?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          match_date?: string
+          team_id?: string | null
+          timeslot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_timeslots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           created_at: string | null

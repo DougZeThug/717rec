@@ -9,14 +9,14 @@ export interface Player {
 export interface Team {
   id: string;
   name: string;
-  logoUrl?: string;
-  imageUrl?: string;
+  logoUrl?: string | null;
+  imageUrl?: string | null;
   players: Player[];
   wins: number;
   losses: number;
   created_at: string;
-  division?: string;
-  divisionName?: string; // Added divisionName to store the actual division name
+  division?: string | null;
+  divisionName?: string | null; // Added divisionName to store the actual division name
 }
 
 export interface Match {
@@ -30,6 +30,14 @@ export interface Match {
   isCompleted: boolean;
   winnerId?: string;
   loserId?: string;
+}
+
+export interface TeamTimeslot {
+  id: string;
+  match_date: string;
+  team_id: string | null;
+  timeslot: string | null;
+  created_at?: string;
 }
 
 export interface PlayoffBracket {
@@ -65,8 +73,8 @@ export interface PlayoffGame {
 export interface Ranking {
   teamId: string;
   teamName: string;
-  logoUrl?: string;
-  imageUrl?: string;
+  logoUrl?: string | null;
+  imageUrl?: string | null;
   wins: number;
   losses: number;
   winPercentage: number;
