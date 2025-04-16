@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -42,12 +41,10 @@ const Stats = () => {
   const [previousRankings, setPreviousRankings] = useState<Record<string, number>>({});
   const isMobile = useIsMobile();
 
-  // Fetch match data for head-to-head records and streaks
   useEffect(() => {
     const fetchMatches = async () => {
       setIsLoadingMatches(true);
       try {
-        // For a real app, this would use pagination and proper API endpoints
         const { data, error } = await supabase
           .from('matches')
           .select('*')
@@ -55,7 +52,6 @@ const Stats = () => {
         
         if (error) throw error;
         
-        // Transform the data to match our Match type
         const matchData = data.map((match): Match => ({
           id: match.id,
           team1Id: match.team1_id || '',
@@ -66,7 +62,14 @@ const Stats = () => {
           location: match.location || '',
           isCompleted: match.isCompleted || false,
           winnerId: match.winner_id,
-          loserId: match.loser_id
+          loserId: match.loser_id,
+          round_number: match.round_number,
+          position: match.position,
+          bracket_id: match.bracket_id,
+          match_type: match.match_type,
+          next_match_id: match.next_match_id,
+          next_loser_match_id: match.next_loser_match_id,
+          best_of: match.best_of
         }));
         
         setMatches(matchData);
@@ -77,7 +80,6 @@ const Stats = () => {
       }
     };
     
-    // Load previous week's rankings data from localStorage or implement a real DB solution
     const loadPreviousRankings = () => {
       try {
         const storedRankings = localStorage.getItem('previousRankings');
@@ -93,18 +95,15 @@ const Stats = () => {
     loadPreviousRankings();
   }, []);
 
-  // Calculate strength of schedule (SOS)
   const calculateSOS = (team: Team, allTeams: Team[]) => {
     const otherTeams = allTeams.filter(t => t.id !== team.id);
     
-    if (otherTeams.length === 0) return 0.5; // Default value if no opponents
+    if (otherTeams.length === 0) return 0.5;
     
-    // Weight by division difficulty (Recreational: 0.7, Intermediate: 0.85, Competitive: 1.0)
-    let divisionWeight = 0.85; // Default to intermediate
+    let divisionWeight = 0.85;
     if (team.divisionName === 'Recreational') divisionWeight = 0.7;
     if (team.divisionName === 'Competitive') divisionWeight = 1.0;
     
-    // Calculate average opponent win percentage, adjusted by division weight
     const opponentWinRates = otherTeams.map(opponent => {
       const totalGames = opponent.wins + opponent.losses;
       return totalGames > 0 ? (opponent.wins / totalGames) : 0.5;
@@ -115,7 +114,6 @@ const Stats = () => {
     return avgOpponentWinRate * divisionWeight;
   };
 
-  // Calculate streak for a team
   const calculateStreak = (teamId: string, matches: Match[]) => {
     const teamMatches = matches
       .filter(match => 
@@ -143,11 +141,9 @@ const Stats = () => {
     return isWin ? `W${streakCount}` : `L${streakCount}`;
   };
 
-  // Calculate head-to-head records
   const calculateHeadToHead = (teamId: string, allTeams: Team[], matches: Match[]) => {
     const result: Record<string, { wins: number; losses: number; opponentName: string }> = {};
     
-    // Initialize with all teams
     allTeams.forEach(team => {
       if (team.id !== teamId) {
         result[team.id] = {
@@ -158,7 +154,6 @@ const Stats = () => {
       }
     });
     
-    // Calculate wins and losses against each opponent
     matches
       .filter(match => 
         match.isCompleted && 
@@ -180,7 +175,6 @@ const Stats = () => {
     return result;
   };
 
-  // Transform teams into rankings with all the new data
   const calculateRankings = (teams: Team[]): Ranking[] => {
     const rankings = teams.map(team => {
       const totalGames = team.wins + team.losses;
@@ -202,22 +196,17 @@ const Stats = () => {
         sos,
         streak,
         headToHead,
-        previousRank,
-        rankChange: previousRank !== undefined ? previousRank - (index + 1) : 0
+        previousRank
       };
     });
     
-    // Sort rankings
     const sortedRankings = rankings.sort((a, b) => {
-      // Sort by win percentage (descending)
       if (b.winPercentage !== a.winPercentage) {
         return b.winPercentage - a.winPercentage;
       }
-      // If win percentages are equal, sort by SOS (descending)
       return b.sos - a.sos;
     });
     
-    // Calculate rank changes
     sortedRankings.forEach((ranking, index) => {
       if (ranking.previousRank !== undefined) {
         ranking.rankChange = ranking.previousRank - (index + 1);
@@ -227,7 +216,6 @@ const Stats = () => {
     return sortedRankings;
   };
 
-  // Save current rankings for next time
   useEffect(() => {
     if (teams && teams.length > 0 && !isLoadingTeams && !isLoadingMatches) {
       const currentRankings = calculateRankings(teams);
@@ -237,15 +225,12 @@ const Stats = () => {
         rankingsToSave[ranking.teamId] = index + 1;
       });
       
-      // In a real app, this would be saved to a database on a weekly schedule
-      // For demo purposes, we'll save to localStorage
       localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
     }
   }, [teams, isLoadingTeams, isLoadingMatches]);
 
   const rankings = (teams && !isLoadingMatches) ? calculateRankings(teams) : [];
 
-  // Prepare data for charts - limit to fewer teams on mobile
   const chartLimit = isMobile ? 5 : 8;
   const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
     name: team.teamName,

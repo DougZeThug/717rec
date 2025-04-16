@@ -1,4 +1,5 @@
 
+
 export interface Player {
   id?: string;
   name: string;
@@ -30,6 +31,14 @@ export interface Match {
   isCompleted: boolean;
   winnerId?: string;
   loserId?: string;
+  // Adding bracket-specific fields for compatibility
+  round_number?: number;
+  position?: number;
+  bracket_id?: string;
+  match_type?: "winners" | "losers" | "finals";
+  next_match_id?: string;
+  next_loser_match_id?: string;
+  best_of?: number;
 }
 
 export interface TeamTimeslot {
@@ -92,3 +101,4 @@ export interface HeadToHeadRecord {
   wins: number;
   losses: number;
 }
+
