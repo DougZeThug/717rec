@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,7 +25,6 @@ const AdminDashboard = () => {
   const { createTeam } = useTeams();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
-  // Get team data from the useTeamData hook
   const teamQuery = useTeamData();
   const teams = teamQuery.data || [];
   const isLoadingTeams = teamQuery.isLoading;
@@ -62,6 +60,28 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleBatchTimeslotAssign = async (teamIds: string[], timeslot: string) => {
+    try {
+      const assignmentPromises = teamIds.map(teamId => 
+        addTimeslot(selectedDate, teamId, timeslot)
+      );
+      
+      await Promise.all(assignmentPromises);
+      
+      toast({
+        title: "Timeslots Assigned",
+        description: `${teamIds.length} team timeslots have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+      });
+    } catch (error) {
+      console.error("Error during batch assignment:", error);
+      toast({
+        title: "Error",
+        description: "Some timeslots could not be assigned. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleTimeslotDelete = async (id: string) => {
     try {
       await deleteTimeslot(id);
@@ -74,9 +94,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Function to be implemented for creating matches
   const handleMatchSubmit = async (matchData: any) => {
-    // Implementation will be added when match creation is developed
     toast({
       title: "Match Created",
       description: "New match has been scheduled.",
@@ -176,6 +194,7 @@ const AdminDashboard = () => {
                       teams={teams}
                       existingTimeslots={timeslots}
                       onAssign={handleTimeslotAssign}
+                      onBatchAssign={handleBatchTimeslotAssign}
                     />
                   )}
                 </div>
