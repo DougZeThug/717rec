@@ -15,9 +15,6 @@ const Footer = () => {
               alt="717 Rec Logo" 
               className="h-16 w-auto mb-4"
             />
-            <p className="text-sm text-gray-300">
-              Managing recreational cornhole leagues with ease.
-            </p>
           </div>
 
           <div>
@@ -57,3 +54,4 @@ const Footer = () => {
 };
 
 export default Footer;
+
