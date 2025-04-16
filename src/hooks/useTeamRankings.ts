@@ -1,8 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Team, Match, Ranking } from "@/types";
-import { createRankingObject } from "../utils/rankingUtils/createRankingObject";
-import { sortRankings, updateRankChanges, saveRankingsToStorage } from "../utils/rankingUtils/sortAndUpdateRankings";
+import { createRankingObject, sortRankings, updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
 
 export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | undefined) => {
   const [previousRankings, setPreviousRankings] = useState<Record<string, number>>({});
