@@ -33,6 +33,18 @@ export const useBracketData = (bracketId?: string) => {
         
       if (matchesError) throw matchesError;
       
+      // Find champion if exists (winner of the finals match)
+      let champion = null;
+      if (matchesData) {
+        const finalMatch = matchesData.find(m => 
+          m.match_type === 'finals' && 
+          m.winner_id !== null
+        );
+        if (finalMatch) {
+          champion = finalMatch.winner_id;
+        }
+      }
+      
       // Transform to our application PlayoffMatch type
       const matches = matchesData.map((match): PlayoffMatch => ({
         id: match.id,
@@ -59,7 +71,8 @@ export const useBracketData = (bracketId?: string) => {
         name: bracketData.title,
         division: bracketData.divisions?.name || "Unknown",
         matches: matches,
-        format: bracketData.format as "Single Elimination" | "Double Elimination" || "Single Elimination"
+        format: bracketData.format as "Single Elimination" | "Double Elimination" || "Single Elimination",
+        champion: champion
       };
       
       return bracket;

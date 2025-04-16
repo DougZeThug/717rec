@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { 
   Card,
@@ -23,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Trophy, Users, Edit, Loader2 } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
+import BracketCreationDialog from "@/components/playoffs/BracketCreationDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -32,11 +34,12 @@ import { useTeamData } from "@/hooks/useTeamData";
 const Playoffs = () => {
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
   const { toast } = useToast();
   
   const { data: teams, isLoading: teamsLoading } = useTeamData();
 
-  const { data: allBrackets, isLoading: bracketsLoading } = useQuery({
+  const { data: allBrackets, isLoading: bracketsLoading, refetch: refetchBrackets } = useQuery({
     queryKey: ['brackets'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -63,7 +66,10 @@ const Playoffs = () => {
       
       if (error) throw error;
       
-      return data.map(div => div.name);
+      return data.map(div => ({
+        id: div.id,
+        name: div.name
+      }));
     }
   });
   
@@ -92,16 +98,17 @@ const Playoffs = () => {
     if (!allBrackets || !divisions) return {};
     
     return (divisions || []).reduce((acc, division) => {
-      acc[division] = (allBrackets || []).filter(bracket => bracket.division === division);
+      acc[division.name] = (allBrackets || []).filter(bracket => bracket.division === division.name);
       return acc;
     }, {} as Record<string, any[]>);
   }, [allBrackets, divisions]);
 
   const handleCreateBracket = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Bracket creation functionality will be available soon.",
-    });
+    setBracketDialogOpen(true);
+  };
+  
+  const handleBracketCreated = () => {
+    refetchBrackets();
   };
   
   const handleEditMatch = (matchId: string) => {
@@ -157,7 +164,7 @@ const Playoffs = () => {
     );
   }
 
-  const availableDivisions = divisions || [];
+  const availableDivisions = divisions?.map(div => div.name) || [];
   const allBracketsData = allBrackets || [];
 
   return (
@@ -287,6 +294,7 @@ const Playoffs = () => {
         )}
       </div>
 
+      {/* Team Division Dialog */}
       <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
@@ -399,6 +407,15 @@ const Playoffs = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bracket Creation Dialog */}
+      <BracketCreationDialog
+        open={bracketDialogOpen}
+        onOpenChange={setBracketDialogOpen}
+        divisions={divisions || []}
+        teams={teams || []}
+        onBracketCreated={handleBracketCreated}
+      />
     </div>
   );
 };
