@@ -19,10 +19,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionName = team.divisionName || "";
 
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
+    <Card className="overflow-hidden h-full flex flex-col mb-4 sm:mb-0">
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
         <div 
-          className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center" 
+          className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center p-2" 
           style={{ 
             backgroundSize: 'contain',
             backgroundPosition: 'center',
@@ -35,12 +35,20 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
               No Team Image
             </div>
           )}
+          {team.imageUrl && (
+            <img 
+              src={team.imageUrl} 
+              alt={team.name} 
+              className="max-h-20 object-contain"
+              style={{ maxWidth: '100%' }}
+            />
+          )}
         </div>
       </Link>
       <CardHeader className="pb-2 space-y-1">
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline">
-            <CardTitle className="text-lg sm:text-xl truncate pr-2">{team.name}</CardTitle>
+            <CardTitle className="text-lg sm:text-xl truncate pr-2" title={team.name}>{team.name}</CardTitle>
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Team } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, RefreshCw, Filter } from "lucide-react";
+import { Plus, RefreshCw, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import TeamForm from "@/components/teams/TeamForm";
 import { TeamList } from "@/components/teams/TeamList";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
@@ -11,6 +11,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { useDivisions } from "@/hooks/useDivisions";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const Teams: React.FC = () => {
   const { teams, isLoading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
@@ -23,6 +24,9 @@ const Teams: React.FC = () => {
   const [selectedDivision, setSelectedDivision] = useState<string>("all");
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  
+  // Track expanded divisions
+  const [expandedDivisions, setExpandedDivisions] = useState<Record<string, boolean>>({});
 
   // Group teams by division
   const teamsByDivision = React.useMemo(() => {
@@ -127,6 +131,24 @@ const Teams: React.FC = () => {
     return division ? division.name : "Unknown Division";
   };
 
+  // Toggle division expansion
+  const toggleDivision = (divisionId: string) => {
+    setExpandedDivisions(prev => ({
+      ...prev,
+      [divisionId]: !prev[divisionId]
+    }));
+  };
+
+  // Initialize expanded divisions on load
+  React.useEffect(() => {
+    const initialExpanded: Record<string, boolean> = {};
+    // Default: expand all divisions on desktop, collapse on mobile
+    Object.keys(teamsByDivision).forEach(divId => {
+      initialExpanded[divId] = !isMobile;
+    });
+    setExpandedDivisions(initialExpanded);
+  }, [isMobile, divisions]);
+
   return (
     <div className="container px-4 py-6 sm:py-8 mx-auto">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
@@ -184,23 +206,36 @@ const Teams: React.FC = () => {
       )}
 
       {selectedDivision === "all" ? (
-        // Group display by divisions
+        // Group display by divisions with collapsible sections
         <div className="space-y-6 sm:space-y-8">
           {Object.keys(teamsByDivision).map(divisionId => {
             const divisionTeams = teamsByDivision[divisionId];
             if (divisionTeams.length === 0) return null;
+            const divisionName = getDivisionName(divisionId === "unassigned" ? undefined : divisionId);
+            const isExpanded = expandedDivisions[divisionId] !== false;
             
             return (
-              <div key={divisionId} className="space-y-4">
-                <h2 className="text-xl sm:text-2xl font-semibold border-b pb-2">
-                  {getDivisionName(divisionId === "unassigned" ? undefined : divisionId)}
-                </h2>
-                <TeamList 
-                  teams={divisionTeams}
-                  isLoading={isLoading}
-                  onEdit={(team) => setTeamToEdit(team)}
-                  onDelete={(teamId) => setDeleteTeamId(teamId)}
-                />
+              <div key={divisionId} className="space-y-4 border-b pb-4 last:border-b-0">
+                <div 
+                  className="flex justify-between items-center cursor-pointer" 
+                  onClick={() => toggleDivision(divisionId)}
+                >
+                  <h2 className="text-xl sm:text-2xl font-semibold">
+                    {divisionName} <span className="text-muted-foreground font-normal">({divisionTeams.length})</span>
+                  </h2>
+                  <Button variant="ghost" size="sm" className="p-1">
+                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </Button>
+                </div>
+                
+                {isExpanded && (
+                  <TeamList 
+                    teams={divisionTeams}
+                    isLoading={isLoading}
+                    onEdit={(team) => setTeamToEdit(team)}
+                    onDelete={(teamId) => setDeleteTeamId(teamId)}
+                  />
+                )}
               </div>
             );
           })}
