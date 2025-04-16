@@ -75,11 +75,15 @@ const Stats = () => {
 
   const chartLimit = isMobile ? 5 : 8;
   const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
+    id: team.teamId,
     name: team.teamName,
     wins: team.wins,
     losses: team.losses,
     winPercentage: Number((team.winPercentage * 100).toFixed(1)),
-    sos: Number((team.sos || 0).toFixed(3))
+    powerScore: team.powerScore || 0,
+    sos: Number((team.sos || 0).toFixed(3)),
+    logoUrl: team.logoUrl,
+    imageUrl: team.imageUrl
   }));
 
   const handleDivisionChange = (value: string) => {
