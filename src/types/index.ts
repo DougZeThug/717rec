@@ -1,3 +1,4 @@
+
 export interface Player {
   id?: string;
   name: string;
@@ -106,4 +107,21 @@ export interface Ranking {
   headToHead?: HeadToHeadMap;
   previousRank?: number;
   rankChange?: number; // Added to fix type access error
+}
+
+// Interface for the team_stats table we just created
+export interface TeamStat {
+  id: string;
+  team_id: string;
+  wins: number;
+  losses: number;
+  win_percentage?: number;
+  sos?: number;
+  streak?: string;
+  previous_rank?: number;
+  current_rank?: number;
+  rank_change?: number;
+  head_to_head?: Record<string, { wins: number; losses: number; opponentName: string }>;
+  snapshot_date: string;
+  created_at: string;
 }

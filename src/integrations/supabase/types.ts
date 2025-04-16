@@ -186,6 +186,62 @@ export type Database = {
           },
         ]
       }
+      team_stats: {
+        Row: {
+          created_at: string | null
+          current_rank: number | null
+          head_to_head: Json | null
+          id: string
+          losses: number
+          previous_rank: number | null
+          rank_change: number | null
+          snapshot_date: string | null
+          sos: number | null
+          streak: string | null
+          team_id: string | null
+          win_percentage: number | null
+          wins: number
+        }
+        Insert: {
+          created_at?: string | null
+          current_rank?: number | null
+          head_to_head?: Json | null
+          id?: string
+          losses: number
+          previous_rank?: number | null
+          rank_change?: number | null
+          snapshot_date?: string | null
+          sos?: number | null
+          streak?: string | null
+          team_id?: string | null
+          win_percentage?: number | null
+          wins: number
+        }
+        Update: {
+          created_at?: string | null
+          current_rank?: number | null
+          head_to_head?: Json | null
+          id?: string
+          losses?: number
+          previous_rank?: number | null
+          rank_change?: number | null
+          snapshot_date?: string | null
+          sos?: number | null
+          streak?: string | null
+          team_id?: string | null
+          win_percentage?: number | null
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_timeslots: {
         Row: {
           created_at: string | null
