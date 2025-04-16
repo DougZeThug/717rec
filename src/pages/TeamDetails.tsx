@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Team, Match } from "@/types";
@@ -295,7 +296,7 @@ const TeamDetails = () => {
                   <span className="font-semibold">
                     Opponent: <span className="text-cornhole-navy">{getOpponentId(match)}</span>
                   </span>
-                  {match.isCompleted && (
+                  {match.iscompleted && (
                     <span className="font-bold">{getScoreDisplay(match)}</span>
                   )}
                 </div>

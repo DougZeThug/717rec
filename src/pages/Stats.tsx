@@ -195,7 +195,8 @@ const Stats = () => {
         sos,
         streak,
         headToHead,
-        previousRank
+        previousRank,
+        rankChange: previousRank !== undefined ? previousRank - (rankings.length + 1) : undefined
       };
     });
     
@@ -206,6 +207,7 @@ const Stats = () => {
       return b.sos - a.sos;
     });
     
+    // Update the rankChange after sorting
     sortedRankings.forEach((ranking, index) => {
       if (ranking.previousRank !== undefined) {
         ranking.rankChange = ranking.previousRank - (index + 1);
