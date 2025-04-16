@@ -29,7 +29,7 @@ const StatsHeader = ({ onDivisionChange, divisions }: StatsHeaderProps) => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Divisions</SelectItem>
-              {divisions.map((division) => (
+              {divisions && divisions.map((division) => (
                 <SelectItem key={division.id} value={division.id}>
                   {division.name}
                 </SelectItem>

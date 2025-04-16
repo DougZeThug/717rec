@@ -8,6 +8,33 @@ interface StatsSummaryCardsProps {
 }
 
 const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
+  const getHighestWinPercentage = () => {
+    if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
+    
+    const highest = rankings.reduce((max, team) => 
+      (team.winPercentage > max.winPercentage) ? team : max, rankings[0]);
+    
+    return {
+      percentage: highest ? (highest.winPercentage * 100).toFixed(1) : 0,
+      teamName: highest?.teamName || 'No teams'
+    };
+  };
+
+  const getMostWins = () => {
+    if (!rankings || rankings.length === 0) return { wins: 0, teamName: 'No teams' };
+    
+    const mostWinsTeam = rankings.reduce((maxTeam, team) => 
+      ((team.wins || 0) > (maxTeam.wins || 0)) ? team : maxTeam, rankings[0]);
+    
+    return {
+      wins: mostWinsTeam ? mostWinsTeam.wins : 0,
+      teamName: mostWinsTeam?.teamName || 'No teams'
+    };
+  };
+
+  const highestWinPercentage = getHighestWinPercentage();
+  const mostWins = getMostWins();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <Card>
@@ -16,7 +43,7 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
           <CardDescription>Active teams in the league</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold text-cornhole-navy">{rankings.length}</div>
+          <div className="text-4xl font-bold text-cornhole-navy">{rankings ? rankings.length : 0}</div>
         </CardContent>
       </Card>
       
@@ -28,10 +55,10 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
         <CardContent>
           <div className="flex flex-col">
             <span className="text-4xl font-bold text-cornhole-green">
-              {rankings.length > 0 ? (rankings[0]?.winPercentage * 100).toFixed(1) : 0}%
+              {highestWinPercentage.percentage}%
             </span>
             <span className="text-sm text-gray-500">
-              {rankings.length > 0 ? rankings[0]?.teamName : 'No teams'}
+              {highestWinPercentage.teamName}
             </span>
           </div>
         </CardContent>
@@ -45,14 +72,10 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
         <CardContent>
           <div className="flex flex-col">
             <span className="text-4xl font-bold text-cornhole-navy">
-              {rankings.length > 0 ? 
-                rankings.reduce((max, team) => Math.max(max, team.wins), 0) : 
-                0}
+              {mostWins.wins}
             </span>
             <span className="text-sm text-gray-500">
-              {rankings.length > 0 ? 
-                rankings.reduce((maxTeam, team) => team.wins > maxTeam.wins ? team : maxTeam, rankings[0]).teamName : 
-                'No teams'}
+              {mostWins.teamName}
             </span>
           </div>
         </CardContent>

@@ -14,6 +14,8 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         }
       } catch (error) {
         console.error('Error loading previous rankings:', error);
+        // If there's an error, we'll use an empty object as fallback
+        setPreviousRankings({});
       }
     };
     
@@ -21,6 +23,8 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
   }, []);
   
   const calculateSOS = (team: Team, allTeams: Team[]) => {
+    if (!team || !allTeams || allTeams.length === 0) return 0.5;
+    
     const otherTeams = allTeams.filter(t => t.id !== team.id);
     
     if (otherTeams.length === 0) return 0.5;
@@ -30,9 +34,11 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     if (team.divisionName === 'Competitive') divisionWeight = 1.0;
     
     const opponentWinRates = otherTeams.map(opponent => {
-      const totalGames = opponent.wins + opponent.losses;
-      return totalGames > 0 ? (opponent.wins / totalGames) : 0.5;
+      const totalGames = (opponent.wins || 0) + (opponent.losses || 0);
+      return totalGames > 0 ? ((opponent.wins || 0) / totalGames) : 0.5;
     });
+    
+    if (opponentWinRates.length === 0) return 0.5;
     
     const avgOpponentWinRate = opponentWinRates.reduce((sum, rate) => sum + rate, 0) / opponentWinRates.length;
     
@@ -40,14 +46,19 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
   };
 
   const calculateStreak = (teamId: string, allMatches: Match[] | undefined) => {
-    if (!allMatches) return undefined;
+    if (!teamId || !allMatches || allMatches.length === 0) return undefined;
     
     const teamMatches = allMatches
       .filter(match => 
+        match && 
         match.iscompleted && 
         (match.team1Id === teamId || match.team2Id === teamId)
       )
-      .sort((a, b) => new Date(b.date || "").getTime() - new Date(a.date || "").getTime());
+      .sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        return dateB - dateA;
+      });
     
     if (teamMatches.length === 0) return undefined;
     
@@ -56,6 +67,8 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     
     for (let i = 1; i < teamMatches.length; i++) {
       const match = teamMatches[i];
+      if (!match) continue;
+      
       const currentIsWin = match.winnerId === teamId;
       
       if (currentIsWin === isWin) {
@@ -68,15 +81,15 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     return isWin ? `W${streakCount}` : `L${streakCount}`;
   };
 
-  const calculateHeadToHead = (teamId: string, allTeams: Team[], allMatches: Match[] | undefined): HeadToHeadMap => {
+  const calculateHeadToHead = (teamId: string, allTeams: Team[] | undefined, allMatches: Match[] | undefined): HeadToHeadMap => {
     const result: HeadToHeadMap = {};
     
-    if (!allMatches) return result;
+    if (!teamId || !allTeams || !allMatches || allTeams.length === 0) return result;
     
     allTeams.forEach(team => {
-      if (team.id !== teamId) {
+      if (team && team.id && team.id !== teamId) {
         result[team.id] = {
-          opponentName: team.name,
+          opponentName: team.name || 'Unknown Team',
           wins: 0,
           losses: 0
         };
@@ -85,10 +98,13 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     
     allMatches
       .filter(match => 
+        match && 
         match.iscompleted && 
         (match.team1Id === teamId || match.team2Id === teamId)
       )
       .forEach(match => {
+        if (!match) return;
+        
         const isTeam1 = match.team1Id === teamId;
         const opponentId = isTeam1 ? match.team2Id : match.team1Id;
         
@@ -109,36 +125,39 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       return [];
     }
     
-    const rankings = teamsData.map(team => {
-      const totalGames = team.wins + team.losses;
-      const winPercentage = totalGames > 0 ? team.wins / totalGames : 0;
-      const sos = calculateSOS(team, teamsData);
-      const streak = calculateStreak(team.id, matchesData);
-      const headToHead = calculateHeadToHead(team.id, teamsData, matchesData);
-      const previousRank = previousRankings[team.id];
-      
-      return {
-        teamId: team.id,
-        teamName: team.name,
-        logoUrl: team.logoUrl,
-        imageUrl: team.imageUrl,
-        wins: team.wins,
-        losses: team.losses,
-        winPercentage,
-        divisionName: team.divisionName,
-        sos,
-        streak,
-        headToHead,
-        previousRank,
-        rankChange: previousRank !== undefined ? previousRank - (rankings?.length + 1 || 0) : undefined
-      };
-    });
+    const rankings = teamsData
+      .filter(team => team !== null && team !== undefined)
+      .map(team => {
+        const totalGames = (team.wins || 0) + (team.losses || 0);
+        const winPercentage = totalGames > 0 ? (team.wins || 0) / totalGames : 0;
+        const sos = calculateSOS(team, teamsData);
+        const streak = calculateStreak(team.id, matchesData);
+        const headToHead = calculateHeadToHead(team.id, teamsData, matchesData);
+        const previousRank = previousRankings[team.id];
+        
+        return {
+          teamId: team.id,
+          teamName: team.name || 'Unknown Team',
+          logoUrl: team.logoUrl,
+          imageUrl: team.imageUrl,
+          wins: team.wins || 0,
+          losses: team.losses || 0,
+          winPercentage,
+          divisionName: team.divisionName,
+          sos,
+          streak,
+          headToHead,
+          previousRank,
+          rankChange: previousRank !== undefined ? previousRank - (0) : undefined
+        };
+      });
     
+    // Sort rankings by win percentage first, then by SOS
     const sortedRankings = rankings.sort((a, b) => {
       if (b.winPercentage !== a.winPercentage) {
         return b.winPercentage - a.winPercentage;
       }
-      return b.sos - a.sos;
+      return (b.sos || 0) - (a.sos || 0);
     });
     
     // Update the rankChange after sorting
@@ -154,14 +173,18 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
   // Save current rankings to localStorage for future comparison
   useEffect(() => {
     if (teams && teams.length > 0 && matches) {
-      const currentRankings = calculateRankings(teams, matches);
-      const rankingsToSave: Record<string, number> = {};
-      
-      currentRankings.forEach((ranking, index) => {
-        rankingsToSave[ranking.teamId] = index + 1;
-      });
-      
-      localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
+      try {
+        const currentRankings = calculateRankings(teams, matches);
+        const rankingsToSave: Record<string, number> = {};
+        
+        currentRankings.forEach((ranking, index) => {
+          rankingsToSave[ranking.teamId] = index + 1;
+        });
+        
+        localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
+      } catch (error) {
+        console.error('Error saving rankings:', error);
+      }
     }
   }, [teams, matches]);
 

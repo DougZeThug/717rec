@@ -6,6 +6,11 @@ export interface Player {
   avatar?: string;
 }
 
+export interface Division {
+  id: string;
+  name: string;
+}
+
 export interface Team {
   id: string;
   name: string;
@@ -106,7 +111,7 @@ export interface Ranking {
   streak?: string;
   headToHead?: HeadToHeadMap;
   previousRank?: number;
-  rankChange?: number; // Added to fix type access error
+  rankChange?: number;
 }
 
 // Interface for the team_stats table we just created
