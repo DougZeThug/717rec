@@ -9,11 +9,13 @@ import { TeamTimeslot } from "@/types";
 interface WeekTimeslotDisplayProps {
   teamId: string;
   teamName?: string;
+  enableBatchAssignment?: boolean;
 }
 
 const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({ 
   teamId, 
-  teamName 
+  teamName,
+  enableBatchAssignment = false
 }) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
