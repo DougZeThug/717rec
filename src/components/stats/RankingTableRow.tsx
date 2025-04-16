@@ -1,9 +1,9 @@
-
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
+import { formatPowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
 
 interface RankingTableRowProps {
   ranking: Ranking;
@@ -70,9 +70,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         {(ranking.sos || 0).toFixed(3)}
       </TableCell>
       <TableCell className="text-center hidden lg:table-cell">
-        {ranking.powerScore !== undefined
-          ? ranking.powerScore.toFixed(1)
-          : "—"}
+        {formatPowerScore(ranking.powerScore)}
       </TableCell>
       <TableCell className="text-center">{ranking.streak || "—"}</TableCell>
       <TableCell className="text-center">

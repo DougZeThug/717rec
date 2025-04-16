@@ -1,10 +1,10 @@
-
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Ranking } from "@/types";
 import HeadToHeadRecords from "./HeadToHeadRecords";
 import RankTrendIndicator from "./RankTrendIndicator";
+import { formatPowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -82,7 +82,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </div>
           <div className="p-2 bg-gray-50 rounded text-center">
             <div className="text-gray-500 text-xs">Power Score</div>
-            <div>{ranking.powerScore !== undefined ? ranking.powerScore.toFixed(1) : "—"}</div>
+            <div>{formatPowerScore(ranking.powerScore)}</div>
           </div>
           
           <div className="p-2 bg-gray-50 rounded text-center">
