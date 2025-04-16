@@ -78,8 +78,8 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
       .from('matches')
       .select(`
         *,
-        team1:team1_id(id, name, logo_url),
-        team2:team2_id(id, name, logo_url)
+        team1:teams!matches_team1_id_fkey(id, name, logo_url),
+        team2:teams!matches_team2_id_fkey(id, name, logo_url)
       `)
       .order('date', { ascending: true });
 
