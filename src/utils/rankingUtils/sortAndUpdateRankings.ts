@@ -2,34 +2,60 @@
 import { Ranking } from "@/types";
 
 /**
- * Sort rankings by power score, win percentage, and SOS
+ * Generic function to sort rankings by any field and direction
  */
-export const sortRankings = (rankings: Ranking[]): Ranking[] => {
+export const sortRankings = (
+  rankings: Ranking[], 
+  sortBy: string = 'powerScore', 
+  sortDirection: 'asc' | 'desc' = 'desc'
+): Ranking[] => {
   return [...rankings].sort((a, b) => {
-    // Primary sort by power score if available
-    if (b.powerScore !== undefined && a.powerScore !== undefined && 
-        b.powerScore !== a.powerScore) {
-      return b.powerScore - a.powerScore;
+    let valueA: number;
+    let valueB: number;
+    
+    // Determine which values to compare based on the sortBy parameter
+    switch (sortBy) {
+      case 'winPercentage':
+        valueA = a.winPercentage;
+        valueB = b.winPercentage;
+        break;
+      case 'sos':
+        valueA = a.sos || 0;
+        valueB = b.sos || 0;
+        break;
+      case 'powerScore':
+        valueA = a.powerScore !== undefined ? a.powerScore : 0;
+        valueB = b.powerScore !== undefined ? b.powerScore : 0;
+        break;
+      case 'gameWinPercentage':
+        valueA = a.gameWinPercentage !== undefined ? a.gameWinPercentage : 0;
+        valueB = b.gameWinPercentage !== undefined ? b.gameWinPercentage : 0;
+        break;
+      case 'gamesWon':
+        valueA = a.gamesWon || 0;
+        valueB = b.gamesWon || 0;
+        break;
+      case 'gamesLost':
+        valueA = a.gamesLost || 0;
+        valueB = b.gamesLost || 0;
+        break;
+      case 'wins':
+        valueA = a.wins;
+        valueB = b.wins;
+        break;
+      case 'losses':
+        valueA = a.losses;
+        valueB = b.losses;
+        break;
+      default:
+        // Default to powerScore
+        valueA = a.powerScore !== undefined ? a.powerScore : 0;
+        valueB = b.powerScore !== undefined ? b.powerScore : 0;
     }
     
-    // Secondary sort by win percentage
-    if (b.winPercentage !== a.winPercentage) {
-      return b.winPercentage - a.winPercentage;
-    }
-    
-    // Tertiary sort by SOS
-    if ((b.sos || 0) !== (a.sos || 0)) {
-      return (b.sos || 0) - (a.sos || 0);
-    }
-    
-    // Quaternary sort by game win percentage if available
-    if (b.gameWinPercentage !== undefined && a.gameWinPercentage !== undefined && 
-        b.gameWinPercentage !== a.gameWinPercentage) {
-      return b.gameWinPercentage - a.gameWinPercentage;
-    }
-    
-    // If all else is equal, sort by total wins
-    return b.wins - a.wins;
+    // Sort in ascending or descending order based on sortDirection
+    const compareResult = valueA - valueB;
+    return sortDirection === 'asc' ? compareResult : -compareResult;
   });
 };
 

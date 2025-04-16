@@ -43,8 +43,8 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
           
         const unsortedRankings = await Promise.all(rankingPromises);
         
-        // Sort rankings by win percentage, SOS, and game win percentage
-        const sortedRankings = sortRankings(unsortedRankings);
+        // Sort rankings by default criteria (will be re-sorted in the component)
+        const sortedRankings = sortRankings(unsortedRankings, 'powerScore', 'desc');
         
         // Update rank changes
         const finalRankings = updateRankChanges(sortedRankings);
