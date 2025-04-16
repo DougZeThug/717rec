@@ -34,7 +34,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   return (
     <Card className="overflow-hidden h-full flex flex-col mb-4 sm:mb-0">
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
-        <div className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center p-2">
+        <div className="h-32 sm:h-40 bg-gray-100 flex items-center justify-center p-4">
           {!team.imageUrl ? (
             <div className="flex items-center justify-center h-full text-gray-400 text-sm">
               No Team Image
@@ -44,7 +44,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
               <img 
                 src={team.imageUrl} 
                 alt={team.name} 
-                className="max-h-24 sm:max-h-32 max-w-full object-contain"
+                className="max-h-28 sm:max-h-36 max-w-full object-contain"
               />
             </div>
           )}
@@ -98,12 +98,12 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
             <span className="font-medium">{team.players.length}</span> 
             {team.players.length === 1 ? "Player" : "Players"}
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-1">
+          <div className="flex items-center justify-start gap-4 mb-1 text-xs">
             <div className="flex items-center gap-1 text-emerald-600">
-              <Trophy size={12} /> {team.wins || 0} Wins
+              <Trophy size={12} /> {team.wins || 0} {team.wins === 1 ? 'Win' : 'Wins'}
             </div>
             <div className="flex items-center gap-1 text-rose-600">
-              <X size={12} /> {team.losses || 0} Losses
+              <X size={12} /> {team.losses || 0} {team.losses === 1 ? 'Loss' : 'Losses'}
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
       <CardFooter className="pt-0 pb-2">
         <div className="text-xs w-full">
           <span className="font-semibold">Players:</span> 
-          <span className="text-muted-foreground ml-1 block truncate">
+          <span className="text-muted-foreground ml-1 block truncate text-xs">
             {team.players.length > 0
               ? team.players.map(p => p.name).slice(0, 3).join(', ') 
                 + (team.players.length > 3 ? ` +${team.players.length - 3} more` : '')

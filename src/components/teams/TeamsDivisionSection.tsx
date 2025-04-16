@@ -40,7 +40,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   const divisionColor = getDivisionColor();
 
   return (
-    <div className="space-y-4 border-b pb-4 last:border-b-0">
+    <div className="space-y-3 border-b pb-3 last:border-b-0">
       <div 
         className="flex justify-between items-center cursor-pointer" 
         onClick={onToggleExpand}
