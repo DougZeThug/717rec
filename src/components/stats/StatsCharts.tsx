@@ -44,7 +44,7 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
                   top: 5,
                   right: 30,
                   left: 20,
-                  bottom: isMobile ? 80 : 60,
+                  bottom: isMobile ? 100 : 80, // Increased bottom margin to prevent overlap
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -52,7 +52,7 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
                   dataKey="name" 
                   angle={-45} 
                   textAnchor="end"
-                  height={70}
+                  height={isMobile ? 90 : 70} // Increased height for mobile
                   interval={0}
                   tick={{fontSize: isMobile ? 10 : 12}}
                 />
@@ -108,3 +108,4 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
 };
 
 export default StatsCharts;
+
