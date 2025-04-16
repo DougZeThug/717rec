@@ -1,35 +1,17 @@
 
 import React, { useState, useMemo } from "react";
-import { 
-  Card,
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Plus, Trophy, Users, Edit, Loader2 } from "lucide-react";
-import BracketView from "@/components/playoffs/BracketView";
-import BracketCreationDialog from "@/components/playoffs/BracketCreationDialog";
+import { Plus, Trophy, Users, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useBracketData } from "@/hooks/useBracketData";
 import { useTeamData } from "@/hooks/useTeamData";
+import BracketCreationDialog from "@/components/playoffs/BracketCreationDialog";
+import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
+import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
+import BracketDetail from "@/components/playoffs/BracketDetail";
+import TeamDivisionDialog from "@/components/playoffs/TeamDivisionDialog";
 
 const Playoffs = () => {
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
@@ -192,221 +174,42 @@ const Playoffs = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          {availableDivisions.map((division) => {
-            const divisionBrackets = bracketsByDivision[division] || [];
-            
-            return (
-              <Card key={division}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center">
-                    <Trophy className="h-5 w-5 mr-2 text-cornhole-wood" />
-                    {division} Division
-                  </CardTitle>
-                  <CardDescription>
-                    {divisionBrackets.length 
-                      ? `${divisionBrackets.length} active bracket${divisionBrackets.length > 1 ? 's' : ''}`
-                      : "No active brackets"
-                    }
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {divisionBrackets.length > 0 ? (
-                    divisionBrackets.map(bracket => (
-                      <div key={bracket.id} className="flex items-center justify-between">
-                        <div className="flex flex-col">
-                          <span>{bracket.title}</span>
-                          <span className="text-xs text-gray-500">{bracket.format}</span>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          onClick={() => setSelectedBracketId(bracket.id)}
-                        >
-                          View
-                        </Button>
-                      </div>
-                    ))
-                  ) : (
-                    <Button size="sm" variant="outline" className="w-full" onClick={handleCreateBracket}>
-                      <Plus className="h-4 w-4 mr-1" /> Create Bracket
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+          {availableDivisions.map((division) => (
+            <DivisionBracketsCard 
+              key={division}
+              division={division}
+              brackets={bracketsByDivision[division] || []}
+              onCreateBracket={handleCreateBracket}
+              onViewBracket={setSelectedBracketId}
+            />
+          ))}
         </div>
         
         {selectedBracketId && bracket && (
-          <Card className="mb-8" id={`bracket-${selectedBracketId}`}>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>{bracket.name}</CardTitle>
-                  <CardDescription>
-                    {bracket.division} Division • {bracket.format}
-                  </CardDescription>
-                </div>
-                <Button variant="outline" size="sm" className="hidden md:flex" onClick={handleCreateBracket}>
-                  <Edit className="h-4 w-4 mr-2" /> Edit Bracket
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
-              {bracketLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
-                </div>
-              ) : (
-                <BracketView 
-                  bracket={bracket}
-                  teams={teams || []}
-                  onEditMatch={handleEditMatch}
-                />
-              )}
-              
-              {bracket.champion && (
-                <div className="mt-8 text-center">
-                  <div className="text-xl font-bold text-cornhole-navy mb-2">Champion</div>
-                  <div className="inline-flex items-center bg-cornhole-cream rounded-full px-6 py-3">
-                    <Trophy className="h-6 w-6 mr-2 text-cornhole-wood" />
-                    <span className="text-lg font-bold">
-                      {teams?.find(t => t.id === bracket.champion)?.name || "Unknown Team"}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <BracketDetail 
+            bracketId={selectedBracketId}
+            bracket={bracket}
+            teams={teams || []}
+            bracketLoading={bracketLoading}
+            onEditBracket={handleCreateBracket}
+            onEditMatch={handleEditMatch}
+          />
         )}
         
         {allBracketsData.length === 0 && !isLoading && (
-          <div className="text-center py-12 bg-white rounded-lg shadow-md">
-            <Trophy className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-bold text-gray-500 mb-2">No Playoff Brackets</h3>
-            <p className="text-gray-500 mb-4">
-              Create playoff brackets to organize your tournament.
-            </p>
-            <Button onClick={handleCreateBracket}>
-              <Plus className="h-4 w-4 mr-2" /> Create First Bracket
-            </Button>
-          </div>
+          <EmptyBracketState onCreateBracket={handleCreateBracket} />
         )}
       </div>
 
       {/* Team Division Dialog */}
-      <Dialog open={teamDialogOpen} onOpenChange={setTeamDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Manage Team Divisions</DialogTitle>
-            <DialogDescription>
-              Assign teams to different divisions for playoff organization.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="max-h-[60vh] overflow-y-auto pr-2">
-            {teamsLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {availableDivisions.map(division => (
-                  <div key={division} className="space-y-3">
-                    <h3 className="text-lg font-semibold">{division} Division</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {teamsByDivision[division]?.map(team => (
-                        <Card key={team.id} className="bg-gray-50">
-                          <CardContent className="p-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-2">
-                                  {team.logoUrl ? (
-                                    <img 
-                                      src={team.logoUrl} 
-                                      alt={team.name} 
-                                      className="w-full h-full object-contain"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">No Logo</div>
-                                  )}
-                                </div>
-                                <span className="truncate max-w-[120px]" title={team.name}>{team.name}</span>
-                              </div>
-                              <Select
-                                value={team.divisionName || "Unassigned"}
-                                onValueChange={(value) => handleTeamDivisionChange(team.id!, value)}
-                              >
-                                <SelectTrigger className="w-[140px]">
-                                  <SelectValue placeholder="Division..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {availableDivisions.map(d => (
-                                    <SelectItem key={d} value={d}>{d}</SelectItem>
-                                  ))}
-                                  <SelectItem value="Unassigned">Unassigned</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                {teamsByDivision["Unassigned"]?.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold">Unassigned Teams</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {teamsByDivision["Unassigned"]?.map(team => (
-                        <Card key={team.id} className="bg-gray-50">
-                          <CardContent className="p-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center">
-                                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-2">
-                                  {team.logoUrl ? (
-                                    <img 
-                                      src={team.logoUrl} 
-                                      alt={team.name} 
-                                      className="w-full h-full object-contain"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">No Logo</div>
-                                  )}
-                                </div>
-                                <span className="truncate max-w-[120px]" title={team.name}>{team.name}</span>
-                              </div>
-                              <Select
-                                value={team.divisionName || "Unassigned"}
-                                onValueChange={(value) => handleTeamDivisionChange(team.id!, value)}
-                              >
-                                <SelectTrigger className="w-[140px]">
-                                  <SelectValue placeholder="Division..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {availableDivisions.map(d => (
-                                    <SelectItem key={d} value={d}>{d}</SelectItem>
-                                  ))}
-                                  <SelectItem value="Unassigned">Unassigned</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="flex justify-end">
-            <Button onClick={() => setTeamDialogOpen(false)}>Done</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TeamDivisionDialog 
+        open={teamDialogOpen}
+        onOpenChange={setTeamDialogOpen}
+        teamsByDivision={teamsByDivision}
+        availableDivisions={availableDivisions}
+        teamsLoading={teamsLoading}
+        onTeamDivisionChange={handleTeamDivisionChange}
+      />
 
       {/* Bracket Creation Dialog */}
       <BracketCreationDialog
