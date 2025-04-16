@@ -38,7 +38,7 @@ const EditScoresSection = () => {
       const { data, error } = await supabase
         .from('matches')
         .select('*')
-        .eq('isCompleted', false)
+        .eq('iscompleted', false) // Updated to use lowercase iscompleted
         .order('date');
 
       if (error) throw error;
@@ -52,7 +52,7 @@ const EditScoresSection = () => {
         team2Score: match.team2_score,
         date: match.date || match.created_at || new Date().toISOString(),
         location: match.location || '',
-        isCompleted: match.isCompleted || false,
+        iscompleted: match.iscompleted || false, // Updated to use lowercase iscompleted
         winnerId: match.winner_id,
         loserId: match.loser_id,
         round_number: match.round_number,
@@ -170,7 +170,7 @@ const EditScoresSection = () => {
         .update({
           team1_score: team1Score,
           team2_score: team2Score,
-          isCompleted: true,
+          iscompleted: true, // Updated to use lowercase iscompleted
           winner_id: winnerId,
           loser_id: loserId
         })

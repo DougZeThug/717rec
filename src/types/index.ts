@@ -1,3 +1,4 @@
+
 export interface Player {
   id?: string;
   name: string;
@@ -26,7 +27,7 @@ export interface Match {
   team2Score?: number | null;
   date: string | null;
   location: string | null;
-  isCompleted: boolean;
+  iscompleted: boolean; // Changed from isCompleted to iscompleted to match Supabase
   winnerId?: string | null;
   loserId?: string | null;
   round_number?: number;
@@ -77,6 +78,21 @@ export interface PlayoffGame {
   winner: string;
 }
 
+// Define HeadToHeadRecord separately to solve excessive depth issue
+export interface HeadToHeadRecord {
+  opponentId: string;
+  opponentName: string;
+  wins: number;
+  losses: number;
+}
+
+// Use HeadToHeadMap as alias to avoid deep nested type
+export type HeadToHeadMap = Record<string, { 
+  wins: number; 
+  losses: number; 
+  opponentName: string 
+}>;
+
 export interface Ranking {
   teamId: string;
   teamName: string;
@@ -88,14 +104,7 @@ export interface Ranking {
   divisionName?: string | null;
   sos?: number;
   streak?: string;
-  headToHead?: { [opponentId: string]: { wins: number; losses: number; opponentName: string } };
+  headToHead?: HeadToHeadMap; // Use the alias instead of inline definition
   previousRank?: number;
-  rankChange?: number;
-}
-
-export interface HeadToHeadRecord {
-  opponentId: string;
-  opponentName: string;
-  wins: number;
-  losses: number;
+  rankChange?: number; // Added explicitly for Stats.tsx
 }

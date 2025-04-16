@@ -37,7 +37,7 @@ const PendingMatchesSection = () => {
       const { data, error } = await supabase
         .from('matches')
         .select('*')
-        .eq('isCompleted', true)
+        .eq('iscompleted', true) // Updated to use lowercase iscompleted
         .is('winner_id', null)
         .order('date');
 
@@ -52,7 +52,7 @@ const PendingMatchesSection = () => {
         team2Score: match.team2_score,
         date: match.date || match.created_at || new Date().toISOString(),
         location: match.location || '',
-        isCompleted: match.isCompleted || false,
+        iscompleted: match.iscompleted || false, // Updated to use lowercase iscompleted
         winnerId: match.winner_id,
         loserId: match.loser_id,
         round_number: match.round_number,

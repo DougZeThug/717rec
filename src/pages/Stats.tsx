@@ -19,7 +19,7 @@ import {
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import RankingsTable from "@/components/stats/RankingsTable";
-import { Ranking, Team, Match } from "@/types";
+import { Ranking, Team, Match, HeadToHeadMap } from "@/types";
 import { Loader2, Filter } from "lucide-react";
 import {
   Select,
@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { format, subDays } from "date-fns";
 
 const Stats = () => {
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
@@ -60,7 +59,7 @@ const Stats = () => {
           team2Score: match.team2_score,
           date: match.date || match.created_at,
           location: match.location || '',
-          isCompleted: match.isCompleted || false,
+          iscompleted: match.iscompleted || false,
           winnerId: match.winner_id,
           loserId: match.loser_id,
           round_number: match.round_number,
@@ -117,7 +116,7 @@ const Stats = () => {
   const calculateStreak = (teamId: string, matches: Match[]) => {
     const teamMatches = matches
       .filter(match => 
-        match.isCompleted && 
+        match.iscompleted && 
         (match.team1Id === teamId || match.team2Id === teamId)
       )
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -141,8 +140,8 @@ const Stats = () => {
     return isWin ? `W${streakCount}` : `L${streakCount}`;
   };
 
-  const calculateHeadToHead = (teamId: string, allTeams: Team[], matches: Match[]) => {
-    const result: Record<string, { wins: number; losses: number; opponentName: string }> = {};
+  const calculateHeadToHead = (teamId: string, allTeams: Team[], matches: Match[]): HeadToHeadMap => {
+    const result: HeadToHeadMap = {};
     
     allTeams.forEach(team => {
       if (team.id !== teamId) {
@@ -156,7 +155,7 @@ const Stats = () => {
     
     matches
       .filter(match => 
-        match.isCompleted && 
+        match.iscompleted && 
         (match.team1Id === teamId || match.team2Id === teamId)
       )
       .forEach(match => {
