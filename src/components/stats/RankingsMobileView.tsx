@@ -1,12 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
 import { SortOptions } from "./RankingsTable";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, LayoutList, LayoutGrid } from "lucide-react";
-import { Toggle } from "@/components/ui/toggle";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -23,9 +23,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   sortOptions,
   onSortChange,
 }) => {
-  // Initialize compact view state from localStorage or default to false
-  const [compactView, setCompactView] = useState(() => {
-    const savedView = localStorage.getItem("rankingsCompactView");
+  // Initialize detailed view state from localStorage or default to false
+  const [detailedView, setDetailedView] = useState(() => {
+    const savedView = localStorage.getItem("rankingsDetailedView");
     return savedView ? savedView === "true" : false;
   });
 
@@ -38,9 +38,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   ];
 
   // Update localStorage when view preference changes
-  const toggleViewMode = (newValue: boolean) => {
-    setCompactView(newValue);
-    localStorage.setItem("rankingsCompactView", String(newValue));
+  const toggleViewMode = (checked: boolean) => {
+    setDetailedView(checked);
+    localStorage.setItem("rankingsDetailedView", String(checked));
   };
 
   // Group rankings by division
@@ -56,8 +56,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   return (
     <div>
       <div className="mb-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="overflow-x-auto pb-2 flex-1">
+        <div className="flex flex-col gap-4">
+          <div className="overflow-x-auto pb-2">
             <div className="flex space-x-2">
               {sortableFields.map((field) => (
                 <Button
@@ -78,15 +78,15 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             </div>
           </div>
           
-          <div className="flex items-center gap-2 ml-2">
-            <span className="text-xs text-muted-foreground">
-              {compactView ? "Compact" : "Detailed"}
-            </span>
+          <div className="flex items-center space-x-2">
             <Switch
-              checked={compactView}
+              id="detailed-view"
+              checked={detailedView}
               onCheckedChange={toggleViewMode}
-              aria-label="Toggle compact view"
             />
+            <Label htmlFor="detailed-view" className="text-sm">
+              {detailedView ? "Detailed View" : "Compact View"}
+            </Label>
           </div>
         </div>
       </div>
@@ -108,7 +108,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     index={globalIndex}
                     expandedTeam={expandedTeam}
                     onToggleExpand={toggleExpand}
-                    compactView={compactView}
+                    compactView={!detailedView}
                   />
                 );
               })}

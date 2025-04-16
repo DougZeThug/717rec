@@ -46,10 +46,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
     <Collapsible
       key={ranking.teamId}
       className="border rounded-lg overflow-hidden"
-      open={expandedTeam === ranking.teamId}
-      onOpenChange={() => onToggleExpand(ranking.teamId)}
+      open={expandedTeam === ranking.teamId && !compactView}
+      onOpenChange={() => !compactView && onToggleExpand(ranking.teamId)}
     >
-      <div className="p-3 bg-white">
+      <div className={`p-3 bg-white ${compactView ? 'py-2' : ''}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className={`w-7 h-7 flex items-center justify-center rounded-full ${getRankStyles(index)}`}>
@@ -75,23 +75,18 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <div className={`text-sm ${powerScoreColor} font-semibold`}>
               {formatPowerScore(ranking.powerScore)}
             </div>
-            <CollapsibleTrigger className="p-2">
-              <ChevronDown className="h-4 w-4" />
-            </CollapsibleTrigger>
+            {!compactView && (
+              <CollapsibleTrigger className="p-2">
+                <ChevronDown className="h-4 w-4" />
+              </CollapsibleTrigger>
+            )}
           </div>
         </div>
 
         {compactView ? (
-          <div className="grid grid-cols-2 gap-1 mt-2 text-sm">
-            <div className="p-1.5 bg-gray-50 rounded text-center">
-              <div className="text-gray-500 text-xs">Record</div>
-              <div>
-                {ranking.wins}-{ranking.losses}
-              </div>
-            </div>
-            <div className="p-1.5 bg-gray-50 rounded text-center">
-              <div className="text-gray-500 text-xs">Win %</div>
-              <div>{(ranking.winPercentage * 100).toFixed(1)}%</div>
+          <div className="flex justify-between mt-2 text-sm">
+            <div className="text-gray-700">
+              <span>{ranking.wins}-{ranking.losses}</span>
             </div>
           </div>
         ) : (
@@ -148,9 +143,11 @@ const RankingCard: React.FC<RankingCardProps> = ({
         )}
       </div>
 
-      <CollapsibleContent className="bg-gray-50 p-3 border-t">
-        <HeadToHeadRecords headToHead={ranking.headToHead} />
-      </CollapsibleContent>
+      {!compactView && (
+        <CollapsibleContent className="bg-gray-50 p-3 border-t">
+          <HeadToHeadRecords headToHead={ranking.headToHead} />
+        </CollapsibleContent>
+      )}
     </Collapsible>
   );
 };

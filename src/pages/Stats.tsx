@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTeamData } from "@/hooks/useTeamData";
@@ -79,7 +78,6 @@ const Stats = () => {
   const chartLimit = isMobile ? 5 : 8;
   const compactLimit = isMobile ? 5 : 5;
   
-  // Take top teams for compact standings
   const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
     id: team.teamId,
     name: team.teamName,
@@ -138,7 +136,6 @@ const Stats = () => {
 
         {rankings.length > 0 ? (
           <>
-            {/* New Compact Standings Section */}
             <Card className="mb-6">
               <CardHeader className="pb-2">
                 <CardTitle>Current Standings</CardTitle>
@@ -159,19 +156,16 @@ const Stats = () => {
               </CardContent>
             </Card>
             
-            {/* Moved summary cards below compact standings */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-cornhole-navy mb-4">League Highlights</h2>
               <StatsSummaryCards rankings={rankings} />
             </div>
 
-            {/* Charts Section */}
             <StatsCharts 
               chartData={topTeamsData} 
               chartLimit={chartLimit} 
             />
 
-            {/* Full Rankings Table */}
             <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
               <Card>
                 <CardHeader>

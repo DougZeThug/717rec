@@ -26,10 +26,11 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
       try {
         const parsed = JSON.parse(savedSort);
         // Ensure the direction is of valid SortDirection type
-        if (parsed.direction !== 'asc' && parsed.direction !== 'desc') {
-          parsed.direction = 'desc'; // Default to desc if invalid
-        }
-        return parsed as SortOptions;
+        const direction: SortDirection = parsed.direction === 'asc' ? 'asc' : 'desc';
+        return { 
+          field: parsed.field || 'powerScore', 
+          direction 
+        };
       } catch (e) {
         console.error("Failed to parse saved sort options");
       }
