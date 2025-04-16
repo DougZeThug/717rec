@@ -109,8 +109,10 @@ export type Database = {
           next_match_id: string | null
           position: number | null
           round_number: number
+          team1_game_wins: number | null
           team1_id: string | null
           team1_score: number | null
+          team2_game_wins: number | null
           team2_id: string | null
           team2_score: number | null
           winner_id: string | null
@@ -129,8 +131,10 @@ export type Database = {
           next_match_id?: string | null
           position?: number | null
           round_number: number
+          team1_game_wins?: number | null
           team1_id?: string | null
           team1_score?: number | null
+          team2_game_wins?: number | null
           team2_id?: string | null
           team2_score?: number | null
           winner_id?: string | null
@@ -149,8 +153,10 @@ export type Database = {
           next_match_id?: string | null
           position?: number | null
           round_number?: number
+          team1_game_wins?: number | null
           team1_id?: string | null
           team1_score?: number | null
+          team2_game_wins?: number | null
           team2_id?: string | null
           team2_score?: number | null
           winner_id?: string | null
