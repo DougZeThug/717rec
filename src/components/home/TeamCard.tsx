@@ -12,18 +12,19 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow mb-4 sm:mb-0">
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-40 bg-gray-200 relative flex items-center justify-center p-4">
-          {team.imageUrl ? (
-            <img 
-              src={team.imageUrl} 
-              alt={team.name} 
-              className="max-h-20 object-contain"
-              style={{ maxWidth: '100%' }}
-            />
-          ) : (
-            <div className="text-gray-400 text-center">
-              <span>No Logo Available</span>
-            </div>
-          )}
+          <div className="w-full h-full flex items-center justify-center">
+            {team.imageUrl ? (
+              <img 
+                src={team.imageUrl} 
+                alt={team.name} 
+                className="max-h-28 max-w-full object-contain"
+              />
+            ) : (
+              <div className="text-gray-400 text-center">
+                <span>No Logo Available</span>
+              </div>
+            )}
+          </div>
         </div>
         <div className="p-4">
           <h3 className="text-lg font-bold mb-2 truncate" title={team.name}>{team.name}</h3>

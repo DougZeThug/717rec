@@ -21,27 +21,19 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   return (
     <Card className="overflow-hidden h-full flex flex-col mb-4 sm:mb-0">
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
-        <div 
-          className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center p-2" 
-          style={{ 
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundImage: team.imageUrl ? `url(${team.imageUrl})` : 'none',
-          }}
-        >
-          {!team.imageUrl && (
+        <div className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center p-2">
+          {!team.imageUrl ? (
             <div className="flex items-center justify-center h-full text-gray-400">
               No Team Image
             </div>
-          )}
-          {team.imageUrl && (
-            <img 
-              src={team.imageUrl} 
-              alt={team.name} 
-              className="max-h-20 object-contain"
-              style={{ maxWidth: '100%' }}
-            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <img 
+                src={team.imageUrl} 
+                alt={team.name} 
+                className="max-h-24 sm:max-h-28 max-w-full object-contain"
+              />
+            </div>
           )}
         </div>
       </Link>
