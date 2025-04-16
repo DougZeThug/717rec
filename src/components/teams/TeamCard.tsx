@@ -21,9 +21,9 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   return (
     <Card className="overflow-hidden h-full flex flex-col mb-4 sm:mb-0">
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
-        <div className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center p-2">
+        <div className="h-32 sm:h-40 bg-gray-100 flex items-center justify-center p-2">
           {!team.imageUrl ? (
-            <div className="flex items-center justify-center h-full text-gray-400">
+            <div className="flex items-center justify-center h-full text-gray-400 text-sm">
               No Team Image
             </div>
           ) : (
@@ -31,21 +31,21 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
               <img 
                 src={team.imageUrl} 
                 alt={team.name} 
-                className="max-h-24 sm:max-h-28 max-w-full object-contain"
+                className="max-h-28 sm:max-h-36 max-w-full object-contain"
               />
             </div>
           )}
         </div>
       </Link>
-      <CardHeader className="pb-2 space-y-1">
+      <CardHeader className="pb-1 pt-3 space-y-1">
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline">
-            <CardTitle className="text-lg sm:text-xl truncate pr-2" title={team.name}>{team.name}</CardTitle>
+            <CardTitle className="text-lg truncate pr-2" title={team.name}>{team.name}</CardTitle>
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                <MoreHorizontal size={16} />
+              <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
+                <MoreHorizontal size={15} />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
@@ -71,29 +71,29 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </DropdownMenu>
         </div>
         {divisionName && (
-          <Badge variant="outline" className="mr-auto">
+          <Badge variant="outline" className="mr-auto text-xs">
             {divisionName}
           </Badge>
         )}
       </CardHeader>
-      <CardContent className="flex-grow">
-        <div className="text-sm text-muted-foreground">
-          <div className="flex items-center gap-2 mb-2">
+      <CardContent className="flex-grow py-1">
+        <div className="text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 mb-1">
             <span className="font-medium">{team.players.length}</span> 
             {team.players.length === 1 ? "Player" : "Players"}
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-2">
+          <div className="grid grid-cols-2 gap-2 mb-1">
             <div className="flex items-center gap-1 text-emerald-600">
-              <Trophy size={14} /> {team.wins || 0} Wins
+              <Trophy size={12} /> {team.wins || 0} Wins
             </div>
             <div className="flex items-center gap-1 text-rose-600">
-              <X size={14} /> {team.losses || 0} Losses
+              <X size={12} /> {team.losses || 0} Losses
             </div>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="pt-1 pb-3">
-        <div className="text-sm w-full">
+      <CardFooter className="pt-0 pb-2">
+        <div className="text-xs w-full">
           <span className="font-semibold">Players:</span> 
           <span className="text-muted-foreground ml-1 block truncate">
             {team.players.length > 0
