@@ -65,7 +65,7 @@ const TeamDetails = () => {
         team2Score: match.team2_score,
         date: match.date || new Date().toISOString(), // Fallback if date is missing
         location: match.location || "",
-        isCompleted: match.is_completed || false,
+        iscompleted: match.is_completed || false,
         winnerId: match.winner_id,
         loserId: match.loser_id
       }));
@@ -96,12 +96,12 @@ const TeamDetails = () => {
   
   // Match result functions for past matches
   const getMatchResult = (match: Match) => {
-    if (!match.isCompleted) return "Incomplete";
+    if (!match.iscompleted) return "Incomplete";
     return match.winnerId === teamId ? "Win" : "Loss";
   };
   
   const getScoreDisplay = (match: Match) => {
-    if (!match.isCompleted || match.team1Score === undefined || match.team2Score === undefined) {
+    if (!match.iscompleted || match.team1Score === undefined || match.team2Score === undefined) {
       return "";
     }
     

@@ -298,7 +298,7 @@ export const mockMatches: Match[] = [
     team2Score: 15,
     date: new Date(2023, 5, 15, 18, 0).toISOString(),
     location: "Community Park",
-    isCompleted: true,
+    iscompleted: true,
     winnerId: "1",
     loserId: "2"
   },
@@ -310,7 +310,7 @@ export const mockMatches: Match[] = [
     team2Score: 21,
     date: new Date(2023, 5, 15, 19, 30).toISOString(),
     location: "Community Park",
-    isCompleted: true,
+    iscompleted: true,
     winnerId: "4",
     loserId: "3"
   },
@@ -322,7 +322,7 @@ export const mockMatches: Match[] = [
     team2Score: 21,
     date: new Date(2023, 5, 16, 18, 0).toISOString(),
     location: "Riverside Grounds",
-    isCompleted: true,
+    iscompleted: true,
     winnerId: "6",
     loserId: "5"
   },
@@ -334,7 +334,7 @@ export const mockMatches: Match[] = [
     team2Score: 14,
     date: new Date(2023, 5, 16, 19, 30).toISOString(),
     location: "Riverside Grounds",
-    isCompleted: true,
+    iscompleted: true,
     winnerId: "7",
     loserId: "8"
   },
@@ -344,7 +344,7 @@ export const mockMatches: Match[] = [
     team2Id: "4",
     date: new Date(2023, 6, 1, 18, 0).toISOString(),
     location: "Community Park",
-    isCompleted: false
+    iscompleted: false
   },
   {
     id: "m6",
@@ -352,7 +352,7 @@ export const mockMatches: Match[] = [
     team2Id: "7",
     date: new Date(2023, 6, 1, 19, 30).toISOString(),
     location: "Community Park",
-    isCompleted: false
+    iscompleted: false
   },
   {
     id: "m7",
@@ -360,7 +360,7 @@ export const mockMatches: Match[] = [
     team2Id: "3",
     date: new Date(2023, 6, 2, 18, 0).toISOString(),
     location: "Riverside Grounds",
-    isCompleted: false
+    iscompleted: false
   },
   {
     id: "m8",
@@ -368,7 +368,7 @@ export const mockMatches: Match[] = [
     team2Id: "8",
     date: new Date(2023, 6, 2, 19, 30).toISOString(),
     location: "Riverside Grounds",
-    isCompleted: false
+    iscompleted: false
   }
 ];
 

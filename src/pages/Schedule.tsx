@@ -51,9 +51,9 @@ const Schedule = () => {
   const filteredMatches = matches
     .filter(match => {
       if (activeTab === "upcoming") {
-        return !match.isCompleted;
+        return !match.iscompleted;
       } else if (activeTab === "completed") {
-        return match.isCompleted;
+        return match.iscompleted;
       }
       return true;
     })
@@ -80,7 +80,7 @@ const Schedule = () => {
       description: `Match between ${getTeamName(newMatch.team1Id)} and ${getTeamName(newMatch.team2Id)} has been scheduled.`,
     });
 
-    if (newMatch.isCompleted && newMatch.winnerId && newMatch.loserId) {
+    if (newMatch.iscompleted && newMatch.winnerId && newMatch.loserId) {
       updateTeamRecords(newMatch.winnerId, newMatch.loserId);
     }
   };
@@ -107,10 +107,10 @@ const Schedule = () => {
 
     const updatedMatch = { ...editingMatch, ...matchData };
     if (
-      updatedMatch.isCompleted && 
+      updatedMatch.iscompleted && 
       updatedMatch.winnerId && 
       updatedMatch.loserId &&
-      (!editingMatch.isCompleted || 
+      (!editingMatch.iscompleted || 
         editingMatch.winnerId !== updatedMatch.winnerId)
     ) {
       updateTeamRecords(updatedMatch.winnerId, updatedMatch.loserId);

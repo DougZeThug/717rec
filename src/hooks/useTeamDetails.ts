@@ -55,7 +55,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
         team2Score: match.team2_score,
         date: match.date || new Date().toISOString(), // Fallback if date is missing
         location: match.location || "",
-        isCompleted: match.is_completed || false,
+        iscompleted: match.is_completed || false,
         winnerId: match.winner_id,
         loserId: match.loser_id
       }));

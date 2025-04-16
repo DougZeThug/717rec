@@ -26,7 +26,7 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
   const [team2Id, setTeam2Id] = useState(match?.team2Id || "");
   const [selectedDate, setSelectedDate] = useState(match ? new Date(match.date) : new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [isCompleted, setIsCompleted] = useState(match?.isCompleted || false);
+  const [isCompleted, setIsCompleted] = useState(match?.iscompleted || false);
   const [team1Score, setTeam1Score] = useState<number | undefined>(match?.team1Score);
   const [team2Score, setTeam2Score] = useState<number | undefined>(match?.team2Score);
 
@@ -86,7 +86,7 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
       team2Id,
       date: dateWithTime.toISOString(),
       location: "", // Setting to empty string for legacy compatibility
-      isCompleted,
+      iscompleted: isCompleted,
       team1Score: isCompleted ? team1Score : undefined,
       team2Score: isCompleted ? team2Score : undefined,
       winnerId,

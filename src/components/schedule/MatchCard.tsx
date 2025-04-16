@@ -57,7 +57,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
               </div>
               <h3 className="font-medium truncate hover:underline">{team1.name}</h3>
             </Link>
-            {match.isCompleted && (
+            {match.iscompleted && (
               <p className={`text-2xl font-bold ${match.winnerId === team1.id ? 'text-green-600' : 'text-gray-500'}`}>
                 {match.team1Score}
               </p>
@@ -66,7 +66,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
           
           <div className="mx-4">
             <div className="text-lg font-bold">VS</div>
-            {match.isCompleted && <div className="mt-2 text-xs text-gray-500">Final</div>}
+            {match.iscompleted && <div className="mt-2 text-xs text-gray-500">Final</div>}
           </div>
           
           <div className="flex-1 text-center">
@@ -84,7 +84,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
               </div>
               <h3 className="font-medium truncate hover:underline">{team2.name}</h3>
             </Link>
-            {match.isCompleted && (
+            {match.iscompleted && (
               <p className={`text-2xl font-bold ${match.winnerId === team2.id ? 'text-green-600' : 'text-gray-500'}`}>
                 {match.team2Score}
               </p>
