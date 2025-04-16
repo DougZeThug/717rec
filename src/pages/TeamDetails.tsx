@@ -7,6 +7,7 @@ import { useTeamDetails } from "@/hooks/useTeamDetails";
 import TeamHeader from "@/components/teams/TeamHeader";
 import TeamStats from "@/components/teams/TeamStats";
 import MatchList from "@/components/teams/MatchList";
+import StatBreakdown from "@/components/teams/StatBreakdown";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -19,6 +20,12 @@ const TeamDetails = () => {
     upcomingMatches,
     pastMatches,
     winPercentage,
+    gamesWon,
+    gamesLost,
+    gameWinPercentage,
+    strengthOfSchedule,
+    closeMatchLosses,
+    powerScore,
     getOpponentId,
     getMatchResult,
     getScoreDisplay
@@ -62,6 +69,19 @@ const TeamDetails = () => {
       
       {/* Team Stats */}
       <TeamStats team={team} winPercentage={winPercentage} />
+      
+      {/* Stat Breakdown */}
+      <StatBreakdown
+        wins={team.wins}
+        losses={team.losses}
+        winPercentage={winPercentage}
+        gamesWon={gamesWon}
+        gamesLost={gamesLost}
+        gameWinPercentage={gameWinPercentage}
+        strengthOfSchedule={strengthOfSchedule}
+        closeMatchLosses={closeMatchLosses}
+        powerScore={powerScore}
+      />
       
       {/* Upcoming Matches */}
       <MatchList
