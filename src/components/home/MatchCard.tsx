@@ -19,55 +19,57 @@ const MatchCard: React.FC<MatchCardProps> = ({
   formatTime 
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-              {team1.imageUrl ? (
-                <img 
-                  src={team1.imageUrl} 
-                  alt={team1.name} 
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                  <span className="text-xs">No Logo</span>
-                </div>
-              )}
+    <Link to={`/schedule?matchId=${match.id}`} className="block">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow transform hover:-translate-y-1 transition-transform duration-200">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                {team1.imageUrl ? (
+                  <img 
+                    src={team1.imageUrl} 
+                    alt={team1.name} 
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                    <span className="text-xs">No Logo</span>
+                  </div>
+                )}
+              </div>
+              <span className="ml-3 font-medium">{team1.name}</span>
             </div>
-            <span className="ml-3 font-medium">{team1.name}</span>
-          </div>
-          <span className="text-lg font-bold mx-2">VS</span>
-          <div className="flex items-center">
-            <span className="mr-3 font-medium">{team2.name}</span>
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-              {team2.imageUrl ? (
-                <img 
-                  src={team2.imageUrl} 
-                  alt={team2.name} 
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                  <span className="text-xs">No Logo</span>
-                </div>
-              )}
+            <span className="text-lg font-bold mx-2">VS</span>
+            <div className="flex items-center">
+              <span className="mr-3 font-medium">{team2.name}</span>
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                {team2.imageUrl ? (
+                  <img 
+                    src={team2.imageUrl} 
+                    alt={team2.name} 
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                    <span className="text-xs">No Logo</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex justify-between text-sm text-gray-600 mt-4">
-          <div>
-            <p><strong>Date:</strong> {formatDate(match.date!)}</p>
-            <p><strong>Time:</strong> {formatTime(match.date!)}</p>
-          </div>
-          <div className="text-right">
-            <p><strong>Score:</strong></p>
-            <p>{match.team1Score} - {match.team2Score}</p>
+          <div className="flex justify-between text-sm text-gray-600 mt-4">
+            <div>
+              <p><strong>Date:</strong> {formatDate(match.date!)}</p>
+              <p><strong>Time:</strong> {formatTime(match.date!)}</p>
+            </div>
+            <div className="text-right">
+              <p><strong>Score:</strong></p>
+              <p>{match.team1Score} - {match.team2Score}</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

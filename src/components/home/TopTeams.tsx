@@ -11,9 +11,12 @@ interface TopTeamsProps {
 
 const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   return (
-    <section>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy">Top Teams</h2>
+    <section id="top-teams-section">
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy">Top Teams</h2>
+          <p className="text-sm text-gray-600 mt-1">Based on highest win percentage this season</p>
+        </div>
         <Button asChild variant="outline" className="text-cornhole-navy border-cornhole-navy hover:bg-cornhole-navy hover:text-white">
           <Link to="/teams">View All</Link>
         </Button>

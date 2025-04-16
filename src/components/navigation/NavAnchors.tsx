@@ -29,7 +29,7 @@ export const NavAnchors = () => {
   return (
     <div className={cn(
       "w-full bg-cornhole-cream/30 py-4 px-4",
-      isMobile ? "sticky top-0 z-10" : ""
+      isMobile ? "sticky top-0 z-10 backdrop-blur-sm" : ""
     )}>
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-3 gap-4">
