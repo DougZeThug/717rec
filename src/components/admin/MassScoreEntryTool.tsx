@@ -36,6 +36,7 @@ import { Match, Team } from "@/types";
 
 interface MassScoreEntryToolProps {}
 
+// Extended Match interface for our component's internal use
 interface MatchWithTeams extends Match {
   team1?: Team;
   team2?: Team;
@@ -98,13 +99,50 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
       const { data, error } = await query;
       if (error) throw error;
 
-      const formattedMatches: MatchWithTeams[] = (data || []).map(match => ({
-        ...match,
-        team1: match.team1 as unknown as Team,
-        team2: match.team2 as unknown as Team,
-        isEdited: false,
-        isValid: validateMatchScores(match.team1_score, match.team2_score)
-      }));
+      const formattedMatches: MatchWithTeams[] = (data || []).map(match => {
+        // Convert from database snake_case to our TypeScript camelCase
+        return {
+          id: match.id,
+          team1Id: match.team1_id,
+          team2Id: match.team2_id,
+          team1Score: match.team1_score,
+          team2Score: match.team2_score,
+          date: match.date,
+          location: match.location,
+          iscompleted: match.iscompleted,
+          winnerId: match.winner_id,
+          loserId: match.loser_id,
+          round_number: match.round_number,
+          position: match.position,
+          bracket_id: match.bracket_id,
+          match_type: match.match_type,
+          next_match_id: match.next_match_id,
+          next_loser_match_id: match.next_loser_match_id,
+          best_of: match.best_of,
+          created_at: match.created_at,
+          // Map the team relation data
+          team1: match.team1 ? {
+            id: match.team1.id,
+            name: match.team1.name,
+            logoUrl: match.team1.logo_url,
+            players: [],
+            wins: 0,
+            losses: 0,
+            created_at: ""
+          } : undefined,
+          team2: match.team2 ? {
+            id: match.team2.id,
+            name: match.team2.name,
+            logoUrl: match.team2.logo_url,
+            players: [],
+            wins: 0,
+            losses: 0,
+            created_at: ""
+          } : undefined,
+          isEdited: false,
+          isValid: validateMatchScores(match.team1_score, match.team2_score)
+        };
+      });
 
       setMatches(formattedMatches);
     } catch (error: any) {
@@ -129,13 +167,13 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
     const match = newMatches[index];
     
     if (team === 'team1') {
-      match.team1_score = scoreValue;
+      match.team1Score = scoreValue;
     } else {
-      match.team2_score = scoreValue;
+      match.team2Score = scoreValue;
     }
 
     match.isEdited = true;
-    match.isValid = validateMatchScores(match.team1_score, match.team2_score);
+    match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     setMatches(newMatches);
   };
 
@@ -165,25 +203,25 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
     try {
       // Process matches one by one to handle winner_id and loser_id
       for (const match of editedMatches) {
-        if (match.team1_score !== null && match.team2_score !== null) {
+        if (match.team1Score !== null && match.team2Score !== null) {
           let winnerId = null;
           let loserId = null;
           
           // Determine winner and loser
-          if (match.team1_score > match.team2_score) {
-            winnerId = match.team1_id;
-            loserId = match.team2_id;
-          } else if (match.team2_score > match.team1_score) {
-            winnerId = match.team2_id;
-            loserId = match.team1_id;
+          if (match.team1Score > match.team2Score) {
+            winnerId = match.team1Id;
+            loserId = match.team2Id;
+          } else if (match.team2Score > match.team1Score) {
+            winnerId = match.team2Id;
+            loserId = match.team1Id;
           }
 
           // Update match in database
           const { error } = await supabase
             .from('matches')
             .update({
-              team1_score: match.team1_score,
-              team2_score: match.team2_score,
+              team1_score: match.team1Score,
+              team2_score: match.team2Score,
               iscompleted: match.iscompleted,
               winner_id: winnerId,
               loser_id: loserId
@@ -304,9 +342,9 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {match.team1?.logo_url && (
+                          {match.team1?.logoUrl && (
                             <img 
-                              src={match.team1.logo_url} 
+                              src={match.team1.logoUrl} 
                               alt={match.team1.name} 
                               className="h-6 w-6 object-contain"
                             />
@@ -317,7 +355,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
                       <TableCell className="text-center">
                         <Input
                           type="number"
-                          value={match.team1_score ?? ""}
+                          value={match.team1Score ?? ""}
                           onChange={(e) => handleScoreChange(index, 'team1', e.target.value)}
                           className="max-w-[80px] mx-auto text-center"
                           min={0}
@@ -326,7 +364,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
                       <TableCell className="text-center">
                         <Input
                           type="number"
-                          value={match.team2_score ?? ""}
+                          value={match.team2Score ?? ""}
                           onChange={(e) => handleScoreChange(index, 'team2', e.target.value)}
                           className="max-w-[80px] mx-auto text-center"
                           min={0}
@@ -334,9 +372,9 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {match.team2?.logo_url && (
+                          {match.team2?.logoUrl && (
                             <img 
-                              src={match.team2.logo_url} 
+                              src={match.team2.logoUrl} 
                               alt={match.team2.name} 
                               className="h-6 w-6 object-contain"
                             />
