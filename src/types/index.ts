@@ -1,4 +1,3 @@
-
 export interface Player {
   id?: string;
   name: string;
@@ -27,7 +26,7 @@ export interface Match {
   team2Score?: number | null;
   date: string | null;
   location: string | null;
-  iscompleted: boolean; // Changed from isCompleted to iscompleted to match Supabase
+  iscompleted: boolean; // Matches Supabase column name
   winnerId?: string | null;
   loserId?: string | null;
   round_number?: number;
@@ -104,7 +103,7 @@ export interface Ranking {
   divisionName?: string | null;
   sos?: number;
   streak?: string;
-  headToHead?: HeadToHeadMap; // Use the alias instead of inline definition
+  headToHead?: HeadToHeadMap;
   previousRank?: number;
-  rankChange?: number; // Added explicitly for Stats.tsx
+  rankChange?: number; // Added to fix type access error
 }

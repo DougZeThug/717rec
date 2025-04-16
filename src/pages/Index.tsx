@@ -11,7 +11,7 @@ const Index = () => {
 
   // Change to show completed matches instead of upcoming
   const completedMatches = mockMatches
-    .filter(match => match.isCompleted)
+    .filter(match => match.iscompleted)  // Changed from isCompleted
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
 
