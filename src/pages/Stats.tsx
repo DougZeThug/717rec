@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import RankingsTable from "@/components/stats/RankingsTable";
 import { Match } from "@/types";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
@@ -13,6 +13,8 @@ import StatsHeader from "@/components/stats/StatsHeader";
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards";
 import StatsCharts from "@/components/stats/StatsCharts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import CompactStandings from "@/components/stats/CompactStandings";
+import { Button } from "@/components/ui/button";
 
 const Stats = () => {
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
@@ -23,6 +25,7 @@ const Stats = () => {
   const [matchesError, setMatchesError] = useState<Error | null>(null);
   const isMobile = useIsMobile();
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
+  const fullRankingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -74,6 +77,9 @@ const Stats = () => {
   const hasError = teamsError || matchesError;
 
   const chartLimit = isMobile ? 5 : 8;
+  const compactLimit = isMobile ? 5 : 5;
+  
+  // Take top teams for compact standings
   const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
     id: team.teamId,
     name: team.teamName,
@@ -88,6 +94,12 @@ const Stats = () => {
 
   const handleDivisionChange = (value: string) => {
     setSelectedDivision(value === "all" ? null : value);
+  };
+  
+  const scrollToFullRankings = () => {
+    if (fullRankingsRef.current) {
+      fullRankingsRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   if (isLoading) {
@@ -124,24 +136,53 @@ const Stats = () => {
           divisions={divisions || []} 
         />
 
-        <StatsSummaryCards rankings={rankings} />
-
         {rankings.length > 0 ? (
           <>
+            {/* New Compact Standings Section */}
+            <Card className="mb-6">
+              <CardHeader className="pb-2">
+                <CardTitle>Current Standings</CardTitle>
+                <CardDescription>Top {compactLimit} teams based on performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CompactStandings rankings={rankings.slice(0, compactLimit)} />
+                <div className="mt-4 text-center">
+                  <Button 
+                    onClick={scrollToFullRankings}
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                  >
+                    View Full Standings
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Moved summary cards below compact standings */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-cornhole-navy mb-4">League Highlights</h2>
+              <StatsSummaryCards rankings={rankings} />
+            </div>
+
+            {/* Charts Section */}
             <StatsCharts 
               chartData={topTeamsData} 
               chartLimit={chartLimit} 
             />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Rankings</CardTitle>
-                <CardDescription>Based on win percentage, strength of schedule (SOS), and game-level performance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RankingsTable rankings={rankings} />
-              </CardContent>
-            </Card>
+            {/* Full Rankings Table */}
+            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Complete Team Rankings</CardTitle>
+                  <CardDescription>Based on win percentage, strength of schedule (SOS), and game-level performance</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <RankingsTable rankings={rankings} />
+                </CardContent>
+              </Card>
+            </div>
           </>
         ) : (
           <Card>

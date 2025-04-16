@@ -2,12 +2,15 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StatsSummaryCardsProps {
   rankings: Ranking[];
 }
 
 const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
+  const isMobile = useIsMobile();
+  
   const getHighestWinPercentage = () => {
     if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
     
@@ -68,29 +71,34 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const highestSOS = getHighestSOS();
   const highestGameWinPercentage = getHighestGameWinPercentage();
 
+  // Optimize card styling for mobile
+  const cardStyles = isMobile ? "py-3" : "pb-2";
+  const contentStyles = isMobile ? "py-3" : "";
+  const fontStyles = isMobile ? "text-3xl" : "text-4xl";
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Total Teams</CardTitle>
-          <CardDescription>Active teams in the league</CardDescription>
+        <CardHeader className={cardStyles}>
+          <CardTitle className="text-lg">Total Teams</CardTitle>
+          <CardDescription className="text-xs">Active teams in the league</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-4xl font-bold text-cornhole-navy">{rankings ? rankings.length : 0}</div>
+        <CardContent className={contentStyles}>
+          <div className={`${fontStyles} font-bold text-cornhole-navy`}>{rankings ? rankings.length : 0}</div>
         </CardContent>
       </Card>
       
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Highest Win %</CardTitle>
-          <CardDescription>Best performing team</CardDescription>
+        <CardHeader className={cardStyles}>
+          <CardTitle className="text-lg">Highest Win %</CardTitle>
+          <CardDescription className="text-xs">Best performing team</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={contentStyles}>
           <div className="flex flex-col">
-            <span className="text-4xl font-bold text-cornhole-green">
+            <span className={`${fontStyles} font-bold text-cornhole-green`}>
               {highestWinPercentage.percentage}%
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-xs text-gray-500">
               {highestWinPercentage.teamName}
             </span>
           </div>
@@ -98,16 +106,16 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
       </Card>
       
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Highest SOS</CardTitle>
-          <CardDescription>Team with toughest schedule</CardDescription>
+        <CardHeader className={cardStyles}>
+          <CardTitle className="text-lg">Highest SOS</CardTitle>
+          <CardDescription className="text-xs">Team with toughest schedule</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={contentStyles}>
           <div className="flex flex-col">
-            <span className="text-4xl font-bold text-cornhole-navy">
+            <span className={`${fontStyles} font-bold text-cornhole-navy`}>
               {highestSOS.sos}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-xs text-gray-500">
               {highestSOS.teamName}
             </span>
           </div>
@@ -115,16 +123,16 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
       </Card>
       
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Best Game Win %</CardTitle>
-          <CardDescription>Team with highest game win rate</CardDescription>
+        <CardHeader className={cardStyles}>
+          <CardTitle className="text-lg">Best Game Win %</CardTitle>
+          <CardDescription className="text-xs">Team with highest game win rate</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={contentStyles}>
           <div className="flex flex-col">
-            <span className="text-4xl font-bold text-cornhole-green">
+            <span className={`${fontStyles} font-bold text-cornhole-green`}>
               {highestGameWinPercentage.percentage}%
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-xs text-gray-500">
               {highestGameWinPercentage.teamName}
             </span>
           </div>
