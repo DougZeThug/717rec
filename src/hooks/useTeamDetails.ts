@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Team, Match } from "@/types";
+import { format } from "date-fns";
 
 export const useTeamDetails = (teamId: string | undefined) => {
   // Fetch team data
@@ -63,8 +64,56 @@ export const useTeamDetails = (teamId: string | undefined) => {
     enabled: !!teamId
   });
   
+  // Calculate win percentage
+  const calculateWinPercentage = () => {
+    if (!teamQuery.data) return "0.0";
+    const totalGames = teamQuery.data.wins + teamQuery.data.losses;
+    return totalGames > 0 ? ((teamQuery.data.wins / totalGames) * 100).toFixed(1) : "0.0";
+  };
+  
+  // Separate upcoming and past matches
+  const getUpcomingAndPastMatches = () => {
+    if (!matchesQuery.data) return { upcomingMatches: [], pastMatches: [] };
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day
+    
+    const upcomingMatches = matchesQuery.data
+      .filter(match => new Date(match.date) >= today)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    const pastMatches = matchesQuery.data
+      .filter(match => new Date(match.date) < today)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+    return { upcomingMatches, pastMatches };
+  };
+  
+  // For displaying opponents
+  const getOpponentId = (match: Match) => {
+    return match.team1Id === teamId ? match.team2Id : match.team1Id;
+  };
+  
+  // Match result functions for past matches
+  const getMatchResult = (match: Match) => {
+    if (!match.iscompleted) return "Incomplete";
+    return match.winnerId === teamId ? "Win" : "Loss";
+  };
+  
+  const getScoreDisplay = (match: Match) => {
+    if (!match.iscompleted || match.team1Score === undefined || match.team2Score === undefined) {
+      return "";
+    }
+    
+    // If this team is team1, show scores as is, otherwise swap
+    if (match.team1Id === teamId) {
+      return `${match.team1Score}–${match.team2Score}`;
+    } else {
+      return `${match.team2Score}–${match.team1Score}`;
+    }
+  };
+  
   // Calculate strength of schedule (SOS)
-  // A simple implementation: average win percentage of all opponents
   const calculateSOS = () => {
     if (!teamQuery.data || !matchesQuery.data) return 0;
     
@@ -72,11 +121,20 @@ export const useTeamDetails = (teamId: string | undefined) => {
     return 0; // Placeholder for now
   };
   
+  const { upcomingMatches, pastMatches } = getUpcomingAndPastMatches();
+  const winPercentage = calculateWinPercentage();
+  
   return {
     team: teamQuery.data,
     isLoadingTeam: teamQuery.isLoading,
     matches: matchesQuery.data,
     isLoadingMatches: matchesQuery.isLoading,
-    strengthOfSchedule: calculateSOS()
+    upcomingMatches,
+    pastMatches,
+    winPercentage,
+    strengthOfSchedule: calculateSOS(),
+    getOpponentId,
+    getMatchResult,
+    getScoreDisplay
   };
 };
