@@ -99,42 +99,60 @@ export type Database = {
           best_of: number | null
           bracket_id: string | null
           created_at: string | null
+          date: string | null
           id: string
+          iscompleted: boolean | null
+          location: string | null
+          loser_id: string | null
           match_type: Database["public"]["Enums"]["match_type"] | null
           next_loser_match_id: string | null
           next_match_id: string | null
           position: number | null
           round_number: number
           team1_id: string | null
+          team1_score: number | null
           team2_id: string | null
+          team2_score: number | null
           winner_id: string | null
         }
         Insert: {
           best_of?: number | null
           bracket_id?: string | null
           created_at?: string | null
+          date?: string | null
           id?: string
+          iscompleted?: boolean | null
+          location?: string | null
+          loser_id?: string | null
           match_type?: Database["public"]["Enums"]["match_type"] | null
           next_loser_match_id?: string | null
           next_match_id?: string | null
           position?: number | null
           round_number: number
           team1_id?: string | null
+          team1_score?: number | null
           team2_id?: string | null
+          team2_score?: number | null
           winner_id?: string | null
         }
         Update: {
           best_of?: number | null
           bracket_id?: string | null
           created_at?: string | null
+          date?: string | null
           id?: string
+          iscompleted?: boolean | null
+          location?: string | null
+          loser_id?: string | null
           match_type?: Database["public"]["Enums"]["match_type"] | null
           next_loser_match_id?: string | null
           next_match_id?: string | null
           position?: number | null
           round_number?: number
           team1_id?: string | null
+          team1_score?: number | null
           team2_id?: string | null
+          team2_score?: number | null
           winner_id?: string | null
         }
         Relationships: [

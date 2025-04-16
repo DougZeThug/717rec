@@ -1,5 +1,3 @@
-
-
 export interface Player {
   id?: string;
   name: string;
@@ -24,14 +22,13 @@ export interface Match {
   id: string;
   team1Id: string;
   team2Id: string;
-  team1Score?: number;
-  team2Score?: number;
-  date: string;
-  location: string;
+  team1Score?: number | null;
+  team2Score?: number | null;
+  date: string | null;
+  location: string | null;
   isCompleted: boolean;
-  winnerId?: string;
-  loserId?: string;
-  // Adding bracket-specific fields for compatibility
+  winnerId?: string | null;
+  loserId?: string | null;
   round_number?: number;
   position?: number;
   bracket_id?: string;
@@ -39,6 +36,7 @@ export interface Match {
   next_match_id?: string;
   next_loser_match_id?: string;
   best_of?: number;
+  created_at?: string;
 }
 
 export interface TeamTimeslot {
@@ -88,11 +86,11 @@ export interface Ranking {
   losses: number;
   winPercentage: number;
   divisionName?: string | null;
-  sos?: number; // Strength of Schedule
-  streak?: string; // Current streak (e.g., "W3", "L2")
-  previousRank?: number; // Previous week's rank
-  rankChange?: number; // Change in rank (positive = improved, negative = declined)
-  headToHead?: { [opponentId: string]: { wins: number; losses: number; opponentName: string } }; // Head-to-head records
+  sos?: number;
+  streak?: string;
+  headToHead?: { [opponentId: string]: { wins: number; losses: number; opponentName: string } };
+  previousRank?: number;
+  rankChange?: number;
 }
 
 export interface HeadToHeadRecord {
@@ -101,4 +99,3 @@ export interface HeadToHeadRecord {
   wins: number;
   losses: number;
 }
-
