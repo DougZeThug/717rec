@@ -1,21 +1,19 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTeamData } from "@/hooks/useTeamData";
 import { mockMatches } from "@/data/mockData";
 import { Loader2 } from "lucide-react";
+import NavAnchors from "@/components/navigation/NavAnchors";
 
 const Index = () => {
   const { data: teams, isLoading } = useTeamData();
 
-  // Change to show completed matches instead of upcoming
   const completedMatches = mockMatches
-    .filter(match => match.iscompleted)  // Changed from isCompleted
+    .filter(match => match.iscompleted)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
 
-  // Get top teams by win percentage
   const topTeams = teams 
     ? [...teams]
         .sort((a, b) => {
@@ -87,6 +85,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Navigation Anchors */}
+      <NavAnchors />
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Completed Matches */}
