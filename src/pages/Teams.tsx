@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Teams: React.FC = () => {
-  const { teams, isLoading, fetchTeams, createTeam, updateTeam, deleteTeam } = useTeams();
+  const { teams, isLoading, fetchTeams, updateTeam, deleteTeam } = useTeams();
   const { divisions } = useDivisions();
   const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
   const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
@@ -24,8 +24,8 @@ const Teams: React.FC = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
-  // Track expanded divisions
-  const [expandedDivisions, setExpandedDivisions] = useState<Record<string, boolean>>({});
+  // Track expanded division (only one can be expanded at a time)
+  const [expandedDivision, setExpandedDivision] = useState<string | null>(null);
 
   // Group teams by division
   const teamsByDivision = React.useMemo(() => {
@@ -65,15 +65,6 @@ const Teams: React.FC = () => {
     
     return teams.filter(team => team.division === selectedDivision);
   }, [teams, selectedDivision]);
-
-  const handleCreateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
-    try {
-      await createTeam(teamData);
-      setIsFormOpen(false);
-    } catch (error) {
-      console.error("Error creating team:", error);
-    }
-  };
 
   const handleUpdateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
     if (!teamToEdit) return;
@@ -130,28 +121,29 @@ const Teams: React.FC = () => {
     return division ? division.name : "Unknown Division";
   };
 
-  // Toggle division expansion
+  // Toggle division expansion - ensure only one is expanded at a time
   const toggleDivision = (divisionId: string) => {
-    setExpandedDivisions(prev => ({
-      ...prev,
-      [divisionId]: !prev[divisionId]
-    }));
+    setExpandedDivision(prevExpanded => 
+      prevExpanded === divisionId ? null : divisionId
+    );
   };
 
-  // Initialize expanded divisions on load
+  // Initialize expanded division on load
   React.useEffect(() => {
-    const initialExpanded: Record<string, boolean> = {};
-    // Default: expand all divisions on desktop, collapse on mobile
-    Object.keys(teamsByDivision).forEach(divId => {
-      initialExpanded[divId] = !isMobile;
-    });
-    setExpandedDivisions(initialExpanded);
-  }, [isMobile, divisions, teamsByDivision]);
+    // Default: expand first non-empty division on desktop, none on mobile
+    if (!isMobile && !expandedDivision) {
+      const firstNonEmptyDivision = Object.entries(teamsByDivision)
+        .find(([_, teams]) => teams.length > 0);
+      
+      if (firstNonEmptyDivision) {
+        setExpandedDivision(firstNonEmptyDivision[0]);
+      }
+    }
+  }, [isMobile, divisions, teamsByDivision, expandedDivision]);
 
   return (
     <div className="container px-4 py-6 sm:py-8 mx-auto">
       <TeamsHeader 
-        onAddTeam={() => setIsFormOpen(true)}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
       />
@@ -164,16 +156,15 @@ const Teams: React.FC = () => {
         />
       </div>
 
-      {(isFormOpen || teamToEdit) && (
+      {teamToEdit && (
         <div className="mb-6 p-4 sm:p-6 bg-card border rounded-lg shadow overflow-x-hidden">
           <h2 className="text-xl font-semibold mb-4">
-            {teamToEdit ? "Edit Team" : "Create New Team"}
+            Edit Team
           </h2>
           <TeamForm 
-            team={teamToEdit || undefined}
-            onSubmit={teamToEdit ? handleUpdateTeam : handleCreateTeam} 
+            team={teamToEdit}
+            onSubmit={handleUpdateTeam} 
             onCancel={() => {
-              setIsFormOpen(false);
               setTeamToEdit(null);
             }}
           />
@@ -186,7 +177,7 @@ const Teams: React.FC = () => {
           {Object.keys(teamsByDivision).map(divisionId => {
             const divisionTeams = teamsByDivision[divisionId];
             const divisionName = getDivisionName(divisionId === "unassigned" ? undefined : divisionId);
-            const isExpanded = expandedDivisions[divisionId] !== false;
+            const isExpanded = expandedDivision === divisionId;
             
             return (
               <TeamsDivisionSection

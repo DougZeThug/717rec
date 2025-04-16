@@ -17,11 +17,24 @@ interface TeamCardProps {
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   // Use the divisionName property if available, otherwise fall back to the original approach
   const divisionName = team.divisionName || "";
+  
+  // Division color mapping
+  const getDivisionColor = () => {
+    if (!divisionName) return "gray";
+    
+    const lowerDivName = divisionName.toLowerCase();
+    if (lowerDivName.includes("competitive")) return "red-500";
+    if (lowerDivName.includes("intermediate")) return "blue-500";
+    if (lowerDivName.includes("recreational")) return "green-500";
+    return "gray-400";
+  };
+
+  const divisionColor = getDivisionColor();
 
   return (
     <Card className="overflow-hidden h-full flex flex-col mb-4 sm:mb-0">
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
-        <div className="h-32 sm:h-40 bg-gray-100 flex items-center justify-center p-2">
+        <div className="h-28 sm:h-36 bg-gray-100 flex items-center justify-center p-2">
           {!team.imageUrl ? (
             <div className="flex items-center justify-center h-full text-gray-400 text-sm">
               No Team Image
@@ -31,13 +44,13 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
               <img 
                 src={team.imageUrl} 
                 alt={team.name} 
-                className="max-h-28 sm:max-h-36 max-w-full object-contain"
+                className="max-h-24 sm:max-h-32 max-w-full object-contain"
               />
             </div>
           )}
         </div>
       </Link>
-      <CardHeader className="pb-1 pt-3 space-y-1">
+      <CardHeader className="pb-1 pt-2 space-y-1">
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline">
             <CardTitle className="text-lg truncate pr-2" title={team.name}>{team.name}</CardTitle>
@@ -71,9 +84,12 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </DropdownMenu>
         </div>
         {divisionName && (
-          <Badge variant="outline" className="mr-auto text-xs">
-            {divisionName}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <div className={`w-2.5 h-2.5 rounded-full bg-${divisionColor} flex-shrink-0`}></div>
+            <Badge variant="outline" className="mr-auto text-xs">
+              {divisionName}
+            </Badge>
+          </div>
         )}
       </CardHeader>
       <CardContent className="flex-grow py-1">
