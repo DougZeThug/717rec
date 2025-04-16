@@ -1,3 +1,4 @@
+
 export interface Player {
   id?: string;
   name: string;
@@ -117,6 +118,7 @@ export interface Ranking {
   gamesLost?: number;
   gameWinPercentage?: number;
   closeMatchLosses?: number;
+  powerScore?: number;
 }
 
 // Interface for the team_stats table we just created
