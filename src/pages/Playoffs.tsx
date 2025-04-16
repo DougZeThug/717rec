@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Trophy, Users } from "lucide-react";
@@ -6,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import BracketCreationDialog from "@/components/playoffs/BracketCreationDialog";
 import TeamDivisionDialog from "@/components/playoffs/TeamDivisionDialog";
 import PlayoffPageContent from "@/components/playoffs/PlayoffPageContent";
+import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import { usePlayoffData } from "@/hooks/usePlayoffData";
 
 const Playoffs = () => {
@@ -69,7 +69,6 @@ const Playoffs = () => {
         />
       </div>
 
-      {/* Team Division Dialog */}
       <TeamDivisionDialog 
         open={teamDialogOpen}
         onOpenChange={setTeamDialogOpen}
@@ -79,7 +78,6 @@ const Playoffs = () => {
         onTeamDivisionChange={handleTeamDivisionChange}
       />
 
-      {/* Bracket Creation Dialog */}
       <BracketCreationDialog
         open={bracketDialogOpen}
         onOpenChange={setBracketDialogOpen}
