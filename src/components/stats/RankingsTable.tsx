@@ -24,7 +24,12 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
     const savedSort = localStorage.getItem("rankingsSortOptions");
     if (savedSort) {
       try {
-        return JSON.parse(savedSort);
+        const parsed = JSON.parse(savedSort);
+        // Ensure the direction is of valid SortDirection type
+        if (parsed.direction !== 'asc' && parsed.direction !== 'desc') {
+          parsed.direction = 'desc'; // Default to desc if invalid
+        }
+        return parsed as SortOptions;
       } catch (e) {
         console.error("Failed to parse saved sort options");
       }
@@ -41,9 +46,10 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
 
   // Handle column header click for sorting
   const handleSortChange = (field: string) => {
-    const newSortOptions = {
+    const newDirection: SortDirection = sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc';
+    const newSortOptions: SortOptions = {
       field,
-      direction: sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc'
+      direction: newDirection
     };
     setSortOptions(newSortOptions);
     
