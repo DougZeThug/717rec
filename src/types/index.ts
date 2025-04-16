@@ -118,7 +118,7 @@ export interface Ranking {
   gamesLost?: number;
   gameWinPercentage?: number;
   closeMatchLosses?: number;
-  powerScore?: number;
+  powerScore?: number; // This was already present but with optional marker
 }
 
 // Interface for the team_stats table we just created
