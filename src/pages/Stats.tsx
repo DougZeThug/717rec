@@ -1,30 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTeamData } from "@/hooks/useTeamData";
-import { useDivisions } from "@/hooks/useDivisions";
-import RankingsTable from "@/components/stats/RankingsTable";
-import { Match } from "@/types";
-import { Loader2, AlertTriangle, ArrowDown } from "lucide-react";
+
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useTeamRankings } from "@/hooks/useTeamRankings";
-import StatsHeader from "@/components/stats/StatsHeader";
-import StatsSummaryCards from "@/components/stats/StatsSummaryCards";
-import StatsCharts from "@/components/stats/StatsCharts";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import CompactStandings from "@/components/stats/CompactStandings";
+import { Match } from "@/types";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ArrowDown } from "lucide-react";
+import StatsContainer from "@/components/stats/StatsContainer";
 
 const Stats = () => {
-  const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
-  const { divisions, isLoading: isLoadingDivisions } = useDivisions();
-  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamData(selectedDivision);
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [matchesError, setMatchesError] = useState<Error | null>(null);
-  const isMobile = useIsMobile();
-  const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
-  const fullRankingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -72,124 +58,13 @@ const Stats = () => {
     fetchMatches();
   }, []);
 
-  const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
-  const hasError = teamsError || matchesError;
-
-  const chartLimit = isMobile ? 5 : 8;
-  const compactLimit = isMobile ? 5 : 5;
-  
-  const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
-    id: team.teamId,
-    name: team.teamName,
-    wins: team.wins,
-    losses: team.losses,
-    winPercentage: Number((team.winPercentage * 100).toFixed(1)),
-    powerScore: team.powerScore || 0,
-    sos: Number((team.sos || 0).toFixed(3)),
-    logoUrl: team.logoUrl,
-    imageUrl: team.imageUrl
-  }));
-
-  const handleDivisionChange = (value: string) => {
-    setSelectedDivision(value === "all" ? null : value);
-  };
-  
-  const scrollToFullRankings = () => {
-    if (fullRankingsRef.current) {
-      fullRankingsRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
-          <p className="text-lg">Loading team statistics...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
-        <Alert variant="destructive" className="max-w-xl">
-          <AlertTriangle className="h-5 w-5 mr-2" />
-          <AlertDescription>
-            There was an error loading the statistics data. Please try refreshing the page.
-            {teamsError && <p className="mt-2 text-sm">{teamsError.message}</p>}
-            {matchesError && <p className="mt-2 text-sm">{matchesError.message}</p>}
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto">
-        <StatsHeader 
-          onDivisionChange={handleDivisionChange} 
-          divisions={divisions || []} 
-        />
-
-        {rankings.length > 0 ? (
-          <>
-            <Card className="mb-6">
-              <CardHeader className="pb-2">
-                <CardTitle>Current Standings</CardTitle>
-                <CardDescription>Top {compactLimit} teams based on performance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CompactStandings rankings={rankings.slice(0, compactLimit)} />
-                <div className="mt-4 text-center">
-                  <Button 
-                    onClick={scrollToFullRankings}
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                  >
-                    View Full Standings
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-cornhole-navy mb-4">League Highlights</h2>
-              <StatsSummaryCards rankings={rankings} />
-            </div>
-
-            <StatsCharts 
-              chartData={topTeamsData} 
-              chartLimit={chartLimit} 
-            />
-
-            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Complete Team Rankings</CardTitle>
-                  <CardDescription>Based on win percentage, strength of schedule (SOS), and game-level performance</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <RankingsTable rankings={rankings} />
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>No Teams Available</CardTitle>
-              <CardDescription>There are no teams in the selected division or no teams have been added yet.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Try selecting a different division or add teams to view statistics.</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      <StatsContainer 
+        matches={matches} 
+        isLoadingMatches={isLoadingMatches} 
+        matchesError={matchesError} 
+      />
     </div>
   );
 };
