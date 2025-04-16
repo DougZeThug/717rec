@@ -58,10 +58,21 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <TableCell className="text-center">
         {(ranking.winPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center">{ranking.streak || "—"}</TableCell>
+      <TableCell className="text-center hidden md:table-cell">
+        {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
+      </TableCell>
+      <TableCell className="text-center hidden lg:table-cell">
+        {ranking.gameWinPercentage !== undefined
+          ? (ranking.gameWinPercentage * 100).toFixed(1) + "%"
+          : "—"}
+      </TableCell>
       <TableCell className="text-center">
         {(ranking.sos || 0).toFixed(3)}
       </TableCell>
+      <TableCell className="text-center hidden lg:table-cell">
+        {ranking.closeMatchLosses || 0}
+      </TableCell>
+      <TableCell className="text-center">{ranking.streak || "—"}</TableCell>
       <TableCell className="text-center">
         <RankTrendIndicator rankChange={ranking.rankChange} />
       </TableCell>

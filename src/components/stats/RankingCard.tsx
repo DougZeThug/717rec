@@ -51,7 +51,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </CollapsibleTrigger>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
+        <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
           <div className="p-2 bg-gray-50 rounded text-center">
             <div className="text-gray-500 text-xs">Record</div>
             <div>
@@ -62,23 +62,44 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <div className="text-gray-500 text-xs">Win %</div>
             <div>{(ranking.winPercentage * 100).toFixed(1)}%</div>
           </div>
+          
           <div className="p-2 bg-gray-50 rounded text-center">
-            <div className="text-gray-500 text-xs">Streak</div>
-            <div>{ranking.streak || "—"}</div>
+            <div className="text-gray-500 text-xs">Games</div>
+            <div>{ranking.gamesWon || 0}-{ranking.gamesLost || 0}</div>
           </div>
+          <div className="p-2 bg-gray-50 rounded text-center">
+            <div className="text-gray-500 text-xs">Game Win %</div>
+            <div>
+              {ranking.gameWinPercentage !== undefined
+                ? (ranking.gameWinPercentage * 100).toFixed(1) + "%"
+                : "—"}
+            </div>
+          </div>
+          
           <div className="p-2 bg-gray-50 rounded text-center">
             <div className="text-gray-500 text-xs">SOS</div>
             <div>{(ranking.sos || 0).toFixed(3)}</div>
           </div>
           <div className="p-2 bg-gray-50 rounded text-center">
-            <div className="text-gray-500 text-xs">Division</div>
-            <div>{ranking.divisionName || "Not Assigned"}</div>
+            <div className="text-gray-500 text-xs">Close Losses</div>
+            <div>{ranking.closeMatchLosses || 0}</div>
+          </div>
+          
+          <div className="p-2 bg-gray-50 rounded text-center">
+            <div className="text-gray-500 text-xs">Streak</div>
+            <div>{ranking.streak || "—"}</div>
           </div>
           <div className="p-2 bg-gray-50 rounded text-center">
             <div className="text-gray-500 text-xs">Trend</div>
             <div className="flex justify-center">
               <RankTrendIndicator rankChange={ranking.rankChange} />
             </div>
+          </div>
+        </div>
+        
+        <div className="mt-4 text-xs text-gray-500">
+          <div className="text-center">
+            {ranking.divisionName || "No Division"} Division
           </div>
         </div>
       </div>

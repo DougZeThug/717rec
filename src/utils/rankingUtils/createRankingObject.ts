@@ -4,21 +4,30 @@ import { calculateSOS } from "./calculateSOS";
 import { calculateStreak } from "./calculateStreak";
 import { calculateHeadToHead } from "./calculateHeadToHead";
 import { calculateWinPercentage } from "./calculateWinPercentage";
+import { calculateGameStats } from "./calculateGameStats";
 
 /**
  * Create a ranking object for a team
  */
-export const createRankingObject = (
+export const createRankingObject = async (
   team: Team, 
   allTeams: Team[], 
   allMatches: Match[] | undefined,
   previousRankings: Record<string, number>
-): Ranking => {
+): Promise<Ranking> => {
   const winPercentage = calculateWinPercentage(team.wins || 0, team.losses || 0);
-  const sos = calculateSOS(team, allTeams);
+  const sos = await calculateSOS(team, allTeams, allMatches);
   const streak = calculateStreak(team.id, allMatches);
   const headToHead = calculateHeadToHead(team.id, allTeams, allMatches);
   const previousRank = previousRankings[team.id];
+  
+  // Calculate game-level statistics
+  const { 
+    gamesWon,
+    gamesLost,
+    gameWinPercentage,
+    closeMatchLosses
+  } = calculateGameStats(team.id, allMatches);
   
   return {
     teamId: team.id,
@@ -33,6 +42,10 @@ export const createRankingObject = (
     streak,
     headToHead,
     previousRank,
-    rankChange: previousRank !== undefined ? 0 : undefined // Will be updated after sorting
+    rankChange: previousRank !== undefined ? 0 : undefined, // Will be updated after sorting
+    gamesWon,
+    gamesLost,
+    gameWinPercentage,
+    closeMatchLosses
   };
 };

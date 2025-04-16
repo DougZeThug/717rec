@@ -1,4 +1,3 @@
-
 export interface Player {
   id?: string;
   name: string;
@@ -43,6 +42,8 @@ export interface Match {
   next_loser_match_id?: string;
   best_of?: number;
   created_at?: string;
+  team1_game_wins?: number | null;
+  team2_game_wins?: number | null;
 }
 
 export interface TeamTimeslot {
@@ -112,6 +113,10 @@ export interface Ranking {
   headToHead?: HeadToHeadMap;
   previousRank?: number;
   rankChange?: number;
+  gamesWon?: number;
+  gamesLost?: number;
+  gameWinPercentage?: number;
+  closeMatchLosses?: number;
 }
 
 // Interface for the team_stats table we just created

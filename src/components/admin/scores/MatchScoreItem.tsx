@@ -45,12 +45,12 @@ const MatchScoreItem = ({
           </span>
         </div>
         <div className="text-sm text-gray-500">
-          {new Date(match.date).toLocaleDateString()}
+          {new Date(match.date || '').toLocaleDateString()}
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="p-4 border-t bg-slate-50">
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <p className="text-sm font-medium mb-1">{teams[match.team1Id]?.name || 'Team 1'} Score</p>
               <Input
@@ -72,6 +72,45 @@ const MatchScoreItem = ({
               />
             </div>
           </div>
+          
+          {match.best_of && match.best_of > 1 && (
+            <div className="mb-6">
+              <p className="text-sm font-medium mb-2">Game Wins (Best of {match.best_of})</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">{teams[match.team1Id]?.name || 'Team 1'} Game Wins</p>
+                  <Input
+                    type="number"
+                    min="0"
+                    max={Math.ceil(match.best_of / 2)}
+                    defaultValue={match.team1_game_wins?.toString() || "0"}
+                    onChange={(e) => {
+                      if (match.team1_game_wins !== undefined) {
+                        match.team1_game_wins = parseInt(e.target.value) || 0;
+                      }
+                    }}
+                    placeholder="Game wins"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">{teams[match.team2Id]?.name || 'Team 2'} Game Wins</p>
+                  <Input
+                    type="number"
+                    min="0"
+                    max={Math.ceil(match.best_of / 2)}
+                    defaultValue={match.team2_game_wins?.toString() || "0"}
+                    onChange={(e) => {
+                      if (match.team2_game_wins !== undefined) {
+                        match.team2_game_wins = parseInt(e.target.value) || 0;
+                      }
+                    }}
+                    placeholder="Game wins"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          
           <Button onClick={onSubmitScore}>Submit Result</Button>
         </div>
       </CollapsibleContent>

@@ -31,12 +31,45 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
       teamName: mostWinsTeam?.teamName || 'No teams'
     };
   };
+  
+  const getHighestSOS = () => {
+    if (!rankings || rankings.length === 0) return { sos: 0, teamName: 'No teams' };
+    
+    const highestSOS = rankings.reduce((max, team) => 
+      ((team.sos || 0) > (max.sos || 0)) ? team : max, rankings[0]);
+    
+    return {
+      sos: highestSOS && highestSOS.sos ? highestSOS.sos.toFixed(3) : 0,
+      teamName: highestSOS?.teamName || 'No teams'
+    };
+  };
+  
+  const getHighestGameWinPercentage = () => {
+    if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
+    
+    // Only consider teams with game stats
+    const teamsWithGameStats = rankings.filter(team => team.gameWinPercentage !== undefined);
+    
+    if (teamsWithGameStats.length === 0) return { percentage: 0, teamName: 'No game stats' };
+    
+    const highest = teamsWithGameStats.reduce((max, team) => 
+      ((team.gameWinPercentage || 0) > (max.gameWinPercentage || 0)) ? team : max, teamsWithGameStats[0]);
+    
+    return {
+      percentage: highest && highest.gameWinPercentage !== undefined
+        ? (highest.gameWinPercentage * 100).toFixed(1)
+        : 0,
+      teamName: highest?.teamName || 'No teams'
+    };
+  };
 
   const highestWinPercentage = getHighestWinPercentage();
   const mostWins = getMostWins();
+  const highestSOS = getHighestSOS();
+  const highestGameWinPercentage = getHighestGameWinPercentage();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>Total Teams</CardTitle>
@@ -66,16 +99,33 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
       
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle>Most Wins</CardTitle>
-          <CardDescription>Team with the most victories</CardDescription>
+          <CardTitle>Highest SOS</CardTitle>
+          <CardDescription>Team with toughest schedule</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col">
             <span className="text-4xl font-bold text-cornhole-navy">
-              {mostWins.wins}
+              {highestSOS.sos}
             </span>
             <span className="text-sm text-gray-500">
-              {mostWins.teamName}
+              {highestSOS.teamName}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Best Game Win %</CardTitle>
+          <CardDescription>Team with highest game win rate</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col">
+            <span className="text-4xl font-bold text-cornhole-green">
+              {highestGameWinPercentage.percentage}%
+            </span>
+            <span className="text-sm text-gray-500">
+              {highestGameWinPercentage.teamName}
             </span>
           </div>
         </CardContent>

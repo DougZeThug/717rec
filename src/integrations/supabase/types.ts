@@ -44,16 +44,19 @@ export type Database = {
       divisions: {
         Row: {
           created_at: string | null
+          division_weight: number | null
           id: string
           name: string
         }
         Insert: {
           created_at?: string | null
+          division_weight?: number | null
           id?: string
           name: string
         }
         Update: {
           created_at?: string | null
+          division_weight?: number | null
           id?: string
           name?: string
         }

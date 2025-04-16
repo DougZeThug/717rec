@@ -33,8 +33,11 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
             <TableHead className="hidden md:table-cell">Division</TableHead>
             <TableHead className="text-center">W-L</TableHead>
             <TableHead className="text-center">Win %</TableHead>
-            <TableHead className="text-center">Streak</TableHead>
+            <TableHead className="text-center hidden md:table-cell">Games (W-L)</TableHead>
+            <TableHead className="text-center hidden lg:table-cell">Game %</TableHead>
             <TableHead className="text-center">SOS</TableHead>
+            <TableHead className="text-center hidden lg:table-cell">Close L</TableHead>
+            <TableHead className="text-center">Streak</TableHead>
             <TableHead className="text-center">Trend</TableHead>
           </TableRow>
         </TableHeader>
@@ -49,7 +52,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
               />
               {expandedTeam === ranking.teamId && (
                 <TableRow>
-                  <TableCell colSpan={8} className="bg-gray-50 p-0">
+                  <TableCell colSpan={11} className="bg-gray-50 p-0">
                     <div className="p-4">
                       <HeadToHeadRecords headToHead={ranking.headToHead} />
                     </div>

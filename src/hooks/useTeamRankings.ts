@@ -5,6 +5,8 @@ import { createRankingObject, sortRankings, updateRankChanges, saveRankingsToSto
 
 export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | undefined) => {
   const [previousRankings, setPreviousRankings] = useState<Record<string, number>>({});
+  const [rankings, setRankings] = useState<Ranking[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Load previous rankings from localStorage
   useEffect(() => {
@@ -23,33 +25,46 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     loadPreviousRankings();
   }, []);
   
-  // Calculate team rankings
-  const calculateRankings = (teamsData: Team[] | undefined, matchesData: Match[] | undefined): Ranking[] => {
-    if (!teamsData || teamsData.length === 0) {
-      return [];
-    }
-    
-    // Create ranking objects for each team
-    const unsortedRankings = teamsData
-      .filter(team => team !== null && team !== undefined)
-      .map(team => createRankingObject(team, teamsData, matchesData, previousRankings));
-    
-    // Sort rankings by win percentage and SOS
-    const sortedRankings = sortRankings(unsortedRankings);
-    
-    // Update rank changes
-    return updateRankChanges(sortedRankings);
-  };
-  
-  // Save current rankings to localStorage for future comparison
+  // Calculate team rankings when teams or matches change
   useEffect(() => {
-    if (teams && teams.length > 0 && matches) {
-      const currentRankings = calculateRankings(teams, matches);
-      saveRankingsToStorage(currentRankings);
-    }
-  }, [teams, matches]);
-
+    const calculateRankingsEffect = async () => {
+      if (!teams || teams.length === 0) {
+        setRankings([]);
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      try {
+        // Create ranking objects for each team asynchronously
+        const rankingPromises = teams
+          .filter(team => team !== null && team !== undefined)
+          .map(team => createRankingObject(team, teams, matches, previousRankings));
+          
+        const unsortedRankings = await Promise.all(rankingPromises);
+        
+        // Sort rankings by win percentage, SOS, and game win percentage
+        const sortedRankings = sortRankings(unsortedRankings);
+        
+        // Update rank changes
+        const finalRankings = updateRankChanges(sortedRankings);
+        
+        setRankings(finalRankings);
+        
+        // Save current rankings to localStorage for future comparison
+        saveRankingsToStorage(finalRankings);
+      } catch (error) {
+        console.error('Error calculating rankings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    calculateRankingsEffect();
+  }, [teams, matches, previousRankings]);
+  
   return {
-    calculateRankings
+    rankings,
+    isLoading
   };
 };

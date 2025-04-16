@@ -6,10 +6,24 @@ import { Ranking } from "@/types";
  */
 export const sortRankings = (rankings: Ranking[]): Ranking[] => {
   return [...rankings].sort((a, b) => {
+    // Primary sort by win percentage
     if (b.winPercentage !== a.winPercentage) {
       return b.winPercentage - a.winPercentage;
     }
-    return (b.sos || 0) - (a.sos || 0);
+    
+    // Secondary sort by SOS
+    if ((b.sos || 0) !== (a.sos || 0)) {
+      return (b.sos || 0) - (a.sos || 0);
+    }
+    
+    // Tertiary sort by game win percentage if available
+    if (b.gameWinPercentage !== undefined && a.gameWinPercentage !== undefined && 
+        b.gameWinPercentage !== a.gameWinPercentage) {
+      return b.gameWinPercentage - a.gameWinPercentage;
+    }
+    
+    // If all else is equal, sort by total wins
+    return b.wins - a.wins;
   });
 };
 

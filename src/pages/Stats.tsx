@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import RankingsTable from "@/components/stats/RankingsTable";
-import { Match, Ranking } from "@/types";
+import { Match } from "@/types";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,7 +22,7 @@ const Stats = () => {
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [matchesError, setMatchesError] = useState<Error | null>(null);
   const isMobile = useIsMobile();
-  const { calculateRankings } = useTeamRankings(teams, matches);
+  const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -52,7 +52,9 @@ const Stats = () => {
           match_type: match.match_type,
           next_match_id: match.next_match_id,
           next_loser_match_id: match.next_loser_match_id,
-          best_of: match.best_of
+          best_of: match.best_of,
+          team1_game_wins: match.team1_game_wins,
+          team2_game_wins: match.team2_game_wins
         }));
         
         setMatches(matchData);
@@ -68,19 +70,16 @@ const Stats = () => {
     fetchMatches();
   }, []);
 
-  const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches;
+  const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
-
-  const rankings: Ranking[] = (!isLoading && !hasError && teams) 
-    ? calculateRankings(teams, matches) 
-    : [];
 
   const chartLimit = isMobile ? 5 : 8;
   const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
     name: team.teamName,
     wins: team.wins,
     losses: team.losses,
-    winPercentage: Number((team.winPercentage * 100).toFixed(1))
+    winPercentage: Number((team.winPercentage * 100).toFixed(1)),
+    sos: Number((team.sos || 0).toFixed(3))
   }));
 
   const handleDivisionChange = (value: string) => {
@@ -133,7 +132,7 @@ const Stats = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Team Rankings</CardTitle>
-                <CardDescription>Based on win percentage, strength of schedule (SOS), and current streak</CardDescription>
+                <CardDescription>Based on win percentage, strength of schedule (SOS), and game-level performance</CardDescription>
               </CardHeader>
               <CardContent>
                 <RankingsTable rankings={rankings} />
