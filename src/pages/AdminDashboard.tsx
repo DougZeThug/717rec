@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +14,8 @@ import { useTeamData } from "@/hooks/useTeamData";
 import { Team } from "@/types";
 import PendingMatchesSection from "@/components/admin/PendingMatchesSection";
 import EditScoresSection from "@/components/admin/EditScoresSection";
-import { CalendarIcon, ClipboardEdit, Award, Calendar, Users } from "lucide-react";
+import MassScoreEntryTool from "@/components/admin/MassScoreEntryTool";
+import { CalendarIcon, ClipboardEdit, Award, Calendar, Users, TableProperties } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -122,6 +124,10 @@ const AdminDashboard = () => {
           <TabsTrigger value="scores" className="flex items-center gap-2">
             <ClipboardEdit size={18} />
             <span>Scores</span>
+          </TabsTrigger>
+          <TabsTrigger value="mass-scores" className="flex items-center gap-2">
+            <TableProperties size={18} />
+            <span>Mass Entry</span>
           </TabsTrigger>
         </TabsList>
         
@@ -238,6 +244,10 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="mass-scores">
+          <MassScoreEntryTool />
         </TabsContent>
       </Tabs>
     </div>
