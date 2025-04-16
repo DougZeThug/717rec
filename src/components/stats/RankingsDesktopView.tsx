@@ -36,7 +36,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
             <TableHead className="text-center hidden md:table-cell">Games (W-L)</TableHead>
             <TableHead className="text-center hidden lg:table-cell">Game %</TableHead>
             <TableHead className="text-center">SOS</TableHead>
-            <TableHead className="text-center hidden lg:table-cell">Close L</TableHead>
+            <TableHead className="text-center hidden lg:table-cell">Power Score</TableHead>
             <TableHead className="text-center">Streak</TableHead>
             <TableHead className="text-center">Trend</TableHead>
           </TableRow>

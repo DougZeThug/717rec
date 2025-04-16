@@ -70,7 +70,9 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         {(ranking.sos || 0).toFixed(3)}
       </TableCell>
       <TableCell className="text-center hidden lg:table-cell">
-        {ranking.closeMatchLosses || 0}
+        {ranking.powerScore !== undefined
+          ? ranking.powerScore.toFixed(1)
+          : "—"}
       </TableCell>
       <TableCell className="text-center">{ranking.streak || "—"}</TableCell>
       <TableCell className="text-center">

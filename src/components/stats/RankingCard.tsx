@@ -81,8 +81,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <div>{(ranking.sos || 0).toFixed(3)}</div>
           </div>
           <div className="p-2 bg-gray-50 rounded text-center">
-            <div className="text-gray-500 text-xs">Close Losses</div>
-            <div>{ranking.closeMatchLosses || 0}</div>
+            <div className="text-gray-500 text-xs">Power Score</div>
+            <div>{ranking.powerScore !== undefined ? ranking.powerScore.toFixed(1) : "—"}</div>
           </div>
           
           <div className="p-2 bg-gray-50 rounded text-center">

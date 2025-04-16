@@ -2,21 +2,27 @@
 import { Ranking } from "@/types";
 
 /**
- * Sort rankings by win percentage and SOS
+ * Sort rankings by power score, win percentage, and SOS
  */
 export const sortRankings = (rankings: Ranking[]): Ranking[] => {
   return [...rankings].sort((a, b) => {
-    // Primary sort by win percentage
+    // Primary sort by power score if available
+    if (b.powerScore !== undefined && a.powerScore !== undefined && 
+        b.powerScore !== a.powerScore) {
+      return b.powerScore - a.powerScore;
+    }
+    
+    // Secondary sort by win percentage
     if (b.winPercentage !== a.winPercentage) {
       return b.winPercentage - a.winPercentage;
     }
     
-    // Secondary sort by SOS
+    // Tertiary sort by SOS
     if ((b.sos || 0) !== (a.sos || 0)) {
       return (b.sos || 0) - (a.sos || 0);
     }
     
-    // Tertiary sort by game win percentage if available
+    // Quaternary sort by game win percentage if available
     if (b.gameWinPercentage !== undefined && a.gameWinPercentage !== undefined && 
         b.gameWinPercentage !== a.gameWinPercentage) {
       return b.gameWinPercentage - a.gameWinPercentage;
