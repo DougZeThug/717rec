@@ -34,8 +34,9 @@ export const formatPowerScore = (score: number | undefined): string => {
 export const getPowerScoreColor = (score: number | undefined): string => {
   if (score === undefined) return "text-slate-600";
   
-  if (score >= 75) return "text-emerald-600";
-  if (score >= 60) return "text-blue-600";
-  if (score >= 45) return "text-amber-600";
+  if (score >= 80) return "text-emerald-600";
+  if (score >= 65) return "text-blue-600";
+  if (score >= 50) return "text-indigo-600";
+  if (score >= 40) return "text-amber-600";
   return "text-red-600";
 };

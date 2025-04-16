@@ -52,46 +52,68 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
     </TableHead>
   );
 
+  // Group rankings by division
+  const rankingsByDivision: Record<string, Ranking[]> = {};
+  rankings.forEach(ranking => {
+    const divisionName = ranking.divisionName || "Unassigned";
+    if (!rankingsByDivision[divisionName]) {
+      rankingsByDivision[divisionName] = [];
+    }
+    rankingsByDivision[divisionName].push(ranking);
+  });
+
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">Rank</TableHead>
-            <TableHead>Team</TableHead>
-            <TableHead className="hidden md:table-cell">Division</TableHead>
-            <SortableHeader field="wins" className="text-center">W-L</SortableHeader>
-            <SortableHeader field="winPercentage" className="text-center">Win %</SortableHeader>
-            <SortableHeader field="gamesWon" className="text-center hidden md:table-cell">Games (W-L)</SortableHeader>
-            <SortableHeader field="gameWinPercentage" className="text-center hidden lg:table-cell">Game %</SortableHeader>
-            <SortableHeader field="sos" className="text-center">SOS</SortableHeader>
-            <SortableHeader field="powerScore" className="text-center hidden lg:table-cell">Power Score</SortableHeader>
-            <TableHead className="text-center">Streak</TableHead>
-            <TableHead className="text-center">Trend</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rankings.map((ranking, index) => (
-            <React.Fragment key={ranking.teamId}>
-              <RankingTableRow
-                ranking={ranking}
-                index={index}
-                isExpanded={expandedTeam === ranking.teamId}
-                onToggleExpand={() => toggleExpand(ranking.teamId)}
-              />
-              {expandedTeam === ranking.teamId && (
+    <div>
+      {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
+        <div key={divisionName} className="mb-8">
+          <h3 className="text-lg font-medium mb-3 flex items-center">
+            {divisionName} <span className="text-muted-foreground ml-1">({divisionRankings.length})</span>
+          </h3>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={11} className="bg-gray-50 p-0">
-                    <div className="p-4">
-                      <HeadToHeadRecords headToHead={ranking.headToHead} />
-                    </div>
-                  </TableCell>
+                  <TableHead className="w-12">Rank</TableHead>
+                  <TableHead>Team</TableHead>
+                  <SortableHeader field="powerScore" className="text-center">Power Score</SortableHeader>
+                  <SortableHeader field="wins" className="text-center">W-L</SortableHeader>
+                  <SortableHeader field="winPercentage" className="text-center">Win %</SortableHeader>
+                  <SortableHeader field="gamesWon" className="text-center hidden md:table-cell">Games (W-L)</SortableHeader>
+                  <SortableHeader field="gameWinPercentage" className="text-center hidden lg:table-cell">Game %</SortableHeader>
+                  <SortableHeader field="sos" className="text-center">SOS</SortableHeader>
+                  <TableHead className="text-center">Streak</TableHead>
+                  <TableHead className="text-center">Trend</TableHead>
                 </TableRow>
-              )}
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+              </TableHeader>
+              <TableBody>
+                {divisionRankings.map((ranking) => {
+                  // Find the overall ranking index for this team
+                  const overallIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
+                  return (
+                    <React.Fragment key={ranking.teamId}>
+                      <RankingTableRow
+                        ranking={ranking}
+                        index={overallIndex}
+                        isExpanded={expandedTeam === ranking.teamId}
+                        onToggleExpand={() => toggleExpand(ranking.teamId)}
+                      />
+                      {expandedTeam === ranking.teamId && (
+                        <TableRow>
+                          <TableCell colSpan={10} className="bg-gray-50 p-0">
+                            <div className="p-4">
+                              <HeadToHeadRecords headToHead={ranking.headToHead} />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

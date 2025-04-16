@@ -1,9 +1,11 @@
+
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
-import { formatPowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RankingTableRowProps {
   ranking: Ranking;
@@ -18,12 +20,35 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   isExpanded,
   onToggleExpand,
 }) => {
+  // Function to get rank styling
+  const getRankStyles = (index: number) => {
+    if (index === 0) return "bg-amber-100 text-amber-800 font-bold"; // Gold
+    if (index === 1) return "bg-slate-100 text-slate-700 font-bold"; // Silver
+    if (index === 2) return "bg-orange-100 text-orange-800 font-bold"; // Bronze
+    return "";
+  };
+
+  // Calculate the trend description
+  const getTrendDescription = () => {
+    if (!ranking.rankChange) return "No change";
+    const direction = ranking.rankChange > 0 ? "up" : "down";
+    const amount = Math.abs(ranking.rankChange);
+    return `${direction} ${amount} ${amount === 1 ? 'spot' : 'spots'}`;
+  };
+
+  // Use the power score color
+  const powerScoreColor = getPowerScoreColor(ranking.powerScore);
+
   return (
     <TableRow
       className="cursor-pointer hover:bg-gray-100"
       onClick={onToggleExpand}
     >
-      <TableCell className="font-medium">{index + 1}</TableCell>
+      <TableCell className={`font-medium ${getRankStyles(index)}`}>
+        <div className="w-8 h-8 flex items-center justify-center rounded-full">
+          {index + 1}
+        </div>
+      </TableCell>
       <TableCell>
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
@@ -49,8 +74,8 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           </div>
         </div>
       </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {ranking.divisionName || "Not Assigned"}
+      <TableCell className={`text-center font-semibold ${powerScoreColor}`}>
+        {formatPowerScore(ranking.powerScore)}
       </TableCell>
       <TableCell className="text-center">
         {ranking.wins}-{ranking.losses}
@@ -69,12 +94,20 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <TableCell className="text-center">
         {(ranking.sos || 0).toFixed(3)}
       </TableCell>
-      <TableCell className="text-center hidden lg:table-cell">
-        {formatPowerScore(ranking.powerScore)}
-      </TableCell>
       <TableCell className="text-center">{ranking.streak || "—"}</TableCell>
       <TableCell className="text-center">
-        <RankTrendIndicator rankChange={ranking.rankChange} />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <RankTrendIndicator rankChange={ranking.rankChange} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p className="text-xs">{getTrendDescription()}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </TableCell>
     </TableRow>
   );

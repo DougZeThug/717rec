@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import RankingsMobileView from "./RankingsMobileView";
@@ -19,9 +19,17 @@ export interface SortOptions {
 const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
-  const [sortOptions, setSortOptions] = useState<SortOptions>({ 
-    field: 'powerScore', 
-    direction: 'desc' 
+  const [sortOptions, setSortOptions] = useState<SortOptions>(() => {
+    // Try to restore last sort preference from localStorage
+    const savedSort = localStorage.getItem("rankingsSortOptions");
+    if (savedSort) {
+      try {
+        return JSON.parse(savedSort);
+      } catch (e) {
+        console.error("Failed to parse saved sort options");
+      }
+    }
+    return { field: 'powerScore', direction: 'desc' };
   });
 
   const toggleExpand = (teamId: string) => {
@@ -33,10 +41,14 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
 
   // Handle column header click for sorting
   const handleSortChange = (field: string) => {
-    setSortOptions(prev => ({
+    const newSortOptions = {
       field,
-      direction: prev.field === field && prev.direction === 'desc' ? 'asc' : 'desc'
-    }));
+      direction: sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc'
+    };
+    setSortOptions(newSortOptions);
+    
+    // Save to localStorage
+    localStorage.setItem("rankingsSortOptions", JSON.stringify(newSortOptions));
   };
 
   if (isMobile) {
