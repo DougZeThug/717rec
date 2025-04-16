@@ -22,6 +22,30 @@ export default function Timeslots() {
     }
   };
 
+  const handleBatchAssign = async (teamIds: string[], timeslot: string) => {
+    try {
+      // Create a promise for each team assignment
+      const assignmentPromises = teamIds.map(teamId => 
+        addTimeslot(selectedDate, teamId, timeslot)
+      );
+      
+      // Wait for all assignments to complete
+      await Promise.all(assignmentPromises);
+      
+      toast({
+        title: "Timeslots assigned",
+        description: `${teamIds.length} team timeslots have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+      });
+    } catch (error) {
+      console.error("Error during batch assignment:", error);
+      toast({
+        title: "Error",
+        description: "Some timeslots could not be assigned. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Weekly Timeslot Assignments</h1>
@@ -66,6 +90,7 @@ export default function Timeslots() {
                       description: `Team timeslot has been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
                     });
                   }}
+                  onBatchAssign={handleBatchAssign}
                 />
               )}
             </CardContent>

@@ -21,7 +21,7 @@ export const useTimeslots = (date: Date) => {
       try {
         const { data, error } = await supabase
           .from('team_timeslots')
-          .select('*')
+          .select('*, teams(name)')
           .eq('match_date', formattedDate);
         
         if (error) {

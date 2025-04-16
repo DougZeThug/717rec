@@ -1,10 +1,13 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Edit, Trash2 } from "lucide-react";
-import { Match, Team } from "@/types";
+import { Calendar, Edit, Trash2, Clock } from "lucide-react";
+import { Match, Team, TeamTimeslot } from "@/types";
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import TeamDayTimeslot from "../timeslots/TeamDayTimeslot";
 
 interface MatchCardProps {
   match: Match;
@@ -16,6 +19,42 @@ interface MatchCardProps {
 const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete }) => {
   const team1 = teams.find(t => t.id === match.team1Id);
   const team2 = teams.find(t => t.id === match.team2Id);
+  const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
+  const [isLoadingTimeslots, setIsLoadingTimeslots] = useState(true);
+  
+  useEffect(() => {
+    // Only fetch timeslots if we have a match date
+    if (match.date) {
+      const fetchTimeslots = async () => {
+        setIsLoadingTimeslots(true);
+        
+        try {
+          const matchDate = new Date(match.date);
+          const formattedDate = format(matchDate, 'yyyy-MM-dd');
+          
+          const { data, error } = await supabase
+            .from('team_timeslots')
+            .select('*')
+            .eq('match_date', formattedDate)
+            .in('team_id', [match.team1Id, match.team2Id]);
+            
+          if (error) {
+            throw error;
+          }
+          
+          setTimeslots(data || []);
+        } catch (error) {
+          console.error('Error fetching timeslots for match:', error);
+        } finally {
+          setIsLoadingTimeslots(false);
+        }
+      };
+      
+      fetchTimeslots();
+    } else {
+      setIsLoadingTimeslots(false);
+    }
+  }, [match]);
   
   if (!team1 || !team2) return null;
   
@@ -37,6 +76,8 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
       hour12: true
     });
   };
+
+  const matchDate = match.date ? new Date(match.date) : null;
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
@@ -61,6 +102,16 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
               <p className={`text-2xl font-bold ${match.winnerId === team1.id ? 'text-green-600' : 'text-gray-500'}`}>
                 {match.team1Score}
               </p>
+            )}
+            {matchDate && (
+              <div className="mt-1">
+                <TeamDayTimeslot 
+                  teamId={team1.id} 
+                  date={matchDate} 
+                  timeslots={timeslots}
+                  isLoading={isLoadingTimeslots}
+                />
+              </div>
             )}
           </div>
           
@@ -89,13 +140,23 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
                 {match.team2Score}
               </p>
             )}
+            {matchDate && (
+              <div className="mt-1">
+                <TeamDayTimeslot 
+                  teamId={team2.id} 
+                  date={matchDate} 
+                  timeslots={timeslots}
+                  isLoading={isLoadingTimeslots}
+                />
+              </div>
+            )}
           </div>
         </div>
         
         <div className="border-t border-gray-200 pt-4 mt-4">
           <div className="flex items-center text-gray-600">
             <Calendar className="h-4 w-4 mr-2" />
-            <span>{formatDate(match.date)} at {formatTime(match.date)}</span>
+            <span>{match.date ? `${formatDate(match.date)} at ${formatTime(match.date)}` : 'Date TBD'}</span>
           </div>
         </div>
       </CardContent>
