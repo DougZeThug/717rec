@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
@@ -145,7 +146,12 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
                     }}
                   />
                   <Tooltip 
-                    formatter={(value) => [`${value.toFixed(1)}`, 'Power Score']} 
+                    formatter={(value, name) => {
+                      if (name === 'powerScore') {
+                        return [formatPowerScore(value as number), 'Power Score'];
+                      }
+                      return [value, name];
+                    }} 
                     labelFormatter={(name) => `Team: ${name}`}
                   />
                   <Bar 
