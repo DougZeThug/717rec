@@ -2,7 +2,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import ScrollButton from "./ScrollButton";
 
 const HeroSection = () => {
   return (
@@ -28,11 +27,6 @@ const HeroSection = () => {
           <Button asChild size="lg" variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-cornhole-navy">
             <Link to="/schedule">See Schedule</Link>
           </Button>
-        </div>
-        
-        <div className="flex justify-center mt-10 gap-6">
-          <ScrollButton targetId="top-teams-section" label="Top Teams" />
-          <ScrollButton targetId="recent-matches-section" label="Recent Matches" />
         </div>
       </div>
     </section>
