@@ -42,11 +42,22 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
           <CardContent className="py-4">
             <div className="space-y-2">
               {teams.map(teamTimeslot => {
-                // Debug log to verify what's coming from the API
+                // Enhanced debugging to verify what's coming from the API
                 console.log('Team data in TimeslotGrouping:', {
-                  teamTimeslot,
-                  logoUrl: teamTimeslot.teams?.logo_url
+                  teamId: teamTimeslot.team_id,
+                  teamName: teamTimeslot.teams?.name,
+                  logoUrl: teamTimeslot.teams?.logo_url,
+                  rawTeams: teamTimeslot.teams
                 });
+                
+                // Check if we need to construct a full URL from a relative path
+                let logoUrl = teamTimeslot.teams?.logo_url;
+                
+                // If logoUrl exists and starts with a slash, it might be a relative path
+                if (logoUrl && logoUrl.startsWith('/')) {
+                  console.log('Detected relative path for logo:', logoUrl);
+                  // No need to construct URL as the logo_url should be a full URL from Supabase Storage
+                }
                 
                 return (
                   <div 
@@ -54,10 +65,10 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                     className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                   >
                     <Avatar className="h-8 w-8 mr-3">
-                      {teamTimeslot.teams?.logo_url ? (
+                      {logoUrl ? (
                         <AvatarImage 
-                          src={teamTimeslot.teams.logo_url}
-                          alt={`${teamTimeslot.teams.name} logo`}
+                          src={logoUrl}
+                          alt={`${teamTimeslot.teams?.name || 'Team'} logo`}
                         />
                       ) : (
                         <AvatarFallback>

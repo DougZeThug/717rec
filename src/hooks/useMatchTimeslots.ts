@@ -48,6 +48,11 @@ export const useMatchTimeslots = (date: Date | null) => {
         
         console.log('Raw data from Supabase in useMatchTimeslots:', data);
         
+        // Debug: Log logo URLs specifically
+        data?.forEach((item, index) => {
+          console.log(`Team ${index} logo_url in useMatchTimeslots:`, item.teams?.logo_url);
+        });
+        
         // Map the data to match the TeamTimeslot type
         const timeslotData: TeamTimeslot[] = data?.map(item => ({
           ...item,
