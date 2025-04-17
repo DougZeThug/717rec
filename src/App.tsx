@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import { useSwipeNavigation } from "@/hooks/use-swipe-navigation";
+import PageTransition from "./components/transitions/PageTransition";
 import Index from "./pages/Index";
 import Teams from "./pages/Teams";
 import Schedule from "./pages/Schedule";
@@ -24,24 +25,27 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   // Add swipe navigation
   useSwipeNavigation();
+  const location = useLocation();
   
   return (
     <NavigationProvider>
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-grow pb-16 md:pb-0">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/teams" element={<Teams />} />
-            <Route path="/teams/:teamId" element={<TeamDetails />} />
-            <Route path="/schedule" element={<Schedule />} />
-            <Route path="/stats" element={<Stats />} />
-            <Route path="/playoffs" element={<Playoffs />} />
-            <Route path="/timeslots" element={<Timeslots />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
+        <PageTransition>
+          <main className="flex-grow pb-16 md:pb-0">
+            <Routes location={location}>
+              <Route path="/" element={<Index />} />
+              <Route path="/teams" element={<Teams />} />
+              <Route path="/teams/:teamId" element={<TeamDetails />} />
+              <Route path="/schedule" element={<Schedule />} />
+              <Route path="/stats" element={<Stats />} />
+              <Route path="/playoffs" element={<Playoffs />} />
+              <Route path="/timeslots" element={<Timeslots />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+        </PageTransition>
         <GlobalNav />
         <Footer />
       </div>
