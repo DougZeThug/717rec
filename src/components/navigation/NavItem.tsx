@@ -1,9 +1,7 @@
 
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { TransitionLink } from "@/components/transitions/TransitionLink";
-import { getButtonInteractionStyles } from "@/styles/interactionUtils";
 
 interface NavItemProps {
   to: string;
@@ -21,24 +19,29 @@ export const NavItem = ({
   className 
 }: NavItemProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Check if this is the current active route
-  // Use either the explicit isActive prop, or check if current path exactly matches this route
   const active = isActive !== undefined 
     ? isActive 
     : location.pathname === to;
   
   console.log(`NavItem: ${to}, Current path: ${location.pathname}, Active: ${active}`);
   
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log(`NavItem: direct navigation to ${to}`);
+    navigate(to);
+  };
+  
   return (
-    <TransitionLink 
-      to={to} 
+    <button
+      onClick={handleClick}
       className={cn(
         "flex items-center justify-center transition-colors",
         active 
           ? "text-cornhole-navy font-medium" 
           : "text-gray-500 hover:text-cornhole-navy",
-        getButtonInteractionStyles("outline-none"),
         className
       )}
     >
@@ -48,6 +51,6 @@ export const NavItem = ({
         {/* DEBUG: Visual indicator to confirm navigation */}
         {active && <span className="text-xs bg-green-500 text-white px-1 rounded-sm">Active</span>}
       </div>
-    </TransitionLink>
+    </button>
   );
 };
