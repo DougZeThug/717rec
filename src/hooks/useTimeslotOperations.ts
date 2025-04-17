@@ -8,6 +8,55 @@ import { TeamTimeslot } from "@/types";
 export const useTimeslotOperations = () => {
   const { toast } = useToast();
 
+  // Fetch timeslots for a specific date
+  const fetchTimeslotsByDate = async (date: Date | null) => {
+    if (!date) {
+      return [];
+    }
+    
+    try {
+      // Format date as YYYY-MM-DD for database queries
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      // Use explicit foreign key join for the teams relation
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .select(`
+          id,
+          match_date,
+          timeslot,
+          team_id,
+          created_at,
+          teams:team_id (
+            id, 
+            name, 
+            logo_url
+          )
+        `)
+        .eq('match_date', formattedDate);
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Map the data to match the TeamTimeslot type
+      const formattedData: TeamTimeslot[] = data?.map(item => ({
+        ...item,
+        teams: item.teams ? {
+          id: item.teams.id,
+          name: item.teams.name,
+          logo_url: item.teams.logo_url,
+          divisionName: null
+        } : undefined
+      })) || [];
+      
+      return formattedData;
+    } catch (error: any) {
+      console.error('Error fetching timeslots:', error);
+      throw error;
+    }
+  };
+
   // Add a new timeslot assignment
   const addTimeslot = async (date: Date, teamId: string, timeslot: string) => {
     try {
@@ -20,7 +69,7 @@ export const useTimeslotOperations = () => {
           team_id: teamId,
           timeslot
         })
-        .select('*, teams(id, name, logo_url)')
+        .select('*, teams:team_id(id, name, logo_url)')
         .single();
       
       if (error) {
@@ -97,7 +146,7 @@ export const useTimeslotOperations = () => {
       const { data, error } = await supabase
         .from('team_timeslots')
         .insert(insertData)
-        .select('*, teams(id, name, logo_url)');
+        .select('*, teams:team_id(id, name, logo_url)');
       
       if (error) {
         console.error('Batch insert error details:', error);
@@ -131,6 +180,7 @@ export const useTimeslotOperations = () => {
   };
 
   return {
+    fetchTimeslotsByDate,
     addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots
