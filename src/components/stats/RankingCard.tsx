@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Ranking } from "@/types";
 import HeadToHeadRecords from "./HeadToHeadRecords";
@@ -81,7 +81,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-1">
-                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                     <div className={`text-sm ${powerScoreColor} font-semibold`}>
                       {formatPowerScore(ranking.powerScore)}
                     </div>
