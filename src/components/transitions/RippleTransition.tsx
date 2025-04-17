@@ -58,14 +58,16 @@ export const RippleTransition: React.FC<RippleTransitionProps> = ({
           animation: `rippleExpand ${duration}ms cubic-bezier(0.4, 0, 0.2, 1) forwards`
         }}
       />
-      <style jsx global>{`
-        @keyframes rippleExpand {
-          to {
-            transform: scale(300);
-            opacity: 1;
+      <style>
+        {`
+          @keyframes rippleExpand {
+            to {
+              transform: scale(300);
+              opacity: 1;
+            }
           }
-        }
-      `}</style>
+        `}
+      </style>
     </div>,
     document.body
   );
