@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, LinkProps } from 'react-router-dom';
+import { Link, LinkProps, useLocation } from 'react-router-dom';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { cn } from "@/lib/utils";
 
@@ -20,9 +20,21 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   ...rest
 }) => {
   const { navigateWithTransition } = useNavigation();
-
+  const location = useLocation();
+  
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    
+    // Get current path and target path
+    const currentPath = location.pathname;
+    const targetPath = to.toString();
+    
+    // Check if we're already on this page or a subpage of it
+    if (currentPath === targetPath || 
+        (targetPath !== '/' && currentPath.startsWith(targetPath))) {
+      // We're already on this page, do nothing
+      return;
+    }
     
     // Get the click coordinates for the ripple effect origin
     const clickX = e.clientX;
@@ -35,7 +47,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
     const x = clickX || (rect.left + rect.width / 2);
     const y = clickY || (rect.top + rect.height / 2);
 
-    navigateWithTransition(to.toString(), { 
+    navigateWithTransition(targetPath, { 
       x, 
       y, 
       color, 
