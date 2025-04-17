@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { useSwipeNavigation } from "@/hooks/use-swipe-navigation";
 import Index from "./pages/Index";
 import Teams from "./pages/Teams";
 import Schedule from "./pages/Schedule";
@@ -21,6 +22,9 @@ import GlobalNav from "./components/navigation/GlobalNav";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  // Add swipe navigation
+  useSwipeNavigation();
+  
   return (
     <NavigationProvider>
       <div className="flex flex-col min-h-screen">
