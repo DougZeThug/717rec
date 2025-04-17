@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useCallback } from 'react';
-import { useNavigate, NavigateOptions } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationContextType {
   navigateWithTransition: (
@@ -34,7 +34,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
       state?: any;
     }
   ) => {
-    // Use direct navigation without any animations
+    // Use direct navigation with no animations or transitions
     console.log(`NavigationContext: Direct navigation to ${to}`);
     navigate(to, { state: options?.state });
   }, [navigate]);

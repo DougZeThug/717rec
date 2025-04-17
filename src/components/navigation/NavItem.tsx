@@ -31,6 +31,8 @@ export const NavItem = ({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     console.log(`NavItem: direct navigation to ${to}`);
+    
+    // Direct navigation with no transitions
     navigate(to);
   };
   

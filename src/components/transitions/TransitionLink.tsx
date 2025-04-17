@@ -24,8 +24,8 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
     // Debug log to verify that click handler is triggered
     console.log(`TransitionLink clicked: direct navigation to ${to.toString()}`);
     
-    // Use direct navigation without any transitions
-    navigate(to.toString(), { state: rest.state });
+    // Use direct navigation with no transitions or blocking
+    navigate(to.toString());
   };
 
   return (
