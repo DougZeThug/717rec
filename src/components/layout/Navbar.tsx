@@ -30,13 +30,12 @@ const Navbar = () => {
     <nav className="bg-cornhole-navy text-white shadow-md">
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
             <Link to="/" className="text-xl font-bold">
-              Cornhole League
+              717Rec
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex space-x-1">
             {navItems.map((item) => (
               <Link key={item.href} to={item.href}>
@@ -54,7 +53,6 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Button
               variant="ghost"
@@ -71,7 +69,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden pt-2 pb-4 space-y-1">
             {navItems.map((item) => (
