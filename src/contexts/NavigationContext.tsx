@@ -63,6 +63,12 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
       state: options?.state 
     };
 
+    console.log(`NavigationContext: Starting transition to ${to}`);
+    
+    // Important: Perform immediate navigation first
+    navigate(to, navigateOptions);
+    
+    // Then trigger the visual transition
     setRippleState({
       isActive: true,
       originX: x,
@@ -75,23 +81,18 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     
     // Log navigation attempt for debugging
     console.log(`Navigation initiated to: ${to}`);
-  }, []);
+  }, [navigate]);
 
   const handleAnimationComplete = useCallback(() => {
-    const { targetRoute, navigateOptions } = rippleState;
-    console.log(`Animation complete, navigating to: ${targetRoute}`);
+    const { targetRoute } = rippleState;
+    console.log(`Animation complete for: ${targetRoute}`);
     
-    // Actually perform the navigation
-    navigate(targetRoute, navigateOptions);
-    
-    // Reset after a small delay to ensure the transition completes
-    setTimeout(() => {
-      setRippleState(prev => ({
-        ...prev,
-        isActive: false
-      }));
-    }, 50);
-  }, [navigate, rippleState.targetRoute, rippleState.navigateOptions]);
+    // Reset after animation completes
+    setRippleState(prev => ({
+      ...prev,
+      isActive: false
+    }));
+  }, [rippleState.targetRoute]);
 
   return (
     <NavigationContext.Provider value={{ navigateWithTransition }}>

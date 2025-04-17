@@ -26,14 +26,15 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     
+    // Debug log to verify that click handler is triggered
+    console.log(`TransitionLink clicked: navigating to ${to.toString()}`);
+    
     // Get current path and target path
     const currentPath = location.pathname;
     const targetPath = to.toString();
     
-    // Check if we're already on this page or a subpage of it
-    if (currentPath === targetPath || 
-        (targetPath !== '/' && currentPath.startsWith(targetPath))) {
-      // We're already on this page, do nothing
+    // Still check if we're already on this page, but don't block subpages
+    if (currentPath === targetPath) {
       console.log(`Already on ${targetPath}, not navigating`);
       return;
     }
@@ -51,6 +52,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
     const x = clickX || (rect.left + rect.width / 2);
     const y = clickY || (rect.top + rect.height / 2);
 
+    // Call navigateWithTransition with the target path
     navigateWithTransition(targetPath, { 
       x, 
       y, 
