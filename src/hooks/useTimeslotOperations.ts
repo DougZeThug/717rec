@@ -9,12 +9,16 @@ export const useTimeslotOperations = () => {
   const { toast } = useToast();
 
   // Fetch timeslots for a specific date
-  const fetchTimeslotsByDate = async (date: Date) => {
+  const fetchTimeslotsByDate = async (date: Date | null) => {
+    if (!date) {
+      return [];
+    }
+    
     try {
       // Format date as YYYY-MM-DD for database queries
       const formattedDate = format(date, 'yyyy-MM-dd');
       
-      // Query written in explicit format with all fields specified
+      // Use standard format without explicit alias for the teams relation
       const { data, error } = await supabase
         .from('team_timeslots')
         .select(`
@@ -26,8 +30,7 @@ export const useTimeslotOperations = () => {
           teams (
             id, 
             name, 
-            logo_url, 
-            division_id
+            logo_url
           )
         `)
         .eq('match_date', formattedDate);
@@ -36,8 +39,6 @@ export const useTimeslotOperations = () => {
         throw error;
       }
       
-      console.log('Raw data from Supabase in fetchTimeslotsByDate:', data);
-      
       // Map the data to match the TeamTimeslot type
       const formattedData: TeamTimeslot[] = data?.map(item => ({
         ...item,
@@ -45,18 +46,13 @@ export const useTimeslotOperations = () => {
           id: item.teams.id,
           name: item.teams.name,
           logo_url: item.teams.logo_url,
-          divisionName: null // We can add this if needed in the future
+          divisionName: null
         } : undefined
       })) || [];
       
       return formattedData;
     } catch (error: any) {
       console.error('Error fetching timeslots:', error);
-      toast({
-        title: "Error",
-        description: `Failed to load timeslots: ${error.message || 'Unknown error'}`,
-        variant: "destructive"
-      });
       throw error;
     }
   };
@@ -73,7 +69,7 @@ export const useTimeslotOperations = () => {
           team_id: teamId,
           timeslot
         })
-        .select('*, teams(id, name, logo_url)')
+        .select('*, teams:team_id(id, name, logo_url)')
         .single();
       
       if (error) {
@@ -150,7 +146,7 @@ export const useTimeslotOperations = () => {
       const { data, error } = await supabase
         .from('team_timeslots')
         .insert(insertData)
-        .select('*, teams(id, name, logo_url)');
+        .select('*, teams:team_id(id, name, logo_url)');
       
       if (error) {
         console.error('Batch insert error details:', error);
