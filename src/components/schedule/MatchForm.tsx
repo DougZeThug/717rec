@@ -1,25 +1,13 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Team, Match } from "@/types";
-
-interface MatchFormProps {
-  match?: Match;
-  teams: Team[];
-  onSubmit: (match: Omit<Match, "id">) => void;
-  onCancel: () => void;
-}
+import { Match } from "@/types";
+import { MatchFormProps } from "./types";
+import { createDateWithTime, getTimeSlotFromDate, determineMatchOutcome } from "./form-utils";
+import TeamSelector from "./TeamSelector";
+import ScoreSection from "./ScoreSection";
+import DateTimeSelection from "./DateTimeSelection";
+import MatchStatusToggle from "./MatchStatusToggle";
 
 const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel }) => {
   const [team1Id, setTeam1Id] = useState(match?.team1Id || "");
@@ -37,49 +25,27 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
     // If editing an existing match, set the appropriate time slot
     if (match) {
       const matchDate = new Date(match.date);
-      const matchHour = matchDate.getHours();
-      const matchMinutes = matchDate.getMinutes();
-      
-      if (matchHour === 18 && matchMinutes === 30) {
-        setSelectedTimeSlot("6:30 PM");
-      } else if (matchHour === 19 && matchMinutes === 30) {
-        setSelectedTimeSlot("7:30 PM");
-      } else if (matchHour === 20 && matchMinutes === 30) {
-        setSelectedTimeSlot("8:30 PM");
+      const timeSlot = getTimeSlotFromDate(matchDate);
+      if (timeSlot) {
+        setSelectedTimeSlot(timeSlot);
       }
     }
   }, [match]);
-
-  const formatDateForInput = (date: Date) => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Create date with selected time
-    const dateWithTime = new Date(selectedDate);
+    const dateWithTime = createDateWithTime(selectedDate, selectedTimeSlot);
     
-    if (selectedTimeSlot === "6:30 PM") {
-      dateWithTime.setHours(18, 30, 0, 0);
-    } else if (selectedTimeSlot === "7:30 PM") {
-      dateWithTime.setHours(19, 30, 0, 0);
-    } else if (selectedTimeSlot === "8:30 PM") {
-      dateWithTime.setHours(20, 30, 0, 0);
-    }
-    
-    let winnerId: string | undefined;
-    let loserId: string | undefined;
-    
-    if (isCompleted && team1Score !== undefined && team2Score !== undefined) {
-      if (team1Score > team2Score) {
-        winnerId = team1Id;
-        loserId = team2Id;
-      } else if (team2Score > team1Score) {
-        winnerId = team2Id;
-        loserId = team1Id;
-      }
-    }
+    // Determine winner and loser
+    const { winnerId, loserId } = determineMatchOutcome(
+      isCompleted,
+      team1Id,
+      team2Id,
+      team1Score,
+      team2Score
+    );
     
     onSubmit({
       team1Id,
@@ -97,131 +63,48 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="team1">Team 1</Label>
-          <Select 
-            value={team1Id} 
-            onValueChange={setTeam1Id}
-            required
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Team 1" />
-            </SelectTrigger>
-            <SelectContent>
-              {teams
-                .filter(team => team.id !== team2Id)
-                .map(team => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
-                  </SelectItem>
-                ))
-              }
-            </SelectContent>
-          </Select>
-        </div>
+        <TeamSelector 
+          teamId={team1Id}
+          setTeamId={setTeam1Id}
+          otherTeamId={team2Id}
+          teams={teams}
+          label="Team 1"
+          placeholder="Select Team 1"
+        />
         
-        <div>
-          <Label htmlFor="team2">Team 2</Label>
-          <Select 
-            value={team2Id} 
-            onValueChange={setTeam2Id}
-            required
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Team 2" />
-            </SelectTrigger>
-            <SelectContent>
-              {teams
-                .filter(team => team.id !== team1Id)
-                .map(team => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
-                  </SelectItem>
-                ))
-              }
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <div>
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          value={formatDateForInput(selectedDate)}
-          onChange={(e) => setSelectedDate(new Date(e.target.value))}
-          required
+        <TeamSelector 
+          teamId={team2Id}
+          setTeamId={setTeam2Id}
+          otherTeamId={team1Id}
+          teams={teams}
+          label="Team 2"
+          placeholder="Select Team 2"
         />
       </div>
-
-      <div className="space-y-2">
-        <Label>Time Slot</Label>
-        <RadioGroup 
-          value={selectedTimeSlot || ''} 
-          onValueChange={setSelectedTimeSlot}
-          className="flex flex-wrap gap-3"
-          required
-        >
-          {timeSlots.map(time => (
-            <div key={time} className="flex items-center">
-              <Button
-                type="button"
-                variant={selectedTimeSlot === time ? "default" : "outline"}
-                className={`
-                  w-28 transition-colors py-2
-                  ${selectedTimeSlot === time ? 'bg-cornhole-navy text-white' : 'border-cornhole-navy text-cornhole-navy'}
-                `}
-                onClick={() => setSelectedTimeSlot(time)}
-              >
-                {time}
-              </Button>
-            </div>
-          ))}
-        </RadioGroup>
-        {!selectedTimeSlot && <p className="text-sm text-destructive">Please select a time slot</p>}
-      </div>
       
-      <div className="flex items-center space-x-2 mb-4">
-        <Switch
-          id="isCompleted"
-          checked={isCompleted}
-          onCheckedChange={setIsCompleted}
-        />
-        <Label htmlFor="isCompleted">Match Completed</Label>
-      </div>
+      <DateTimeSelection
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        selectedTimeSlot={selectedTimeSlot || ""}
+        setSelectedTimeSlot={setSelectedTimeSlot as (value: string) => void}
+        timeSlots={timeSlots}
+      />
       
-      {isCompleted && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-md bg-gray-50">
-          <div>
-            <Label htmlFor="team1Score">
-              {teams.find(team => team.id === team1Id)?.name || "Team 1"} Score
-            </Label>
-            <Input
-              id="team1Score"
-              type="number"
-              min="0"
-              value={team1Score === undefined ? "" : team1Score}
-              onChange={(e) => setTeam1Score(e.target.value ? parseInt(e.target.value) : undefined)}
-              required={isCompleted}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="team2Score">
-              {teams.find(team => team.id === team2Id)?.name || "Team 2"} Score
-            </Label>
-            <Input
-              id="team2Score"
-              type="number"
-              min="0"
-              value={team2Score === undefined ? "" : team2Score}
-              onChange={(e) => setTeam2Score(e.target.value ? parseInt(e.target.value) : undefined)}
-              required={isCompleted}
-            />
-          </div>
-        </div>
-      )}
+      <MatchStatusToggle 
+        isCompleted={isCompleted}
+        setIsCompleted={setIsCompleted}
+      />
+      
+      <ScoreSection
+        isCompleted={isCompleted}
+        team1Id={team1Id}
+        team2Id={team2Id}
+        team1Score={team1Score}
+        team2Score={team2Score}
+        setTeam1Score={setTeam1Score}
+        setTeam2Score={setTeam2Score}
+        teams={teams}
+      />
       
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
