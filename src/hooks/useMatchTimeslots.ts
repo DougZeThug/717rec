@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { TeamTimeslot } from "@/types";
-import { useTimeslotOperations } from "./useTimeslotOperations";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 export const useMatchTimeslots = (date: Date | null) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [groupedTimeslots, setGroupedTimeslots] = useState<Record<string, TeamTimeslot[]>>({});
-  const { fetchTimeslotsByDate } = useTimeslotOperations();
   
   useEffect(() => {
     const loadTimeslots = async () => {
@@ -21,13 +21,47 @@ export const useMatchTimeslots = (date: Date | null) => {
       setIsLoading(true);
       
       try {
-        const timeslotData = await fetchTimeslotsByDate(date);
+        // Format date as YYYY-MM-DD for database queries
+        const formattedDate = format(date, 'yyyy-MM-dd');
         
-        console.log('Formatted match timeslots data:', timeslotData);
-        setTimeslots(timeslotData);
+        const { data, error } = await supabase
+          .from('team_timeslots')
+          .select(`
+            id,
+            match_date,
+            timeslot,
+            team_id,
+            created_at,
+            teams:team_id (
+              id, 
+              name, 
+              logo_url
+            )
+          `)
+          .eq('match_date', formattedDate);
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Console log for debugging (once per render)
+        console.log('Formatted match timeslots data:', data);
+        
+        // Map the data to match the TeamTimeslot type
+        const formattedData: TeamTimeslot[] = data?.map(item => ({
+          ...item,
+          teams: item.teams ? {
+            id: item.teams.id,
+            name: item.teams.name,
+            logo_url: item.teams.logo_url,
+            divisionName: null
+          } : undefined
+        })) || [];
+        
+        setTimeslots(formattedData);
         
         // Group timeslots by timeslot value
-        const grouped = timeslotData.reduce((acc: Record<string, TeamTimeslot[]>, curr) => {
+        const grouped = formattedData.reduce((acc: Record<string, TeamTimeslot[]>, curr) => {
           if (!curr.timeslot) return acc;
           
           if (!acc[curr.timeslot]) {
@@ -55,7 +89,7 @@ export const useMatchTimeslots = (date: Date | null) => {
     };
     
     loadTimeslots();
-  }, [date, fetchTimeslotsByDate]);
+  }, [date]);
 
   return { timeslots, groupedTimeslots, isLoading };
 };

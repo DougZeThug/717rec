@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { TeamTimeslot } from "@/types";
-import { useTimeslotOperations } from "./useTimeslotOperations";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 export const useTimeslotsByDate = (date: Date | null) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { fetchTimeslotsByDate } = useTimeslotOperations();
   
   useEffect(() => {
     const loadTimeslots = async () => {
@@ -19,8 +19,42 @@ export const useTimeslotsByDate = (date: Date | null) => {
       setIsLoading(true);
       
       try {
-        const timeslotData = await fetchTimeslotsByDate(date);
-        setTimeslots(timeslotData);
+        // Format date as YYYY-MM-DD for database queries
+        const formattedDate = format(date, 'yyyy-MM-dd');
+        
+        // Use explicit foreign key join for the teams relation
+        const { data, error } = await supabase
+          .from('team_timeslots')
+          .select(`
+            id,
+            match_date,
+            timeslot,
+            team_id,
+            created_at,
+            teams:team_id (
+              id, 
+              name, 
+              logo_url
+            )
+          `)
+          .eq('match_date', formattedDate);
+        
+        if (error) {
+          throw error;
+        }
+        
+        // Map the data to match the TeamTimeslot type
+        const formattedData: TeamTimeslot[] = data?.map(item => ({
+          ...item,
+          teams: item.teams ? {
+            id: item.teams.id,
+            name: item.teams.name,
+            logo_url: item.teams.logo_url,
+            divisionName: null
+          } : undefined
+        })) || [];
+        
+        setTimeslots(formattedData);
       } catch (error: any) {
         console.error('Error fetching timeslots:', error);
       } finally {
@@ -29,7 +63,7 @@ export const useTimeslotsByDate = (date: Date | null) => {
     };
     
     loadTimeslots();
-  }, [date, fetchTimeslotsByDate]);
+  }, [date]);
 
   return { timeslots, isLoading };
 };

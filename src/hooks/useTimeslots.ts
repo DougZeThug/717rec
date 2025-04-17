@@ -3,13 +3,12 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { TeamTimeslot } from "@/types";
-import { useTimeslotOperations } from "./useTimeslotOperations";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useTimeslots = (date: Date) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { fetchTimeslotsByDate, addTimeslot, deleteTimeslot, batchAssignTimeslots } = useTimeslotOperations();
 
   // Format date as YYYY-MM-DD for database queries
   const formattedDate = format(date, 'yyyy-MM-dd');
@@ -20,8 +19,38 @@ export const useTimeslots = (date: Date) => {
       setIsLoading(true);
       
       try {
-        const timeslotData = await fetchTimeslotsByDate(date);
-        setTimeslots(timeslotData);
+        const { data, error } = await supabase
+          .from('team_timeslots')
+          .select(`
+            id,
+            match_date,
+            timeslot,
+            team_id,
+            created_at,
+            teams:team_id (
+              id, 
+              name, 
+              logo_url
+            )
+          `)
+          .eq('match_date', formattedDate);
+          
+        if (error) {
+          throw error;
+        }
+        
+        // Map the data to match the TeamTimeslot type
+        const formattedData: TeamTimeslot[] = data?.map(item => ({
+          ...item,
+          teams: item.teams ? {
+            id: item.teams.id,
+            name: item.teams.name,
+            logo_url: item.teams.logo_url,
+            divisionName: null
+          } : undefined
+        })) || [];
+        
+        setTimeslots(formattedData);
       } catch (error: any) {
         console.error('Error fetching timeslots:', error);
         toast({
@@ -35,38 +64,129 @@ export const useTimeslots = (date: Date) => {
     };
     
     loadTimeslots();
-  }, [date, formattedDate, toast, fetchTimeslotsByDate]);
+  }, [date, formattedDate, toast]);
 
-  // Wrapper for the addTimeslot function that also updates local state
+  // Add a new timeslot assignment
   const handleAddTimeslot = async (date: Date, teamId: string, timeslot: string) => {
     try {
-      const newTimeslot = await addTimeslot(date, teamId, timeslot);
-      setTimeslots(prev => [...prev, newTimeslot]);
-      return newTimeslot;
-    } catch (error) {
-      // Error handling is done in the operations hook
+      console.log('Adding timeslot:', { date: format(date, 'yyyy-MM-dd'), teamId, timeslot });
+      
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .insert({
+          match_date: format(date, 'yyyy-MM-dd'),
+          team_id: teamId,
+          timeslot
+        })
+        .select('*, teams:team_id(id, name, logo_url)')
+        .single();
+      
+      if (error) {
+        console.error('Error details:', error);
+        throw error;
+      }
+      
+      // Format the returned data to match TeamTimeslot type
+      const formattedData: TeamTimeslot = {
+        ...data,
+        teams: data.teams ? {
+          id: data.teams.id,
+          name: data.teams.name,
+          logo_url: data.teams.logo_url,
+          divisionName: null
+        } : undefined
+      };
+      
+      setTimeslots(prev => [...prev, formattedData]);
+      return formattedData;
+      
+    } catch (error: any) {
+      console.error('Error adding timeslot:', error);
+      toast({
+        title: "Error",
+        description: `Failed to assign timeslot: ${error.message || 'Unknown error'}`,
+        variant: "destructive"
+      });
       throw error;
     }
   };
 
-  // Wrapper for the deleteTimeslot function that also updates local state
+  // Delete a timeslot assignment
   const handleDeleteTimeslot = async (id: string) => {
     try {
-      await deleteTimeslot(id);
+      const { error } = await supabase
+        .from('team_timeslots')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error details:', error);
+        throw error;
+      }
+      
       setTimeslots(prev => prev.filter(ts => ts.id !== id));
-    } catch (error) {
-      // Error handling is done in the operations hook
+    } catch (error: any) {
+      console.error('Error deleting timeslot:', error);
+      toast({
+        title: "Error",
+        description: `Failed to remove timeslot: ${error.message || 'Unknown error'}`,
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
-  // Wrapper for the batchAssignTimeslots function that also updates local state
+  // Batch assign multiple teams to the same timeslot
   const handleBatchAssignTimeslots = async (date: Date, teamIds: string[], timeslot: string) => {
     try {
-      const newTimeslots = await batchAssignTimeslots(date, teamIds, timeslot);
-      setTimeslots(prev => [...prev, ...newTimeslots]);
-      return newTimeslots;
-    } catch (error) {
-      // Error handling is done in the operations hook
+      console.log('Batch assigning timeslots:', { 
+        date: format(date, 'yyyy-MM-dd'), 
+        teamIds, 
+        timeslot,
+        count: teamIds.length 
+      });
+      
+      // Create an array of objects for batch insert
+      const insertData = teamIds.map(teamId => ({
+        match_date: format(date, 'yyyy-MM-dd'),
+        team_id: teamId,
+        timeslot
+      }));
+      
+      // Use a single batch insert instead of multiple calls
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .insert(insertData)
+        .select('*, teams:team_id(id, name, logo_url)');
+      
+      if (error) {
+        console.error('Batch insert error details:', error);
+        throw error;
+      }
+      
+      console.log('Batch assignment successful:', data);
+      
+      // Format the returned data to match TeamTimeslot type
+      const formattedData: TeamTimeslot[] = data?.map(item => ({
+        ...item,
+        teams: item.teams ? {
+          id: item.teams.id,
+          name: item.teams.name,
+          logo_url: item.teams.logo_url,
+          divisionName: null
+        } : undefined
+      })) || [];
+      
+      setTimeslots(prev => [...prev, ...formattedData]);
+      return formattedData;
+      
+    } catch (error: any) {
+      console.error('Error in batch assignment:', error);
+      toast({
+        title: "Error",
+        description: `Failed to batch assign timeslots: ${error.message || 'Unknown error'}`,
+        variant: "destructive"
+      });
       throw error;
     }
   };
