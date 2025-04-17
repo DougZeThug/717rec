@@ -3,6 +3,7 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { TransitionLink } from "@/components/transitions/TransitionLink";
+import { getButtonInteractionStyles } from "@/styles/interactionUtils";
 
 interface NavItemProps {
   to: string;
@@ -30,6 +31,7 @@ export const NavItem = ({
         active 
           ? "text-cornhole-navy font-medium" 
           : "text-gray-500 hover:text-cornhole-navy",
+        getButtonInteractionStyles("outline-none"),
         className
       )}
     >

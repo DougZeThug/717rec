@@ -2,6 +2,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ScrollButtonProps {
   targetId: string;
@@ -20,7 +21,10 @@ const ScrollButton: React.FC<ScrollButtonProps> = ({ targetId, label }) => {
     <Button 
       variant="ghost" 
       size="sm" 
-      className="flex items-center gap-1 text-cornhole-navy hover:bg-cornhole-cream/50"
+      className={cn(
+        "flex items-center gap-1 text-cornhole-navy hover:bg-cornhole-cream/50",
+        "active:scale-[0.95] transition-transform duration-150"
+      )}
       onClick={scrollToSection}
     >
       <span>{label}</span>

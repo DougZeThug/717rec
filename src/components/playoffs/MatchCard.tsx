@@ -2,6 +2,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { PlayoffMatch, Team, PlayoffGame } from "@/types";
+import { getRowInteractionStyles } from "@/styles/interactionUtils";
 
 interface MatchCardProps {
   match: PlayoffMatch;
@@ -24,11 +25,15 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team1 = getTeamById(match.team1Id);
   const team2 = getTeamById(match.team2Id);
   const winner = getTeamById(match.winnerId);
+
+  const cardClasses = onEditMatch
+    ? getRowInteractionStyles("w-80 transition-shadow")
+    : "w-80 transition-shadow";
   
   return (
     <div className="relative flex">
       <Card 
-        className={`w-80 hover:shadow-md transition-shadow ${onEditMatch ? 'cursor-pointer' : ''}`}
+        className={cardClasses}
         onClick={() => onEditMatch && onEditMatch(match.id)}
       >
         <CardContent className="p-4">

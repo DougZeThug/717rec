@@ -2,6 +2,7 @@
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
+import { getCardInteractionStyles } from "@/styles/interactionUtils";
 
 interface TeamCardProps {
   team: Team;
@@ -9,7 +10,7 @@ interface TeamCardProps {
 
 const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow mb-4 sm:mb-0">
+    <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0")}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-44 bg-gray-200 relative flex items-center justify-center p-3">
           <div className="w-full h-full flex items-center justify-center">

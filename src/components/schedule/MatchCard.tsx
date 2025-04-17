@@ -8,6 +8,8 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import TeamDayTimeslot from "../timeslots/TeamDayTimeslot";
+import { getCardInteractionStyles } from "@/styles/interactionUtils";
+import { cn } from "@/lib/utils";
 
 interface MatchCardProps {
   match: Match;
@@ -80,12 +82,12 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
   const matchDate = match.date ? new Date(match.date) : null;
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
+    <Card className={getCardInteractionStyles("overflow-hidden transition-all duration-300")}>
       <CardContent className="pt-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex-1 text-center">
-            <Link to={`/teams/${team1.id}`} className="block">
-              <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-gray-200 mb-2 hover:opacity-80 transition-opacity">
+            <Link to={`/teams/${team1.id}`} className="block transition-opacity hover:opacity-80">
+              <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-gray-200 mb-2">
                 {team1.imageUrl ? (
                   <img 
                     src={team1.imageUrl} 
@@ -121,8 +123,8 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
           </div>
           
           <div className="flex-1 text-center">
-            <Link to={`/teams/${team2.id}`} className="block">
-              <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-gray-200 mb-2 hover:opacity-80 transition-opacity">
+            <Link to={`/teams/${team2.id}`} className="block transition-opacity hover:opacity-80">
+              <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-gray-200 mb-2">
                 {team2.imageUrl ? (
                   <img 
                     src={team2.imageUrl} 
@@ -165,7 +167,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
         <Button 
           variant="outline" 
           size="sm" 
-          className="text-cornhole-navy border-cornhole-navy hover:bg-cornhole-navy hover:text-white"
+          className="text-cornhole-navy border-cornhole-navy hover:bg-cornhole-navy hover:text-white active:scale-[0.98] transition-transform duration-150"
           onClick={() => onEdit(match)}
         >
           <Edit className="h-4 w-4 mr-1" />
@@ -174,7 +176,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
         <Button 
           variant="outline" 
           size="sm"
-          className="text-destructive border-destructive hover:bg-destructive hover:text-white"
+          className="text-destructive border-destructive hover:bg-destructive hover:text-white active:scale-[0.98] transition-transform duration-150"
           onClick={() => onDelete(match.id)}
         >
           <Trash2 className="h-4 w-4 mr-1" />

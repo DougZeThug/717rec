@@ -5,6 +5,7 @@ import { Ranking } from "@/types";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { getRowInteractionStyles } from "@/styles/interactionUtils";
 
 interface CompactStandingsProps {
   rankings: Ranking[];
@@ -27,7 +28,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
         {rankings.map((team, index) => (
           <div
             key={team.teamId}
-            className="flex items-center justify-between p-2 rounded-lg border"
+            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border")}
           >
             <div className="flex items-center space-x-3">
               <div className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index))}>
@@ -68,7 +69,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
         </TableHeader>
         <TableBody>
           {rankings.map((team, index) => (
-            <TableRow key={team.teamId}>
+            <TableRow key={team.teamId} className={getRowInteractionStyles("")}>
               <TableCell className={getRankStyles(index)}>
                 <div className="w-8 h-8 flex items-center justify-center rounded-full">
                   {index + 1}

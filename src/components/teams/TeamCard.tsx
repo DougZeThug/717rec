@@ -7,6 +7,8 @@ import { MoreHorizontal, Edit, Trash2, Trophy, X, ExternalLink } from "lucide-re
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { getCardInteractionStyles } from "@/styles/interactionUtils";
+import { cn } from "@/lib/utils";
 
 interface TeamCardProps {
   team: Team;
@@ -32,7 +34,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionColor = getDivisionColor();
 
   return (
-    <Card className="overflow-hidden h-full flex flex-col mb-4 sm:mb-0">
+    <Card className={getCardInteractionStyles("overflow-hidden h-full flex flex-col mb-4 sm:mb-0")}>
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
         <div className="h-32 sm:h-40 bg-gray-100 flex items-center justify-center p-4">
           {!team.imageUrl ? (
@@ -57,25 +59,28 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 active:scale-[0.95] transition-transform duration-150">
                 <MoreHorizontal size={15} />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(team)}>
+              <DropdownMenuItem 
+                onClick={() => onEdit(team)}
+                className="cursor-pointer active:scale-[0.98] transition-transform duration-150"
+              >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="text-destructive focus:text-destructive" 
+                className="text-destructive focus:text-destructive cursor-pointer active:scale-[0.98] transition-transform duration-150" 
                 onClick={() => onDelete(team.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to={`/teams/${team.id}`}>
+                <Link to={`/teams/${team.id}`} className="active:scale-[0.98] transition-transform duration-150">
                   <ExternalLink className="mr-2 h-4 w-4" />
                   View Details
                 </Link>

@@ -7,6 +7,8 @@ import HeadToHeadRecords from "./HeadToHeadRecords";
 import RankTrendIndicator from "./RankTrendIndicator";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getRowInteractionStyles } from "@/styles/interactionUtils";
+import { cn } from "@/lib/utils";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -42,14 +44,21 @@ const RankingCard: React.FC<RankingCardProps> = ({
   // Use the power score color for highlighting
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
   
+  const cardClasses = !compactView 
+    ? getRowInteractionStyles("border rounded-lg overflow-hidden")
+    : "border rounded-lg overflow-hidden";
+  
   return (
     <Collapsible
       key={ranking.teamId}
-      className="border rounded-lg overflow-hidden"
+      className={cardClasses}
       open={expandedTeam === ranking.teamId && !compactView}
       onOpenChange={() => !compactView && onToggleExpand(ranking.teamId)}
     >
-      <div className={`p-3 bg-white ${compactView ? 'py-2' : ''}`}>
+      <div className={cn(
+        `p-3 bg-white ${compactView ? 'py-2' : ''}`,
+        !compactView && "cursor-pointer"
+      )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className={`w-7 h-7 flex items-center justify-center rounded-full ${getRankStyles(index)}`}>
@@ -76,7 +85,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               {formatPowerScore(ranking.powerScore)}
             </div>
             {!compactView && (
-              <CollapsibleTrigger className="p-2">
+              <CollapsibleTrigger className="p-2 active:scale-[0.95] transition-transform duration-150">
                 <ChevronDown className="h-4 w-4" />
               </CollapsibleTrigger>
             )}

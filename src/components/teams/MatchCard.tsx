@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { getCardInteractionStyles } from "@/styles/interactionUtils";
 
 interface MatchCardProps {
   match: Match;
@@ -15,7 +16,7 @@ interface MatchCardProps {
 
 const MatchCard = ({ match, opponentId, isPastMatch, matchResult, scoreDisplay }: MatchCardProps) => {
   return (
-    <Card>
+    <Card className={getCardInteractionStyles("")}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">

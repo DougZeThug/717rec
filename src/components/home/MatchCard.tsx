@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Match, Team } from "@/types";
+import { getCardInteractionStyles } from "@/styles/interactionUtils";
 
 interface MatchCardProps {
   match: Match;
@@ -20,7 +21,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 }) => {
   return (
     <Link to={`/schedule?matchId=${match.id}`} className="block">
-      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow transform hover:-translate-y-1 transition-transform duration-200">
+      <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-200")}>
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">

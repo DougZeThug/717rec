@@ -2,10 +2,12 @@
 import React from 'react';
 import { Link, LinkProps } from 'react-router-dom';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { cn } from "@/lib/utils";
 
 export interface TransitionLinkProps extends Omit<LinkProps, 'onClick'> {
   color?: string;
   duration?: number;
+  noFeedback?: boolean;
 }
 
 export const TransitionLink: React.FC<TransitionLinkProps> = ({
@@ -14,6 +16,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   duration,
   children,
   className,
+  noFeedback = false,
   ...rest
 }) => {
   const { navigateWithTransition } = useNavigation();
@@ -41,7 +44,10 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   return (
     <Link
       to={to}
-      className={className}
+      className={cn(
+        !noFeedback && "active:scale-[0.98] transition-transform duration-150",
+        className
+      )}
       onClick={handleClick}
       {...rest}
     >

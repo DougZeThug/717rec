@@ -4,6 +4,7 @@ import { Award, Calendar, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { TransitionLink } from "@/components/transitions/TransitionLink";
+import { getCardInteractionStyles } from "@/styles/interactionUtils";
 
 interface NavAnchorItemProps {
   to: string;
@@ -15,7 +16,8 @@ const NavAnchorItem = ({ to, label, icon }: NavAnchorItemProps) => {
   return (
     <TransitionLink
       to={to}
-      className="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow text-cornhole-navy hover:bg-cornhole-cream"
+      className={getCardInteractionStyles("flex flex-col items-center w-full p-4 bg-white rounded-lg shadow-md text-cornhole-navy hover:bg-cornhole-cream")}
+      noFeedback
     >
       {icon}
       <span className="mt-2 font-medium">{label}</span>
