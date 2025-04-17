@@ -18,7 +18,7 @@ export const useTimeslotOperations = () => {
       // Format date as YYYY-MM-DD for database queries
       const formattedDate = format(date, 'yyyy-MM-dd');
       
-      // Use standard format without explicit alias for the teams relation
+      // Use explicit foreign key join for the teams relation
       const { data, error } = await supabase
         .from('team_timeslots')
         .select(`
@@ -27,7 +27,7 @@ export const useTimeslotOperations = () => {
           timeslot,
           team_id,
           created_at,
-          teams (
+          teams:team_id (
             id, 
             name, 
             logo_url
