@@ -21,14 +21,24 @@ export const useTimeslots = (date: Date) => {
       try {
         const { data, error } = await supabase
           .from('team_timeslots')
-          .select('*, teams(name)')
+          .select('*, teams(id, name, division_id)')
           .eq('match_date', formattedDate);
         
         if (error) {
           throw error;
         }
         
-        setTimeslots(data || []);
+        // Map the data to match the TeamTimeslot type
+        const formattedData: TeamTimeslot[] = data?.map(item => ({
+          ...item,
+          teams: item.teams ? {
+            id: item.teams.id,
+            name: item.teams.name,
+            divisionName: null // We'll add this if needed in the future
+          } : undefined
+        })) || [];
+        
+        setTimeslots(formattedData);
       } catch (error: any) {
         console.error('Error fetching timeslots:', error);
         toast({
@@ -56,7 +66,7 @@ export const useTimeslots = (date: Date) => {
           team_id: teamId,
           timeslot
         })
-        .select()
+        .select('*, teams(id, name)')
         .single();
       
       if (error) {
@@ -64,8 +74,18 @@ export const useTimeslots = (date: Date) => {
         throw error;
       }
       
-      setTimeslots(prev => [...prev, data]);
-      return data;
+      // Format the returned data to match TeamTimeslot type
+      const formattedData: TeamTimeslot = {
+        ...data,
+        teams: data.teams ? {
+          id: data.teams.id,
+          name: data.teams.name,
+          divisionName: null
+        } : undefined
+      };
+      
+      setTimeslots(prev => [...prev, formattedData]);
+      return formattedData;
       
     } catch (error: any) {
       console.error('Error adding timeslot:', error);
@@ -124,7 +144,7 @@ export const useTimeslots = (date: Date) => {
       const { data, error } = await supabase
         .from('team_timeslots')
         .insert(insertData)
-        .select();
+        .select('*, teams(id, name)');
       
       if (error) {
         console.error('Batch insert error details:', error);
@@ -133,9 +153,19 @@ export const useTimeslots = (date: Date) => {
       
       console.log('Batch assignment successful:', data);
       
+      // Format the returned data to match TeamTimeslot type
+      const formattedData: TeamTimeslot[] = data?.map(item => ({
+        ...item,
+        teams: item.teams ? {
+          id: item.teams.id,
+          name: item.teams.name,
+          divisionName: null
+        } : undefined
+      })) || [];
+      
       // Update local state with the newly inserted timeslots
-      setTimeslots(prev => [...prev, ...data]);
-      return data;
+      setTimeslots(prev => [...prev, ...formattedData]);
+      return formattedData;
       
     } catch (error: any) {
       console.error('Error in batch assignment:', error);

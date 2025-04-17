@@ -24,14 +24,24 @@ export const useTimeslotsByDate = (date: Date | null) => {
         
         const { data, error } = await supabase
           .from('team_timeslots')
-          .select('*, teams(name)')
+          .select('*, teams(id, name)')
           .eq('match_date', formattedDate);
         
         if (error) {
           throw error;
         }
         
-        setTimeslots(data || []);
+        // Map the data to match the TeamTimeslot type
+        const formattedData: TeamTimeslot[] = data?.map(item => ({
+          ...item,
+          teams: item.teams ? {
+            id: item.teams.id,
+            name: item.teams.name,
+            divisionName: null
+          } : undefined
+        })) || [];
+        
+        setTimeslots(formattedData);
       } catch (error: any) {
         console.error('Error fetching timeslots:', error);
       } finally {
