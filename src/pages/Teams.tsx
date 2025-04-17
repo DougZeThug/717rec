@@ -1,32 +1,35 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Team } from "@/types";
-import TeamForm from "@/components/teams/TeamForm";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
 import { TeamList } from "@/components/teams/TeamList";
 import { TeamsHeader } from "@/components/teams/TeamsHeader";
 import { TeamsFilters } from "@/components/teams/TeamsFilters";
-import { TeamsDivisionSection } from "@/components/teams/TeamsDivisionSection";
-import { useTeams } from "@/hooks/useTeams";
+import { TeamsByDivision } from "@/components/teams/TeamsByDivision";
+import { TeamEditForm } from "@/components/teams/TeamEditForm";
+import { useTeamManagement } from "@/hooks/useTeamManagement";
 import { useDivisions } from "@/hooks/useDivisions";
-import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Teams: React.FC = () => {
-  const { teams, isLoading, fetchTeams, updateTeam, deleteTeam } = useTeams();
+  const { 
+    teams, 
+    isLoading, 
+    teamToEdit, 
+    setTeamToEdit,
+    deleteTeamId, 
+    setDeleteTeamId, 
+    isRefreshing,
+    isDeleting,
+    handleUpdateTeam,
+    handleDeleteTeam,
+    handleRefresh
+  } = useTeamManagement();
+  
   const { divisions } = useDivisions();
-  const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-  const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
-  const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [selectedDivision, setSelectedDivision] = useState<string>("all");
-  const { toast } = useToast();
   const isMobile = useIsMobile();
   
-  // Track expanded division (only one can be expanded at a time)
-  const [expandedDivision, setExpandedDivision] = useState<string | null>(null);
-
   // Group teams by division
   const teamsByDivision = React.useMemo(() => {
     const grouped: Record<string, Team[]> = {
@@ -66,54 +69,6 @@ const Teams: React.FC = () => {
     return teams.filter(team => team.division === selectedDivision);
   }, [teams, selectedDivision]);
 
-  const handleUpdateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
-    if (!teamToEdit) return;
-    try {
-      await updateTeam(teamToEdit.id, teamData);
-      setTeamToEdit(null);
-    } catch (error) {
-      console.error("Error updating team:", error);
-    }
-  };
-
-  const handleDeleteTeam = async () => {
-    if (!deleteTeamId) return;
-    
-    setIsDeleting(true);
-    try {
-      await deleteTeam(deleteTeamId);
-      setDeleteTeamId(null);
-      toast({
-        title: "Team Deleted",
-        description: "The team has been successfully deleted.",
-      });
-    } catch (error) {
-      console.error("Error deleting team:", error);
-      toast({
-        title: "Deletion Failed",
-        description: "There was a problem deleting the team. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await fetchTeams();
-      toast({
-        title: "Teams Refreshed",
-        description: "Team list has been refreshed successfully.",
-      });
-    } catch (error) {
-      console.error("Error refreshing teams:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   // Get division name by ID
   const getDivisionName = (divisionId: string | undefined): string => {
     if (!divisionId) return "Unassigned Division";
@@ -121,25 +76,18 @@ const Teams: React.FC = () => {
     return division ? division.name : "Unknown Division";
   };
 
-  // Toggle division expansion - ensure only one is expanded at a time
-  const toggleDivision = (divisionId: string) => {
-    setExpandedDivision(prevExpanded => 
-      prevExpanded === divisionId ? null : divisionId
-    );
-  };
-
-  // Initialize expanded division on load
-  React.useEffect(() => {
-    // Default: expand first non-empty division on desktop, none on mobile
-    if (!isMobile && !expandedDivision) {
+  // Initialize expandedDivision on component mount
+  useEffect(() => {
+    if (!isMobile) {
       const firstNonEmptyDivision = Object.entries(teamsByDivision)
         .find(([_, teams]) => teams.length > 0);
       
       if (firstNonEmptyDivision) {
-        setExpandedDivision(firstNonEmptyDivision[0]);
+        // This will be handled by TeamsByDivision component now
+        // We don't need to set it here
       }
     }
-  }, [isMobile, divisions, teamsByDivision, expandedDivision]);
+  }, [isMobile, teamsByDivision]);
 
   return (
     <div className="container px-4 py-6 sm:py-8 mx-auto">
@@ -157,49 +105,27 @@ const Teams: React.FC = () => {
       </div>
 
       {teamToEdit && (
-        <div className="mb-6 p-4 sm:p-6 bg-card border rounded-lg shadow overflow-x-hidden">
-          <h2 className="text-xl font-semibold mb-4">
-            Edit Team
-          </h2>
-          <TeamForm 
-            team={teamToEdit}
-            onSubmit={handleUpdateTeam} 
-            onCancel={() => {
-              setTeamToEdit(null);
-            }}
-          />
-        </div>
+        <TeamEditForm
+          team={teamToEdit}
+          onSubmit={handleUpdateTeam}
+          onCancel={() => setTeamToEdit(null)}
+        />
       )}
 
       {selectedDivision === "all" ? (
-        // Group display by divisions with collapsible sections
-        <div className="space-y-6 sm:space-y-8">
-          {Object.keys(teamsByDivision).map(divisionId => {
-            const divisionTeams = teamsByDivision[divisionId];
-            const divisionName = getDivisionName(divisionId === "unassigned" ? undefined : divisionId);
-            const isExpanded = expandedDivision === divisionId;
-            
-            return (
-              <TeamsDivisionSection
-                key={divisionId}
-                divisionName={divisionName}
-                teams={divisionTeams}
-                isExpanded={isExpanded}
-                onToggleExpand={() => toggleDivision(divisionId)}
-                onEditTeam={(team) => setTeamToEdit(team)}
-                onDeleteTeam={(teamId) => setDeleteTeamId(teamId)}
-                isLoading={isLoading}
-              />
-            );
-          })}
-        </div>
+        <TeamsByDivision
+          teamsByDivision={teamsByDivision}
+          getDivisionName={getDivisionName}
+          onEditTeam={setTeamToEdit}
+          onDeleteTeam={setDeleteTeamId}
+          isLoading={isLoading}
+        />
       ) : (
-        // Show filtered teams
         <TeamList 
           teams={filteredTeams}
           isLoading={isLoading}
-          onEdit={(team) => setTeamToEdit(team)}
-          onDelete={(teamId) => setDeleteTeamId(teamId)}
+          onEdit={setTeamToEdit}
+          onDelete={setDeleteTeamId}
         />
       )}
 
