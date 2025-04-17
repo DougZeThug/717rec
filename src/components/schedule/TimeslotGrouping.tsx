@@ -50,25 +50,16 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                   rawTeams: teamTimeslot.teams
                 });
                 
-                // Check if we need to construct a full URL from a relative path
-                let logoUrl = teamTimeslot.teams?.logo_url;
-                
-                // If logoUrl exists and starts with a slash, it might be a relative path
-                if (logoUrl && logoUrl.startsWith('/')) {
-                  console.log('Detected relative path for logo:', logoUrl);
-                  // No need to construct URL as the logo_url should be a full URL from Supabase Storage
-                }
-                
                 return (
                   <div 
                     key={teamTimeslot.id} 
                     className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                   >
                     <Avatar className="h-8 w-8 mr-3">
-                      {logoUrl ? (
+                      {teamTimeslot.teams?.logo_url ? (
                         <AvatarImage 
-                          src={logoUrl}
-                          alt={`${teamTimeslot.teams?.name || 'Team'} logo`}
+                          src={teamTimeslot.teams.logo_url}
+                          alt={`${teamTimeslot.teams.name || 'Team'} logo`}
                         />
                       ) : (
                         <AvatarFallback>
@@ -77,16 +68,23 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                       )}
                     </Avatar>
                     
-                    {teamTimeslot.teams?.name ? (
-                      <Link 
-                        to={`/teams/${teamTimeslot.team_id}`}
-                        className="text-cornhole-navy hover:underline"
-                      >
-                        {teamTimeslot.teams.name}
-                      </Link>
-                    ) : (
-                      <span className="text-gray-500">Unknown Team</span>
-                    )}
+                    <div className="flex flex-col">
+                      {teamTimeslot.teams?.name ? (
+                        <Link 
+                          to={`/teams/${teamTimeslot.team_id}`}
+                          className="text-cornhole-navy hover:underline"
+                        >
+                          {teamTimeslot.teams.name}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-500">Unknown Team</span>
+                      )}
+                      
+                      {/* Debug display of logo URL */}
+                      <p className="text-xs text-gray-400 break-all">
+                        {teamTimeslot.teams?.logo_url || 'No logo URL'}
+                      </p>
+                    </div>
                     
                     {/* Add team division as a badge if available */}
                     {teamTimeslot.teams?.divisionName && (
