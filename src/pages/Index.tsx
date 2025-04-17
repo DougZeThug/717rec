@@ -41,7 +41,8 @@ const Index = () => {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Navigation Anchors */}
+      {/* Navigation Anchors component is still imported but won't render on homepage
+         because we added the condition in NavAnchors.tsx */}
       <NavAnchors />
 
       <div className="max-w-7xl mx-auto px-4 py-12">

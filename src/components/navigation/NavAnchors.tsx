@@ -25,8 +25,16 @@ const NavAnchorItem = ({ to, label, icon }: NavAnchorItemProps) => {
   );
 };
 
+// This component is rendering the floating navigation buttons
+// Let's modify this to only appear on non-homepage routes
 export const NavAnchors = () => {
   const isMobile = useIsMobile();
+  const location = window.location.pathname;
+  
+  // Don't render on homepage
+  if (location === "/") {
+    return null;
+  }
   
   return (
     <div className={cn(
