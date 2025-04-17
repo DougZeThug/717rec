@@ -7,18 +7,12 @@ import { useTeamData } from "@/hooks/useTeamData";
 import { mockMatches } from "@/data/mockData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 
-// Import the components we just created
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import MatchGrid from "@/components/schedule/MatchGrid";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
 
 const Schedule = () => {
-  // Debug message for component mount
-  useEffect(() => {
-    console.log("Schedule page mounted!");
-  }, []);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("upcoming");
   const { data: teams, isLoading: teamsLoading } = useTeamData();
@@ -73,11 +67,6 @@ const Schedule = () => {
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
-      {/* Debug indicator */}
-      <div className="bg-green-500 text-white p-2 mb-4 rounded text-center">
-        Schedule page loaded successfully
-      </div>
-
       <div className="max-w-7xl mx-auto">
         <ScheduleHeader 
           searchTerm={searchTerm}

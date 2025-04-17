@@ -12,11 +12,6 @@ const Stats = () => {
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [matchesError, setMatchesError] = useState<Error | null>(null);
 
-  // Debug message for component mount
-  useEffect(() => {
-    console.log("Stats page mounted!");
-  }, []);
-
   useEffect(() => {
     const fetchMatches = async () => {
       setIsLoadingMatches(true);
@@ -65,10 +60,6 @@ const Stats = () => {
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
-      {/* Debug indicator */}
-      <div className="bg-green-500 text-white p-2 mb-4 rounded text-center">
-        Stats page loaded successfully
-      </div>
       <StatsContainer 
         matches={matches} 
         isLoadingMatches={isLoadingMatches} 

@@ -26,13 +26,8 @@ export const NavItem = ({
     ? isActive 
     : location.pathname === to;
   
-  console.log(`NavItem: ${to}, Current path: ${location.pathname}, Active: ${active}`);
-  
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log(`NavItem: direct navigation to ${to}`);
-    
-    // Direct navigation with no transitions
     navigate(to);
   };
   
@@ -50,7 +45,6 @@ export const NavItem = ({
       <div className="flex flex-col items-center">
         {icon}
         <span className="mt-1">{label}</span>
-        {/* DEBUG: Visual indicator to confirm navigation */}
         {active && <span className="text-xs bg-green-500 text-white px-1 rounded-sm">Active</span>}
       </div>
     </button>

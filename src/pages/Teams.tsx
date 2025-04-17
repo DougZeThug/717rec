@@ -12,11 +12,6 @@ import { useDivisions } from "@/hooks/useDivisions";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Teams: React.FC = () => {
-  // Debug message for component mount
-  useEffect(() => {
-    console.log("Teams page mounted!");
-  }, []);
-  
   const { 
     teams, 
     isLoading, 
@@ -96,11 +91,6 @@ const Teams: React.FC = () => {
 
   return (
     <div className="container px-4 py-6 sm:py-8 mx-auto">
-      {/* Debug indicator */}
-      <div className="bg-green-500 text-white p-2 mb-4 rounded text-center">
-        Teams page loaded successfully
-      </div>
-      
       <TeamsHeader 
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
