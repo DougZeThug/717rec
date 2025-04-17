@@ -47,6 +47,8 @@ export const useTimeslots = (date: Date) => {
   // Add a new timeslot assignment
   const addTimeslot = async (date: Date, teamId: string, timeslot: string) => {
     try {
+      console.log('Adding timeslot:', { date: format(date, 'yyyy-MM-dd'), teamId, timeslot });
+      
       const { data, error } = await supabase
         .from('team_timeslots')
         .insert({
@@ -58,6 +60,7 @@ export const useTimeslots = (date: Date) => {
         .single();
       
       if (error) {
+        console.error('Error details:', error);
         throw error;
       }
       
@@ -68,7 +71,7 @@ export const useTimeslots = (date: Date) => {
       console.error('Error adding timeslot:', error);
       toast({
         title: "Error",
-        description: "Failed to assign timeslot. Please try again.",
+        description: `Failed to assign timeslot: ${error.message || 'Unknown error'}`,
         variant: "destructive"
       });
       throw error;
@@ -84,6 +87,7 @@ export const useTimeslots = (date: Date) => {
         .eq('id', id);
       
       if (error) {
+        console.error('Error details:', error);
         throw error;
       }
       
@@ -93,9 +97,54 @@ export const useTimeslots = (date: Date) => {
       console.error('Error deleting timeslot:', error);
       toast({
         title: "Error",
-        description: "Failed to remove timeslot. Please try again.",
+        description: `Failed to remove timeslot: ${error.message || 'Unknown error'}`,
         variant: "destructive"
       });
+    }
+  };
+
+  // Batch assign multiple teams to the same timeslot
+  const batchAssignTimeslots = async (date: Date, teamIds: string[], timeslot: string) => {
+    try {
+      console.log('Batch assigning timeslots:', { 
+        date: format(date, 'yyyy-MM-dd'), 
+        teamIds, 
+        timeslot,
+        count: teamIds.length 
+      });
+      
+      // Create an array of objects for batch insert
+      const insertData = teamIds.map(teamId => ({
+        match_date: format(date, 'yyyy-MM-dd'),
+        team_id: teamId,
+        timeslot
+      }));
+      
+      // Use a single batch insert instead of multiple calls
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .insert(insertData)
+        .select();
+      
+      if (error) {
+        console.error('Batch insert error details:', error);
+        throw error;
+      }
+      
+      console.log('Batch assignment successful:', data);
+      
+      // Update local state with the newly inserted timeslots
+      setTimeslots(prev => [...prev, ...data]);
+      return data;
+      
+    } catch (error: any) {
+      console.error('Error in batch assignment:', error);
+      toast({
+        title: "Error",
+        description: `Failed to batch assign timeslots: ${error.message || 'Unknown error'}`,
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
@@ -103,6 +152,7 @@ export const useTimeslots = (date: Date) => {
     timeslots,
     isLoading,
     addTimeslot,
-    deleteTimeslot
+    deleteTimeslot,
+    batchAssignTimeslots
   };
 };

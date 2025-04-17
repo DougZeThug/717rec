@@ -13,7 +13,7 @@ import { useTeamData } from "@/hooks/useTeamData";
 export default function Timeslots() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { data: teams, isLoading: isLoadingTeams } = useTeamData();
-  const { timeslots, isLoading, addTimeslot, deleteTimeslot } = useTimeslots(selectedDate);
+  const { timeslots, isLoading, addTimeslot, deleteTimeslot, batchAssignTimeslots } = useTimeslots(selectedDate);
   const { toast } = useToast();
   
   const handleDateSelect = (date: Date | undefined) => {
@@ -24,13 +24,8 @@ export default function Timeslots() {
 
   const handleBatchAssign = async (teamIds: string[], timeslot: string) => {
     try {
-      // Create a promise for each team assignment
-      const assignmentPromises = teamIds.map(teamId => 
-        addTimeslot(selectedDate, teamId, timeslot)
-      );
-      
-      // Wait for all assignments to complete
-      await Promise.all(assignmentPromises);
+      // Use the new batch assignment function instead of individual calls
+      await batchAssignTimeslots(selectedDate, teamIds, timeslot);
       
       toast({
         title: "Timeslots assigned",
@@ -38,11 +33,7 @@ export default function Timeslots() {
       });
     } catch (error) {
       console.error("Error during batch assignment:", error);
-      toast({
-        title: "Error",
-        description: "Some timeslots could not be assigned. Please try again.",
-        variant: "destructive"
-      });
+      // The toast notification is already shown in the hook
     }
   };
 

@@ -25,7 +25,8 @@ const TimeslotsTab = () => {
     timeslots, 
     isLoading: isLoadingTimeslots, 
     addTimeslot, 
-    deleteTimeslot 
+    deleteTimeslot,
+    batchAssignTimeslots
   } = useTimeslots(selectedDate);
 
   const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
@@ -37,16 +38,16 @@ const TimeslotsTab = () => {
       });
     } catch (error) {
       console.error("Error assigning timeslot:", error);
+      // Toast notification is handled in the hook
     }
   };
 
   const handleBatchTimeslotAssign = async (teamIds: string[], timeslot: string) => {
     try {
-      const assignmentPromises = teamIds.map(teamId => 
-        addTimeslot(selectedDate, teamId, timeslot)
-      );
+      console.log("Starting batch assignment for teams:", teamIds, "with timeslot:", timeslot);
       
-      await Promise.all(assignmentPromises);
+      // Use the new batch assignment function
+      await batchAssignTimeslots(selectedDate, teamIds, timeslot);
       
       toast({
         title: "Timeslots Assigned",
@@ -54,11 +55,7 @@ const TimeslotsTab = () => {
       });
     } catch (error) {
       console.error("Error during batch assignment:", error);
-      toast({
-        title: "Error",
-        description: "Some timeslots could not be assigned. Please try again.",
-        variant: "destructive"
-      });
+      // Toast notification is handled in the hook
     }
   };
 
@@ -71,6 +68,7 @@ const TimeslotsTab = () => {
       });
     } catch (error) {
       console.error("Error removing timeslot:", error);
+      // Toast notification is handled in the hook
     }
   };
 
