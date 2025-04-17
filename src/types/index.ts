@@ -1,4 +1,3 @@
-
 export interface Player {
   id?: string;
   name: string;
@@ -53,6 +52,11 @@ export interface TeamTimeslot {
   team_id: string | null;
   timeslot: string | null;
   created_at?: string;
+  teams?: { 
+    name: string;
+    id: string;
+    divisionName?: string | null;
+  };
 }
 
 export interface PlayoffBracket {

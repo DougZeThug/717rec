@@ -1,37 +1,66 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Calendar } from "lucide-react";
 import ScheduleSearch from "./ScheduleSearch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
 
 interface ScheduleHeaderProps {
   searchTerm: string;
-  setSearchTerm: (value: string) => void;
+  setSearchTerm: (term: string) => void;
   onNewMatch: () => void;
+  selectedDate?: Date;
+  onDateSelect?: (date: Date) => void;
 }
 
-const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({ 
-  searchTerm, 
-  setSearchTerm, 
-  onNewMatch 
+const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
+  searchTerm,
+  setSearchTerm,
+  onNewMatch,
+  selectedDate = new Date(),
+  onDateSelect
 }) => {
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date && onDateSelect) {
+      onDateSelect(date);
+    }
+  };
+
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-      <h1 className="text-3xl font-bold text-cornhole-navy mb-4 md:mb-0">Schedule</h1>
-      
-      <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
-        <ScheduleSearch 
-          searchTerm={searchTerm} 
-          setSearchTerm={setSearchTerm} 
-        />
-        
-        <Button 
-          onClick={onNewMatch}
-          className="bg-cornhole-green hover:bg-cornhole-green/90"
-        >
-          <Plus className="h-4 w-4 mr-2" /> New Match
-        </Button>
+    <div className="mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <h1 className="text-3xl font-bold text-cornhole-navy">Schedule</h1>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {onDateSelect && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {format(selectedDate, 'PP')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+          <Button 
+            onClick={onNewMatch}
+            className="bg-cornhole-navy hover:bg-cornhole-navy/90"
+          >
+            <Plus className="h-5 w-5 mr-1" />
+            New Match
+          </Button>
+        </div>
       </div>
+      <ScheduleSearch value={searchTerm} onChange={setSearchTerm} />
     </div>
   );
 };

@@ -2,19 +2,23 @@
 import React, { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CheckCircle } from "lucide-react";
+import { Calendar, CheckCircle, Clock } from "lucide-react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { mockMatches } from "@/data/mockData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
+import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
 
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import MatchGrid from "@/components/schedule/MatchGrid";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
+import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("upcoming");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { data: teams, isLoading: teamsLoading } = useTeamData();
   
   const {
@@ -29,6 +33,9 @@ const Schedule = () => {
     handleUpdateMatch,
     handleDeleteMatch
   } = useMatchManagement(mockMatches);
+
+  // Get timeslots for the currently selected date
+  const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
   // Filter matches based on search term and active tab
   const filteredMatches = matches
@@ -54,6 +61,11 @@ const Schedule = () => {
     })
     .sort((a, b) => new Date(a.date || "").getTime() - new Date(b.date || "").getTime());
 
+  // Callback for when a date is selected
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+  };
+
   if (teamsLoading) {
     return (
       <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
@@ -75,7 +87,30 @@ const Schedule = () => {
             setEditingMatch(undefined);
             setIsFormOpen(true);
           }}
+          selectedDate={selectedDate}
+          onDateSelect={handleDateSelect}
         />
+
+        <div className="mb-8">
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-xl">
+                <Clock className="h-5 w-5 mr-2" />
+                Timeslots for {selectedDate.toLocaleDateString('en-US', { 
+                  weekday: 'long',
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TimeslotGrouping 
+                groupedTimeslots={groupedTimeslots} 
+                isLoading={timeslotsLoading} 
+              />
+            </CardContent>
+          </Card>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="w-full md:w-auto">
