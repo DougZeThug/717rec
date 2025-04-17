@@ -1,8 +1,10 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatPowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
 
 interface StatsSummaryCardsProps {
   rankings: Ranking[];
@@ -47,21 +49,14 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
     };
   };
   
-  const getHighestGameWinPercentage = () => {
-    if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
+  const getHighestPowerScore = () => {
+    if (!rankings || rankings.length === 0) return { score: 0, teamName: 'No teams' };
     
-    // Only consider teams with game stats
-    const teamsWithGameStats = rankings.filter(team => team.gameWinPercentage !== undefined);
-    
-    if (teamsWithGameStats.length === 0) return { percentage: 0, teamName: 'No game stats' };
-    
-    const highest = teamsWithGameStats.reduce((max, team) => 
-      ((team.gameWinPercentage || 0) > (max.gameWinPercentage || 0)) ? team : max, teamsWithGameStats[0]);
+    const highest = rankings.reduce((max, team) => 
+      ((team.powerScore || 0) > (max.powerScore || 0)) ? team : max, rankings[0]);
     
     return {
-      percentage: highest && highest.gameWinPercentage !== undefined
-        ? (highest.gameWinPercentage * 100).toFixed(1)
-        : 0,
+      score: highest?.powerScore || 0,
       teamName: highest?.teamName || 'No teams'
     };
   };
@@ -69,9 +64,8 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const highestWinPercentage = getHighestWinPercentage();
   const mostWins = getMostWins();
   const highestSOS = getHighestSOS();
-  const highestGameWinPercentage = getHighestGameWinPercentage();
+  const highestPowerScore = getHighestPowerScore();
 
-  // Optimize card styling for mobile
   const cardStyles = isMobile ? "py-3" : "pb-2";
   const contentStyles = isMobile ? "py-3" : "";
   const fontStyles = isMobile ? "text-3xl" : "text-4xl";
@@ -124,16 +118,29 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
       
       <Card>
         <CardHeader className={cardStyles}>
-          <CardTitle className="text-lg">Best Game Win %</CardTitle>
-          <CardDescription className="text-xs">Team with highest game win rate</CardDescription>
+          <CardTitle className="text-lg flex items-center gap-2">
+            Highest Power Score
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[300px] text-sm">
+                  Power Score is a weighted rating based on a team's win/loss record, strength of schedule, 
+                  and how close each match was. A higher score reflects strong performance against tougher opponents.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </CardTitle>
+          <CardDescription className="text-xs">Team with best overall rating</CardDescription>
         </CardHeader>
         <CardContent className={contentStyles}>
           <div className="flex flex-col">
-            <span className={`${fontStyles} font-bold text-cornhole-green`}>
-              {highestGameWinPercentage.percentage}%
+            <span className={`${fontStyles} font-bold text-cornhole-navy`}>
+              {formatPowerScore(highestPowerScore.score)}
             </span>
             <span className="text-xs text-gray-500">
-              {highestGameWinPercentage.teamName}
+              {highestPowerScore.teamName}
             </span>
           </div>
         </CardContent>
