@@ -6,7 +6,7 @@ import {
   DialogHeader, 
   DialogTitle
 } from "@/components/ui/dialog";
-import MatchForm from "./MatchForm";
+import MatchFormRHF from "./MatchFormRHF";
 import { Match, Team } from "@/types";
 
 interface MatchFormDialogProps {
@@ -30,7 +30,7 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
         <DialogHeader>
           <DialogTitle>{match ? "Edit Match" : "Create New Match"}</DialogTitle>
         </DialogHeader>
-        <MatchForm 
+        <MatchFormRHF 
           match={match}
           teams={teams}
           onSubmit={onSubmit}
