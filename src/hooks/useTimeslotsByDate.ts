@@ -1,5 +1,6 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
 import { TeamTimeslot } from "@/types";
 import { useTimeslotOperations } from "./useTimeslotOperations";
 
@@ -8,29 +9,29 @@ export const useTimeslotsByDate = (date: Date | null) => {
   const [isLoading, setIsLoading] = useState(true);
   const { fetchTimeslotsByDate } = useTimeslotOperations();
   
-  // Use useCallback to memoize the loadTimeslots function
-  const loadTimeslots = useCallback(async () => {
-    if (!date) {
-      setTimeslots([]);
-      setIsLoading(false);
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const timeslotData = await fetchTimeslotsByDate(date);
-      setTimeslots(timeslotData);
-    } catch (error: any) {
-      console.error('Error fetching timeslots:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [date, fetchTimeslotsByDate]);
-  
   useEffect(() => {
+    const loadTimeslots = async () => {
+      if (!date) {
+        setTimeslots([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      try {
+        // Use the operations hook to fetch timeslots
+        const formattedData = await fetchTimeslotsByDate(date);
+        setTimeslots(formattedData);
+      } catch (error: any) {
+        console.error('Error fetching timeslots:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
     loadTimeslots();
-  }, [loadTimeslots]);
+  }, [date, fetchTimeslotsByDate]);
 
   return { timeslots, isLoading };
 };

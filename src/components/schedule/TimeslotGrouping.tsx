@@ -41,53 +41,45 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
           </div>
           <CardContent className="py-4">
             <div className="space-y-2">
-              {teams.map(teamTimeslot => {
-                // Add console log to debug team data
-                console.log('Team timeslot data:', teamTimeslot.teams);
-                
-                // Safe access with nullish coalescing
-                const logoSrc = teamTimeslot.teams?.logo_url ?? '';
-                const teamName = teamTimeslot.teams?.name || 'Unknown Team';
-                
-                return (
-                  <div 
-                    key={teamTimeslot.id} 
-                    className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    <Avatar className="h-8 w-8 mr-3">
-                      {logoSrc ? (
-                        <AvatarImage 
-                          src={logoSrc}
-                          alt={`${teamName} logo`}
-                        />
-                      ) : (
-                        <AvatarFallback>
-                          <Users className="h-4 w-4 text-gray-500" />
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    
-                    <div className="flex flex-col">
-                      {teamTimeslot.teams?.id ? (
-                        <Link 
-                          to={`/teams/${teamTimeslot.team_id}`}
-                          className="text-cornhole-navy hover:underline"
-                        >
-                          {teamName}
-                        </Link>
-                      ) : (
-                        <span className="text-gray-500">Unknown Team</span>
-                      )}
-                    </div>
-                    
-                    {teamTimeslot.teams?.divisionName && (
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        {teamTimeslot.teams.divisionName}
-                      </Badge>
+              {teams.map(teamTimeslot => (
+                <div 
+                  key={teamTimeslot.id} 
+                  className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <Avatar className="h-8 w-8 mr-3">
+                    {teamTimeslot.teams?.logo_url ? (
+                      <AvatarImage 
+                        src={teamTimeslot.teams.logo_url}
+                        alt={`${teamTimeslot.teams.name || 'Team'} logo`}
+                      />
+                    ) : (
+                      <AvatarFallback>
+                        <Users className="h-4 w-4 text-gray-500" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  
+                  <div className="flex flex-col">
+                    {teamTimeslot.teams?.name ? (
+                      <Link 
+                        to={`/teams/${teamTimeslot.team_id}`}
+                        className="text-cornhole-navy hover:underline"
+                      >
+                        {teamTimeslot.teams.name}
+                      </Link>
+                    ) : (
+                      <span className="text-gray-500">Unknown Team</span>
                     )}
                   </div>
-                );
-              })}
+                  
+                  {/* Add team division as a badge if available */}
+                  {teamTimeslot.teams?.divisionName && (
+                    <Badge variant="outline" className="ml-2 text-xs">
+                      {teamTimeslot.teams.divisionName}
+                    </Badge>
+                  )}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
