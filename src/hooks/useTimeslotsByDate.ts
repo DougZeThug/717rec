@@ -22,14 +22,28 @@ export const useTimeslotsByDate = (date: Date | null) => {
         // Format date as YYYY-MM-DD for database queries
         const formattedDate = format(date, 'yyyy-MM-dd');
         
+        // Query written in explicit format with all fields specified
         const { data, error } = await supabase
           .from('team_timeslots')
-          .select('*, teams(id, name, logo_url)')
+          .select(`
+            id,
+            match_date,
+            timeslot,
+            team_id,
+            created_at,
+            teams (
+              id, 
+              name, 
+              logo_url
+            )
+          `)
           .eq('match_date', formattedDate);
         
         if (error) {
           throw error;
         }
+        
+        console.log('Raw data from Supabase in useTimeslotsByDate:', data);
         
         // Map the data to match the TeamTimeslot type
         const formattedData: TeamTimeslot[] = data?.map(item => ({
@@ -42,6 +56,7 @@ export const useTimeslotsByDate = (date: Date | null) => {
           } : undefined
         })) || [];
         
+        console.log('Formatted timeslots data:', formattedData);
         setTimeslots(formattedData);
       } catch (error: any) {
         console.error('Error fetching timeslots:', error);
