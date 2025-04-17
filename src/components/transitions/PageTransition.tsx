@@ -13,7 +13,9 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
   const [transitionStage, setTransitionStage] = useState('fadeIn');
   
   useEffect(() => {
-    if (location.pathname !== displayLocation.pathname) {
+    if (location !== displayLocation) {
+      console.log(`Location changed: ${displayLocation.pathname} -> ${location.pathname}`);
+      
       const direction = location.state?.swipeDirection || 'none';
       
       // Start transition out
@@ -33,6 +35,8 @@ export const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
           direction === 'right' ? 'slideInLeft' : 
           'fadeIn'
         );
+        
+        console.log(`Transition complete to: ${location.pathname}`);
       }, 300); // Match the CSS duration
       
       return () => clearTimeout(timer);

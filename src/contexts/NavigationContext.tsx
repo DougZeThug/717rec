@@ -72,10 +72,17 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
       targetRoute: to,
       navigateOptions
     });
+    
+    // Log navigation attempt for debugging
+    console.log(`Navigation initiated to: ${to}`);
   }, []);
 
   const handleAnimationComplete = useCallback(() => {
-    navigate(rippleState.targetRoute, rippleState.navigateOptions);
+    const { targetRoute, navigateOptions } = rippleState;
+    console.log(`Animation complete, navigating to: ${targetRoute}`);
+    
+    // Actually perform the navigation
+    navigate(targetRoute, navigateOptions);
     
     // Reset after a small delay to ensure the transition completes
     setTimeout(() => {

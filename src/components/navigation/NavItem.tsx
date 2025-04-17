@@ -26,7 +26,8 @@ export const NavItem = ({
   // Use either the explicit isActive prop, or check if current path starts with this route
   const active = isActive !== undefined 
     ? isActive 
-    : location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
+    : location.pathname === to || 
+      (to !== '/' && location.pathname.startsWith(to));
   
   return (
     <TransitionLink 

@@ -40,7 +40,6 @@ export const BottomNav = () => {
             to={item.path}
             label={item.label}
             icon={item.icon}
-            isActive={location.pathname.startsWith(item.path)}
             className="flex-1 min-h-[44px] px-3 py-2 text-xs"
           />
         ))}
