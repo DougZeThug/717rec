@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Table,
@@ -12,7 +11,8 @@ import { Ranking } from "@/types";
 import RankingTableRow from "./RankingTableRow";
 import HeadToHeadRecords from "./HeadToHeadRecords";
 import { SortOptions } from "./RankingsTable";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RankingsDesktopViewProps {
   rankings: Ranking[];
@@ -29,7 +29,6 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
   sortOptions,
   onSortChange,
 }) => {
-  // Render sort indicator based on current sort options
   const renderSortIndicator = (field: string) => {
     if (sortOptions.field === field) {
       return sortOptions.direction === 'asc' 
@@ -39,7 +38,6 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
     return null;
   };
 
-  // Helper for creating sortable column headers
   const SortableHeader = ({ field, children, className }: { field: string, children: React.ReactNode, className?: string }) => (
     <TableHead 
       className={`cursor-pointer hover:bg-gray-50 ${className || ''}`}
@@ -52,7 +50,6 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
     </TableHead>
   );
 
-  // Group rankings by division
   const rankingsByDivision: Record<string, Ranking[]> = {};
   rankings.forEach(ranking => {
     const divisionName = ranking.divisionName || "Unassigned";
@@ -75,7 +72,24 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                 <TableRow>
                   <TableHead className="w-12">Rank</TableHead>
                   <TableHead>Team</TableHead>
-                  <SortableHeader field="powerScore" className="text-center">Power Score</SortableHeader>
+                  <TableHead className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[300px] text-sm">
+                            Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+                            into a single rating from 0-100. Higher scores indicate stronger overall performance.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <span onClick={() => onSortChange('powerScore')} className="cursor-pointer">
+                        Power Score {renderSortIndicator('powerScore')}
+                      </span>
+                    </div>
+                  </TableHead>
                   <SortableHeader field="wins" className="text-center">W-L</SortableHeader>
                   <SortableHeader field="winPercentage" className="text-center">Win %</SortableHeader>
                   <SortableHeader field="gamesWon" className="text-center hidden md:table-cell">Games (W-L)</SortableHeader>
@@ -87,7 +101,6 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
               </TableHeader>
               <TableBody>
                 {divisionRankings.map((ranking) => {
-                  // Find the overall ranking index for this team
                   const overallIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
                   return (
                     <React.Fragment key={ranking.teamId}>

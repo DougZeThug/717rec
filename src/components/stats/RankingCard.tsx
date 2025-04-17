@@ -1,4 +1,3 @@
-
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -25,15 +24,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
   onToggleExpand,
   compactView = false,
 }) => {
-  // Function to get rank styling
   const getRankStyles = (index: number) => {
-    if (index === 0) return "bg-amber-100 text-amber-800 font-bold"; // Gold
-    if (index === 1) return "bg-slate-100 text-slate-700 font-bold"; // Silver
-    if (index === 2) return "bg-orange-100 text-orange-800 font-bold"; // Bronze
+    if (index === 0) return "bg-amber-100 text-amber-800 font-bold";
+    if (index === 1) return "bg-slate-100 text-slate-700 font-bold";
+    if (index === 2) return "bg-orange-100 text-orange-800 font-bold";
     return "bg-gray-50 text-gray-700";
   };
-  
-  // Calculate the trend description
+
   const getTrendDescription = () => {
     if (!ranking.rankChange) return "No change";
     const direction = ranking.rankChange > 0 ? "up" : "down";
@@ -41,7 +38,6 @@ const RankingCard: React.FC<RankingCardProps> = ({
     return `${direction} ${amount} ${amount === 1 ? 'spot' : 'spots'}`;
   };
 
-  // Use the power score color for highlighting
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
   
   const cardClasses = !compactView 
@@ -81,9 +77,22 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
-            <div className={`text-sm ${powerScoreColor} font-semibold`}>
-              {formatPowerScore(ranking.powerScore)}
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                    <div className={`text-sm ${powerScoreColor} font-semibold`}>
+                      {formatPowerScore(ranking.powerScore)}
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[300px] text-xs">
+                  Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+                  into a single rating from 0-100. Higher scores indicate stronger overall performance.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {!compactView && (
               <CollapsibleTrigger className="p-2 active:scale-[0.95] transition-transform duration-150">
                 <ChevronDown className="h-4 w-4" />
