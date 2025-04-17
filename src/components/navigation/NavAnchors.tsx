@@ -1,9 +1,9 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
 import { Award, Calendar, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { TransitionLink } from "@/components/transitions/TransitionLink";
 
 interface NavAnchorItemProps {
   to: string;
@@ -13,13 +13,13 @@ interface NavAnchorItemProps {
 
 const NavAnchorItem = ({ to, label, icon }: NavAnchorItemProps) => {
   return (
-    <Link
+    <TransitionLink
       to={to}
       className="flex flex-col items-center w-full p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow text-cornhole-navy hover:bg-cornhole-cream"
     >
       {icon}
       <span className="mt-2 font-medium">{label}</span>
-    </Link>
+    </TransitionLink>
   );
 };
 

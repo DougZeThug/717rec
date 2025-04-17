@@ -1,36 +1,10 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Award, Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const NavItem = ({ 
-  to, 
-  label, 
-  icon, 
-  isActive 
-}: { 
-  to: string; 
-  label: string; 
-  icon: React.ReactNode;
-  isActive: boolean;
-}) => {
-  return (
-    <Link 
-      to={to} 
-      className={cn(
-        "flex items-center px-4 py-2 rounded-full transition-colors",
-        isActive 
-          ? "bg-cornhole-cream text-cornhole-navy font-medium" 
-          : "text-gray-600 hover:bg-gray-100"
-      )}
-    >
-      <span className="mr-2">{icon}</span>
-      <span>{label}</span>
-    </Link>
-  );
-};
+import { NavItem } from "@/components/navigation/NavItem";
 
 export const DesktopNav = () => {
   const location = useLocation();
@@ -40,17 +14,17 @@ export const DesktopNav = () => {
     {
       path: "/stats",
       label: "Standings",
-      icon: <Award size={18} />
+      icon: <Award size={18} className="mr-2" />
     },
     {
       path: "/schedule",
       label: "Schedule",
-      icon: <Calendar size={18} />
+      icon: <Calendar size={18} className="mr-2" />
     },
     {
       path: "/teams",
       label: "Teams",
-      icon: <Users size={18} />
+      icon: <Users size={18} className="mr-2" />
     }
   ];
 
@@ -68,6 +42,12 @@ export const DesktopNav = () => {
               label={item.label}
               icon={item.icon}
               isActive={location.pathname === item.path}
+              className={cn(
+                "px-4 py-2 rounded-full",
+                location.pathname === item.path 
+                  ? "bg-cornhole-cream" 
+                  : "hover:bg-gray-100"
+              )}
             />
           ))}
         </div>
