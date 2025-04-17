@@ -65,22 +65,24 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
 
     console.log(`NavigationContext: Starting transition to ${to}`);
     
-    // Important: Perform immediate navigation first
+    // CRITICAL CHANGE: First navigate immediately to ensure route change happens
     navigate(to, navigateOptions);
     
-    // Then trigger the visual transition
-    setRippleState({
-      isActive: true,
-      originX: x,
-      originY: y,
-      color,
-      duration,
-      targetRoute: to,
-      navigateOptions
-    });
+    // Then trigger the visual transition effect
+    setTimeout(() => {
+      setRippleState({
+        isActive: true,
+        originX: x,
+        originY: y,
+        color,
+        duration,
+        targetRoute: to,
+        navigateOptions
+      });
+    }, 0);
     
     // Log navigation attempt for debugging
-    console.log(`Navigation initiated to: ${to}`);
+    console.log(`Navigation completed to: ${to}`);
   }, [navigate]);
 
   const handleAnimationComplete = useCallback(() => {

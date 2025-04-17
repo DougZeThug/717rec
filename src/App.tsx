@@ -20,12 +20,21 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import GlobalNav from "./components/navigation/GlobalNav";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 const AppContent = () => {
   // Add swipe navigation
   useSwipeNavigation();
   const location = useLocation();
+  
+  console.log('AppContent rendering with path:', location.pathname);
   
   return (
     <NavigationProvider>
@@ -53,16 +62,20 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log('App component rendering');
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

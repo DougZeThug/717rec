@@ -53,6 +53,7 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
     const y = clickY || (rect.top + rect.height / 2);
 
     // Call navigateWithTransition with the target path
+    // This will handle both the visual transition and the actual navigation
     navigateWithTransition(targetPath, { 
       x, 
       y, 

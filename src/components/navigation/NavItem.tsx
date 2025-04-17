@@ -45,6 +45,8 @@ export const NavItem = ({
       <div className="flex flex-col items-center">
         {icon}
         <span className="mt-1">{label}</span>
+        {/* DEBUG: Visual indicator to confirm navigation */}
+        {active && <span className="text-xs bg-green-500 text-white px-1 rounded-sm">Active</span>}
       </div>
     </TransitionLink>
   );

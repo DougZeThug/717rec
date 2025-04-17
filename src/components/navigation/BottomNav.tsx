@@ -1,6 +1,6 @@
 
-import React from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Award, Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -8,6 +8,7 @@ import { NavItem } from "@/components/navigation/NavItem";
 
 export const BottomNav = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   
   console.log("BottomNav rendering, current path:", location.pathname);
@@ -29,6 +30,11 @@ export const BottomNav = () => {
       icon: <Users size={20} />
     }
   ];
+
+  // Add effect to debug current route
+  useEffect(() => {
+    console.log("BottomNav: Current route is:", location.pathname);
+  }, [location.pathname]);
 
   // Don't render on desktop if specified
   if (!isMobile) {
