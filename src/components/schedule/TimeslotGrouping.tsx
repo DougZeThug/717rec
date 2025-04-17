@@ -79,11 +79,6 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                       ) : (
                         <span className="text-gray-500">Unknown Team</span>
                       )}
-                      
-                      {/* Debug display of logo URL */}
-                      <p className="text-xs text-gray-400 break-all">
-                        {teamTimeslot.teams?.logo_url || 'No logo URL'}
-                      </p>
                     </div>
                     
                     {/* Add team division as a badge if available */}
