@@ -56,6 +56,7 @@ export interface TeamTimeslot {
     name: string;
     id: string;
     divisionName?: string | null;
+    logo_url?: string | null;
   };
 }
 

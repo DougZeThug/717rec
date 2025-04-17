@@ -26,7 +26,7 @@ export const useMatchTimeslots = (date: Date | null) => {
         
         const { data, error } = await supabase
           .from('team_timeslots')
-          .select('*, teams(id, name, division_id)')
+          .select('*, teams(id, name, logo_url, division_id)')
           .eq('match_date', formattedDate);
         
         if (error) {
@@ -39,6 +39,7 @@ export const useMatchTimeslots = (date: Date | null) => {
           teams: item.teams ? {
             id: item.teams.id,
             name: item.teams.name,
+            logo_url: item.teams.logo_url,
             divisionName: null // We can add this if needed in the future
           } : undefined
         })) || [];
