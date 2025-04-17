@@ -14,17 +14,17 @@ export const BottomNav = () => {
     {
       path: "/stats",
       label: "Standings",
-      icon: <Award size={20} className="mb-1" />
+      icon: <Award size={20} />
     },
     {
       path: "/schedule",
       label: "Schedule",
-      icon: <Calendar size={20} className="mb-1" />
+      icon: <Calendar size={20} />
     },
     {
       path: "/teams",
       label: "Teams",
-      icon: <Users size={20} className="mb-1" />
+      icon: <Users size={20} />
     }
   ];
 
@@ -32,7 +32,7 @@ export const BottomNav = () => {
   if (!isMobile) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 py-1 shadow-[0_-1px_5px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 py-2 shadow-[0_-1px_5px_rgba(0,0,0,0.05)]">
       <div className="flex justify-around items-center max-w-md mx-auto">
         {navItems.map((item) => (
           <NavItem
@@ -40,8 +40,8 @@ export const BottomNav = () => {
             to={item.path}
             label={item.label}
             icon={item.icon}
-            isActive={location.pathname === item.path}
-            className="flex-col px-3 py-2 text-xs"
+            isActive={location.pathname.startsWith(item.path)}
+            className="flex-1 min-h-[44px] px-3 py-2 text-xs"
           />
         ))}
       </div>

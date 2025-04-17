@@ -24,10 +24,13 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     
-    const rect = e.currentTarget.getBoundingClientRect();
+    // Get the click coordinates for the ripple effect origin
     const clickX = e.clientX;
     const clickY = e.clientY;
-
+    
+    // Get the element bounds as fallback
+    const rect = e.currentTarget.getBoundingClientRect();
+    
     // Use position of the click, or fallback to center of element
     const x = clickX || (rect.left + rect.width / 2);
     const y = clickY || (rect.top + rect.height / 2);

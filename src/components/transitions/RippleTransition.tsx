@@ -44,7 +44,7 @@ export const RippleTransition: React.FC<RippleTransitionProps> = ({
     >
       <div
         ref={rippleRef}
-        className="absolute rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-400 ease-out"
+        className="absolute rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all ease-out"
         style={{
           top: originY,
           left: originX,

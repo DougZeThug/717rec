@@ -35,8 +35,10 @@ export const NavItem = ({
         className
       )}
     >
-      {icon}
-      <span>{label}</span>
+      <div className="flex flex-col items-center">
+        {icon}
+        <span className="mt-1">{label}</span>
+      </div>
     </TransitionLink>
   );
 };
