@@ -31,8 +31,13 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <Link to="/" className="text-xl font-bold">
-              717Rec
+            <Link to="/" className="flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/faa54084-d274-43b9-9862-5544b188b4ca.png" 
+                alt="717Rec League Logo" 
+                className="h-8 w-8 object-contain"
+              />
+              <span className="text-xl font-bold">717Rec</span>
             </Link>
           </div>
 
