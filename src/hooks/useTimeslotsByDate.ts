@@ -1,15 +1,16 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
 import { TeamTimeslot } from "@/types";
+import { useTimeslotOperations } from "./useTimeslotOperations";
 
 export const useTimeslotsByDate = (date: Date | null) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { fetchTimeslotsByDate } = useTimeslotOperations();
   
   useEffect(() => {
-    const fetchTimeslots = async () => {
+    const loadTimeslots = async () => {
       if (!date) {
         setTimeslots([]);
         setIsLoading(false);
@@ -19,49 +20,8 @@ export const useTimeslotsByDate = (date: Date | null) => {
       setIsLoading(true);
       
       try {
-        // Format date as YYYY-MM-DD for database queries
-        const formattedDate = format(date, 'yyyy-MM-dd');
-        
-        // Query written in explicit format with all fields specified
-        const { data, error } = await supabase
-          .from('team_timeslots')
-          .select(`
-            id,
-            match_date,
-            timeslot,
-            team_id,
-            created_at,
-            teams (
-              id, 
-              name, 
-              logo_url
-            )
-          `)
-          .eq('match_date', formattedDate);
-        
-        if (error) {
-          throw error;
-        }
-        
-        console.log('Raw data from Supabase in useTimeslotsByDate:', data);
-        
-        // Debug: Log logo URLs specifically
-        data?.forEach((item, index) => {
-          console.log(`Team ${index} logo_url:`, item.teams?.logo_url);
-        });
-        
-        // Map the data to match the TeamTimeslot type
-        const formattedData: TeamTimeslot[] = data?.map(item => ({
-          ...item,
-          teams: item.teams ? {
-            id: item.teams.id,
-            name: item.teams.name,
-            logo_url: item.teams.logo_url,
-            divisionName: null
-          } : undefined
-        })) || [];
-        
-        console.log('Formatted timeslots data:', formattedData);
+        // Use the operations hook to fetch timeslots
+        const formattedData = await fetchTimeslotsByDate(date);
         setTimeslots(formattedData);
       } catch (error: any) {
         console.error('Error fetching timeslots:', error);
@@ -70,8 +30,8 @@ export const useTimeslotsByDate = (date: Date | null) => {
       }
     };
     
-    fetchTimeslots();
-  }, [date]);
+    loadTimeslots();
+  }, [date, fetchTimeslotsByDate]);
 
   return { timeslots, isLoading };
 };

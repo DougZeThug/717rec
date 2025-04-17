@@ -8,6 +8,59 @@ import { TeamTimeslot } from "@/types";
 export const useTimeslotOperations = () => {
   const { toast } = useToast();
 
+  // Fetch timeslots for a specific date
+  const fetchTimeslotsByDate = async (date: Date) => {
+    try {
+      // Format date as YYYY-MM-DD for database queries
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      // Query written in explicit format with all fields specified
+      const { data, error } = await supabase
+        .from('team_timeslots')
+        .select(`
+          id,
+          match_date,
+          timeslot,
+          team_id,
+          created_at,
+          teams (
+            id, 
+            name, 
+            logo_url, 
+            division_id
+          )
+        `)
+        .eq('match_date', formattedDate);
+      
+      if (error) {
+        throw error;
+      }
+      
+      console.log('Raw data from Supabase in fetchTimeslotsByDate:', data);
+      
+      // Map the data to match the TeamTimeslot type
+      const formattedData: TeamTimeslot[] = data?.map(item => ({
+        ...item,
+        teams: item.teams ? {
+          id: item.teams.id,
+          name: item.teams.name,
+          logo_url: item.teams.logo_url,
+          divisionName: null // We can add this if needed in the future
+        } : undefined
+      })) || [];
+      
+      return formattedData;
+    } catch (error: any) {
+      console.error('Error fetching timeslots:', error);
+      toast({
+        title: "Error",
+        description: `Failed to load timeslots: ${error.message || 'Unknown error'}`,
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
   // Add a new timeslot assignment
   const addTimeslot = async (date: Date, teamId: string, timeslot: string) => {
     try {
@@ -131,6 +184,7 @@ export const useTimeslotOperations = () => {
   };
 
   return {
+    fetchTimeslotsByDate,
     addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots
