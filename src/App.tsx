@@ -15,6 +15,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import GlobalNav from "./components/navigation/GlobalNav";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +27,7 @@ const App = () => (
       <BrowserRouter>
         <div className="flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow">
+          <main className="flex-grow pb-16 md:pb-0">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/teams" element={<Teams />} />
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
+          <GlobalNav />
           <Footer />
         </div>
       </BrowserRouter>
