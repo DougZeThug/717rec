@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { MatchWithTeams, FilterState } from "../types";
+import { MatchWithTeams } from "../types";
 import { useMatchFilters } from "./useMatchFilters";
 import { useMatchFetching } from "./useMatchFetching";
 import { useMatchValidation } from "./useMatchValidation";
