@@ -10,7 +10,7 @@ interface MatchScoresListProps {
   scores: Record<string, { team1Score: string, team2Score: string }>;
   onToggleItem: (id: string) => void;
   onScoreChange: (matchId: string, team: 'team1Score' | 'team2Score', value: string) => void;
-  onSubmitScore: (matchId: string) => void;
+  onSubmitScore: (matchId: string, team1Score: number, team2Score: number) => Promise<boolean>;
 }
 
 const MatchScoresList = ({
@@ -38,7 +38,11 @@ const MatchScoresList = ({
           team2Score={scores[match.id]?.team2Score || ''}
           onToggle={() => onToggleItem(match.id)}
           onScoreChange={(team, value) => onScoreChange(match.id, team, value)}
-          onSubmitScore={() => onSubmitScore(match.id)}
+          onSubmitScore={() => {
+            const score1 = parseInt(scores[match.id]?.team1Score || '0');
+            const score2 = parseInt(scores[match.id]?.team2Score || '0');
+            return onSubmitScore(match.id, score1, score2);
+          }}
         />
       ))}
     </div>

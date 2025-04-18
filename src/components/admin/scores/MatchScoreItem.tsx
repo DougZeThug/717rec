@@ -18,7 +18,7 @@ interface MatchScoreItemProps {
   team2Score: string;
   onToggle: () => void;
   onScoreChange: (team: 'team1Score' | 'team2Score', value: string) => void;
-  onSubmitScore: () => void;
+  onSubmitScore: () => Promise<boolean>;
 }
 
 const MatchScoreItem = ({ 
@@ -31,6 +31,17 @@ const MatchScoreItem = ({
   onScoreChange, 
   onSubmitScore 
 }: MatchScoreItemProps) => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      await onSubmitScore();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Collapsible
       open={isOpen}
@@ -111,7 +122,9 @@ const MatchScoreItem = ({
             </div>
           )}
           
-          <Button onClick={onSubmitScore}>Submit Result</Button>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Result'}
+          </Button>
         </div>
       </CollapsibleContent>
     </Collapsible>
