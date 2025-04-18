@@ -6,7 +6,15 @@ export const fetchTeamData = async (teamId: string) => {
   
   const { data: team, error } = await supabase
     .from('teams')
-    .select('id, name, wins, losses, game_wins, game_losses')
+    .select(`
+      id, 
+      name, 
+      wins, 
+      losses, 
+      game_wins, 
+      game_losses,
+      divisions (name)
+    `)
     .eq('id', teamId)
     .maybeSingle();
   
@@ -14,6 +22,14 @@ export const fetchTeamData = async (teamId: string) => {
     console.error("ERROR FETCHING TEAM:", error || "No team found with ID: " + teamId);
     return null;
   }
+  
+  console.log("Team data fetched:", {
+    name: team.name,
+    wins: team.wins,
+    losses: team.losses,
+    game_wins: team.game_wins,
+    game_losses: team.game_losses
+  });
   
   return team;
 };

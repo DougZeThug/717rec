@@ -9,10 +9,12 @@ export const useTeamData = (divisionId?: string | null) => {
     queryFn: async () => {
       let query = supabase
         .from('teams')
-        .select('*, divisions(name)')
+        .select(`
+          *,
+          divisions(name)
+        `)
         .order('name');
       
-      // Apply division filter if provided
       if (divisionId) {
         query = query.eq('division_id', divisionId);
       }
@@ -24,7 +26,6 @@ export const useTeamData = (divisionId?: string | null) => {
         throw error;
       }
       
-      // Transform and log the data for debugging
       const transformedTeams = (data || []).map((team): Team => {
         return {
           id: team.id,
@@ -43,6 +44,14 @@ export const useTeamData = (divisionId?: string | null) => {
           divisionName: team.divisions?.name || null
         };
       });
+      
+      console.log(`Loaded ${transformedTeams.length} teams with game stats:`, 
+        transformedTeams.map(t => ({
+          name: t.name,
+          game_wins: t.game_wins,
+          game_losses: t.game_losses
+        }))
+      );
       
       return transformedTeams;
     },
