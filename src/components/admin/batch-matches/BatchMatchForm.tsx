@@ -12,6 +12,7 @@ const BatchMatchForm = () => {
     selectedDate,
     setSelectedDate,
     matchPairs,
+    isSubmitting,
     addMatchPair,
     updateMatchPair,
     removeMatchPair,
@@ -31,6 +32,7 @@ const BatchMatchForm = () => {
           onAutoAssign={autoAssignTimeslots}
           onAddMatch={addMatchPair}
           onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
         />
       </div>
 

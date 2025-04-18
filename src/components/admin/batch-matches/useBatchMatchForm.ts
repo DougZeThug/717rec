@@ -1,14 +1,17 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchPair } from "./MatchPairsList";
+import { createDateWithTime } from "@/components/schedule/form-utils";
 
 export const useBatchMatchForm = (teams: Team[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [matchPairs, setMatchPairs] = useState<MatchPair[]>([
     { id: '1', team1Id: null, team2Id: null, timeslot: null }
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const addMatchPair = () => {
@@ -34,7 +37,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
   };
 
   const autoAssignTimeslots = () => {
-    const timeslots = ['18:30', '19:30', '20:30'];
+    const timeslots = ['18:30', '19:00', '19:30', '20:00', '20:30', '21:00'];
     const updatedPairs = matchPairs.map((pair, index) => ({
       ...pair,
       timeslot: timeslots[index % timeslots.length]
@@ -81,20 +84,30 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
   const handleSubmit = async () => {
     if (!validateMatches()) return;
+    
+    setIsSubmitting(true);
 
     try {
-      const matchesToCreate = matchPairs.map(pair => ({
-        team1_id: pair.team1Id,
-        team2_id: pair.team2Id,
-        date: selectedDate?.toISOString(),
-        location: `Court ${matchPairs.indexOf(pair) + 1}`,
-        iscompleted: false,
-        round_number: 0,
-        team1_score: 0,
-        team2_score: 0,
-        team1_game_wins: 0,
-        team2_game_wins: 0
-      }));
+      const matchesToCreate = matchPairs.map(pair => {
+        // Create a date with the selected timeslot
+        const dateWithTime = createDateWithTime(
+          selectedDate as Date,
+          pair.timeslot?.substring(0, 2) + ':' + pair.timeslot?.substring(2) + ':00'
+        );
+        
+        return {
+          team1_id: pair.team1Id,
+          team2_id: pair.team2Id,
+          date: dateWithTime.toISOString(),
+          location: `Court ${matchPairs.indexOf(pair) + 1}`,
+          iscompleted: false,
+          round_number: 0,
+          team1_score: 0,
+          team2_score: 0,
+          team1_game_wins: 0,
+          team2_game_wins: 0
+        };
+      });
 
       const { error } = await supabase
         .from('matches')
@@ -117,6 +130,9 @@ export const useBatchMatchForm = (teams: Team[]) => {
         description: error.message,
         variant: "destructive"
       });
+      console.error("Error creating matches:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -124,6 +140,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
     selectedDate,
     setSelectedDate,
     matchPairs,
+    isSubmitting,
     addMatchPair,
     updateMatchPair,
     removeMatchPair,
