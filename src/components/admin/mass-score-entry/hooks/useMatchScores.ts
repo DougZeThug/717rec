@@ -6,19 +6,27 @@ import { validateMatchScores } from "../utils/matchValidation";
 export const useMatchScores = () => {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
 
-  const handleScoreChange = (index: number, team: 'team1' | 'team2', value: string) => {
+  const handleScoreChange = (
+    index: number,
+    team1Score: number,
+    team2Score: number
+  ) => {
     const newMatches = [...matches];
-    const scoreValue = value === "" ? null : parseInt(value, 10);
     const match = newMatches[index];
     
-    if (team === 'team1') {
-      match.team1Score = scoreValue;
-    } else {
-      match.team2Score = scoreValue;
-    }
+    // Ensure scores are stored as numbers
+    match.team1Score = team1Score;
+    match.team2Score = team2Score;
 
     match.isEdited = true;
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
+    
+    console.log(`Match ${match.id} scores updated:`, {
+      team1Score: match.team1Score,
+      team2Score: match.team2Score,
+      isValid: match.isValid
+    });
+    
     setMatches(newMatches);
   };
 

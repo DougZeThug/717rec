@@ -1,71 +1,105 @@
 
 import React from "react";
-import { MatchWithTeams } from "@/components/admin/mass-score-entry/types";
-import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { formatDate } from "@/utils/scheduleUtils";
+import { MatchWithTeams } from "./types";
 import ScoreInput from "./components/ScoreInput";
-import CompletionCheckbox from "./components/CompletionCheckbox";
 import MatchStatusIndicator from "./components/MatchStatusIndicator";
 
 interface MatchRowProps {
   match: MatchWithTeams;
+  index: number;
+  onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
+  onMarkCompleted: (index: number, checked: boolean) => void;
   isSubmitting: boolean;
-  failedMatch?: { matchId: string; errorMessage: string };
-  onScoreChange: (team: 'team1' | 'team2', value: string) => void;
-  onMarkCompleted: (checked: boolean) => void;
+  hasError: boolean;
+  errorMessage?: string;
+  onClearError?: (matchId: string) => void;
 }
 
-const MatchRow = ({ match, isSubmitting, failedMatch, onScoreChange, onMarkCompleted }: MatchRowProps) => {
-  const errorMessage = failedMatch?.errorMessage;
-  
+const MatchRow: React.FC<MatchRowProps> = ({
+  match,
+  index,
+  onScoreChange,
+  onMarkCompleted,
+  isSubmitting,
+  hasError,
+  errorMessage,
+  onClearError
+}) => {
   const handleScoreChange = (scores: { team1Score: number; team2Score: number }) => {
-    onScoreChange('team1', scores.team1Score.toString());
-    onScoreChange('team2', scores.team2Score.toString());
+    onScoreChange(index, scores.team1Score, scores.team2Score);
+  };
+
+  const handleCompletionChange = (checked: boolean) => {
+    onMarkCompleted(index, checked);
   };
 
   return (
-    <tr className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-      errorMessage ? "bg-destructive/10" : ""
-    )}>
-      <td className="py-4 px-2">
-        <div className="flex items-center gap-2">
-          <MatchStatusIndicator 
-            isEdited={match.isEdited}
-            wasCompletedAndEdited={false}
-            isCompleted={match.iscompleted}
-            isValid={match.isValid}
-          />
-          <span>{match.team1?.name || "TBD"}</span>
-        </div>
+    <tr className={hasError ? "bg-red-50" : ""}>
+      <td className="px-4 py-3 text-sm whitespace-nowrap">
+        {formatDate(match.date)}
       </td>
-      
-      <td className="py-4 px-4">
-        <div className="flex flex-col items-center gap-2">
-          <ScoreInput
-            value={{
-              team1Score: match.team1Score,
-              team2Score: match.team2Score
-            }}
-            onChange={handleScoreChange}
-            isValid={match.isValid}
-            disabled={isSubmitting}
-          />
-          {errorMessage && (
-            <p className="text-sm text-destructive mt-1">{errorMessage}</p>
+      <td className="px-4 py-3">
+        <div className="flex items-center">
+          {match.team1?.logoUrl && (
+            <img
+              src={match.team1.logoUrl}
+              alt=""
+              className="h-6 w-6 mr-2 rounded-full"
+            />
           )}
+          <span>{match.team1?.name || "Team 1"}</span>
         </div>
       </td>
-
-      <td className="py-4 px-2">
-        <span>{match.team2?.name || "TBD"}</span>
+      <td className="px-4 py-3">
+        <div className="flex items-center">
+          {match.team2?.logoUrl && (
+            <img
+              src={match.team2.logoUrl}
+              alt=""
+              className="h-6 w-6 mr-2 rounded-full"
+            />
+          )}
+          <span>{match.team2?.name || "Team 2"}</span>
+        </div>
       </td>
-
-      <td className="py-4 px-4">
-        <CompletionCheckbox
-          id={`completion-${match.id}`}
+      <td className="px-4 py-3">
+        <ScoreInput
+          value={{
+            team1Score: typeof match.team1Score === 'number' ? match.team1Score : null,
+            team2Score: typeof match.team2Score === 'number' ? match.team2Score : null
+          }}
+          onChange={handleScoreChange}
+          onComplete={() => handleCompletionChange(true)}
+          disabled={isSubmitting}
+        />
+        {hasError && (
+          <div className="text-xs text-red-600 mt-1">
+            {errorMessage || "Invalid score"}
+            {onClearError && (
+              <button
+                onClick={() => onClearError(match.id)}
+                className="ml-2 text-xs underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+      </td>
+      <td className="px-4 py-3 text-center">
+        <Checkbox
           checked={match.iscompleted}
-          onCheckedChange={(checked) => onMarkCompleted(checked)}
-          disabled={isSubmitting || !match.isValid}
+          onCheckedChange={handleCompletionChange}
+          disabled={isSubmitting}
+        />
+      </td>
+      <td className="px-4 py-3 text-center">
+        <MatchStatusIndicator
+          isEdited={match.isEdited}
+          isValid={match.isValid}
+          isCompleted={match.iscompleted}
         />
       </td>
     </tr>

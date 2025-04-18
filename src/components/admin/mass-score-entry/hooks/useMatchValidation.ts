@@ -1,20 +1,21 @@
 
 import { MatchWithTeams } from "../types";
+import { validateMatchScores } from "../utils/matchValidation";
 
 export const useMatchValidation = () => {
-  const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-    return Number.isInteger(score1) && Number.isInteger(score2);
-  };
-
   const handleScoreChange = (
     matches: MatchWithTeams[],
     index: number,
     team: 'team1' | 'team2',
-    value: string
+    value: string | number
   ): MatchWithTeams[] => {
     const newMatches = [...matches];
-    const scoreValue = value === "" ? null : parseInt(value, 10);
     const match = newMatches[index];
+    
+    // Convert value to number if it's a string
+    const scoreValue = typeof value === 'string' 
+      ? (value === "" ? null : parseInt(value, 10))
+      : value;
     
     if (team === 'team1') {
       match.team1Score = scoreValue;
@@ -24,6 +25,14 @@ export const useMatchValidation = () => {
 
     match.isEdited = true;
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
+    
+    // Debug logging
+    console.log(`Match ${match.id} validation:`, {
+      team1Score: match.team1Score,
+      team2Score: match.team2Score,
+      isValid: match.isValid
+    });
+    
     return newMatches;
   };
 

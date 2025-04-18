@@ -5,6 +5,7 @@ import ScoreButtonGroup from "./ScoreButtonGroup";
 interface ScoreInputProps {
   value: { team1Score: number | null; team2Score: number | null };
   onChange: (scores: { team1Score: number; team2Score: number }) => void;
+  onComplete?: () => void;
   isValid?: boolean;
   disabled?: boolean;
   className?: string;
@@ -13,6 +14,7 @@ interface ScoreInputProps {
 const ScoreInput: React.FC<ScoreInputProps> = ({
   value,
   onChange,
+  onComplete,
   isValid = true,
   disabled = false,
   className = ""
@@ -22,6 +24,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
       <ScoreButtonGroup
         value={value}
         onChange={onChange}
+        onComplete={onComplete}
         disabled={disabled}
       />
     </div>

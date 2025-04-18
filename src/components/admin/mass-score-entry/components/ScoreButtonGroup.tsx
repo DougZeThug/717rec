@@ -20,23 +20,37 @@ interface ScoreButtonGroupProps {
   value: { team1Score: number | null; team2Score: number | null } | null;
   onChange: (scores: { team1Score: number; team2Score: number }) => void;
   disabled?: boolean;
+  onComplete?: () => void;
 }
 
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   value,
   onChange,
-  disabled = false
+  disabled = false,
+  onComplete
 }) => {
   const isSelected = (option: ScoreOption) =>
     value?.team1Score === option.team1Score && 
     value?.team2Score === option.team2Score;
+
+  const handleSelect = (option: ScoreOption) => {
+    onChange({
+      team1Score: option.team1Score,
+      team2Score: option.team2Score
+    });
+    
+    // If onComplete is provided, call it to mark the match as completed
+    if (onComplete) {
+      onComplete();
+    }
+  };
 
   return (
     <div className="flex gap-2 flex-wrap">
       {SCORE_OPTIONS.map((option) => (
         <Button
           key={option.label}
-          onClick={() => onChange(option)}
+          onClick={() => handleSelect(option)}
           variant="outline"
           size="lg"
           className={cn(
