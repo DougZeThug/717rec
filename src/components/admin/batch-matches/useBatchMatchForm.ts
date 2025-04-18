@@ -5,6 +5,7 @@ import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchPair } from "./MatchPairsList";
 import { createDateWithTime } from "@/components/schedule/form-utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useBatchMatchForm = (teams: Team[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -13,6 +14,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const addMatchPair = () => {
     setMatchPairs([
@@ -89,11 +91,19 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
     try {
       const matchesToCreate = matchPairs.map(pair => {
+        // Fix time format for proper parsing
+        const timeString = pair.timeslot || "18:00";
+        const hours = timeString.substring(0, 2);
+        const minutes = timeString.substring(3, 5) || "00";
+        const formattedTime = `${hours}:${minutes}:00`;
+        
         // Create a date with the selected timeslot
         const dateWithTime = createDateWithTime(
           selectedDate as Date,
-          pair.timeslot?.substring(0, 2) + ':' + pair.timeslot?.substring(2) + ':00'
+          formattedTime
         );
+        
+        console.log("Creating match at date:", dateWithTime.toISOString());
         
         return {
           team1_id: pair.team1Id,
@@ -109,16 +119,27 @@ export const useBatchMatchForm = (teams: Team[]) => {
         };
       });
 
-      const { error } = await supabase
+      console.log("Batch creating matches:", matchesToCreate);
+
+      const { data, error } = await supabase
         .from('matches')
-        .insert(matchesToCreate);
+        .insert(matchesToCreate)
+        .select();
 
       if (error) throw error;
+
+      console.log("Successfully created matches:", data);
 
       toast({
         title: "Success",
         description: `Created ${matchPairs.length} matches for ${selectedDate?.toLocaleDateString()}`,
       });
+
+      // Invalidate queries to refresh data across the app
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
 
       // Reset form
       setMatchPairs([{ id: '1', team1Id: null, team2Id: null, timeslot: null }]);

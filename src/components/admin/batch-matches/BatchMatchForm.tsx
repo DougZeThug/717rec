@@ -5,9 +5,10 @@ import { ThursdayDatePicker } from "./ThursdayDatePicker";
 import MatchPairsList from "./MatchPairsList";
 import BatchMatchFormActions from "./BatchMatchFormActions";
 import { useBatchMatchForm } from "./useBatchMatchForm";
+import { Card, CardContent } from "@/components/ui/card";
 
 const BatchMatchForm = () => {
-  const { data: teams } = useTeamData();
+  const { data: teams, isLoading } = useTeamData();
   const {
     selectedDate,
     setSelectedDate,
@@ -20,19 +21,24 @@ const BatchMatchForm = () => {
     handleSubmit
   } = useBatchMatchForm(teams || []);
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-center">
+            <p>Loading teams data...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-4">
         <ThursdayDatePicker
           selected={selectedDate}
           onSelect={setSelectedDate}
-        />
-        
-        <BatchMatchFormActions
-          onAutoAssign={autoAssignTimeslots}
-          onAddMatch={addMatchPair}
-          onSubmit={handleSubmit}
-          isSubmitting={isSubmitting}
         />
       </div>
 
@@ -41,6 +47,13 @@ const BatchMatchForm = () => {
         teams={teams || []}
         onUpdate={updateMatchPair}
         onRemove={removeMatchPair}
+      />
+
+      <BatchMatchFormActions
+        onAutoAssign={autoAssignTimeslots}
+        onAddMatch={addMatchPair}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

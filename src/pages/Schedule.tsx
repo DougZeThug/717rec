@@ -24,19 +24,27 @@ const Schedule = () => {
   const queryClient = useQueryClient();
   const { data: teams, isLoading: teamsLoading } = useTeamData();
   
-  // Fetch matches from Supabase
+  // Fetch matches from Supabase with improved logging to debug issues
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
+      console.log("Fetching matches data...");
+      
       const { data, error } = await supabase
         .from('matches')
         .select('*')
         .order('date');
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching matches:", error);
+        throw error;
+      }
+      
+      // Log raw response to verify data
+      console.log("Raw matches response:", data);
       
       // Transform Supabase data to Match type
-      return data.map((match): Match => ({
+      const formattedData = data.map((match): Match => ({
         id: match.id,
         team1Id: match.team1_id,
         team2Id: match.team2_id,
@@ -55,9 +63,18 @@ const Schedule = () => {
         next_loser_match_id: match.next_loser_match_id,
         best_of: match.best_of
       }));
-    }
+      
+      console.log("Formatted matches data:", formattedData);
+      return formattedData;
+    },
+    // Remove staleTime to ensure we always have fresh data
+    refetchOnWindowFocus: true,
+    refetchOnMount: true
   });
   
+  // Get timeslots for the currently selected date
+  const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
+
   const {
     matches,
     editingMatch,
@@ -70,16 +87,6 @@ const Schedule = () => {
     handleUpdateMatch,
     handleDeleteMatch
   } = useMatchManagement(matchesData || []);
-
-  // Get timeslots for the currently selected date
-  const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
-
-  // Update matches when matchesData changes
-  useEffect(() => {
-    if (matchesData) {
-      // This is handled by useMatchManagement initialization
-    }
-  }, [matchesData]);
 
   // Filter matches based on search term and active tab
   const filteredMatches = matches
@@ -103,7 +110,12 @@ const Schedule = () => {
         (team2?.name || "").toLowerCase().includes(searchLower)
       );
     })
-    .sort((a, b) => new Date(a.date || "").getTime() - new Date(b.date || "").getTime());
+    .sort((a, b) => {
+      // Sort by date ascending (earliest first)
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateA - dateB;
+    });
 
   // Callback for when a date is selected
   const handleDateSelect = (date: Date) => {
@@ -143,6 +155,16 @@ const Schedule = () => {
     }
   };
 
+  // Effect to set up a polling mechanism to refresh data periodically
+  useEffect(() => {
+    // Set up polling to refresh matches data every 30 seconds
+    const intervalId = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+    }, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, [queryClient]);
+
   if (teamsLoading || matchesLoading) {
     return (
       <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
@@ -153,6 +175,12 @@ const Schedule = () => {
       </div>
     );
   }
+
+  // Log data after loading for debugging purposes
+  console.log("Total matches available:", matches.length);
+  console.log("Filtered matches count:", filteredMatches.length);
+  console.log("Teams count:", teams?.length || 0);
+  console.log("Group timeslots:", groupedTimeslots);
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">

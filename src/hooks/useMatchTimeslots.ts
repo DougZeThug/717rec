@@ -3,11 +3,13 @@ import { useState, useEffect } from "react";
 import { TeamTimeslot } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useMatchTimeslots = (date: Date | null) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [groupedTimeslots, setGroupedTimeslots] = useState<Record<string, TeamTimeslot[]>>({});
+  const queryClient = useQueryClient();
   
   useEffect(() => {
     const loadTimeslots = async () => {
@@ -23,6 +25,7 @@ export const useMatchTimeslots = (date: Date | null) => {
       try {
         // Format date as YYYY-MM-DD for database queries
         const formattedDate = format(date, 'yyyy-MM-dd');
+        console.log("Fetching timeslots for date:", formattedDate);
         
         const { data, error } = await supabase
           .from('team_timeslots')
@@ -41,11 +44,12 @@ export const useMatchTimeslots = (date: Date | null) => {
           .eq('match_date', formattedDate);
         
         if (error) {
+          console.error("Error fetching timeslots:", error);
           throw error;
         }
         
-        // Console log for debugging (once per render)
-        console.log('Formatted match timeslots data:', data);
+        // Console log for debugging
+        console.log('Timeslots raw data:', data);
         
         // Map the data to match the TeamTimeslot type
         const formattedData: TeamTimeslot[] = data?.map(item => ({
@@ -57,6 +61,8 @@ export const useMatchTimeslots = (date: Date | null) => {
             divisionName: null
           } : undefined
         })) || [];
+        
+        console.log('Formatted timeslots data:', formattedData);
         
         setTimeslots(formattedData);
         
@@ -79,7 +85,8 @@ export const useMatchTimeslots = (date: Date | null) => {
             acc[key] = grouped[key];
             return acc;
           }, {});
-          
+        
+        console.log('Grouped timeslots:', sortedGrouped);  
         setGroupedTimeslots(sortedGrouped);
       } catch (error: any) {
         console.error('Error fetching timeslots:', error);
@@ -90,6 +97,76 @@ export const useMatchTimeslots = (date: Date | null) => {
     
     loadTimeslots();
   }, [date]);
+
+  // Add a 30-second polling mechanism to refresh timeslots
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (date) {
+        queryClient.invalidateQueries({ queryKey: ['timeslots', format(date, 'yyyy-MM-dd')] });
+        // Re-run the loadTimeslots logic
+        const formattedDate = format(date, 'yyyy-MM-dd');
+        
+        supabase
+          .from('team_timeslots')
+          .select(`
+            id,
+            match_date,
+            timeslot,
+            team_id,
+            created_at,
+            teams:team_id (
+              id, 
+              name, 
+              logo_url
+            )
+          `)
+          .eq('match_date', formattedDate)
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("Error refreshing timeslots:", error);
+              return;
+            }
+            
+            // Map and update the state
+            const formattedData = data?.map(item => ({
+              ...item,
+              teams: item.teams ? {
+                id: item.teams.id,
+                name: item.teams.name,
+                logo_url: item.teams.logo_url,
+                divisionName: null
+              } : undefined
+            })) || [];
+            
+            setTimeslots(formattedData);
+            
+            // Group timeslots
+            const grouped = formattedData.reduce((acc: Record<string, TeamTimeslot[]>, curr) => {
+              if (!curr.timeslot) return acc;
+              
+              if (!acc[curr.timeslot]) {
+                acc[curr.timeslot] = [];
+              }
+              
+              acc[curr.timeslot].push(curr);
+              return acc;
+            }, {});
+            
+            // Sort the timeslots
+            const sortedGrouped = Object.keys(grouped)
+              .sort()
+              .reduce((acc: Record<string, TeamTimeslot[]>, key) => {
+                acc[key] = grouped[key];
+                return acc;
+              }, {});
+              
+            setGroupedTimeslots(sortedGrouped);
+          });
+      }
+    }, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, [date, queryClient]);
 
   return { timeslots, groupedTimeslots, isLoading };
 };

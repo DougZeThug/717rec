@@ -1,11 +1,16 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Match, Team } from "@/types";
 import { useMatchCreation } from "./useMatchCreation";
 import { useMatchUpdates } from "./useMatchUpdates";
 
 export const useMatchManagement = (initialMatches: Match[]) => {
   const [matches, setMatches] = useState<Match[]>(initialMatches);
+  
+  // Update matches when initialMatches changes
+  useEffect(() => {
+    setMatches(initialMatches);
+  }, [initialMatches]);
   
   const {
     isFormOpen,
