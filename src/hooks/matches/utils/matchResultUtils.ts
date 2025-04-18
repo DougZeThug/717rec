@@ -30,6 +30,8 @@ export const determineMatchResults = (
     winnerId,
     loserId,
     team1GameWins,
-    team2GameWins
+    team2GameWins,
+    team1Id,  // Add the team1Id property
+    team2Id   // Add the team2Id property
   };
 };
