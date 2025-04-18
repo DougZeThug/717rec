@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
@@ -51,7 +52,7 @@ export const useScheduleData = () => {
   });
 
   // Set up polling to refresh matches data
-  React.useEffect(() => {
+  useEffect(() => {
     const intervalId = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ['matches'] });
     }, 30000);

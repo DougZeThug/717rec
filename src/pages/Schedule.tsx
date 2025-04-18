@@ -39,6 +39,19 @@ const Schedule = () => {
 
   const filteredMatches = filterAndSortMatches(matches, activeTab, searchTerm, teams);
 
+  // Adapter functions to handle the parameter mismatches
+  const handleCreateMatchAdapter = (matchData: any) => {
+    return handleCreateMatch(matchData, teams || []);
+  };
+
+  const handleUpdateMatchAdapter = (matchData: any) => {
+    return handleUpdateMatch(matchData, teams || []);
+  };
+
+  const handleDeleteMatchAdapter = () => {
+    return handleDeleteMatch(teams || []);
+  };
+
   if (teamsLoading || matchesLoading) {
     return (
       <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
@@ -103,13 +116,13 @@ const Schedule = () => {
         onClose={() => setIsFormOpen(false)}
         match={editingMatch}
         teams={teams || []}
-        onSubmit={editingMatch ? handleUpdateMatch : handleCreateMatch}
+        onSubmit={editingMatch ? handleUpdateMatchAdapter : handleCreateMatchAdapter}
       />
       
       <DeleteMatchDialog 
         isOpen={deleteMatchId !== null}
         onClose={() => setDeleteMatchId(null)}
-        onConfirm={handleDeleteMatch}
+        onConfirm={handleDeleteMatchAdapter}
       />
     </div>
   );
