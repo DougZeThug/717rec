@@ -13,7 +13,18 @@ export const useTeamRecords = () => {
   const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[]) => {
     console.log("===== TEAM RECORDS UPDATE PROCESS STARTING =====");
     console.log("Winner ID:", winnerId, "Loser ID:", loserId);
-    console.log("Teams data:", teams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses })));
+    
+    // Log types and values of team data
+    if (teams && teams.length > 0) {
+      teams.forEach(team => {
+        console.log(`Team ${team.name} (${team.id}) current data:`, {
+          wins: team.wins,
+          winsType: typeof team.wins,
+          losses: team.losses,
+          lossesType: typeof team.losses
+        });
+      });
+    }
     
     try {
       // First update the basic win/loss records in the teams table

@@ -12,16 +12,19 @@ interface TeamStatsProps {
 }
 
 const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches = [] }) => {
-  const totalGames = team.wins + team.losses;
+  // Parse and ensure we're working with numbers
+  const wins = parseInt(String(team.wins)) || 0;
+  const losses = parseInt(String(team.losses)) || 0;
+  const totalGames = wins + losses;
   
   const getRecordColor = () => {
-    if (team.wins > team.losses) return "text-green-600";
-    if (team.wins < team.losses) return "text-red-600";
+    if (wins > losses) return "text-green-600";
+    if (wins < losses) return "text-red-600";
     return "text-gray-600";
   };
   
   // For debugging purposes
-  console.log(`TeamStats component - Team: ${team.name}, Record: ${team.wins}-${team.losses}, Win%: ${winPercentage}`);
+  console.log(`TeamStats component - Team: ${team.name}, Record: ${wins}-${losses}, Win%: ${winPercentage}`);
 
   return (
     <Card className="mb-6">
@@ -30,7 +33,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches 
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-gray-500">Record</h3>
             <p className={`text-2xl font-bold ${getRecordColor()}`}>
-              {team.wins}-{team.losses}
+              {wins}-{losses}
             </p>
           </div>
           

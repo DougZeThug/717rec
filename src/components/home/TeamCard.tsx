@@ -10,8 +10,12 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
+  // Parse and ensure we're working with numbers for calculations
+  const wins = parseInt(String(team.wins)) || 0;
+  const losses = parseInt(String(team.losses)) || 0;
+  
   // Use the consistent win percentage calculation
-  const winPercentage = calculateWinPercentage(team.wins, team.losses) * 100;
+  const winPercentage = calculateWinPercentage(wins, losses) * 100;
   
   return (
     <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0")}>
@@ -35,7 +39,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
           <h3 className="text-lg font-bold mb-1.5 truncate" title={team.name}>{team.name}</h3>
           <div className="flex justify-between text-xs">
             <span>Record:</span>
-            <span className="font-medium">{team.wins} - {team.losses}</span>
+            <span className="font-medium">{wins} - {losses}</span>
           </div>
           <div className="flex justify-between text-xs mt-1">
             <span>Win %:</span>

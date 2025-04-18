@@ -16,9 +16,9 @@ export const createRankingObject = async (
   allMatches: Match[] | undefined,
   previousRankings: Record<string, number>
 ): Promise<Ranking> => {
-  // Make sure we're working with defined values for wins and losses
-  const wins = typeof team.wins === 'number' ? team.wins : 0;
-  const losses = typeof team.losses === 'number' ? team.losses : 0;
+  // Parse and ensure we're working with numbers
+  const wins = parseInt(String(team.wins)) || 0;
+  const losses = parseInt(String(team.losses)) || 0;
   
   console.log(`Creating ranking for team ${team.name} with record ${wins}-${losses}`);
   

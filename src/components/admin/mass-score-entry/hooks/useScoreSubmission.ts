@@ -34,6 +34,7 @@ export const useScoreSubmission = (
       return;
     }
 
+    console.log(`[useScoreSubmission] Processing ${editedMatches.length} edited matches`);
     setSubmitting(true);
     clearErrors();
     let successCount = 0;
@@ -41,6 +42,8 @@ export const useScoreSubmission = (
     try {
       for (const match of editedMatches) {
         try {
+          console.log(`[useScoreSubmission] Processing match ${match.id}: Team1(${match.team1Id}): ${match.team1Score} - Team2(${match.team2Id}): ${match.team2Score}`);
+          
           const validation = validateMatchSubmission(match);
           if (!validation.isValid) {
             addError(match.id, validation.errorMessage || "Invalid match data");
@@ -67,8 +70,21 @@ export const useScoreSubmission = (
             }
           }
 
-          if (match.iscompleted && match.team1 && match.team2) {
+          console.log(`[useScoreSubmission] Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);
+
+          if (match.iscompleted && winnerId && loserId && match.team1 && match.team2) {
+            console.log(`[useScoreSubmission] Updating team records for winner ${winnerId} (${match.team1.name}) and loser ${loserId} (${match.team2.name})`);
+            
             const teams = [match.team1, match.team2];
+            console.log(`[useScoreSubmission] Team data:`, 
+              teams.map(team => ({ 
+                id: team.id, 
+                name: team.name, 
+                wins: team.wins, 
+                type: typeof team.wins,
+                losses: team.losses 
+              })));
+              
             const updateSuccess = await updateTeamRecords(winnerId!, loserId!, teams);
             
             if (!updateSuccess) {
@@ -77,12 +93,14 @@ export const useScoreSubmission = (
                 description: `Match updated, but team records may not have been updated properly.`,
                 variant: "default"
               });
+            } else {
+              console.log(`[useScoreSubmission] Team records updated successfully for match ${match.id}`);
             }
           }
 
           successCount++;
         } catch (error: any) {
-          console.error(`Error updating match ${match.id}:`, error);
+          console.error(`[useScoreSubmission] Error updating match ${match.id}:`, error);
           addError(match.id, error.message || "Failed to update match");
         }
       }
@@ -114,7 +132,7 @@ export const useScoreSubmission = (
         await fetchMatches();
       }
     } catch (error: any) {
-      console.error("Error in batch update:", error.message);
+      console.error("[useScoreSubmission] Error in batch update:", error.message);
       toast({
         title: "Error",
         description: `Failed to update matches: ${error.message}`,
@@ -127,6 +145,7 @@ export const useScoreSubmission = (
 
   // Helper function to invalidate all related queries
   const invalidateAllDataQueries = () => {
+    console.log("[useScoreSubmission] Invalidating all data queries for fresh data");
     queryClient.invalidateQueries({ queryKey: ['matches'] });
     queryClient.invalidateQueries({ queryKey: ['teams'] });
     queryClient.invalidateQueries({ queryKey: ['rankings'] });

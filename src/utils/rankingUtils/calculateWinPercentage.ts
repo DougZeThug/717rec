@@ -6,9 +6,9 @@
  * @returns Win percentage as a decimal (0.0-1.0)
  */
 export const calculateWinPercentage = (wins: number, losses: number) => {
-  // Ensure we're working with numbers
-  const winCount = typeof wins === 'number' ? wins : 0;
-  const lossCount = typeof losses === 'number' ? losses : 0;
+  // Parse and ensure we're working with numbers
+  const winCount = parseInt(String(wins)) || 0;
+  const lossCount = parseInt(String(losses)) || 0;
   
   const totalGames = winCount + lossCount;
   

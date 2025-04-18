@@ -24,6 +24,9 @@ export const useMatchSubmission = () => {
         
       if (matchError) throw matchError;
 
+      console.log(`[useMatchSubmission] Match ${matchId} data:`, matchData);
+      console.log(`[useMatchSubmission] Scores - Team1: ${team1Score}, Team2: ${team2Score}`);
+
       // Determine winner and loser
       if (team1Score > team2Score) {
         winnerId = matchData.team1_id;
@@ -33,8 +36,7 @@ export const useMatchSubmission = () => {
         loserId = matchData.team1_id;
       }
 
-      console.log(`Match ${matchId}: Team 1 (${matchData.team1_id}) ${team1Score}-${team2Score} Team 2 (${matchData.team2_id})`);
-      console.log(`Winner: ${winnerId}, Loser: ${loserId}`);
+      console.log(`[useMatchSubmission] Winner ID: ${winnerId}, Loser ID: ${loserId}`);
 
       // Update the match with game level details if provided
       const updateData: any = {
@@ -49,14 +51,14 @@ export const useMatchSubmission = () => {
       if (team1GameWins !== undefined) updateData.team1_game_wins = team1GameWins;
       if (team2GameWins !== undefined) updateData.team2_game_wins = team2GameWins;
 
-      const { error } = await supabase
+      const { error, data: updatedMatch } = await supabase
         .from('matches')
         .update(updateData)
         .eq('id', matchId);
 
       if (error) throw error;
 
-      console.log(`Match ${matchId} updated successfully with scores`);
+      console.log(`[useMatchSubmission] Match ${matchId} updated successfully:`, updatedMatch);
 
       // If we have both winner and loser, update team records
       if (winnerId && loserId) {
@@ -67,13 +69,13 @@ export const useMatchSubmission = () => {
           .in('id', [winnerId, loserId]);
           
         if (teamsError) {
-          console.error("Error fetching team data:", teamsError);
+          console.error("[useMatchSubmission] Error fetching team data:", teamsError);
           throw teamsError;
         }
           
         if (teamsData && teamsData.length > 0) {
-          console.log(`Found ${teamsData.length} teams for W/L update`);
-          console.log("Raw team data from Supabase:", teamsData);
+          console.log(`[useMatchSubmission] Found ${teamsData.length} teams for W/L update:`, 
+            teamsData.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses })));
           
           // Transform to proper Team objects
           const formattedTeams: Team[] = teamsData.map(team => ({
@@ -91,11 +93,13 @@ export const useMatchSubmission = () => {
             divisionName: null
           }));
           
-          console.log("Formatted teams for update:", formattedTeams);
-          await updateTeamRecords(winnerId, loserId, formattedTeams);
-          console.log("Team records updated successfully");
+          console.log("[useMatchSubmission] Formatted teams for update:", 
+            formattedTeams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses })));
+            
+          const updateSuccess = await updateTeamRecords(winnerId, loserId, formattedTeams);
+          console.log(`[useMatchSubmission] Team records update ${updateSuccess ? 'succeeded' : 'failed'}`);
         } else {
-          console.error("Could not find team data for winner/loser");
+          console.error("[useMatchSubmission] Could not find team data for winner/loser");
         }
       }
 
@@ -115,7 +119,7 @@ export const useMatchSubmission = () => {
       
       return true;
     } catch (error) {
-      console.error('Error updating scores:', error);
+      console.error('[useMatchSubmission] Error updating scores:', error);
       toast({
         title: 'Error',
         description: 'Failed to update scores. Please try again.',
