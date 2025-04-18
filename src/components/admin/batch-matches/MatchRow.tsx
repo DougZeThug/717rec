@@ -29,9 +29,12 @@ const MatchRow = ({ pair, teams, onUpdate, onRemove }: MatchRowProps) => {
     { value: '21:00', label: '9:00 PM' },
   ];
 
-  const availableTeams = teams.filter(team => 
-    team.id !== pair.team1Id && team.id !== pair.team2Id
-  );
+  // Find team objects for display purposes
+  const team1 = teams.find(team => team.id === pair.team1Id);
+  const team2 = teams.find(team => team.id === pair.team2Id);
+  
+  // Filter available teams for Team 2 dropdown
+  const availableTeams = teams.filter(team => team.id !== pair.team1Id);
 
   return (
     <div className="flex items-center gap-4 p-4 border rounded-lg bg-card">
@@ -40,7 +43,9 @@ const MatchRow = ({ pair, teams, onUpdate, onRemove }: MatchRowProps) => {
         onValueChange={(value) => onUpdate({ team1Id: value })}
       >
         <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select Team 1" />
+          <SelectValue placeholder="Select Team 1">
+            {team1?.name || "Select Team 1"}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {teams.map((team) => (
@@ -58,7 +63,9 @@ const MatchRow = ({ pair, teams, onUpdate, onRemove }: MatchRowProps) => {
         onValueChange={(value) => onUpdate({ team2Id: value })}
       >
         <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select Team 2" />
+          <SelectValue placeholder="Select Team 2">
+            {team2?.name || "Select Team 2"}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {availableTeams.map((team) => (
