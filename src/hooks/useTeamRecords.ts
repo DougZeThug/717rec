@@ -99,13 +99,16 @@ export const useTeamRecords = () => {
         throw new Error("Failed to fetch data for stats calculation");
       }
 
-      // Map DB data to our expected format
+      // Map DB data to our expected format with proper typing
       const mappedTeams: Team[] = allTeams.map(team => ({
         id: team.id,
         name: team.name,
         logoUrl: team.logo_url,
         imageUrl: team.image_url,
-        players: team.players || [],
+        // Convert string array to Player array with the correct structure
+        players: Array.isArray(team.players) 
+          ? team.players.map(playerName => ({ name: playerName })) 
+          : [],
         wins: team.wins || 0,
         losses: team.losses || 0,
         created_at: team.created_at,
@@ -115,13 +118,13 @@ export const useTeamRecords = () => {
 
       const mappedMatches: Match[] = allMatches.map(match => ({
         id: match.id,
-        team1Id: match.team1_id,
-        team2Id: match.team2_id,
+        team1Id: match.team1_id || '',
+        team2Id: match.team2_id || '',
         team1Score: match.team1_score,
         team2Score: match.team2_score,
-        date: match.date,
-        location: match.location,
-        iscompleted: match.iscompleted,
+        date: match.date || match.created_at,
+        location: match.location || '',
+        iscompleted: match.iscompleted || false,
         winnerId: match.winner_id,
         loserId: match.loser_id,
         team1_game_wins: match.team1_game_wins,
