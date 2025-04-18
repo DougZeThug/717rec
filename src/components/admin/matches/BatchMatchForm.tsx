@@ -1,54 +1,31 @@
 
 import React from "react";
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Team } from "@/types";
 import { ThursdayDatePicker } from "../batch-matches/ThursdayDatePicker";
-import { X } from "lucide-react";
-
-interface MatchRow {
-  id: string;
-  team1Id: string;
-  team2Id: string;
-  timeSlot: string;
-}
+import MatchFormRow from "./MatchFormRow";
+import { MatchPair } from "./types";
 
 interface BatchMatchFormProps {
   teams: Team[];
-  onSubmit: (matches: MatchRow[]) => void;
+  onSubmit: (matches: any[]) => void;
   onCancel: () => void;
 }
 
 const BatchMatchForm = ({ teams, onSubmit, onCancel }: BatchMatchFormProps) => {
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
-  const [matches, setMatches] = React.useState<MatchRow[]>([
-    { id: '1', team1Id: '', team2Id: '', timeSlot: '' }
+  const [matches, setMatches] = React.useState<MatchPair[]>([
+    { id: '1', team1Id: null, team2Id: null, timeslot: null }
   ]);
-
-  const timeSlots = [
-    "6:30 PM",
-    "7:00 PM",
-    "7:30 PM",
-    "8:00 PM",
-    "8:30 PM",
-    "9:00 PM"
-  ];
 
   const addMatch = () => {
     setMatches([
       ...matches,
       { 
         id: Date.now().toString(), 
-        team1Id: '', 
-        team2Id: '', 
-        timeSlot: '' 
+        team1Id: null, 
+        team2Id: null, 
+        timeslot: null 
       }
     ]);
   };
@@ -57,16 +34,19 @@ const BatchMatchForm = ({ teams, onSubmit, onCancel }: BatchMatchFormProps) => {
     setMatches(matches.filter(match => match.id !== id));
   };
 
-  const updateMatch = (id: string, field: keyof MatchRow, value: string) => {
+  const updateMatch = (id: string, updates: Partial<MatchPair>) => {
     setMatches(matches.map(match =>
-      match.id === id ? { ...match, [field]: value } : match
+      match.id === id ? { ...match, ...updates } : match
     ));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate) return;
-    onSubmit(matches);
+    onSubmit(matches.map(match => ({
+      ...match,
+      date: selectedDate
+    })));
   };
 
   return (
@@ -78,71 +58,13 @@ const BatchMatchForm = ({ teams, onSubmit, onCancel }: BatchMatchFormProps) => {
 
       <div className="space-y-4">
         {matches.map((match) => (
-          <div key={match.id} className="flex items-center gap-4 p-4 border rounded-lg bg-card">
-            <Select
-              value={match.team1Id}
-              onValueChange={(value) => updateMatch(match.id, 'team1Id', value)}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select Team 1" />
-              </SelectTrigger>
-              <SelectContent>
-                {teams
-                  .filter(team => team.id !== match.team2Id)
-                  .map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-
-            <span className="text-muted-foreground">vs</span>
-
-            <Select
-              value={match.team2Id}
-              onValueChange={(value) => updateMatch(match.id, 'team2Id', value)}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select Team 2" />
-              </SelectTrigger>
-              <SelectContent>
-                {teams
-                  .filter(team => team.id !== match.team1Id)
-                  .map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={match.timeSlot}
-              onValueChange={(value) => updateMatch(match.id, 'timeSlot', value)}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Time" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeSlots.map((time) => (
-                  <SelectItem key={time} value={time}>
-                    {time}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => removeMatch(match.id)}
-              className="ml-auto"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <MatchFormRow
+            key={match.id}
+            match={match}
+            teams={teams}
+            onUpdate={(updates) => updateMatch(match.id, updates)}
+            onRemove={() => removeMatch(match.id)}
+          />
         ))}
       </div>
 
@@ -156,7 +78,7 @@ const BatchMatchForm = ({ teams, onSubmit, onCancel }: BatchMatchFormProps) => {
           </Button>
           <Button 
             type="submit" 
-            disabled={!selectedDate || matches.some(m => !m.team1Id || !m.team2Id || !m.timeSlot)}
+            disabled={!selectedDate || matches.some(m => !m.team1Id || !m.team2Id || !m.timeslot)}
           >
             Create Matches
           </Button>
