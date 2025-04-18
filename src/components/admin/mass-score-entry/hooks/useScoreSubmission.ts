@@ -12,7 +12,7 @@ export const useScoreSubmission = (
 ) => {
   const queryClient = useQueryClient();
   const { updateTeamRecords } = useTeamRecords();
-  const { updateMatch } = useMatchUpdates();
+  const { updateMatchInDatabase } = useMatchUpdates(); // Fixed: using the correct method name
   const {
     submitting,
     setSubmitting,
@@ -47,7 +47,26 @@ export const useScoreSubmission = (
             continue;
           }
 
-          const { winnerId, loserId } = await updateMatch(match);
+          // Fixed: using updateMatchInDatabase instead of updateMatch
+          const success = await updateMatchInDatabase(match);
+          if (!success) {
+            addError(match.id, "Failed to update match");
+            continue;
+          }
+
+          // Determine winner and loser IDs
+          let winnerId = null;
+          let loserId = null;
+          
+          if (match.team1Score !== null && match.team2Score !== null) {
+            if (match.team1Score > match.team2Score) {
+              winnerId = match.team1Id;
+              loserId = match.team2Id;
+            } else if (match.team2Score > match.team1Score) {
+              winnerId = match.team2Id;
+              loserId = match.team1Id;
+            }
+          }
 
           if (match.iscompleted && match.team1 && match.team2) {
             const teams = [match.team1, match.team2];
