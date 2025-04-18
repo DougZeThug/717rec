@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { MatchWithTeams } from "../types";
+import { validateMatchScores } from "../utils/matchValidation";
 
 export const useMatchScores = () => {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
@@ -36,6 +37,3 @@ export const useMatchScores = () => {
   };
 };
 
-const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-  return Number.isInteger(score1) && Number.isInteger(score2);
-};
