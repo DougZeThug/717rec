@@ -63,12 +63,46 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       }));
     },
     refetchInterval: 60000, // Refetch every minute for updates
+    staleTime: 30000, // Consider data stale after 30 seconds
+  });
+  
+  // Fetch the latest team data
+  const { data: latestTeams, isLoading: teamsLoading } = useQuery({
+    queryKey: ['teams'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*, divisions(name)')
+        .order('name');
+        
+      if (error) throw error;
+      
+      // Transform the data to match Team type
+      return data.map((team): Team => ({
+        id: team.id,
+        name: team.name || 'Unnamed Team',
+        logoUrl: team.logo_url || null,
+        imageUrl: team.image_url || null,
+        players: Array.isArray(team.players) 
+          ? team.players.map((playerName: string) => ({ name: playerName })) 
+          : [],
+        wins: team.wins || 0,
+        losses: team.losses || 0,
+        created_at: team.created_at || new Date().toISOString(),
+        division: team.division_id || null,
+        divisionName: team.divisions?.name || null
+      }));
+    },
+    refetchInterval: 60000, // Refetch every minute for updates
+    staleTime: 30000, // Consider data stale after 30 seconds
   });
   
   // Calculate team rankings when teams or matches change
   useEffect(() => {
     const calculateRankingsEffect = async () => {
-      if (!teams || teams.length === 0) {
+      const teamsToUse = latestTeams || teams;
+      
+      if (!teamsToUse || teamsToUse.length === 0) {
         setRankings([]);
         return;
       }
@@ -80,9 +114,9 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         const matchesToUse = latestMatches || matches;
         
         // Create ranking objects for each team asynchronously
-        const rankingPromises = teams
+        const rankingPromises = teamsToUse
           .filter(team => team !== null && team !== undefined)
-          .map(team => createRankingObject(team, teams, matchesToUse, previousRankings));
+          .map(team => createRankingObject(team, teamsToUse, matchesToUse, previousRankings));
           
         const unsortedRankings = await Promise.all(rankingPromises);
         
@@ -104,7 +138,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     };
     
     calculateRankingsEffect();
-  }, [teams, latestMatches, matches, previousRankings]);
+  }, [latestTeams, latestMatches, teams, matches, previousRankings]);
   
   // Handle manual refresh of rankings
   const refreshRankings = () => {
@@ -114,7 +148,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
   
   return {
     rankings,
-    isLoading: isLoading || matchesLoading,
+    isLoading: isLoading || matchesLoading || teamsLoading,
     refreshRankings
   };
 };

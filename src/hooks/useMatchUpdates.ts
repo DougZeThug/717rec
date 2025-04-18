@@ -4,12 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
 import { useTeamRecords } from "./useTeamRecords";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [editingMatch, setEditingMatch] = useState<Match | undefined>(undefined);
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
   const { toast } = useToast();
   const { updateTeamRecords } = useTeamRecords();
+  const queryClient = useQueryClient();
 
   const handleUpdateMatch = async (matchData: Omit<Match, "id">, teams: Team[]) => {
     if (!editingMatch) return false;
@@ -32,7 +34,9 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
           team1_score: matchData.team1Score,
           team2_score: matchData.team2Score,
           winner_id: matchData.winnerId,
-          loser_id: matchData.loserId
+          loser_id: matchData.loserId,
+          team1_game_wins: matchData.team1_game_wins || 0,
+          team2_game_wins: matchData.team2_game_wins || 0
         })
         .eq('id', editingMatch.id)
         .select()
@@ -52,10 +56,12 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         team2Score: data.team2_score,
         winnerId: data.winner_id,
         loserId: data.loser_id,
+        team1_game_wins: data.team1_game_wins,
+        team2_game_wins: data.team2_game_wins,
         round_number: data.round_number
       };
       
-      // Update the matches state - Fixed the issue by changing how we update the state
+      // Update the matches state
       const updatedMatches = matches.map(match => 
         match.id === updatedMatch.id ? updatedMatch : match
       );
@@ -72,6 +78,11 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       if ((isNowCompleted && !wasCompleted) || (isNowCompleted && winnerChanged)) {
         if (updatedMatch.winnerId && updatedMatch.loserId) {
           await updateTeamRecords(updatedMatch.winnerId, updatedMatch.loserId, teams);
+          
+          // Invalidate relevant queries to refresh data across the app
+          queryClient.invalidateQueries({ queryKey: ['matches'] });
+          queryClient.invalidateQueries({ queryKey: ['teams'] });
+          queryClient.invalidateQueries({ queryKey: ['rankings'] });
         }
       }
       
@@ -105,7 +116,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       
       if (error) throw error;
       
-      // Update the matches state - Fixed to directly create a new array
+      // Update the matches state
       const updatedMatches = matches.filter(match => match.id !== deleteMatchId);
       setMatches(updatedMatches);
       
@@ -116,6 +127,9 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         description: "Match has been successfully deleted.",
         variant: "destructive"
       });
+      
+      // Invalidate queries after deleting
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
       
       return true;
     } catch (error: any) {

@@ -41,14 +41,17 @@ export const useScheduleData = () => {
         match_type: match.match_type,
         next_match_id: match.next_match_id,
         next_loser_match_id: match.next_loser_match_id,
-        best_of: match.best_of
+        best_of: match.best_of,
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins
       }));
       
       console.log("Formatted matches data:", formattedData);
       return formattedData;
     },
     refetchOnWindowFocus: true,
-    refetchOnMount: true
+    refetchOnMount: true,
+    staleTime: 15000 // Consider data stale after 15 seconds
   });
 
   // Set up polling to refresh matches data
