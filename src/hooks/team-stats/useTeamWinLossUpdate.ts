@@ -13,12 +13,12 @@ export const useTeamWinLossUpdate = () => {
     loserGameWins: number = 0
   ) => {
     try {
-      // Since the database trigger handles all stat updates,
+      // Since we're now handling stats in matchUpdateUtils,
       // we only need to invalidate the relevant queries
-      console.log("Invalidating queries to refresh team stats...");
-      
       await queryClient.invalidateQueries({ queryKey: ['teams'] });
       await queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      await queryClient.invalidateQueries({ queryKey: ['team', winnerId] });
+      await queryClient.invalidateQueries({ queryKey: ['team', loserId] });
       
       return true;
     } catch (error) {

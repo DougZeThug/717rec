@@ -22,17 +22,52 @@ export const updateMatchInDatabase = async (
   
   console.log(`[matchUpdateUtils] Updating match ${matchId} with:`, updateData);
   
-  const { data, error } = await supabase
+  // First update the match itself
+  const { data: matchData, error: matchError } = await supabase
     .from('matches')
     .update(updateData)
     .eq('id', matchId)
     .select();
     
-  if (error) {
-    console.error(`[matchUpdateUtils] Error updating match ${matchId}:`, error);
-    throw error;
+  if (matchError) {
+    console.error(`[matchUpdateUtils] Error updating match ${matchId}:`, matchError);
+    throw matchError;
+  }
+
+  if (winnerId && loserId) {
+    // Update winner stats
+    const { data: winner, error: winnerError } = await supabase
+      .from('teams')
+      .update({
+        wins: supabase.sql`wins + 1`,
+        game_wins: supabase.sql`game_wins + ${team1Score}`,
+        game_losses: supabase.sql`game_losses + ${team2Score}`
+      })
+      .eq('id', winnerId)
+      .select('id');
+
+    if (winnerError) {
+      console.error(`[matchUpdateUtils] Error updating winner stats:`, winnerError);
+      throw winnerError;
+    }
+
+    // Update loser stats
+    const { data: loser, error: loserError } = await supabase
+      .from('teams')
+      .update({
+        losses: supabase.sql`losses + 1`,
+        game_wins: supabase.sql`game_wins + ${team2Score}`,
+        game_losses: supabase.sql`game_losses + ${team1Score}`
+      })
+      .eq('id', loserId)
+      .select('id');
+
+    if (loserError) {
+      console.error(`[matchUpdateUtils] Error updating loser stats:`, loserError);
+      throw loserError;
+    }
   }
   
   console.log(`[matchUpdateUtils] Match ${matchId} updated successfully`);
-  return data;
+  return matchData;
 };
