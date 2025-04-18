@@ -3,12 +3,16 @@ import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
+import { calculateWinPercentage } from "@/utils/rankingUtils/calculateWinPercentage";
 
 interface TeamCardProps {
   team: Team;
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
+  // Use the consistent win percentage calculation
+  const winPercentage = calculateWinPercentage(team.wins, team.losses) * 100;
+  
   return (
     <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0")}>
       <Link to={`/teams/${team.id}`} className="block">
@@ -36,7 +40,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
           <div className="flex justify-between text-xs mt-1">
             <span>Win %:</span>
             <span className="font-medium">
-              {((team.wins / (team.wins + team.losses || 1)) * 100).toFixed(1)}%
+              {winPercentage.toFixed(1)}%
             </span>
           </div>
           {team.divisionName && (

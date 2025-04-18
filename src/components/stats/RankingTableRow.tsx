@@ -48,6 +48,9 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
 
   // Use the power score color
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
+  
+  // Log the ranking data for debugging
+  console.log(`Rendering rank #${index + 1}: ${ranking.teamName} (${ranking.wins}-${ranking.losses}, Win%: ${ranking.winPercentage}, Power: ${ranking.powerScore})`);
 
   return (
     <TableRow

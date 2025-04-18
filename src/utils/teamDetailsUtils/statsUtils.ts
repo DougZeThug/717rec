@@ -8,14 +8,22 @@ import { calculateWinPercentage as calculateWinPercentageUtil } from "@/utils/ra
  */
 export const calculateWinPercentage = (team: Team | undefined) => {
   if (!team) return "0.0";
-  const wins = team.wins || 0;
-  const losses = team.losses || 0;
+  
+  // Ensure we have numbers for wins and losses
+  const wins = typeof team.wins === 'number' ? team.wins : 0;
+  const losses = typeof team.losses === 'number' ? team.losses : 0;
+  
+  // Log the calculation for debugging
+  console.log(`Team win percentage calculation for ${team.name}: ${wins} wins, ${losses} losses`);
   
   // Use the common utility function to ensure consistency
   const percentage = calculateWinPercentageUtil(wins, losses);
   
   // Format as percentage string with 1 decimal place
-  return (percentage * 100).toFixed(1);
+  const formattedPercentage = (percentage * 100).toFixed(1);
+  console.log(`Calculated win percentage for ${team.name}: ${formattedPercentage}%`);
+  
+  return formattedPercentage;
 };
 
 /**
@@ -77,8 +85,8 @@ export const calculateTeamStats = async (
     strengthOfSchedule
   });
   
-  // Calculate Power Score
-  const winPercentValue = team.wins + team.losses > 0 ? team.wins / (team.wins + team.losses) : 0;
+  // Calculate Power Score - ensure we use consistent win percentage calculation
+  const winPercentValue = calculateWinPercentageUtil(team.wins || 0, team.losses || 0);
   const gameWinPercentValue = parseFloat(gameWinPercentage) / 100;
   const powerScore = (winPercentValue * 0.5) + (gameWinPercentValue * 0.3) + (strengthOfSchedule * 0.2);
   const formattedPowerScore = (powerScore * 100).toFixed(1);
