@@ -22,7 +22,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
     handleScoreChange,
     handleMarkCompleted,
     handleSubmitAll,
-    clearError,
+    clearErrors,
     setFilterDate,
     setBracketFilter,
     clearFilters
@@ -72,7 +72,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
           errorMessages={errorMessages}
           onScoreChange={handleScoreChange}
           onMarkCompleted={handleMarkCompleted}
-          onClearError={clearError}
+          onClearError={clearErrors}
         />
 
         <div className="flex justify-end mt-6">

@@ -11,7 +11,7 @@ export const useScoreEntryData = () => {
   const { filters, brackets, fetchBrackets, setFilterDate, setBracketFilter, clearFilters } = useMatchFilters();
   const { loading, fetchMatches } = useMatchFetching();
   const { handleScoreChange: validateScoreChange, handleMarkCompleted: validateMarkCompleted } = useMatchValidation();
-  const { submitting, failedMatches, errorMessages, handleSubmitAll, clearErrors } = useScoreSubmission(matches, fetchMatches);
+  const { submitting, failedMatches, errorMessages, handleSubmitAll, clearErrors } = useScoreSubmission(matches, () => fetchMatches(filters));
 
   useEffect(() => {
     const loadData = async () => {
