@@ -146,9 +146,9 @@ export const useScoreSubmission = (
               
               if (!updateSuccess) {
                 toast({
-                  title: "Warning",
+                  title: "Partial Success",
                   description: `Match updated, but team records may not have been updated properly.`,
-                  variant: "warning"
+                  variant: "default"
                 });
               }
             }
@@ -175,7 +175,7 @@ export const useScoreSubmission = (
         toast({
           title: "Partial Success",
           description: `Updated ${successCount} matches. ${newFailedMatches.length} matches failed to update.`,
-          variant: "warning"
+          variant: "default"
         });
       } else {
         toast({

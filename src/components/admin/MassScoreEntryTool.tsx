@@ -55,7 +55,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
 
       <CardContent>
         {failedMatches && failedMatches.length > 0 && (
-          <Alert variant="warning" className="mb-4">
+          <Alert variant="default" className="mb-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               {failedMatches.length} {failedMatches.length === 1 ? 'match' : 'matches'} failed to update. 
