@@ -18,6 +18,8 @@ export interface Team {
   players: Player[];
   wins: number;
   losses: number;
+  game_wins?: number;  // Add this property
+  game_losses?: number;  // Add this property
   created_at: string;
   division?: string | null;
   divisionName?: string | null;

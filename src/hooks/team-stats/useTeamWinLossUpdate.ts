@@ -9,12 +9,12 @@ export const useTeamWinLossUpdate = () => {
   const queryClient = useQueryClient();
 
   /**
-   * Updates team records for match results and game wins
+   * Updates team records for match results and game wins/losses
    * @param winnerId The ID of the team that won the match
    * @param loserId The ID of the team that lost the match
    * @param teams Array of team data objects
-   * @param winnerGameWins Number of games won by winner
-   * @param loserGameWins Number of games won by loser
+   * @param winnerGameWins Number of games won by winner in the match
+   * @param loserGameWins Number of games won by loser in the match
    */
   const updateTeamRecords = async (
     winnerId: string, 
@@ -25,8 +25,8 @@ export const useTeamWinLossUpdate = () => {
   ) => {
     try {
       console.log(`---TEAM RECORD UPDATE STARTED---`);
-      console.log(`Updating team records - Winner: ${winnerId}, Loser: ${loserId}`);
-      console.log(`Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
+      console.log(`Match result: Winner: ${winnerId}, Loser: ${loserId}`);
+      console.log(`Games - Winner won: ${winnerGameWins}, Loser won: ${loserGameWins}`);
       
       // First, let's verify the teams exist and get their current records
       const { data: winnerTeam, error: winnerFetchError } = await supabase
@@ -51,22 +51,26 @@ export const useTeamWinLossUpdate = () => {
         return false;
       }
       
-      console.log("Winner team data:", winnerTeam);
-      console.log("Loser team data:", loserTeam);
+      console.log("Winner team before update:", winnerTeam);
+      console.log("Loser team before update:", loserTeam);
       
-      // Parse and validate the win/loss values
+      // Parse and ensure we're working with numbers for all values
       const currentWinnerWins = parseInt(String(winnerTeam.wins ?? 0));
       const currentLoserLosses = parseInt(String(loserTeam.losses ?? 0));
       const currentWinnerGameWins = parseInt(String(winnerTeam.game_wins ?? 0));
       const currentLoserGameWins = parseInt(String(loserTeam.game_wins ?? 0));
       
+      // Calculate new values for game losses - each team's game losses are the other team's game wins
+      const currentWinnerGameLosses = parseInt(String(winnerTeam.game_losses ?? 0));
+      const currentLoserGameLosses = parseInt(String(loserTeam.game_losses ?? 0));
+      
       console.log(`BEFORE UPDATE - Winner ${winnerTeam.name}:`);
       console.log(`Match record: ${currentWinnerWins} wins`);
-      console.log(`Game wins: ${currentWinnerGameWins}`);
+      console.log(`Game stats: ${currentWinnerGameWins} wins, ${currentWinnerGameLosses} losses`);
       
       console.log(`BEFORE UPDATE - Loser ${loserTeam.name}:`);
       console.log(`Match record: ${currentLoserLosses} losses`);
-      console.log(`Game wins: ${currentLoserGameWins}`);
+      console.log(`Game stats: ${currentLoserGameWins} wins, ${currentLoserGameLosses} losses`);
       
       if (isNaN(currentWinnerWins) || isNaN(currentLoserLosses) || 
           isNaN(currentWinnerGameWins) || isNaN(currentLoserGameWins)) {
@@ -74,22 +78,31 @@ export const useTeamWinLossUpdate = () => {
         return false;
       }
       
-      // Calculate new values - Add 1 win/loss for match result, add game wins separately
-      const newWinnerWins = currentWinnerWins + 1; // One match win
-      const newLoserLosses = currentLoserLosses + 1; // One match loss
+      // Calculate new values
+      // Match record: +1 win for winner, +1 loss for loser
+      const newWinnerWins = currentWinnerWins + 1;
+      const newLoserLosses = currentLoserLosses + 1;
+      
+      // Game stats: Add the number of games each team won
       const newWinnerGameWins = currentWinnerGameWins + winnerGameWins;
       const newLoserGameWins = currentLoserGameWins + loserGameWins;
+      
+      // Game losses: Add the number of games each team lost (which is what the other team won)
+      const newWinnerGameLosses = currentWinnerGameLosses + loserGameWins;
+      const newLoserGameLosses = currentLoserGameLosses + winnerGameWins;
       
       console.log(`Updating winner ${winnerTeam.name} (${winnerId})`);
       console.log(`Match wins: ${currentWinnerWins} -> ${newWinnerWins}`);
       console.log(`Game wins: ${currentWinnerGameWins} -> ${newWinnerGameWins}`);
+      console.log(`Game losses: ${currentWinnerGameLosses} -> ${newWinnerGameLosses}`);
       
       // Update winner's records
       const winnerUpdateResult = await supabase
         .from('teams')
         .update({ 
           wins: newWinnerWins,
-          game_wins: newWinnerGameWins
+          game_wins: newWinnerGameWins,
+          game_losses: newWinnerGameLosses
         })
         .eq('id', winnerId)
         .select();
@@ -105,12 +118,14 @@ export const useTeamWinLossUpdate = () => {
       console.log(`Updating loser ${loserTeam.name} (${loserId})`);
       console.log(`Match losses: ${currentLoserLosses} -> ${newLoserLosses}`);
       console.log(`Game wins: ${currentLoserGameWins} -> ${newLoserGameWins}`);
+      console.log(`Game losses: ${currentLoserGameLosses} -> ${newLoserGameLosses}`);
       
       const loserUpdateResult = await supabase
         .from('teams')
         .update({ 
           losses: newLoserLosses,
-          game_wins: newLoserGameWins
+          game_wins: newLoserGameWins,
+          game_losses: newLoserGameLosses
         })
         .eq('id', loserId)
         .select();
@@ -125,24 +140,24 @@ export const useTeamWinLossUpdate = () => {
       // Verify the updates by fetching the updated records
       const { data: updatedWinnerData } = await supabase
         .from('teams')
-        .select('wins, losses, game_wins, name')
+        .select('wins, losses, game_wins, game_losses, name')
         .eq('id', winnerId)
         .single();
         
       const { data: updatedLoserData } = await supabase
         .from('teams')
-        .select('wins, losses, game_wins, name')
+        .select('wins, losses, game_wins, game_losses, name')
         .eq('id', loserId)
         .single();
         
       if (updatedWinnerData && updatedLoserData) {
         console.log(`AFTER UPDATE - Winner ${updatedWinnerData.name}:`);
         console.log(`Match record: ${updatedWinnerData.wins}W-${updatedWinnerData.losses}L`);
-        console.log(`Game wins: ${updatedWinnerData.game_wins}`);
+        console.log(`Game record: ${updatedWinnerData.game_wins}W-${updatedWinnerData.game_losses}L`);
         
         console.log(`AFTER UPDATE - Loser ${updatedLoserData.name}:`);
         console.log(`Match record: ${updatedLoserData.wins}W-${updatedLoserData.losses}L`);
-        console.log(`Game wins: ${updatedLoserData.game_wins}`);
+        console.log(`Game record: ${updatedLoserData.game_wins}W-${updatedLoserData.game_losses}L`);
       }
       
       // Immediately invalidate caches to update UI

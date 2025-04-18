@@ -38,14 +38,16 @@ export const useTeamRecords = () => {
           losses: team.losses,
           lossesType: typeof team.losses,
           gameWins: team.game_wins,
-          gameWinsType: typeof team.game_wins
+          gameWinsType: typeof team.game_wins,
+          gameLosses: team.game_losses,
+          gameLossesType: typeof team.game_losses
         });
       });
     }
     
     try {
       // First update the basic win/loss records in the teams table
-      console.log("Step 1: Updating basic win/loss records in teams table");
+      console.log("Step 1: Updating basic win/loss and game records in teams table");
       const success = await updateWinLoss(winnerId, loserId, teams, winnerGameWins, loserGameWins);
       
       if (!success) {

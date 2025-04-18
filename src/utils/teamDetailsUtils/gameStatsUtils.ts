@@ -35,6 +35,7 @@ export const calculateGameStats = (teamId: string, matches: Match[] | undefined)
       }
     } else {
       // Fall back to match scores if game wins are not available
+      // This case should be increasingly rare as we update historical data
       if (match.winnerId === teamId) {
         gamesWon += 1;
       } else if (match.loserId === teamId) {

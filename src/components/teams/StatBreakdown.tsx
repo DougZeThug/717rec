@@ -94,23 +94,24 @@ const StatBreakdown = ({
               title="Match Record" 
               value={`${wins}–${losses}`}
               color="text-amber-500"
+              isHighlighted
             />
             <StatItem 
               icon={<Percent size={20} />} 
-              title="Win Percentage" 
+              title="Match Win %" 
               value={`${winPercentage}%`}
               color={getWinPercentageColor(winPercentage)}
-              isHighlighted
             />
             <StatItem 
               icon={<BarChart2 size={20} />} 
               title="Game Record" 
               value={`${gamesWon}–${gamesLost}`}
               color="text-blue-500"
+              isHighlighted
             />
             <StatItem 
               icon={<Percent size={20} />} 
-              title="Game Win Percentage" 
+              title="Game Win %" 
               value={`${gameWinPercentage}%`}
               color={getWinPercentageColor(gameWinPercentage)}
             />

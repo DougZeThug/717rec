@@ -38,25 +38,26 @@ const MatchScoreItem = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // For the actual match result, winner gets 1, loser gets 0
+      // Parse game wins
       const team1Wins = parseInt(team1GameWins) || 0;
       const team2Wins = parseInt(team2GameWins) || 0;
       
       // Determine match winner based on game wins
-      const matchScore1 = team1Wins > team2Wins ? 1 : 0;
-      const matchScore2 = team2Wins > team1Wins ? 1 : 0;
+      // Match score is now binary: 1 for winner, 0 for loser
+      const matchScore1 = team1Wins > team2Wins ? "1" : "0";
+      const matchScore2 = team2Wins > team1Wins ? "1" : "0";
       
       console.log(`Submitting match ${match.id}:`);
       console.log(`Team 1 (${teams[match.team1Id]?.name}):`);
-      console.log(`- Match score: ${matchScore1}`);
+      console.log(`- Match result: ${matchScore1} (win/loss)`);
       console.log(`- Game wins: ${team1Wins}`);
       console.log(`Team 2 (${teams[match.team2Id]?.name}):`);
-      console.log(`- Match score: ${matchScore2}`);
+      console.log(`- Match result: ${matchScore2} (win/loss)`);
       console.log(`- Game wins: ${team2Wins}`);
       
       await onSubmitScore(
-        matchScore1.toString(), 
-        matchScore2.toString(),
+        matchScore1, 
+        matchScore2,
         team1Wins,
         team2Wins
       );
