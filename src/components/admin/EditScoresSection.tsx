@@ -32,7 +32,11 @@ const EditScoresSection = () => {
         scores={scores}
         onToggleItem={toggleItem}
         onScoreChange={handleScoreChange}
-        onSubmitScore={(matchId, team1Score, team2Score) => handleSubmitScore(matchId, team1Score, team2Score)}
+        onSubmitScore={(matchId, team1Score, team2Score) => handleSubmitScore({
+          matchId,
+          team1Score,
+          team2Score
+        })}
       />
     </div>
   );
