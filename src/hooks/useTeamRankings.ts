@@ -62,7 +62,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         best_of: match.best_of
       }));
     },
-    staleTime: 30000, // Consider data stale after 30 seconds
+    staleTime: 10000, // Consider data stale after 10 seconds (reduced from 30s)
   });
   
   // Fetch the latest team data
@@ -79,7 +79,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       
       console.log(`Fetched ${data.length} teams for rankings calculation`);
       
-      // Output some team data for debugging
+      // Output all team stats for debugging
       data.forEach(team => {
         console.log(`Team ${team.name}: ${team.wins || 0}W-${team.losses || 0}L`);
       });
@@ -100,7 +100,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         divisionName: team.divisions?.name || null
       }));
     },
-    staleTime: 30000, // Consider data stale after 30 seconds
+    staleTime: 10000, // Consider data stale after 10 seconds (reduced from 30s)
   });
   
   // Calculate team rankings when teams or matches change
@@ -116,7 +116,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       setIsLoading(true);
       
       try {
-        console.log("Starting rankings calculation...");
+        console.log("Starting rankings calculation with fresh data...");
         
         // Use latestMatches from query if available, otherwise fall back to matches prop
         const matchesToUse = latestMatches || matches;
@@ -124,7 +124,10 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         // Create ranking objects for each team asynchronously
         const rankingPromises = teamsToUse
           .filter(team => team !== null && team !== undefined)
-          .map(team => createRankingObject(team, teamsToUse, matchesToUse, previousRankings));
+          .map(team => {
+            console.log(`Creating ranking for team ${team.name} with record ${team.wins}-${team.losses}`);
+            return createRankingObject(team, teamsToUse, matchesToUse, previousRankings);
+          });
           
         const unsortedRankings = await Promise.all(rankingPromises);
         
@@ -136,7 +139,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         
         console.log("Rankings calculation complete:", finalRankings.length);
         
-        // Output top 3 teams for debugging
+        // Output top 3 teams and team stats for debugging
         finalRankings.slice(0, 3).forEach((ranking, idx) => {
           console.log(`Rank ${idx + 1}: ${ranking.teamName} (${ranking.wins}-${ranking.losses}, ${(ranking.winPercentage * 100).toFixed(1)}%)`);
         });
@@ -160,6 +163,8 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     console.log("Manually refreshing rankings data...");
     queryClient.invalidateQueries({ queryKey: ['matches'] });
     queryClient.invalidateQueries({ queryKey: ['teams'] });
+    queryClient.invalidateQueries({ queryKey: ['rankings'] });
+    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
   };
   
   return {

@@ -10,5 +10,6 @@ export const calculateWinPercentage = (wins: number, losses: number) => {
   const totalGames = winCount + lossCount;
   
   // Return a raw decimal value (not multiplied by 100)
+  // Ensure we return exactly 0 when there are no games
   return totalGames > 0 ? winCount / totalGames : 0;
 };

@@ -74,6 +74,14 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       team2_game_wins: match.team2_game_wins
     }));
 
+    // Log the match details for debugging
+    console.log("Match details for processing:");
+    mappedMatches.forEach(match => {
+      if (match.winnerId === winnerId || match.loserId === loserId) {
+        console.log(`Match ${match.id}: Team1 (${match.team1Id}): ${match.team1Score}, Team2 (${match.team2Id}): ${match.team2Score}, Winner: ${match.winnerId}, Loser: ${match.loserId}, Completed: ${match.iscompleted}`);
+      }
+    });
+
     // Process both winner and loser stats
     const results = await Promise.all([
       updateSingleTeamStats(winnerId, mappedTeams, mappedMatches, currentDate),
@@ -98,6 +106,9 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
       return false;
     }
 
+    // Output the current team record from database
+    console.log(`Team ${team.name} database record: ${team.wins || 0}W-${team.losses || 0}L`);
+
     // Calculate basic stats
     const streak = calculateStreak(teamId, matches);
     const headToHead = calculateHeadToHead(teamId, teams, matches);
@@ -110,15 +121,15 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     // Calculate power score
     const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
     
-    console.log(`Team ${team.name} (${teamId}) stats:`, {
+    console.log(`Team ${team.name} (${teamId}) stats calculated:`, {
       wins: team.wins,
       losses: team.losses,
-      winPercentage: winPercentage.toFixed(3),
+      winPercentage: winPercentage.toFixed(4),
       gamesWon,
       gamesLost,
-      gameWinPercentage: gameWinPercentage.toFixed(3),
+      gameWinPercentage: gameWinPercentage.toFixed(4),
       powerScore: powerScore.toFixed(2),
-      sos: sos.toFixed(3)
+      sos: sos.toFixed(4)
     });
     
     // Get previous rank information

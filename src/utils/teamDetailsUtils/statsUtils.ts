@@ -1,6 +1,7 @@
 
 import { Team, Match } from "@/types";
 import { calculateSOS } from "@/utils/rankingUtils";
+import { calculateWinPercentage as calculateWinPercentageUtil } from "@/utils/rankingUtils/calculateWinPercentage";
 
 /**
  * Calculate win percentage
@@ -9,8 +10,12 @@ export const calculateWinPercentage = (team: Team | undefined) => {
   if (!team) return "0.0";
   const wins = team.wins || 0;
   const losses = team.losses || 0;
-  const totalGames = wins + losses;
-  return totalGames > 0 ? ((wins / totalGames) * 100).toFixed(1) : "0.0";
+  
+  // Use the common utility function to ensure consistency
+  const percentage = calculateWinPercentageUtil(wins, losses);
+  
+  // Format as percentage string with 1 decimal place
+  return (percentage * 100).toFixed(1);
 };
 
 /**
@@ -65,6 +70,12 @@ export const calculateTeamStats = async (
   if (team && allTeams) {
     strengthOfSchedule = await calculateSOS(team, allTeams, matches);
   }
+  
+  console.log(`Team ${team.name} stats calculated:`, { 
+    wins: team.wins, losses: team.losses, 
+    gameWinPercentage,
+    strengthOfSchedule
+  });
   
   // Calculate Power Score
   const winPercentValue = team.wins + team.losses > 0 ? team.wins / (team.wins + team.losses) : 0;

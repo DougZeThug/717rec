@@ -38,6 +38,8 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
 
   // Format win percentage to display with correct precision
   const formatWinPercentage = (percentage: number) => {
+    // Log the raw percentage for debugging
+    console.log(`Formatting win percentage for ${ranking.teamName}: ${percentage}`);
     return `${(percentage * 100).toFixed(1)}%`;
   };
 

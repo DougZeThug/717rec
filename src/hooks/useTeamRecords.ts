@@ -41,14 +41,15 @@ export const useTeamRecords = () => {
       
       console.log("Invalidating all relevant queries to ensure data freshness");
       
-      // Invalidate all relevant queries to ensure data freshness across the app
+      // Force invalidate all relevant queries to ensure data freshness across the app
       const queriesToInvalidate = [
         'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches'
       ];
       
-      queriesToInvalidate.forEach(queryKey => {
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-      });
+      for (const queryKey of queriesToInvalidate) {
+        await queryClient.invalidateQueries({ queryKey: [queryKey] });
+        console.log(`Invalidated query cache for ${queryKey}`);
+      }
       
       toast({
         title: "Success",

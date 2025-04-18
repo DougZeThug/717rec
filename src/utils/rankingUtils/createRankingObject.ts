@@ -24,6 +24,7 @@ export const createRankingObject = async (
   
   // Calculate win percentage using wins and losses
   const winPercentage = calculateWinPercentage(wins, losses);
+  console.log(`Win percentage calculated for ${team.name}: ${winPercentage} (${winPercentage * 100}%)`);
   
   const sos = await calculateSOS(team, allTeams, allMatches);
   const streak = calculateStreak(team.id, allMatches);
@@ -41,7 +42,7 @@ export const createRankingObject = async (
   // Calculate power score using the weighted formula
   const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
   
-  console.log(`Team ${team.name} stats: Record ${wins}-${losses}, Win% ${(winPercentage * 100).toFixed(1)}%, Games ${gamesWon}-${gamesLost}, Power ${powerScore.toFixed(1)}`);
+  console.log(`Team ${team.name} final stats: Record ${wins}-${losses}, Win% ${(winPercentage * 100).toFixed(1)}%, Games ${gamesWon}-${gamesLost}, Power ${powerScore.toFixed(1)}`);
   
   return {
     teamId: team.id,
