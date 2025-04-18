@@ -23,6 +23,7 @@ export const updateTeamRecord = async ({
   currentGameLosses
 }: UpdateTeamRecordParams) => {
   // Calculate new values
+  // Match win/loss is binary (0 or 1), while game wins/losses are the actual scores
   const newWins = currentWins + (isWinner ? 1 : 0);
   const newLosses = currentLosses + (isWinner ? 0 : 1);
   const newGameWins = currentGameWins + gameWins;
