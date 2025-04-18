@@ -3,7 +3,7 @@ import { QueryClient } from "@tanstack/react-query";
 
 export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) => {
   const queriesToInvalidate = [
-    'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches', 'standings'
+    'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches', 'standings', 'homepageStats'
   ];
   
   console.log("[queryCacheUtils] Invalidating relevant query caches");

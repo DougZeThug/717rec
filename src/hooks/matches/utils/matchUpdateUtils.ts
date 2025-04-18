@@ -36,12 +36,12 @@ export const updateMatchInDatabase = async (
   }
 
   if (winnerId && loserId) {
-    // Determine which team's score belongs to winner/loser
+    // Determine which team's game score belongs to winner/loser
     const winnerGameWins = winnerId === matchResult.team1Id ? matchResult.team1GameWins : matchResult.team2GameWins;
     const loserGameWins = loserId === matchResult.team1Id ? matchResult.team1GameWins : matchResult.team2GameWins;
     
     try {
-      // Use the new utility to update team records correctly
+      // Use the updated utility to update team records correctly
       await applyMatchResult(
         winnerId,
         loserId,

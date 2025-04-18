@@ -7,6 +7,7 @@ import { SubmitScoreParams } from "./types/matchSubmissionTypes";
 import { determineMatchResults } from "./utils/matchResultUtils";
 import { updateMatchInDatabase } from "./utils/matchUpdateUtils";
 import { fetchTeamsForMatch } from "./utils/teamDataUtils";
+import { invalidateMatchRelatedQueries } from "./utils/queryCacheUtils";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
@@ -21,6 +22,12 @@ export const useMatchSubmission = () => {
     team2GameWins = 0
   }: SubmitScoreParams) => {
     try {
+      // Ensure scores are treated as numbers
+      const team1ScoreNum = Number(team1Score);
+      const team2ScoreNum = Number(team2Score);
+      const team1GameWinsNum = Number(team1GameWins || 0);
+      const team2GameWinsNum = Number(team2GameWins || 0);
+      
       // Fetch the match data to get team IDs
       const { data: matchData, error: matchError } = await supabase
         .from('matches')
@@ -33,43 +40,24 @@ export const useMatchSubmission = () => {
       const { team1_id, team2_id } = matchData;
       
       console.log(`[useMatchSubmission] Submitting scores for match ${matchId}`);
-      console.log(`Team scores - Team1: ${team1Score}, Team2: ${team2Score}`);
-      console.log(`Game wins - Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
+      console.log(`Team scores - Team1: ${team1ScoreNum}, Team2: ${team2ScoreNum}`);
+      console.log(`Game wins - Team1: ${team1GameWinsNum}, Team2: ${team2GameWinsNum}`);
 
       // Determine match results
       const matchResult = determineMatchResults(
         team1_id, 
         team2_id, 
-        team1Score, 
-        team2Score,
-        team1GameWins,
-        team2GameWins
+        team1ScoreNum, 
+        team2ScoreNum,
+        team1GameWinsNum,
+        team2GameWinsNum
       );
       
       // Update the match in database
-      await updateMatchInDatabase(matchId, team1Score, team2Score, matchResult);
+      await updateMatchInDatabase(matchId, team1ScoreNum, team2ScoreNum, matchResult);
 
-      // If we have both winner and loser, trigger team stats update
-      if (matchResult.winnerId && matchResult.loserId) {
-        const teamIds = [matchResult.winnerId, matchResult.loserId];
-        const teams = await fetchTeamsForMatch(teamIds);
-        
-        if (teams.length === 2) {
-          console.log(`[useMatchSubmission] Updating team records for teams ${teamIds.join(', ')}`);
-          
-          // Get the game wins for each team (winner vs loser)
-          const winnerGameWins = matchResult.winnerId === team1_id ? team1GameWins : team2GameWins;
-          const loserGameWins = matchResult.loserId === team1_id ? team1GameWins : team2GameWins;
-          
-          await updateTeamRecords(
-            matchResult.winnerId, 
-            matchResult.loserId, 
-            teams,
-            winnerGameWins,
-            loserGameWins
-          );
-        }
-      }
+      // Invalidate all relevant query caches to ensure data freshness
+      await invalidateMatchRelatedQueries(queryClient);
       
       toast({
         title: 'Scores Updated',

@@ -15,11 +15,15 @@ export const determineMatchResults = (
   console.log(`[matchResultUtils] Calculating match result - Team1: ${team1Score}, Team2: ${team2Score}`);
   console.log(`[matchResultUtils] Game wins - Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
   
+  // Ensure scores are treated as numbers
+  const team1ScoreNum = Number(team1Score);
+  const team2ScoreNum = Number(team2Score);
+  
   // Determine winner and loser based on scores
-  if (team1Score > team2Score) {
+  if (team1ScoreNum > team2ScoreNum) {
     winnerId = team1Id;
     loserId = team2Id;
-  } else if (team2Score > team1Score) {
+  } else if (team2ScoreNum > team1ScoreNum) {
     winnerId = team2Id;
     loserId = team1Id;
   }
@@ -31,7 +35,7 @@ export const determineMatchResults = (
     loserId,
     team1GameWins,
     team2GameWins,
-    team1Id,  // Add the team1Id property
-    team2Id   // Add the team2Id property
+    team1Id,
+    team2Id
   };
 };

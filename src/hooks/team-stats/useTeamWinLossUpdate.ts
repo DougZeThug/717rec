@@ -15,12 +15,21 @@ export const useTeamWinLossUpdate = () => {
     loserGameWins: number = 0
   ) => {
     try {
-      // Update team records with our new utility function
+      // Ensure game win values are numbers
+      const winnerGameWinsNum = Number(winnerGameWins || 0);
+      const loserGameWinsNum = Number(loserGameWins || 0);
+      
+      console.log(`[useTeamWinLossUpdate] Updating team records with game stats:`, {
+        winner: { id: winnerId, gameWins: winnerGameWinsNum },
+        loser: { id: loserId, gameWins: loserGameWinsNum }
+      });
+      
+      // Update team records with our updated utility function
       await applyMatchResult(
         winnerId,
         loserId,
-        winnerGameWins,
-        loserGameWins
+        winnerGameWinsNum,
+        loserGameWinsNum
       );
       
       // Invalidate all relevant queries to ensure fresh data

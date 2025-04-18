@@ -37,15 +37,20 @@ export async function applyMatchResult(
   };
 
   /* ───── persist ───── */
-  const { error: wErr } = await supabase
-    .from("teams")
-    .update(winnerUpdate)
-    .eq("id", winnerId);
+  // Use Promise.all to update both teams simultaneously
+  const [winnerResult, loserResult] = await Promise.all([
+    supabase
+      .from("teams")
+      .update(winnerUpdate)
+      .eq("id", winnerId),
+    supabase
+      .from("teams")
+      .update(loserUpdate)
+      .eq("id", loserId)
+  ]);
 
-  const { error: lErr } = await supabase
-    .from("teams")
-    .update(loserUpdate)
-    .eq("id", loserId);
+  const wErr = winnerResult.error;
+  const lErr = loserResult.error;
 
   if (wErr || lErr) {
     console.error("❌ update failed", { wErr, lErr });
@@ -53,9 +58,21 @@ export async function applyMatchResult(
   }
 
   /* ───── done ───── */
-  console.log("✅ Team records updated successfully", {
-    winner: winnerUpdate,
-    loser: loserUpdate
+  console.log("✅ Team stats updated:", {
+    winner: {
+      team: winner.name || winnerId,
+      wins: winnerUpdate.wins, 
+      losses: winnerUpdate.losses, 
+      game_wins: winnerUpdate.game_wins, 
+      game_losses: winnerUpdate.game_losses
+    },
+    loser: {
+      team: loser.name || loserId,
+      wins: loserUpdate.wins, 
+      losses: loserUpdate.losses, 
+      game_wins: loserUpdate.game_wins, 
+      game_losses: loserUpdate.game_losses
+    }
   });
   
   return true;
