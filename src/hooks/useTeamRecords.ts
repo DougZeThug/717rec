@@ -3,37 +3,68 @@ import { useTeamWinLossUpdate } from "./team-stats/useTeamWinLossUpdate";
 import { updateTeamStatsRecord } from "@/services/TeamStatsService";
 import { Team } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 export const useTeamRecords = () => {
   const { updateTeamRecords: updateWinLoss } = useTeamWinLossUpdate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[]) => {
     console.log("Starting team record update process for winner:", winnerId, "loser:", loserId);
     
-    // First update the basic win/loss records
-    const success = await updateWinLoss(winnerId, loserId, teams);
-    if (!success) {
-      console.error("Failed to update basic win/loss records");
+    try {
+      // First update the basic win/loss records
+      const success = await updateWinLoss(winnerId, loserId, teams);
+      if (!success) {
+        console.error("Failed to update basic win/loss records");
+        toast({
+          title: "Error",
+          description: "Failed to update team records. Please try again.",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      console.log("Basic win/loss records updated successfully, now updating detailed stats");
+  
+      // Then update the detailed team stats
+      const statsSuccess = await updateTeamStatsRecord(winnerId, loserId);
+      if (!statsSuccess) {
+        console.error("Failed to update detailed team stats");
+        toast({
+          title: "Warning",
+          description: "Team win/loss records updated, but detailed stats failed to update.",
+          variant: "destructive"
+        });
+      }
+      
+      console.log("Invalidating all relevant queries to ensure data freshness");
+      
+      // Invalidate all relevant queries to ensure data freshness across the app
+      const queriesToInvalidate = [
+        'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches'
+      ];
+      
+      queriesToInvalidate.forEach(queryKey => {
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
+      });
+      
+      toast({
+        title: "Success",
+        description: "Team records and statistics have been updated successfully.",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error in team record update process:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while updating team records.",
+        variant: "destructive"
+      });
       return false;
     }
-    
-    console.log("Basic win/loss records updated successfully, now updating detailed stats");
-
-    // Then update the detailed team stats
-    await updateTeamStatsRecord(winnerId, loserId);
-    
-    console.log("Invalidating all relevant queries to ensure data freshness");
-    
-    // Invalidate all relevant queries to ensure data freshness across the app
-    queryClient.invalidateQueries({ queryKey: ['rankings'] });
-    queryClient.invalidateQueries({ queryKey: ['teams'] });
-    queryClient.invalidateQueries({ queryKey: ['matches'] });
-    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-    queryClient.invalidateQueries({ queryKey: ['team'] });
-    queryClient.invalidateQueries({ queryKey: ['team-matches'] });
-    
-    return true;
   };
 
   return {

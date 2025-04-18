@@ -7,8 +7,10 @@ import { calculateSOS } from "@/utils/rankingUtils";
  */
 export const calculateWinPercentage = (team: Team | undefined) => {
   if (!team) return "0.0";
-  const totalGames = team.wins + team.losses;
-  return totalGames > 0 ? ((team.wins / totalGames) * 100).toFixed(1) : "0.0";
+  const wins = team.wins || 0;
+  const losses = team.losses || 0;
+  const totalGames = wins + losses;
+  return totalGames > 0 ? ((wins / totalGames) * 100).toFixed(1) : "0.0";
 };
 
 /**
@@ -44,7 +46,7 @@ export const calculateTeamStats = async (
       if (match.loserId === team.id && (match.team1_game_wins || 0) > 0) {
         closeMatchLosses++;
       }
-    } else {
+    } else if (match.team2Id === team.id) {
       gamesWon += match.team2_game_wins || 0;
       gamesLost += match.team1_game_wins || 0;
       
@@ -65,7 +67,7 @@ export const calculateTeamStats = async (
   }
   
   // Calculate Power Score
-  const winPercentValue = parseFloat(calculateWinPercentage(team)) / 100;
+  const winPercentValue = team.wins + team.losses > 0 ? team.wins / (team.wins + team.losses) : 0;
   const gameWinPercentValue = parseFloat(gameWinPercentage) / 100;
   const powerScore = (winPercentValue * 0.5) + (gameWinPercentValue * 0.3) + (strengthOfSchedule * 0.2);
   const formattedPowerScore = (powerScore * 100).toFixed(1);

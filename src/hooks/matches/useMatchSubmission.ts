@@ -10,7 +10,7 @@ export const useMatchSubmission = () => {
   const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
 
-  const handleSubmitScore = async (matchId: string, team1Score: number, team2Score: number) => {
+  const handleSubmitScore = async (matchId: string, team1Score: number, team2Score: number, team1GameWins?: number, team2GameWins?: number) => {
     try {
       let winnerId: string | null = null;
       let loserId: string | null = null;
@@ -33,19 +33,30 @@ export const useMatchSubmission = () => {
         loserId = matchData.team1_id;
       }
 
-      // Update the match
+      console.log(`Match ${matchId}: Team 1 (${matchData.team1_id}) ${team1Score}-${team2Score} Team 2 (${matchData.team2_id})`);
+      console.log(`Winner: ${winnerId}, Loser: ${loserId}`);
+
+      // Update the match with game level details if provided
+      const updateData: any = {
+        team1_score: team1Score,
+        team2_score: team2Score,
+        iscompleted: true,
+        winner_id: winnerId,
+        loser_id: loserId
+      };
+
+      // Add game wins if provided
+      if (team1GameWins !== undefined) updateData.team1_game_wins = team1GameWins;
+      if (team2GameWins !== undefined) updateData.team2_game_wins = team2GameWins;
+
       const { error } = await supabase
         .from('matches')
-        .update({
-          team1_score: team1Score,
-          team2_score: team2Score,
-          iscompleted: true,
-          winner_id: winnerId,
-          loser_id: loserId
-        })
+        .update(updateData)
         .eq('id', matchId);
 
       if (error) throw error;
+
+      console.log(`Match ${matchId} updated successfully with scores`);
 
       // If we have both winner and loser, update team records
       if (winnerId && loserId) {
@@ -55,7 +66,9 @@ export const useMatchSubmission = () => {
           .select('*')
           .in('id', [winnerId, loserId]);
           
-        if (teamsData) {
+        if (teamsData && teamsData.length > 0) {
+          console.log(`Found ${teamsData.length} teams for W/L update`);
+          
           // Transform to proper Team objects
           const formattedTeams: Team[] = teamsData.map(team => ({
             id: team.id,
@@ -73,6 +86,9 @@ export const useMatchSubmission = () => {
           }));
           
           await updateTeamRecords(winnerId, loserId, formattedTeams);
+          console.log("Team records updated successfully");
+        } else {
+          console.error("Could not find team data for winner/loser");
         }
       }
 
@@ -82,12 +98,13 @@ export const useMatchSubmission = () => {
       });
       
       // Invalidate relevant queries to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-      queryClient.invalidateQueries({ queryKey: ['team'] });
-      queryClient.invalidateQueries({ queryKey: ['team-matches'] });
+      const queriesToInvalidate = [
+        'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches'
+      ];
+      
+      queriesToInvalidate.forEach(queryKey => {
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
+      });
       
       return true;
     } catch (error) {

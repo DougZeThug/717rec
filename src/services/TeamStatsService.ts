@@ -12,17 +12,33 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
   try {
     const currentDate = new Date().toISOString();
     
+    console.log(`Starting stat updates for winner: ${winnerId}, loser: ${loserId}`);
+    
     // Get all matches to calculate complete stats
-    const { data: allMatches } = await supabase
+    const { data: allMatches, error: matchesError } = await supabase
       .from('matches')
       .select('*')
       .eq('iscompleted', true);
 
+    if (matchesError) {
+      console.error("Error fetching matches:", matchesError);
+      throw matchesError;
+    }
+
+    console.log(`Found ${allMatches?.length || 0} completed matches for stats calculation`);
+    
     // Get all teams to calculate SOS and other stats
-    const { data: allTeams } = await supabase
+    const { data: allTeams, error: teamsError } = await supabase
       .from('teams')
       .select('*, divisions(name, division_weight)');
       
+    if (teamsError) {
+      console.error("Error fetching teams:", teamsError);
+      throw teamsError;
+    }
+
+    console.log(`Found ${allTeams?.length || 0} teams for stats calculation`);
+
     if (!allMatches || !allTeams) {
       throw new Error("Failed to fetch data for stats calculation");
     }
@@ -59,13 +75,15 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
     }));
 
     // Process both winner and loser stats
-    await Promise.all([
+    const results = await Promise.all([
       updateSingleTeamStats(winnerId, mappedTeams, mappedMatches, currentDate),
       updateSingleTeamStats(loserId, mappedTeams, mappedMatches, currentDate)
     ]);
     
-    console.log(`Stats updated for teams: ${winnerId} and ${loserId}`);
-    return true;
+    const success = results.every(result => result === true);
+    console.log(`Stats update ${success ? 'completed successfully' : 'had some issues'} for teams: ${winnerId} and ${loserId}`);
+    
+    return success;
   } catch (error) {
     console.error("Error updating team stats record:", error);
     return false;
@@ -95,12 +113,12 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     console.log(`Team ${team.name} (${teamId}) stats:`, {
       wins: team.wins,
       losses: team.losses,
-      winPercentage,
+      winPercentage: winPercentage.toFixed(3),
       gamesWon,
       gamesLost,
-      gameWinPercentage,
-      powerScore,
-      sos
+      gameWinPercentage: gameWinPercentage.toFixed(3),
+      powerScore: powerScore.toFixed(2),
+      sos: sos.toFixed(3)
     });
     
     // Get previous rank information
@@ -115,7 +133,7 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
       previousStats[0].current_rank : undefined;
     
     // Save all calculated stats
-    await supabase
+    const { error: insertError } = await supabase
       .from('team_stats')
       .insert({
         team_id: teamId,
@@ -129,6 +147,11 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
         snapshot_date: snapshotDate,
         power_score: powerScore
       });
+      
+    if (insertError) {
+      console.error("Error inserting team stats:", insertError);
+      return false;
+    }
     
     return true;
   } catch (error) {

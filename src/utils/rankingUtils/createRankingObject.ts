@@ -20,6 +20,8 @@ export const createRankingObject = async (
   const wins = team.wins || 0;
   const losses = team.losses || 0;
   
+  console.log(`Creating ranking for team ${team.name} with record ${wins}-${losses}`);
+  
   // Calculate win percentage using wins and losses
   const winPercentage = calculateWinPercentage(wins, losses);
   
@@ -38,6 +40,8 @@ export const createRankingObject = async (
   
   // Calculate power score using the weighted formula
   const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
+  
+  console.log(`Team ${team.name} stats: Record ${wins}-${losses}, Win% ${(winPercentage * 100).toFixed(1)}%, Games ${gamesWon}-${gamesLost}, Power ${powerScore.toFixed(1)}`);
   
   return {
     teamId: team.id,

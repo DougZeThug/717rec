@@ -67,20 +67,16 @@ export const useTeamWinLossUpdate = () => {
       const winnerName = getTeamName(winnerId);
       const loserName = getTeamName(loserId);
       
-      console.log(`Successfully updated team records: ${winnerName} (W) and ${loserName} (L)`);
+      console.log(`Successfully updated team records: ${winnerName} (${winnerData.wins + 1}W-${winnerData.losses}L) and ${loserName} (${loserData.wins}W-${loserData.losses + 1}L)`);
       
-      toast({
-        title: "Team Records Updated",
-        description: `${winnerName} (W) and ${loserName} (L) records have been updated.`,
+      // Immediately invalidate caches so UI updates
+      const queriesToInvalidate = [
+        'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches'
+      ];
+      
+      queriesToInvalidate.forEach(queryKey => {
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
       });
-      
-      // Invalidate all relevant queries
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-      queryClient.invalidateQueries({ queryKey: ['team'] });
-      queryClient.invalidateQueries({ queryKey: ['team-matches'] });
       
       return true;
     } catch (error) {

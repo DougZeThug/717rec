@@ -8,5 +8,7 @@ export const calculateWinPercentage = (wins: number, losses: number) => {
   const lossCount = typeof losses === 'number' ? losses : 0;
   
   const totalGames = winCount + lossCount;
+  
+  // Return a raw decimal value (not multiplied by 100)
   return totalGames > 0 ? winCount / totalGames : 0;
 };

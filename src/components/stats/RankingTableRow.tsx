@@ -36,6 +36,11 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     return `${direction} ${amount} ${amount === 1 ? 'spot' : 'spots'}`;
   };
 
+  // Format win percentage to display with correct precision
+  const formatWinPercentage = (percentage: number) => {
+    return `${(percentage * 100).toFixed(1)}%`;
+  };
+
   // Use the power score color
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
 
@@ -81,14 +86,14 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         {ranking.wins}-{ranking.losses}
       </TableCell>
       <TableCell className="text-center">
-        {Math.round(ranking.winPercentage * 1000) / 10}%
+        {formatWinPercentage(ranking.winPercentage)}
       </TableCell>
       <TableCell className="text-center hidden md:table-cell">
         {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
       </TableCell>
       <TableCell className="text-center hidden lg:table-cell">
         {ranking.gameWinPercentage !== undefined
-          ? Math.round(ranking.gameWinPercentage * 1000) / 10 + "%"
+          ? (ranking.gameWinPercentage * 100).toFixed(1) + "%"
           : "—"}
       </TableCell>
       <TableCell className="text-center">
