@@ -14,10 +14,16 @@ export const createDateWithTime = (date: Date, timeSlot: string | null): Date =>
   
   if (timeSlot === "6:30 PM") {
     dateWithTime.setHours(18, 30, 0, 0);
+  } else if (timeSlot === "7:00 PM") {
+    dateWithTime.setHours(19, 0, 0, 0);
   } else if (timeSlot === "7:30 PM") {
     dateWithTime.setHours(19, 30, 0, 0);
+  } else if (timeSlot === "8:00 PM") {
+    dateWithTime.setHours(20, 0, 0, 0);
   } else if (timeSlot === "8:30 PM") {
     dateWithTime.setHours(20, 30, 0, 0);
+  } else if (timeSlot === "9:00 PM") {
+    dateWithTime.setHours(21, 0, 0, 0);
   }
   
   return dateWithTime;
@@ -32,10 +38,16 @@ export const getTimeSlotFromDate = (date: Date): string | null => {
   
   if (hours === 18 && minutes === 30) {
     return "6:30 PM";
+  } else if (hours === 19 && minutes === 0) {
+    return "7:00 PM";
   } else if (hours === 19 && minutes === 30) {
     return "7:30 PM";
+  } else if (hours === 20 && minutes === 0) {
+    return "8:00 PM";
   } else if (hours === 20 && minutes === 30) {
     return "8:30 PM";
+  } else if (hours === 21 && minutes === 0) {
+    return "9:00 PM";
   }
   
   return null;
