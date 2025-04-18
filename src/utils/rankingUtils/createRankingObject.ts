@@ -16,7 +16,13 @@ export const createRankingObject = async (
   allMatches: Match[] | undefined,
   previousRankings: Record<string, number>
 ): Promise<Ranking> => {
-  const winPercentage = calculateWinPercentage(team.wins || 0, team.losses || 0);
+  // Make sure we're working with defined values for wins and losses
+  const wins = team.wins || 0;
+  const losses = team.losses || 0;
+  
+  // Calculate win percentage using wins and losses
+  const winPercentage = calculateWinPercentage(wins, losses);
+  
   const sos = await calculateSOS(team, allTeams, allMatches);
   const streak = calculateStreak(team.id, allMatches);
   const headToHead = calculateHeadToHead(team.id, allTeams, allMatches);
@@ -38,8 +44,8 @@ export const createRankingObject = async (
     teamName: team.name || 'Unknown Team',
     logoUrl: team.logoUrl,
     imageUrl: team.imageUrl,
-    wins: team.wins || 0,
-    losses: team.losses || 0,
+    wins: wins,
+    losses: losses,
     winPercentage,
     divisionName: team.divisionName,
     sos,

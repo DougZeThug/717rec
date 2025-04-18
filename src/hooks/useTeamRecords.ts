@@ -9,12 +9,21 @@ export const useTeamRecords = () => {
   const queryClient = useQueryClient();
 
   const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[]) => {
+    console.log("Starting team record update process for winner:", winnerId, "loser:", loserId);
+    
     // First update the basic win/loss records
     const success = await updateWinLoss(winnerId, loserId, teams);
-    if (!success) return false;
+    if (!success) {
+      console.error("Failed to update basic win/loss records");
+      return false;
+    }
+    
+    console.log("Basic win/loss records updated successfully, now updating detailed stats");
 
     // Then update the detailed team stats
     await updateTeamStatsRecord(winnerId, loserId);
+    
+    console.log("Invalidating all relevant queries to ensure data freshness");
     
     // Invalidate all relevant queries to ensure data freshness across the app
     queryClient.invalidateQueries({ queryKey: ['rankings'] });

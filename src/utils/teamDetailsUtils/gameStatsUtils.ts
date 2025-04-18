@@ -51,7 +51,7 @@ export const calculateGameStats = (teamId: string, matches: Match[] | undefined)
   return {
     gamesWon,
     gamesLost,
-    gameWinPercentage, // Add this property
+    gameWinPercentage,
     closeMatchLosses,
   };
 };

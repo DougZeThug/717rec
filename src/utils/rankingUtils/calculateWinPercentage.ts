@@ -3,6 +3,10 @@
  * Calculate win percentage for a team
  */
 export const calculateWinPercentage = (wins: number, losses: number) => {
-  const totalGames = wins + losses;
-  return totalGames > 0 ? wins / totalGames : 0;
+  // Ensure we're working with numbers
+  const winCount = typeof wins === 'number' ? wins : 0;
+  const lossCount = typeof losses === 'number' ? losses : 0;
+  
+  const totalGames = winCount + lossCount;
+  return totalGames > 0 ? winCount / totalGames : 0;
 };

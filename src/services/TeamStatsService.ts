@@ -64,6 +64,7 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       updateSingleTeamStats(loserId, mappedTeams, mappedMatches, currentDate)
     ]);
     
+    console.log(`Stats updated for teams: ${winnerId} and ${loserId}`);
     return true;
   } catch (error) {
     console.error("Error updating team stats record:", error);
@@ -74,12 +75,15 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
 const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Match[], snapshotDate: string) => {
   try {
     const team = teams.find(t => t.id === teamId);
-    if (!team) return false;
+    if (!team) {
+      console.error(`Team not found: ${teamId}`);
+      return false;
+    }
 
     // Calculate basic stats
     const streak = calculateStreak(teamId, matches);
     const headToHead = calculateHeadToHead(teamId, teams, matches);
-    const winPercentage = calculateWinPercentage(team.wins, team.losses);
+    const winPercentage = calculateWinPercentage(team.wins || 0, team.losses || 0);
     const sos = await calculateSOS(team, teams, matches);
     
     // Calculate game stats
@@ -87,6 +91,17 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     
     // Calculate power score
     const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
+    
+    console.log(`Team ${team.name} (${teamId}) stats:`, {
+      wins: team.wins,
+      losses: team.losses,
+      winPercentage,
+      gamesWon,
+      gamesLost,
+      gameWinPercentage,
+      powerScore,
+      sos
+    });
     
     // Get previous rank information
     const { data: previousStats } = await supabase

@@ -81,14 +81,14 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         {ranking.wins}-{ranking.losses}
       </TableCell>
       <TableCell className="text-center">
-        {(ranking.winPercentage * 100).toFixed(1)}%
+        {Math.round(ranking.winPercentage * 1000) / 10}%
       </TableCell>
       <TableCell className="text-center hidden md:table-cell">
         {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
       </TableCell>
       <TableCell className="text-center hidden lg:table-cell">
         {ranking.gameWinPercentage !== undefined
-          ? (ranking.gameWinPercentage * 100).toFixed(1) + "%"
+          ? Math.round(ranking.gameWinPercentage * 1000) / 10 + "%"
           : "—"}
       </TableCell>
       <TableCell className="text-center">

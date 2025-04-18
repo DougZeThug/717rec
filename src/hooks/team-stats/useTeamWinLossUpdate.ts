@@ -10,6 +10,8 @@ export const useTeamWinLossUpdate = () => {
 
   const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[]) => {
     try {
+      console.log(`Updating team records - Winner: ${winnerId}, Loser: ${loserId}`);
+      
       // Get the current records for both teams
       const { data: winnerData, error: winnerError } = await supabase
         .from('teams')
@@ -17,7 +19,10 @@ export const useTeamWinLossUpdate = () => {
         .eq('id', winnerId)
         .single();
       
-      if (winnerError) throw winnerError;
+      if (winnerError) {
+        console.error("Error fetching winner data:", winnerError);
+        throw winnerError;
+      }
       
       const { data: loserData, error: loserError } = await supabase
         .from('teams')
@@ -25,7 +30,12 @@ export const useTeamWinLossUpdate = () => {
         .eq('id', loserId)
         .single();
       
-      if (loserError) throw loserError;
+      if (loserError) {
+        console.error("Error fetching loser data:", loserError);
+        throw loserError;
+      }
+      
+      console.log(`Current records - Winner: ${winnerData.wins}W-${winnerData.losses}L, Loser: ${loserData.wins}W-${loserData.losses}L`);
       
       // Update winner's record
       const { error: updateWinnerError } = await supabase
@@ -33,7 +43,10 @@ export const useTeamWinLossUpdate = () => {
         .update({ wins: (winnerData.wins || 0) + 1 })
         .eq('id', winnerId);
       
-      if (updateWinnerError) throw updateWinnerError;
+      if (updateWinnerError) {
+        console.error("Error updating winner record:", updateWinnerError);
+        throw updateWinnerError;
+      }
       
       // Update loser's record
       const { error: updateLoserError } = await supabase
@@ -41,7 +54,10 @@ export const useTeamWinLossUpdate = () => {
         .update({ losses: (loserData.losses || 0) + 1 })
         .eq('id', loserId);
       
-      if (updateLoserError) throw updateLoserError;
+      if (updateLoserError) {
+        console.error("Error updating loser record:", updateLoserError);
+        throw updateLoserError;
+      }
       
       const getTeamName = (teamId: string) => {
         const team = teams.find(t => t.id === teamId);
@@ -50,6 +66,8 @@ export const useTeamWinLossUpdate = () => {
 
       const winnerName = getTeamName(winnerId);
       const loserName = getTeamName(loserId);
+      
+      console.log(`Successfully updated team records: ${winnerName} (W) and ${loserName} (L)`);
       
       toast({
         title: "Team Records Updated",
