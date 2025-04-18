@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTeamRecords } from "@/hooks/useTeamRecords";
 import { useQueryClient } from "@tanstack/react-query";
+import { Team } from "@/types";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
@@ -48,14 +49,30 @@ export const useMatchSubmission = () => {
 
       // If we have both winner and loser, update team records
       if (winnerId && loserId) {
-        // First fetch teams for proper naming in notifications
+        // First fetch full teams data to satisfy the Team type
         const { data: teamsData } = await supabase
           .from('teams')
-          .select('id, name')
+          .select('*')
           .in('id', [winnerId, loserId]);
           
         if (teamsData) {
-          await updateTeamRecords(winnerId, loserId, teamsData);
+          // Transform to proper Team objects
+          const formattedTeams: Team[] = teamsData.map(team => ({
+            id: team.id,
+            name: team.name,
+            logoUrl: team.logo_url || null,
+            imageUrl: team.image_url || null,
+            players: Array.isArray(team.players) 
+              ? team.players.map((playerName: string) => ({ name: playerName })) 
+              : [],
+            wins: team.wins || 0,
+            losses: team.losses || 0,
+            created_at: team.created_at || '',
+            division: team.division_id || null,
+            divisionName: null
+          }));
+          
+          await updateTeamRecords(winnerId, loserId, formattedTeams);
         }
       }
 
