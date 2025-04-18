@@ -10,7 +10,17 @@ export const useTeamData = (divisionId?: string | null) => {
       let query = supabase
         .from('teams')
         .select(`
-          *,
+          id,
+          name,
+          logo_url,
+          image_url,
+          players,
+          wins,
+          losses,
+          game_wins,
+          game_losses,
+          created_at,
+          division_id,
           divisions(name)
         `)
         .order('name');
@@ -26,36 +36,26 @@ export const useTeamData = (divisionId?: string | null) => {
         throw error;
       }
       
-      const transformedTeams = (data || []).map((team): Team => {
-        return {
-          id: team.id,
-          name: team.name || 'Unnamed Team',
-          logoUrl: team.logo_url || null,
-          imageUrl: team.image_url || null,
-          players: Array.isArray(team.players) 
-            ? team.players.map((playerName: string) => ({ name: playerName })) 
-            : [],
-          wins: team.wins || 0,
-          losses: team.losses || 0,
-          game_wins: team.game_wins || 0,
-          game_losses: team.game_losses || 0,
-          created_at: team.created_at || new Date().toISOString(),
-          division: team.division_id || null,
-          divisionName: team.divisions?.name || null
-        };
-      });
-      
-      console.log(`Loaded ${transformedTeams.length} teams with game stats:`, 
-        transformedTeams.map(t => ({
-          name: t.name,
-          game_wins: t.game_wins,
-          game_losses: t.game_losses
-        }))
-      );
+      const transformedTeams = (data || []).map((team): Team => ({
+        id: team.id,
+        name: team.name || 'Unnamed Team',
+        logoUrl: team.logo_url || null,
+        imageUrl: team.image_url || null,
+        players: Array.isArray(team.players) 
+          ? team.players.map((playerName: string) => ({ name: playerName })) 
+          : [],
+        wins: team.wins || 0,
+        losses: team.losses || 0,
+        game_wins: team.game_wins || 0,
+        game_losses: team.game_losses || 0,
+        created_at: team.created_at || new Date().toISOString(),
+        division: team.division_id || null,
+        divisionName: team.divisions?.name || null
+      }));
       
       return transformedTeams;
     },
-    staleTime: 10000, // Cache for 10 seconds to ensure fresh data
+    staleTime: 10000,
   });
   
   return query;

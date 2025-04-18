@@ -43,7 +43,7 @@ export function useTeamFetching() {
       });
       
       setTeams(teamsMap);
-      console.log(`Loaded ${Object.keys(teamsMap).length} teams`);
+      console.log(`Loaded ${Object.keys(teamsMap).length} teams with game stats`);
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({

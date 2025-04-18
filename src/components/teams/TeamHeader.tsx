@@ -48,6 +48,10 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
           <div className="font-semibold">
             {winPercentage}% Win Rate
           </div>
+
+          <div className="font-medium text-gray-600">
+            Games: {team.game_wins ?? 0}–{team.game_losses ?? 0}
+          </div>
         </div>
       </div>
     </div>
