@@ -1,19 +1,7 @@
 
 import { Match } from "@/types";
 
-/**
- * Calculate game-level statistics for a team
- */
-export const calculateGameStats = (teamId: string, matches: Match[] | undefined) => {
-  if (!matches) {
-    return {
-      gamesWon: 0,
-      gamesLost: 0,
-      gameWinPercentage: 0,
-      closeMatchLosses: 0
-    };
-  }
-  
+export const calculateGameStats = (teamId: string, matches: Match[]) => {
   let gamesWon = 0;
   let gamesLost = 0;
   let closeMatchLosses = 0;
@@ -48,7 +36,6 @@ export const calculateGameStats = (teamId: string, matches: Match[] | undefined)
       }
     } else {
       // Fall back to match scores if game wins are not available
-      // Count each match as a single game for backwards compatibility
       if (match.winnerId === teamId) {
         gamesWon += 1;
       } else if (match.loserId === teamId) {
@@ -57,13 +44,9 @@ export const calculateGameStats = (teamId: string, matches: Match[] | undefined)
     }
   });
   
-  const totalGames = gamesWon + gamesLost;
-  const gameWinPercentage = totalGames > 0 ? gamesWon / totalGames : 0;
-  
   return {
     gamesWon,
     gamesLost,
-    gameWinPercentage,
-    closeMatchLosses
+    closeMatchLosses,
   };
 };

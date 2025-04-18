@@ -2,10 +2,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
 import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
-import { calculateHeadToHead } from "@/utils/rankingUtils/calculateHeadToHead";
 import { calculateSOS } from "@/utils/rankingUtils/calculateSOS";
 import { calculatePowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
 import { calculateWinPercentage } from "@/utils/rankingUtils/calculateWinPercentage";
+import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
+import { calculateHeadToHead } from "@/utils/teamDetailsUtils/headToHeadUtils";
 
 export const updateTeamStatsRecord = async (winnerId: string, loserId: string) => {
   try {
@@ -75,36 +76,14 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     const team = teams.find(t => t.id === teamId);
     if (!team) return false;
 
-    // Calculate streak
+    // Calculate basic stats
     const streak = calculateStreak(teamId, matches);
-    
-    // Calculate head-to-head records
     const headToHead = calculateHeadToHead(teamId, teams, matches);
-    
-    // Calculate win percentage
     const winPercentage = calculateWinPercentage(team.wins, team.losses);
-    
-    // Calculate strength of schedule
     const sos = await calculateSOS(team, teams, matches);
     
     // Calculate game stats
-    const teamMatches = matches.filter(m => 
-      m.team1Id === teamId || m.team2Id === teamId
-    );
-    
-    let gamesWon = 0;
-    let gamesLost = 0;
-    
-    teamMatches.forEach(match => {
-      if (match.team1Id === teamId) {
-        gamesWon += match.team1_game_wins || 0;
-        gamesLost += match.team2_game_wins || 0;
-      } else {
-        gamesWon += match.team2_game_wins || 0;
-        gamesLost += match.team1_game_wins || 0;
-      }
-    });
-    
+    const { gamesWon, gamesLost, closeMatchLosses } = calculateGameStats(teamId, matches);
     const gameWinPercentage = (gamesWon + gamesLost > 0) ? 
       gamesWon / (gamesWon + gamesLost) : 0;
     
