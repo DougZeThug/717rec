@@ -2,11 +2,14 @@
 import { useEffect, useState } from "react";
 import { Team, Match, Ranking } from "@/types";
 import { createRankingObject, sortRankings, updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | undefined) => {
   const [previousRankings, setPreviousRankings] = useState<Record<string, number>>({});
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   
   // Load previous rankings from localStorage
   useEffect(() => {
@@ -25,6 +28,43 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     loadPreviousRankings();
   }, []);
   
+  // Fetch the latest match data
+  const { data: latestMatches, isLoading: matchesLoading } = useQuery({
+    queryKey: ['matches'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .order('date', { ascending: false });
+        
+      if (error) throw error;
+      
+      // Transform data to Match type
+      return data.map((match): Match => ({
+        id: match.id,
+        team1Id: match.team1_id,
+        team2Id: match.team2_id,
+        team1Score: match.team1_score,
+        team2Score: match.team2_score,
+        date: match.date,
+        location: match.location || '',
+        iscompleted: match.iscompleted,
+        winnerId: match.winner_id,
+        loserId: match.loser_id,
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins,
+        round_number: match.round_number,
+        position: match.position,
+        bracket_id: match.bracket_id,
+        match_type: match.match_type,
+        next_match_id: match.next_match_id,
+        next_loser_match_id: match.next_loser_match_id,
+        best_of: match.best_of
+      }));
+    },
+    refetchInterval: 60000, // Refetch every minute for updates
+  });
+  
   // Calculate team rankings when teams or matches change
   useEffect(() => {
     const calculateRankingsEffect = async () => {
@@ -36,10 +76,13 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       setIsLoading(true);
       
       try {
+        // Use latestMatches from query if available, otherwise fall back to matches prop
+        const matchesToUse = latestMatches || matches;
+        
         // Create ranking objects for each team asynchronously
         const rankingPromises = teams
           .filter(team => team !== null && team !== undefined)
-          .map(team => createRankingObject(team, teams, matches, previousRankings));
+          .map(team => createRankingObject(team, teams, matchesToUse, previousRankings));
           
         const unsortedRankings = await Promise.all(rankingPromises);
         
@@ -61,10 +104,17 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     };
     
     calculateRankingsEffect();
-  }, [teams, matches, previousRankings]);
+  }, [teams, latestMatches, matches, previousRankings]);
+  
+  // Handle manual refresh of rankings
+  const refreshRankings = () => {
+    queryClient.invalidateQueries({ queryKey: ['matches'] });
+    queryClient.invalidateQueries({ queryKey: ['teams'] });
+  };
   
   return {
     rankings,
-    isLoading
+    isLoading: isLoading || matchesLoading,
+    refreshRankings
   };
 };

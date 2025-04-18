@@ -26,22 +26,33 @@ export const calculateGameStats = (teamId: string, matches: Match[] | undefined)
   teamMatches.forEach(match => {
     if (!match.iscompleted) return;
     
-    // Game wins calculation
-    if (match.team1Id === teamId) {
-      gamesWon += match.team1_game_wins || 0;
-      gamesLost += match.team2_game_wins || 0;
-      
-      // Check for close match loss (lost match but won at least one game)
-      if (match.loserId === teamId && (match.team1_game_wins || 0) > 0) {
-        closeMatchLosses++;
+    // Check if match has explicit game_wins fields
+    if (match.team1_game_wins !== undefined || match.team2_game_wins !== undefined) {
+      // Game wins calculation from dedicated fields
+      if (match.team1Id === teamId) {
+        gamesWon += match.team1_game_wins || 0;
+        gamesLost += match.team2_game_wins || 0;
+        
+        // Check for close match loss (lost match but won at least one game)
+        if (match.loserId === teamId && (match.team1_game_wins || 0) > 0) {
+          closeMatchLosses++;
+        }
+      } else if (match.team2Id === teamId) {
+        gamesWon += match.team2_game_wins || 0;
+        gamesLost += match.team1_game_wins || 0;
+        
+        // Check for close match loss (lost match but won at least one game)
+        if (match.loserId === teamId && (match.team2_game_wins || 0) > 0) {
+          closeMatchLosses++;
+        }
       }
-    } else if (match.team2Id === teamId) {
-      gamesWon += match.team2_game_wins || 0;
-      gamesLost += match.team1_game_wins || 0;
-      
-      // Check for close match loss (lost match but won at least one game)
-      if (match.loserId === teamId && (match.team2_game_wins || 0) > 0) {
-        closeMatchLosses++;
+    } else {
+      // Fall back to match scores if game wins are not available
+      // Count each match as a single game for backwards compatibility
+      if (match.winnerId === teamId) {
+        gamesWon += 1;
+      } else if (match.loserId === teamId) {
+        gamesLost += 1;
       }
     }
   });

@@ -4,9 +4,11 @@ import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, CheckCircle, Clock } from "lucide-react";
 import { useTeamData } from "@/hooks/useTeamData";
-import { mockMatches } from "@/data/mockData";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
+import { Match } from "@/types";
 
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import MatchGrid from "@/components/schedule/MatchGrid";
@@ -19,7 +21,42 @@ const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("upcoming");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const queryClient = useQueryClient();
   const { data: teams, isLoading: teamsLoading } = useTeamData();
+  
+  // Fetch matches from Supabase
+  const { data: matchesData, isLoading: matchesLoading } = useQuery({
+    queryKey: ['matches'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .order('date');
+        
+      if (error) throw error;
+      
+      // Transform Supabase data to Match type
+      return data.map((match): Match => ({
+        id: match.id,
+        team1Id: match.team1_id,
+        team2Id: match.team2_id,
+        team1Score: match.team1_score,
+        team2Score: match.team2_score,
+        date: match.date,
+        location: match.location || '',
+        iscompleted: match.iscompleted,
+        winnerId: match.winner_id,
+        loserId: match.loser_id,
+        round_number: match.round_number,
+        position: match.position,
+        bracket_id: match.bracket_id,
+        match_type: match.match_type,
+        next_match_id: match.next_match_id,
+        next_loser_match_id: match.next_loser_match_id,
+        best_of: match.best_of
+      }));
+    }
+  });
   
   const {
     matches,
@@ -32,10 +69,17 @@ const Schedule = () => {
     handleCreateMatch,
     handleUpdateMatch,
     handleDeleteMatch
-  } = useMatchManagement(mockMatches);
+  } = useMatchManagement(matchesData || []);
 
   // Get timeslots for the currently selected date
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
+
+  // Update matches when matchesData changes
+  useEffect(() => {
+    if (matchesData) {
+      // This is handled by useMatchManagement initialization
+    }
+  }, [matchesData]);
 
   // Filter matches based on search term and active tab
   const filteredMatches = matches
@@ -65,13 +109,46 @@ const Schedule = () => {
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
   };
+  
+  // Handlers with data invalidation
+  const handleMatchCreated = async (matchData: Omit<Match, "id">) => {
+    const success = await handleCreateMatch(matchData, teams || []);
+    if (success) {
+      // Invalidate all related queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+    }
+  };
+  
+  const handleMatchUpdated = async (matchData: Omit<Match, "id">) => {
+    const success = await handleUpdateMatch(matchData, teams || []);
+    if (success) {
+      // Invalidate all related queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+    }
+  };
+  
+  const handleMatchDeleted = async () => {
+    const success = await handleDeleteMatch(teams || []);
+    if (success) {
+      // Invalidate all related queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+    }
+  };
 
-  if (teamsLoading) {
+  if (teamsLoading || matchesLoading) {
     return (
       <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
-          <p className="text-lg">Loading team data...</p>
+          <p className="text-lg">Loading data...</p>
         </div>
       </div>
     );
@@ -161,9 +238,9 @@ const Schedule = () => {
         teams={teams || []}
         onSubmit={(matchData) => {
           if (editingMatch) {
-            handleUpdateMatch(matchData, teams || []);
+            handleMatchUpdated(matchData);
           } else {
-            handleCreateMatch(matchData, teams || []);
+            handleMatchCreated(matchData);
           }
         }}
       />
@@ -171,7 +248,7 @@ const Schedule = () => {
       <DeleteMatchDialog 
         isOpen={deleteMatchId !== null}
         onClose={() => setDeleteMatchId(null)}
-        onConfirm={() => handleDeleteMatch(teams || [])}
+        onConfirm={handleMatchDeleted}
       />
     </div>
   );
