@@ -77,18 +77,30 @@ export const useTeamWinLossUpdate = () => {
         return false;
       }
       
-      // Calculate new values - FIXED to separate match wins from game wins
-      // Match record: +1 win for winner, +1 loss for loser (ONLY)
-      const newWinnerWins = currentWinnerWins + 1; // Just +1 for the match win
-      const newLoserLosses = currentLoserLosses + 1; // Just +1 for the match loss
+      // CRITICAL FIX: Always add exactly 1 win or 1 loss per match
+      // Match outcome: Winner gets exactly 1 win, loser gets exactly 1 loss
+      const newWinnerWins = currentWinnerWins + 1; // Exactly +1 for winning the match
+      const newLoserLosses = currentLoserLosses + 1; // Exactly +1 for losing the match
       
-      // Game stats: Add the number of games each team won in this match
+      // Game-level stats: Update with the actual games won/lost in this match
       const newWinnerGameWins = currentWinnerGameWins + winnerGameWins;
       const newLoserGameWins = currentLoserGameWins + loserGameWins;
-      
-      // Game losses: Add the number of games each team lost in this match
       const newWinnerGameLosses = currentWinnerGameLosses + loserGameWins;
       const newLoserGameLosses = currentLoserGameLosses + winnerGameWins;
+      
+      console.log("Match Result - Winner:", { 
+        teamId: winnerId,
+        isWinner: true,
+        teamScore: winnerGameWins,
+        opponentScore: loserGameWins 
+      });
+      
+      console.log("Updating winner with:", {
+        wins: 1, // Always exactly 1 win per match
+        losses: 0, // No change to losses
+        game_wins: winnerGameWins,
+        game_losses: loserGameWins
+      });
       
       console.log(`Updating winner ${winnerTeam.name} (${winnerId})`);
       console.log(`Match wins: ${currentWinnerWins} -> ${newWinnerWins}`);
@@ -99,7 +111,7 @@ export const useTeamWinLossUpdate = () => {
       const winnerUpdateResult = await supabase
         .from('teams')
         .update({ 
-          wins: newWinnerWins, // ONLY match wins counted here
+          wins: newWinnerWins, // ONLY match wins counted here - exactly +1
           game_wins: newWinnerGameWins,
           game_losses: newWinnerGameLosses
         })
@@ -114,6 +126,20 @@ export const useTeamWinLossUpdate = () => {
       console.log(`Winner ${winnerTeam.name} updated successfully`);
       
       // Update loser's records
+      console.log("Match Result - Loser:", { 
+        teamId: loserId,
+        isWinner: false,
+        teamScore: loserGameWins,
+        opponentScore: winnerGameWins 
+      });
+      
+      console.log("Updating loser with:", {
+        wins: 0, // No change to wins
+        losses: 1, // Always exactly 1 loss per match
+        game_wins: loserGameWins,
+        game_losses: winnerGameWins
+      });
+      
       console.log(`Updating loser ${loserTeam.name} (${loserId})`);
       console.log(`Match losses: ${currentLoserLosses} -> ${newLoserLosses}`);
       console.log(`Game wins: ${currentLoserGameWins} -> ${newLoserGameWins}`);
@@ -122,7 +148,7 @@ export const useTeamWinLossUpdate = () => {
       const loserUpdateResult = await supabase
         .from('teams')
         .update({ 
-          losses: newLoserLosses, // ONLY match losses counted here
+          losses: newLoserLosses, // ONLY match losses counted here - exactly +1
           game_wins: newLoserGameWins,
           game_losses: newLoserGameLosses
         })
