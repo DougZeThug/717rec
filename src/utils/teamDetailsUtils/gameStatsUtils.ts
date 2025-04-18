@@ -15,7 +15,7 @@ export const calculateGameStats = (teamId: string, matches: Match[] | undefined)
     if (!match.iscompleted) return;
     
     // Check if match has explicit game_wins fields
-    if (match.team1_game_wins !== undefined || match.team2_game_wins !== undefined) {
+    if (match.team1_game_wins !== undefined && match.team2_game_wins !== undefined) {
       if (match.team1Id === teamId) {
         gamesWon += match.team1_game_wins || 0;
         gamesLost += match.team2_game_wins || 0;

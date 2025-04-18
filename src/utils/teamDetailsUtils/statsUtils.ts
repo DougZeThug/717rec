@@ -86,6 +86,7 @@ export const calculateTeamStats = async (
   });
   
   // Calculate Power Score - ensure we use consistent win percentage calculation
+  // Use match results, not game results for this
   const winPercentValue = calculateWinPercentageUtil(team.wins || 0, team.losses || 0);
   const gameWinPercentValue = parseFloat(gameWinPercentage) / 100;
   const powerScore = (winPercentValue * 0.5) + (gameWinPercentValue * 0.3) + (strengthOfSchedule * 0.2);

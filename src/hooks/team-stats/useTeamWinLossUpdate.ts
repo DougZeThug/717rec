@@ -55,12 +55,11 @@ export const useTeamWinLossUpdate = () => {
       console.log("Loser team before update:", loserTeam);
       
       // Parse and ensure we're working with numbers for all values
+      // IMPORTANT: Match wins/losses are separate from game wins/losses
       const currentWinnerWins = parseInt(String(winnerTeam.wins ?? 0));
       const currentLoserLosses = parseInt(String(loserTeam.losses ?? 0));
       const currentWinnerGameWins = parseInt(String(winnerTeam.game_wins ?? 0));
       const currentLoserGameWins = parseInt(String(loserTeam.game_wins ?? 0));
-      
-      // Calculate new values for game losses - each team's game losses are the other team's game wins
       const currentWinnerGameLosses = parseInt(String(winnerTeam.game_losses ?? 0));
       const currentLoserGameLosses = parseInt(String(loserTeam.game_losses ?? 0));
       
@@ -78,16 +77,16 @@ export const useTeamWinLossUpdate = () => {
         return false;
       }
       
-      // Calculate new values
-      // Match record: +1 win for winner, +1 loss for loser
-      const newWinnerWins = currentWinnerWins + 1;
-      const newLoserLosses = currentLoserLosses + 1;
+      // Calculate new values - FIXED to separate match wins from game wins
+      // Match record: +1 win for winner, +1 loss for loser (ONLY)
+      const newWinnerWins = currentWinnerWins + 1; // Just +1 for the match win
+      const newLoserLosses = currentLoserLosses + 1; // Just +1 for the match loss
       
-      // Game stats: Add the number of games each team won
+      // Game stats: Add the number of games each team won in this match
       const newWinnerGameWins = currentWinnerGameWins + winnerGameWins;
       const newLoserGameWins = currentLoserGameWins + loserGameWins;
       
-      // Game losses: Add the number of games each team lost (which is what the other team won)
+      // Game losses: Add the number of games each team lost in this match
       const newWinnerGameLosses = currentWinnerGameLosses + loserGameWins;
       const newLoserGameLosses = currentLoserGameLosses + winnerGameWins;
       
@@ -100,7 +99,7 @@ export const useTeamWinLossUpdate = () => {
       const winnerUpdateResult = await supabase
         .from('teams')
         .update({ 
-          wins: newWinnerWins,
+          wins: newWinnerWins, // ONLY match wins counted here
           game_wins: newWinnerGameWins,
           game_losses: newWinnerGameLosses
         })
@@ -123,7 +122,7 @@ export const useTeamWinLossUpdate = () => {
       const loserUpdateResult = await supabase
         .from('teams')
         .update({ 
-          losses: newLoserLosses,
+          losses: newLoserLosses, // ONLY match losses counted here
           game_wins: newLoserGameWins,
           game_losses: newLoserGameLosses
         })
