@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MatchResultData } from "../types/matchSubmissionTypes";
+import { applyMatchResult } from "@/hooks/team-stats/utils/teamRecordUtils";
 
 export const updateMatchInDatabase = async (
   matchId: string,
@@ -35,36 +36,21 @@ export const updateMatchInDatabase = async (
   }
 
   if (winnerId && loserId) {
-    // Update winner stats
-    const { data: winner, error: winnerError } = await supabase
-      .from('teams')
-      .update({
-        wins: supabase.rpc('increment', { value: 1 }),
-        game_wins: supabase.rpc('increment', { value: team1Score }),
-        game_losses: supabase.rpc('increment', { value: team2Score })
-      })
-      .eq('id', winnerId)
-      .select('id');
-
-    if (winnerError) {
-      console.error(`[matchUpdateUtils] Error updating winner stats:`, winnerError);
-      throw winnerError;
-    }
-
-    // Update loser stats
-    const { data: loser, error: loserError } = await supabase
-      .from('teams')
-      .update({
-        losses: supabase.rpc('increment', { value: 1 }),
-        game_wins: supabase.rpc('increment', { value: team2Score }),
-        game_losses: supabase.rpc('increment', { value: team1Score })
-      })
-      .eq('id', loserId)
-      .select('id');
-
-    if (loserError) {
-      console.error(`[matchUpdateUtils] Error updating loser stats:`, loserError);
-      throw loserError;
+    // Determine which team's score belongs to winner/loser
+    const winnerGameWins = winnerId === matchResult.team1Id ? matchResult.team1GameWins : matchResult.team2GameWins;
+    const loserGameWins = loserId === matchResult.team1Id ? matchResult.team1GameWins : matchResult.team2GameWins;
+    
+    try {
+      // Use the new utility to update team records correctly
+      await applyMatchResult(
+        winnerId,
+        loserId,
+        winnerGameWins,
+        loserGameWins
+      );
+    } catch (error) {
+      console.error(`[matchUpdateUtils] Error updating team stats:`, error);
+      throw error;
     }
   }
   

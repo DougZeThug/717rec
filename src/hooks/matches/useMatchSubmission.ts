@@ -49,19 +49,24 @@ export const useMatchSubmission = () => {
       // Update the match in database
       await updateMatchInDatabase(matchId, team1Score, team2Score, matchResult);
 
-      // If we have both winner and loser, trigger cache invalidation
+      // If we have both winner and loser, trigger team stats update
       if (matchResult.winnerId && matchResult.loserId) {
         const teamIds = [matchResult.winnerId, matchResult.loserId];
         const teams = await fetchTeamsForMatch(teamIds);
         
         if (teams.length === 2) {
-          console.log(`[useMatchSubmission] Triggering cache invalidation for teams ${teamIds.join(', ')}`);
+          console.log(`[useMatchSubmission] Updating team records for teams ${teamIds.join(', ')}`);
+          
+          // Get the game wins for each team (winner vs loser)
+          const winnerGameWins = matchResult.winnerId === team1_id ? team1GameWins : team2GameWins;
+          const loserGameWins = matchResult.loserId === team1_id ? team1GameWins : team2GameWins;
+          
           await updateTeamRecords(
             matchResult.winnerId, 
             matchResult.loserId, 
             teams,
-            team1GameWins,
-            team2GameWins
+            winnerGameWins,
+            loserGameWins
           );
         }
       }

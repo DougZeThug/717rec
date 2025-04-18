@@ -1,6 +1,8 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Team } from "@/types";
+import { applyMatchResult } from "./utils/teamRecordUtils";
+import { invalidateMatchRelatedQueries } from "../matches/utils/queryCacheUtils";
 
 export const useTeamWinLossUpdate = () => {
   const queryClient = useQueryClient();
@@ -13,12 +15,16 @@ export const useTeamWinLossUpdate = () => {
     loserGameWins: number = 0
   ) => {
     try {
-      // Since we're now handling stats in matchUpdateUtils,
-      // we only need to invalidate the relevant queries
-      await queryClient.invalidateQueries({ queryKey: ['teams'] });
-      await queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      await queryClient.invalidateQueries({ queryKey: ['team', winnerId] });
-      await queryClient.invalidateQueries({ queryKey: ['team', loserId] });
+      // Update team records with our new utility function
+      await applyMatchResult(
+        winnerId,
+        loserId,
+        winnerGameWins,
+        loserGameWins
+      );
+      
+      // Invalidate all relevant queries to ensure fresh data
+      await invalidateMatchRelatedQueries(queryClient);
       
       return true;
     } catch (error) {
