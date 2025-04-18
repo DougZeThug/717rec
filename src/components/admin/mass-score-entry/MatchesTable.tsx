@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface MatchesTableProps {
   matches: MatchWithTeams[];
   loading: boolean;
-  onScoreChange: (index: number, team: "team1" | "team2", value: string) => void;
+  onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
   onMarkCompleted: (index: number, checked: boolean) => void;
   submitting?: boolean;
   failedMatches?: string[];
@@ -76,7 +76,6 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
               const originalIndex = matches.findIndex(m => m.id === match.id);
               const hasError = failedMatches?.includes(match.id);
               const errorMessage = errorMessages?.[match.id];
-              const failedMatch = hasError ? { matchId: match.id, errorMessage: errorMessage || "Error submitting match" } : undefined;
               
               return (
                 <div key={match.id} className="space-y-2">
@@ -98,10 +97,13 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
                   )}
                   <MatchRow
                     match={match}
+                    index={originalIndex}
                     isSubmitting={submitting}
-                    failedMatch={failedMatch}
-                    onScoreChange={(team, value) => onScoreChange(originalIndex, team, value)}
-                    onMarkCompleted={(checked) => onMarkCompleted(originalIndex, checked)}
+                    hasError={hasError}
+                    errorMessage={errorMessage}
+                    onScoreChange={onScoreChange}
+                    onMarkCompleted={onMarkCompleted}
+                    onClearError={onClearError}
                   />
                 </div>
               );

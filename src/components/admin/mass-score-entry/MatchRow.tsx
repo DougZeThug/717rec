@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatDate } from "@/utils/scheduleUtils";
+import { format } from "date-fns"; // Changed from formatDate import
 import { MatchWithTeams } from "./types";
 import ScoreInput from "./components/ScoreInput";
 import MatchStatusIndicator from "./components/MatchStatusIndicator";
@@ -38,7 +38,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   return (
     <tr className={hasError ? "bg-red-50" : ""}>
       <td className="px-4 py-3 text-sm whitespace-nowrap">
-        {formatDate(match.date)}
+        {match.date ? format(new Date(match.date), "MMM d, yyyy") : ""}
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center">
