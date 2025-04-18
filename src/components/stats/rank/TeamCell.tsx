@@ -37,11 +37,9 @@ export const TeamCell: React.FC<TeamCellProps> = ({
             </div>
           </div>
         </TooltipTrigger>
-        {hasGameStats && (
-          <TooltipContent side="bottom" className="text-xs">
-            Game Record: {gameWins}-{gameLosses}
-          </TooltipContent>
-        )}
+        <TooltipContent side="bottom" className="text-xs">
+          Game Record: {gameWins || 0}-{gameLosses || 0}
+        </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
