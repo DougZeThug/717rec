@@ -17,7 +17,10 @@ export const calculatePowerScore = (
   const sosScore = sos * 25;
   const gameScore = (gameWinPercentage * 100) * 0.25;
   
-  return Number((baseScore + sosScore + gameScore).toFixed(1));
+  // Add a small bonus for non-zero values to prevent exact ties
+  const tiebreaker = Math.random() * 0.01;
+  
+  return Number(((baseScore + sosScore + gameScore) + tiebreaker).toFixed(1));
 };
 
 /**

@@ -22,8 +22,6 @@ export const useScheduleData = () => {
         throw error;
       }
       
-      console.log("Raw matches response:", data);
-      
       const formattedData = data.map((match): Match => ({
         id: match.id,
         team1Id: match.team1_id,
@@ -46,7 +44,6 @@ export const useScheduleData = () => {
         team2_game_wins: match.team2_game_wins
       }));
       
-      console.log("Formatted matches data:", formattedData);
       return formattedData;
     },
     refetchOnWindowFocus: true,
@@ -63,5 +60,28 @@ export const useScheduleData = () => {
     return () => clearInterval(intervalId);
   }, [queryClient]);
 
-  return { matchesData, matchesLoading };
+  // Process and separate upcoming vs completed matches
+  const upcomingMatches = matchesData?.filter(match => !match.iscompleted) || [];
+  const completedMatches = matchesData?.filter(match => match.iscompleted) || [];
+
+  // Sort upcoming matches by date (closest first)
+  upcomingMatches.sort((a, b) => {
+    const dateA = a.date ? new Date(a.date).getTime() : Infinity;
+    const dateB = b.date ? new Date(b.date).getTime() : Infinity;
+    return dateA - dateB;
+  });
+  
+  // Sort completed matches by date (most recent first)
+  completedMatches.sort((a, b) => {
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  return { 
+    matchesData, 
+    matchesLoading,
+    upcomingMatches,
+    completedMatches
+  };
 };

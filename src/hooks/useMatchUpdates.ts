@@ -78,13 +78,11 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       if ((isNowCompleted && !wasCompleted) || (isNowCompleted && winnerChanged)) {
         if (updatedMatch.winnerId && updatedMatch.loserId) {
           await updateTeamRecords(updatedMatch.winnerId, updatedMatch.loserId, teams);
-          
-          // Invalidate relevant queries to refresh data across the app
-          queryClient.invalidateQueries({ queryKey: ['matches'] });
-          queryClient.invalidateQueries({ queryKey: ['teams'] });
-          queryClient.invalidateQueries({ queryKey: ['rankings'] });
         }
       }
+      
+      // Invalidate relevant queries to refresh data across the app
+      invalidateAllDataQueries();
       
       return true;
     } catch (error: any) {
@@ -128,8 +126,8 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         variant: "destructive"
       });
       
-      // Invalidate queries after deleting
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      // Invalidate all queries to ensure data consistency
+      invalidateAllDataQueries();
       
       return true;
     } catch (error: any) {
@@ -143,12 +141,25 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     }
   };
 
+  // Helper function to invalidate all related queries
+  const invalidateAllDataQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['matches'] });
+    queryClient.invalidateQueries({ queryKey: ['teams'] });
+    queryClient.invalidateQueries({ queryKey: ['rankings'] });
+    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+    
+    // Also invalidate single team queries that might be open in team details pages
+    queryClient.invalidateQueries({ queryKey: ['team'] }); 
+    queryClient.invalidateQueries({ queryKey: ['team-matches'] });
+  };
+
   return {
     editingMatch,
     deleteMatchId,
     setEditingMatch,
     setDeleteMatchId,
     handleUpdateMatch,
-    handleDeleteMatch
+    handleDeleteMatch,
+    invalidateAllDataQueries
   };
 };

@@ -21,7 +21,13 @@ const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   const { data: teams, isLoading: teamsLoading } = useTeamData();
-  const { matchesData, matchesLoading } = useScheduleData();
+  const { 
+    matchesData, 
+    matchesLoading, 
+    upcomingMatches, 
+    completedMatches 
+  } = useScheduleData();
+  
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
   const {
@@ -37,7 +43,25 @@ const Schedule = () => {
     handleDeleteMatch
   } = useMatchManagement(matchesData || []);
 
-  const filteredMatches = filterAndSortMatches(matches, activeTab, searchTerm, teams);
+  const filteredMatches = React.useMemo(() => {
+    // Use the pre-sorted upcoming and completed match lists
+    const sourceMatches = activeTab === "upcoming" ? upcomingMatches : completedMatches;
+    
+    if (!searchTerm) return sourceMatches;
+    
+    // Filter based on search term
+    return sourceMatches.filter(match => {
+      const team1 = teams?.find(t => t.id === match.team1Id);
+      const team2 = teams?.find(t => t.id === match.team2Id);
+      const searchLower = searchTerm.toLowerCase();
+      
+      return (
+        team1?.name.toLowerCase().includes(searchLower) ||
+        team2?.name.toLowerCase().includes(searchLower) ||
+        match.location?.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [activeTab, upcomingMatches, completedMatches, searchTerm, teams]);
 
   // Adapter functions to handle the parameter mismatches
   const handleCreateMatchAdapter = (matchData: any) => {

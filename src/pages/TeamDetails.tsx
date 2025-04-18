@@ -68,7 +68,11 @@ const TeamDetails = () => {
       <TeamHeader team={team} winPercentage={winPercentage} />
       
       {/* Team Stats */}
-      <TeamStats team={team} winPercentage={winPercentage} />
+      <TeamStats 
+        team={team} 
+        winPercentage={winPercentage}
+        pastMatches={pastMatches}
+      />
       
       {/* Stat Breakdown */}
       <StatBreakdown

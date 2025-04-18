@@ -89,10 +89,8 @@ export const useScoreSubmission = (
         });
       }
 
-      // Invalidate queries and refresh data
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      // Invalidate ALL queries to ensure global consistency
+      invalidateAllDataQueries();
 
       if (successCount > 0) {
         await fetchMatches();
@@ -107,6 +105,16 @@ export const useScoreSubmission = (
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Helper function to invalidate all related queries
+  const invalidateAllDataQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['matches'] });
+    queryClient.invalidateQueries({ queryKey: ['teams'] });
+    queryClient.invalidateQueries({ queryKey: ['rankings'] });
+    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+    queryClient.invalidateQueries({ queryKey: ['team'] });
+    queryClient.invalidateQueries({ queryKey: ['team-matches'] });
   };
 
   return {

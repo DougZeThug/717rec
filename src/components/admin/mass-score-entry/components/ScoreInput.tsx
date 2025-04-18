@@ -7,22 +7,32 @@ interface ScoreInputProps {
   onChange: (value: string) => void;
   isValid?: boolean;
   disabled?: boolean;
+  min?: string;
+  max?: string;
+  className?: string;
+  placeholder?: string;
 }
 
 const ScoreInput: React.FC<ScoreInputProps> = ({
   value,
   onChange,
   isValid = true,
-  disabled = false
+  disabled = false,
+  min = "0",
+  max,
+  className = "",
+  placeholder = ""
 }) => {
   return (
     <Input
       type="number"
-      min="0"
+      min={min}
+      max={max}
       value={value === null ? "" : value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full text-center ${!isValid ? "border-red-500" : ""}`}
+      className={`w-full text-center ${!isValid ? "border-red-500" : ""} ${className}`}
       disabled={disabled}
+      placeholder={placeholder}
     />
   );
 };
