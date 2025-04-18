@@ -107,7 +107,18 @@ export const useScoreEntryData = () => {
     }
   };
 
-  const { submitting, handleSubmitAll } = useScoreSubmission(matches, fetchMatches);
+  const { 
+    submitting, 
+    failedMatches, 
+    errorMessages, 
+    handleSubmitAll, 
+    clearErrors 
+  } = useScoreSubmission(matches, fetchMatches);
+
+  // Helper to clear a specific match error
+  const clearError = (matchId: string) => {
+    clearErrors(matchId);
+  };
 
   useEffect(() => {
     fetchBrackets();
@@ -118,11 +129,14 @@ export const useScoreEntryData = () => {
     matches,
     loading,
     submitting,
+    failedMatches,
+    errorMessages,
     brackets,
     filters,
     handleScoreChange,
     handleMarkCompleted,
     handleSubmitAll,
+    clearError,
     setFilterDate,
     setBracketFilter,
     clearFilters

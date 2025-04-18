@@ -62,6 +62,7 @@ export const useTeamRecords = () => {
       // Invalidate team queries to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
       
       return true;
     } catch (error) {
