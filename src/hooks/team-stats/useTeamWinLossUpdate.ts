@@ -1,10 +1,8 @@
 
-import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Team } from "@/types";
 
 export const useTeamWinLossUpdate = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const updateTeamRecords = async (
@@ -15,25 +13,16 @@ export const useTeamWinLossUpdate = () => {
     loserGameWins: number = 0
   ) => {
     try {
-      // Invalidate queries to update UI with new stats
-      console.log("Invalidating query caches to ensure UI updates...");
-      const queriesToInvalidate = [
-        'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches'
-      ];
+      // Since the database trigger handles all stat updates,
+      // we only need to invalidate the relevant queries
+      console.log("Invalidating queries to refresh team stats...");
       
-      for (const queryKey of queriesToInvalidate) {
-        await queryClient.invalidateQueries({ queryKey: [queryKey] });
-        console.log(`Invalidated query cache for ${queryKey}`);
-      }
+      await queryClient.invalidateQueries({ queryKey: ['teams'] });
+      await queryClient.invalidateQueries({ queryKey: ['rankings'] });
       
       return true;
     } catch (error) {
-      console.error("Error updating team records:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update team records. Please try again.",
-        variant: "destructive"
-      });
+      console.error("Error in updateTeamRecords:", error);
       return false;
     }
   };
