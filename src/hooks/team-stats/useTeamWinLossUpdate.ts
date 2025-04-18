@@ -34,6 +34,24 @@ export const useTeamWinLossUpdate = () => {
       const winnerStats = parseTeamStats(winnerTeam);
       const loserStats = parseTeamStats(loserTeam);
       
+      console.log("Winner current stats:", {
+        teamId: winnerId,
+        teamName: winnerTeam.name,
+        wins: winnerStats.wins,
+        losses: winnerStats.losses,
+        gameWins: winnerStats.gameWins,
+        gameLosses: winnerStats.gameLosses
+      });
+      
+      console.log("Loser current stats:", {
+        teamId: loserId,
+        teamName: loserTeam.name, 
+        wins: loserStats.wins,
+        losses: loserStats.losses,
+        gameWins: loserStats.gameWins,
+        gameLosses: loserStats.gameLosses
+      });
+      
       // Update winner's record
       const winnerSuccess = await updateTeamRecord({
         teamId: winnerId,

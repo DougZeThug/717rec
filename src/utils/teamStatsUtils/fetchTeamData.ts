@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const fetchTeamData = async (teamId: string) => {
   const { data: team, error } = await supabase
     .from('teams')
-    .select('*')
+    .select('id, name, wins, losses, game_wins, game_losses')
     .eq('id', teamId)
     .maybeSingle();
   

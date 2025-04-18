@@ -31,6 +31,11 @@ export const updateTeamRecord = async ({
   console.log(`Updating ${isWinner ? 'winner' : 'loser'} team ${teamId}:`);
   console.log(`Match record: ${currentWins}-${currentLosses} → ${newWins}-${newLosses}`);
   console.log(`Game stats: ${currentGameWins}-${currentGameLosses} → ${newGameWins}-${newGameLosses}`);
+  console.log("Game stats details:", {
+    teamId: teamId,
+    game_wins: gameWins,
+    game_losses: gameLosses
+  });
   
   const { error, data } = await supabase
     .from('teams')
