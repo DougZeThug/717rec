@@ -8,10 +8,11 @@ export const useTeamWinLossUpdate = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[]) => {
+  const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[], winnerGameWins: number, loserGameWins: number) => {
     try {
       console.log(`---TEAM RECORD UPDATE STARTED---`);
       console.log(`Updating team records - Winner: ${winnerId}, Loser: ${loserId}`);
+      console.log(`Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
       
       // First, let's verify the teams exist and get their current records
       const { data: winnerTeam, error: winnerFetchError } = await supabase
@@ -42,87 +43,92 @@ export const useTeamWinLossUpdate = () => {
       // Parse and validate the win/loss values
       const currentWinnerWins = parseInt(String(winnerTeam.wins ?? 0));
       const currentLoserLosses = parseInt(String(loserTeam.losses ?? 0));
+      const currentWinnerGameWins = parseInt(String(winnerTeam.game_wins ?? 0));
+      const currentLoserGameWins = parseInt(String(loserTeam.game_wins ?? 0));
       
-      console.log(`BEFORE UPDATE - Winner ${winnerTeam.name}: ${currentWinnerWins} wins (type: ${typeof winnerTeam.wins})`);
-      console.log(`BEFORE UPDATE - Loser ${loserTeam.name}: ${currentLoserLosses} losses (type: ${typeof loserTeam.losses})`);
+      console.log(`BEFORE UPDATE - Winner ${winnerTeam.name}:`);
+      console.log(`Match record: ${currentWinnerWins} wins`);
+      console.log(`Game wins: ${currentWinnerGameWins}`);
       
-      if (isNaN(currentWinnerWins) || isNaN(currentLoserLosses)) {
-        console.error("ERROR: Invalid win/loss values detected");
-        console.error(`Winner wins: ${winnerTeam.wins} (parsed: ${currentWinnerWins})`);
-        console.error(`Loser losses: ${loserTeam.losses} (parsed: ${currentLoserLosses})`);
+      console.log(`BEFORE UPDATE - Loser ${loserTeam.name}:`);
+      console.log(`Match record: ${currentLoserLosses} losses`);
+      console.log(`Game wins: ${currentLoserGameWins}`);
+      
+      if (isNaN(currentWinnerWins) || isNaN(currentLoserLosses) || 
+          isNaN(currentWinnerGameWins) || isNaN(currentLoserGameWins)) {
+        console.error("ERROR: Invalid win/loss/game values detected");
         return false;
       }
       
-      // Calculate new values - IMPORTANT: Only add 1 win/loss per match, not per game win
-      const newWinnerWins = currentWinnerWins + 1;
-      const newLoserLosses = currentLoserLosses + 1;
+      // Calculate new values - Add 1 win/loss for match result, add game wins separately
+      const newWinnerWins = currentWinnerWins + 1; // One match win
+      const newLoserLosses = currentLoserLosses + 1; // One match loss
+      const newWinnerGameWins = currentWinnerGameWins + winnerGameWins;
+      const newLoserGameWins = currentLoserGameWins + loserGameWins;
       
-      console.log(`Updating winner ${winnerTeam.name} (${winnerId}) wins from ${currentWinnerWins} to ${newWinnerWins}`);
+      console.log(`Updating winner ${winnerTeam.name} (${winnerId})`);
+      console.log(`Match wins: ${currentWinnerWins} -> ${newWinnerWins}`);
+      console.log(`Game wins: ${currentWinnerGameWins} -> ${newWinnerGameWins}`);
       
-      // Update winner's wins - FIXED: Removed the second argument to select()
+      // Update winner's records
       const winnerUpdateResult = await supabase
         .from('teams')
-        .update({ wins: newWinnerWins })
+        .update({ 
+          wins: newWinnerWins,
+          game_wins: newWinnerGameWins
+        })
         .eq('id', winnerId)
         .select();
       
-      console.log("WINNER UPDATE RESPONSE:", winnerUpdateResult);
-      
-      if (winnerUpdateResult.error) {
+      if (winnerUpdateResult.error || !winnerUpdateResult.data?.length) {
         console.error("CRITICAL ERROR updating winner record:", winnerUpdateResult.error);
         return false;
       }
       
-      if (!winnerUpdateResult.data || winnerUpdateResult.data.length === 0) {
-        console.error(`CRITICAL ERROR: Winner update affected 0 rows. Team might not exist with ID: ${winnerId}`);
-        return false;
-      }
+      console.log(`Winner ${winnerTeam.name} updated successfully`);
       
-      console.log(`Winner update status: ${winnerUpdateResult.error ? 'FAILED' : 'SUCCESS'}`);
-      console.log(`Winner update affected rows: ${winnerUpdateResult.data?.length || 0}`);
-      console.log(`Updated winner data:`, winnerUpdateResult.data);
-      
-      // Update loser's losses - FIXED: Removed the second argument to select()
-      console.log(`Updating loser ${loserTeam.name} (${loserId}) losses from ${currentLoserLosses} to ${newLoserLosses}`);
+      // Update loser's records
+      console.log(`Updating loser ${loserTeam.name} (${loserId})`);
+      console.log(`Match losses: ${currentLoserLosses} -> ${newLoserLosses}`);
+      console.log(`Game wins: ${currentLoserGameWins} -> ${newLoserGameWins}`);
       
       const loserUpdateResult = await supabase
         .from('teams')
-        .update({ losses: newLoserLosses })
+        .update({ 
+          losses: newLoserLosses,
+          game_wins: newLoserGameWins
+        })
         .eq('id', loserId)
         .select();
       
-      console.log("LOSER UPDATE RESPONSE:", loserUpdateResult);
-      
-      if (loserUpdateResult.error) {
+      if (loserUpdateResult.error || !loserUpdateResult.data?.length) {
         console.error("CRITICAL ERROR updating loser record:", loserUpdateResult.error);
         return false;
       }
       
-      if (!loserUpdateResult.data || loserUpdateResult.data.length === 0) {
-        console.error(`CRITICAL ERROR: Loser update affected 0 rows. Team might not exist with ID: ${loserId}`);
-        return false;
-      }
-      
-      console.log(`Loser update status: ${loserUpdateResult.error ? 'FAILED' : 'SUCCESS'}`);
-      console.log(`Loser update affected rows: ${loserUpdateResult.data?.length || 0}`);
-      console.log(`Updated loser data:`, loserUpdateResult.data);
+      console.log(`Loser ${loserTeam.name} updated successfully`);
       
       // Verify the updates by fetching the updated records
       const { data: updatedWinnerData } = await supabase
         .from('teams')
-        .select('wins, losses, name')
+        .select('wins, losses, game_wins, name')
         .eq('id', winnerId)
         .single();
         
       const { data: updatedLoserData } = await supabase
         .from('teams')
-        .select('wins, losses, name')
+        .select('wins, losses, game_wins, name')
         .eq('id', loserId)
         .single();
         
       if (updatedWinnerData && updatedLoserData) {
-        console.log(`AFTER UPDATE - Winner ${updatedWinnerData.name}: ${updatedWinnerData.wins}W-${updatedWinnerData.losses}L`);
-        console.log(`AFTER UPDATE - Loser ${updatedLoserData.name}: ${updatedLoserData.wins}W-${updatedLoserData.losses}L`);
+        console.log(`AFTER UPDATE - Winner ${updatedWinnerData.name}:`);
+        console.log(`Match record: ${updatedWinnerData.wins}W-${updatedWinnerData.losses}L`);
+        console.log(`Game wins: ${updatedWinnerData.game_wins}`);
+        
+        console.log(`AFTER UPDATE - Loser ${updatedLoserData.name}:`);
+        console.log(`Match record: ${updatedLoserData.wins}W-${updatedLoserData.losses}L`);
+        console.log(`Game wins: ${updatedLoserData.game_wins}`);
       }
       
       // Immediately invalidate caches to update UI

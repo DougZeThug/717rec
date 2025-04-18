@@ -287,6 +287,8 @@ export type Database = {
         Row: {
           created_at: string | null
           division_id: string | null
+          game_losses: number | null
+          game_wins: number | null
           id: string
           image_url: string | null
           logo_url: string | null
@@ -299,6 +301,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           division_id?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
           id?: string
           image_url?: string | null
           logo_url?: string | null
@@ -311,6 +315,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           division_id?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
           id?: string
           image_url?: string | null
           logo_url?: string | null

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Match, Team } from '@/types';
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,7 @@ interface MatchScoreItemProps {
   team2Score: string;
   onToggle: () => void;
   onScoreChange: (team: 'team1Score' | 'team2Score', value: string) => void;
-  onSubmitScore: () => Promise<boolean>;
+  onSubmitScore: (team1Score: string, team2Score: string, team1GameWins: number, team2GameWins: number) => Promise<boolean>;
 }
 
 const MatchScoreItem = ({ 
@@ -32,11 +31,34 @@ const MatchScoreItem = ({
   onSubmitScore 
 }: MatchScoreItemProps) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [team1GameWins, setTeam1GameWins] = React.useState(match.team1_game_wins?.toString() || "0");
+  const [team2GameWins, setTeam2GameWins] = React.useState(match.team2_game_wins?.toString() || "0");
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onSubmitScore();
+      // For the actual match result, winner gets 1, loser gets 0
+      const team1Wins = parseInt(team1GameWins) || 0;
+      const team2Wins = parseInt(team2GameWins) || 0;
+      
+      // Determine match winner based on game wins
+      const matchScore1 = team1Wins > team2Wins ? 1 : 0;
+      const matchScore2 = team2Wins > team1Wins ? 1 : 0;
+      
+      console.log(`Submitting match ${match.id}:`);
+      console.log(`Team 1 (${teams[match.team1Id]?.name}):`);
+      console.log(`- Match score: ${matchScore1}`);
+      console.log(`- Game wins: ${team1Wins}`);
+      console.log(`Team 2 (${teams[match.team2Id]?.name}):`);
+      console.log(`- Match score: ${matchScore2}`);
+      console.log(`- Game wins: ${team2Wins}`);
+      
+      await onSubmitScore(
+        matchScore1.toString(), 
+        matchScore2.toString(),
+        team1Wins,
+        team2Wins
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -59,66 +81,39 @@ const MatchScoreItem = ({
           {new Date(match.date || '').toLocaleDateString()}
         </div>
       </CollapsibleTrigger>
+      
       <CollapsibleContent>
         <div className="p-4 border-t bg-slate-50">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <p className="text-sm font-medium mb-1">{teams[match.team1Id]?.name || 'Team 1'} Score</p>
+              <p className="text-sm font-medium mb-1">
+                {teams[match.team1Id]?.name || 'Team 1'} Game Wins
+              </p>
               <Input
                 type="number"
                 min="0"
-                value={team1Score}
-                onChange={(e) => onScoreChange('team1Score', e.target.value)}
-                placeholder="Enter score"
+                value={team1GameWins}
+                onChange={(e) => setTeam1GameWins(e.target.value)}
+                placeholder="Enter game wins"
               />
             </div>
             <div>
-              <p className="text-sm font-medium mb-1">{teams[match.team2Id]?.name || 'Team 2'} Score</p>
+              <p className="text-sm font-medium mb-1">
+                {teams[match.team2Id]?.name || 'Team 2'} Game Wins
+              </p>
               <Input
                 type="number"
                 min="0"
-                value={team2Score}
-                onChange={(e) => onScoreChange('team2Score', e.target.value)}
-                placeholder="Enter score"
+                value={team2GameWins}
+                onChange={(e) => setTeam2GameWins(e.target.value)}
+                placeholder="Enter game wins"
               />
             </div>
           </div>
           
           {match.best_of && match.best_of > 1 && (
-            <div className="mb-6">
-              <p className="text-sm font-medium mb-2">Game Wins (Best of {match.best_of})</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">{teams[match.team1Id]?.name || 'Team 1'} Game Wins</p>
-                  <Input
-                    type="number"
-                    min="0"
-                    max={Math.ceil(match.best_of / 2)}
-                    defaultValue={match.team1_game_wins?.toString() || "0"}
-                    onChange={(e) => {
-                      if (match.team1_game_wins !== undefined) {
-                        match.team1_game_wins = parseInt(e.target.value) || 0;
-                      }
-                    }}
-                    placeholder="Game wins"
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">{teams[match.team2Id]?.name || 'Team 2'} Game Wins</p>
-                  <Input
-                    type="number"
-                    min="0"
-                    max={Math.ceil(match.best_of / 2)}
-                    defaultValue={match.team2_game_wins?.toString() || "0"}
-                    onChange={(e) => {
-                      if (match.team2_game_wins !== undefined) {
-                        match.team2_game_wins = parseInt(e.target.value) || 0;
-                      }
-                    }}
-                    placeholder="Game wins"
-                  />
-                </div>
-              </div>
+            <div className="mb-4 text-sm text-gray-500">
+              Best of {match.best_of} - First to {Math.ceil(match.best_of / 2)} wins
             </div>
           )}
           
