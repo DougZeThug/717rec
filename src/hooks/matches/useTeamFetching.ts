@@ -1,0 +1,52 @@
+
+import { useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Team } from '@/types';
+
+export function useTeamFetching() {
+  const [teams, setTeams] = useState<Record<string, Team>>({});
+  const { toast } = useToast();
+
+  const fetchTeams = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*');
+
+      if (error) throw error;
+      
+      const teamsMap: Record<string, Team> = {};
+      data?.forEach(team => {
+        teamsMap[team.id] = {
+          id: team.id,
+          name: team.name,
+          logoUrl: team.logo_url,
+          imageUrl: team.image_url,
+          players: Array.isArray(team.players) 
+            ? team.players.map((playerName: string) => ({ name: playerName })) 
+            : [],
+          wins: team.wins || 0,
+          losses: team.losses || 0,
+          created_at: team.created_at || '',
+          division: team.division_id || null,
+          divisionName: null
+        };
+      });
+      
+      setTeams(teamsMap);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load teams. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return {
+    teams,
+    fetchTeams
+  };
+}
