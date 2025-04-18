@@ -1,10 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { useTeamRecords } from "@/hooks/useTeamRecords";
 import { MatchWithTeams } from "../types";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useMatchUpdates = () => {
   const { toast } = useToast();
+  const { updateTeamRecords } = useTeamRecords();
+  const queryClient = useQueryClient();
 
   const updateMatchInDatabase = async (match: MatchWithTeams) => {
     try {
@@ -28,11 +32,26 @@ export const useMatchUpdates = () => {
           team2_score: match.team2Score,
           iscompleted: match.iscompleted,
           winner_id: winnerId,
-          loser_id: loserId
+          loser_id: loserId,
+          team1_game_wins: match.team1_game_wins || 0,
+          team2_game_wins: match.team2_game_wins || 0
         })
         .eq('id', match.id);
 
       if (error) throw error;
+
+      // Update team records if match is completed and we have winner/loser
+      if (match.iscompleted && winnerId && loserId && match.team1 && match.team2) {
+        const teams = [match.team1, match.team2]; 
+        await updateTeamRecords(winnerId, loserId, teams);
+      }
+
+      // Invalidate queries to ensure fresh data throughout the app
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+      
       return true;
     } catch (error: any) {
       console.error("Error updating match:", error.message);

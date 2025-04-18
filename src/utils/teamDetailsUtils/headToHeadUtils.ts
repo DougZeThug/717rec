@@ -1,36 +1,39 @@
 
-import { Team, Match } from "@/types";
+import { Team, Match, HeadToHeadMap } from "@/types";
 
-export const calculateHeadToHead = (teamId: string, teams: Team[], matches: Match[]) => {
-  const headToHeadMap: Record<string, { wins: number; losses: number; opponentName: string }> = {};
+export const calculateHeadToHead = (teamId: string, allTeams: Team[], allMatches: Match[]) => {
+  const result: HeadToHeadMap = {};
   
-  // Get all matches involving this team
-  const teamMatches = matches.filter(match => 
-    match.team1Id === teamId || match.team2Id === teamId
-  );
-  
-  teamMatches.forEach(match => {
-    if (!match.iscompleted || !match.winnerId || !match.loserId) return;
-    
-    const opponentId = match.team1Id === teamId ? match.team2Id : match.team1Id;
-    const opponent = teams.find(t => t.id === opponentId);
-    
-    if (!opponent) return;
-    
-    if (!headToHeadMap[opponentId]) {
-      headToHeadMap[opponentId] = {
+  // Initialize records for all teams
+  allTeams.forEach(team => {
+    if (team && team.id && team.id !== teamId) {
+      result[team.id] = {
+        opponentName: team.name || 'Unknown Team',
         wins: 0,
-        losses: 0,
-        opponentName: opponent.name
+        losses: 0
       };
-    }
-    
-    if (match.winnerId === teamId) {
-      headToHeadMap[opponentId].wins++;
-    } else {
-      headToHeadMap[opponentId].losses++;
     }
   });
   
-  return headToHeadMap;
+  // Count wins and losses against each team
+  allMatches
+    .filter(match => 
+      match && 
+      match.iscompleted && 
+      (match.team1Id === teamId || match.team2Id === teamId)
+    )
+    .forEach(match => {
+      const isTeam1 = match.team1Id === teamId;
+      const opponentId = isTeam1 ? match.team2Id : match.team1Id;
+      
+      if (opponentId && result[opponentId]) {
+        if (match.winnerId === teamId) {
+          result[opponentId].wins += 1;
+        } else if (match.loserId === teamId) {
+          result[opponentId].losses += 1;
+        }
+      }
+    });
+  
+  return result;
 };

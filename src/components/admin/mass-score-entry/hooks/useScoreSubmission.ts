@@ -12,7 +12,7 @@ export const useScoreSubmission = (
 ) => {
   const queryClient = useQueryClient();
   const { updateTeamRecords } = useTeamRecords();
-  const { updateMatchInDatabase } = useMatchUpdates(); // Fixed: using the correct method name
+  const { updateMatchInDatabase } = useMatchUpdates(); 
   const {
     submitting,
     setSubmitting,
@@ -47,7 +47,6 @@ export const useScoreSubmission = (
             continue;
           }
 
-          // Fixed: using updateMatchInDatabase instead of updateMatch
           const success = await updateMatchInDatabase(match);
           if (!success) {
             addError(match.id, "Failed to update match");
