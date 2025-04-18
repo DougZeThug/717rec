@@ -1,16 +1,13 @@
 
 import React from "react";
-import { Input } from "@/components/ui/input";
+import ScoreButtonGroup from "./ScoreButtonGroup";
 
 interface ScoreInputProps {
-  value: number | null;
-  onChange: (value: string) => void;
+  value: { team1Score: number | null; team2Score: number | null };
+  onChange: (scores: { team1Score: number; team2Score: number }) => void;
   isValid?: boolean;
   disabled?: boolean;
-  min?: string;
-  max?: string;
   className?: string;
-  placeholder?: string;
 }
 
 const ScoreInput: React.FC<ScoreInputProps> = ({
@@ -18,22 +15,16 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   onChange,
   isValid = true,
   disabled = false,
-  min = "0",
-  max,
-  className = "",
-  placeholder = ""
+  className = ""
 }) => {
   return (
-    <Input
-      type="number"
-      min={min}
-      max={max}
-      value={value === null ? "" : value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`w-full text-center ${!isValid ? "border-red-500" : ""} ${className}`}
-      disabled={disabled}
-      placeholder={placeholder}
-    />
+    <div className={`flex justify-center ${className}`}>
+      <ScoreButtonGroup
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+      />
+    </div>
   );
 };
 
