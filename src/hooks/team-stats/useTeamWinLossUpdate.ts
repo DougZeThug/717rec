@@ -17,7 +17,7 @@ export const useTeamWinLossUpdate = () => {
         .from('teams')
         .select('wins, losses, name')
         .eq('id', winnerId)
-        .single();
+        .maybeSingle();
       
       if (winnerError) {
         console.error("Error fetching winner data:", winnerError);
@@ -28,11 +28,15 @@ export const useTeamWinLossUpdate = () => {
         .from('teams')
         .select('wins, losses, name')
         .eq('id', loserId)
-        .single();
+        .maybeSingle();
       
       if (loserError) {
         console.error("Error fetching loser data:", loserError);
         throw loserError;
+      }
+
+      if (!winnerData || !loserData) {
+        throw new Error("Could not find team data");
       }
       
       console.log(`Current records - Winner ${winnerData.name}: ${winnerData.wins}W-${winnerData.losses}L, Loser ${loserData.name}: ${loserData.wins}W-${loserData.losses}L`);
