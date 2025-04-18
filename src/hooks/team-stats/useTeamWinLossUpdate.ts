@@ -39,10 +39,16 @@ export const useTeamWinLossUpdate = () => {
         throw new Error("Could not find team data");
       }
       
-      console.log(`Current records - Winner ${winnerData.name}: ${winnerData.wins}W-${winnerData.losses}L, Loser ${loserData.name}: ${loserData.wins}W-${loserData.losses}L`);
+      // Get current win/loss values, ensuring they are numbers
+      const currentWinnerWins = typeof winnerData.wins === 'number' ? winnerData.wins : 0;
+      const currentWinnerLosses = typeof winnerData.losses === 'number' ? winnerData.losses : 0;
+      const currentLoserWins = typeof loserData.wins === 'number' ? loserData.wins : 0;
+      const currentLoserLosses = typeof loserData.losses === 'number' ? loserData.losses : 0;
       
-      // Update winner's record
-      const newWinnerWins = (winnerData.wins || 0) + 1;
+      console.log(`Current records - Winner ${winnerData.name}: ${currentWinnerWins}W-${currentWinnerLosses}L, Loser ${loserData.name}: ${currentLoserWins}W-${currentLoserLosses}L`);
+      
+      // Update winner's record - increment wins by 1
+      const newWinnerWins = currentWinnerWins + 1;
       const { error: updateWinnerError } = await supabase
         .from('teams')
         .update({ wins: newWinnerWins })
@@ -53,8 +59,10 @@ export const useTeamWinLossUpdate = () => {
         throw updateWinnerError;
       }
       
-      // Update loser's record
-      const newLoserLosses = (loserData.losses || 0) + 1;
+      console.log(`Updated winner ${winnerData.name} (${winnerId}) wins from ${currentWinnerWins} to ${newWinnerWins}`);
+      
+      // Update loser's record - increment losses by 1
+      const newLoserLosses = currentLoserLosses + 1;
       const { error: updateLoserError } = await supabase
         .from('teams')
         .update({ losses: newLoserLosses })
@@ -65,6 +73,8 @@ export const useTeamWinLossUpdate = () => {
         throw updateLoserError;
       }
       
+      console.log(`Updated loser ${loserData.name} (${loserId}) losses from ${currentLoserLosses} to ${newLoserLosses}`);
+      
       const getTeamName = (teamId: string) => {
         const team = teams.find(t => t.id === teamId);
         return team ? team.name : "Unknown Team";
@@ -73,7 +83,7 @@ export const useTeamWinLossUpdate = () => {
       const winnerName = getTeamName(winnerId);
       const loserName = getTeamName(loserId);
       
-      console.log(`Successfully updated team records: ${winnerName} (${newWinnerWins}W-${winnerData.losses}L) and ${loserName} (${loserData.wins}W-${newLoserLosses}L)`);
+      console.log(`Successfully updated team records: ${winnerName} (${newWinnerWins}W-${currentWinnerLosses}L) and ${loserName} (${currentLoserWins}W-${newLoserLosses}L)`);
       
       // Immediately invalidate caches so UI updates
       const queriesToInvalidate = [

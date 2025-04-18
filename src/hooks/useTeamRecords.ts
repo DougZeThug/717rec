@@ -14,10 +14,10 @@ export const useTeamRecords = () => {
     console.log("Starting team record update process for winner:", winnerId, "loser:", loserId);
     
     try {
-      // First update the basic win/loss records
+      // First update the basic win/loss records in the teams table
       const success = await updateWinLoss(winnerId, loserId, teams);
       if (!success) {
-        console.error("Failed to update basic win/loss records");
+        console.error("Failed to update basic win/loss records in teams table");
         toast({
           title: "Error",
           description: "Failed to update team records. Please try again.",
@@ -26,7 +26,7 @@ export const useTeamRecords = () => {
         return false;
       }
       
-      console.log("Basic win/loss records updated successfully, now updating detailed stats");
+      console.log("Teams table win/loss records updated successfully, now updating detailed stats");
   
       // Then update the detailed team stats
       const statsSuccess = await updateTeamStatsRecord(winnerId, loserId);
