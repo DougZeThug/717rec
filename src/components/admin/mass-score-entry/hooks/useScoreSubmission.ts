@@ -85,7 +85,19 @@ export const useScoreSubmission = (
                 losses: team.losses 
               })));
               
-            const updateSuccess = await updateTeamRecords(winnerId!, loserId!, teams);
+            // Get the game wins for each team
+            const winnerGameWins = winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+            const loserGameWins = loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+              
+            console.log(`[useScoreSubmission] Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
+              
+            const updateSuccess = await updateTeamRecords(
+              winnerId, 
+              loserId, 
+              teams,
+              winnerGameWins,
+              loserGameWins
+            );
             
             if (!updateSuccess) {
               toast({

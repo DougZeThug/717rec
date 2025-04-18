@@ -10,7 +10,13 @@ export const useMatchSubmission = () => {
   const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
 
-  const handleSubmitScore = async (matchId: string, team1Score: number, team2Score: number, team1GameWins?: number, team2GameWins?: number) => {
+  const handleSubmitScore = async (
+    matchId: string, 
+    team1Score: number, 
+    team2Score: number, 
+    team1GameWins?: number, 
+    team2GameWins?: number
+  ) => {
     try {
       let winnerId: string | null = null;
       let loserId: string | null = null;
@@ -26,8 +32,9 @@ export const useMatchSubmission = () => {
 
       console.log(`[useMatchSubmission] Match ${matchId} data:`, matchData);
       console.log(`[useMatchSubmission] Scores - Team1: ${team1Score}, Team2: ${team2Score}`);
+      console.log(`[useMatchSubmission] Game wins - Team1: ${team1GameWins || 0}, Team2: ${team2GameWins || 0}`);
 
-      // Determine winner and loser
+      // Determine winner and loser based on scores
       if (team1Score > team2Score) {
         winnerId = matchData.team1_id;
         loserId = matchData.team2_id;
@@ -38,18 +45,20 @@ export const useMatchSubmission = () => {
 
       console.log(`[useMatchSubmission] Winner ID: ${winnerId}, Loser ID: ${loserId}`);
 
+      // Set default values for game wins if not provided
+      const finalTeam1GameWins = team1GameWins || 0;
+      const finalTeam2GameWins = team2GameWins || 0;
+
       // Update the match with game level details if provided
       const updateData: any = {
         team1_score: team1Score,
         team2_score: team2Score,
         iscompleted: true,
         winner_id: winnerId,
-        loser_id: loserId
+        loser_id: loserId,
+        team1_game_wins: finalTeam1GameWins,
+        team2_game_wins: finalTeam2GameWins
       };
-
-      // Add game wins if provided
-      if (team1GameWins !== undefined) updateData.team1_game_wins = team1GameWins;
-      if (team2GameWins !== undefined) updateData.team2_game_wins = team2GameWins;
 
       const { error, data: updatedMatch } = await supabase
         .from('matches')
@@ -88,6 +97,7 @@ export const useMatchSubmission = () => {
               : [],
             wins: team.wins || 0,
             losses: team.losses || 0,
+            game_wins: team.game_wins || 0,
             created_at: team.created_at || '',
             division: team.division_id || null,
             divisionName: null
@@ -95,8 +105,18 @@ export const useMatchSubmission = () => {
           
           console.log("[useMatchSubmission] Formatted teams for update:", 
             formattedTeams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses })));
+          
+          // Get the game wins for each team based on their role (winner/loser)
+          const winnerGameWins = winnerId === matchData.team1_id ? finalTeam1GameWins : finalTeam2GameWins;
+          const loserGameWins = loserId === matchData.team1_id ? finalTeam1GameWins : finalTeam2GameWins;
             
-          const updateSuccess = await updateTeamRecords(winnerId, loserId, formattedTeams);
+          const updateSuccess = await updateTeamRecords(
+            winnerId, 
+            loserId, 
+            formattedTeams,
+            winnerGameWins,
+            loserGameWins
+          );
           console.log(`[useMatchSubmission] Team records update ${updateSuccess ? 'succeeded' : 'failed'}`);
         } else {
           console.error("[useMatchSubmission] Could not find team data for winner/loser");

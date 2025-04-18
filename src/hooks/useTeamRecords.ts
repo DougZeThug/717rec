@@ -10,9 +10,24 @@ export const useTeamRecords = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[]) => {
+  /**
+   * Updates team records for a completed match
+   * @param winnerId The ID of the winning team
+   * @param loserId The ID of the losing team
+   * @param teams Array of team data
+   * @param winnerGameWins Number of games won by winner (default: 0)
+   * @param loserGameWins Number of games won by loser (default: 0)
+   */
+  const updateTeamRecords = async (
+    winnerId: string, 
+    loserId: string, 
+    teams: Team[], 
+    winnerGameWins: number = 0, 
+    loserGameWins: number = 0
+  ) => {
     console.log("===== TEAM RECORDS UPDATE PROCESS STARTING =====");
     console.log("Winner ID:", winnerId, "Loser ID:", loserId);
+    console.log("Game wins - Winner:", winnerGameWins, "Loser:", loserGameWins);
     
     // Log types and values of team data
     if (teams && teams.length > 0) {
@@ -21,7 +36,9 @@ export const useTeamRecords = () => {
           wins: team.wins,
           winsType: typeof team.wins,
           losses: team.losses,
-          lossesType: typeof team.losses
+          lossesType: typeof team.losses,
+          gameWins: team.game_wins,
+          gameWinsType: typeof team.game_wins
         });
       });
     }
@@ -29,7 +46,7 @@ export const useTeamRecords = () => {
     try {
       // First update the basic win/loss records in the teams table
       console.log("Step 1: Updating basic win/loss records in teams table");
-      const success = await updateWinLoss(winnerId, loserId, teams);
+      const success = await updateWinLoss(winnerId, loserId, teams, winnerGameWins, loserGameWins);
       
       if (!success) {
         console.error("CRITICAL ERROR: Failed to update basic win/loss records in teams table");

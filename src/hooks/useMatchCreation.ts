@@ -25,6 +25,8 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
           team2_score: matchData.team2Score,
           winner_id: matchData.winnerId,
           loser_id: matchData.loserId,
+          team1_game_wins: matchData.team1_game_wins || 0,
+          team2_game_wins: matchData.team2_game_wins || 0,
           round_number: 0 // Adding required field with default value
         })
         .select()
@@ -44,6 +46,8 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         team2Score: data.team2_score,
         winnerId: data.winner_id,
         loserId: data.loser_id,
+        team1_game_wins: data.team1_game_wins,
+        team2_game_wins: data.team2_game_wins,
         round_number: data.round_number
       };
       
@@ -57,7 +61,16 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
 
       // If match is completed with a winner/loser, update team records
       if (newMatch.iscompleted && newMatch.winnerId && newMatch.loserId) {
-        await updateTeamRecords(newMatch.winnerId, newMatch.loserId, teams);
+        const winnerGameWins = newMatch.winnerId === newMatch.team1Id ? (newMatch.team1_game_wins || 0) : (newMatch.team2_game_wins || 0);
+        const loserGameWins = newMatch.loserId === newMatch.team1Id ? (newMatch.team1_game_wins || 0) : (newMatch.team2_game_wins || 0);
+        
+        await updateTeamRecords(
+          newMatch.winnerId, 
+          newMatch.loserId, 
+          teams,
+          winnerGameWins,
+          loserGameWins
+        );
       }
       
       return true;

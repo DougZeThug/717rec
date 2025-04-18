@@ -57,8 +57,21 @@ export const useMatchUpdates = () => {
       if (match.iscompleted && winnerId && loserId && match.team1 && match.team2) {
         console.log(`Updating team records for winner ${winnerId} and loser ${loserId}`);
         const teams = [match.team1, match.team2]; 
+        
+        // Get the game wins for winner and loser
+        const winnerGameWins = winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+        const loserGameWins = loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+        
         console.log('Team objects being passed:', teams);
-        const updateResult = await updateTeamRecords(winnerId, loserId, teams);
+        console.log(`Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
+        
+        const updateResult = await updateTeamRecords(
+          winnerId, 
+          loserId, 
+          teams,
+          winnerGameWins,
+          loserGameWins
+        );
         console.log(`Team record update result: ${updateResult ? "success" : "failure"}`);
       }
 

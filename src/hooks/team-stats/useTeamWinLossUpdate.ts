@@ -8,7 +8,21 @@ export const useTeamWinLossUpdate = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[], winnerGameWins: number, loserGameWins: number) => {
+  /**
+   * Updates team records for match results and game wins
+   * @param winnerId The ID of the team that won the match
+   * @param loserId The ID of the team that lost the match
+   * @param teams Array of team data objects
+   * @param winnerGameWins Number of games won by winner
+   * @param loserGameWins Number of games won by loser
+   */
+  const updateTeamRecords = async (
+    winnerId: string, 
+    loserId: string, 
+    teams: Team[], 
+    winnerGameWins: number = 0, 
+    loserGameWins: number = 0
+  ) => {
     try {
       console.log(`---TEAM RECORD UPDATE STARTED---`);
       console.log(`Updating team records - Winner: ${winnerId}, Loser: ${loserId}`);

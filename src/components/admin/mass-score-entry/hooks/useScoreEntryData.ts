@@ -60,15 +60,42 @@ export const useScoreEntryData = () => {
           }
 
           if (match.iscompleted && match.team1 && match.team2) {
-            const teams = [match.team1, match.team2];
-            const updateSuccess = await updateTeamRecords(match.winnerId!, match.loserId!, teams);
+            // Determine winner and loser
+            let winnerId = null;
+            let loserId = null;
             
-            if (!updateSuccess) {
-              toast({
-                title: "Partial Success",
-                description: `Match updated, but team records may not have been updated properly.`,
-                variant: "default"
-              });
+            if (match.team1Score !== null && match.team2Score !== null) {
+              if (match.team1Score > match.team2Score) {
+                winnerId = match.team1Id;
+                loserId = match.team2Id;
+              } else if (match.team2Score > match.team1Score) {
+                winnerId = match.team2Id;
+                loserId = match.team1Id;
+              }
+            }
+            
+            if (winnerId && loserId) {
+              const teams = [match.team1, match.team2];
+              
+              // Get the game wins for winner and loser
+              const winnerGameWins = winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+              const loserGameWins = loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+              
+              const updateSuccess = await updateTeamRecords(
+                winnerId,
+                loserId,
+                teams,
+                winnerGameWins,
+                loserGameWins
+              );
+              
+              if (!updateSuccess) {
+                toast({
+                  title: "Partial Success",
+                  description: `Match updated, but team records may not have been updated properly.`,
+                  variant: "default"
+                });
+              }
             }
           }
 
