@@ -11,14 +11,16 @@ import {
 import { Team } from "@/types";
 import { X } from "lucide-react";
 
+interface MatchPair {
+  team1Id: string | null;
+  team2Id: string | null;
+  timeslot: string | null;
+}
+
 interface MatchRowProps {
-  pair: {
-    team1Id: string | null;
-    team2Id: string | null;
-    timeslot: string | null;
-  };
+  pair: MatchPair;
   teams: Team[];
-  onUpdate: (updates: Partial<typeof pair>) => void;
+  onUpdate: (updates: Partial<MatchPair>) => void;
   onRemove: () => void;
 }
 
