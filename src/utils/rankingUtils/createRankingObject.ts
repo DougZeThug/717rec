@@ -4,7 +4,7 @@ import { calculateSOS } from "./calculateSOS";
 import { calculateStreak } from "./calculateStreak";
 import { calculateHeadToHead } from "./calculateHeadToHead";
 import { calculateWinPercentage } from "./calculateWinPercentage";
-import { calculateGameStats } from "./calculateGameStats";
+import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
 
 /**
  * Create a ranking object for a team
