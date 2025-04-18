@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MatchResultData } from "../types/matchSubmissionTypes";
-import { applyMatchResult } from "@/hooks/team-stats/utils/teamRecordUtils";
 
 export const updateMatchInDatabase = async (
   matchId: string,
@@ -35,19 +34,19 @@ export const updateMatchInDatabase = async (
     throw matchError;
   }
 
+  // For completed matches, trigger the team stats update via RPC
   if (winnerId && loserId) {
-    // Determine which team's game score belongs to winner/loser
-    const winnerGameWins = winnerId === matchResult.team1Id ? matchResult.team1GameWins : matchResult.team2GameWins;
-    const loserGameWins = loserId === matchResult.team1Id ? matchResult.team1GameWins : matchResult.team2GameWins;
-    
     try {
-      // Use the updated utility to update team records correctly
-      await applyMatchResult(
-        winnerId,
-        loserId,
-        winnerGameWins,
-        loserGameWins
-      );
+      const { data, error } = await supabase.functions.invoke('update_team_stats', {
+        body: { matchId }
+      });
+      
+      if (error) {
+        console.error('[matchUpdateUtils] Error calling update_team_stats function:', error);
+        throw error;
+      }
+      
+      console.log('[matchUpdateUtils] Team stats update successful:', data);
     } catch (error) {
       console.error(`[matchUpdateUtils] Error updating team stats:`, error);
       throw error;

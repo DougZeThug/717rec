@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export async function applyMatchResult(
@@ -7,73 +6,59 @@ export async function applyMatchResult(
   winnerGameWins: number,
   loserGameWins: number
 ) {
-  /* ───── fetch current numbers for both teams ───── */
-  const { data: teams, error: fetchErr } = await supabase
-    .from("teams")
-    .select("id,wins,losses,game_wins,game_losses,name")  // Add 'name' to the select
-    .in("id", [winnerId, loserId]);
+  // Convert parameters to numbers to ensure proper math
+  const winnerGameWinsNum = Number(winnerGameWins || 0);
+  const loserGameWinsNum = Number(loserGameWins || 0);
 
-  if (fetchErr || !teams?.length) {
-    console.error("❌ fetch teams failed", fetchErr);
-    throw fetchErr;
-  }
+  console.log(`Updating stats → winner:${winnerId} (+1 W / +${winnerGameWinsNum} GW) loser:${loserId} (+1 L / +${loserGameWinsNum} GL)`);
 
-  const winner = teams.find(t => t.id === winnerId)!;
-  const loser = teams.find(t => t.id === loserId)!;
+  try {
+    // Use the RPC function for atomic updates to both teams
+    const { data, error } = await supabase.rpc('update_team_stats', {
+      p_winner_id: winnerId,
+      p_loser_id: loserId,
+      p_winner_game_wins: winnerGameWinsNum,
+      p_loser_game_wins: loserGameWinsNum
+    });
 
-  /* ───── compute new counts ───── */
-  const winnerUpdate = {
-    wins: (winner.wins ?? 0) + 1,
-    losses: (winner.losses ?? 0),
-    game_wins: (winner.game_wins ?? 0) + winnerGameWins,
-    game_losses: (winner.game_losses ?? 0) + loserGameWins,
-  };
-
-  const loserUpdate = {
-    wins: (loser.wins ?? 0),
-    losses: (loser.losses ?? 0) + 1,
-    game_wins: (loser.game_wins ?? 0) + loserGameWins,
-    game_losses: (loser.game_losses ?? 0) + winnerGameWins,
-  };
-
-  /* ───── persist ───── */
-  // Use Promise.all to update both teams simultaneously
-  const [winnerResult, loserResult] = await Promise.all([
-    supabase
-      .from("teams")
-      .update(winnerUpdate)
-      .eq("id", winnerId),
-    supabase
-      .from("teams")
-      .update(loserUpdate)
-      .eq("id", loserId)
-  ]);
-
-  const wErr = winnerResult.error;
-  const lErr = loserResult.error;
-
-  if (wErr || lErr) {
-    console.error("❌ update failed", { wErr, lErr });
-    throw wErr || lErr;
-  }
-
-  /* ───── done ───── */
-  console.log("✅ Team stats updated:", {
-    winner: {
-      team: winner.name || winnerId,  // Use name if available, fallback to ID
-      wins: winnerUpdate.wins, 
-      losses: winnerUpdate.losses, 
-      game_wins: winnerUpdate.game_wins, 
-      game_losses: winnerUpdate.game_losses
-    },
-    loser: {
-      team: loser.name || loserId,  // Use name if available, fallback to ID
-      wins: loserUpdate.wins, 
-      losses: loserUpdate.losses, 
-      game_wins: loserUpdate.game_wins, 
-      game_losses: loserUpdate.game_losses
+    if (error) {
+      console.error("❌ update_team_stats RPC failed", error);
+      throw error;
     }
-  });
-  
-  return true;
+
+    // Fetch the updated team data to log
+    const { data: teams } = await supabase
+      .from("teams")
+      .select("id,name,wins,losses,game_wins,game_losses")
+      .in("id", [winnerId, loserId]);
+
+    if (teams && teams.length === 2) {
+      const winner = teams.find(t => t.id === winnerId);
+      const loser = teams.find(t => t.id === loserId);
+
+      if (winner && loser) {
+        console.log("✅ Team stats updated:", {
+          winner: {
+            team: winner.name || winnerId,
+            wins: winner.wins, 
+            losses: winner.losses, 
+            game_wins: winner.game_wins, 
+            game_losses: winner.game_losses
+          },
+          loser: {
+            team: loser.name || loserId,
+            wins: loser.wins, 
+            losses: loser.losses, 
+            game_wins: loser.game_wins, 
+            game_losses: loser.game_losses
+          }
+        });
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to update team stats:", error);
+    throw error;
+  }
 }

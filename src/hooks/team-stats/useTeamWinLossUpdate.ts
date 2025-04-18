@@ -1,8 +1,8 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { Team } from "@/types";
-import { applyMatchResult } from "./utils/teamRecordUtils";
 import { invalidateMatchRelatedQueries } from "../matches/utils/queryCacheUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useTeamWinLossUpdate = () => {
   const queryClient = useQueryClient();
@@ -24,13 +24,18 @@ export const useTeamWinLossUpdate = () => {
         loser: { id: loserId, gameWins: loserGameWinsNum }
       });
       
-      // Update team records with our updated utility function
-      await applyMatchResult(
-        winnerId,
-        loserId,
-        winnerGameWinsNum,
-        loserGameWinsNum
-      );
+      // Use the RPC function to update team stats
+      const { data, error } = await supabase.rpc('update_team_stats', {
+        p_winner_id: winnerId,
+        p_loser_id: loserId,
+        p_winner_game_wins: winnerGameWinsNum,
+        p_loser_game_wins: loserGameWinsNum
+      });
+      
+      if (error) {
+        console.error("[useTeamWinLossUpdate] Error in update_team_stats RPC:", error);
+        return false;
+      }
       
       // Invalidate all relevant queries to ensure fresh data
       await invalidateMatchRelatedQueries(queryClient);
