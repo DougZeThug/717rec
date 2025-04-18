@@ -8,7 +8,7 @@ export const updateMatchInDatabase = async (
   team2Score: number,
   matchResult: MatchResultData
 ) => {
-  const { winnerId, loserId, team1GameWins, team2GameWins } = matchResult;
+  const { winnerId, loserId } = matchResult;
   
   const updateData = {
     team1_score: team1Score,
@@ -16,8 +16,8 @@ export const updateMatchInDatabase = async (
     iscompleted: true,
     winner_id: winnerId,
     loser_id: loserId,
-    team1_game_wins: team1GameWins,
-    team2_game_wins: team2GameWins
+    team1_game_wins: matchResult.team1GameWins,
+    team2_game_wins: matchResult.team2GameWins
   };
   
   console.log(`[matchUpdateUtils] Updating match ${matchId} with:`, updateData);
@@ -25,7 +25,8 @@ export const updateMatchInDatabase = async (
   const { data, error } = await supabase
     .from('matches')
     .update(updateData)
-    .eq('id', matchId);
+    .eq('id', matchId)
+    .select();
     
   if (error) {
     console.error(`[matchUpdateUtils] Error updating match ${matchId}:`, error);

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Match, Team } from '@/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +30,7 @@ const MatchScoreItem = ({
   onScoreChange, 
   onSubmitScore 
 }: MatchScoreItemProps) => {
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [team1GameWins, setTeam1GameWins] = React.useState(match.team1_game_wins?.toString() || "0");
   const [team2GameWins, setTeam2GameWins] = React.useState(match.team2_game_wins?.toString() || "0");
 
@@ -43,7 +42,6 @@ const MatchScoreItem = ({
       const team2Wins = parseInt(team2GameWins) || 0;
       
       // Determine match winner based on game wins
-      // Match score is now binary: 1 for winner, 0 for loser
       const matchScore1 = team1Wins > team2Wins ? "1" : "0";
       const matchScore2 = team2Wins > team1Wins ? "1" : "0";
       
