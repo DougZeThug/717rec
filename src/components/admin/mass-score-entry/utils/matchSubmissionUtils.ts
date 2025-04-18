@@ -16,3 +16,14 @@ export const determineWinner = (match: MatchWithTeams) => {
     return { winnerId: match.team2Id, loserId: match.team1Id };
   }
 };
+
+export const validateMatchSubmission = (match: MatchWithTeams): { isValid: boolean; errorMessage?: string } => {
+  if (!match.isValid || !match.team1Score || !match.team2Score) {
+    return {
+      isValid: false,
+      errorMessage: "Invalid scores. Please enter valid numbers."
+    };
+  }
+  return { isValid: true };
+};
+
