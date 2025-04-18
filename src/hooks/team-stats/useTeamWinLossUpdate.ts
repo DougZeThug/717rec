@@ -53,18 +53,18 @@ export const useTeamWinLossUpdate = () => {
         return false;
       }
       
-      // Calculate new values
+      // Calculate new values - IMPORTANT: Only add 1 win/loss per match, not per game win
       const newWinnerWins = currentWinnerWins + 1;
       const newLoserLosses = currentLoserLosses + 1;
       
       console.log(`Updating winner ${winnerTeam.name} (${winnerId}) wins from ${currentWinnerWins} to ${newWinnerWins}`);
       
-      // Update winner's wins
+      // Update winner's wins - FIXED: Removed the second argument to select()
       const winnerUpdateResult = await supabase
         .from('teams')
         .update({ wins: newWinnerWins })
         .eq('id', winnerId)
-        .select('*', { count: 'exact' });
+        .select();
       
       console.log("WINNER UPDATE RESPONSE:", winnerUpdateResult);
       
@@ -73,23 +73,23 @@ export const useTeamWinLossUpdate = () => {
         return false;
       }
       
-      if (!winnerUpdateResult.count || winnerUpdateResult.count === 0) {
+      if (!winnerUpdateResult.data || winnerUpdateResult.data.length === 0) {
         console.error(`CRITICAL ERROR: Winner update affected 0 rows. Team might not exist with ID: ${winnerId}`);
         return false;
       }
       
       console.log(`Winner update status: ${winnerUpdateResult.error ? 'FAILED' : 'SUCCESS'}`);
-      console.log(`Winner update affected rows: ${winnerUpdateResult.count || 0}`);
+      console.log(`Winner update affected rows: ${winnerUpdateResult.data?.length || 0}`);
       console.log(`Updated winner data:`, winnerUpdateResult.data);
       
-      // Update loser's losses
+      // Update loser's losses - FIXED: Removed the second argument to select()
       console.log(`Updating loser ${loserTeam.name} (${loserId}) losses from ${currentLoserLosses} to ${newLoserLosses}`);
       
       const loserUpdateResult = await supabase
         .from('teams')
         .update({ losses: newLoserLosses })
         .eq('id', loserId)
-        .select('*', { count: 'exact' });
+        .select();
       
       console.log("LOSER UPDATE RESPONSE:", loserUpdateResult);
       
@@ -98,13 +98,13 @@ export const useTeamWinLossUpdate = () => {
         return false;
       }
       
-      if (!loserUpdateResult.count || loserUpdateResult.count === 0) {
+      if (!loserUpdateResult.data || loserUpdateResult.data.length === 0) {
         console.error(`CRITICAL ERROR: Loser update affected 0 rows. Team might not exist with ID: ${loserId}`);
         return false;
       }
       
       console.log(`Loser update status: ${loserUpdateResult.error ? 'FAILED' : 'SUCCESS'}`);
-      console.log(`Loser update affected rows: ${loserUpdateResult.count || 0}`);
+      console.log(`Loser update affected rows: ${loserUpdateResult.data?.length || 0}`);
       console.log(`Updated loser data:`, loserUpdateResult.data);
       
       // Verify the updates by fetching the updated records
