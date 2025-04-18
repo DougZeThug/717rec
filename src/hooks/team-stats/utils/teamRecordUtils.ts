@@ -10,7 +10,7 @@ export async function applyMatchResult(
   /* ───── fetch current numbers for both teams ───── */
   const { data: teams, error: fetchErr } = await supabase
     .from("teams")
-    .select("id,wins,losses,game_wins,game_losses")
+    .select("id,wins,losses,game_wins,game_losses,name")  // Add 'name' to the select
     .in("id", [winnerId, loserId]);
 
   if (fetchErr || !teams?.length) {
@@ -60,14 +60,14 @@ export async function applyMatchResult(
   /* ───── done ───── */
   console.log("✅ Team stats updated:", {
     winner: {
-      team: winner.name || winnerId,
+      team: winner.name || winnerId,  // Use name if available, fallback to ID
       wins: winnerUpdate.wins, 
       losses: winnerUpdate.losses, 
       game_wins: winnerUpdate.game_wins, 
       game_losses: winnerUpdate.game_losses
     },
     loser: {
-      team: loser.name || loserId,
+      team: loser.name || loserId,  // Use name if available, fallback to ID
       wins: loserUpdate.wins, 
       losses: loserUpdate.losses, 
       game_wins: loserUpdate.game_wins, 
