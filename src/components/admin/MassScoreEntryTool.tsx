@@ -1,12 +1,11 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, TableProperties, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useScoreEntryData } from "./mass-score-entry/hooks/useScoreEntryData";
-import FilterBar from "./mass-score-entry/FilterBar";
 import MatchesTable from "./mass-score-entry/MatchesTable";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import ScoreEntryToolbar from "./mass-score-entry/components/ScoreEntryToolbar";
+import ErrorAlert from "./mass-score-entry/components/ErrorAlert";
+import SubmitButton from "./mass-score-entry/components/SubmitButton";
 
 interface MassScoreEntryToolProps {}
 
@@ -37,32 +36,17 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <CardTitle className="flex items-center gap-2">
-            <TableProperties size={20} />
-            Mass Score Entry
-          </CardTitle>
-
-          <FilterBar
-            filters={filters}
-            brackets={brackets}
-            onDateChange={setFilterDate}
-            onBracketChange={setBracketFilter}
-            onClearFilters={clearFilters}
-          />
-        </div>
+        <ScoreEntryToolbar
+          filters={filters}
+          brackets={brackets}
+          onDateChange={setFilterDate}
+          onBracketChange={setBracketFilter}
+          onClearFilters={clearFilters}
+        />
       </CardHeader>
 
       <CardContent>
-        {failedMatches && failedMatches.length > 0 && (
-          <Alert variant="default" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {failedMatches.length} {failedMatches.length === 1 ? 'match' : 'matches'} failed to update. 
-              Please correct the errors and resubmit.
-            </AlertDescription>
-          </Alert>
-        )}
+        <ErrorAlert failedMatches={failedMatches} />
         
         <MatchesTable
           matches={matches}
@@ -76,15 +60,11 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
         />
 
         <div className="flex justify-end mt-6">
-          <Button
-            onClick={handleSubmitAll}
+          <SubmitButton
+            onSubmit={handleSubmitAll}
             disabled={disableSubmit}
-            className="flex items-center gap-2"
-          >
-            {submitting && <Loader2 size={16} className="animate-spin" />}
-            <Save size={16} />
-            {submitting ? "Processing..." : "Submit All Changes"}
-          </Button>
+            submitting={submitting}
+          />
         </div>
       </CardContent>
     </Card>
