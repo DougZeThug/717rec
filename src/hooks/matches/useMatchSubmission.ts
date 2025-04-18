@@ -1,26 +1,27 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useTeamRecords } from "@/hooks/useTeamRecords";
+import { useTeamWinLossUpdate } from "@/hooks/team-stats/useTeamWinLossUpdate"; 
 import { useQueryClient } from "@tanstack/react-query";
-import { Team } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
+import { SubmitScoreParams } from "./types/matchSubmissionTypes";
+import { determineMatchResults } from "./utils/matchResultUtils";
+import { updateMatchInDatabase } from "./utils/matchUpdateUtils";
+import { fetchTeamsForMatch } from "./utils/teamDataUtils";
+import { invalidateMatchRelatedQueries } from "./utils/queryCacheUtils";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
-  const { updateTeamRecords } = useTeamRecords();
+  const { updateTeamRecords } = useTeamWinLossUpdate();
   const queryClient = useQueryClient();
 
-  const handleSubmitScore = async (
-    matchId: string, 
-    team1Score: number, 
-    team2Score: number, 
-    team1GameWins?: number, 
-    team2GameWins?: number
-  ) => {
+  const handleSubmitScore = async ({
+    matchId,
+    team1Score,
+    team2Score,
+    team1GameWins = 0,
+    team2GameWins = 0
+  }: SubmitScoreParams) => {
     try {
-      let winnerId: string | null = null;
-      let loserId: string | null = null;
-      
       // Fetch the match data to get team IDs
       const { data: matchData, error: matchError } = await supabase
         .from('matches')
@@ -29,116 +30,61 @@ export const useMatchSubmission = () => {
         .single();
         
       if (matchError) throw matchError;
-
+      
+      const { team1_id, team2_id } = matchData;
+      
       console.log(`[useMatchSubmission] Match ${matchId} data:`, matchData);
       console.log(`[useMatchSubmission] Scores - Team1: ${team1Score}, Team2: ${team2Score}`);
-      console.log(`[useMatchSubmission] Game wins - Team1: ${team1GameWins || 0}, Team2: ${team2GameWins || 0}`);
+      console.log(`[useMatchSubmission] Game wins - Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
 
-      // Determine winner and loser based on scores
-      if (team1Score > team2Score) {
-        winnerId = matchData.team1_id;
-        loserId = matchData.team2_id;
-      } else if (team2Score > team1Score) {
-        winnerId = matchData.team2_id;
-        loserId = matchData.team1_id;
-      }
-
-      console.log(`[useMatchSubmission] Winner ID: ${winnerId}, Loser ID: ${loserId}`);
-
-      // Set default values for game wins if not provided
-      const finalTeam1GameWins = team1GameWins || 0;
-      const finalTeam2GameWins = team2GameWins || 0;
-
-      // Update the match with game level details if provided
-      const updateData: any = {
-        team1_score: team1Score,
-        team2_score: team2Score,
-        iscompleted: true,
-        winner_id: winnerId,
-        loser_id: loserId,
-        team1_game_wins: finalTeam1GameWins,
-        team2_game_wins: finalTeam2GameWins
-      };
-
-      const { error, data: updatedMatch } = await supabase
-        .from('matches')
-        .update(updateData)
-        .eq('id', matchId);
-
-      if (error) throw error;
-
-      console.log(`[useMatchSubmission] Match ${matchId} updated successfully:`, updatedMatch);
+      // Determine match results
+      const matchResult = determineMatchResults(
+        team1_id, 
+        team2_id, 
+        team1Score, 
+        team2Score,
+        team1GameWins,
+        team2GameWins
+      );
+      
+      // Update the match in database
+      await updateMatchInDatabase(matchId, team1Score, team2Score, matchResult);
 
       // If we have both winner and loser, update team records
-      if (winnerId && loserId) {
-        // First fetch full teams data to satisfy the Team type
-        const { data: teamsData, error: teamsError } = await supabase
-          .from('teams')
-          .select('*')
-          .in('id', [winnerId, loserId]);
+      if (matchResult.winnerId && matchResult.loserId) {
+        // Fetch team data
+        const teamIds = [matchResult.winnerId, matchResult.loserId];
+        const teams = await fetchTeamsForMatch(teamIds);
+        
+        if (teams.length === 2) {
+          console.log(`[useMatchSubmission] Updating team records for winner ${matchResult.winnerId} and loser ${matchResult.loserId}`);
           
-        if (teamsError) {
-          console.error("[useMatchSubmission] Error fetching team data:", teamsError);
-          throw teamsError;
-        }
-          
-        if (teamsData && teamsData.length > 0) {
-          console.log(`[useMatchSubmission] Found ${teamsData.length} teams for W/L update:`, 
-            teamsData.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses })));
-          
-          // Transform to proper Team objects
-          const formattedTeams: Team[] = teamsData.map(team => ({
-            id: team.id,
-            name: team.name,
-            logoUrl: team.logo_url || null,
-            imageUrl: team.image_url || null,
-            players: Array.isArray(team.players) 
-              ? team.players.map((playerName: string) => ({ name: playerName })) 
-              : [],
-            wins: team.wins || 0,
-            losses: team.losses || 0,
-            game_wins: team.game_wins || 0,
-            created_at: team.created_at || '',
-            division: team.division_id || null,
-            divisionName: null
-          }));
-          
-          console.log("[useMatchSubmission] Formatted teams for update:", 
-            formattedTeams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses })));
-          
-          // Get the game wins for each team based on their role (winner/loser)
-          const winnerGameWins = winnerId === matchData.team1_id ? finalTeam1GameWins : finalTeam2GameWins;
-          const loserGameWins = loserId === matchData.team1_id ? finalTeam1GameWins : finalTeam2GameWins;
+          // Get the game wins for each team
+          const winnerGameWins = matchResult.winnerId === team1_id ? team1GameWins : team2GameWins;
+          const loserGameWins = matchResult.loserId === team1_id ? team1GameWins : team2GameWins;
             
           const updateSuccess = await updateTeamRecords(
-            winnerId, 
-            loserId, 
-            formattedTeams,
+            matchResult.winnerId, 
+            matchResult.loserId, 
+            teams,
             winnerGameWins,
             loserGameWins
           );
+          
           console.log(`[useMatchSubmission] Team records update ${updateSuccess ? 'succeeded' : 'failed'}`);
-        } else {
-          console.error("[useMatchSubmission] Could not find team data for winner/loser");
         }
       }
 
+      // Invalidate relevant queries to ensure fresh data
+      await invalidateMatchRelatedQueries(queryClient);
+      
       toast({
         title: 'Scores Updated',
         description: 'Match scores have been successfully updated and team records are now current.',
       });
       
-      // Invalidate relevant queries to ensure fresh data
-      const queriesToInvalidate = [
-        'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches'
-      ];
-      
-      queriesToInvalidate.forEach(queryKey => {
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-      });
-      
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[useMatchSubmission] Error updating scores:', error);
       toast({
         title: 'Error',
