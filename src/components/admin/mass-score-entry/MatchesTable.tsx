@@ -76,6 +76,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
               const originalIndex = matches.findIndex(m => m.id === match.id);
               const hasError = failedMatches?.includes(match.id);
               const errorMessage = errorMessages?.[match.id];
+              const failedMatch = hasError ? { matchId: match.id, errorMessage: errorMessage || "Error submitting match" } : undefined;
               
               return (
                 <div key={match.id} className="space-y-2">
@@ -97,8 +98,8 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
                   )}
                   <MatchRow
                     match={match}
-                    disabled={submitting}
-                    hasError={hasError}
+                    isSubmitting={submitting}
+                    failedMatch={failedMatch}
                     onScoreChange={(team, value) => onScoreChange(originalIndex, team, value)}
                     onMarkCompleted={(checked) => onMarkCompleted(originalIndex, checked)}
                   />

@@ -1,5 +1,6 @@
+
 import React from "react";
-import { MatchWithTeams } from "../types";
+import { MatchWithTeams } from "@/components/admin/mass-score-entry/types";
 import { cn } from "@/lib/utils";
 import ScoreInput from "./components/ScoreInput";
 import CompletionCheckbox from "./components/CompletionCheckbox";
@@ -28,7 +29,12 @@ const MatchRow = ({ match, isSubmitting, failedMatch, onScoreChange, onMarkCompl
     )}>
       <td className="py-4 px-2">
         <div className="flex items-center gap-2">
-          <MatchStatusIndicator isValid={match.isValid} isCompleted={match.iscompleted} />
+          <MatchStatusIndicator 
+            isEdited={match.isEdited}
+            wasCompletedAndEdited={false}
+            isCompleted={match.iscompleted}
+            isValid={match.isValid}
+          />
           <span>{match.team1?.name || "TBD"}</span>
         </div>
       </td>
@@ -56,6 +62,7 @@ const MatchRow = ({ match, isSubmitting, failedMatch, onScoreChange, onMarkCompl
 
       <td className="py-4 px-4">
         <CompletionCheckbox
+          id={`completion-${match.id}`}
           checked={match.iscompleted}
           onCheckedChange={(checked) => onMarkCompleted(checked)}
           disabled={isSubmitting || !match.isValid}
