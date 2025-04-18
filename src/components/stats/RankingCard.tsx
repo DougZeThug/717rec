@@ -6,6 +6,8 @@ import HeadToHeadRecords from "./HeadToHeadRecords";
 import RankTrendIndicator from "./RankTrendIndicator";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +26,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
   onToggleExpand,
   compactView = false,
 }) => {
+  const isMobile = useIsMobile();
+
   const getRankStyles = (index: number) => {
     if (index === 0) return "bg-amber-100 text-amber-800 font-bold";
     if (index === 1) return "bg-slate-100 text-slate-700 font-bold";
@@ -43,6 +47,44 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const cardClasses = !compactView 
     ? getRowInteractionStyles("border rounded-lg overflow-hidden")
     : "border rounded-lg overflow-hidden";
+  
+  const PowerScoreInfo = () => {
+    if (isMobile) {
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Info 
+              className="h-4 w-4 text-muted-foreground cursor-pointer" 
+              role="button"
+              aria-label="Power Score information"
+            />
+          </PopoverTrigger>
+          <PopoverContent side="top" className="max-w-[300px] text-xs">
+            Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+            into a single rating from 0-100. Higher scores indicate stronger overall performance.
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Info 
+              className="h-4 w-4 text-muted-foreground cursor-help" 
+              role="button"
+              aria-label="Power Score information"
+            />
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[300px] text-xs">
+            Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+            into a single rating from 0-100. Higher scores indicate stronger overall performance.
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
   
   return (
     <Collapsible
@@ -77,22 +119,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1">
-                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                    <div className={`text-sm ${powerScoreColor} font-semibold`}>
-                      {formatPowerScore(ranking.powerScore)}
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[300px] text-xs">
-                  Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
-                  into a single rating from 0-100. Higher scores indicate stronger overall performance.
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex items-center gap-1">
+              <PowerScoreInfo />
+              <div className={`text-sm ${powerScoreColor} font-semibold`}>
+                {formatPowerScore(ranking.powerScore)}
+              </div>
+            </div>
             {!compactView && (
               <CollapsibleTrigger className="p-2 active:scale-[0.95] transition-transform duration-150">
                 <ChevronDown className="h-4 w-4" />

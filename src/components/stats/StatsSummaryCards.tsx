@@ -1,9 +1,11 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatPowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
 
 interface StatsSummaryCardsProps {
@@ -70,6 +72,44 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const contentStyles = isMobile ? "py-3" : "";
   const fontStyles = isMobile ? "text-3xl" : "text-4xl";
 
+  const PowerScoreInfo = () => {
+    if (isMobile) {
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Info 
+              className="h-4 w-4 text-muted-foreground cursor-pointer" 
+              role="button"
+              aria-label="Power Score information"
+            />
+          </PopoverTrigger>
+          <PopoverContent side="top" className="max-w-[300px] text-sm">
+            Power Score is a weighted rating based on a team's win/loss record, strength of schedule, 
+            and how close each match was. A higher score reflects strong performance against tougher opponents.
+          </PopoverContent>
+        </Popover>
+      );
+    }
+    
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Info 
+              className="h-4 w-4 text-muted-foreground cursor-help" 
+              role="button"
+              aria-label="Power Score information"
+            />
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[300px] text-sm">
+            Power Score is a weighted rating based on a team's win/loss record, strength of schedule, 
+            and how close each match was. A higher score reflects strong performance against tougher opponents.
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card>
@@ -120,17 +160,7 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
         <CardHeader className={cardStyles}>
           <CardTitle className="text-lg flex items-center gap-2">
             Highest Power Score
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-[300px] text-sm">
-                  Power Score is a weighted rating based on a team's win/loss record, strength of schedule, 
-                  and how close each match was. A higher score reflects strong performance against tougher opponents.
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <PowerScoreInfo />
           </CardTitle>
           <CardDescription className="text-xs">Team with best overall rating</CardDescription>
         </CardHeader>
