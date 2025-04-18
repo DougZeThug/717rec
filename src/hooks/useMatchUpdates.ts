@@ -55,10 +55,11 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         round_number: data.round_number
       };
       
-      // Update the matches state
-      setMatches(prevMatches => prevMatches.map(match => 
+      // Update the matches state - Fixed the issue by changing how we update the state
+      const updatedMatches = matches.map(match => 
         match.id === updatedMatch.id ? updatedMatch : match
-      ));
+      );
+      setMatches(updatedMatches);
       
       setEditingMatch(undefined);
       
@@ -104,9 +105,10 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       
       if (error) throw error;
       
-      // Update the matches state
+      // Update the matches state - Fixed to directly create a new array
       const updatedMatches = matches.filter(match => match.id !== deleteMatchId);
       setMatches(updatedMatches);
+      
       setDeleteMatchId(null);
       
       toast({

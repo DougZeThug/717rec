@@ -3,10 +3,10 @@ import React from "react";
 import MatchRow from "./MatchRow";
 import { Team } from "@/types";
 
-interface MatchPair {
+export interface MatchPair {
   id: string;
   team1Id: string | null;
-  team2Id: null;
+  team2Id: string | null;
   timeslot: string | null;
 }
 

@@ -10,12 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Team } from "@/types";
 import { X } from "lucide-react";
-
-interface MatchPair {
-  team1Id: string | null;
-  team2Id: string | null;
-  timeslot: string | null;
-}
+import { MatchPair } from "./MatchPairsList";
 
 interface MatchRowProps {
   pair: MatchPair;

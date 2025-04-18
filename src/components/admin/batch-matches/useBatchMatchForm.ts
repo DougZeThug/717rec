@@ -1,15 +1,8 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-
-interface MatchPair {
-  id: string;
-  team1Id: string | null;
-  team2Id: string | null;
-  timeslot: string | null;
-}
+import { MatchPair } from "./MatchPairsList";
 
 export const useBatchMatchForm = (teams: Team[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
