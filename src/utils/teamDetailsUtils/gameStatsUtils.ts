@@ -1,15 +1,15 @@
 
 import { Match } from "@/types";
 
-export const calculateGameStats = (teamId: string, matches: Match[]) => {
+export const calculateGameStats = (teamId: string, matches: Match[] | undefined) => {
   let gamesWon = 0;
   let gamesLost = 0;
   let closeMatchLosses = 0;
   
   // Filter matches involving this team
-  const teamMatches = matches.filter(
+  const teamMatches = matches?.filter(
     match => match.team1Id === teamId || match.team2Id === teamId
-  );
+  ) || [];
   
   teamMatches.forEach(match => {
     if (!match.iscompleted) return;
@@ -44,9 +44,14 @@ export const calculateGameStats = (teamId: string, matches: Match[]) => {
     }
   });
   
+  // Calculate game win percentage
+  const totalGames = gamesWon + gamesLost;
+  const gameWinPercentage = totalGames > 0 ? gamesWon / totalGames : 0;
+  
   return {
     gamesWon,
     gamesLost,
+    gameWinPercentage, // Add this property
     closeMatchLosses,
   };
 };
