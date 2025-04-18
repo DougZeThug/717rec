@@ -47,6 +47,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
               {winPercentage.toFixed(1)}%
             </span>
           </div>
+          <div className="flex justify-between text-xs mt-1">
+            <span>Games:</span>
+            <span className="font-medium">{team.game_wins || 0} - {team.game_losses || 0}</span>
+          </div>
           {team.divisionName && (
             <div className="flex justify-between text-xs mt-1">
               <span>Division:</span>

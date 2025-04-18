@@ -24,23 +24,30 @@ export const useTeamData = (divisionId?: string | null) => {
         throw error;
       }
       
-      // Transform the data to match our Team type
-      return (data || []).map((team): Team => ({
-        id: team.id,
-        name: team.name || 'Unnamed Team',
-        logoUrl: team.logo_url || null,
-        imageUrl: team.image_url || null,
-        players: Array.isArray(team.players) 
-          ? team.players.map((playerName: string) => ({ name: playerName })) 
-          : [],
-        wins: team.wins || 0,
-        losses: team.losses || 0,
-        game_wins: team.game_wins || 0,
-        game_losses: team.game_losses || 0,
-        created_at: team.created_at || new Date().toISOString(),
-        division: team.division_id || null,
-        divisionName: team.divisions?.name || null
-      }));
+      // Transform and log the data for debugging
+      return (data || []).map((team): Team => {
+        console.log(`Team ${team.name} game stats:`, {
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0
+        });
+        
+        return {
+          id: team.id,
+          name: team.name || 'Unnamed Team',
+          logoUrl: team.logo_url || null,
+          imageUrl: team.image_url || null,
+          players: Array.isArray(team.players) 
+            ? team.players.map((playerName: string) => ({ name: playerName })) 
+            : [],
+          wins: team.wins || 0,
+          losses: team.losses || 0,
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0,
+          created_at: team.created_at || new Date().toISOString(),
+          division: team.division_id || null,
+          divisionName: team.divisions?.name || null
+        };
+      });
     },
     staleTime: 60000, // Cache for 1 minute
   });
