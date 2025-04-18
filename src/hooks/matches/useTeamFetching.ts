@@ -18,6 +18,11 @@ export function useTeamFetching() {
       
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
+        console.log(`Team ${team.name} game stats:`, {
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0
+        });
+        
         teamsMap[team.id] = {
           id: team.id,
           name: team.name,
@@ -28,6 +33,8 @@ export function useTeamFetching() {
             : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0,
           created_at: team.created_at || '',
           division: team.division_id || null,
           divisionName: null

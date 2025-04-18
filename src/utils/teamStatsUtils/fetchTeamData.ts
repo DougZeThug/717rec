@@ -13,5 +13,12 @@ export const fetchTeamData = async (teamId: string) => {
     return null;
   }
   
+  console.log(`Team data fetched for ${team.name}:`, {
+    wins: team.wins,
+    losses: team.losses,
+    game_wins: team.game_wins,
+    game_losses: team.game_losses
+  });
+  
   return team;
 };

@@ -28,6 +28,12 @@ const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches 
     return "text-gray-600";
   };
   
+  const getGameRecordColor = () => {
+    if (gameWins > gameLosses) return "text-green-600";
+    if (gameWins < gameLosses) return "text-red-600";
+    return "text-gray-600";
+  };
+  
   // For debugging purposes
   console.log(`TeamStats component - Team: ${team.name}`);
   console.log(`Match Record: ${wins}-${losses}, Win%: ${winPercentage}`);
@@ -53,7 +59,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches 
           
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-gray-500">Game Record</h3>
-            <p className="text-2xl font-bold">
+            <p className={`text-2xl font-bold ${getGameRecordColor()}`}>
               {gameWins}-{gameLosses}
             </p>
           </div>

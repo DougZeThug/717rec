@@ -81,7 +81,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       
       // Output all team stats for debugging
       data.forEach(team => {
-        console.log(`Team ${team.name}: ${team.wins || 0}W-${team.losses || 0}L`);
+        console.log(`Team ${team.name}: ${team.wins || 0}W-${team.losses || 0}L, Games: ${team.game_wins || 0}W-${team.game_losses || 0}L`);
       });
       
       // Transform the data to match Team type
@@ -95,6 +95,8 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
           : [],
         wins: team.wins || 0,
         losses: team.losses || 0,
+        game_wins: team.game_wins || 0,
+        game_losses: team.game_losses || 0,
         created_at: team.created_at || new Date().toISOString(),
         division: team.division_id || null,
         divisionName: team.divisions?.name || null
@@ -125,7 +127,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         const rankingPromises = teamsToUse
           .filter(team => team !== null && team !== undefined)
           .map(team => {
-            console.log(`Creating ranking for team ${team.name} with record ${team.wins}-${team.losses}`);
+            console.log(`Creating ranking for team ${team.name} with record ${team.wins}-${team.losses}, Games: ${team.game_wins}-${team.game_losses}`);
             return createRankingObject(team, teamsToUse, matchesToUse, previousRankings);
           });
           
@@ -141,7 +143,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         
         // Output top 3 teams and team stats for debugging
         finalRankings.slice(0, 3).forEach((ranking, idx) => {
-          console.log(`Rank ${idx + 1}: ${ranking.teamName} (${ranking.wins}-${ranking.losses}, ${(ranking.winPercentage * 100).toFixed(1)}%)`);
+          console.log(`Rank ${idx + 1}: ${ranking.teamName} (${ranking.wins}-${ranking.losses}, Games: ${ranking.gamesWon}-${ranking.gamesLost})`);
         });
         
         setRankings(finalRankings);

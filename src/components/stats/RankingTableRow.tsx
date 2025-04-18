@@ -54,6 +54,8 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           teamName={ranking.teamName}
           imageUrl={ranking.imageUrl}
           isExpanded={isExpanded}
+          gameWins={ranking.gamesWon}
+          gameLosses={ranking.gamesLost}
         />
       </TableCell>
       <TableCell className="text-center">

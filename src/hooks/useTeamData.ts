@@ -49,7 +49,7 @@ export const useTeamData = (divisionId?: string | null) => {
         };
       });
     },
-    staleTime: 60000, // Cache for 1 minute
+    staleTime: 10000, // Cache for 10 seconds to ensure fresh data
   });
   
   return query;
