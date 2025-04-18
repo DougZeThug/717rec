@@ -2,10 +2,10 @@
 import React from "react";
 import { format, parseISO } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { MatchWithTeams } from "./types";
-import { Edit, Check } from "lucide-react";
+import ScoreInput from "./components/ScoreInput";
+import MatchStatusIndicator from "./components/MatchStatusIndicator";
+import CompletionCheckbox from "./components/CompletionCheckbox";
 
 interface MatchRowProps {
   match: MatchWithTeams;
@@ -47,12 +47,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
           {/* Score Input for Team 1 */}
           <div className="md:col-span-1">
-            <Input
-              type="number"
-              min="0"
-              value={match.team1Score === null ? "" : match.team1Score}
-              onChange={(e) => onScoreChange("team1", e.target.value)}
-              className={`w-full text-center ${!match.isValid ? "border-red-500" : ""}`}
+            <ScoreInput
+              value={match.team1Score}
+              onChange={(value) => onScoreChange("team1", value)}
+              isValid={match.isValid}
               disabled={disabled}
             />
           </div>
@@ -64,12 +62,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
           {/* Score Input for Team 2 */}
           <div className="md:col-span-1">
-            <Input
-              type="number"
-              min="0"
-              value={match.team2Score === null ? "" : match.team2Score}
-              onChange={(e) => onScoreChange("team2", e.target.value)}
-              className={`w-full text-center ${!match.isValid ? "border-red-500" : ""}`}
+            <ScoreInput
+              value={match.team2Score}
+              onChange={(value) => onScoreChange("team2", value)}
+              isValid={match.isValid}
               disabled={disabled}
             />
           </div>
@@ -79,44 +75,20 @@ const MatchRow: React.FC<MatchRowProps> = ({
             <span className="font-medium">{match.team2.name}</span>
           </div>
 
-          {/* Complete Checkbox */}
+          {/* Complete Checkbox and Status */}
           <div className="md:col-span-8 flex justify-between items-center mt-2 pt-2 border-t">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id={`complete-${match.id}`}
-                checked={match.iscompleted}
-                onCheckedChange={onMarkCompleted}
-                disabled={disabled}
-              />
-              <label
-                htmlFor={`complete-${match.id}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Mark as completed
-              </label>
-            </div>
+            <CompletionCheckbox
+              id={`complete-${match.id}`}
+              checked={match.iscompleted}
+              onCheckedChange={onMarkCompleted}
+              disabled={disabled}
+            />
             
-            {/* Status Indicators */}
-            <div className="flex items-center space-x-2">
-              {match.isEdited && (
-                <span className="text-xs text-blue-500 flex items-center">
-                  <Edit className="h-3 w-3 mr-1" />
-                  Edited
-                </span>
-              )}
-              {wasCompletedAndEdited && (
-                <span className="text-xs text-amber-500 flex items-center">
-                  <Edit className="h-3 w-3 mr-1" />
-                  Rescored
-                </span>
-              )}
-              {match.iscompleted && !match.isEdited && (
-                <span className="text-xs text-green-500 flex items-center">
-                  <Check className="h-3 w-3 mr-1" />
-                  Completed
-                </span>
-              )}
-            </div>
+            <MatchStatusIndicator
+              isEdited={match.isEdited}
+              wasCompletedAndEdited={wasCompletedAndEdited}
+              isCompleted={match.iscompleted}
+            />
           </div>
         </div>
       </CardContent>
