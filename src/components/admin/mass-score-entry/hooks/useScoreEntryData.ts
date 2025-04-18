@@ -11,7 +11,14 @@ export const useScoreEntryData = () => {
   const { filters, brackets, fetchBrackets, setFilterDate, setBracketFilter, clearFilters } = useMatchFilters();
   const { loading, fetchMatches } = useMatchFetching();
   const { handleScoreChange: validateScoreChange, handleMarkCompleted: validateMarkCompleted } = useMatchValidation();
-  const { submitting, failedMatches, errorMessages, handleSubmitAll, clearErrors } = useScoreSubmission(matches, () => fetchMatches(filters));
+  
+  // Create a wrapper function that returns void as expected by useScoreSubmission
+  const refreshMatches = async () => {
+    const fetchedMatches = await fetchMatches(filters);
+    setMatches(fetchedMatches);
+  };
+  
+  const { submitting, failedMatches, errorMessages, handleSubmitAll, clearErrors } = useScoreSubmission(matches, refreshMatches);
 
   useEffect(() => {
     const loadData = async () => {
