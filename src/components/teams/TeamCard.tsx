@@ -111,6 +111,9 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
               <X size={12} /> {team.losses || 0} {team.losses === 1 ? 'Loss' : 'Losses'}
             </div>
           </div>
+          <div className="flex items-center gap-1 text-gray-500 mb-1">
+            <span>Games:</span> {team.game_wins ?? 0}–{team.game_losses ?? 0}
+          </div>
         </div>
       </CardContent>
       <CardFooter className="pt-0 pb-2">

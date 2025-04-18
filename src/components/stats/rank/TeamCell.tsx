@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TeamLogo } from "./TeamLogo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -19,16 +19,6 @@ export const TeamCell: React.FC<TeamCellProps> = ({
   gameWins,
   gameLosses
 }) => {
-  // Add debug logging to verify the props
-  useEffect(() => {
-    console.log(`TeamCell for ${teamName} - Game Stats:`, { 
-      gameWins: typeof gameWins === 'undefined' ? 'undefined' : gameWins, 
-      gameLosses: typeof gameLosses === 'undefined' ? 'undefined' : gameLosses 
-    });
-  }, [teamName, gameWins, gameLosses]);
-  
-  const hasGameStats = typeof gameWins === 'number' && typeof gameLosses === 'number';
-  
   return (
     <TooltipProvider>
       <Tooltip>
@@ -45,17 +35,13 @@ export const TeamCell: React.FC<TeamCellProps> = ({
                 )}
               </div>
               <div className="text-xs text-gray-500">
-                Games: {typeof gameWins === 'undefined' ? "undefined" : gameWins === null ? "null" : gameWins}–
-                {typeof gameLosses === 'undefined' ? "undefined" : gameLosses === null ? "null" : gameLosses}
+                Games: {gameWins ?? 0}–{gameLosses ?? 0}
               </div>
             </div>
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-xs">
           Game Record: {gameWins ?? 0}-{gameLosses ?? 0}
-          <div className="mt-1">
-            Types: gameWins ({typeof gameWins}), gameLosses ({typeof gameLosses})
-          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

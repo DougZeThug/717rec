@@ -69,21 +69,12 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
   const { data: latestTeams, isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: async () => {
-      console.log("Fetching latest team data for rankings...");
       const { data, error } = await supabase
         .from('teams')
         .select('*, divisions(name)')
         .order('name');
         
       if (error) throw error;
-      
-      console.log("Raw Supabase results from useTeamRankings:", data);
-      console.log(`Fetched ${data.length} teams for rankings calculation`);
-      
-      // Output all team stats for debugging
-      data.forEach(team => {
-        console.log(`Team ${team.name}: ${team.wins || 0}W-${team.losses || 0}L, Games: ${team.game_wins || 0}W-${team.game_losses || 0}L`);
-      });
       
       // Transform the data to match Team type
       return data.map((team): Team => ({
@@ -119,8 +110,6 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       setIsLoading(true);
       
       try {
-        console.log("Starting rankings calculation with fresh data...");
-        
         // Use latestMatches from query if available, otherwise fall back to matches prop
         const matchesToUse = latestMatches || matches;
         
@@ -128,7 +117,6 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         const rankingPromises = teamsToUse
           .filter(team => team !== null && team !== undefined)
           .map(team => {
-            console.log(`Creating ranking for team ${team.name} with record ${team.wins}-${team.losses}, Games: ${team.game_wins}-${team.game_losses}`);
             return createRankingObject(team, teamsToUse, matchesToUse, previousRankings);
           });
           
@@ -139,13 +127,6 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         
         // Update rank changes
         const finalRankings = updateRankChanges(sortedRankings);
-        
-        console.log("Rankings calculation complete:", finalRankings.length);
-        
-        // Output top 3 teams and team stats for debugging
-        finalRankings.slice(0, 3).forEach((ranking, idx) => {
-          console.log(`Rank ${idx + 1}: ${ranking.teamName} (${ranking.wins}-${ranking.losses}, Games: ${ranking.gamesWon}-${ranking.gamesLost})`);
-        });
         
         setRankings(finalRankings);
         
@@ -163,7 +144,6 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
   
   // Handle manual refresh of rankings
   const refreshRankings = () => {
-    console.log("Manually refreshing rankings data...");
     queryClient.invalidateQueries({ queryKey: ['matches'] });
     queryClient.invalidateQueries({ queryKey: ['teams'] });
     queryClient.invalidateQueries({ queryKey: ['rankings'] });

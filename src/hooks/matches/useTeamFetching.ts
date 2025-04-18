@@ -16,24 +16,14 @@ export function useTeamFetching() {
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
-      console.log("Fetching teams with game stats...");
       const { data, error } = await supabase
         .from('teams')
         .select('*');
 
       if (error) throw error;
       
-      console.log("Raw Supabase results:", data);
-      
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
-        console.log(`Team ${team.name} game stats:`, {
-          game_wins: team.game_wins || 0,
-          game_wins_type: typeof team.game_wins,
-          game_losses: team.game_losses || 0,
-          game_losses_type: typeof team.game_losses
-        });
-        
         teamsMap[team.id] = {
           id: team.id,
           name: team.name,
@@ -54,12 +44,6 @@ export function useTeamFetching() {
       
       setTeams(teamsMap);
       console.log(`Loaded ${Object.keys(teamsMap).length} teams`);
-      
-      // Log a sample team to verify structure
-      const sampleTeamId = Object.keys(teamsMap)[0];
-      if (sampleTeamId) {
-        console.log("Sample team structure:", teamsMap[sampleTeamId]);
-      }
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({

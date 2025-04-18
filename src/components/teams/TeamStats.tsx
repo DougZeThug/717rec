@@ -3,7 +3,6 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Team, Match } from "@/types";
 import TeamTrend from "./TeamTrend"; 
-import { calculateWinPercentage } from "@/utils/rankingUtils/calculateWinPercentage";
 
 interface TeamStatsProps {
   team: Team;
@@ -33,11 +32,6 @@ const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches 
     if (gameWins < gameLosses) return "text-red-600";
     return "text-gray-600";
   };
-  
-  // For debugging purposes
-  console.log(`TeamStats component - Team: ${team.name}`);
-  console.log(`Match Record: ${wins}-${losses}, Win%: ${winPercentage}`);
-  console.log(`Game Record: ${gameWins}-${gameLosses}, Total Games: ${totalGames}`);
 
   return (
     <Card className="mb-6">

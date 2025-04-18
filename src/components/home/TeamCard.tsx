@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
@@ -10,16 +10,6 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
-  // Add debug logging to verify the data
-  useEffect(() => {
-    console.log(`TeamCard for ${team.name} - Stats:`, {
-      wins: team.wins,
-      losses: team.losses,
-      game_wins: team.game_wins,
-      game_losses: team.game_losses
-    });
-  }, [team]);
-  
   // Parse and ensure we're working with numbers for calculations
   const wins = parseInt(String(team.wins)) || 0;
   const losses = parseInt(String(team.losses)) || 0;
@@ -27,8 +17,6 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   // Get game stats with fallbacks
   const gameWins = parseInt(String(team.game_wins)) || 0;
   const gameLosses = parseInt(String(team.game_losses)) || 0;
-  
-  console.log(`Team ${team.name} game stats:`, { gameWins, gameLosses });
   
   // Use the consistent win percentage calculation
   const winPercentage = calculateWinPercentage(wins, losses) * 100;
@@ -66,7 +54,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
           <div className="flex justify-between text-xs mt-1">
             <span>Games:</span>
             <span className="font-medium">
-              {gameWins ? gameWins : "?"}–{gameLosses ? gameLosses : "?"}
+              {gameWins}–{gameLosses}
             </span>
           </div>
           {team.divisionName && (
