@@ -1,45 +1,43 @@
 
 /**
- * Calculate and format a power score based on team performance metrics
- * 
- * @param winPercentage - Team win percentage (as a decimal, e.g. 0.75)
- * @param sos - Strength of schedule
- * @param gameWinPercentage - Team's game win percentage (as a decimal)
- * @returns Formatted power score with one decimal place
+ * Calculate a team's power score based on win percentage, strength of schedule, and game win percentage
+ * Power Score = (Win% * 0.5) + (SOS * 0.2) + (Game Win% * 0.3)
  */
 export const calculatePowerScore = (
   winPercentage: number, 
-  sos: number = 0,
-  gameWinPercentage: number = 0
+  strengthOfSchedule: number,
+  gameWinPercentage: number
 ): number => {
-  // Base formula: 50 points for win percentage, 25 for SOS, 25 for game win percentage
-  const baseScore = (winPercentage * 100) * 0.5;
-  const sosScore = sos * 25;
-  const gameScore = (gameWinPercentage * 100) * 0.25;
+  // Normalize all inputs to ensure they're between 0 and 1
+  const normalizedWinPct = Math.min(Math.max(winPercentage, 0), 1);
+  const normalizedSOS = Math.min(Math.max(strengthOfSchedule, 0), 1);
+  const normalizedGameWinPct = Math.min(Math.max(gameWinPercentage, 0), 1);
   
-  // Add a small bonus for non-zero values to prevent exact ties
-  const tiebreaker = Math.random() * 0.01;
+  // Calculate power score using the formula with weights
+  const powerScore = (normalizedWinPct * 0.5) + 
+                     (normalizedSOS * 0.2) + 
+                     (normalizedGameWinPct * 0.3);
   
-  return Number(((baseScore + sosScore + gameScore) + tiebreaker).toFixed(1));
+  // Convert to a 0-100 scale and round to one decimal place
+  return Math.round(powerScore * 1000) / 10;
 };
 
 /**
- * Format power score to one decimal place for display
+ * Format power score for display
  */
-export const formatPowerScore = (score: number | undefined): string => {
-  if (score === undefined) return "—";
-  return score.toFixed(1);
+export const formatPowerScore = (powerScore: number | undefined): string => {
+  if (powerScore === undefined) return '—';
+  return powerScore.toFixed(1);
 };
 
 /**
- * Get color class based on power score value
+ * Get appropriate color class for a power score
  */
-export const getPowerScoreColor = (score: number | undefined): string => {
-  if (score === undefined) return "text-slate-600";
+export const getPowerScoreColor = (powerScore: number | undefined): string => {
+  if (powerScore === undefined) return 'text-gray-500';
   
-  if (score >= 80) return "text-emerald-600";
-  if (score >= 65) return "text-blue-600";
-  if (score >= 50) return "text-indigo-600";
-  if (score >= 40) return "text-amber-600";
-  return "text-red-600";
+  if (powerScore >= 75) return 'text-emerald-600';
+  if (powerScore >= 60) return 'text-blue-600';
+  if (powerScore >= 45) return 'text-amber-600';
+  return 'text-red-600';
 };

@@ -83,9 +83,7 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     const sos = await calculateSOS(team, teams, matches);
     
     // Calculate game stats
-    const { gamesWon, gamesLost, closeMatchLosses } = calculateGameStats(teamId, matches);
-    const gameWinPercentage = (gamesWon + gamesLost > 0) ? 
-      gamesWon / (gamesWon + gamesLost) : 0;
+    const { gamesWon, gamesLost, gameWinPercentage, closeMatchLosses } = calculateGameStats(teamId, matches);
     
     // Calculate power score
     const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);

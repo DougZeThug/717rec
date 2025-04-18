@@ -5,6 +5,7 @@ import { calculateStreak } from "./calculateStreak";
 import { calculateHeadToHead } from "./calculateHeadToHead";
 import { calculateWinPercentage } from "./calculateWinPercentage";
 import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
+import { calculatePowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
 
 /**
  * Create a ranking object for a team
@@ -29,6 +30,9 @@ export const createRankingObject = async (
     closeMatchLosses
   } = calculateGameStats(team.id, allMatches);
   
+  // Calculate power score using the weighted formula
+  const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
+  
   return {
     teamId: team.id,
     teamName: team.name || 'Unknown Team',
@@ -46,6 +50,7 @@ export const createRankingObject = async (
     gamesWon,
     gamesLost,
     gameWinPercentage,
+    powerScore,
     closeMatchLosses
   };
 };
