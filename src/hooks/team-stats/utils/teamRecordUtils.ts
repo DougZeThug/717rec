@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export async function applyMatchResult(
@@ -39,14 +40,14 @@ export async function applyMatchResult(
       if (winner && loser) {
         console.log("✅ Team stats updated:", {
           winner: {
-            team: winner.name || winnerId,
+            team: winner.name || winner.id,
             wins: winner.wins, 
             losses: winner.losses, 
             game_wins: winner.game_wins, 
             game_losses: winner.game_losses
           },
           loser: {
-            team: loser.name || loserId,
+            team: loser.name || loser.id,
             wins: loser.wins, 
             losses: loser.losses, 
             game_wins: loser.game_wins, 

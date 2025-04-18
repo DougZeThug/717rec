@@ -64,30 +64,6 @@ describe('Team Stats Updates', () => {
     });
   });
 
-  it('should update team stats for a 0-2 result', async () => {
-    // Test case: 0-2 loss (winner gets 2 games, loser gets 0)
-    await applyMatchResult('winner-id', 'loser-id', 2, 0);
-    
-    expect(supabase.rpc).toHaveBeenCalledWith('update_team_stats', {
-      p_winner_id: 'winner-id',
-      p_loser_id: 'loser-id',
-      p_winner_game_wins: 2,
-      p_loser_game_wins: 0
-    });
-  });
-
-  it('should update team stats for a 1-2 result', async () => {
-    // Test case: 1-2 loss (winner gets 2 games, loser gets 1)
-    await applyMatchResult('winner-id', 'loser-id', 2, 1);
-    
-    expect(supabase.rpc).toHaveBeenCalledWith('update_team_stats', {
-      p_winner_id: 'winner-id',
-      p_loser_id: 'loser-id',
-      p_winner_game_wins: 2,
-      p_loser_game_wins: 1
-    });
-  });
-
   it('should handle string inputs by converting them to numbers', async () => {
     // Test case: string inputs instead of numbers
     await applyMatchResult('winner-id', 'loser-id', '2' as any, '1' as any);

@@ -341,7 +341,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_team_stats: {
+        Args: {
+          p_winner_id: string
+          p_loser_id: string
+          p_winner_game_wins?: number
+          p_loser_game_wins?: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       match_type: "winners" | "losers" | "finals"
