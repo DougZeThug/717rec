@@ -21,7 +21,10 @@ export const TeamCell: React.FC<TeamCellProps> = ({
 }) => {
   // Add debug logging to verify the props
   useEffect(() => {
-    console.log(`TeamCell for ${teamName} - Game Stats:`, { gameWins, gameLosses });
+    console.log(`TeamCell for ${teamName} - Game Stats:`, { 
+      gameWins: typeof gameWins === 'undefined' ? 'undefined' : gameWins, 
+      gameLosses: typeof gameLosses === 'undefined' ? 'undefined' : gameLosses 
+    });
   }, [teamName, gameWins, gameLosses]);
   
   const hasGameStats = typeof gameWins === 'number' && typeof gameLosses === 'number';
@@ -42,13 +45,17 @@ export const TeamCell: React.FC<TeamCellProps> = ({
                 )}
               </div>
               <div className="text-xs text-gray-500">
-                Games: {gameWins ?? "?"}–{gameLosses ?? "?"}
+                Games: {typeof gameWins === 'undefined' ? "undefined" : gameWins === null ? "null" : gameWins}–
+                {typeof gameLosses === 'undefined' ? "undefined" : gameLosses === null ? "null" : gameLosses}
               </div>
             </div>
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" className="text-xs">
           Game Record: {gameWins ?? 0}-{gameLosses ?? 0}
+          <div className="mt-1">
+            Types: gameWins ({typeof gameWins}), gameLosses ({typeof gameLosses})
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

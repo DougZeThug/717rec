@@ -77,6 +77,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         
       if (error) throw error;
       
+      console.log("Raw Supabase results from useTeamRankings:", data);
       console.log(`Fetched ${data.length} teams for rankings calculation`);
       
       // Output all team stats for debugging

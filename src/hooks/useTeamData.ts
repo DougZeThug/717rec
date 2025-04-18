@@ -25,6 +25,8 @@ export const useTeamData = (divisionId?: string | null) => {
         throw error;
       }
       
+      console.log("Raw Supabase results from useTeamData:", data);
+      
       // Transform and log the data for debugging
       const transformedTeams = (data || []).map((team): Team => {
         const gameWins = team.game_wins || 0;
@@ -32,7 +34,9 @@ export const useTeamData = (divisionId?: string | null) => {
         
         console.log(`Team ${team.name} game stats:`, {
           game_wins: gameWins,
-          game_losses: gameLosses
+          game_wins_type: typeof team.game_wins,
+          game_losses: gameLosses,
+          game_losses_type: typeof team.game_losses
         });
         
         return {
@@ -54,6 +58,12 @@ export const useTeamData = (divisionId?: string | null) => {
       });
       
       console.log(`Loaded ${transformedTeams.length} teams with game stats`);
+      
+      // Log a sample transformed team
+      if (transformedTeams.length > 0) {
+        console.log("Sample transformed team:", transformedTeams[0]);
+      }
+      
       return transformedTeams;
     },
     staleTime: 10000, // Cache for 10 seconds to ensure fresh data

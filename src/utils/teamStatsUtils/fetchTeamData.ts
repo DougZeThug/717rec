@@ -19,7 +19,9 @@ export const fetchTeamData = async (teamId: string) => {
     wins: team.wins,
     losses: team.losses,
     game_wins: team.game_wins,
-    game_losses: team.game_losses
+    game_losses: team.game_losses,
+    raw_game_wins_type: typeof team.game_wins,
+    raw_game_losses_type: typeof team.game_losses
   });
   
   return team;
