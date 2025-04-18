@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
@@ -10,6 +10,16 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
+  // Add debug logging to verify the data
+  useEffect(() => {
+    console.log(`TeamCard for ${team.name} - Stats:`, {
+      wins: team.wins,
+      losses: team.losses,
+      game_wins: team.game_wins,
+      game_losses: team.game_losses
+    });
+  }, [team]);
+  
   // Parse and ensure we're working with numbers for calculations
   const wins = parseInt(String(team.wins)) || 0;
   const losses = parseInt(String(team.losses)) || 0;
@@ -55,7 +65,9 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
           </div>
           <div className="flex justify-between text-xs mt-1">
             <span>Games:</span>
-            <span className="font-medium">{gameWins} - {gameLosses}</span>
+            <span className="font-medium">
+              {gameWins ? gameWins : "?"}–{gameLosses ? gameLosses : "?"}
+            </span>
           </div>
           {team.divisionName && (
             <div className="flex justify-between text-xs mt-1">

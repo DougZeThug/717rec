@@ -2,6 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const fetchTeamData = async (teamId: string) => {
+  console.log("Fetching team data for ID:", teamId);
+  
   const { data: team, error } = await supabase
     .from('teams')
     .select('id, name, wins, losses, game_wins, game_losses')

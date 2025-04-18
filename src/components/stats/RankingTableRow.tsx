@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
@@ -22,6 +22,16 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   isExpanded,
   onToggleExpand,
 }) => {
+  // Add debug logging to check the game stats
+  useEffect(() => {
+    console.log(`TEAM STATS for ${ranking.teamName}:`, {
+      wins: ranking.wins,
+      losses: ranking.losses,
+      gamesWon: ranking.gamesWon,
+      gamesLost: ranking.gamesLost
+    });
+  }, [ranking]);
+
   // Format win percentage to display with correct precision
   const formatWinPercentage = (percentage: number) => {
     if (typeof percentage !== 'number' || isNaN(percentage)) {
@@ -73,7 +83,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         {formatWinPercentage(ranking.winPercentage)}
       </TableCell>
       <TableCell className="text-center hidden md:table-cell">
-        {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
+        {ranking.gamesWon ?? "?"}–{ranking.gamesLost ?? "?"}
       </TableCell>
       <TableCell className="text-center hidden lg:table-cell">
         {ranking.gameWinPercentage !== undefined
