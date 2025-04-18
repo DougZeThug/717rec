@@ -12,6 +12,7 @@ export const useTeamRecords = () => {
 
   const updateTeamRecords = async (winnerId: string, loserId: string, teams: Team[]) => {
     console.log("Starting team record update process for winner:", winnerId, "loser:", loserId);
+    console.log("Teams data being passed:", teams.map(t => ({ id: t.id, name: t.name, wins: t.wins, losses: t.losses })));
     
     try {
       // First update the basic win/loss records in the teams table

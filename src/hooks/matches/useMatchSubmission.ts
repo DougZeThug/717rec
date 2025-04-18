@@ -61,13 +61,19 @@ export const useMatchSubmission = () => {
       // If we have both winner and loser, update team records
       if (winnerId && loserId) {
         // First fetch full teams data to satisfy the Team type
-        const { data: teamsData } = await supabase
+        const { data: teamsData, error: teamsError } = await supabase
           .from('teams')
           .select('*')
           .in('id', [winnerId, loserId]);
           
+        if (teamsError) {
+          console.error("Error fetching team data:", teamsError);
+          throw teamsError;
+        }
+          
         if (teamsData && teamsData.length > 0) {
           console.log(`Found ${teamsData.length} teams for W/L update`);
+          console.log("Raw team data from Supabase:", teamsData);
           
           // Transform to proper Team objects
           const formattedTeams: Team[] = teamsData.map(team => ({
@@ -85,6 +91,7 @@ export const useMatchSubmission = () => {
             divisionName: null
           }));
           
+          console.log("Formatted teams for update:", formattedTeams);
           await updateTeamRecords(winnerId, loserId, formattedTeams);
           console.log("Team records updated successfully");
         } else {

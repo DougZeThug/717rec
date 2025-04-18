@@ -49,10 +49,11 @@ export const useTeamWinLossUpdate = () => {
       
       // Update winner's record - increment wins by 1
       const newWinnerWins = currentWinnerWins + 1;
-      const { error: updateWinnerError } = await supabase
+      const { data: winnerUpdateData, error: updateWinnerError, count: winnerUpdateCount } = await supabase
         .from('teams')
         .update({ wins: newWinnerWins })
-        .eq('id', winnerId);
+        .eq('id', winnerId)
+        .select();
       
       if (updateWinnerError) {
         console.error("Error updating winner record:", updateWinnerError);
@@ -60,13 +61,16 @@ export const useTeamWinLossUpdate = () => {
       }
       
       console.log(`Updated winner ${winnerData.name} (${winnerId}) wins from ${currentWinnerWins} to ${newWinnerWins}`);
+      console.log(`Winner update response:`, winnerUpdateData);
+      console.log(`Rows affected in winner update: ${winnerUpdateCount}`);
       
       // Update loser's record - increment losses by 1
       const newLoserLosses = currentLoserLosses + 1;
-      const { error: updateLoserError } = await supabase
+      const { data: loserUpdateData, error: updateLoserError, count: loserUpdateCount } = await supabase
         .from('teams')
         .update({ losses: newLoserLosses })
-        .eq('id', loserId);
+        .eq('id', loserId)
+        .select();
       
       if (updateLoserError) {
         console.error("Error updating loser record:", updateLoserError);
@@ -74,6 +78,8 @@ export const useTeamWinLossUpdate = () => {
       }
       
       console.log(`Updated loser ${loserData.name} (${loserId}) losses from ${currentLoserLosses} to ${newLoserLosses}`);
+      console.log(`Loser update response:`, loserUpdateData);
+      console.log(`Rows affected in loser update: ${loserUpdateCount}`);
       
       const getTeamName = (teamId: string) => {
         const team = teams.find(t => t.id === teamId);
