@@ -85,7 +85,8 @@ export const useMatchManagement = (initialMatches: Match[]) => {
           team1_score: matchData.team1Score,
           team2_score: matchData.team2Score,
           winner_id: matchData.winnerId,
-          loser_id: matchData.loserId
+          loser_id: matchData.loserId,
+          round_number: 0 // Adding required field with default value
         })
         .select()
         .single();
@@ -103,7 +104,8 @@ export const useMatchManagement = (initialMatches: Match[]) => {
         team1Score: data.team1_score,
         team2Score: data.team2_score,
         winnerId: data.winner_id,
-        loserId: data.loser_id
+        loserId: data.loser_id,
+        round_number: data.round_number
       };
       
       setMatches([...matches, newMatch]);
@@ -175,7 +177,8 @@ export const useMatchManagement = (initialMatches: Match[]) => {
         team1Score: data.team1_score,
         team2Score: data.team2_score,
         winnerId: data.winner_id,
-        loserId: data.loser_id
+        loserId: data.loser_id,
+        round_number: data.round_number
       };
       
       // Update the matches state
