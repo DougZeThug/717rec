@@ -39,9 +39,9 @@ export const updateMatchInDatabase = async (
     const { data: winner, error: winnerError } = await supabase
       .from('teams')
       .update({
-        wins: supabase.sql`wins + 1`,
-        game_wins: supabase.sql`game_wins + ${team1Score}`,
-        game_losses: supabase.sql`game_losses + ${team2Score}`
+        wins: supabase.rpc('increment', { value: 1 }),
+        game_wins: supabase.rpc('increment', { value: team1Score }),
+        game_losses: supabase.rpc('increment', { value: team2Score })
       })
       .eq('id', winnerId)
       .select('id');
@@ -55,9 +55,9 @@ export const updateMatchInDatabase = async (
     const { data: loser, error: loserError } = await supabase
       .from('teams')
       .update({
-        losses: supabase.sql`losses + 1`,
-        game_wins: supabase.sql`game_wins + ${team2Score}`,
-        game_losses: supabase.sql`game_losses + ${team1Score}`
+        losses: supabase.rpc('increment', { value: 1 }),
+        game_wins: supabase.rpc('increment', { value: team2Score }),
+        game_losses: supabase.rpc('increment', { value: team1Score })
       })
       .eq('id', loserId)
       .select('id');

@@ -18,7 +18,7 @@ export function useTeamFetching() {
     try {
       const { data, error } = await supabase
         .from('teams')
-        .select('id, name, logo_url, image_url, players, wins, losses, game_wins, game_losses, division_id');
+        .select('id, name, logo_url, image_url, players, wins, losses, game_wins, game_losses, division_id, created_at');
 
       if (error) throw error;
       
