@@ -16,11 +16,12 @@ export const useMatchUpdates = () => {
       let winnerId = null;
       let loserId = null;
       
-      if (match.team1Score !== null && match.team2Score !== null) {
-        if (match.team1Score > match.team2Score) {
+      // Determine winner and loser based on game wins
+      if (match.team1_game_wins !== null && match.team2_game_wins !== null) {
+        if (match.team1_game_wins > match.team2_game_wins) {
           winnerId = match.team1Id;
           loserId = match.team2Id;
-        } else if (match.team2Score > match.team1Score) {
+        } else if (match.team2_game_wins > match.team1_game_wins) {
           winnerId = match.team2Id;
           loserId = match.team1Id;
         }
@@ -28,9 +29,13 @@ export const useMatchUpdates = () => {
 
       console.log(`Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);
 
+      // Set match scores as 1/0 binary indicators (not game totals)
+      const team1Score = winnerId === match.team1Id ? 1 : 0;
+      const team2Score = winnerId === match.team2Id ? 1 : 0;
+
       const updatePayload = {
-        team1_score: match.team1Score,
-        team2_score: match.team2Score,
+        team1_score: team1Score,
+        team2_score: team2Score,
         iscompleted: match.iscompleted,
         winner_id: winnerId,
         loser_id: loserId,
