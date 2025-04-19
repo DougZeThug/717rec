@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,16 +8,25 @@ export function useTeamFetching() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('teams')
-        .select('id, name, logo_url, image_url, players, wins, losses, game_wins, game_losses, division_id, created_at');
+        .select(`
+          id, 
+          name, 
+          logo_url, 
+          image_url, 
+          players,
+          wins,
+          losses,
+          game_wins,
+          game_losses,
+          division_id,
+          created_at
+        `)
+        .order('name');
 
       if (error) throw error;
       
@@ -43,7 +51,6 @@ export function useTeamFetching() {
       });
       
       setTeams(teamsMap);
-      console.log(`Loaded ${Object.keys(teamsMap).length} teams with detailed game stats`);
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({

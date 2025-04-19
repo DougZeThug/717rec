@@ -30,6 +30,8 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
+  console.debug('TeamCard data', team);
+
   return (
     <Card className={getCardInteractionStyles("overflow-hidden h-full flex flex-col mb-4 sm:mb-0")}>
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
