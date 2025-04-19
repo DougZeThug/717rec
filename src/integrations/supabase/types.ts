@@ -411,6 +411,7 @@ export type Database = {
       v_team_details: {
         Row: {
           close_match_losses: string | null
+          created_at: string | null
           division_id: string | null
           division_name: string | null
           game_losses: number | null
@@ -418,6 +419,7 @@ export type Database = {
           logo_url: string | null
           losses: number | null
           name: string | null
+          players: string[] | null
           power_score: string | null
           sos: number | null
           team_id: string | null

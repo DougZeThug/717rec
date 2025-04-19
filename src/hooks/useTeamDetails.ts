@@ -30,7 +30,9 @@ export const useTeamDetails = (teamId: string | undefined) => {
         divisionName: data.division_name || null,
         sos: data.sos,
         close_match_losses: data.close_match_losses,
-        power_score: data.power_score
+        power_score: data.power_score,
+        players: data.players || [],
+        created_at: data.created_at || new Date().toISOString(),
       } as Team;
     },
     enabled: !!teamId
@@ -41,4 +43,3 @@ export const useTeamDetails = (teamId: string | undefined) => {
     isLoading: teamQuery.isLoading
   };
 };
-
