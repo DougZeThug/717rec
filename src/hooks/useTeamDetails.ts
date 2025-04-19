@@ -31,7 +31,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
         sos: data.sos,
         close_match_losses: data.close_match_losses,
         power_score: data.power_score,
-        players: data.players || [],
+        players: data.players || [], // Now correctly typed as string[]
         created_at: data.created_at || new Date().toISOString(),
       } as Team;
     },

@@ -15,7 +15,7 @@ export interface Team {
   name: string;
   logoUrl?: string | null;
   imageUrl?: string | null;
-  players: Player[];
+  players: string[];
   wins: number;
   losses: number;
   game_wins?: number;
