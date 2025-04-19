@@ -194,6 +194,20 @@ export type Database = {
             referencedColumns: ["team_id"]
           },
           {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
             foreignKeyName: "matches_team2_id_fkey"
             columns: ["team2_id"]
             isOneToOne: false
@@ -215,6 +229,20 @@ export type Database = {
             referencedColumns: ["team_id"]
           },
           {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
             foreignKeyName: "matches_winner_id_fkey"
             columns: ["winner_id"]
             isOneToOne: false
@@ -233,6 +261,20 @@ export type Database = {
             columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
         ]
@@ -305,6 +347,20 @@ export type Database = {
             referencedRelation: "v_team_game_totals"
             referencedColumns: ["team_id"]
           },
+          {
+            foreignKeyName: "team_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
         ]
       }
       team_timeslots: {
@@ -349,6 +405,20 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_timeslots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_timeslots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
         ]
@@ -411,7 +481,6 @@ export type Database = {
       v_team_details: {
         Row: {
           close_match_losses: string | null
-          created_at: string | null
           division_id: string | null
           divisionname: string | null
           game_losses: number | null
@@ -445,6 +514,55 @@ export type Database = {
           losses: number | null
           name: string | null
           team_id: string | null
+          wins: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_team_power_scores: {
+        Row: {
+          close_match_losses: number | null
+          division_id: string | null
+          game_losses: number | null
+          game_win_percentage: number | null
+          game_wins: number | null
+          losses: number | null
+          power_score: number | null
+          sos: number | null
+          team_id: string | null
+          team_name: string | null
+          win_percentage: number | null
+          wins: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_team_strength_of_schedule: {
+        Row: {
+          close_match_losses: number | null
+          division_id: string | null
+          game_losses: number | null
+          game_win_percentage: number | null
+          game_wins: number | null
+          losses: number | null
+          sos: number | null
+          team_id: string | null
+          team_name: string | null
+          win_percentage: number | null
           wins: number | null
         }
         Relationships: [

@@ -7,15 +7,15 @@ import { Team } from "@/types";
  */
 export const fetchTeamsFromApi = async () => {
   const { data, error } = await supabase
-    .from('v_team_details') // Using v_team_details view for consistency
+    .from('v_team_details')
     .select('*')
     .order('name');
 
   console.log("Teams fetched from API:", data?.map(t => ({
     id: t.team_id, 
     name: t.name,
-    logoUrl: t.logo_url,
-    imageUrl: t.image_url
+    sos: t.sos,
+    power_score: t.power_score
   })));
 
   if (error) {
@@ -28,7 +28,7 @@ export const fetchTeamsFromApi = async () => {
     id: team.team_id,
     name: team.name || 'Unnamed Team',
     logoUrl: team.logo_url || null,
-    imageUrl: team.image_url || null, // Explicitly include image_url
+    imageUrl: team.image_url || null,
     // Safely handle players array which might be null/undefined
     players: Array.isArray(team.players) ? team.players : [],
     // Default values for optional fields
@@ -39,7 +39,12 @@ export const fetchTeamsFromApi = async () => {
     divisionName: team.divisionname || null,
     game_wins: team.game_wins || 0,
     game_losses: team.game_losses || 0,
-    sos: typeof team.sos === 'number' ? team.sos : 0,
-    power_score: typeof team.power_score === 'number' ? team.power_score : 0
+    // Use database-calculated values from the view
+    sos: typeof team.sos === 'number' ? team.sos :
+         typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
+    power_score: typeof team.power_score === 'number' ? team.power_score :
+                typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0,
+    close_match_losses: typeof team.close_match_losses === 'string' ? 
+                       parseInt(team.close_match_losses) : 0
   }));
 };

@@ -19,23 +19,26 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (!data) throw new Error("Team not found");
       
       console.log("Team details from API:", data);
-      console.log("Image URL from API:", data.image_url);
       
       return {
         id: data.team_id,
         name: data.name,
         logoUrl: data.logo_url,
-        imageUrl: data.image_url, // Ensure imageUrl is properly mapped
+        imageUrl: data.image_url,
         wins: data.wins || 0,
         losses: data.losses || 0,
         game_wins: data.game_wins || 0,
         game_losses: data.game_losses || 0,
         division: data.division_id,
-        divisionName: data.divisionname || null, // Changed from division_name to divisionname
-        sos: typeof data.sos === 'number' ? data.sos : undefined,
+        divisionName: data.divisionname || null,
+        // Map the database-calculated SOS value
+        sos: typeof data.sos === 'number' ? data.sos : 
+             typeof data.sos === 'string' ? parseFloat(data.sos) : undefined,
+        // Map the close match losses value
         close_match_losses: typeof data.close_match_losses === 'string' 
           ? parseInt(data.close_match_losses) || 0 
           : data.close_match_losses || 0,
+        // Map the database-calculated power score
         power_score: typeof data.power_score === 'string' 
           ? parseFloat(data.power_score) || 0 
           : data.power_score || 0,

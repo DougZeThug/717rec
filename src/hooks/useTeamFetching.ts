@@ -16,7 +16,6 @@ export function useTeamFetching() {
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
-      // Changed from v_team_game_totals to v_team_details since it has the sos and power_score columns
       const { data, error } = await supabase
         .from('v_team_details')
         .select('*')
@@ -30,7 +29,7 @@ export function useTeamFetching() {
           id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: team.image_url || null, // Explicitly include image_url
+          imageUrl: team.image_url || null,
           players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
@@ -39,17 +38,21 @@ export function useTeamFetching() {
           created_at: team.created_at || '',
           division: team.division_id || null,
           divisionName: team.divisionname || null,
-          sos: typeof team.sos === 'number' ? team.sos : 0,
-          power_score: typeof team.power_score === 'number' ? team.power_score : 0
+          // Use database-calculated SOS value
+          sos: typeof team.sos === 'number' ? team.sos :
+               typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
+          // Use database-calculated power score
+          power_score: typeof team.power_score === 'number' ? team.power_score :
+                      typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
         };
       });
       
       setTeams(teamsMap);
-      console.log("Team data loaded with images:", data?.slice(0, 3).map(t => ({
+      console.log("Team data loaded with values:", data?.slice(0, 3).map(t => ({
         id: t.team_id, 
         name: t.name,
-        logo_url: t.logo_url, 
-        image_url: t.image_url
+        sos: t.sos,
+        power_score: t.power_score
       })));
     } catch (error) {
       console.error('Error fetching teams:', error);
