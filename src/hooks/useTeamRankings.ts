@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Team, Match, Ranking } from "@/types";
 import { useRankingsData } from "./rankings/useRankingsData";
 import { usePreviousRankings } from "./rankings/usePreviousRankings";
@@ -12,7 +12,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
   const { latestMatches, matchesLoading } = useRankingsData();
   
   // Create ranking objects from teams data
-  useState(() => {
+  useEffect(() => {
     const updateRankings = async () => {
       const teamsToUse = teams;
       const matchesToUse = latestMatches || matches;
