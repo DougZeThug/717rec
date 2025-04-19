@@ -13,19 +13,16 @@ export function useTeamFetching() {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('teams')
+        .from('v_team_game_totals')
         .select(`
-          id, 
+          team_id,
           name, 
-          logo_url, 
-          image_url, 
-          players,
           wins,
           losses,
           game_wins,
           game_losses,
-          division_id,
-          created_at
+          logo_url,
+          division_id
         `)
         .order('name');
 
@@ -33,33 +30,21 @@ export function useTeamFetching() {
       
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
-        teamsMap[team.id] = {
-          id: team.id,
+        teamsMap[team.team_id] = {
+          id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: team.image_url,
-          players: Array.isArray(team.players) 
-            ? team.players.map((playerName: string) => ({ name: playerName })) 
-            : [],
+          imageUrl: null,
+          players: [],
           wins: team.wins || 0,
           losses: team.losses || 0,
           game_wins: team.game_wins || 0,
           game_losses: team.game_losses || 0,
-          created_at: team.created_at || '',
+          created_at: '',
           division: team.division_id || null,
           divisionName: null
         };
-        
-        console.debug('[hook][useTeamFetching] team', team.id, team.game_wins, team.game_losses);
       });
-      
-      console.debug('[useTeamFetching] Teams loaded with game stats:', 
-        Object.values(teamsMap).map(t => ({
-          id: t.id,
-          name: t.name,
-          game_stats: `${t.game_wins}-${t.game_losses}`
-        }))
-      );
       
       setTeams(teamsMap);
     } catch (error) {

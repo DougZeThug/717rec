@@ -19,24 +19,26 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (!teamId) throw new Error("Team ID is required");
       
       const { data, error } = await supabase
-        .from("teams")
-        .select("*, divisions(name)")
-        .eq("id", teamId)
+        .from("v_team_game_totals")
+        .select("team_id, name, wins, losses, game_wins, game_losses, logo_url, division_id, divisions(name)")
+        .eq("team_id", teamId)
         .single();
         
       if (error) throw error;
       
       return {
-        id: data.id,
+        id: data.team_id,
         name: data.name,
         logoUrl: data.logo_url,
-        imageUrl: data.image_url,
-        players: data.players?.map((name: string) => ({ name })) || [],
+        imageUrl: null,
+        players: [],
         wins: data.wins || 0,
         losses: data.losses || 0,
-        created_at: data.created_at,
+        created_at: '',
         division: data.division_id,
-        divisionName: data.divisions?.name || null
+        divisionName: data.divisions?.name || null,
+        game_wins: data.game_wins || 0,
+        game_losses: data.game_losses || 0
       } as Team;
     },
     enabled: !!teamId
@@ -144,5 +146,3 @@ export const useTeamDetails = (teamId: string | undefined) => {
     getScoreDisplay: scoreDisplayWrapper
   };
 };
-
-import React from "react";
