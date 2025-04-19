@@ -1,26 +1,34 @@
 
 import { QueryClient } from "@tanstack/react-query";
 
+/**
+ * Invalidates all queries related to matches and team stats
+ * to ensure data freshness across the app
+ */
 export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) => {
+  console.log("Invalidating all match and team related queries...");
   const queriesToInvalidate = [
-    'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches', 'standings', 'homepageStats'
+    'matches', 
+    'teams', 
+    'rankings', 
+    'teamStats', 
+    'team', 
+    'team-matches',
+    'standings'
   ];
   
-  console.log("[queryCacheUtils] Invalidating relevant query caches");
+  const promises = queriesToInvalidate.map(queryKey => 
+    queryClient.invalidateQueries({ queryKey: [queryKey] })
+  );
   
-  for (const queryKey of queriesToInvalidate) {
-    await queryClient.invalidateQueries({ queryKey: [queryKey] });
-    console.log(`[queryCacheUtils] Invalidated query cache for ${queryKey}`);
-  }
-  
-  // Also invalidate specific team queries if needed
-  // This ensures team details pages are updated
-  const teamIds = queryClient.getQueryData(['teams']) as any[];
-  if (teamIds) {
-    for (const teamData of teamIds) {
-      if (teamData.id) {
-        await queryClient.invalidateQueries({ queryKey: ['team', teamData.id] });
-      }
-    }
-  }
+  await Promise.all(promises);
+  console.log("Query cache invalidation complete for:", queriesToInvalidate.join(", "));
+};
+
+/**
+ * Helper function for batch operations
+ */
+export const batchInvalidateQueries = async (queryClient: QueryClient, keys: string[]) => {
+  const promises = keys.map(key => queryClient.invalidateQueries({ queryKey: [key] }));
+  await Promise.all(promises);
 };

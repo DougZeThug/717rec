@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Match, Team } from '@/types';
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertCircle } from 'lucide-react';
+import { validateGameScores } from '@/hooks/matches/utils/matchResultUtils';
 
 interface MatchScoreItemProps {
   match: Match;
@@ -33,8 +35,29 @@ const MatchScoreItem = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [team1GameWins, setTeam1GameWins] = React.useState(match.team1_game_wins?.toString() || "0");
   const [team2GameWins, setTeam2GameWins] = React.useState(match.team2_game_wins?.toString() || "0");
+  const [validationError, setValidationError] = React.useState<string | null>(null);
+
+  const validateScores = () => {
+    const team1Wins = parseInt(team1GameWins) || 0;
+    const team2Wins = parseInt(team2GameWins) || 0;
+    const bestOf = match.best_of || 3;
+    
+    const validation = validateGameScores(team1Wins, team2Wins, bestOf);
+    
+    if (!validation.isValid) {
+      setValidationError(validation.errorMessage || "Invalid score combination");
+      return false;
+    }
+    
+    setValidationError(null);
+    return true;
+  };
 
   const handleSubmit = async () => {
+    if (!validateScores()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       // Parse game wins
@@ -117,7 +140,14 @@ const MatchScoreItem = ({
             </div>
           )}
           
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          {validationError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-start">
+              <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+              <span>{validationError}</span>
+            </div>
+          )}
+          
+          <Button onClick={handleSubmit} disabled={isSubmitting || !!validationError}>
             {isSubmitting ? 'Submitting...' : 'Submit Result'}
           </Button>
         </div>

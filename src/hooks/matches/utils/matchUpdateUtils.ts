@@ -4,11 +4,11 @@ import { MatchResultData } from "../types/matchSubmissionTypes";
 
 export const updateMatchInDatabase = async (
   matchId: string,
-  team1Score: number,
-  team2Score: number,
+  team1GameWins: number,
+  team2GameWins: number,
   matchResult: MatchResultData
 ) => {
-  const { winnerId, loserId } = matchResult;
+  const { winnerId, loserId, team1Score, team2Score } = matchResult;
   
   const updateData = {
     team1_score: team1Score,
@@ -37,12 +37,15 @@ export const updateMatchInDatabase = async (
   // For completed matches, trigger the team stats update via RPC
   if (winnerId && loserId) {
     try {
-      const { data, error } = await supabase.functions.invoke('update_team_stats', {
-        body: { matchId }
+      const { data, error } = await supabase.rpc('update_team_stats', {
+        p_winner_id: winnerId,
+        p_loser_id: loserId,
+        p_winner_game_wins: matchResult.team1GameWins,
+        p_loser_game_wins: matchResult.team2GameWins
       });
       
       if (error) {
-        console.error('[matchUpdateUtils] Error calling update_team_stats function:', error);
+        console.error('[matchUpdateUtils] Error calling update_team_stats RPC:', error);
         throw error;
       }
       

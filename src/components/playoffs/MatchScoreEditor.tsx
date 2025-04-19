@@ -3,8 +3,9 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, MinusCircle, Save } from "lucide-react";
+import { PlusCircle, MinusCircle, Save, AlertCircle } from "lucide-react";
 import type { PlayoffMatch, Team } from "@/types";
+import { validateGameScores } from "@/hooks/matches/utils/matchResultUtils";
 
 interface MatchScoreEditorProps {
   match: PlayoffMatch;
@@ -28,6 +29,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   const team2 = teams.find(t => t.id === match.team2Id);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [games, setGames] = useState<{ team1Score: number; team2Score: number; }[]>(
     match.games && match.games.length > 0
       ? match.games.map(game => ({
@@ -45,6 +47,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       newGames[index].team2Score = score;
     }
     setGames(newGames);
+    validateGameScores();
   };
   
   const addGame = () => {
@@ -56,22 +59,50 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
     const newGames = [...games];
     newGames.splice(index, 1);
     setGames(newGames);
+    validateGameScores();
   };
   
   const calculateTotalScore = () => {
     const team1Wins = games.filter(g => g.team1Score > g.team2Score).length;
     const team2Wins = games.filter(g => g.team2Score > g.team1Score).length;
-    return { team1Score: team1Wins, team2Score: team2Wins };
+    return { team1Wins, team2Wins };
+  };
+  
+  const validateGameScores = () => {
+    const { team1Wins, team2Wins } = calculateTotalScore();
+    const validation = validateGameScores(team1Wins, team2Wins, match.bestOf);
+    
+    if (!validation.isValid) {
+      setValidationError(validation.errorMessage || "Invalid score combination");
+      return false;
+    }
+    
+    setValidationError(null);
+    return true;
   };
   
   const handleSave = async () => {
+    if (!validateGameScores()) {
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
-      const { team1Score, team2Score } = calculateTotalScore();
+      const { team1Wins, team2Wins } = calculateTotalScore();
+      
+      // Set match result - 1 for win, 0 for loss
+      const team1Score = team1Wins > team2Wins ? 1 : 0;
+      const team2Score = team2Wins > team1Wins ? 1 : 0;
+      
+      console.log(`Saving playoff match ${match.id}:`);
+      console.log(`- Match result: ${team1Score}-${team2Score}`);
+      console.log(`- Game wins: ${team1Wins}-${team2Wins}`);
+      
       await onSave(match.id, team1Score, team2Score, games);
       onCancel();
     } catch (error) {
       console.error("Error saving match scores:", error);
+      setValidationError("Failed to save match scores");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,6 +169,13 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
           </div>
         ))}
         
+        {validationError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-start">
+            <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+            <span>{validationError}</span>
+          </div>
+        )}
+        
         <div className="flex justify-between items-center mt-4">
           <Button
             type="button"
@@ -151,7 +189,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
           </Button>
           
           <div className="text-sm">
-            Score: <span className="font-bold">{calculateTotalScore().team1Score} - {calculateTotalScore().team2Score}</span>
+            Score: <span className="font-bold">{calculateTotalScore().team1Wins} - {calculateTotalScore().team2Wins}</span>
           </div>
         </div>
       </div>
@@ -160,7 +198,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
         <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
-        <Button onClick={handleSave} disabled={isSubmitting}>
+        <Button onClick={handleSave} disabled={isSubmitting || !!validationError}>
           {isSubmitting ? (
             <>Saving...</>
           ) : (
