@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, MinusCircle, Save, AlertCircle } from "lucide-react";
 import type { PlayoffMatch, Team } from "@/types";
-import { validateGameScores } from "@/hooks/matches/utils/matchResultUtils";
+import { validateGameScore } from "@/hooks/matches/utils/matchValidationUtils";
 
 interface MatchScoreEditorProps {
   match: PlayoffMatch;
@@ -69,7 +69,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   
   const validateGameScores = () => {
     const { team1Wins, team2Wins } = calculateTotalScore();
-    const validation = validateGameScores(team1Wins, team2Wins, match.bestOf);
+    const validation = validateGameScore(team1Wins, team2Wins, match.bestOf);
     
     if (!validation.isValid) {
       setValidationError(validation.errorMessage || "Invalid score combination");

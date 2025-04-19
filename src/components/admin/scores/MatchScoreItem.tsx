@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Match, Team } from '@/types';
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, AlertCircle } from 'lucide-react';
-import { validateGameScores } from '@/hooks/matches/utils/matchResultUtils';
+import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
 
 interface MatchScoreItemProps {
   match: Match;
@@ -19,7 +18,7 @@ interface MatchScoreItemProps {
   team2Score: string;
   onToggle: () => void;
   onScoreChange: (team: 'team1Score' | 'team2Score', value: string) => void;
-  onSubmitScore: (team1Score: string, team2Score: string, team1GameWins: number, team2GameWins: number) => Promise<boolean>;
+  onSubmitScore: (team1GameWins: number, team2GameWins: number) => Promise<boolean>;
 }
 
 const MatchScoreItem = ({ 
@@ -42,7 +41,7 @@ const MatchScoreItem = ({
     const team2Wins = parseInt(team2GameWins) || 0;
     const bestOf = match.best_of || 3;
     
-    const validation = validateGameScores(team1Wins, team2Wins, bestOf);
+    const validation = validateGameScore(team1Wins, team2Wins, bestOf);
     
     if (!validation.isValid) {
       setValidationError(validation.errorMessage || "Invalid score combination");
@@ -60,28 +59,16 @@ const MatchScoreItem = ({
     
     setIsSubmitting(true);
     try {
-      // Parse game wins
       const team1Wins = parseInt(team1GameWins) || 0;
       const team2Wins = parseInt(team2GameWins) || 0;
       
-      // Determine match winner based on game wins
-      const matchScore1 = team1Wins > team2Wins ? "1" : "0";
-      const matchScore2 = team2Wins > team1Wins ? "1" : "0";
-      
       console.log(`Submitting match ${match.id}:`);
       console.log(`Team 1 (${teams[match.team1Id]?.name}):`);
-      console.log(`- Match result: ${matchScore1} (win/loss)`);
       console.log(`- Game wins: ${team1Wins}`);
       console.log(`Team 2 (${teams[match.team2Id]?.name}):`);
-      console.log(`- Match result: ${matchScore2} (win/loss)`);
       console.log(`- Game wins: ${team2Wins}`);
       
-      await onSubmitScore(
-        matchScore1, 
-        matchScore2,
-        team1Wins,
-        team2Wins
-      );
+      await onSubmitScore(team1Wins, team2Wins);
     } finally {
       setIsSubmitting(false);
     }
