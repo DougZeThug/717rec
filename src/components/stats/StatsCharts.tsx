@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
@@ -15,7 +14,7 @@ import {
 } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatPowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { formatPowerScore } from "@/utils/powerScore";
 
 interface ChartDataItem {
   name: string;

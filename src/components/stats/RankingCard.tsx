@@ -5,7 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Ranking } from "@/types";
 import HeadToHeadRecords from "./HeadToHeadRecords";
 import RankTrendIndicator from "./RankTrendIndicator";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";

@@ -3,7 +3,7 @@ import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { RankNumber } from "./rank/RankNumber";
 import { TeamCell } from "./rank/TeamCell";

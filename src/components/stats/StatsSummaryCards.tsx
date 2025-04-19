@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -6,7 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { formatPowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { formatPowerScore } from "@/utils/powerScore";
 
 interface StatsSummaryCardsProps {
   rankings: Ranking[];
