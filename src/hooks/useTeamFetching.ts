@@ -35,13 +35,11 @@ export function useTeamFetching() {
           losses: team.losses || 0,
           game_wins: team.game_wins || 0,
           game_losses: team.game_losses || 0,
-          created_at: team.created_at || '',
+          created_at: team.created_at || new Date().toISOString(),  // Add default value
           division: team.division_id || null,
           divisionName: team.divisionname || null,
-          // Use database-calculated SOS value
           sos: typeof team.sos === 'number' ? team.sos :
                typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
-          // Use database-calculated power score
           power_score: typeof team.power_score === 'number' ? team.power_score :
                       typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
         };

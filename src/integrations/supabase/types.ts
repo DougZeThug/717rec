@@ -481,6 +481,7 @@ export type Database = {
       v_team_details: {
         Row: {
           close_match_losses: string | null
+          created_at: string | null
           division_id: string | null
           divisionname: string | null
           game_losses: number | null
