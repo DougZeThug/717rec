@@ -98,7 +98,7 @@ export interface Ranking {
   winPercentage: number;
   divisionName?: string | null;
   sos: number;
-  streak: number;
+  streak?: string | undefined;  // Changed from number to string | undefined
   headToHead: HeadToHeadMap;
   previousRank?: number;
   rankChange?: number;

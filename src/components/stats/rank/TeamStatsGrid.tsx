@@ -5,10 +5,10 @@ interface TeamStatsGridProps {
   wins: number;
   losses: number;
   winPercentage: number;
-  gamesWon?: number;
-  gamesLost?: number;
-  gameWinPercentage?: number;
-  sos?: number;
+  gamesWon: number;
+  gamesLost: number;
+  gameWinPercentage: number;
+  sos: number;
   streak?: string;
   compactView?: boolean;
 }
@@ -17,54 +17,41 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   wins,
   losses,
   winPercentage,
-  gamesWon = 0,
-  gamesLost = 0,
+  gamesWon,
+  gamesLost,
   gameWinPercentage,
-  sos = 0,
+  sos,
   streak = "—",
   compactView = false
 }) => {
   if (compactView) {
     return (
-      <div className="flex justify-between mt-2 text-sm">
-        <div className="text-gray-700">
-          <span>{wins}-{losses}</span>
-        </div>
+      <div className="mt-1 text-xs text-gray-500">
+        <span className="inline-block mr-2">{wins}-{losses}</span>
+        <span className="inline-block mr-2">
+          Win: {(winPercentage * 100).toFixed(1)}%
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 gap-1 mt-2 text-xs">
-      <div className="p-1.5 bg-gray-50 rounded text-center">
-        <div className="text-gray-500 text-xs">Record</div>
-        <div>{wins}-{losses}</div>
+    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="p-1 bg-gray-50 rounded">
+        <div className="text-xs text-gray-500">Record</div>
+        <div className="font-semibold">{wins}-{losses}</div>
       </div>
-      <div className="p-1.5 bg-gray-50 rounded text-center">
-        <div className="text-gray-500 text-xs">Win %</div>
-        <div>{(winPercentage * 100).toFixed(1)}%</div>
+      <div className="p-1 bg-gray-50 rounded">
+        <div className="text-xs text-gray-500">Win %</div>
+        <div className="font-semibold">{(winPercentage * 100).toFixed(1)}%</div>
       </div>
-      
-      <div className="p-1.5 bg-gray-50 rounded text-center">
-        <div className="text-gray-500 text-xs">Games</div>
-        <div>{gamesWon}-{gamesLost}</div>
+      <div className="p-1 bg-gray-50 rounded">
+        <div className="text-xs text-gray-500">Games</div>
+        <div className="font-semibold">{gamesWon}-{gamesLost}</div>
       </div>
-      <div className="p-1.5 bg-gray-50 rounded text-center">
-        <div className="text-gray-500 text-xs">Game Win %</div>
-        <div>
-          {gameWinPercentage !== undefined
-            ? (gameWinPercentage * 100).toFixed(1) + "%"
-            : "—"}
-        </div>
-      </div>
-      
-      <div className="p-1.5 bg-gray-50 rounded text-center">
-        <div className="text-gray-500 text-xs">SOS</div>
-        <div>{sos.toFixed(3)}</div>
-      </div>
-      <div className="p-1.5 bg-gray-50 rounded text-center">
-        <div className="text-gray-500 text-xs">Streak</div>
-        <div>{streak}</div>
+      <div className="p-1 bg-gray-50 rounded">
+        <div className="text-xs text-gray-500">Streak</div>
+        <div className="font-semibold">{streak}</div>
       </div>
     </div>
   );

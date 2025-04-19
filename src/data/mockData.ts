@@ -624,9 +624,18 @@ export const mockRankings: Ranking[] = mockTeams.map(team => {
     teamId: team.id,
     teamName: team.name,
     logoUrl: team.logoUrl,
+    imageUrl: team.imageUrl,
     wins: team.wins,
     losses: team.losses,
     winPercentage,
-    sos: Number((Math.random() * 0.5 + 0.5).toFixed(3)) // Random SOS between 0.5 and 1.0
+    divisionName: team.division || null,
+    sos: Number((Math.random() * 0.5 + 0.5).toFixed(3)), // Random SOS between 0.5 and 1.0
+    streak: Math.random() > 0.5 ? `W${Math.floor(Math.random() * 5) + 1}` : `L${Math.floor(Math.random() * 3) + 1}`,
+    headToHead: {}, // Empty head-to-head records
+    gamesWon: Math.floor(Math.random() * 10) + 1,
+    gamesLost: Math.floor(Math.random() * 5) + 1,
+    gameWinPercentage: Math.random(),
+    powerScore: Math.floor(Math.random() * 100),
+    closeMatchLosses: Math.floor(Math.random() * 3)
   };
 }).sort((a, b) => b.winPercentage - a.winPercentage || b.sos - a.sos);

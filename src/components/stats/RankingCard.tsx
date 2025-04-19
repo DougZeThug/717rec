@@ -128,7 +128,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           gamesLost={ranking.gamesLost}
           gameWinPercentage={ranking.gameWinPercentage}
           sos={ranking.sos}
-          streak={ranking.streak}
+          streak={ranking.streak || "—"}  // Convert undefined to a dash if needed
           compactView={compactView}
         />
       </div>
