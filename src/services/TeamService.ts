@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
@@ -25,9 +24,7 @@ export const fetchTeamsFromApi = async () => {
     logoUrl: team.logo_url || null,
     imageUrl: team.image_url || null,
     // Safely handle players array which might be null/undefined
-    players: Array.isArray(team.players) 
-      ? team.players.map((playerName: string) => ({ name: playerName })) 
-      : [],
+    players: Array.isArray(team.players) ? team.players : [],
     // Default values for optional fields
     wins: team.wins || 0,
     losses: team.losses || 0,
@@ -48,7 +45,7 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
       name: teamData.name,
       logo_url: teamData.logoUrl,
       image_url: teamData.imageUrl || null, // Use null if no image
-      players: teamData.players.map(p => p.name),
+      players: teamData.players, // Players is now a string[]
       seed: null, // Default
       division_id: teamData.division || null // Ensure null if no division
     })
@@ -68,9 +65,7 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
     name: data.name,
     logoUrl: data.logo_url,
     imageUrl: data.image_url,
-    players: data.players ? data.players.map((playerName: string) => ({
-      name: playerName
-    })) : [],
+    players: data.players || [],
     wins: 0,
     losses: 0,
     created_at: data.created_at,
@@ -119,7 +114,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
       name: teamData.name,
       logo_url: teamData.logoUrl,
       image_url: teamData.imageUrl || null,
-      players: teamData.players.map(p => p.name),
+      players: teamData.players, // Players is now a string[]
       division_id: teamData.division // This will be null when no division is selected
     })
     .eq('id', teamId)
@@ -127,7 +122,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     .single();
     
   if (error) {
-    console.error("Error updating team:", error, error.details, error.hint);
+    console.error("Error updating team:", error);
     throw error;
   }
 
@@ -140,9 +135,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     name: data.name,
     logoUrl: data.logo_url,
     imageUrl: data.image_url,
-    players: data.players ? data.players.map((playerName: string) => ({
-      name: playerName
-    })) : [],
+    players: data.players || [],
     // Use the values from teamData since they're not in the database schema
     wins: teamData.wins || 0,
     losses: teamData.losses || 0,

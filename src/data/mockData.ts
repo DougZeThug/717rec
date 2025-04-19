@@ -6,8 +6,8 @@ export const mockTeams: Team[] = [
     name: "Hole Burners",
     logoUrl: "https://via.placeholder.com/150?text=Hole+Burners",
     players: [
-      { id: "p1", name: "Player 1" },
-      { id: "p2", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -19,8 +19,8 @@ export const mockTeams: Team[] = [
     name: "Here for the Fireball",
     logoUrl: "https://via.placeholder.com/150?text=Here+for+the+Fireball",
     players: [
-      { id: "p3", name: "Player 1" },
-      { id: "p4", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -32,8 +32,8 @@ export const mockTeams: Team[] = [
     name: "F*** I don't know",
     logoUrl: "https://via.placeholder.com/150?text=Team+3",
     players: [
-      { id: "p5", name: "Player 1" },
-      { id: "p6", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -45,8 +45,8 @@ export const mockTeams: Team[] = [
     name: "The Undigestibles",
     logoUrl: "https://via.placeholder.com/150?text=The+Undigestibles",
     players: [
-      { id: "p7", name: "Player 1" },
-      { id: "p8", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -58,8 +58,8 @@ export const mockTeams: Team[] = [
     name: "Zoo Pals",
     logoUrl: "https://via.placeholder.com/150?text=Zoo+Pals",
     players: [
-      { id: "p9", name: "Player 1" },
-      { id: "p10", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -71,8 +71,8 @@ export const mockTeams: Team[] = [
     name: "Double Trouble",
     logoUrl: "https://via.placeholder.com/150?text=Double+Trouble",
     players: [
-      { id: "p11", name: "Player 1" },
-      { id: "p12", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -84,8 +84,8 @@ export const mockTeams: Team[] = [
     name: "Pepperoni Cheesers",
     logoUrl: "https://via.placeholder.com/150?text=Pepperoni+Cheesers",
     players: [
-      { id: "p13", name: "Player 1" },
-      { id: "p14", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -97,8 +97,8 @@ export const mockTeams: Team[] = [
     name: "3 Amigos",
     logoUrl: "https://via.placeholder.com/150?text=3+Amigos",
     players: [
-      { id: "p15", name: "Player 1" },
-      { id: "p16", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -110,8 +110,8 @@ export const mockTeams: Team[] = [
     name: "Came from Dicks",
     logoUrl: "https://via.placeholder.com/150?text=Came+from+Dicks",
     players: [
-      { id: "p17", name: "Player 1" },
-      { id: "p18", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -123,8 +123,8 @@ export const mockTeams: Team[] = [
     name: "Believers",
     logoUrl: "https://via.placeholder.com/150?text=Believers",
     players: [
-      { id: "p19", name: "Player 1" },
-      { id: "p20", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -136,8 +136,8 @@ export const mockTeams: Team[] = [
     name: "Corn 2 Be Wild",
     logoUrl: "https://via.placeholder.com/150?text=Corn+2+Be+Wild",
     players: [
-      { id: "p21", name: "Player 1" },
-      { id: "p22", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -149,8 +149,8 @@ export const mockTeams: Team[] = [
     name: "Mailmen",
     logoUrl: "https://via.placeholder.com/150?text=Mailmen",
     players: [
-      { id: "p23", name: "Player 1" },
-      { id: "p24", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -162,8 +162,8 @@ export const mockTeams: Team[] = [
     name: "Cuzzo's Clinic",
     logoUrl: "https://via.placeholder.com/150?text=Cuzzos+Clinic",
     players: [
-      { id: "p25", name: "Player 1" },
-      { id: "p26", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -175,8 +175,8 @@ export const mockTeams: Team[] = [
     name: "Buttery Nips",
     logoUrl: "https://via.placeholder.com/150?text=Buttery+Nips",
     players: [
-      { id: "p27", name: "Player 1" },
-      { id: "p28", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -188,8 +188,8 @@ export const mockTeams: Team[] = [
     name: "Happy Valley Hole Hunters",
     logoUrl: "https://via.placeholder.com/150?text=Happy+Valley+Hole+Hunters",
     players: [
-      { id: "p29", name: "Player 1" },
-      { id: "p30", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -201,8 +201,8 @@ export const mockTeams: Team[] = [
     name: "Off Dogs",
     logoUrl: "https://via.placeholder.com/150?text=Off+Dogs",
     players: [
-      { id: "p31", name: "Player 1" },
-      { id: "p32", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -214,8 +214,8 @@ export const mockTeams: Team[] = [
     name: "On a Mission",
     logoUrl: "https://via.placeholder.com/150?text=On+a+Mission",
     players: [
-      { id: "p33", name: "Player 1" },
-      { id: "p34", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -227,8 +227,8 @@ export const mockTeams: Team[] = [
     name: "Hole Violators",
     logoUrl: "https://via.placeholder.com/150?text=Hole+Violators",
     players: [
-      { id: "p35", name: "Player 1" },
-      { id: "p36", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -240,8 +240,8 @@ export const mockTeams: Team[] = [
     name: "Seize the Maize",
     logoUrl: "https://via.placeholder.com/150?text=Seize+the+Maize",
     players: [
-      { id: "p37", name: "Player 1" },
-      { id: "p38", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -253,8 +253,8 @@ export const mockTeams: Team[] = [
     name: "Wrong Hole",
     logoUrl: "https://via.placeholder.com/150?text=Wrong+Hole",
     players: [
-      { id: "p39", name: "Player 1" },
-      { id: "p40", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -266,8 +266,8 @@ export const mockTeams: Team[] = [
     name: "Shut Your Cornhole",
     logoUrl: "https://via.placeholder.com/150?text=Shut+Your+Cornhole",
     players: [
-      { id: "p41", name: "Player 1" },
-      { id: "p42", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,
@@ -279,8 +279,8 @@ export const mockTeams: Team[] = [
     name: "Jager Bombers",
     logoUrl: "https://via.placeholder.com/150?text=Jager+Bombers",
     players: [
-      { id: "p43", name: "Player 1" },
-      { id: "p44", name: "Player 2" }
+      "Player 1",
+      "Player 2"
     ],
     wins: 0,
     losses: 0,

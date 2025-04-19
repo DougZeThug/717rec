@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -179,7 +178,6 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
           </div>
         </div>
 
-        {/* Players section */}
         <div className="space-y-2">
           <Label>Players</Label>
           {playerNames.map((playerName, index) => (

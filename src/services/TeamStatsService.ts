@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
 import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
@@ -50,7 +49,7 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       logoUrl: team.logo_url,
       imageUrl: team.image_url,
       players: Array.isArray(team.players) 
-        ? team.players.map(playerName => ({ name: playerName })) 
+        ? team.players.map(playerName => playerName) 
         : [],
       wins: team.wins || 0,
       losses: team.losses || 0,

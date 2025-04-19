@@ -31,7 +31,7 @@ export function useTeams() {
         console.debug('[hook][useTeams] team', team.id, team.game_wins, team.game_losses);
       });
       
-      setTeams(teamsData);
+      setTeams(teamsData as Team[]);
       
       if (teamsData.length === 0) {
         toast({
