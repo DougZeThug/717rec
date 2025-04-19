@@ -20,14 +20,18 @@ export const useTeamWinLossUpdate = () => {
       const loserGameWinsNum = Number(loserGameWins || 0);
       
       console.log(`[useTeamWinLossUpdate] Updating team records:`, {
-        match_result: { winnerId, loserId }, // This is the match win/loss (1-0)
+        match_result: { 
+          winnerId, // This team gets exactly ONE match win
+          loserId   // This team gets exactly ONE match loss
+        }, 
         game_stats: { 
-          winner: { id: winnerId, gameWins: winnerGameWinsNum },
-          loser: { id: loserId, gameWins: loserGameWinsNum }
+          winner: { id: winnerId, gameWins: winnerGameWinsNum }, // These are game wins, separate from match win
+          loser: { id: loserId, gameWins: loserGameWinsNum }     // These are game wins, separate from match loss
         }
       });
       
       // Use the RPC function to update team stats - pass only the IDs and game wins
+      // The function should handle +1 match win/loss and the variable game wins correctly
       const { data, error } = await supabase.rpc('update_team_stats', {
         p_winner_id: winnerId,
         p_loser_id: loserId,
