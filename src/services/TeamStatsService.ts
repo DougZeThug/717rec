@@ -1,9 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
 import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
 import { calculateSOS } from "@/utils/rankingUtils/calculateSOS";
-import { calculatePowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { calculatePowerScore } from "@/utils/powerScore";
 import { calculateWinPercentage } from "@/utils/rankingUtils/calculateWinPercentage";
 import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
 import { calculateHeadToHead } from "@/utils/teamDetailsUtils/headToHeadUtils";

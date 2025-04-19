@@ -1,11 +1,10 @@
-
 import { Team, Match, Ranking } from "@/types";
 import { calculateSOS } from "./calculateSOS";
 import { calculateStreak } from "./calculateStreak";
 import { calculateHeadToHead } from "./calculateHeadToHead";
 import { calculateWinPercentage } from "./calculateWinPercentage";
 import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
-import { calculatePowerScore } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { calculatePowerScore } from "@/utils/powerScore";
 
 /**
  * Create a ranking object for a team

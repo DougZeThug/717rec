@@ -14,31 +14,10 @@ export const calculatePowerScore = (
   const normalizedGameWinPct = Math.min(Math.max(gameWinPercentage, 0), 1);
   
   // Calculate power score using the updated formula with new weights
-  // Now SOS has 40% weight (up from 20%), win% has 40% (down from 50%)
   const powerScore = (normalizedWinPct * 0.4) + 
-                     (normalizedSOS * 0.4) + 
-                     (normalizedGameWinPct * 0.2);
+                    (normalizedSOS * 0.4) + 
+                    (normalizedGameWinPct * 0.2);
   
   // Convert to a 0-100 scale and round to one decimal place
   return Math.round(powerScore * 1000) / 10;
-};
-
-/**
- * Format power score for display
- */
-export const formatPowerScore = (powerScore: number | undefined): string => {
-  if (powerScore === undefined) return '—';
-  return powerScore.toFixed(1);
-};
-
-/**
- * Get appropriate color class for a power score
- */
-export const getPowerScoreColor = (powerScore: number | undefined): string => {
-  if (powerScore === undefined) return 'text-gray-500';
-  
-  if (powerScore >= 75) return 'text-emerald-600';
-  if (powerScore >= 60) return 'text-blue-600';
-  if (powerScore >= 45) return 'text-amber-600';
-  return 'text-red-600';
 };

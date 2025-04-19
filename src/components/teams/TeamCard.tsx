@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
 import { cn } from "@/lib/utils";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 
 interface TeamCardProps {
   team: Team;
