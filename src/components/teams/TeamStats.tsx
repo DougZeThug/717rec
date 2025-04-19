@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Team } from "@/types";
 
 interface TeamStatsProps {
   wins: number;
@@ -57,6 +56,24 @@ const TeamStats: React.FC<TeamStatsProps> = ({
               {gameWinPercentage}
             </p>
           </div>
+          
+          {sos !== undefined && (
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-gray-500">Strength of Schedule</h3>
+              <p className="text-2xl font-bold text-indigo-600">
+                {sos.toFixed(3)}
+              </p>
+            </div>
+          )}
+          
+          {powerScore !== undefined && (
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-gray-500">Power Score</h3>
+              <p className="text-2xl font-bold text-purple-600">
+                {powerScore.toFixed(1)}
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

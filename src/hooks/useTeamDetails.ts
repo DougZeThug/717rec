@@ -2,7 +2,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
-import { getUpcomingAndPastMatches } from "@/utils/teamDetailsUtils";
 
 export const useTeamDetails = (teamId: string | undefined) => {
   const teamQuery = useQuery({
@@ -34,15 +33,15 @@ export const useTeamDetails = (teamId: string | undefined) => {
         id: data.team_id,
         name: data.name,
         logoUrl: data.logo_url,
-        imageUrl: null,
-        players: [],
         wins: data.wins || 0,
         losses: data.losses || 0,
         game_wins: data.game_wins || 0,
         game_losses: data.game_losses || 0,
-        created_at: '',
         division: data.division_id,
-        divisionName: data.divisions?.name || null
+        divisionName: data.divisions?.name || null,
+        sos: data?.sos,
+        close_match_losses: data?.close_match_losses,
+        power_score: data?.power_score
       } as Team;
     },
     enabled: !!teamId
