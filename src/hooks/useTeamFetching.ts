@@ -30,7 +30,7 @@ export function useTeamFetching() {
           id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: team.image_url || null, // Properly handle image_url
+          imageUrl: team.image_url || null, // Explicitly include image_url
           players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
@@ -38,19 +38,18 @@ export function useTeamFetching() {
           game_losses: team.game_losses || 0,
           created_at: team.created_at || '',
           division: team.division_id || null,
-          divisionName: team.divisionname || null, // Changed from division_name to divisionname
+          divisionName: team.divisionname || null,
           sos: typeof team.sos === 'number' ? team.sos : 0,
           power_score: typeof team.power_score === 'number' ? team.power_score : 0
         };
       });
       
       setTeams(teamsMap);
-      console.log("Team data loaded:", data?.map(t => ({
+      console.log("Team data loaded with images:", data?.slice(0, 3).map(t => ({
         id: t.team_id, 
-        logo: t.logo_url, 
-        image: t.image_url,
-        sos: t.sos, 
-        power_score: t.power_score
+        name: t.name,
+        logo_url: t.logo_url, 
+        image_url: t.image_url
       })));
     } catch (error) {
       console.error('Error fetching teams:', error);

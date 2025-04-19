@@ -11,7 +11,12 @@ export const fetchTeamsFromApi = async () => {
     .select('*')
     .order('name');
 
-  console.log("Teams fetched from API:", data);
+  console.log("Teams fetched from API:", data?.map(t => ({
+    id: t.team_id, 
+    name: t.name,
+    logoUrl: t.logo_url,
+    imageUrl: t.image_url
+  })));
 
   if (error) {
     console.error("Error fetching teams:", error);
@@ -23,7 +28,7 @@ export const fetchTeamsFromApi = async () => {
     id: team.team_id,
     name: team.name || 'Unnamed Team',
     logoUrl: team.logo_url || null,
-    imageUrl: null,
+    imageUrl: team.image_url || null, // Explicitly include image_url
     // Safely handle players array which might be null/undefined
     players: Array.isArray(team.players) ? team.players : [],
     // Default values for optional fields
@@ -31,7 +36,7 @@ export const fetchTeamsFromApi = async () => {
     losses: team.losses || 0,
     created_at: team.created_at || new Date().toISOString(),
     division: team.division_id || null,
-    divisionName: team.division_name || null,
+    divisionName: team.divisionname || null,
     game_wins: team.game_wins || 0,
     game_losses: team.game_losses || 0,
     sos: typeof team.sos === 'number' ? team.sos : 0,

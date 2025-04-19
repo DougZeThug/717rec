@@ -19,6 +19,14 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
     return <TeamListSkeleton />;
   }
 
+  // Debug team image data
+  console.log("TeamList rendering teams:", teams.slice(0, 3).map(team => ({
+    id: team.id,
+    name: team.name,
+    logoUrl: team.logoUrl,
+    imageUrl: team.imageUrl
+  })));
+
   if (teams.length === 0) {
     return (
       <div className="text-center py-12">

@@ -31,7 +31,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  console.debug('[TeamCard] props', team.id, team.game_wins, team.game_losses, 'sos:', team.sos, 'power_score:', team.power_score, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl);
+  console.debug('[TeamCard] props', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
 
   // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
   const teamImage = team.logoUrl || team.imageUrl;
@@ -53,6 +53,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
                 src={teamImage} 
                 alt={team.name} 
                 className="max-h-28 sm:max-h-36 max-w-full object-contain"
+                onError={(e) => {
+                  console.error(`Image load error for ${team.name}:`, teamImage);
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop'; // Fallback image
+                }}
               />
             </div>
           )}
