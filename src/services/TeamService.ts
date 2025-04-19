@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
@@ -6,7 +7,7 @@ import { Team } from "@/types";
  */
 export const fetchTeamsFromApi = async () => {
   const { data, error } = await supabase
-    .from('teams')
+    .from('v_team_details') // Using v_team_details view for consistency
     .select('*')
     .order('name');
 
@@ -19,10 +20,10 @@ export const fetchTeamsFromApi = async () => {
 
   // Process the data to match our Team type, safely handling missing fields
   return (data || []).map((team: any): Team => ({
-    id: team.id,
+    id: team.team_id,
     name: team.name || 'Unnamed Team',
     logoUrl: team.logo_url || null,
-    imageUrl: team.image_url || null,
+    imageUrl: null,
     // Safely handle players array which might be null/undefined
     players: Array.isArray(team.players) ? team.players : [],
     // Default values for optional fields
@@ -30,8 +31,11 @@ export const fetchTeamsFromApi = async () => {
     losses: team.losses || 0,
     created_at: team.created_at || new Date().toISOString(),
     division: team.division_id || null,
+    divisionName: team.division_name || null,
     game_wins: team.game_wins || 0,
-    game_losses: team.game_losses || 0
+    game_losses: team.game_losses || 0,
+    sos: typeof team.sos === 'number' ? team.sos : 0,
+    power_score: typeof team.power_score === 'number' ? team.power_score : 0
   }));
 };
 

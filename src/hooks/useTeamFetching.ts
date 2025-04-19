@@ -26,7 +26,9 @@ export function useTeamFetching() {
           game_wins,
           game_losses,
           logo_url,
-          division_id
+          division_id,
+          sos,
+          power_score
         `)
         .order('name');
 
@@ -46,12 +48,19 @@ export function useTeamFetching() {
           game_losses: team.game_losses || 0,
           created_at: '',
           division: team.division_id || null,
-          divisionName: null
+          divisionName: null,
+          sos: team.sos || 0,
+          power_score: team.power_score || 0
         };
       });
       
       setTeams(teamsMap);
-      console.log("Team logos loaded:", data?.map(t => ({id: t.team_id, logo: t.logo_url})));
+      console.log("Team data loaded:", data?.map(t => ({
+        id: t.team_id, 
+        logo: t.logo_url, 
+        sos: t.sos, 
+        power_score: t.power_score
+      })));
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({

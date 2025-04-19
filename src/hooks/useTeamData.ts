@@ -8,12 +8,11 @@ export const useTeamData = (divisionId?: string | null) => {
     queryKey: ['teams', divisionId],
     queryFn: async () => {
       let query = supabase
-        .from('teams')
+        .from('v_team_details') // Using v_team_details view for consistency
         .select(`
-          id,
+          team_id as id,
           name,
           logo_url,
-          image_url,
           players,
           wins,
           losses,
@@ -21,7 +20,9 @@ export const useTeamData = (divisionId?: string | null) => {
           game_losses,
           created_at,
           division_id,
-          divisions(name)
+          division_name,
+          sos,
+          power_score
         `)
         .order('name');
       
@@ -40,7 +41,7 @@ export const useTeamData = (divisionId?: string | null) => {
         id: team.id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
-        imageUrl: team.image_url || null,
+        imageUrl: null,
         players: Array.isArray(team.players) ? team.players : [],
         wins: team.wins || 0,
         losses: team.losses || 0,
@@ -48,8 +49,17 @@ export const useTeamData = (divisionId?: string | null) => {
         game_losses: team.game_losses || 0,
         created_at: team.created_at || new Date().toISOString(),
         division: team.division_id || null,
-        divisionName: team.divisions?.name || null
+        divisionName: team.division_name || null,
+        sos: typeof team.sos === 'number' ? team.sos : 0,
+        power_score: typeof team.power_score === 'number' ? team.power_score : 0
       }));
+      
+      console.log("TeamData query result:", transformedTeams.map(t => ({
+        id: t.id, 
+        name: t.name, 
+        sos: t.sos, 
+        power_score: t.power_score
+      })));
       
       return transformedTeams;
     },

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types";
@@ -28,7 +29,7 @@ export function useTeams() {
       
       // Add debug log for each team's game stats and logo URLs
       teamsData.forEach((team: Team) => {
-        console.debug('[hook][useTeams] team', team.id, team.game_wins, team.game_losses, 'logoUrl:', team.logoUrl);
+        console.debug('[hook][useTeams] team', team.id, team.game_wins, team.game_losses, 'logoUrl:', team.logoUrl, 'sos:', team.sos, 'power_score:', team.power_score);
       });
       
       setTeams(teamsData as Team[]);

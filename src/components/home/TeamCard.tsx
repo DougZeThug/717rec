@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
@@ -22,6 +23,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   
   // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
   const teamImage = team.logoUrl || team.imageUrl;
+  
+  // Get SOS and Power Score with fallbacks
+  const sos = team.sos !== undefined ? team.sos : 0;
+  const powerScore = team.power_score !== undefined ? team.power_score : 0;
   
   return (
     <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0")}>
@@ -57,6 +62,18 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
             <span>Games:</span>
             <span className="font-medium">
               {gameWins}–{gameLosses}
+            </span>
+          </div>
+          <div className="flex justify-between text-xs mt-1">
+            <span>SOS:</span>
+            <span className="font-medium">
+              {sos.toFixed(3)}
+            </span>
+          </div>
+          <div className="flex justify-between text-xs mt-1">
+            <span>Power Score:</span>
+            <span className="font-medium">
+              {powerScore.toFixed(1)}
             </span>
           </div>
           {team.divisionName && (

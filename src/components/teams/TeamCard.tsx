@@ -1,13 +1,15 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2, Trophy, X, ExternalLink } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Trophy, X, ExternalLink, BarChart } from "lucide-react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
 import { cn } from "@/lib/utils";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/teamDetailsUtils/powerScoreUtils";
 
 interface TeamCardProps {
   team: Team;
@@ -30,10 +32,13 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  console.debug('[TeamCard] props', team.id, team.game_wins, team.game_losses);
+  console.debug('[TeamCard] props', team.id, team.game_wins, team.game_losses, 'sos:', team.sos, 'power_score:', team.power_score);
 
   // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
   const teamImage = team.logoUrl || team.imageUrl;
+  
+  // Get power score color
+  const powerScoreColor = getPowerScoreColor(team.power_score);
 
   return (
     <Card className={getCardInteractionStyles("overflow-hidden h-full flex flex-col mb-4 sm:mb-0")}>
@@ -115,6 +120,20 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </div>
           <div className="flex items-center gap-1 text-gray-500 mb-1">
             <span>Games:</span> {team.game_wins ?? 0}–{team.game_losses ?? 0}
+          </div>
+          <div className="flex items-center justify-between gap-1 text-gray-500 mb-1">
+            <span className="flex items-center gap-1">
+              <BarChart size={12} /> Power Score:
+            </span>
+            <span className={powerScoreColor}>
+              {formatPowerScore(team.power_score)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-1 text-gray-500 mb-1">
+            <span>SOS:</span>
+            <span className="font-medium">
+              {team.sos !== undefined ? team.sos.toFixed(3) : '0.000'}
+            </span>
           </div>
         </div>
       </CardContent>
