@@ -8,38 +8,31 @@ import TeamHeader from "@/components/teams/TeamHeader";
 import TeamStats from "@/components/teams/TeamStats";
 import MatchList from "@/components/teams/MatchList";
 import StatBreakdown from "@/components/teams/StatBreakdown";
+import { useTeamMatches } from "@/hooks/useTeamMatches"; // This hook should already exist
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
   
-  const {
-    team,
-    isLoadingTeam,
-    isLoadingMatches,
-    upcomingMatches,
-    pastMatches,
-    winPercentage,
-    gamesWon,
-    gamesLost,
-    gameWinPercentage,
-    strengthOfSchedule,
-    closeMatchLosses,
-    powerScore,
-    getOpponentId,
-    getMatchResult,
-    getScoreDisplay
-  } = useTeamDetails(teamId);
+  const { team, isLoading } = useTeamDetails(teamId);
+  const { upcomingMatches, pastMatches, isLoadingMatches } = useTeamMatches(teamId);
 
-  if (isLoadingTeam) {
+  // Derived values (guard against undefined)
+  const wins = team?.wins ?? 0;
+  const losses = team?.losses ?? 0;
+  const gameWins = team?.game_wins ?? 0;
+  const gameLosses = team?.game_losses ?? 0;
+
+  const winPct = wins + losses === 0 ? 0 : (wins / (wins + losses)) * 100;
+  const gamePct = gameWins + gameLosses === 0 ? 0 : (gameWins / (gameWins + gameLosses)) * 100;
+
+  if (isLoading || isLoadingMatches) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Skeleton className="h-10 w-40 mb-4" />
         <Skeleton className="h-64 w-full rounded-lg mb-8" />
         <Skeleton className="h-8 w-60 mb-2" />
         <Skeleton className="h-24 w-full rounded-lg mb-4" />
-        <Skeleton className="h-8 w-60 mb-2" />
-        <Skeleton className="h-48 w-full rounded-lg" />
       </div>
     );
   }
@@ -65,26 +58,30 @@ const TeamDetails = () => {
       </Button>
       
       {/* Team Header */}
-      <TeamHeader team={team} winPercentage={winPercentage} />
+      <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
       
       {/* Team Stats */}
       <TeamStats 
-        team={team} 
-        winPercentage={winPercentage}
-        pastMatches={pastMatches}
+        team={team}
+        wins={wins}
+        losses={losses}
+        gameWins={gameWins}
+        gameLosses={gameLosses}
+        winPercentage={winPct.toFixed(1)}
+        gameWinPercentage={gamePct.toFixed(1)}
       />
       
       {/* Stat Breakdown */}
       <StatBreakdown
-        wins={team.wins}
-        losses={team.losses}
-        winPercentage={winPercentage}
-        gamesWon={gamesWon}
-        gamesLost={gamesLost}
-        gameWinPercentage={gameWinPercentage}
-        strengthOfSchedule={strengthOfSchedule}
-        closeMatchLosses={closeMatchLosses}
-        powerScore={powerScore}
+        wins={wins}
+        losses={losses}
+        winPercentage={winPct.toFixed(1)}
+        gamesWon={gameWins}
+        gamesLost={gameLosses}
+        gameWinPercentage={gamePct.toFixed(1)}
+        strengthOfSchedule={team.sos || "0.0"}
+        closeMatchLosses={team.close_match_losses || 0}
+        powerScore={team.power_score || 0}
       />
       
       {/* Upcoming Matches */}
@@ -93,7 +90,6 @@ const TeamDetails = () => {
         matches={upcomingMatches}
         isLoading={isLoadingMatches}
         teamId={teamId || ''}
-        getOpponentId={getOpponentId}
       />
       
       {/* Past Matches */}
@@ -103,9 +99,6 @@ const TeamDetails = () => {
         isLoading={isLoadingMatches}
         teamId={teamId || ''}
         isPast={true}
-        getOpponentId={getOpponentId}
-        getMatchResult={getMatchResult}
-        getScoreDisplay={getScoreDisplay}
       />
     </div>
   );
