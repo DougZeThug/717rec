@@ -26,9 +26,9 @@ export function useTeams() {
 
       console.log("Teams data received:", teamsData);
       
-      // Add debug log for each team's game stats
+      // Add debug log for each team's game stats and logo URLs
       teamsData.forEach((team: Team) => {
-        console.debug('[hook][useTeams] team', team.id, team.game_wins, team.game_losses);
+        console.debug('[hook][useTeams] team', team.id, team.game_wins, team.game_losses, 'logoUrl:', team.logoUrl);
       });
       
       setTeams(teamsData as Team[]);

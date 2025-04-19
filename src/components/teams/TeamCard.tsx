@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,18 +32,21 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   console.debug('[TeamCard] props', team.id, team.game_wins, team.game_losses);
 
+  // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
+  const teamImage = team.logoUrl || team.imageUrl;
+
   return (
     <Card className={getCardInteractionStyles("overflow-hidden h-full flex flex-col mb-4 sm:mb-0")}>
       <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
         <div className="h-32 sm:h-40 bg-gray-100 flex items-center justify-center p-4">
-          {!team.imageUrl ? (
+          {!teamImage ? (
             <div className="flex items-center justify-center h-full text-gray-400 text-sm">
               No Team Image
             </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <img 
-                src={team.imageUrl} 
+                src={teamImage} 
                 alt={team.name} 
                 className="max-h-28 sm:max-h-36 max-w-full object-contain"
               />

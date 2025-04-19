@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
@@ -21,14 +20,17 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   // Use the consistent win percentage calculation
   const winPercentage = calculateWinPercentage(wins, losses) * 100;
   
+  // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
+  const teamImage = team.logoUrl || team.imageUrl;
+  
   return (
     <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0")}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-44 bg-gray-200 relative flex items-center justify-center p-3">
           <div className="w-full h-full flex items-center justify-center">
-            {team.imageUrl ? (
+            {teamImage ? (
               <img 
-                src={team.imageUrl} 
+                src={teamImage} 
                 alt={team.name} 
                 className="max-h-36 max-w-full object-contain"
               />

@@ -9,6 +9,10 @@ export function useTeamFetching() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
@@ -22,6 +26,7 @@ export function useTeamFetching() {
           game_wins,
           game_losses,
           logo_url,
+          image_url,
           division_id
         `)
         .order('name');
@@ -34,7 +39,7 @@ export function useTeamFetching() {
           id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: null,
+          imageUrl: team.image_url,
           players: [],  // Initialize as empty string array
           wins: team.wins || 0,
           losses: team.losses || 0,
@@ -47,6 +52,7 @@ export function useTeamFetching() {
       });
       
       setTeams(teamsMap);
+      console.log("Team logos loaded:", data?.map(t => ({id: t.team_id, logo: t.logo_url})));
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({
