@@ -9,32 +9,17 @@ export const useTeamDetails = (teamId: string | undefined) => {
     queryFn: async () => {
       if (!teamId) throw new Error("Team ID is required");
       
-      // Let's first check what fields are available in the v_team_game_totals view
       const { data, error } = await supabase
-        .from("teams") // Query from teams table directly instead of the view
-        .select(`
-          id,
-          name,
-          logo_url,
-          wins,
-          losses,
-          game_wins,
-          game_losses,
-          division_id,
-          divisions:division_id(name),
-          sos,
-          close_match_losses,
-          power_score
-        `)
-        .eq("id", teamId)
+        .from("v_team_details")
+        .select('*')
+        .eq("team_id", teamId)
         .maybeSingle();
         
       if (error) throw error;
       if (!data) throw new Error("Team not found");
       
-      // Map the data to match the Team interface
       return {
-        id: data.id,
+        id: data.team_id,
         name: data.name,
         logoUrl: data.logo_url,
         wins: data.wins || 0,
@@ -42,7 +27,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
         game_wins: data.game_wins || 0,
         game_losses: data.game_losses || 0,
         division: data.division_id,
-        divisionName: data.divisions?.name || null,
+        divisionName: data.division_name || null,
         sos: data.sos,
         close_match_losses: data.close_match_losses,
         power_score: data.power_score
@@ -56,3 +41,4 @@ export const useTeamDetails = (teamId: string | undefined) => {
     isLoading: teamQuery.isLoading
   };
 };
+
