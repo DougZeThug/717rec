@@ -18,11 +18,14 @@ export interface Team {
   players: Player[];
   wins: number;
   losses: number;
-  game_wins?: number;  // Add this property
-  game_losses?: number;  // Add this property
+  game_wins?: number;
+  game_losses?: number;
   created_at: string;
   division?: string | null;
   divisionName?: string | null;
+  sos?: number;
+  close_match_losses?: number;
+  power_score?: number;
 }
 
 export interface Match {
@@ -33,7 +36,7 @@ export interface Match {
   team2Score?: number | null;
   date: string | null;
   location: string | null;
-  iscompleted: boolean; // Matches Supabase column name
+  iscompleted: boolean;
   winnerId?: string | null;
   loserId?: string | null;
   round_number?: number;
@@ -44,8 +47,16 @@ export interface Match {
   next_loser_match_id?: string;
   best_of?: number;
   created_at?: string;
+  team1GameWins?: number | null;
+  team2GameWins?: number | null;
+  team1_id?: string;
+  team2_id?: string;
+  team1_score?: number | null;
+  team2_score?: number | null;
   team1_game_wins?: number | null;
   team2_game_wins?: number | null;
+  winner_id?: string | null;
+  loser_id?: string | null;
 }
 
 export interface TeamTimeslot {
@@ -92,7 +103,6 @@ export interface PlayoffGame {
   winner: string;
 }
 
-// Define HeadToHeadRecord separately to solve excessive depth issue
 export interface HeadToHeadRecord {
   opponentId: string;
   opponentName: string;
@@ -100,7 +110,6 @@ export interface HeadToHeadRecord {
   losses: number;
 }
 
-// Use HeadToHeadMap as alias to avoid deep nested type
 export type HeadToHeadMap = Record<string, { 
   wins: number; 
   losses: number; 
@@ -125,10 +134,9 @@ export interface Ranking {
   gamesLost?: number;
   gameWinPercentage?: number;
   closeMatchLosses?: number;
-  powerScore?: number; // This was already present but with optional marker
+  powerScore?: number;
 }
 
-// Interface for the team_stats table we just created
 export interface TeamStat {
   id: string;
   team_id: string;

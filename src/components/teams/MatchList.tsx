@@ -19,7 +19,7 @@ const MatchList = ({
   isPast = false,
 }: MatchListProps) => {
   const getOpponentId = (match: Match) => {
-    return match.team1_id === teamId ? match.team2_id : match.team1_id;
+    return match.team1Id === teamId ? match.team2Id : match.team1Id;
   };
 
   return (

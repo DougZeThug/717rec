@@ -62,13 +62,15 @@ const TeamDetails = () => {
       
       {/* Team Stats */}
       <TeamStats 
-        team={team}
         wins={wins}
         losses={losses}
         gameWins={gameWins}
         gameLosses={gameLosses}
-        winPercentage={winPct.toFixed(1)}
-        gameWinPercentage={gamePct.toFixed(1)}
+        winPercentage={winPct.toFixed(1) + "%"}
+        gameWinPercentage={gamePct.toFixed(1) + "%"}
+        sos={team.sos}
+        closeMatchLosses={team.close_match_losses}
+        powerScore={team.power_score}
       />
       
       {/* Stat Breakdown */}
@@ -79,7 +81,7 @@ const TeamDetails = () => {
         gamesWon={gameWins}
         gamesLost={gameLosses}
         gameWinPercentage={gamePct.toFixed(1)}
-        strengthOfSchedule={team.sos || "0.0"}
+        strengthOfSchedule={team.sos?.toString() || "0.0"}
         closeMatchLosses={team.close_match_losses || 0}
         powerScore={team.power_score || 0}
       />

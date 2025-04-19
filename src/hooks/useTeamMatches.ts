@@ -20,9 +20,22 @@ export const useTeamMatches = (teamId: string | undefined) => {
       const today = new Date();
       const matchData = data || [];
       
+      // Map database rows to Match interface with camelCase properties
+      const mappedMatches = matchData.map(row => ({
+        ...row,
+        team1Id: row.team1_id,
+        team2Id: row.team2_id,
+        team1Score: row.team1_score,
+        team2Score: row.team2_score,
+        team1GameWins: row.team1_game_wins,
+        team2GameWins: row.team2_game_wins,
+        winnerId: row.winner_id,
+        loserId: row.loser_id
+      })) as Match[];
+      
       return {
-        upcomingMatches: matchData.filter(m => m.date && new Date(m.date) > today),
-        pastMatches: matchData.filter(m => m.date && new Date(m.date) <= today),
+        upcomingMatches: mappedMatches.filter(m => m.date && new Date(m.date) > today),
+        pastMatches: mappedMatches.filter(m => m.date && new Date(m.date) <= today),
       };
     },
     enabled: !!teamId,
