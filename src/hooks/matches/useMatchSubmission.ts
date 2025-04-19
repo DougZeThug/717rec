@@ -1,8 +1,8 @@
 
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTeamWinLossUpdate } from "@/hooks/team-stats/useTeamWinLossUpdate"; 
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { SubmitScoreParams } from "./types/matchSubmissionTypes";
 import { determineMatchResults } from "./utils/matchResultUtils";
 import { updateMatchInDatabase } from "./utils/matchUpdateUtils";
@@ -40,16 +40,45 @@ export const useMatchSubmission = () => {
       console.log(`[useMatchSubmission] Submitting scores for match ${matchId}`);
       console.log(`Game wins - Team1: ${team1GameWinsNum}, Team2: ${team2GameWinsNum}`);
 
-      // Determine match results
-      const matchResult = determineMatchResults(
-        team1_id, 
-        team2_id, 
-        team1GameWinsNum, 
-        team2GameWinsNum
-      );
+      // Determine match results based on game wins
+      const team1Win = team1GameWinsNum > team2GameWinsNum;
       
-      // Update the match in database
-      await updateMatchInDatabase(matchId, team1GameWinsNum, team2GameWinsNum, matchResult);
+      // Update the match in database with both match-level and game-level stats
+      const updatePayload = {
+        team1_score: team1Win ? 1 : 0,
+        team2_score: team1Win ? 0 : 1,
+        team1_game_wins: team1GameWinsNum,
+        team2_game_wins: team2GameWinsNum,
+        iscompleted: true,
+        winner_id: team1Win ? team1_id : team2_id,
+        loser_id: team1Win ? team2_id : team1_id
+      };
+
+      const { data, error } = await supabase
+        .from('matches')
+        .update(updatePayload)
+        .eq('id', matchId)
+        .select();
+
+      if (error) throw error;
+      
+      // Trigger team records update
+      const teamsUpdateSuccess = await updateTeamRecords(
+        team1Win ? team1_id : team2_id, 
+        team1Win ? team2_id : team1_id, 
+        [], 
+        team1Win ? team1GameWinsNum : team2GameWinsNum,
+        team1Win ? team2GameWinsNum : team1GameWinsNum
+      );
+
+      if (!teamsUpdateSuccess) {
+        console.warn('Team records update partially failed');
+        toast({
+          title: 'Partial Update',
+          description: 'Match scores updated, but team records may not be fully synchronized.',
+          variant: 'default'
+        });
+      }
 
       // Invalidate all relevant query caches to ensure data freshness
       await invalidateMatchRelatedQueries(queryClient);
