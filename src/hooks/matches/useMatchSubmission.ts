@@ -69,14 +69,8 @@ export const useMatchSubmission = () => {
 
       if (error) throw error;
       
-      // Trigger team records update
-      const teamsUpdateSuccess = await updateTeamRecords(
-        team1Win ? team1_id : team2_id, 
-        team1Win ? team2_id : team1_id, 
-        [], 
-        team1Win ? team1GameWinsNum : team2GameWinsNum,
-        team1Win ? team2GameWinsNum : team1GameWinsNum
-      );
+      // Trigger team records update - now it only needs to invalidate queries
+      const teamsUpdateSuccess = await updateTeamRecords();
 
       if (!teamsUpdateSuccess) {
         console.warn('Team records update partially failed');

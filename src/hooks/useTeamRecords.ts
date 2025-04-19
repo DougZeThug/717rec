@@ -46,12 +46,13 @@ export const useTeamRecords = () => {
     }
     
     try {
-      // First update the basic win/loss records in the teams table
-      console.log("Step 1: Updating basic win/loss and game records in teams table");
-      const success = await updateWinLoss(winnerId, loserId, teams, winnerGameWins, loserGameWins);
+      // With our new approach, we only need to invalidate queries
+      // since the stats are calculated dynamically from the matches table
+      console.log("Step 1: Invalidating queries to refresh team stats");
+      const success = await updateWinLoss();
       
       if (!success) {
-        console.error("CRITICAL ERROR: Failed to update basic win/loss records in teams table");
+        console.error("CRITICAL ERROR: Failed to update team records");
         toast({
           title: "Error",
           description: "Failed to update team records. Please try again.",
@@ -60,7 +61,7 @@ export const useTeamRecords = () => {
         return false;
       }
       
-      console.log("Step 1 SUCCESSFUL: Teams table win/loss records updated");
+      console.log("Step 1 SUCCESSFUL: Team stats refreshed");
       console.log("Step 2: Updating detailed team statistics");
   
       // Then update the detailed team stats
