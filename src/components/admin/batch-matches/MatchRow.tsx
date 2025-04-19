@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,8 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Team } from "@/types";
+import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { Team } from "@/types";
 import { MatchPair } from "./MatchPairsList";
 
 interface MatchRowProps {
@@ -20,86 +20,76 @@ interface MatchRowProps {
 }
 
 const MatchRow = ({ pair, teams, onUpdate, onRemove }: MatchRowProps) => {
-  const timeslots = [
-    { value: '18:30', label: '6:30 PM' },
-    { value: '19:00', label: '7:00 PM' },
-    { value: '19:30', label: '7:30 PM' },
-    { value: '20:00', label: '8:00 PM' },
-    { value: '20:30', label: '8:30 PM' },
-    { value: '21:00', label: '9:00 PM' },
-  ];
-
-  // Find team objects for display purposes
-  const team1 = teams.find(team => team.id === pair.team1Id);
-  const team2 = teams.find(team => team.id === pair.team2Id);
-  
-  // Filter available teams for Team 2 dropdown
-  const availableTeams = teams.filter(team => team.id !== pair.team1Id);
+  const availableTeams = teams.filter(team => 
+    team.id !== pair.team1Id && team.id !== pair.team2Id
+  );
 
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-lg bg-card">
-      <Select
-        value={pair.team1Id || ""}
-        onValueChange={(value) => onUpdate({ team1Id: value })}
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select Team 1">
-            {team1?.name || "Select Team 1"}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {teams.map((team) => (
-            <SelectItem key={team.id} value={team.id}>
-              {team.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="flex flex-col gap-3 p-3 sm:p-4 border rounded-lg bg-card">
+      <div className="grid grid-cols-1 gap-3">
+        <Select
+          value={pair.team1Id || ""}
+          onValueChange={(value) => onUpdate({ team1Id: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Team 1" />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map((team) => (
+              <SelectItem key={team.id} value={team.id}>
+                {team.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <span className="text-muted-foreground">vs</span>
+        <div className="flex items-center justify-center text-sm text-muted-foreground">
+          vs
+        </div>
 
-      <Select
-        value={pair.team2Id || ""}
-        onValueChange={(value) => onUpdate({ team2Id: value })}
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select Team 2">
-            {team2?.name || "Select Team 2"}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {availableTeams.map((team) => (
-            <SelectItem key={team.id} value={team.id}>
-              {team.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select
+          value={pair.team2Id || ""}
+          onValueChange={(value) => onUpdate({ team2Id: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Team 2" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableTeams.map((team) => (
+              <SelectItem key={team.id} value={team.id}>
+                {team.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Select
-        value={pair.timeslot || ""}
-        onValueChange={(value) => onUpdate({ timeslot: value })}
-      >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Time" />
-        </SelectTrigger>
-        <SelectContent>
-          {timeslots.map((slot) => (
-            <SelectItem key={slot.value} value={slot.value}>
-              {slot.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center gap-2">
+        <Select
+          value={pair.timeslot || ""}
+          onValueChange={(value) => onUpdate({ timeslot: value })}
+        >
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select Time" />
+          </SelectTrigger>
+          <SelectContent>
+            {["6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM"].map((slot) => (
+              <SelectItem key={slot} value={slot}>
+                {slot}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onRemove}
-        className="ml-auto"
-      >
-        <X className="h-4 w-4" />
-      </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onRemove}
+          className="shrink-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

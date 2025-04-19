@@ -35,7 +35,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
 
   return (
     <Card className="mx-auto max-w-full">
-      <CardHeader className="p-4">
+      <CardHeader className="p-3 sm:p-4">
         <ScoreEntryToolbar
           filters={filters}
           brackets={brackets}
@@ -45,20 +45,22 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
         />
       </CardHeader>
 
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
         <ErrorAlert failedMatches={failedMatches} />
         
-        <div className="overflow-x-auto">
-          <MatchesTable
-            matches={matches}
-            loading={loading}
-            submitting={submitting}
-            failedMatches={failedMatches}
-            errorMessages={errorMessages}
-            onScoreChange={handleScoreChange}
-            onMarkCompleted={handleMarkCompleted}
-            onClearError={clearErrors}
-          />
+        <div className="overflow-x-auto -mx-3 sm:mx-0">
+          <div className="min-w-[640px] sm:min-w-0">
+            <MatchesTable
+              matches={matches}
+              loading={loading}
+              submitting={submitting}
+              failedMatches={failedMatches}
+              errorMessages={errorMessages}
+              onScoreChange={handleScoreChange}
+              onMarkCompleted={handleMarkCompleted}
+              onClearError={clearErrors}
+            />
+          </div>
         </div>
 
         <div className="flex justify-end mt-6">

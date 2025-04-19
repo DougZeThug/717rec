@@ -34,7 +34,7 @@ const BatchMatchForm = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-full overflow-hidden">
       <div className="w-full">
         <ThursdayDatePicker
           selected={selectedDate}
