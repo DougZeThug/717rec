@@ -1,3 +1,4 @@
+
 export interface Player {
   id?: string;
   name: string;
@@ -11,8 +12,9 @@ export interface Division {
 }
 
 export interface Team {
-  id: string;
+  id?: string;
   name: string;
+  email?: string;
   logoUrl?: string | null;
   imageUrl?: string | null;
   players: string[];

@@ -77,9 +77,7 @@ export function usePendingMatches() {
           name: team.name,
           logoUrl: team.logo_url,
           imageUrl: team.image_url,
-          players: Array.isArray(team.players) 
-            ? team.players.map((playerName: string) => ({ name: playerName })) 
-            : [],
+          players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
           created_at: team.created_at || '',

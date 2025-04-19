@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Team, Match, Ranking } from "@/types";
 import { createRankingObject, sortRankings, updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
@@ -82,9 +81,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
         imageUrl: team.image_url || null,
-        players: Array.isArray(team.players) 
-          ? team.players.map((playerName: string) => ({ name: playerName })) 
-          : [],
+        players: Array.isArray(team.players) ? team.players : [],
         wins: team.wins || 0,
         losses: team.losses || 0,
         game_wins: team.game_wins || 0,
@@ -142,17 +139,14 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     calculateRankingsEffect();
   }, [latestTeams, latestMatches, teams, matches, previousRankings]);
   
-  // Handle manual refresh of rankings
-  const refreshRankings = () => {
-    queryClient.invalidateQueries({ queryKey: ['matches'] });
-    queryClient.invalidateQueries({ queryKey: ['teams'] });
-    queryClient.invalidateQueries({ queryKey: ['rankings'] });
-    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-  };
-  
   return {
     rankings,
     isLoading: isLoading || matchesLoading || teamsLoading,
-    refreshRankings
+    refreshRankings: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      queryClient.invalidateQueries({ queryKey: ['rankings'] });
+      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+    }
   };
 };

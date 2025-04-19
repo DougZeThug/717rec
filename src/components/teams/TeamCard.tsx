@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -120,7 +121,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           <span className="font-semibold">Players:</span> 
           <span className="text-muted-foreground ml-1 block truncate text-xs">
             {team.players.length > 0
-              ? team.players.map(p => p.name).slice(0, 3).join(', ') 
+              ? team.players.slice(0, 3).join(', ') 
                 + (team.players.length > 3 ? ` +${team.players.length - 3} more` : '')
               : "No players"
             }

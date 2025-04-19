@@ -35,7 +35,7 @@ export function useTeamFetching() {
           name: team.name,
           logoUrl: team.logo_url,
           imageUrl: null,
-          players: [],
+          players: [],  // Initialize as empty string array
           wins: team.wins || 0,
           losses: team.losses || 0,
           game_wins: team.game_wins || 0,

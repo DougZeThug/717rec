@@ -41,9 +41,7 @@ export const useTeamData = (divisionId?: string | null) => {
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
         imageUrl: team.image_url || null,
-        players: Array.isArray(team.players) 
-          ? team.players.map((playerName: string) => ({ name: playerName })) 
-          : [],
+        players: Array.isArray(team.players) ? team.players : [],
         wins: team.wins || 0,
         losses: team.losses || 0,
         game_wins: team.game_wins || 0,

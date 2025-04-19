@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Team, Player } from "@/types";
+import { Team } from "@/types";
 import { uploadTeamImage } from "@/utils/imageUpload";
 import { Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -19,8 +19,8 @@ interface TeamFormProps {
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [name, setName] = useState<string>(team?.name || '');
   const [imageUrl, setImageUrl] = useState<string | undefined>(team?.imageUrl);
-  const [players, setPlayers] = useState<Player[]>(
-    team?.players || [{ name: '' }]
+  const [playerNames, setPlayerNames] = useState<string[]>(
+    team?.players || ['']
   );
   const [division, setDivision] = useState<string | null>(team?.division || null);
   const [isUploading, setIsUploading] = useState(false);
@@ -31,17 +31,17 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const { divisions, isLoading: isDivisionsLoading } = useDivisions();
 
   const handleAddPlayer = () => {
-    setPlayers([...players, { name: '' }]);
+    setPlayerNames([...playerNames, '']);
   };
 
   const handlePlayerChange = (index: number, value: string) => {
-    const updatedPlayers = [...players];
-    updatedPlayers[index] = { ...updatedPlayers[index], name: value };
-    setPlayers(updatedPlayers);
+    const updatedPlayers = [...playerNames];
+    updatedPlayers[index] = value;
+    setPlayerNames(updatedPlayers);
   };
 
   const handleRemovePlayer = (index: number) => {
-    setPlayers(players.filter((_, i) => i !== index));
+    setPlayerNames(playerNames.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +92,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
     onSubmit({
       name,
       imageUrl: imageUrl || undefined, // Use undefined if no image
-      players: players.filter(p => p.name.trim() !== ""),
+      players: playerNames.filter(name => name.trim() !== ""),
       wins,
       losses,
       division: divisionValue
@@ -182,10 +182,10 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
         {/* Players section */}
         <div className="space-y-2">
           <Label>Players</Label>
-          {players.map((player, index) => (
+          {playerNames.map((playerName, index) => (
             <div key={index} className="flex gap-2 mt-2">
               <Input
-                value={player.name}
+                value={playerName}
                 onChange={(e) => handlePlayerChange(index, e.target.value)}
                 placeholder={`Player ${index + 1} name`}
                 className="flex-1"
