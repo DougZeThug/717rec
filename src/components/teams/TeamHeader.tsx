@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -14,25 +15,23 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
   console.log("TeamHeader logo URL:", team?.logoUrl);
 
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
-      <Avatar className="h-16 w-16">
-        <AvatarImage
-          src={team?.imageUrl || team?.logoUrl || undefined}
-          alt={team?.name ?? "logo"}
+    <div className="flex flex-col items-center">
+      <div className="flex justify-center mb-4 w-full">
+        <img
+          src={team?.imageUrl || team?.logoUrl || '/placeholder-logo.png'}
+          alt={`${team?.name} logo`}
           onError={(e) => {
             console.error(`Image load error for ${team?.name}:`, team?.imageUrl);
-            // Keep fallback behavior
+            (e.target as HTMLImageElement).src = '/placeholder-logo.png';
           }}
+          className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl object-contain shadow-md mx-auto"
         />
-        <AvatarFallback>
-          {team?.name?.slice(0, 1).toUpperCase() || 'T'}
-        </AvatarFallback>
-      </Avatar>
+      </div>
       
-      <div>
+      <div className="text-center">
         <h1 className="text-3xl font-bold">{team.name}</h1>
         
-        <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex flex-wrap justify-center items-center gap-2 mt-2">
           {team.divisionName && (
             <Badge variant="outline" className="font-medium">
               {team.divisionName}
