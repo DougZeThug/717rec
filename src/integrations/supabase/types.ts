@@ -413,9 +413,10 @@ export type Database = {
           close_match_losses: string | null
           created_at: string | null
           division_id: string | null
-          division_name: string | null
+          divisionname: string | null
           game_losses: number | null
           game_wins: number | null
+          image_url: string | null
           logo_url: string | null
           losses: number | null
           name: string | null

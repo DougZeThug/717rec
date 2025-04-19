@@ -27,7 +27,7 @@ export const useTeamData = (divisionId?: string | null) => {
         id: team.team_id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
-        imageUrl: null,
+        imageUrl: team.image_url || null, // Make sure to include image_url
         players: Array.isArray(team.players) ? team.players : [],
         wins: team.wins || 0,
         losses: team.losses || 0,
@@ -43,6 +43,8 @@ export const useTeamData = (divisionId?: string | null) => {
       console.log("TeamData query result:", transformedTeams.map(t => ({
         id: t.id, 
         name: t.name, 
+        logoUrl: t.logoUrl,
+        imageUrl: t.imageUrl,
         sos: t.sos, 
         power_score: t.power_score
       })));

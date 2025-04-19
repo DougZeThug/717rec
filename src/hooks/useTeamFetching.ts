@@ -30,7 +30,7 @@ export function useTeamFetching() {
           id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: null, // v_team_details doesn't have image_url
+          imageUrl: team.image_url || null, // Properly handle image_url
           players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
@@ -48,6 +48,7 @@ export function useTeamFetching() {
       console.log("Team data loaded:", data?.map(t => ({
         id: t.team_id, 
         logo: t.logo_url, 
+        image: t.image_url,
         sos: t.sos, 
         power_score: t.power_score
       })));

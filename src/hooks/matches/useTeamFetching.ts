@@ -30,7 +30,7 @@ export function useTeamFetching() {
           id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: null,
+          imageUrl: team.image_url || null, // Make sure to handle image_url properly
           players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
