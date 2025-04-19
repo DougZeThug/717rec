@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  console.debug('[TeamCard] game stats', team.id, team.game_wins, team.game_losses);
+  console.debug('[TeamCard] props', team.id, team.game_wins, team.game_losses);
 
   return (
     <Card className={getCardInteractionStyles("overflow-hidden h-full flex flex-col mb-4 sm:mb-0")}>

@@ -26,6 +26,12 @@ export function useTeams() {
       const teamsData = await fetchTeamsFromApi();
 
       console.log("Teams data received:", teamsData);
+      
+      // Add debug log for each team's game stats
+      teamsData.forEach((team: Team) => {
+        console.debug('[hook][useTeams] team', team.id, team.game_wins, team.game_losses);
+      });
+      
       setTeams(teamsData);
       
       if (teamsData.length === 0) {

@@ -9,7 +9,7 @@ interface TeamHeaderProps {
 }
 
 const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
-  console.debug('[TeamHeader] game stats', team.id, team.game_wins, team.game_losses);
+  console.debug('[TeamHeader] props', team.id, team.game_wins, team.game_losses);
   
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">

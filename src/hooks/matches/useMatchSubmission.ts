@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTeamWinLossUpdate } from "@/hooks/team-stats/useTeamWinLossUpdate"; 
@@ -90,9 +89,10 @@ export const useMatchSubmission = () => {
       await invalidateMatchRelatedQueries(queryClient);
       
       // Explicitly invalidate teams and standings queries using correct syntax
-      ['teams', 'standings', 'rankings'].forEach(key =>
-        queryClient.invalidateQueries({ queryKey: [key] })
-      );
+      queryClient.invalidateQueries({ 
+        predicate: q => ['teams', 'team', 'rankings'].includes(String(q.queryKey[0]))
+      });
+      console.debug('[invalidate] done');
       
       toast({
         title: 'Scores Updated',

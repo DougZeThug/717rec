@@ -49,6 +49,8 @@ export function useTeamFetching() {
           division: team.division_id || null,
           divisionName: null
         };
+        
+        console.debug('[hook][useTeamFetching] team', team.id, team.game_wins, team.game_losses);
       });
       
       console.debug('[useTeamFetching] Teams loaded with game stats:', 

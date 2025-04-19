@@ -17,6 +17,12 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
     'standings'
   ];
   
+  // Use predicate to catch all variations of team queries
+  queryClient.invalidateQueries({ 
+    predicate: q => ['teams', 'team', 'rankings'].includes(String(q.queryKey[0]))
+  });
+  console.debug('[invalidate] done');
+  
   const promises = queriesToInvalidate.map(queryKey => 
     queryClient.invalidateQueries({ queryKey: [queryKey] })
   );
