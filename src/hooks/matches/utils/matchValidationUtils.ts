@@ -1,19 +1,16 @@
 
-export interface MatchValidationResult {
-  isValid: boolean;
-  errorMessage?: string;
-}
+import { MatchValidationResult } from "../types/matchSubmissionTypes";
 
 /**
- * Validate a best-of-X score.
- * @param gameWins1 - games won by team 1
- * @param gameWins2 - games won by team 2
- * @param bestOf    - e.g. 3 (BO3) or 5 (BO5)
+ * Validate a best‑of‑X score.
+ * @param gameWins1 – games won by team 1
+ * @param gameWins2 – games won by team 2
+ * @param bestOf    – e.g. 3 (BO3) or 5 (BO5)
  */
 export function validateGameScore(
   gameWins1: number,
   gameWins2: number,
-  bestOf: number = 3
+  bestOf: number
 ): MatchValidationResult {
   const totalGames = gameWins1 + gameWins2;
   const maxGames = bestOf;
@@ -42,8 +39,8 @@ export function validateGameScore(
   const totalGamesResult = team1HasEnoughWins ? 
     (gameWins1 === minGamesForWin && gameWins2 < minGamesForWin) || 
     (gameWins1 > minGamesForWin && totalGames <= maxGames) : 
-    (team2HasEnoughWins === minGamesForWin && gameWins1 < minGamesForWin) || 
-    (team2HasEnoughWins > minGamesForWin && totalGames <= maxGames);
+    (team2HasEnoughWins && gameWins2 === minGamesForWin && gameWins1 < minGamesForWin) || 
+    (team2HasEnoughWins && gameWins2 > minGamesForWin && totalGames <= maxGames);
   
   if (!totalGamesResult) {
     return { isValid: false, errorMessage: `Invalid score combination for best of ${bestOf}` };
