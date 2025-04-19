@@ -52,7 +52,8 @@ export const useMatchFetching = () => {
         next_match_id: match.next_match_id,
         next_loser_match_id: match.next_loser_match_id,
         best_of: match.best_of,
-        created_at: match.created_at,
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins,
         team1: match.team1 ? {
           id: match.team1.id,
           name: match.team1.name,
@@ -60,7 +61,7 @@ export const useMatchFetching = () => {
           players: [],
           wins: 0,
           losses: 0,
-          created_at: ""
+          created_at: new Date().toISOString()
         } : undefined,
         team2: match.team2 ? {
           id: match.team2.id,
@@ -69,7 +70,7 @@ export const useMatchFetching = () => {
           players: [],
           wins: 0,
           losses: 0,
-          created_at: ""
+          created_at: new Date().toISOString()
         } : undefined,
         isEdited: false,
         isValid: true

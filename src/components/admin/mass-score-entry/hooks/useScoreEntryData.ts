@@ -133,7 +133,8 @@ export const useScoreEntryData = () => {
       queryClient.invalidateQueries({ queryKey: ['team-matches'] });
 
       if (successCount > 0) {
-        await fetchMatches(filters);
+        const fetchedMatches = await fetchMatches(filters);
+        setMatches(fetchedMatches);
       }
     } catch (error: any) {
       console.error("Error in batch update:", error.message);
