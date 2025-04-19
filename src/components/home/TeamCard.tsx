@@ -20,28 +20,25 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   // Use the consistent win percentage calculation
   const winPercentage = calculateWinPercentage(wins, losses) * 100;
   
-  // First check for imageUrl, then fall back to logoUrl (this is the most important change)
-  const teamImage = team.imageUrl || team.logoUrl;
-  
-  console.debug('[HomeTeamCard]', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
-  
   // Get SOS and Power Score with fallbacks
   const sos = team.sos !== undefined ? team.sos : 0;
   const powerScore = team.power_score !== undefined ? team.power_score : 0;
+  
+  console.debug('[HomeTeamCard]', team.id, 'imageUrl:', team.imageUrl);
   
   return (
     <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0")}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-44 bg-gray-200 relative flex items-center justify-center p-3">
           <div className="w-full h-full flex items-center justify-center">
-            {teamImage ? (
+            {team.imageUrl ? (
               <img 
-                src={teamImage} 
+                src={team.imageUrl} 
                 alt={team.name} 
                 className="max-h-36 max-w-full object-contain"
                 onError={(e) => {
-                  console.error(`Image load error for ${team.name}:`, teamImage);
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop'; // Fallback image
+                  console.error(`Image load error for ${team.name}:`, team.imageUrl);
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                 }}
               />
             ) : (

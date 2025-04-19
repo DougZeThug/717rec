@@ -86,31 +86,33 @@ const MatchScoreItem = ({
           {isOpen ? <ChevronDown className="h-4 w-4 mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
           <div className="flex items-center">
             <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 mr-2">
-              {teams[match.team1Id]?.imageUrl || teams[match.team1Id]?.logoUrl ? (
+              {teams[match.team1Id]?.imageUrl && (
                 <img 
-                  src={teams[match.team1Id]?.imageUrl || teams[match.team1Id]?.logoUrl} 
+                  src={teams[match.team1Id].imageUrl} 
                   alt="" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
+                    console.error(`Image load error for ${teams[match.team1Id].name}:`, teams[match.team1Id].imageUrl);
                     (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                   }}
                 />
-              ) : null}
+              )}
             </div>
             <span>
               {teams[match.team1Id]?.name || 'Team 1'} vs 
             </span>
             <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 mx-2">
-              {teams[match.team2Id]?.imageUrl || teams[match.team2Id]?.logoUrl ? (
+              {teams[match.team2Id]?.imageUrl && (
                 <img 
-                  src={teams[match.team2Id]?.imageUrl || teams[match.team2Id]?.logoUrl} 
+                  src={teams[match.team2Id].imageUrl} 
                   alt="" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
+                    console.error(`Image load error for ${teams[match.team2Id].name}:`, teams[match.team2Id].imageUrl);
                     (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                   }}
                 />
-              ) : null}
+              )}
             </div>
             <span>
               {teams[match.team2Id]?.name || 'Team 2'}

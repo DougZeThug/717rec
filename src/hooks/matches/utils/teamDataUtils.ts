@@ -30,8 +30,10 @@ export const fetchTeamsForMatch = async (
     const formattedTeams: Team[] = data.map(team => ({
       id: team.team_id,
       name: team.name,
+      // Only use logoUrl for legacy compatibility
       logoUrl: team.logo_url || null,
-      imageUrl: team.image_url || null, // Make sure image_url is properly mapped
+      // Make imageUrl the primary image source
+      imageUrl: team.image_url || team.logo_url || null,
       players: Array.isArray(team.players) ? team.players : [],
       wins: team.wins || 0,
       losses: team.losses || 0,
@@ -47,7 +49,6 @@ export const fetchTeamsForMatch = async (
     console.log("[teamDataUtils] Team image data sample:", formattedTeams.map(t => ({
       id: t.id,
       name: t.name,
-      logoUrl: t.logoUrl,
       imageUrl: t.imageUrl
     })));
     
