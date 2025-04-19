@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
 import { TeamList } from "@/components/teams/TeamList";
@@ -30,8 +30,21 @@ const Teams: React.FC = () => {
   const [selectedDivision, setSelectedDivision] = useState<string>("all");
   const isMobile = useIsMobile();
   
+  // Deduplicate teams array first
+  const uniqueTeams = useMemo(() => {
+    const uniqueTeamMap = new Map<string, Team>();
+    teams.forEach(team => {
+      if (!uniqueTeamMap.has(team.id)) {
+        uniqueTeamMap.set(team.id, team);
+      }
+    });
+    return Array.from(uniqueTeamMap.values());
+  }, [teams]);
+  
+  console.log(`Teams page: ${teams.length} total teams, ${uniqueTeams.length} unique teams`);
+  
   // Group teams by division
-  const teamsByDivision = React.useMemo(() => {
+  const teamsByDivision = useMemo(() => {
     const grouped: Record<string, Team[]> = {
       unassigned: []
     };
@@ -42,7 +55,7 @@ const Teams: React.FC = () => {
     });
     
     // Group teams
-    teams.forEach(team => {
+    uniqueTeams.forEach(team => {
       if (!team.division) {
         grouped.unassigned.push(team);
       } else {
@@ -54,20 +67,20 @@ const Teams: React.FC = () => {
     });
     
     return grouped;
-  }, [teams, divisions]);
+  }, [uniqueTeams, divisions]);
 
   // Filter teams based on selection
-  const filteredTeams = React.useMemo(() => {
+  const filteredTeams = useMemo(() => {
     if (selectedDivision === "all") {
-      return teams;
+      return uniqueTeams;
     }
     
     if (selectedDivision === "unassigned") {
-      return teams.filter(team => !team.division);
+      return uniqueTeams.filter(team => !team.division);
     }
     
-    return teams.filter(team => team.division === selectedDivision);
-  }, [teams, selectedDivision]);
+    return uniqueTeams.filter(team => team.division === selectedDivision);
+  }, [uniqueTeams, selectedDivision]);
 
   // Get division name by ID
   const getDivisionName = (divisionId: string | undefined): string => {

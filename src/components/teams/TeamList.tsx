@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Team } from "@/types";
 import TeamCard from "@/components/teams/TeamCard";
 import { TeamListSkeleton } from "@/components/teams/TeamListSkeleton";
@@ -15,19 +15,27 @@ interface TeamListProps {
 export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, onDelete }) => {
   const isMobile = useIsMobile();
   
+  // Create a deduplicated array of teams by team ID
+  const uniqueTeams = useMemo(() => {
+    const uniqueTeamMap = new Map<string, Team>();
+    
+    teams.forEach(team => {
+      if (!uniqueTeamMap.has(team.id)) {
+        uniqueTeamMap.set(team.id, team);
+      }
+    });
+    
+    return Array.from(uniqueTeamMap.values());
+  }, [teams]);
+  
   if (isLoading) {
     return <TeamListSkeleton />;
   }
 
-  // Debug team image data
-  console.log("TeamList rendering teams:", teams.slice(0, 3).map(team => ({
-    id: team.id,
-    name: team.name,
-    logoUrl: team.logoUrl,
-    imageUrl: team.imageUrl
-  })));
+  // Debug unique team data
+  console.log("TeamList rendering unique teams:", uniqueTeams.length, "out of", teams.length, "total teams");
 
-  if (teams.length === 0) {
+  if (uniqueTeams.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">No teams available. Add a team to get started.</p>
@@ -37,7 +45,7 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      {teams.map(team => (
+      {uniqueTeams.map(team => (
         <TeamCard 
           key={team.id} 
           team={team}
