@@ -9,10 +9,11 @@ export const useTeamDetails = (teamId: string | undefined) => {
     queryFn: async () => {
       if (!teamId) throw new Error("Team ID is required");
       
+      // Let's first check what fields are available in the v_team_game_totals view
       const { data, error } = await supabase
-        .from("v_team_game_totals")
+        .from("teams") // Query from teams table directly instead of the view
         .select(`
-          team_id,
+          id,
           name,
           logo_url,
           wins,
@@ -20,12 +21,12 @@ export const useTeamDetails = (teamId: string | undefined) => {
           game_wins,
           game_losses,
           division_id,
-          divisions (name),
+          divisions:division_id(name),
           sos,
           close_match_losses,
           power_score
         `)
-        .eq("team_id", teamId)
+        .eq("id", teamId)
         .maybeSingle();
         
       if (error) throw error;
@@ -33,7 +34,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
       
       // Map the data to match the Team interface
       return {
-        id: data.team_id,
+        id: data.id,
         name: data.name,
         logoUrl: data.logo_url,
         wins: data.wins || 0,
