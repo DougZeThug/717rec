@@ -43,12 +43,12 @@ export function useTeamFetching() {
       });
       
       setTeams(teamsMap);
-      console.log(`Loaded ${Object.keys(teamsMap).length} teams with game stats`);
+      console.log(`Loaded ${Object.keys(teamsMap).length} teams with detailed game stats`);
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load teams. Please try again.',
+        description: 'Failed to load teams with game statistics. Please try again.',
         variant: 'destructive',
       });
     } finally {

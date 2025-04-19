@@ -37,12 +37,18 @@ export const useMatchSubmission = () => {
       
       const { team1_id, team2_id } = matchData;
       
-      console.log(`[useMatchSubmission] Submitting scores for match ${matchId}`);
-      console.log(`Game wins - Team1: ${team1GameWinsNum}, Team2: ${team2GameWinsNum}`);
-
       // Determine match results based on game wins
       const team1Win = team1GameWinsNum > team2GameWinsNum;
       
+      console.log('Submitting match:', {
+        matchId,
+        team1GameWins: team1GameWinsNum,
+        team2GameWins: team2GameWinsNum,
+        team1_score: team1Win ? 1 : 0,
+        team2_score: team1Win ? 0 : 1,
+        winner_id: team1Win ? team1_id : team2_id
+      });
+
       // Update the match in database with both match-level and game-level stats
       const updatePayload = {
         team1_score: team1Win ? 1 : 0,
@@ -82,6 +88,11 @@ export const useMatchSubmission = () => {
 
       // Invalidate all relevant query caches to ensure data freshness
       await invalidateMatchRelatedQueries(queryClient);
+      
+      // Explicitly invalidate teams and standings queries
+      queryClient.invalidateQueries(['teams']);
+      queryClient.invalidateQueries(['standings']);
+      queryClient.invalidateQueries(['rankings']);
       
       toast({
         title: 'Scores Updated',
