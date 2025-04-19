@@ -89,10 +89,10 @@ export const useMatchSubmission = () => {
       // Invalidate all relevant query caches to ensure data freshness
       await invalidateMatchRelatedQueries(queryClient);
       
-      // Explicitly invalidate teams and standings queries
-      queryClient.invalidateQueries(['teams']);
-      queryClient.invalidateQueries(['standings']);
-      queryClient.invalidateQueries(['rankings']);
+      // Explicitly invalidate teams and standings queries using correct syntax
+      ['teams', 'standings', 'rankings'].forEach(key =>
+        queryClient.invalidateQueries({ queryKey: [key] })
+      );
       
       toast({
         title: 'Scores Updated',
