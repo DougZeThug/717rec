@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  console.debug('[TeamCard] props', team.id, team.game_wins, team.game_losses, 'sos:', team.sos, 'power_score:', team.power_score);
+  console.debug('[TeamCard] props', team.id, team.game_wins, team.game_losses, 'sos:', team.sos, 'power_score:', team.power_score, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl);
 
   // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
   const teamImage = team.logoUrl || team.imageUrl;

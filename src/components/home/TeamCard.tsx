@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
@@ -23,6 +22,8 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   
   // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
   const teamImage = team.logoUrl || team.imageUrl;
+  
+  console.debug('[HomeTeamCard]', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
   
   // Get SOS and Power Score with fallbacks
   const sos = team.sos !== undefined ? team.sos : 0;
