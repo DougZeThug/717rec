@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,15 +22,15 @@ export const useTeamDetails = (teamId: string | undefined) => {
       const { data, error } = await supabase
         .from("v_team_game_totals")
         .select(`
-          team_id      as id,
+          team_id,
           name,
-          logo_url    as logoUrl,
+          logo_url,
           wins,
           losses,
           game_wins,
           game_losses,
-          division_id as division,
-          divisions(name)
+          division_id,
+          divisions (name)
         `)
         .eq("team_id", teamId)
         .maybeSingle();
@@ -37,11 +38,19 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (error) throw error;
       if (!data) throw new Error("Team not found");
       
+      // Map explicitly to Team object to avoid spread on undefined
       return {
-        ...data,
-        players: [],
-        created_at: '',
+        id: data.team_id,
+        name: data.name,
+        logoUrl: data.logo_url,
         imageUrl: null,
+        players: [],
+        wins: data.wins || 0,
+        losses: data.losses || 0,
+        game_wins: data.game_wins || 0,
+        game_losses: data.game_losses || 0,
+        created_at: '',
+        division: data.division_id,
         divisionName: data.divisions?.name || null
       } as Team;
     },
