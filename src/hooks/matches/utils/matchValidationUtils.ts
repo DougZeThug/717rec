@@ -1,5 +1,7 @@
-
-import { MatchValidationResult } from "../types/matchSubmissionTypes";
+export interface MatchValidationResult {
+  isValid: boolean;
+  errorMessage?: string;
+}
 
 /**
  * Validate a best‑of‑X score.
