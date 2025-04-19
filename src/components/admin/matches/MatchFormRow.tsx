@@ -29,71 +29,74 @@ const timeSlots = [
 ];
 
 const MatchFormRow = ({ match, teams, onUpdate, onRemove }: MatchFormRowProps) => {
-  const availableTeams = teams.filter(team => 
-    team.id !== match.team1Id && team.id !== match.team2Id
+  // Fix: Only filter out the current team1Id when populating team2 dropdown
+  const availableTeamsForTeam2 = teams.filter(team => 
+    team.id !== match.team1Id
   );
 
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-lg bg-card">
-      <Select
-        value={match.team1Id || ""}
-        onValueChange={(value) => onUpdate({ team1Id: value })}
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select Team 1" />
-        </SelectTrigger>
-        <SelectContent>
-          {teams.map((team) => (
-            <SelectItem key={team.id} value={team.id}>
-              {team.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="flex items-center gap-4 p-4 border rounded-lg bg-card flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-4 w-full">
+        <Select
+          value={match.team1Id || ""}
+          onValueChange={(value) => onUpdate({ team1Id: value })}
+        >
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Select Team 1" />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map((team) => (
+              <SelectItem key={team.id} value={team.id}>
+                {team.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <span className="text-muted-foreground">vs</span>
+        <span className="text-muted-foreground hidden sm:inline-block">vs</span>
 
-      <Select
-        value={match.team2Id || ""}
-        onValueChange={(value) => onUpdate({ team2Id: value })}
-      >
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select Team 2" />
-        </SelectTrigger>
-        <SelectContent>
-          {availableTeams.map((team) => (
-            <SelectItem key={team.id} value={team.id}>
-              {team.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select
+          value={match.team2Id || ""}
+          onValueChange={(value) => onUpdate({ team2Id: value })}
+        >
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue placeholder="Select Team 2" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableTeamsForTeam2.map((team) => (
+              <SelectItem key={team.id} value={team.id}>
+                {team.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select
-        value={match.timeslot || ""}
-        onValueChange={(value) => onUpdate({ timeslot: value })}
-      >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Time" />
-        </SelectTrigger>
-        <SelectContent>
-          {timeSlots.map((time) => (
-            <SelectItem key={time} value={time}>
-              {time}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select
+          value={match.timeslot || ""}
+          onValueChange={(value) => onUpdate({ timeslot: value })}
+        >
+          <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectValue placeholder="Time" />
+          </SelectTrigger>
+          <SelectContent>
+            {timeSlots.map((time) => (
+              <SelectItem key={time} value={time}>
+                {time}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={onRemove}
-        className="ml-auto"
-      >
-        <X className="h-4 w-4" />
-      </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onRemove}
+          className="ml-auto"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

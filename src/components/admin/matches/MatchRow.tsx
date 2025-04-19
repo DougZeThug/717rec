@@ -29,8 +29,9 @@ const timeSlots = [
 ];
 
 const MatchRow = ({ match, teams, onUpdate, onRemove }: MatchRowProps) => {
-  const availableTeams = teams.filter(team => 
-    team.id !== match.team1Id && team.id !== match.team2Id
+  // Fix: Only filter out the current team1Id when populating team2 dropdown
+  const availableTeamsForTeam2 = teams.filter(team => 
+    team.id !== match.team1Id
   );
 
   return (
@@ -60,7 +61,7 @@ const MatchRow = ({ match, teams, onUpdate, onRemove }: MatchRowProps) => {
             <SelectValue placeholder="Select Team 2" />
           </SelectTrigger>
           <SelectContent>
-            {availableTeams.map((team) => (
+            {availableTeamsForTeam2.map((team) => (
               <SelectItem key={team.id} value={team.id}>
                 {team.name}
               </SelectItem>
