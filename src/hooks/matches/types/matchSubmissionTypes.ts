@@ -12,6 +12,6 @@ export interface MatchResultData {
   loserId: string | null;
   team1GameWins: number;
   team2GameWins: number;
-  team1Id: string; // Add this property
-  team2Id: string; // Add this property
+  team1Id: string; 
+  team2Id: string; 
 }

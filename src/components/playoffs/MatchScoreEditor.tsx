@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,7 +89,6 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       setIsSubmitting(true);
       const { team1Wins, team2Wins } = calculateTotalScore();
       
-      // Set match result - 1 for win, 0 for loss
       const team1Score = team1Wins > team2Wins ? 1 : 0;
       const team2Score = team2Wins > team1Wins ? 1 : 0;
       

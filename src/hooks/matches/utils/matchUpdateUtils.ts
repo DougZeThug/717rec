@@ -8,7 +8,11 @@ export const updateMatchInDatabase = async (
   team2GameWins: number,
   matchResult: MatchResultData
 ) => {
-  const { winnerId, loserId, team1Score, team2Score } = matchResult;
+  const { winnerId, loserId } = matchResult;
+  
+  // Calculate match scores (1 for win, 0 for loss)
+  const team1Score = winnerId === matchResult.team1Id ? 1 : 0;
+  const team2Score = winnerId === matchResult.team2Id ? 1 : 0;
   
   const updateData = {
     team1_score: team1Score,

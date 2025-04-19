@@ -25,18 +25,12 @@ export const determineMatchResults = (
     loserId = team1Id;
   }
   
-  // Calculate match scores (1 for win, 0 for loss)
-  const team1Score = winnerId === team1Id ? 1 : 0;
-  const team2Score = winnerId === team2Id ? 1 : 0;
-  
   console.log(`[matchResultUtils] Match result - Winner: ${winnerId}, Loser: ${loserId}`);
-  console.log(`[matchResultUtils] Match scores - Team1: ${team1Score}, Team2: ${team2Score}`);
+  console.log(`[matchResultUtils] Game wins - Team1: ${team1GameWinsNum}, Team2: ${team2GameWinsNum}`);
   
   return {
     winnerId,
     loserId,
-    team1Score,
-    team2Score,
     team1GameWins: team1GameWinsNum,
     team2GameWins: team2GameWinsNum,
     team1Id,
@@ -44,7 +38,16 @@ export const determineMatchResults = (
   };
 };
 
-export const validateGameScores = (team1GameWins: number, team2GameWins: number, bestOf: number = 3): { isValid: boolean, errorMessage?: string } => {
+export interface MatchValidationResult {
+  isValid: boolean;
+  errorMessage?: string;
+}
+
+export const validateGameScores = (
+  team1GameWins: number, 
+  team2GameWins: number, 
+  bestOf: number = 3
+): MatchValidationResult => {
   const totalGames = team1GameWins + team2GameWins;
   const maxGames = bestOf;
   const minGamesForWin = Math.ceil(bestOf / 2);

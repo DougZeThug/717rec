@@ -23,8 +23,6 @@ export const useMatchSubmission = () => {
   }: SubmitScoreParams) => {
     try {
       // Ensure scores are treated as numbers
-      const team1ScoreNum = Number(team1Score);
-      const team2ScoreNum = Number(team2Score);
       const team1GameWinsNum = Number(team1GameWins || 0);
       const team2GameWinsNum = Number(team2GameWins || 0);
       
@@ -40,21 +38,18 @@ export const useMatchSubmission = () => {
       const { team1_id, team2_id } = matchData;
       
       console.log(`[useMatchSubmission] Submitting scores for match ${matchId}`);
-      console.log(`Team scores - Team1: ${team1ScoreNum}, Team2: ${team2ScoreNum}`);
       console.log(`Game wins - Team1: ${team1GameWinsNum}, Team2: ${team2GameWinsNum}`);
 
       // Determine match results
       const matchResult = determineMatchResults(
         team1_id, 
         team2_id, 
-        team1ScoreNum, 
-        team2ScoreNum,
-        team1GameWinsNum,
+        team1GameWinsNum, 
         team2GameWinsNum
       );
       
       // Update the match in database
-      await updateMatchInDatabase(matchId, team1ScoreNum, team2ScoreNum, matchResult);
+      await updateMatchInDatabase(matchId, team1GameWinsNum, team2GameWinsNum, matchResult);
 
       // Invalidate all relevant query caches to ensure data freshness
       await invalidateMatchRelatedQueries(queryClient);
