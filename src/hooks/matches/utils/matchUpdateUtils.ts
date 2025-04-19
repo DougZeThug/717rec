@@ -26,6 +26,13 @@ export const updateMatchInDatabase = async (
   
   console.log(`[matchUpdateUtils] Updating match ${matchId} with:`, updateData);
   
+  // Development assertion to catch incorrect score values
+  if ((team1GameWins > team2GameWins && team1Score !== 1) || 
+      (team2GameWins > team1GameWins && team2Score !== 1)) {
+    console.error('Score validation failed:', { team1GameWins, team2GameWins, team1Score, team2Score });
+    throw new Error('Match scores must be 1/0 based on game win totals, not raw game totals');
+  }
+
   // First update the match itself
   const { data: matchData, error: matchError } = await supabase
     .from('matches')
