@@ -9,9 +9,6 @@ interface MatchListProps {
   isLoading: boolean;
   teamId: string;
   isPast?: boolean;
-  getOpponentId: (match: Match) => string;
-  getMatchResult?: (match: Match) => string;
-  getScoreDisplay?: (match: Match) => string;
 }
 
 const MatchList = ({
@@ -20,10 +17,11 @@ const MatchList = ({
   isLoading,
   teamId,
   isPast = false,
-  getOpponentId,
-  getMatchResult,
-  getScoreDisplay
 }: MatchListProps) => {
+  const getOpponentId = (match: Match) => {
+    return match.team1_id === teamId ? match.team2_id : match.team1_id;
+  };
+
   return (
     <>
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
@@ -40,8 +38,6 @@ const MatchList = ({
               match={match}
               opponentId={getOpponentId(match)}
               isPastMatch={isPast}
-              matchResult={isPast && getMatchResult ? getMatchResult(match) : undefined}
-              scoreDisplay={isPast && getScoreDisplay ? getScoreDisplay(match) : undefined}
             />
           ))}
         </div>

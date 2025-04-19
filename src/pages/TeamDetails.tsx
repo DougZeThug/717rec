@@ -8,7 +8,7 @@ import TeamHeader from "@/components/teams/TeamHeader";
 import TeamStats from "@/components/teams/TeamStats";
 import MatchList from "@/components/teams/MatchList";
 import StatBreakdown from "@/components/teams/StatBreakdown";
-import { useTeamMatches } from "@/hooks/useTeamMatches"; // This hook should already exist
+import { useTeamMatches } from "@/hooks/useTeamMatches";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
