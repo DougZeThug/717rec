@@ -22,12 +22,13 @@ export const useTeamDetails = (teamId: string | undefined) => {
         id: data.team_id,
         name: data.name,
         logoUrl: data.logo_url,
+        imageUrl: data.image_url,
         wins: data.wins || 0,
         losses: data.losses || 0,
         game_wins: data.game_wins || 0,
         game_losses: data.game_losses || 0,
         division: data.division_id,
-        divisionName: data.division_name || null,
+        divisionName: data.divisionname || null, // Changed from division_name to divisionname
         sos: typeof data.sos === 'number' ? data.sos : undefined,
         close_match_losses: typeof data.close_match_losses === 'string' 
           ? parseInt(data.close_match_losses) || 0 

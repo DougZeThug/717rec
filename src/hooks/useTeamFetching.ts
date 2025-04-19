@@ -38,7 +38,7 @@ export function useTeamFetching() {
           game_losses: team.game_losses || 0,
           created_at: team.created_at || '',
           division: team.division_id || null,
-          divisionName: team.division_name || null,
+          divisionName: team.divisionname || null, // Changed from division_name to divisionname
           sos: typeof team.sos === 'number' ? team.sos : 0,
           power_score: typeof team.power_score === 'number' ? team.power_score : 0
         };
