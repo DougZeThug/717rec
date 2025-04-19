@@ -42,12 +42,9 @@ export const useTeamData = (divisionId?: string | null) => {
                     typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
       }));
       
-      console.log("TeamData query result:", transformedTeams.map(t => ({
-        id: t.id, 
-        name: t.name, 
-        sos: t.sos, 
-        power_score: t.power_score
-      })));
+      // Log the number of unique team IDs to help debug any remaining duplicates
+      const uniqueTeamIds = new Set(transformedTeams.map(t => t.id)).size;
+      console.log(`TeamData query result: ${transformedTeams.length} teams, ${uniqueTeamIds} unique IDs`);
       
       return transformedTeams;
     },

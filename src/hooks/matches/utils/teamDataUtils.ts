@@ -8,6 +8,11 @@ export const fetchTeamsForMatch = async (
   try {
     console.log(`[teamDataUtils] Fetching teams for ids:`, teamIds);
     
+    // Return early if there are no team IDs
+    if (!teamIds.length) {
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('v_team_details')
       .select('*')
@@ -23,9 +28,18 @@ export const fetchTeamsForMatch = async (
       return [];
     }
     
-    console.log(`[teamDataUtils] Found ${data.length} teams`);
+    // Check for and handle duplicates
+    const uniqueTeams = new Map<string, any>();
+    data.forEach(team => {
+      if (!uniqueTeams.has(team.team_id)) {
+        uniqueTeams.set(team.team_id, team);
+      }
+    });
     
-    const formattedTeams: Team[] = data.map(team => ({
+    const teamArray = Array.from(uniqueTeams.values());
+    console.log(`[teamDataUtils] Found ${teamArray.length} unique teams out of ${data.length} records`);
+    
+    const formattedTeams: Team[] = teamArray.map(team => ({
       id: team.team_id,
       name: team.name,
       logoUrl: team.logo_url || null,
@@ -41,12 +55,6 @@ export const fetchTeamsForMatch = async (
       sos: typeof team.sos === 'number' ? team.sos : 0,
       power_score: typeof team.power_score === 'number' ? team.power_score : 0
     }));
-    
-    console.log("[teamDataUtils] Team image data sample:", formattedTeams.map(t => ({
-      id: t.id,
-      name: t.name,
-      imageUrl: t.imageUrl
-    })));
     
     return formattedTeams;
   } catch (error) {

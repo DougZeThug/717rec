@@ -29,19 +29,19 @@ const timeSlots = [
 ];
 
 const MatchFormRow = ({ match, teams, onUpdate, onRemove }: MatchFormRowProps) => {
-  // Fix: Only filter out the current team1Id when populating team2 dropdown
+  // Filter out the current team1Id when populating team2 dropdown
   const availableTeamsForTeam2 = teams.filter(team => 
     team.id !== match.team1Id
   );
 
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-lg bg-card flex-wrap">
-      <div className="flex flex-col sm:flex-row gap-4 w-full">
+    <div className="flex flex-col gap-3 p-3 sm:p-4 border rounded-lg bg-card">
+      <div className="grid grid-cols-1 gap-3">
         <Select
           value={match.team1Id || ""}
           onValueChange={(value) => onUpdate({ team1Id: value })}
         >
-          <SelectTrigger className="w-full sm:w-[200px]">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Team 1" />
           </SelectTrigger>
           <SelectContent>
@@ -53,13 +53,15 @@ const MatchFormRow = ({ match, teams, onUpdate, onRemove }: MatchFormRowProps) =
           </SelectContent>
         </Select>
 
-        <span className="text-muted-foreground hidden sm:inline-block">vs</span>
+        <div className="flex items-center justify-center text-sm text-muted-foreground">
+          vs
+        </div>
 
         <Select
           value={match.team2Id || ""}
           onValueChange={(value) => onUpdate({ team2Id: value })}
         >
-          <SelectTrigger className="w-full sm:w-[200px]">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Team 2" />
           </SelectTrigger>
           <SelectContent>
@@ -70,29 +72,30 @@ const MatchFormRow = ({ match, teams, onUpdate, onRemove }: MatchFormRowProps) =
             ))}
           </SelectContent>
         </Select>
+      </div>
 
+      <div className="flex items-center gap-2">
         <Select
           value={match.timeslot || ""}
           onValueChange={(value) => onUpdate({ timeslot: value })}
         >
-          <SelectTrigger className="w-full sm:w-[150px]">
-            <SelectValue placeholder="Time" />
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Select Time" />
           </SelectTrigger>
           <SelectContent>
-            {timeSlots.map((time) => (
-              <SelectItem key={time} value={time}>
-                {time}
+            {["6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM"].map((slot) => (
+              <SelectItem key={slot} value={slot}>
+                {slot}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
         <Button
-          type="button"
           variant="ghost"
           size="icon"
           onClick={onRemove}
-          className="ml-auto"
+          className="shrink-0"
         >
           <X className="h-4 w-4" />
         </Button>

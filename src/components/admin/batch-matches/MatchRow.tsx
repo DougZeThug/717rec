@@ -20,8 +20,7 @@ interface MatchRowProps {
 }
 
 const MatchRow = ({ pair, teams, onUpdate, onRemove }: MatchRowProps) => {
-  // Fix: Only filter out the current team1Id when populating team2 dropdown
-  // This allows team2 dropdown to show all teams except the one selected in team1
+  // Only filter out the current team1Id when populating team2 dropdown
   const availableTeamsForTeam2 = teams.filter(team => 
     team.id !== pair.team1Id
   );
@@ -54,7 +53,7 @@ const MatchRow = ({ pair, teams, onUpdate, onRemove }: MatchRowProps) => {
           value={pair.team1Id || ""}
           onValueChange={(value) => onUpdate({ team1Id: value })}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Team 1" />
           </SelectTrigger>
           <SelectContent>
@@ -74,7 +73,7 @@ const MatchRow = ({ pair, teams, onUpdate, onRemove }: MatchRowProps) => {
           value={pair.team2Id || ""}
           onValueChange={(value) => onUpdate({ team2Id: value })}
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Team 2" />
           </SelectTrigger>
           <SelectContent>

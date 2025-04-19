@@ -20,14 +20,26 @@ export function useTeamFetching() {
       // This ensures we get the same data as everywhere else
       const { data, error } = await supabase
         .from('v_team_details')
-        .select('*');
+        .select('*')
+        .order('name');
 
       if (error) throw error;
       
       const teamsMap: Record<string, Team> = {};
+      
+      // Make sure we only process each team once to eliminate duplicates
+      const processedTeamIds = new Set<string>();
+      
       data?.forEach(team => {
-        teamsMap[team.team_id] = {
-          id: team.team_id,
+        const teamId = team.team_id;
+        
+        // Skip if we've already processed this team
+        if (processedTeamIds.has(teamId)) return;
+        
+        processedTeamIds.add(teamId);
+        
+        teamsMap[teamId] = {
+          id: teamId,
           name: team.name,
           logoUrl: team.logo_url,
           imageUrl: team.image_url || null, // Make sure to handle image_url properly
@@ -45,7 +57,7 @@ export function useTeamFetching() {
       });
       
       setTeams(teamsMap);
-      console.log(`Loaded ${Object.keys(teamsMap).length} teams with detailed game stats`);
+      console.log(`Loaded ${Object.keys(teamsMap).length} unique teams out of ${data?.length || 0} total records`);
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({

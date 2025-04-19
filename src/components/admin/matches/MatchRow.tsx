@@ -29,7 +29,7 @@ const timeSlots = [
 ];
 
 const MatchRow = ({ match, teams, onUpdate, onRemove }: MatchRowProps) => {
-  // Fix: Only filter out the current team1Id when populating team2 dropdown
+  // Filter out the current team1Id when populating team2 dropdown
   const availableTeamsForTeam2 = teams.filter(team => 
     team.id !== match.team1Id
   );

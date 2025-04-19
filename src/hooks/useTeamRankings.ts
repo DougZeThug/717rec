@@ -79,8 +79,19 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         
       if (error) throw error;
       
+      // Prevent duplicate rows by using a Map
+      const uniqueTeams = new Map();
+      
+      data.forEach(team => {
+        if (!uniqueTeams.has(team.team_id)) {
+          uniqueTeams.set(team.team_id, team);
+        }
+      });
+      
+      console.log(`Fetched ${data.length} team records, found ${uniqueTeams.size} unique teams`);
+      
       // Transform the data to match Team type
-      return data.map((team): Team => ({
+      return Array.from(uniqueTeams.values()).map((team): Team => ({
         id: team.team_id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,

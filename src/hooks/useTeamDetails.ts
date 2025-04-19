@@ -18,7 +18,16 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (error) throw error;
       if (!data) throw new Error("Team not found");
       
-      console.log("Team details from API:", data);
+      console.log("Team details from API:", {
+        id: data.team_id,
+        name: data.name,
+        wins: data.wins || 0,
+        losses: data.losses || 0,
+        stats: {
+          sos: data.sos,
+          power_score: data.power_score
+        }
+      });
       
       return {
         id: data.team_id,

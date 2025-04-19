@@ -24,34 +24,46 @@ export function useTeamFetching() {
       if (error) throw error;
       
       const teamsMap: Record<string, Team> = {};
+      
+      // Check for duplicate teams
+      const teamCounts: Record<string, number> = {};
+      
       data?.forEach(team => {
-        teamsMap[team.team_id] = {
-          id: team.team_id,
-          name: team.name,
-          logoUrl: team.logo_url,
-          imageUrl: team.image_url || null,
-          players: Array.isArray(team.players) ? team.players : [],
-          wins: team.wins || 0,
-          losses: team.losses || 0,
-          game_wins: team.game_wins || 0,
-          game_losses: team.game_losses || 0,
-          created_at: team.created_at || new Date().toISOString(),  // Add default value
-          division: team.division_id || null,
-          divisionName: team.divisionname || null,
-          sos: typeof team.sos === 'number' ? team.sos :
-               typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
-          power_score: typeof team.power_score === 'number' ? team.power_score :
-                      typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
-        };
+        const teamId = team.team_id;
+        teamCounts[teamId] = (teamCounts[teamId] || 0) + 1;
+        
+        // Only process each team once
+        if (!teamsMap[teamId]) {
+          teamsMap[teamId] = {
+            id: teamId,
+            name: team.name,
+            logoUrl: team.logo_url,
+            imageUrl: team.image_url || null,
+            players: Array.isArray(team.players) ? team.players : [],
+            wins: team.wins || 0,
+            losses: team.losses || 0,
+            game_wins: team.game_wins || 0,
+            game_losses: team.game_losses || 0,
+            created_at: team.created_at || new Date().toISOString(),
+            division: team.division_id || null,
+            divisionName: team.divisionname || null,
+            sos: typeof team.sos === 'number' ? team.sos :
+                 typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
+            power_score: typeof team.power_score === 'number' ? team.power_score :
+                        typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
+          };
+        }
       });
       
+      // Log any duplicates found
+      const duplicates = Object.entries(teamCounts).filter(([_, count]) => count > 1);
+      if (duplicates.length > 0) {
+        console.warn(`Found ${duplicates.length} duplicated teams in the data:`, 
+          duplicates.map(([id]) => data?.find(t => t.team_id === id)?.name));
+      }
+      
       setTeams(teamsMap);
-      console.log("Team data loaded with values:", data?.slice(0, 3).map(t => ({
-        id: t.team_id, 
-        name: t.name,
-        sos: t.sos,
-        power_score: t.power_score
-      })));
+      console.log(`Loaded ${Object.keys(teamsMap).length} unique teams from ${data?.length || 0} records`);
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({
