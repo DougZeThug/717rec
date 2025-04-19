@@ -11,12 +11,13 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
     'team', 
     'team-matches',
     'standings',
-    'v_team_game_totals'
+    'v_team_game_totals',
+    'all-teams'
   ];
   
   // Use predicate to catch all variations of team queries
   queryClient.invalidateQueries({ 
-    predicate: q => ['teams', 'team', 'rankings', 'v_team_game_totals'].includes(String(q.queryKey[0]))
+    predicate: q => ['teams', 'team', 'rankings', 'v_team_game_totals', 'all-teams'].includes(String(q.queryKey[0]))
   });
   
   const promises = queriesToInvalidate.map(queryKey => 

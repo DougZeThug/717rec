@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Team, Match } from "@/types";
@@ -110,7 +111,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
   const scoreDisplayWrapper = (match: Match) => getScoreDisplay(match, teamId);
   
   // Get team stats using our async function
-  const [stats, setStats] = React.useState({
+  const [stats, setStats] = useState({
     gamesWon: 0,
     gamesLost: 0,
     gameWinPercentage: "0.0",
@@ -119,7 +120,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
     powerScore: 0.0
   });
   
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchStats = async () => {
       const calculatedStats = await calculateTeamStats(
         teamQuery.data, 
