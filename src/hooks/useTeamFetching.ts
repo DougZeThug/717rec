@@ -16,6 +16,7 @@ export function useTeamFetching() {
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
+      // Use v_team_details to get all team data
       const { data, error } = await supabase
         .from('v_team_details')
         .select('*')
@@ -25,45 +26,42 @@ export function useTeamFetching() {
       
       const teamsMap: Record<string, Team> = {};
       
-      // Check for duplicate teams
-      const teamCounts: Record<string, number> = {};
+      // Track processed team IDs to ensure we only process each team once
+      const processedTeamIds = new Set<string>();
       
+      // Process each row to extract unique teams
       data?.forEach(team => {
         const teamId = team.team_id;
-        teamCounts[teamId] = (teamCounts[teamId] || 0) + 1;
         
-        // Only process each team once
-        if (!teamsMap[teamId]) {
-          teamsMap[teamId] = {
-            id: teamId,
-            name: team.name,
-            logoUrl: team.logo_url,
-            imageUrl: team.image_url || null,
-            players: Array.isArray(team.players) ? team.players : [],
-            wins: team.wins || 0,
-            losses: team.losses || 0,
-            game_wins: team.game_wins || 0,
-            game_losses: team.game_losses || 0,
-            created_at: team.created_at || new Date().toISOString(),
-            division: team.division_id || null,
-            divisionName: team.divisionname || null,
-            sos: typeof team.sos === 'number' ? team.sos :
-                 typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
-            power_score: typeof team.power_score === 'number' ? team.power_score :
-                        typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
-          };
-        }
+        // Skip if we've already processed this team
+        if (processedTeamIds.has(teamId)) return;
+        
+        // Mark as processed
+        processedTeamIds.add(teamId);
+        
+        // Create the team object
+        teamsMap[teamId] = {
+          id: teamId,
+          name: team.name,
+          logoUrl: team.logo_url,
+          imageUrl: team.image_url || null,
+          players: Array.isArray(team.players) ? team.players : [],
+          wins: team.wins || 0,
+          losses: team.losses || 0,
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0,
+          created_at: team.created_at || new Date().toISOString(),
+          division: team.division_id || null,
+          divisionName: team.divisionname || null,
+          sos: typeof team.sos === 'number' ? team.sos :
+               typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
+          power_score: typeof team.power_score === 'number' ? team.power_score :
+                      typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
+        };
       });
       
-      // Log any duplicates found
-      const duplicates = Object.entries(teamCounts).filter(([_, count]) => count > 1);
-      if (duplicates.length > 0) {
-        console.warn(`Found ${duplicates.length} duplicated teams in the data:`, 
-          duplicates.map(([id]) => data?.find(t => t.team_id === id)?.name));
-      }
-      
       setTeams(teamsMap);
-      console.log(`Loaded ${Object.keys(teamsMap).length} unique teams from ${data?.length || 0} records`);
+      console.log(`Loaded ${Object.keys(teamsMap).length} unique teams from ${data?.length || 0} total records`);
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({

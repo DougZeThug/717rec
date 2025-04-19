@@ -79,8 +79,8 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
         
       if (error) throw error;
       
-      // Prevent duplicate rows by using a Map
-      const uniqueTeams = new Map();
+      // Prevent duplicate rows by using a Map with team_id as key
+      const uniqueTeams = new Map<string, any>();
       
       data.forEach(team => {
         if (!uniqueTeams.has(team.team_id)) {
@@ -112,7 +112,9 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
                     typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0,
         // Map close_match_losses if available
         close_match_losses: typeof team.close_match_losses === 'string' ? 
-                           parseInt(team.close_match_losses) : 0
+                           parseInt(team.close_match_losses) : 
+                           typeof team.close_match_losses === 'number' ? 
+                           team.close_match_losses : 0
       }));
     },
     staleTime: 10000,

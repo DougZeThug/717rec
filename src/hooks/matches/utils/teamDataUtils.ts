@@ -28,8 +28,9 @@ export const fetchTeamsForMatch = async (
       return [];
     }
     
-    // Check for and handle duplicates
+    // Create a Map to ensure each team ID is only represented once
     const uniqueTeams = new Map<string, any>();
+    
     data.forEach(team => {
       if (!uniqueTeams.has(team.team_id)) {
         uniqueTeams.set(team.team_id, team);
@@ -37,7 +38,7 @@ export const fetchTeamsForMatch = async (
     });
     
     const teamArray = Array.from(uniqueTeams.values());
-    console.log(`[teamDataUtils] Found ${teamArray.length} unique teams out of ${data.length} records`);
+    console.log(`[teamDataUtils] Found ${teamArray.length} unique teams out of ${data.length} total records`);
     
     const formattedTeams: Team[] = teamArray.map(team => ({
       id: team.team_id,
@@ -49,11 +50,13 @@ export const fetchTeamsForMatch = async (
       losses: team.losses || 0,
       game_wins: team.game_wins || 0,
       game_losses: team.game_losses || 0,
-      created_at: team.created_at || new Date().toISOString(),  // Add default value
+      created_at: team.created_at || new Date().toISOString(),
       division: team.division_id || null,
       divisionName: team.divisionname || null,
-      sos: typeof team.sos === 'number' ? team.sos : 0,
-      power_score: typeof team.power_score === 'number' ? team.power_score : 0
+      sos: typeof team.sos === 'number' ? team.sos : 
+           typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
+      power_score: typeof team.power_score === 'number' ? team.power_score : 
+                  typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
     }));
     
     return formattedTeams;

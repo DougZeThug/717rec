@@ -23,7 +23,20 @@ export const useTeamData = (divisionId?: string | null) => {
         throw error;
       }
       
-      const transformedTeams = (data || []).map((team): Team => ({
+      // Create a Map to store unique teams by ID
+      const uniqueTeamsMap = new Map<string, any>();
+      
+      (data || []).forEach(team => {
+        // Only add the team if it doesn't exist in our map already
+        if (!uniqueTeamsMap.has(team.team_id)) {
+          uniqueTeamsMap.set(team.team_id, team);
+        }
+      });
+      
+      // Convert the Map values back to an array
+      const uniqueTeamsArray = Array.from(uniqueTeamsMap.values());
+      
+      const transformedTeams = uniqueTeamsArray.map((team): Team => ({
         id: team.team_id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
@@ -33,7 +46,7 @@ export const useTeamData = (divisionId?: string | null) => {
         losses: team.losses || 0,
         game_wins: team.game_wins || 0,
         game_losses: team.game_losses || 0,
-        created_at: team.created_at || new Date().toISOString(),  // Add default value
+        created_at: team.created_at || new Date().toISOString(),
         division: team.division_id || null,
         divisionName: team.divisionname || null,
         sos: typeof team.sos === 'number' ? team.sos :
@@ -42,9 +55,8 @@ export const useTeamData = (divisionId?: string | null) => {
                     typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
       }));
       
-      // Log the number of unique team IDs to help debug any remaining duplicates
-      const uniqueTeamIds = new Set(transformedTeams.map(t => t.id)).size;
-      console.log(`TeamData query result: ${transformedTeams.length} teams, ${uniqueTeamIds} unique IDs`);
+      // Log the number of unique team IDs after deduplication
+      console.log(`TeamData query result: ${data?.length || 0} total records, ${transformedTeams.length} unique teams`);
       
       return transformedTeams;
     },
