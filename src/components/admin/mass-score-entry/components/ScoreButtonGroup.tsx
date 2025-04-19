@@ -46,24 +46,34 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   };
 
   return (
-    <div className="flex gap-2 flex-wrap">
-      {SCORE_OPTIONS.map((option) => (
-        <Button
-          key={option.label}
-          onClick={() => handleSelect(option)}
-          variant="outline"
-          size="lg"
-          className={cn(
-            "min-w-[70px] text-base font-medium transition-all",
-            isSelected(option) 
-              ? "bg-primary text-primary-foreground" 
-              : "hover:bg-primary/10"
-          )}
-          disabled={disabled}
-        >
-          {option.label}
-        </Button>
-      ))}
+    <div className="space-y-2">
+      <div className="flex text-xs text-gray-500 justify-between px-4">
+        <span>Team 1</span>
+        <span>Team 2</span>
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        {SCORE_OPTIONS.map((option) => (
+          <Button
+            key={option.label}
+            onClick={() => handleSelect(option)}
+            variant="outline"
+            size="sm"
+            className={cn(
+              "min-w-[70px] text-base font-medium transition-all",
+              isSelected(option) 
+                ? "bg-primary text-primary-foreground" 
+                : "hover:bg-primary/10",
+              "relative"
+            )}
+            disabled={disabled}
+          >
+            {option.label}
+          </Button>
+        ))}
+      </div>
+      <div className="text-xs text-center text-gray-500">
+        (First number represents Team 1's game wins)
+      </div>
     </div>
   );
 };

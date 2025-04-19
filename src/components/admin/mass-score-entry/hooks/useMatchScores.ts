@@ -30,6 +30,26 @@ export const useMatchScores = () => {
     setMatches(newMatches);
   };
 
+  const handleGameWinsChange = (
+    index: number,
+    team1GameWins: number,
+    team2GameWins: number
+  ) => {
+    const newMatches = [...matches];
+    const match = newMatches[index];
+    
+    match.team1_game_wins = team1GameWins;
+    match.team2_game_wins = team2GameWins;
+    match.isEdited = true;
+    
+    console.log(`Match ${match.id} game wins updated:`, {
+      team1GameWins: match.team1_game_wins,
+      team2GameWins: match.team2_game_wins
+    });
+    
+    setMatches(newMatches);
+  };
+
   const handleMarkCompleted = (index: number, checked: boolean) => {
     const newMatches = [...matches];
     newMatches[index].iscompleted = checked;
@@ -41,6 +61,7 @@ export const useMatchScores = () => {
     matches,
     setMatches,
     handleScoreChange,
+    handleGameWinsChange,
     handleMarkCompleted
   };
 };

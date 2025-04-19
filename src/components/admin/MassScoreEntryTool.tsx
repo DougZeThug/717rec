@@ -19,6 +19,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
     brackets,
     filters,
     handleScoreChange,
+    handleGameWinsChange,
     handleMarkCompleted,
     handleSubmitAll,
     clearErrors,
@@ -57,6 +58,7 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
               failedMatches={failedMatches}
               errorMessages={errorMessages}
               onScoreChange={handleScoreChange}
+              onGameWinsChange={handleGameWinsChange}
               onMarkCompleted={handleMarkCompleted}
               onClearError={clearErrors}
             />

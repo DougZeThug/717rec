@@ -10,6 +10,7 @@ interface MatchRowProps {
   match: MatchWithTeams;
   index: number;
   onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
+  onGameWinsChange: (index: number, team1GameWins: number, team2GameWins: number) => void; 
   onMarkCompleted: (index: number, checked: boolean) => void;
   isSubmitting: boolean;
   hasError: boolean;
@@ -21,6 +22,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   match,
   index,
   onScoreChange,
+  onGameWinsChange,
   onMarkCompleted,
   isSubmitting,
   hasError,
@@ -29,6 +31,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
 }) => {
   const handleScoreChange = (scores: { team1Score: number; team2Score: number }) => {
     onScoreChange(index, scores.team1Score, scores.team2Score);
+  };
+
+  const handleGameWinsChange = (gameWins: { team1GameWins: number; team2GameWins: number }) => {
+    onGameWinsChange(index, gameWins.team1GameWins, gameWins.team2GameWins);
   };
 
   const handleCompletionChange = (checked: boolean) => {
@@ -71,6 +77,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
             team2Score: typeof match.team2Score === 'number' ? match.team2Score : null
           }}
           onChange={handleScoreChange}
+          onChangeGameWins={handleGameWinsChange}
           onComplete={() => handleCompletionChange(true)}
           disabled={isSubmitting}
         />

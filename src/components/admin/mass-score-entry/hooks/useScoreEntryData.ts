@@ -15,6 +15,7 @@ export const useScoreEntryData = () => {
     matches,
     setMatches,
     handleScoreChange,
+    handleGameWinsChange,
     handleMarkCompleted
   } = useMatchScores();
 
@@ -77,7 +78,7 @@ export const useScoreEntryData = () => {
             if (winnerId && loserId) {
               const teams = [match.team1, match.team2];
               
-              // Get the game wins for winner and loser
+              // Get the game wins for winner and loser - use the actual game wins values
               const winnerGameWins = winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
               const loserGameWins = loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
               
@@ -166,6 +167,7 @@ export const useScoreEntryData = () => {
     brackets,
     filters,
     handleScoreChange,
+    handleGameWinsChange,
     handleMarkCompleted,
     handleSubmitAll,
     clearErrors,

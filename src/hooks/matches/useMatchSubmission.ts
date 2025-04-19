@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTeamWinLossUpdate } from "@/hooks/team-stats/useTeamWinLossUpdate"; 
@@ -36,8 +37,9 @@ export const useMatchSubmission = () => {
       
       const { team1_id, team2_id } = matchData;
       
-      // Determine match results based on game wins
-      const team1Win = team1GameWinsNum > team2GameWinsNum;
+      // Determine match results based on match scores (1/0), not game wins
+      // Match win is determined by comparing the total scores (team1Score vs team2Score)
+      const team1Win = team1Score > team2Score;
       
       console.log('Submitting match:', {
         matchId,
@@ -50,10 +52,10 @@ export const useMatchSubmission = () => {
 
       // Update the match in database with both match-level and game-level stats
       const updatePayload = {
-        team1_score: team1Win ? 1 : 0,
-        team2_score: team1Win ? 0 : 1,
-        team1_game_wins: team1GameWinsNum,
-        team2_game_wins: team2GameWinsNum,
+        team1_score: team1Win ? 1 : 0,  // Binary match win indicator
+        team2_score: team1Win ? 0 : 1,  // Binary match win indicator
+        team1_game_wins: team1GameWinsNum, // Actual game wins
+        team2_game_wins: team2GameWinsNum, // Actual game wins
         iscompleted: true,
         winner_id: team1Win ? team1_id : team2_id,
         loser_id: team1Win ? team2_id : team1_id

@@ -11,6 +11,7 @@ interface MatchesTableProps {
   matches: MatchWithTeams[];
   loading: boolean;
   onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
+  onGameWinsChange: (index: number, team1GameWins: number, team2GameWins: number) => void;
   onMarkCompleted: (index: number, checked: boolean) => void;
   submitting?: boolean;
   failedMatches?: string[];
@@ -22,6 +23,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   matches,
   loading,
   onScoreChange,
+  onGameWinsChange,
   onMarkCompleted,
   submitting = false,
   failedMatches = [],
@@ -102,6 +104,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
                     hasError={hasError}
                     errorMessage={errorMessage}
                     onScoreChange={onScoreChange}
+                    onGameWinsChange={onGameWinsChange}
                     onMarkCompleted={onMarkCompleted}
                     onClearError={onClearError}
                   />
