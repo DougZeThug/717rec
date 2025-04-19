@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,10 +32,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  console.debug('[TeamCard] props', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
-
-  // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
+  // Explicitly declare teamImage before use
   const teamImage = team.logoUrl || team.imageUrl;
+
+  console.debug('[TeamCard] props', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
   
   // Get power score color
   const powerScoreColor = getPowerScoreColor(team.power_score);
@@ -157,3 +158,4 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 };
 
 export default TeamCard;
+
