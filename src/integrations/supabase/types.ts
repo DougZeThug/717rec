@@ -485,6 +485,7 @@ export type Database = {
           division_id: string | null
           divisionname: string | null
           game_losses: number | null
+          game_win_percentage: number | null
           game_wins: number | null
           image_url: string | null
           logo_url: string | null
@@ -494,6 +495,7 @@ export type Database = {
           power_score: number | null
           sos: number | null
           team_id: string | null
+          win_percentage: number | null
           wins: number | null
         }
         Relationships: [
@@ -527,6 +529,19 @@ export type Database = {
           },
         ]
       }
+      v_team_match_stats: {
+        Row: {
+          close_match_losses: number | null
+          game_losses: number | null
+          game_win_percentage: number | null
+          game_wins: number | null
+          losses: number | null
+          team_id: string | null
+          win_percentage: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
       v_team_power_scores: {
         Row: {
           close_match_losses: number | null
@@ -551,6 +566,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      v_team_sos: {
+        Row: {
+          sos: number | null
+          team_id: string | null
+        }
+        Relationships: []
       }
       v_team_strength_of_schedule: {
         Row: {

@@ -39,11 +39,10 @@ export const updateMatchInDatabase = async (
     iscompleted: true,
     winner_id: winnerId,
     loser_id: loserId,
-    team1_game_wins: matchResult.team1GameWins, // Actual game wins
-    team2_game_wins: matchResult.team2GameWins  // Actual game wins
+    team1_game_wins: team1GameWins,  // Actual game wins
+    team2_game_wins: team2GameWins   // Actual game wins
   };
 
-  // First update the match itself
   const { data: matchData, error: matchError } = await supabase
     .from('matches')
     .update(updateData)
