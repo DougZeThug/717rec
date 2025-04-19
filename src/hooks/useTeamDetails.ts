@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +12,7 @@ import {
 } from "@/utils/teamDetailsUtils";
 
 export const useTeamDetails = (teamId: string | undefined) => {
-  // Fetch team data
+  // Fetch team data from v_team_game_totals
   const teamQuery = useQuery({
     queryKey: ["team", teamId],
     queryFn: async () => {
@@ -21,25 +20,29 @@ export const useTeamDetails = (teamId: string | undefined) => {
       
       const { data, error } = await supabase
         .from("v_team_game_totals")
-        .select("team_id, name, wins, losses, game_wins, game_losses, logo_url, division_id, divisions(name)")
+        .select(`
+          team_id      as id,
+          name,
+          logo_url    as logoUrl,
+          wins,
+          losses,
+          game_wins,
+          game_losses,
+          division_id as division,
+          divisions(name)
+        `)
         .eq("team_id", teamId)
-        .single();
+        .maybeSingle();
         
       if (error) throw error;
+      if (!data) throw new Error("Team not found");
       
       return {
-        id: data.team_id,
-        name: data.name,
-        logoUrl: data.logo_url,
-        imageUrl: null,
+        ...data,
         players: [],
-        wins: data.wins || 0,
-        losses: data.losses || 0,
         created_at: '',
-        division: data.division_id,
-        divisionName: data.divisions?.name || null,
-        game_wins: data.game_wins || 0,
-        game_losses: data.game_losses || 0
+        imageUrl: null,
+        divisionName: data.divisions?.name || null
       } as Team;
     },
     enabled: !!teamId

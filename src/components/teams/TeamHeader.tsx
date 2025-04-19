@@ -1,7 +1,9 @@
 
+import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, X } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TeamHeaderProps {
   team: Team;
@@ -13,19 +15,13 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
   
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
-      <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
-        {team.imageUrl ? (
-          <img 
-            src={team.imageUrl} 
-            alt={team.name} 
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No Logo
-          </div>
-        )}
-      </div>
+      <Avatar className="h-16 w-16">
+        <AvatarImage
+          src={team?.logoUrl ?? undefined}
+          alt={team?.name ?? "logo"}
+        />
+        <AvatarFallback>No Logo</AvatarFallback>
+      </Avatar>
       
       <div>
         <h1 className="text-3xl font-bold">{team.name}</h1>
