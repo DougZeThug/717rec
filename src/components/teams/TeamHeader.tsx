@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +10,19 @@ interface TeamHeaderProps {
 }
 
 const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
+  console.log("TeamHeader image URL:", team?.imageUrl);
+  console.log("TeamHeader logo URL:", team?.logoUrl);
+
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
       <Avatar className="h-16 w-16">
         <AvatarImage
-          src={team?.logoUrl ?? undefined}
+          src={team?.imageUrl || team?.logoUrl || undefined}
           alt={team?.name ?? "logo"}
+          onError={(e) => {
+            console.error(`Image load error for ${team?.name}:`, team?.imageUrl);
+            // Keep fallback behavior
+          }}
         />
         <AvatarFallback>
           {team?.name?.slice(0, 1).toUpperCase() || 'T'}

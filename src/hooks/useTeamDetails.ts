@@ -18,11 +18,14 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (error) throw error;
       if (!data) throw new Error("Team not found");
       
+      console.log("Team details from API:", data);
+      console.log("Image URL from API:", data.image_url);
+      
       return {
         id: data.team_id,
         name: data.name,
         logoUrl: data.logo_url,
-        imageUrl: data.image_url,
+        imageUrl: data.image_url, // Ensure imageUrl is properly mapped
         wins: data.wins || 0,
         losses: data.losses || 0,
         game_wins: data.game_wins || 0,

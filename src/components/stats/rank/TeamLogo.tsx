@@ -7,6 +7,8 @@ interface TeamLogoProps {
 }
 
 export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
+  console.log(`TeamLogo component for ${teamName}:`, imageUrl);
+
   return (
     <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
       {imageUrl ? (
