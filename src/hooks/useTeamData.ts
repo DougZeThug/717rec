@@ -9,21 +9,7 @@ export const useTeamData = (divisionId?: string | null) => {
     queryFn: async () => {
       let query = supabase
         .from('v_team_details') // Using v_team_details view for consistency
-        .select(`
-          team_id as id,
-          name,
-          logo_url,
-          players,
-          wins,
-          losses,
-          game_wins,
-          game_losses,
-          created_at,
-          division_id,
-          division_name,
-          sos,
-          power_score
-        `)
+        .select('*')
         .order('name');
       
       if (divisionId) {
@@ -38,7 +24,7 @@ export const useTeamData = (divisionId?: string | null) => {
       }
       
       const transformedTeams = (data || []).map((team): Team => ({
-        id: team.id,
+        id: team.team_id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
         imageUrl: null,

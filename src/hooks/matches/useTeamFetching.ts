@@ -16,19 +16,21 @@ export function useTeamFetching() {
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
+      // Use v_team_details instead of directly querying teams table
+      // This ensures we get the same data as everywhere else
       const { data, error } = await supabase
-        .from('teams')
-        .select('id, name, logo_url, image_url, players, wins, losses, game_wins, game_losses, division_id, created_at');
+        .from('v_team_details')
+        .select('*');
 
       if (error) throw error;
       
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
-        teamsMap[team.id] = {
-          id: team.id,
+        teamsMap[team.team_id] = {
+          id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: team.image_url,
+          imageUrl: null,
           players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
@@ -36,7 +38,9 @@ export function useTeamFetching() {
           game_losses: team.game_losses || 0,
           created_at: team.created_at || '',
           division: team.division_id || null,
-          divisionName: null
+          divisionName: team.division_name || null,
+          sos: typeof team.sos === 'number' ? team.sos : 0,
+          power_score: typeof team.power_score === 'number' ? team.power_score : 0
         };
       });
       
