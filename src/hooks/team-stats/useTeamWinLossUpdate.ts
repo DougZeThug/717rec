@@ -19,12 +19,15 @@ export const useTeamWinLossUpdate = () => {
       const winnerGameWinsNum = Number(winnerGameWins || 0);
       const loserGameWinsNum = Number(loserGameWins || 0);
       
-      console.log(`[useTeamWinLossUpdate] Updating team records with game stats:`, {
-        winner: { id: winnerId, gameWins: winnerGameWinsNum },
-        loser: { id: loserId, gameWins: loserGameWinsNum }
+      console.log(`[useTeamWinLossUpdate] Updating team records:`, {
+        match_result: { winnerId, loserId }, // This is the match win/loss (1-0)
+        game_stats: { 
+          winner: { id: winnerId, gameWins: winnerGameWinsNum },
+          loser: { id: loserId, gameWins: loserGameWinsNum }
+        }
       });
       
-      // Use the RPC function to update team stats
+      // Use the RPC function to update team stats - pass only the IDs and game wins
       const { data, error } = await supabase.rpc('update_team_stats', {
         p_winner_id: winnerId,
         p_loser_id: loserId,
@@ -36,6 +39,8 @@ export const useTeamWinLossUpdate = () => {
         console.error("[useTeamWinLossUpdate] Error in update_team_stats RPC:", error);
         return false;
       }
+      
+      console.log("[useTeamWinLossUpdate] Update successful:", data);
       
       // Invalidate all relevant queries to ensure fresh data
       await invalidateMatchRelatedQueries(queryClient);

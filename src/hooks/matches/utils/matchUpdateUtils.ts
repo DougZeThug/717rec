@@ -10,7 +10,7 @@ export const updateMatchInDatabase = async (
 ) => {
   const { winnerId, loserId } = matchResult;
   
-  // Calculate match scores (1 for win, 0 for loss)
+  // Calculate match scores (1 for win, 0 for loss) - this is binary, not the game totals
   const team1Score = winnerId === matchResult.team1Id ? 1 : 0;
   const team2Score = winnerId === matchResult.team2Id ? 1 : 0;
   
