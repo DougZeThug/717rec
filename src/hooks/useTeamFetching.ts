@@ -26,7 +26,6 @@ export function useTeamFetching() {
           game_wins,
           game_losses,
           logo_url,
-          image_url,
           division_id
         `)
         .order('name');
@@ -39,7 +38,7 @@ export function useTeamFetching() {
           id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
-          imageUrl: team.image_url,
+          imageUrl: null, // Since image_url is not available in v_team_game_totals
           players: [],  // Initialize as empty string array
           wins: team.wins || 0,
           losses: team.losses || 0,
