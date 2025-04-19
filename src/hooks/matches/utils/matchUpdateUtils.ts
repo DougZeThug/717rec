@@ -10,28 +10,38 @@ export const updateMatchInDatabase = async (
 ) => {
   const { winnerId, loserId } = matchResult;
   
-  // Calculate match scores (1 for win, 0 for loss) - this is binary, not the game totals
-  const team1Score = winnerId === matchResult.team1Id ? 1 : 0;
-  const team2Score = winnerId === matchResult.team2Id ? 1 : 0;
+  // Binary match scores - winner gets 1, loser gets 0
+  const team1MatchScore = winnerId === matchResult.team1Id ? 1 : 0;
+  const team2MatchScore = winnerId === matchResult.team2Id ? 1 : 0;
+  
+  console.log(`[matchUpdateUtils] Processing match ${matchId}:`, {
+    match_scores: {
+      team1: { id: matchResult.team1Id, matchScore: team1MatchScore },
+      team2: { id: matchResult.team2Id, matchScore: team2MatchScore }
+    },
+    game_scores: {
+      team1: { id: matchResult.team1Id, gameWins: team1GameWins },
+      team2: { id: matchResult.team2Id, gameWins: team2GameWins }
+    },
+    winner_id: winnerId,
+    loser_id: loserId
+  });
+  
+  // Validation to ensure match scores are binary
+  if (team1MatchScore + team2MatchScore !== 1) {
+    console.error('Invalid match scores - exactly one team must win');
+    throw new Error('Match scores must be 1/0 based on winner/loser');
+  }
   
   const updateData = {
-    team1_score: team1Score,             // Binary winner indicator (1/0)
-    team2_score: team2Score,             // Binary winner indicator (1/0)
+    team1_score: team1MatchScore,          // Binary winner indicator (1/0)
+    team2_score: team2MatchScore,          // Binary winner indicator (1/0)
     iscompleted: true,
     winner_id: winnerId,
     loser_id: loserId,
     team1_game_wins: matchResult.team1GameWins, // Actual game wins
     team2_game_wins: matchResult.team2GameWins  // Actual game wins
   };
-  
-  console.log(`[matchUpdateUtils] Updating match ${matchId} with:`, updateData);
-  
-  // Development assertion to catch incorrect score values
-  if ((team1GameWins > team2GameWins && team1Score !== 1) || 
-      (team2GameWins > team1GameWins && team2Score !== 1)) {
-    console.error('Score validation failed:', { team1GameWins, team2GameWins, team1Score, team2Score });
-    throw new Error('Match scores must be 1/0 based on game win totals, not raw game totals');
-  }
 
   // First update the match itself
   const { data: matchData, error: matchError } = await supabase
@@ -45,28 +55,6 @@ export const updateMatchInDatabase = async (
     throw matchError;
   }
 
-  // For completed matches, trigger the team stats update via RPC
-  if (winnerId && loserId) {
-    try {
-      const { data, error } = await supabase.rpc('update_team_stats', {
-        p_winner_id: winnerId,
-        p_loser_id: loserId,
-        p_winner_game_wins: matchResult.team1GameWins,
-        p_loser_game_wins: matchResult.team2GameWins
-      });
-      
-      if (error) {
-        console.error('[matchUpdateUtils] Error calling update_team_stats RPC:', error);
-        throw error;
-      }
-      
-      console.log('[matchUpdateUtils] Team stats update successful:', data);
-    } catch (error) {
-      console.error(`[matchUpdateUtils] Error updating team stats:`, error);
-      throw error;
-    }
-  }
-  
-  console.log(`[matchUpdateUtils] Match ${matchId} updated successfully`);
+  console.log(`[matchUpdateUtils] Match ${matchId} updated successfully:`, matchData);
   return matchData;
 };
