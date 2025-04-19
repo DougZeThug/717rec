@@ -30,16 +30,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
   onClearFilters
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div className="flex flex-col sm:flex-row gap-2">
+    <div className="flex flex-col gap-3 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="flex items-center gap-1 h-9">
-              <CalendarIcon size={16} />
+            <Button variant="outline" className="w-full justify-start">
+              <CalendarIcon className="mr-2 h-4 w-4" />
               {filters.date ? format(filters.date, "MMM d, yyyy") : "Filter by Date"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={filters.date}
@@ -50,7 +50,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Popover>
 
         <Select value={filters.bracketId} onValueChange={onBracketChange}>
-          <SelectTrigger className="w-[180px] h-9">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Filter by Bracket" />
           </SelectTrigger>
           <SelectContent>
@@ -62,12 +62,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
             ))}
           </SelectContent>
         </Select>
-
-        <Button variant="ghost" size="sm" className="h-9" onClick={onClearFilters}>
-          <Filter size={16} className="mr-1" />
-          Clear Filters
-        </Button>
       </div>
+
+      <Button 
+        variant="ghost" 
+        onClick={onClearFilters}
+        className="w-full sm:w-auto justify-center"
+      >
+        <Filter className="mr-2 h-4 w-4" />
+        Clear Filters
+      </Button>
     </div>
   );
 };

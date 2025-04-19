@@ -34,8 +34,8 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
   const disableSubmit = submitting || validEditedMatchesCount === 0;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="mx-auto max-w-full">
+      <CardHeader className="p-4">
         <ScoreEntryToolbar
           filters={filters}
           brackets={brackets}
@@ -45,19 +45,21 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
         />
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-4">
         <ErrorAlert failedMatches={failedMatches} />
         
-        <MatchesTable
-          matches={matches}
-          loading={loading}
-          submitting={submitting}
-          failedMatches={failedMatches}
-          errorMessages={errorMessages}
-          onScoreChange={handleScoreChange}
-          onMarkCompleted={handleMarkCompleted}
-          onClearError={clearErrors}
-        />
+        <div className="overflow-x-auto">
+          <MatchesTable
+            matches={matches}
+            loading={loading}
+            submitting={submitting}
+            failedMatches={failedMatches}
+            errorMessages={errorMessages}
+            onScoreChange={handleScoreChange}
+            onMarkCompleted={handleMarkCompleted}
+            onClearError={clearErrors}
+          />
+        </div>
 
         <div className="flex justify-end mt-6">
           <SubmitButton

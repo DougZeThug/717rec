@@ -21,7 +21,7 @@ const ScoreEntryToolbar: React.FC<ScoreEntryToolbarProps> = ({
   onClearFilters
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="flex flex-col space-y-4">
       <CardTitle className="flex items-center gap-2">
         <TableProperties size={20} />
         Mass Score Entry

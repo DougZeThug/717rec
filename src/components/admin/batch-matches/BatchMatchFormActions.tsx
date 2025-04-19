@@ -17,18 +17,16 @@ const BatchMatchFormActions = ({
   isSubmitting = false
 }: BatchMatchFormActionsProps) => {
   return (
-    <>
-      <div className="flex flex-col space-y-4">
-        <Button 
-          onClick={onAutoAssign}
-          variant="outline"
-          className="w-auto"
-        >
-          Auto Assign Timeslots
-        </Button>
-      </div>
+    <div className="flex flex-col gap-4">
+      <Button 
+        onClick={onAutoAssign}
+        variant="outline"
+        className="w-full"
+      >
+        Auto Assign Timeslots
+      </Button>
 
-      <div className="flex justify-between pt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Button onClick={onAddMatch} variant="outline">
           + Add Another Match
         </Button>
@@ -36,14 +34,14 @@ const BatchMatchFormActions = ({
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Matches...
+              Creating...
             </>
           ) : (
             "Create Matches"
           )}
         </Button>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -24,7 +24,7 @@ const BatchMatchForm = () => {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4">
           <div className="flex justify-center">
             <p>Loading teams data...</p>
           </div>
@@ -34,8 +34,8 @@ const BatchMatchForm = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col space-y-4">
+    <div className="space-y-4">
+      <div className="w-full">
         <ThursdayDatePicker
           selected={selectedDate}
           onSelect={setSelectedDate}
