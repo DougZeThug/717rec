@@ -1,10 +1,6 @@
 
 import { QueryClient } from "@tanstack/react-query";
 
-/**
- * Invalidates all queries related to matches and team stats
- * to ensure data freshness across the app
- */
 export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) => {
   console.log("Invalidating all match and team related queries...");
   const queriesToInvalidate = [
@@ -31,9 +27,6 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
   console.log("Query cache invalidation complete for:", queriesToInvalidate.join(", "));
 };
 
-/**
- * Helper function for batch operations
- */
 export const batchInvalidateQueries = async (queryClient: QueryClient, keys: string[]) => {
   const promises = keys.map(key => queryClient.invalidateQueries({ queryKey: [key] }));
   await Promise.all(promises);
