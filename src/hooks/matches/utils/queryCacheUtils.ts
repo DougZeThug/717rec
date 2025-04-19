@@ -3,23 +3,20 @@ import { QueryClient } from "@tanstack/react-query";
 
 export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) => {
   console.log("Invalidating all match and team related queries...");
-  const queriesToInvalidate = [
-    'matches', 
-    'teams', 
-    'rankings', 
-    'teamStats', 
-    'team', 
-    'team-matches',
-    'standings',
-    'v_team_game_totals',
-    'all-teams',
-    'team-details'
-  ];
   
   // Use predicate to catch all variations of team queries
   queryClient.invalidateQueries({ 
     predicate: q => ['teams', 'team', 'rankings', 'v_team_game_totals', 'all-teams', 'team-details'].includes(String(q.queryKey[0]))
   });
+  
+  const queriesToInvalidate = [
+    'matches', 
+    'rankings', 
+    'teamStats', 
+    'team-matches',
+    'standings',
+    'v_team_game_totals'
+  ];
   
   const promises = queriesToInvalidate.map(queryKey => 
     queryClient.invalidateQueries({ queryKey: [queryKey] })
