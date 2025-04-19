@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Match, Team } from '@/types';
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,11 @@ const MatchApprovalItem = ({
   onApproveResult, 
   onMarkAsTie 
 }: MatchApprovalItemProps) => {
+  const team1 = teams[match.team1Id];
+  const team2 = teams[match.team2Id];
+  const team1Image = team1?.imageUrl || team1?.logoUrl;
+  const team2Image = team2?.imageUrl || team2?.logoUrl;
+
   return (
     <Collapsible
       key={match.id}
@@ -36,9 +40,38 @@ const MatchApprovalItem = ({
       <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-slate-50">
         <div className="flex items-center">
           {isOpen ? <ChevronDown className="h-4 w-4 mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
-          <span>
-            {teams[match.team1Id]?.name || 'Team 1'} vs {teams[match.team2Id]?.name || 'Team 2'}
-          </span>
+          <div className="flex items-center">
+            <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 mr-2">
+              {team1Image && (
+                <img 
+                  src={team1Image} 
+                  alt="" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                  }}
+                />
+              )}
+            </div>
+            <span>
+              {team1?.name || 'Team 1'} vs 
+            </span>
+            <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 mx-2">
+              {team2Image && (
+                <img 
+                  src={team2Image} 
+                  alt="" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                  }}
+                />
+              )}
+            </div>
+            <span>
+              {team2?.name || 'Team 2'}
+            </span>
+          </div>
         </div>
         <div className="text-sm text-gray-500">
           {new Date(match.date).toLocaleDateString()}

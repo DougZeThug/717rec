@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,8 +31,8 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  // Explicitly declare teamImage before use
-  const teamImage = team.logoUrl || team.imageUrl;
+  // First check for imageUrl, then fall back to logoUrl
+  const teamImage = team.imageUrl || team.logoUrl;
 
   console.debug('[TeamCard] props', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
   
@@ -158,4 +157,3 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 };
 
 export default TeamCard;
-

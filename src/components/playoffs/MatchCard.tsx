@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { PlayoffMatch, Team, PlayoffGame } from "@/types";
@@ -48,11 +47,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {team1 ? (
                 <>
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                    {team1.imageUrl && (
+                    {(team1.imageUrl || team1.logoUrl) && (
                       <img 
-                        src={team1.imageUrl} 
+                        src={team1.imageUrl || team1.logoUrl} 
                         alt={team1.name} 
                         className="w-full h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                        }}
                       />
                     )}
                   </div>
@@ -73,11 +75,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {team2 ? (
                 <>
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                    {team2.imageUrl && (
+                    {(team2.imageUrl || team2.logoUrl) && (
                       <img 
-                        src={team2.imageUrl} 
+                        src={team2.imageUrl || team2.logoUrl} 
                         alt={team2.name} 
                         className="w-full h-full object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                        }}
                       />
                     )}
                   </div>
@@ -96,7 +101,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
             {/* Games details */}
             <MatchGames match={match} />
             
-            {/* Finals Champion */}
             {winner && match.matchType === 'Finals' && (
               <div className="mt-3 pt-3 border-t text-center">
                 <div className="text-sm text-gray-500">Champion</div>
@@ -107,7 +111,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
         </CardContent>
       </Card>
       
-      {/* Bracket connecting lines */}
       {hasNextMatch && (
         <svg 
           className="absolute top-1/2 -right-16 h-full w-16"
@@ -131,7 +134,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
   );
 };
 
-// Sub-component for match games
 const MatchGames: React.FC<{ match: PlayoffMatch }> = ({ match }) => {
   if (!match.games || match.games.length === 0) return null;
   

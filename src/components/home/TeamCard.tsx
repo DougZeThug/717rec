@@ -20,8 +20,8 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   // Use the consistent win percentage calculation
   const winPercentage = calculateWinPercentage(wins, losses) * 100;
   
-  // Use logoUrl as primary image source, fallback to imageUrl if logoUrl is not available
-  const teamImage = team.logoUrl || team.imageUrl;
+  // First check for imageUrl, then fall back to logoUrl (this is the most important change)
+  const teamImage = team.imageUrl || team.logoUrl;
   
   console.debug('[HomeTeamCard]', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
   
@@ -39,6 +39,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
                 src={teamImage} 
                 alt={team.name} 
                 className="max-h-36 max-w-full object-contain"
+                onError={(e) => {
+                  console.error(`Image load error for ${team.name}:`, teamImage);
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop'; // Fallback image
+                }}
               />
             ) : (
               <div className="text-gray-400 text-center">

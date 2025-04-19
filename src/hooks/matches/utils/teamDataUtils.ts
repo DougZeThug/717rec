@@ -8,7 +8,7 @@ export const fetchTeamsForMatch = async (
   try {
     console.log(`[teamDataUtils] Fetching teams for ids:`, teamIds);
     
-    // Use v_team_details view instead of teams table to get all necessary fields
+    // Use v_team_details view to get all necessary fields
     const { data, error } = await supabase
       .from('v_team_details')
       .select('*')
@@ -26,12 +26,12 @@ export const fetchTeamsForMatch = async (
     
     console.log(`[teamDataUtils] Found ${data.length} teams`);
     
-    // Transform to proper Team objects
+    // Transform to proper Team objects with consistent image handling
     const formattedTeams: Team[] = data.map(team => ({
       id: team.team_id,
       name: team.name,
       logoUrl: team.logo_url || null,
-      imageUrl: team.image_url || null, // Ensure image_url is properly mapped
+      imageUrl: team.image_url || null, // Make sure image_url is properly mapped
       players: Array.isArray(team.players) ? team.players : [],
       wins: team.wins || 0,
       losses: team.losses || 0,
@@ -44,7 +44,12 @@ export const fetchTeamsForMatch = async (
       power_score: typeof team.power_score === 'number' ? team.power_score : 0
     }));
     
-    console.log("[teamDataUtils] First team image data:", formattedTeams[0]?.logoUrl, formattedTeams[0]?.imageUrl);
+    console.log("[teamDataUtils] Team image data sample:", formattedTeams.map(t => ({
+      id: t.id,
+      name: t.name,
+      logoUrl: t.logoUrl,
+      imageUrl: t.imageUrl
+    })));
     
     return formattedTeams;
   } catch (error) {

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Match, Team } from "@/types";
@@ -19,6 +18,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
   formatDate, 
   formatTime 
 }) => {
+  // Get team images with proper fallback
+  const team1Image = team1.imageUrl || team1.logoUrl;
+  const team2Image = team2.imageUrl || team2.logoUrl;
+  
   return (
     <Link to={`/schedule?matchId=${match.id}`} className="block">
       <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-200")}>
@@ -26,11 +29,15 @@ const MatchCard: React.FC<MatchCardProps> = ({
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
               <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                {team1.imageUrl ? (
+                {team1Image ? (
                   <img 
-                    src={team1.imageUrl} 
+                    src={team1Image} 
                     alt={team1.name} 
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      console.error(`Image load error for ${team1.name}:`, team1Image);
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
@@ -44,11 +51,15 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <div className="flex items-center">
               <span className="mr-3 font-medium">{team2.name}</span>
               <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                {team2.imageUrl ? (
+                {team2Image ? (
                   <img 
-                    src={team2.imageUrl} 
+                    src={team2Image} 
                     alt={team2.name} 
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      console.error(`Image load error for ${team2.name}:`, team2Image);
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
