@@ -1,37 +1,25 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Team, Match } from "@/types";
-import TeamTrend from "./TeamTrend"; 
+import { Team } from "@/types";
 
 interface TeamStatsProps {
   team: Team;
-  winPercentage: string;
-  pastMatches?: Match[];
+  winPercentage?: string;
+  pastMatches?: any[];
 }
 
-const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches = [] }) => {
-  // Parse and ensure we're working with numbers
-  const wins = parseInt(String(team.wins)) || 0;
-  const losses = parseInt(String(team.losses)) || 0;
-  const totalMatches = wins + losses;
+const calcPercentage = (wins: number, total: number): string => {
+  if (total === 0) return "0.0%";
+  return ((wins / total) * 100).toFixed(1) + "%";
+};
 
-  // Parse game stats if available
-  const gameWins = parseInt(String(team.game_wins)) || 0;
-  const gameLosses = parseInt(String(team.game_losses)) || 0;
-  const totalGames = gameWins + gameLosses;
-  
-  const getRecordColor = () => {
-    if (wins > losses) return "text-green-600";
-    if (wins < losses) return "text-red-600";
-    return "text-gray-600";
-  };
-  
-  const getGameRecordColor = () => {
-    if (gameWins > gameLosses) return "text-green-600";
-    if (gameWins < gameLosses) return "text-red-600";
-    return "text-gray-600";
-  };
+const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches = [] }) => {
+  // Calculate game win percentage
+  const gameWinPercentage = calcPercentage(
+    team.game_wins || 0,
+    (team.game_wins || 0) + (team.game_losses || 0)
+  );
 
   return (
     <Card className="mb-6">
@@ -39,8 +27,8 @@ const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-gray-500">Match Record</h3>
-            <p className={`text-2xl font-bold ${getRecordColor()}`}>
-              {wins}-{losses}
+            <p className="text-2xl font-bold text-emerald-600">
+              {team.wins}-{team.losses}
             </p>
           </div>
           
@@ -53,18 +41,16 @@ const TeamStats: React.FC<TeamStatsProps> = ({ team, winPercentage, pastMatches 
           
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-gray-500">Game Record</h3>
-            <p className={`text-2xl font-bold ${getGameRecordColor()}`}>
-              {gameWins}-{gameLosses}
+            <p className="text-2xl font-bold text-blue-600">
+              {team.game_wins || 0}-{team.game_losses || 0}
             </p>
           </div>
           
           <div className="space-y-1">
-            <h3 className="text-sm font-medium text-gray-500">Trend</h3>
-            <TeamTrend
-              recentMatches={pastMatches || []}
-              teamId={team.id}
-              limit={5}
-            />
+            <h3 className="text-sm font-medium text-gray-500">Game Win %</h3>
+            <p className="text-2xl font-bold">
+              {gameWinPercentage}
+            </p>
           </div>
         </div>
       </CardContent>

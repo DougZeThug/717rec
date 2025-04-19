@@ -11,8 +11,6 @@ interface TeamHeaderProps {
 }
 
 const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
-  console.debug('[TeamHeader] props', team.id, team.game_wins, team.game_losses);
-  
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
       <Avatar className="h-16 w-16">
@@ -20,7 +18,9 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
           src={team?.logoUrl ?? undefined}
           alt={team?.name ?? "logo"}
         />
-        <AvatarFallback>No Logo</AvatarFallback>
+        <AvatarFallback>
+          {team?.name?.slice(0, 1).toUpperCase() || 'T'}
+        </AvatarFallback>
       </Avatar>
       
       <div>
