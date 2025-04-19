@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
 import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
@@ -117,7 +118,7 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     // Calculate game stats
     const { gamesWon, gamesLost, gameWinPercentage, closeMatchLosses } = calculateGameStats(teamId, matches);
     
-    // Calculate power score
+    // Calculate power score with updated weights: 40% win%, 40% SOS, 20% game%
     const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
     
     console.log(`Team ${team.name} (${teamId}) stats calculated:`, {

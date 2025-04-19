@@ -54,7 +54,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             />
           </PopoverTrigger>
           <PopoverContent side="top" className="max-w-[300px] text-xs">
-            Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+            Power Score combines win percentage (40%), strength of schedule (40%), and game win rate (20%) 
             into a single rating from 0-100. Higher scores indicate stronger overall performance.
           </PopoverContent>
         </Popover>
@@ -72,7 +72,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             />
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-[300px] text-xs">
-            Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+            Power Score combines win percentage (40%), strength of schedule (40%), and game win rate (20%) 
             into a single rating from 0-100. Higher scores indicate stronger overall performance.
           </TooltipContent>
         </Tooltip>

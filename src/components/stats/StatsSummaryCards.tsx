@@ -84,8 +84,9 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
             />
           </PopoverTrigger>
           <PopoverContent side="top" className="max-w-[300px] text-sm">
-            Power Score is a weighted rating based on a team's win/loss record, strength of schedule, 
-            and how close each match was. A higher score reflects strong performance against tougher opponents.
+            Power Score is a weighted rating that heavily considers strength of schedule (40%), 
+            win percentage (40%), and game-level performance (20%). 
+            Higher scores indicate stronger teams against tougher opponents.
           </PopoverContent>
         </Popover>
       );
@@ -102,8 +103,9 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
             />
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-[300px] text-sm">
-            Power Score is a weighted rating based on a team's win/loss record, strength of schedule, 
-            and how close each match was. A higher score reflects strong performance against tougher opponents.
+            Power Score is a weighted rating that heavily considers strength of schedule (40%), 
+            win percentage (40%), and game-level performance (20%). 
+            Higher scores indicate stronger teams against tougher opponents.
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

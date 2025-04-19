@@ -31,6 +31,9 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
         <span className="inline-block mr-2">
           Win: {(winPercentage * 100).toFixed(1)}%
         </span>
+        <span className="inline-block">
+          SOS: {sos.toFixed(2)}
+        </span>
       </div>
     );
   }
@@ -46,12 +49,12 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
         <div className="font-semibold">{(winPercentage * 100).toFixed(1)}%</div>
       </div>
       <div className="p-1 bg-gray-50 rounded">
-        <div className="text-xs text-gray-500">Games</div>
-        <div className="font-semibold">{gamesWon}-{gamesLost}</div>
+        <div className="text-xs text-gray-500">SOS</div>
+        <div className="font-semibold">{sos.toFixed(2)}</div>
       </div>
       <div className="p-1 bg-gray-50 rounded">
-        <div className="text-xs text-gray-500">Streak</div>
-        <div className="font-semibold">{streak}</div>
+        <div className="text-xs text-gray-500">Games</div>
+        <div className="font-semibold">{gamesWon}-{gamesLost}</div>
       </div>
     </div>
   );

@@ -480,7 +480,7 @@ export type Database = {
     Views: {
       v_team_details: {
         Row: {
-          close_match_losses: string | null
+          close_match_losses: number | null
           created_at: string | null
           division_id: string | null
           divisionname: string | null
@@ -491,7 +491,7 @@ export type Database = {
           losses: number | null
           name: string | null
           players: string[] | null
-          power_score: string | null
+          power_score: number | null
           sos: number | null
           team_id: string | null
           wins: number | null

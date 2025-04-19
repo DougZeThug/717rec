@@ -85,11 +85,10 @@ export const calculateTeamStats = async (
     strengthOfSchedule
   });
   
-  // Calculate Power Score - ensure we use consistent win percentage calculation
-  // Use match results, not game results for this
+  // Calculate Power Score with updated weights - 40% win%, 40% SOS, 20% game%
   const winPercentValue = calculateWinPercentageUtil(team.wins || 0, team.losses || 0);
   const gameWinPercentValue = parseFloat(gameWinPercentage) / 100;
-  const powerScore = (winPercentValue * 0.5) + (gameWinPercentValue * 0.3) + (strengthOfSchedule * 0.2);
+  const powerScore = (winPercentValue * 0.4) + (strengthOfSchedule * 0.4) + (gameWinPercentValue * 0.2);
   const formattedPowerScore = (powerScore * 100).toFixed(1);
   
   return {

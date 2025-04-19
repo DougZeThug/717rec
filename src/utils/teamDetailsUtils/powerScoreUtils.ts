@@ -1,7 +1,7 @@
 
 /**
  * Calculate a team's power score based on win percentage, strength of schedule, and game win percentage
- * Power Score = (Win% * 0.5) + (SOS * 0.2) + (Game Win% * 0.3)
+ * Power Score = (Win% * 0.4) + (SOS * 0.4) + (Game Win% * 0.2)
  */
 export const calculatePowerScore = (
   winPercentage: number, 
@@ -13,10 +13,11 @@ export const calculatePowerScore = (
   const normalizedSOS = Math.min(Math.max(strengthOfSchedule, 0), 1);
   const normalizedGameWinPct = Math.min(Math.max(gameWinPercentage, 0), 1);
   
-  // Calculate power score using the formula with weights
-  const powerScore = (normalizedWinPct * 0.5) + 
-                     (normalizedSOS * 0.2) + 
-                     (normalizedGameWinPct * 0.3);
+  // Calculate power score using the updated formula with new weights
+  // Now SOS has 40% weight (up from 20%), win% has 40% (down from 50%)
+  const powerScore = (normalizedWinPct * 0.4) + 
+                     (normalizedSOS * 0.4) + 
+                     (normalizedGameWinPct * 0.2);
   
   // Convert to a 0-100 scale and round to one decimal place
   return Math.round(powerScore * 1000) / 10;
