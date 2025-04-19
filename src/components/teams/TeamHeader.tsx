@@ -1,4 +1,3 @@
-
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, X } from "lucide-react";
