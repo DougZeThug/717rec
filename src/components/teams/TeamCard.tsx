@@ -16,10 +16,8 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
-  // Use the divisionName property if available, otherwise fall back to the original approach
   const divisionName = team.divisionName || "";
   
-  // Division color mapping
   const getDivisionColor = () => {
     if (!divisionName) return "gray";
     
