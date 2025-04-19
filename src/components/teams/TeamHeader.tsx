@@ -1,3 +1,4 @@
+
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, X } from "lucide-react";
@@ -8,6 +9,8 @@ interface TeamHeaderProps {
 }
 
 const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
+  console.debug('[TeamHeader] game stats', team.id, team.game_wins, team.game_losses);
+  
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
       <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">

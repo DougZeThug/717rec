@@ -30,7 +30,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  console.debug('TeamCard data', team);
+  console.debug('[TeamCard] game stats', team.id, team.game_wins, team.game_losses);
 
   return (
     <Card className={getCardInteractionStyles("overflow-hidden h-full flex flex-col mb-4 sm:mb-0")}>

@@ -51,6 +51,14 @@ export function useTeamFetching() {
         };
       });
       
+      console.debug('[useTeamFetching] Teams loaded with game stats:', 
+        Object.values(teamsMap).map(t => ({
+          id: t.id,
+          name: t.name,
+          game_stats: `${t.game_wins}-${t.game_losses}`
+        }))
+      );
+      
       setTeams(teamsMap);
     } catch (error) {
       console.error('Error fetching teams:', error);
