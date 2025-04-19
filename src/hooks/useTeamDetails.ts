@@ -20,7 +20,10 @@ export const useTeamDetails = (teamId: string | undefined) => {
           game_wins,
           game_losses,
           division_id,
-          divisions (name)
+          divisions (name),
+          sos,
+          close_match_losses,
+          power_score
         `)
         .eq("team_id", teamId)
         .maybeSingle();
@@ -39,9 +42,9 @@ export const useTeamDetails = (teamId: string | undefined) => {
         game_losses: data.game_losses || 0,
         division: data.division_id,
         divisionName: data.divisions?.name || null,
-        sos: data?.sos,
-        close_match_losses: data?.close_match_losses,
-        power_score: data?.power_score
+        sos: data.sos,
+        close_match_losses: data.close_match_losses,
+        power_score: data.power_score
       } as Team;
     },
     enabled: !!teamId

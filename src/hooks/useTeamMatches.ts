@@ -22,15 +22,26 @@ export const useTeamMatches = (teamId: string | undefined) => {
       
       // Map database rows to Match interface with camelCase properties
       const mappedMatches = matchData.map(row => ({
-        ...row,
+        id: row.id,
         team1Id: row.team1_id,
         team2Id: row.team2_id,
         team1Score: row.team1_score,
         team2Score: row.team2_score,
-        team1GameWins: row.team1_game_wins,
-        team2GameWins: row.team2_game_wins,
+        date: row.date,
+        location: row.location,
+        iscompleted: row.iscompleted,
         winnerId: row.winner_id,
-        loserId: row.loser_id
+        loserId: row.loser_id,
+        round_number: row.round_number,
+        position: row.position,
+        bracket_id: row.bracket_id,
+        match_type: row.match_type,
+        next_match_id: row.next_match_id,
+        next_loser_match_id: row.next_loser_match_id,
+        best_of: row.best_of,
+        created_at: row.created_at,
+        team1GameWins: row.team1_game_wins,
+        team2GameWins: row.team2_game_wins
       })) as Match[];
       
       return {
