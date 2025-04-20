@@ -6,6 +6,7 @@ import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import RankTrendIndicator from "./RankTrendIndicator";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface RankingCardProps {
   ranking: Ranking;

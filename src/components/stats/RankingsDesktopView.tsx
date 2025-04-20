@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Table,
@@ -69,15 +70,6 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
       </div>
     </TableHead>
   );
-
-  const rankingsByDivision: Record<string, Ranking[]> = {};
-  rankings.forEach(ranking => {
-    const divisionName = ranking.divisionName || "Unassigned";
-    if (!rankingsByDivision[divisionName]) {
-      rankingsByDivision[divisionName] = [];
-    }
-    rankingsByDivision[divisionName].push(ranking);
-  });
 
   return (
     <div>
