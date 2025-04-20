@@ -14,7 +14,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
       <CardHeader>
         <CardTitle>Complete Team Rankings</CardTitle>
         <CardDescription>
-          Based on win percentage, strength of schedule (SOS), and game-level performance
+          Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
         </CardDescription>
       </CardHeader>
       <CardContent>

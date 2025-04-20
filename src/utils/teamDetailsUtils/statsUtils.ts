@@ -73,7 +73,7 @@ export const calculateTeamStats = async (
   const totalGames = gamesWon + gamesLost;
   const gameWinPercentage = totalGames > 0 ? ((gamesWon / totalGames) * 100).toFixed(1) : "0.0";
   
-  // Calculate SOS
+  // Calculate SOS - this should already incorporate division weights from the database
   let strengthOfSchedule = 0.5;
   if (team && allTeams) {
     strengthOfSchedule = await calculateSOS(team, allTeams, matches);
@@ -85,9 +85,13 @@ export const calculateTeamStats = async (
     strengthOfSchedule
   });
   
-  // Calculate Power Score with updated weights - 40% win%, 40% SOS, 20% game%
+  // Note: We now rely on the database view to calculate the power score with the weighted algorithm
+  // We provide a simple version here as fallback, but the actual weighted calculations
+  // should come from v_team_details
   const winPercentValue = calculateWinPercentageUtil(team.wins || 0, team.losses || 0);
   const gameWinPercentValue = parseFloat(gameWinPercentage) / 100;
+  
+  // Use the new weighted formula (40/40/20)
   const powerScore = (winPercentValue * 0.4) + (strengthOfSchedule * 0.4) + (gameWinPercentValue * 0.2);
   const formattedPowerScore = (powerScore * 100).toFixed(1);
   

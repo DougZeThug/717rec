@@ -27,10 +27,11 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
       try {
         // Create rankings directly from team data, using v_team_details values
         const calculatedRankings = teamsToUse.map((team): Ranking => {
-          // Fix for error 1: Pass the correct parameters to calculateStreak
+          // Calculate streak from matches
           const streak = calculateStreak(team.id, matchesToUse);
           const previousRank = previousRankings[team.id];
           
+          // Use the power_score directly from v_team_details
           return {
             teamId: team.id,
             teamName: team.name,
@@ -49,7 +50,7 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
             previousRank,
             rankChange: 0, // Will be calculated after sorting
             headToHead: {}, // Will be populated if needed
-            closeMatchLosses: team.close_match_losses || 0 // Fix for error 2: Add missing property
+            closeMatchLosses: team.close_match_losses || 0
           };
         });
 

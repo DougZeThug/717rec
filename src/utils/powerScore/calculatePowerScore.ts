@@ -1,30 +1,30 @@
 
 /**
- * Calculate a team's power score based on win percentage, strength of schedule, and game win percentage
- * 
- * New Power Score = (WeightedWin% * 0.4) + (SOS * 0.4) + (WeightedGameWin% * 0.2)
- * 
- * Note: The actual calculation is now done in the database view v_team_details.
- * This function is maintained for consistency and any client-side calculations.
+ * Calculate the power score based on the weighted formula
+ * 40% Weighted Win Percentage
+ * 40% Strength of Schedule
+ * 20% Weighted Game Win Percentage
  */
 export const calculatePowerScore = (
   winPercentage: number, 
-  strengthOfSchedule: number,
+  strengthOfSchedule: number, 
   gameWinPercentage: number
 ): number => {
-  // Normalize all inputs to ensure they're between 0 and 1
-  const normalizedWinPct = Math.min(Math.max(winPercentage, 0), 1);
-  const normalizedSOS = Math.min(Math.max(strengthOfSchedule, 0), 1);
-  const normalizedGameWinPct = Math.min(Math.max(gameWinPercentage, 0), 1);
+  // Handle invalid inputs with sensible defaults
+  const validWinPct = isNaN(winPercentage) ? 0 : winPercentage;
+  const validSOS = isNaN(strengthOfSchedule) ? 0.5 : strengthOfSchedule;
+  const validGameWinPct = isNaN(gameWinPercentage) ? 0 : gameWinPercentage;
   
-  // Calculate power score using the updated formula with weights that match the database view:
-  // - 40% weighted match win percentage
-  // - 40% strength of schedule
-  // - 20% weighted game win percentage
-  const powerScore = (normalizedWinPct * 0.4) + 
-                    (normalizedSOS * 0.4) + 
-                    (normalizedGameWinPct * 0.2);
+  // Apply the weighted formula: 40/40/20 split
+  const powerScore = (validWinPct * 0.4) + (validSOS * 0.4) + (validGameWinPct * 0.2);
   
-  // Convert to a 0-100 scale and round to one decimal place
-  return Math.round(powerScore * 1000) / 10;
+  // Log for debugging
+  console.debug('Power Score Calculation:', {
+    winPercentage: validWinPct,
+    strengthOfSchedule: validSOS,
+    gameWinPercentage: validGameWinPct,
+    powerScore
+  });
+  
+  return powerScore * 100; // Convert to 0-100 scale for display
 };
