@@ -97,12 +97,9 @@ const PowerScoreScatterPlot = ({ data }: { data: TeamPowerScore[] }) => {
                 fill={getDivisionColor(division)}
                 shape="circle"
                 line={{}}
-                // Dynamically size based on # of games
                 legendType="circle"
-                // Use average size
-                marker={{
-                  radius: 12
-                }}
+                // Use Recharts' correct props for dot size
+                dot={{ r: 6 }}
               />
             ))}
           </ScatterChart>
