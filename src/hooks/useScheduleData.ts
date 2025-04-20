@@ -50,6 +50,16 @@ export const useScheduleData = () => {
           team2Type: typeof match.team2
         });
         
+        // Properly handle team details based on what Supabase returns
+        // This handles both cases where team details might be an array or a direct object
+        const team1Details = match.team1 ? (
+          Array.isArray(match.team1) ? match.team1[0] : match.team1
+        ) : null;
+
+        const team2Details = match.team2 ? (
+          Array.isArray(match.team2) ? match.team2[0] : match.team2
+        ) : null;
+        
         return {
           id: match.id,
           team1Id: match.team1_id,
@@ -70,13 +80,8 @@ export const useScheduleData = () => {
           best_of: match.best_of,
           team1_game_wins: match.team1_game_wins,
           team2_game_wins: match.team2_game_wins,
-          // Correctly handle team details - ensure they're objects not strings
-          team1Details: Array.isArray(match.team1) && match.team1.length > 0 
-            ? match.team1[0] 
-            : (typeof match.team1 === 'object' ? match.team1 : null),
-          team2Details: Array.isArray(match.team2) && match.team2.length > 0 
-            ? match.team2[0] 
-            : (typeof match.team2 === 'object' ? match.team2 : null)
+          team1Details: team1Details,
+          team2Details: team2Details
         };
       });
       
