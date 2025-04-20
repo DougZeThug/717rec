@@ -1,22 +1,12 @@
-
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { RankNumber } from "./rank/RankNumber";
-import { TeamCell } from "./rank/TeamCell";
-import { PowerScoreInfo } from "./rank/PowerScoreInfo";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-
-interface RankingTableRowProps {
-  ranking: Ranking;
-  index: number;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
-}
+import { RankNumber } from "./rank/RankNumber";
+import { TeamCell } from "./rank/TeamCell";
 
 const RankingTableRow: React.FC<RankingTableRowProps> = ({
   ranking,
@@ -77,11 +67,8 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         />
       </TableCell>
       <TableCell className="text-center">
-        <div className="flex items-center justify-center gap-1">
-          <PowerScoreInfo />
-          <div className={`text-sm ${powerScoreColor} font-semibold`}>
-            {formatPowerScore(ranking.powerScore)}
-          </div>
+        <div className={`text-sm ${powerScoreColor} font-semibold`}>
+          {formatPowerScore(ranking.powerScore)}
         </div>
       </TableCell>
       <TableCell className="text-center">
