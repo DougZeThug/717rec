@@ -1,3 +1,4 @@
+
 export interface Team {
   id: string;
   name: string;
@@ -99,7 +100,7 @@ export interface Ranking {
   winPercentage: number;
   divisionName?: string | null;
   sos: number;
-  streak?: string | undefined;  // Changed from number to string | undefined
+  streak?: string | undefined;
   headToHead: HeadToHeadMap;
   previousRank?: number;
   rankChange?: number;
