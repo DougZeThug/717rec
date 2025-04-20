@@ -25,7 +25,8 @@ export const useTeamData = (divisionId?: string | null) => {
           win_percentage,
           game_win_percentage,
           players,
-          created_at
+          created_at,
+          close_match_losses
         `)
         .order('name');
       
@@ -52,12 +53,10 @@ export const useTeamData = (divisionId?: string | null) => {
       const uniqueTeamsArray = Array.from(uniqueTeamsMap.values());
       
       // Log the data to verify values
-      console.log("useTeamData query results:", uniqueTeamsArray.map(team => ({
+      console.log("useTeamData SOS and power_score values:", uniqueTeamsArray.map(team => ({
         name: team.name,
         power_score: team.power_score,
-        sos: team.sos,
-        win_percentage: team.win_percentage,
-        game_win_percentage: team.game_win_percentage
+        sos: team.sos
       })));
       
       return uniqueTeamsArray.map((team): Team => ({
@@ -73,10 +72,11 @@ export const useTeamData = (divisionId?: string | null) => {
         created_at: team.created_at || new Date().toISOString(),
         division: team.division_id || null,
         divisionName: team.divisionname || null,
-        sos: team.sos ?? 0.5, // Default SOS to 0.5 for new teams
-        power_score: team.power_score || 0,
+        sos: typeof team.sos === 'number' ? team.sos : 0.5,
+        power_score: typeof team.power_score === 'number' ? team.power_score : 0,
         win_percentage: team.win_percentage || 0,
-        game_win_percentage: team.game_win_percentage || 0
+        game_win_percentage: team.game_win_percentage || 0,
+        close_match_losses: team.close_match_losses
       }));
     },
     staleTime: 10000,

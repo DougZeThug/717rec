@@ -44,8 +44,8 @@ export function useTeamFetching() {
           created_at: team.created_at || new Date().toISOString(),
           division: team.division_id || null,
           divisionName: team.divisionname || null,
-          sos: team.sos ?? 0.5,
-          power_score: team.power_score ?? 0,
+          sos: typeof team.sos === 'number' ? team.sos : 0.5,
+          power_score: typeof team.power_score === 'number' ? team.power_score : 0,
           win_percentage: team.win_percentage ?? 0,
           game_win_percentage: team.game_win_percentage ?? 0
         };
@@ -53,6 +53,11 @@ export function useTeamFetching() {
       
       setTeams(teamsMap);
       console.log(`Loaded ${Object.keys(teamsMap).length} teams with stats from v_team_details`);
+
+      // Log SOS and Power Score for debugging
+      Object.values(teamsMap).forEach(team => {
+        console.log(`Team: ${team.name}, SOS: ${team.sos}, PowerScore: ${team.power_score}`);
+      });
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({

@@ -27,7 +27,8 @@ export const useTeamDetails = (teamId: string | undefined) => {
           win_percentage,
           game_win_percentage,
           players,
-          created_at
+          created_at,
+          close_match_losses
         `)
         .eq("team_id", teamId)
         .maybeSingle();
@@ -56,12 +57,13 @@ export const useTeamDetails = (teamId: string | undefined) => {
         game_losses: data.game_losses || 0,
         division: data.division_id,
         divisionName: data.divisionname || null,
-        sos: data.sos || 0.5, // Default SOS to 0.5 for new teams
-        power_score: data.power_score || 0,
+        sos: typeof data.sos === 'number' ? data.sos : 0.5,
+        power_score: typeof data.power_score === 'number' ? data.power_score : 0,
         win_percentage: data.win_percentage || 0,
         game_win_percentage: data.game_win_percentage || 0,
         players: Array.isArray(data.players) ? data.players : [],
         created_at: data.created_at || new Date().toISOString(),
+        close_match_losses: data.close_match_losses
       } as Team;
     },
     enabled: !!teamId
