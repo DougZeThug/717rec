@@ -1,7 +1,5 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Match, Team } from "@/types";
 import MatchCard from "./MatchCard";
 
@@ -20,11 +18,8 @@ const RecentMatches: React.FC<RecentMatchesProps> = ({
 }) => {
   return (
     <section id="recent-matches-section" className="mb-12">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy">Recent Matches</h2>
-        <Button asChild variant="outline" className="text-cornhole-navy border-cornhole-navy hover:bg-cornhole-navy hover:text-white">
-          <Link to="/schedule">View All</Link>
-        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
