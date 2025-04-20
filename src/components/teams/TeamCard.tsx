@@ -18,13 +18,15 @@ interface TeamCardProps {
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionName = team.divisionName || "";
   
-  console.log(`TeamCard ${team.name} stats:`, {
+  console.log(`TeamCard ${team.name} complete stats:`, {
     powerScore: team.power_score,
     sos: team.sos,
     wins: team.wins,
     losses: team.losses,
     gameWins: team.game_wins,
-    gameLosses: team.game_losses
+    gameLosses: team.game_losses,
+    winPercentage: team.wins / (team.wins + team.losses || 1),
+    gameWinPercentage: team.game_wins / (team.game_wins + team.game_losses || 1)
   });
   
   const getDivisionColor = () => {
@@ -141,7 +143,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           <div className="flex items-center justify-between gap-1 text-gray-500 mb-1">
             <span>SOS:</span>
             <span className="font-medium">
-              {team.sos !== undefined ? team.sos.toFixed(3) : '0.000'}
+              {team.sos?.toFixed(3) || '0.000'}
             </span>
           </div>
         </div>

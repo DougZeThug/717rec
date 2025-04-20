@@ -14,13 +14,15 @@ export function useTeamsData() {
       setIsLoading(true);
       const teamsData = await fetchTeamsFromApi();
       
-      // Log teams data to verify Power Score values
-      console.log("Teams with Power Score > 0.4:", teamsData.filter(t => t.power_score > 0.4).map(t => ({
+      // Enhanced logging to verify power score and SOS values
+      console.log("Teams data loaded in useTeamsData:", teamsData.map(t => ({
         name: t.name,
         power_score: t.power_score,
         sos: t.sos,
-        wins: t.wins,
-        losses: t.losses
+        win_percentage: t.wins / (t.wins + t.losses),
+        game_win_percentage: t.game_wins / (t.game_wins + t.game_losses),
+        record: `${t.wins}-${t.losses}`,
+        game_record: `${t.game_wins}-${t.game_losses}`
       })));
       
       setTeams(teamsData);
