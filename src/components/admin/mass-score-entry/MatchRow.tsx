@@ -1,16 +1,17 @@
 
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format } from "date-fns"; // Changed from formatDate import
+import { format } from "date-fns";
 import { MatchWithTeams } from "./types";
 import ScoreInput from "./components/ScoreInput";
 import MatchStatusIndicator from "./components/MatchStatusIndicator";
+import { cn } from "@/lib/utils";
 
 interface MatchRowProps {
   match: MatchWithTeams;
   index: number;
   onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
-  onGameWinsChange: (index: number, team1GameWins: number, team2GameWins: number) => void; 
+  onGameWinsChange: (index: number, team1GameWins: number, team2GameWins: number) => void;
   onMarkCompleted: (index: number, checked: boolean) => void;
   isSubmitting: boolean;
   hasError: boolean;
@@ -41,75 +42,72 @@ const MatchRow: React.FC<MatchRowProps> = ({
     onMarkCompleted(index, checked);
   };
 
+  const TeamDisplay = ({ team, logoUrl }: { team: { name?: string, logoUrl?: string }, logoUrl?: string }) => (
+    <div className="flex items-center gap-2">
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          alt=""
+          className="h-6 w-6 rounded-full object-cover"
+        />
+      )}
+      <span className="font-medium">{team?.name || "TBD"}</span>
+    </div>
+  );
+
   return (
-    <tr className={hasError ? "bg-red-50" : ""}>
-      <td className="px-4 py-3 text-sm whitespace-nowrap">
-        {match.date ? format(new Date(match.date), "MMM d, yyyy") : ""}
-      </td>
-      <td className="px-4 py-3">
-        <div className="flex items-center">
-          {match.team1?.logoUrl && (
-            <img
-              src={match.team1.logoUrl}
-              alt=""
-              className="h-6 w-6 mr-2 rounded-full"
-            />
-          )}
-          <span>{match.team1?.name || "Team 1"}</span>
+    <div className={cn("flex flex-col space-y-4", hasError && "text-destructive")}>
+      <div className="flex flex-col space-y-4">
+        <div className="flex justify-between items-center">
+          <TeamDisplay team={match.team1} logoUrl={match.team1?.logoUrl} />
+          <div className="text-sm text-muted-foreground">vs</div>
+          <TeamDisplay team={match.team2} logoUrl={match.team2?.logoUrl} />
         </div>
-      </td>
-      <td className="px-4 py-3">
-        <div className="flex items-center">
-          {match.team2?.logoUrl && (
-            <img
-              src={match.team2.logoUrl}
-              alt=""
-              className="h-6 w-6 mr-2 rounded-full"
-            />
+
+        <div className="flex flex-col items-center space-y-4">
+          <ScoreInput
+            value={{
+              team1Score: typeof match.team1Score === 'number' ? match.team1Score : null,
+              team2Score: typeof match.team2Score === 'number' ? match.team2Score : null
+            }}
+            onChange={handleScoreChange}
+            onChangeGameWins={handleGameWinsChange}
+            onComplete={() => handleCompletionChange(true)}
+            disabled={isSubmitting}
+          />
+          
+          {hasError && (
+            <div className="text-xs text-destructive flex items-center gap-2">
+              <span>{errorMessage || "Invalid score"}</span>
+              {onClearError && (
+                <button
+                  onClick={() => onClearError(match.id)}
+                  className="underline"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           )}
-          <span>{match.team2?.name || "Team 2"}</span>
         </div>
-      </td>
-      <td className="px-4 py-3">
-        <ScoreInput
-          value={{
-            team1Score: typeof match.team1Score === 'number' ? match.team1Score : null,
-            team2Score: typeof match.team2Score === 'number' ? match.team2Score : null
-          }}
-          onChange={handleScoreChange}
-          onChangeGameWins={handleGameWinsChange}
-          onComplete={() => handleCompletionChange(true)}
-          disabled={isSubmitting}
-        />
-        {hasError && (
-          <div className="text-xs text-red-600 mt-1">
-            {errorMessage || "Invalid score"}
-            {onClearError && (
-              <button
-                onClick={() => onClearError(match.id)}
-                className="ml-2 text-xs underline"
-              >
-                Clear
-              </button>
-            )}
+
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={match.iscompleted}
+              onCheckedChange={handleCompletionChange}
+              disabled={isSubmitting}
+            />
+            <span className="text-sm">Completed</span>
           </div>
-        )}
-      </td>
-      <td className="px-4 py-3 text-center">
-        <Checkbox
-          checked={match.iscompleted}
-          onCheckedChange={handleCompletionChange}
-          disabled={isSubmitting}
-        />
-      </td>
-      <td className="px-4 py-3 text-center">
-        <MatchStatusIndicator
-          isEdited={match.isEdited}
-          isValid={match.isValid}
-          isCompleted={match.iscompleted}
-        />
-      </td>
-    </tr>
+          <MatchStatusIndicator
+            isEdited={match.isEdited}
+            isValid={match.isValid}
+            isCompleted={match.iscompleted}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 

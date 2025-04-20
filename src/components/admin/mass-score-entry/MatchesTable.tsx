@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import MatchRow from "./MatchRow";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 interface MatchesTableProps {
   matches: MatchWithTeams[];
@@ -30,20 +31,6 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   errorMessages = {},
   onClearError
 }) => {
-  // Group matches by date for better organization
-  const matchesByDate: Record<string, MatchWithTeams[]> = {};
-
-  matches.forEach((match) => {
-    if (!match.date) return;
-    
-    const dateKey = format(new Date(match.date), "yyyy-MM-dd");
-    if (!matchesByDate[dateKey]) {
-      matchesByDate[dateKey] = [];
-    }
-    
-    matchesByDate[dateKey].push(match);
-  });
-
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -65,22 +52,31 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
     );
   }
 
+  // Group matches by date
+  const matchesByDate = matches.reduce((acc, match) => {
+    if (!match.date) return acc;
+    const dateKey = format(new Date(match.date), "yyyy-MM-dd");
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(match);
+    return acc;
+  }, {} as Record<string, MatchWithTeams[]>);
+
   return (
     <div className="space-y-8">
-      {Object.keys(matchesByDate).map((dateKey) => (
-        <div key={dateKey}>
-          <h3 className="text-lg font-semibold mb-4">
+      {Object.entries(matchesByDate).map(([dateKey, dayMatches]) => (
+        <div key={dateKey} className="space-y-4">
+          <h3 className="text-lg font-semibold">
             {format(new Date(dateKey), "EEEE, MMMM d, yyyy")}
           </h3>
           
           <div className="grid grid-cols-1 gap-4">
-            {matchesByDate[dateKey].map((match, idx) => {
+            {dayMatches.map((match, idx) => {
               const originalIndex = matches.findIndex(m => m.id === match.id);
               const hasError = failedMatches?.includes(match.id);
               const errorMessage = errorMessages?.[match.id];
               
               return (
-                <div key={match.id} className="space-y-2">
+                <div key={match.id}>
                   {hasError && errorMessage && (
                     <Alert variant="destructive" className="mb-2">
                       <AlertCircle className="h-4 w-4" />
@@ -97,17 +93,21 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
                       </AlertDescription>
                     </Alert>
                   )}
-                  <MatchRow
-                    match={match}
-                    index={originalIndex}
-                    isSubmitting={submitting}
-                    hasError={hasError}
-                    errorMessage={errorMessage}
-                    onScoreChange={onScoreChange}
-                    onGameWinsChange={onGameWinsChange}
-                    onMarkCompleted={onMarkCompleted}
-                    onClearError={onClearError}
-                  />
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-4">
+                      <MatchRow
+                        match={match}
+                        index={originalIndex}
+                        isSubmitting={submitting}
+                        hasError={hasError}
+                        errorMessage={errorMessage}
+                        onScoreChange={onScoreChange}
+                        onGameWinsChange={onGameWinsChange}
+                        onMarkCompleted={onMarkCompleted}
+                        onClearError={onClearError}
+                      />
+                    </CardContent>
+                  </Card>
                 </div>
               );
             })}

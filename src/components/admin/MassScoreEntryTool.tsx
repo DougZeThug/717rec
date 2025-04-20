@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useScoreEntryData } from "./mass-score-entry/hooks/useScoreEntryData";
@@ -49,20 +48,18 @@ const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
       <CardContent className="p-3 sm:p-4">
         <ErrorAlert failedMatches={failedMatches} />
         
-        <div className="overflow-x-auto -mx-3 sm:mx-0">
-          <div className="min-w-[640px] sm:min-w-0">
-            <MatchesTable
-              matches={matches}
-              loading={loading}
-              submitting={submitting}
-              failedMatches={failedMatches}
-              errorMessages={errorMessages}
-              onScoreChange={handleScoreChange}
-              onGameWinsChange={handleGameWinsChange}
-              onMarkCompleted={handleMarkCompleted}
-              onClearError={clearErrors}
-            />
-          </div>
+        <div className="w-full">
+          <MatchesTable
+            matches={matches}
+            loading={loading}
+            submitting={submitting}
+            failedMatches={failedMatches}
+            errorMessages={errorMessages}
+            onScoreChange={handleScoreChange}
+            onGameWinsChange={handleGameWinsChange}
+            onMarkCompleted={handleMarkCompleted}
+            onClearError={clearErrors}
+          />
         </div>
 
         <div className="flex justify-end mt-6">

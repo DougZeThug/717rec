@@ -22,13 +22,11 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   className = ""
 }) => {
   return (
-    <div className={`flex justify-center ${className}`}>
+    <div className={`w-full flex justify-center ${className}`}>
       <ScoreButtonGroup
         value={value}
         onChange={(scores) => {
           onChange(scores);
-          
-          // Also update game wins when score changes
           if (onChangeGameWins) {
             onChangeGameWins({
               team1GameWins: scores.team1Score,
