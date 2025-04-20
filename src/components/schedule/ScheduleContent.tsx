@@ -53,7 +53,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           searchTerm=""
           isCompleted={true}
           onEdit={onEditMatch}
-          onDelete={onDeleteMatch}
+          // Removed onDelete prop for completed matches
         />
       </TabsContent>
     </Tabs>

@@ -1,7 +1,8 @@
 
 import React from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import { Match, Team } from "@/types";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CheckCircle, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -10,7 +11,7 @@ interface MatchCardProps {
   match: Match;
   teams: Team[];
   onEdit: (match: Match) => void;
-  onDelete: (matchId: string) => void;
+  onDelete?: (matchId: string) => void;
 }
 
 const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete }) => {
@@ -108,9 +109,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
         <Button variant="ghost" size="sm" onClick={() => onEdit(match)}>
           <Edit className="h-4 w-4 mr-1" /> Edit
         </Button>
-        <Button variant="ghost" size="sm" className="text-red-600" onClick={() => onDelete(match.id)}>
-          <Trash2 className="h-4 w-4 mr-1" /> Delete
-        </Button>
+        {onDelete && (
+          <Button variant="ghost" size="sm" className="text-red-600" onClick={() => onDelete(match.id)}>
+            <Trash2 className="h-4 w-4 mr-1" /> Delete
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

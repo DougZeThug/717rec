@@ -10,7 +10,7 @@ interface MatchGridProps {
   searchTerm: string;
   isCompleted: boolean;
   onEdit: (match: Match) => void;
-  onDelete: (matchId: string) => void;
+  onDelete?: (matchId: string) => void;
 }
 
 const MatchGrid: React.FC<MatchGridProps> = ({ 
@@ -33,7 +33,8 @@ const MatchGrid: React.FC<MatchGridProps> = ({
           match={match}
           teams={teams}
           onEdit={onEdit}
-          onDelete={onDelete}
+          // Only pass onDelete for non-completed matches
+          onDelete={!isCompleted ? onDelete : undefined}
         />
       ))}
     </div>
