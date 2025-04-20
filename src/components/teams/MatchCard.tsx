@@ -22,7 +22,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
   };
 
   // Find opponent details - check both team1 and team2
-  const opponentDetails = match.team1Id === opponentId ? match.team1Details : match.team2Details;
+  const opponentDetails = match.team1Id === opponentId ? match.team2Details : match.team1Details;
   const opponentName = opponentDetails?.name || "Unknown Opponent";
   const opponentImage = opponentDetails?.image_url || opponentDetails?.logo_url;
 
@@ -52,12 +52,12 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
                 )}
               </div>
             )}
-            {match.team1GameWins !== undefined && match.team2GameWins !== undefined && (
+            {match.team1_game_wins !== undefined && match.team2_game_wins !== undefined && (
               <div className="text-sm text-gray-600">
                 Games: {match.team1Id === opponentId ? (
-                  `${match.team2GameWins}-${match.team1GameWins}`
+                  `${match.team2_game_wins}-${match.team1_game_wins}`
                 ) : (
-                  `${match.team1GameWins}-${match.team2GameWins}`
+                  `${match.team1_game_wins}-${match.team2_game_wins}`
                 )}
               </div>
             )}
@@ -69,3 +69,4 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
 };
 
 export default MatchCard;
+
