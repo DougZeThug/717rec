@@ -19,7 +19,9 @@ export const fetchTeamsFromApi = async () => {
       division_id,
       divisionname,
       sos,
-      power_score
+      power_score,
+      win_percentage,
+      game_win_percentage
     `)
     .order('name');
 

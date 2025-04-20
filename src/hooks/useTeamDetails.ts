@@ -24,6 +24,8 @@ export const useTeamDetails = (teamId: string | undefined) => {
           divisionname,
           sos,
           power_score,
+          win_percentage,
+          game_win_percentage,
           players,
           created_at
         `)
