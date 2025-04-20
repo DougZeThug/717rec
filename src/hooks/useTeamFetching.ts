@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,10 +44,11 @@ export function useTeamFetching() {
           created_at: team.created_at || new Date().toISOString(),
           division: team.division_id || null,
           divisionName: team.divisionname || null,
-          sos: typeof team.sos === 'number' ? team.sos : 
-               typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
-          power_score: typeof team.power_score === 'number' ? team.power_score :
-                      typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
+          sos: team.sos ?? 0.5,
+          power_score: team.power_score ?? 0,
+          // Add these missing fields with default values
+          win_percentage: team.win_percentage ?? 0,
+          game_win_percentage: team.game_win_percentage ?? 0
         };
       });
       

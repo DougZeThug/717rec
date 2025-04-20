@@ -11,9 +11,6 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
   try {
     const currentDate = new Date().toISOString();
     
-    console.log(`Starting stat updates for winner: ${winnerId}, loser: ${loserId}`);
-    
-    // Get all matches to calculate complete stats
     const { data: allMatches, error: matchesError } = await supabase
       .from('matches')
       .select('*')
@@ -24,9 +21,6 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       throw matchesError;
     }
 
-    console.log(`Found ${allMatches?.length || 0} completed matches for stats calculation`);
-    
-    // Get all teams to calculate SOS and other stats
     const { data: allTeams, error: teamsError } = await supabase
       .from('teams')
       .select('*, divisions(name, division_weight)');
@@ -36,13 +30,10 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       throw teamsError;
     }
 
-    console.log(`Found ${allTeams?.length || 0} teams for stats calculation`);
-
     if (!allMatches || !allTeams) {
       throw new Error("Failed to fetch data for stats calculation");
     }
 
-    // Map DB data to our expected format with proper typing
     const mappedTeams: Team[] = allTeams.map(team => ({
       id: team.id,
       name: team.name,
@@ -55,7 +46,11 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       losses: team.losses || 0,
       created_at: team.created_at,
       division: team.division_id,
-      divisionName: team.divisions?.name
+      divisionName: team.divisions?.name,
+      power_score: 0,
+      sos: 0.5,
+      win_percentage: 0,
+      game_win_percentage: 0
     }));
 
     const mappedMatches: Match[] = allMatches.map(match => ({
@@ -73,7 +68,6 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       team2_game_wins: match.team2_game_wins
     }));
 
-    // Log the match details for debugging
     console.log("Match details for processing:");
     mappedMatches.forEach(match => {
       if (match.winnerId === winnerId || match.loserId === loserId) {
@@ -81,7 +75,6 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       }
     });
 
-    // Process both winner and loser stats
     const results = await Promise.all([
       updateSingleTeamStats(winnerId, mappedTeams, mappedMatches, currentDate),
       updateSingleTeamStats(loserId, mappedTeams, mappedMatches, currentDate)
@@ -105,19 +98,15 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
       return false;
     }
 
-    // Output the current team record from database
     console.log(`Team ${team.name} database record: ${team.wins || 0}W-${team.losses || 0}L`);
 
-    // Calculate basic stats
     const streak = calculateStreak(teamId, matches);
     const headToHead = calculateHeadToHead(teamId, teams, matches);
     const winPercentage = calculateWinPercentage(team.wins || 0, team.losses || 0);
     const sos = await calculateSOS(team, teams, matches);
     
-    // Calculate game stats
     const { gamesWon, gamesLost, gameWinPercentage, closeMatchLosses } = calculateGameStats(teamId, matches);
     
-    // Calculate power score with updated weights: 40% win%, 40% SOS, 20% game%
     const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
     
     console.log(`Team ${team.name} (${teamId}) stats calculated:`, {
@@ -131,7 +120,6 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
       sos: sos.toFixed(4)
     });
     
-    // Get previous rank information
     const { data: previousStats } = await supabase
       .from('team_stats')
       .select('current_rank')
@@ -142,7 +130,6 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     const previousRank = previousStats && previousStats.length > 0 ? 
       previousStats[0].current_rank : undefined;
     
-    // Save all calculated stats
     const { error: insertError } = await supabase
       .from('team_stats')
       .insert({
