@@ -2,16 +2,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
-/**
- * Fetch all teams from the database
- */
 export const fetchTeamsFromApi = async () => {
   const { data, error } = await supabase
     .from('v_team_details')
     .select('*')
     .order('name');
 
-  console.log("Teams fetched from API:", data?.map(t => ({
+  console.log("Teams fetched from v_team_details:", data?.map(t => ({
     id: t.team_id, 
     name: t.name,
     sos: t.sos,
@@ -29,9 +26,7 @@ export const fetchTeamsFromApi = async () => {
     name: team.name || 'Unnamed Team',
     logoUrl: team.logo_url || null,
     imageUrl: team.image_url || null,
-    // Safely handle players array which might be null/undefined
     players: Array.isArray(team.players) ? team.players : [],
-    // Default values for optional fields
     wins: team.wins || 0,
     losses: team.losses || 0,
     created_at: team.created_at || new Date().toISOString(),
@@ -44,7 +39,6 @@ export const fetchTeamsFromApi = async () => {
          typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
     power_score: typeof team.power_score === 'number' ? team.power_score :
                 typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0,
-    close_match_losses: typeof team.close_match_losses === 'string' ? 
-                       parseInt(team.close_match_losses) : 0
+    close_match_losses: team.close_match_losses || 0
   }));
 };

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Team } from "@/types";
-import { fetchTeamsFromApi } from "@/services/TeamService";
+import { fetchTeamsFromApi } from "@/services/teams/TeamFetchService";
 import { useToast } from "@/hooks/use-toast";
 
 export function useTeamsData() {
@@ -13,6 +13,15 @@ export function useTeamsData() {
     try {
       setIsLoading(true);
       const teamsData = await fetchTeamsFromApi();
+      
+      // Log fetched data to verify values
+      console.log("Teams data from v_team_details:", teamsData.map(t => ({
+        id: t.id,
+        name: t.name,
+        sos: t.sos,
+        power_score: t.power_score
+      })));
+      
       setTeams(teamsData);
       
       if (teamsData.length === 0) {

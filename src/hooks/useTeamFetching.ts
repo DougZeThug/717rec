@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +15,6 @@ export function useTeamFetching() {
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
-      // Use v_team_details to get all team data
       const { data, error } = await supabase
         .from('v_team_details')
         .select('*')
@@ -25,21 +23,13 @@ export function useTeamFetching() {
       if (error) throw error;
       
       const teamsMap: Record<string, Team> = {};
-      
-      // Track processed team IDs to ensure we only process each team once
       const processedTeamIds = new Set<string>();
       
-      // Process each row to extract unique teams
       data?.forEach(team => {
         const teamId = team.team_id;
-        
-        // Skip if we've already processed this team
         if (processedTeamIds.has(teamId)) return;
-        
-        // Mark as processed
         processedTeamIds.add(teamId);
         
-        // Create the team object
         teamsMap[teamId] = {
           id: teamId,
           name: team.name,
@@ -53,7 +43,7 @@ export function useTeamFetching() {
           created_at: team.created_at || new Date().toISOString(),
           division: team.division_id || null,
           divisionName: team.divisionname || null,
-          sos: typeof team.sos === 'number' ? team.sos :
+          sos: typeof team.sos === 'number' ? team.sos : 
                typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
           power_score: typeof team.power_score === 'number' ? team.power_score :
                       typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
@@ -61,7 +51,7 @@ export function useTeamFetching() {
       });
       
       setTeams(teamsMap);
-      console.log(`Loaded ${Object.keys(teamsMap).length} unique teams from ${data?.length || 0} total records`);
+      console.log(`Loaded ${Object.keys(teamsMap).length} teams with stats from v_team_details`);
     } catch (error) {
       console.error('Error fetching teams:', error);
       toast({
