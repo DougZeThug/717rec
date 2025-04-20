@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
 import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
@@ -37,8 +38,8 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
     const mappedTeams: Team[] = allTeams.map(team => ({
       id: team.id,
       name: team.name,
-      logoUrl: team.logo_url,
-      imageUrl: team.image_url,
+      logoUrl: team.logo_url || null,
+      imageUrl: team.image_url || null,
       players: Array.isArray(team.players) 
         ? team.players.map(playerName => playerName) 
         : [],
@@ -50,7 +51,9 @@ export const updateTeamStatsRecord = async (winnerId: string, loserId: string) =
       power_score: 0,
       sos: 0.5,
       win_percentage: 0,
-      game_win_percentage: 0
+      game_win_percentage: 0,
+      game_wins: team.game_wins || 0,
+      game_losses: team.game_losses || 0
     }));
 
     const mappedMatches: Match[] = allMatches.map(match => ({

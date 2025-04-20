@@ -46,7 +46,6 @@ export function useTeamFetching() {
           divisionName: team.divisionname || null,
           sos: team.sos ?? 0.5,
           power_score: team.power_score ?? 0,
-          // Add these missing fields with default values
           win_percentage: team.win_percentage ?? 0,
           game_win_percentage: team.game_win_percentage ?? 0
         };
