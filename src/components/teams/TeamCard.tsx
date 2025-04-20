@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
 
 interface TeamCardProps {
   team: Team;
@@ -18,7 +19,6 @@ interface TeamCardProps {
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionName = team.divisionName || "";
   
-  // Enhanced logging to verify stats from v_team_details
   console.log(`TeamCard ${team.name} complete stats:`, {
     powerScore: team.power_score,
     sos: team.sos,
@@ -135,7 +135,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
           </div>
           <div className="flex items-center justify-between gap-1 text-gray-500 mb-1">
             <span className="flex items-center gap-1">
-              <BarChart size={12} /> Power Score:
+              <BarChart size={12} /> Power Score <PowerScoreTooltip />
             </span>
             <span className={powerScoreColor}>
               {formatPowerScore(team.power_score)}
