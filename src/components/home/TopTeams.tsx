@@ -15,7 +15,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy">Top Teams</h2>
-          <p className="text-sm text-gray-600 mt-1">Based on highest win percentage this season</p>
+          <p className="text-sm text-gray-600 mt-1">Based on highest power score ranking</p>
         </div>
         <Button asChild variant="outline" className="text-cornhole-navy border-cornhole-navy hover:bg-cornhole-navy hover:text-white">
           <Link to="/teams">View All</Link>

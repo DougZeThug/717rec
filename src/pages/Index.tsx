@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { mockMatches } from "@/data/mockData";
@@ -20,11 +19,7 @@ const Index = () => {
 
   const topTeams = teams 
     ? [...teams]
-        .sort((a, b) => {
-          const aWinPerc = a.wins / (a.wins + a.losses) || 0;
-          const bWinPerc = b.wins / (b.wins + b.losses) || 0;
-          return bWinPerc - aWinPerc;
-        })
+        .sort((a, b) => (b.power_score || 0) - (a.power_score || 0))
         .slice(0, 4)
     : [];
 
