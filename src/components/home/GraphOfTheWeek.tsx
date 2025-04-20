@@ -81,12 +81,15 @@ const GraphOfTheWeek: React.FC<GraphOfTheWeekProps> = ({ featuredTeam }) => {
                   <ChartTooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
+                        const value = payload[0].value;
                         return (
                           <div className="rounded-lg border bg-background p-2 shadow-sm">
                             <div className="grid gap-1">
                               <div className="font-medium">{payload[0].payload.date}</div>
                               <div className="text-sm text-muted-foreground">
-                                Power Score: {payload[0].value?.toFixed(1)}
+                                Power Score: {typeof value === 'number' 
+                                  ? value.toFixed(1) 
+                                  : (parseFloat(value as string) || 0).toFixed(1)}
                               </div>
                             </div>
                           </div>
