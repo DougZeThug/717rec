@@ -19,8 +19,8 @@ export function useTeamsData() {
         name: t.name,
         power_score: t.power_score,
         sos: t.sos,
-        win_percentage: t.wins / (t.wins + t.losses),
-        game_win_percentage: t.game_wins / (t.game_wins + t.game_losses),
+        win_percentage: t.win_percentage,
+        game_win_percentage: t.game_win_percentage,
         record: `${t.wins}-${t.losses}`,
         game_record: `${t.game_wins}-${t.game_losses}`
       })));

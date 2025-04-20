@@ -59,6 +59,8 @@ export const fetchTeamsFromApi = async () => {
     divisionName: team.divisionname || null,
     // Take values directly from v_team_details without transformation
     sos: team.sos || 0,
-    power_score: team.power_score || 0
+    power_score: team.power_score || 0,
+    win_percentage: team.win_percentage || 0,
+    game_win_percentage: team.game_win_percentage || 0
   }));
 };

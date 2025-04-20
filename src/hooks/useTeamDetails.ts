@@ -35,7 +35,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (error) throw error;
       if (!data) throw new Error("Team not found");
       
-      // Log the data to verify SOS and Power Score values
+      // Log the data to verify values are coming from v_team_details
       console.log("Team details from v_team_details:", {
         id: data.team_id,
         name: data.name,
@@ -58,6 +58,8 @@ export const useTeamDetails = (teamId: string | undefined) => {
         divisionName: data.divisionname || null,
         sos: data.sos || 0,
         power_score: data.power_score || 0,
+        win_percentage: data.win_percentage || 0,
+        game_win_percentage: data.game_win_percentage || 0,
         players: Array.isArray(data.players) ? data.players : [],
         created_at: data.created_at || new Date().toISOString(),
       } as Team;

@@ -17,14 +17,14 @@ const TeamDetails = () => {
   const { team, isLoading } = useTeamDetails(teamId);
   const { upcomingMatches, pastMatches, isLoadingMatches } = useTeamMatches(teamId);
 
-  // Derived values (guard against undefined)
-  const wins = team?.wins ?? 0;
-  const losses = team?.losses ?? 0;
-  const gameWins = team?.game_wins ?? 0;
-  const gameLosses = team?.game_losses ?? 0;
-
-  const winPct = wins + losses === 0 ? 0 : (wins / (wins + losses)) * 100;
-  const gamePct = gameWins + gameLosses === 0 ? 0 : (gameWins / (gameWins + gameLosses)) * 100;
+  // Log team data to verify we're using the correct values
+  console.log("TeamDetails rendering with team data:", team ? {
+    name: team.name,
+    power_score: team.power_score,
+    sos: team.sos,
+    win_percentage: team.win_percentage || 0,
+    game_win_percentage: team.game_win_percentage || 0
+  } : "Loading team...");
 
   if (isLoading || isLoadingMatches) {
     return (
@@ -47,6 +47,10 @@ const TeamDetails = () => {
     );
   }
 
+  // Use values directly from v_team_details instead of calculating
+  const winPct = team.win_percentage ? team.win_percentage * 100 : 0;
+  const gamePct = team.game_win_percentage ? team.game_win_percentage * 100 : 0;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Button 
@@ -62,10 +66,10 @@ const TeamDetails = () => {
       
       {/* Team Stats */}
       <TeamStats 
-        wins={wins}
-        losses={losses}
-        gameWins={gameWins}
-        gameLosses={gameLosses}
+        wins={team.wins}
+        losses={team.losses}
+        gameWins={team.game_wins}
+        gameLosses={team.game_losses}
         winPercentage={winPct.toFixed(1) + "%"}
         gameWinPercentage={gamePct.toFixed(1) + "%"}
         sos={team.sos}
@@ -75,11 +79,11 @@ const TeamDetails = () => {
       
       {/* Stat Breakdown */}
       <StatBreakdown
-        wins={wins}
-        losses={losses}
+        wins={team.wins}
+        losses={team.losses}
         winPercentage={winPct.toFixed(1)}
-        gamesWon={gameWins}
-        gamesLost={gameLosses}
+        gamesWon={team.game_wins}
+        gamesLost={team.game_losses}
         gameWinPercentage={gamePct.toFixed(1)}
         strengthOfSchedule={team.sos?.toString() || "0.0"}
         closeMatchLosses={team.close_match_losses || 0}
