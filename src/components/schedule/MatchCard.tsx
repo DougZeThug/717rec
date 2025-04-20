@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Match, Team } from "@/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Calendar } from "lucide-react";
+import { Edit, Trash2, CheckCircle, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 interface MatchCardProps {
