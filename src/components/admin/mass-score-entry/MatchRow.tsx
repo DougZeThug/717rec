@@ -1,10 +1,9 @@
 
 import React from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { format } from "date-fns";
 import { MatchWithTeams } from "./types";
-import ScoreInput from "./components/ScoreInput";
-import MatchStatusIndicator from "./components/MatchStatusIndicator";
+import TeamDisplay from "./components/TeamDisplay";
+import ScoreSection from "./components/ScoreSection";
+import MatchStatusSection from "./components/MatchStatusSection";
 import { cn } from "@/lib/utils";
 
 interface MatchRowProps {
@@ -38,75 +37,36 @@ const MatchRow: React.FC<MatchRowProps> = ({
     onGameWinsChange(index, gameWins.team1GameWins, gameWins.team2GameWins);
   };
 
-  const handleCompletionChange = (checked: boolean) => {
-    onMarkCompleted(index, checked);
-  };
-
-  const TeamDisplay = ({ team, logoUrl }: { team: { name?: string, logoUrl?: string }, logoUrl?: string }) => (
-    <div className="flex items-center gap-2">
-      {logoUrl && (
-        <img
-          src={logoUrl}
-          alt=""
-          className="h-6 w-6 rounded-full object-cover"
-        />
-      )}
-      <span className="font-medium">{team?.name || "TBD"}</span>
-    </div>
-  );
-
   return (
     <div className={cn("flex flex-col space-y-4", hasError && "text-destructive")}>
-      <div className="flex flex-col space-y-4">
-        <div className="flex justify-between items-center">
-          <TeamDisplay team={match.team1} logoUrl={match.team1?.logoUrl} />
-          <div className="text-sm text-muted-foreground">vs</div>
-          <TeamDisplay team={match.team2} logoUrl={match.team2?.logoUrl} />
-        </div>
-
-        <div className="flex flex-col items-center space-y-4">
-          <ScoreInput
-            value={{
-              team1Score: typeof match.team1Score === 'number' ? match.team1Score : null,
-              team2Score: typeof match.team2Score === 'number' ? match.team2Score : null
-            }}
-            onChange={handleScoreChange}
-            onChangeGameWins={handleGameWinsChange}
-            onComplete={() => handleCompletionChange(true)}
-            disabled={isSubmitting}
-          />
-          
-          {hasError && (
-            <div className="text-xs text-destructive flex items-center gap-2">
-              <span>{errorMessage || "Invalid score"}</span>
-              {onClearError && (
-                <button
-                  onClick={() => onClearError(match.id)}
-                  className="underline"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={match.iscompleted}
-              onCheckedChange={handleCompletionChange}
-              disabled={isSubmitting}
-            />
-            <span className="text-sm">Completed</span>
-          </div>
-          <MatchStatusIndicator
-            isEdited={match.isEdited}
-            isValid={match.isValid}
-            isCompleted={match.iscompleted}
-          />
-        </div>
+      <div className="flex justify-between items-center">
+        <TeamDisplay team={match.team1} />
+        <div className="text-sm text-muted-foreground">vs</div>
+        <TeamDisplay team={match.team2} />
       </div>
+
+      <ScoreSection
+        value={{
+          team1Score: typeof match.team1Score === 'number' ? match.team1Score : null,
+          team2Score: typeof match.team2Score === 'number' ? match.team2Score : null
+        }}
+        onScoreChange={handleScoreChange}
+        onGameWinsChange={handleGameWinsChange}
+        onComplete={() => onMarkCompleted(index, true)}
+        disabled={isSubmitting}
+        hasError={hasError}
+        errorMessage={errorMessage}
+        onClearError={onClearError}
+        matchId={match.id}
+      />
+
+      <MatchStatusSection
+        isCompleted={match.iscompleted || false}
+        onCompletedChange={(checked) => onMarkCompleted(index, checked)}
+        isEdited={match.isEdited || false}
+        isValid={match.isValid || false}
+        disabled={isSubmitting}
+      />
     </div>
   );
 };
