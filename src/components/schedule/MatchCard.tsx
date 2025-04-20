@@ -1,14 +1,14 @@
 
 import React from "react";
-import { Match, Team } from "@/types";
+import { Match } from "@/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, CheckCircle, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface MatchCardProps {
   match: Match;
-  teams: Team[];
   isCompleted: boolean;
   onEdit?: (match: Match) => void;
   onDelete?: (matchId: string) => void;
@@ -16,14 +16,10 @@ interface MatchCardProps {
 
 const MatchCard: React.FC<MatchCardProps> = ({ 
   match, 
-  teams, 
   isCompleted = false, 
   onEdit, 
   onDelete 
 }) => {
-  const team1 = teams.find(team => team.id === match.team1Id);
-  const team2 = teams.find(team => team.id === match.team2Id);
-  
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "No date set";
     try {
@@ -45,7 +41,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
     <Card className={`overflow-hidden ${match.iscompleted ? 'bg-gray-50 border-green-200' : ''}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">{team1?.name || "Team 1"} vs {team2?.name || "Team 2"}</CardTitle>
+          <CardTitle className="text-lg">
+            {match.team1Details?.name || "Team 1"} vs {match.team2Details?.name || "Team 2"}
+          </CardTitle>
           <div>
             {match.iscompleted && (
               <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
@@ -59,18 +57,18 @@ const MatchCard: React.FC<MatchCardProps> = ({
         <div className="space-y-3">
           <div className="flex justify-center items-center py-4">
             <div className="flex flex-col items-center w-1/3">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                {team1?.logoUrl ? (
-                  <img 
-                    src={team1.logoUrl} 
-                    alt={team1.name}
-                    className="w-12 h-12 object-contain"
-                  />
-                ) : (
-                  <div className="text-2xl font-bold text-gray-400">{team1?.name?.charAt(0) || "T"}</div>
-                )}
+              <Avatar className="w-16 h-16">
+                <AvatarImage 
+                  src={match.team1Details?.image_url || '/placeholder.svg'}
+                  alt={match.team1Details?.name || "Team 1"}
+                />
+                <AvatarFallback>
+                  {(match.team1Details?.name || "T1").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="mt-2 text-center font-medium">
+                {match.team1Details?.name || "Team 1"}
               </div>
-              <div className="mt-2 text-center font-medium">{team1?.name || "Team 1"}</div>
             </div>
             
             <div className={`text-xl font-bold mx-4 ${match.iscompleted ? 'text-green-600' : ''}`}>
@@ -78,24 +76,24 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
             
             <div className="flex flex-col items-center w-1/3">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                {team2?.logoUrl ? (
-                  <img 
-                    src={team2.logoUrl}
-                    alt={team2.name}
-                    className="w-12 h-12 object-contain"
-                  />
-                ) : (
-                  <div className="text-2xl font-bold text-gray-400">{team2?.name?.charAt(0) || "T"}</div>
-                )}
+              <Avatar className="w-16 h-16">
+                <AvatarImage 
+                  src={match.team2Details?.image_url || '/placeholder.svg'}
+                  alt={match.team2Details?.name || "Team 2"}
+                />
+                <AvatarFallback>
+                  {(match.team2Details?.name || "T2").charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="mt-2 text-center font-medium">
+                {match.team2Details?.name || "Team 2"}
               </div>
-              <div className="mt-2 text-center font-medium">{team2?.name || "Team 2"}</div>
             </div>
           </div>
           
           {match.iscompleted && match.team1_game_wins !== undefined && match.team2_game_wins !== undefined && (
             <div className="bg-gray-100 p-2 rounded text-center text-sm">
-              Game Wins: {team1?.name || "Team 1"} ({match.team1_game_wins}) - {team2?.name || "Team 2"} ({match.team2_game_wins})
+              Game Wins: {match.team1Details?.name || "Team 1"} ({match.team1_game_wins}) - {match.team2Details?.name || "Team 2"} ({match.team2_game_wins})
             </div>
           )}
           

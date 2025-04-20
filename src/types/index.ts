@@ -1,4 +1,3 @@
-
 export interface Team {
   id: string;
   name: string;
@@ -41,6 +40,20 @@ export interface Match {
   team1_game_wins?: number;
   team2_game_wins?: number;
   created_at?: string;
+  team1Details?: {
+    team_id: string;
+    name: string;
+    image_url: string | null;
+    logo_url: string | null;
+    divisionName: string | null;
+  } | null;
+  team2Details?: {
+    team_id: string;
+    name: string;
+    image_url: string | null;
+    logo_url: string | null;
+    divisionName: string | null;
+  } | null;
 }
 
 // Types for playoff brackets

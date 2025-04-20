@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,11 +9,28 @@ export const useScheduleData = () => {
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
-      console.log("Fetching matches data...");
+      console.log("Fetching matches data with team details...");
       
+      // Join with v_team_details to get team information
       const { data, error } = await supabase
         .from('matches')
-        .select('*')
+        .select(`
+          *,
+          team1:v_team_details!team1_id(
+            team_id,
+            name,
+            image_url,
+            logo_url,
+            divisionName
+          ),
+          team2:v_team_details!team2_id(
+            team_id,
+            name,
+            image_url,
+            logo_url,
+            divisionName
+          )
+        `)
         .order('date');
         
       if (error) {
@@ -41,14 +57,17 @@ export const useScheduleData = () => {
         next_loser_match_id: match.next_loser_match_id,
         best_of: match.best_of,
         team1_game_wins: match.team1_game_wins,
-        team2_game_wins: match.team2_game_wins
+        team2_game_wins: match.team2_game_wins,
+        // Add team details from v_team_details
+        team1Details: match.team1?.[0] || null,
+        team2Details: match.team2?.[0] || null
       }));
       
       return formattedData;
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    staleTime: 15000 // Consider data stale after 15 seconds
+    staleTime: 15000
   });
 
   // Set up polling to refresh matches data
