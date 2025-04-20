@@ -36,8 +36,8 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (error) throw error;
       if (!data) throw new Error("Team not found");
       
-      // Enhanced logging to verify values from v_team_details
-      console.log("Team details from v_team_details:", {
+      // Enhanced logging to verify values from v_team_details with the new weighted power score
+      console.log("Team details from v_team_details with weighted Power Score:", {
         id: data.team_id,
         name: data.name,
         sos: data.sos,
@@ -57,6 +57,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
         game_losses: data.game_losses || 0,
         division: data.division_id,
         divisionName: data.divisionname || null,
+        // Use the database-calculated values with the weighted algorithm
         sos: typeof data.sos === 'number' ? data.sos : 0.5,
         power_score: typeof data.power_score === 'number' ? data.power_score : 0,
         win_percentage: data.win_percentage || 0,

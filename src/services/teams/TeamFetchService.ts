@@ -26,12 +26,14 @@ export const fetchTeamsFromApi = async () => {
     `)
     .order('name');
 
-  // Enhanced logging to verify values
+  // Enhanced logging to verify values for the new weighted power score
   if (data && data.length > 0) {
-    console.log("SOS and Power Score sample from v_team_details:", data.slice(0, 3).map(t => ({
+    console.log("SOS and Power Score sample from v_team_details with new weighted algorithm:", data.slice(0, 3).map(t => ({
       name: t.name,
       power_score: t.power_score,
-      sos: t.sos
+      sos: t.sos,
+      win_pct: t.win_percentage,
+      game_win_pct: t.game_win_percentage
     })));
   }
 
@@ -41,6 +43,7 @@ export const fetchTeamsFromApi = async () => {
   }
 
   // Map data directly from v_team_details with proper type handling
+  // The power_score and sos are now calculated in the database with the weighted algorithm
   return (data || []).map((team: any): Team => ({
     id: team.team_id,
     name: team.name || 'Unnamed Team',
@@ -54,6 +57,7 @@ export const fetchTeamsFromApi = async () => {
     created_at: team.created_at || new Date().toISOString(),
     division: team.division_id || null,
     divisionName: team.divisionname || null,
+    // Use directly the SOS and power score calculated in the database view
     sos: typeof team.sos === 'number' ? team.sos : 0.5,
     power_score: typeof team.power_score === 'number' ? team.power_score : 0,
     win_percentage: team.win_percentage || 0,

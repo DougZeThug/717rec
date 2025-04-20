@@ -1,7 +1,11 @@
 
 /**
  * Calculate a team's power score based on win percentage, strength of schedule, and game win percentage
- * Power Score = (Win% * 0.4) + (SOS * 0.4) + (Game Win% * 0.2)
+ * 
+ * New Power Score = (WeightedWin% * 0.4) + (SOS * 0.4) + (WeightedGameWin% * 0.2)
+ * 
+ * Note: The actual calculation is now done in the database view v_team_details.
+ * This function is maintained for consistency and any client-side calculations.
  */
 export const calculatePowerScore = (
   winPercentage: number, 
@@ -13,7 +17,10 @@ export const calculatePowerScore = (
   const normalizedSOS = Math.min(Math.max(strengthOfSchedule, 0), 1);
   const normalizedGameWinPct = Math.min(Math.max(gameWinPercentage, 0), 1);
   
-  // Calculate power score using the updated formula with new weights
+  // Calculate power score using the updated formula with weights that match the database view:
+  // - 40% weighted match win percentage
+  // - 40% strength of schedule
+  // - 20% weighted game win percentage
   const powerScore = (normalizedWinPct * 0.4) + 
                     (normalizedSOS * 0.4) + 
                     (normalizedGameWinPct * 0.2);

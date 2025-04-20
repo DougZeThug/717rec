@@ -600,6 +600,10 @@ export type Database = {
       }
     }
     Functions: {
+      get_team_division_weight: {
+        Args: { team_id: string }
+        Returns: number
+      }
       update_team_stats: {
         Args: {
           p_winner_id: string
