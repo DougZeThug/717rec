@@ -10,10 +10,26 @@ export const useTeamMatches = (teamId: string | undefined) => {
       if (!teamId) return { upcomingMatches: [], pastMatches: [] };
 
       const { data, error } = await supabase
-        .from("matches")
-        .select("*")
+        .from('matches')
+        .select(`
+          *,
+          team1:v_team_details!team1_id(
+            team_id,
+            name,
+            image_url,
+            logo_url,
+            divisionname
+          ),
+          team2:v_team_details!team2_id(
+            team_id,
+            name,
+            image_url,
+            logo_url,
+            divisionname
+          )
+        `)
         .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-        .order("date", { ascending: true });
+        .order('date');
 
       if (error) throw error;
 
@@ -41,7 +57,9 @@ export const useTeamMatches = (teamId: string | undefined) => {
         best_of: row.best_of,
         created_at: row.created_at,
         team1GameWins: row.team1_game_wins,
-        team2GameWins: row.team2_game_wins
+        team2GameWins: row.team2_game_wins,
+        team1Details: row.team1 ? (Array.isArray(row.team1) ? row.team1[0] : row.team1) : null,
+        team2Details: row.team2 ? (Array.isArray(row.team2) ? row.team2[0] : row.team2) : null
       })) as Match[];
       
       return {

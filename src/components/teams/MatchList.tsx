@@ -18,10 +18,6 @@ const MatchList = ({
   teamId,
   isPast = false,
 }: MatchListProps) => {
-  const getOpponentId = (match: Match) => {
-    return match.team1Id === teamId ? match.team2Id : match.team1Id;
-  };
-
   return (
     <>
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
@@ -32,14 +28,17 @@ const MatchList = ({
         </div>
       ) : matches.length > 0 ? (
         <div className={`space-y-4 ${!isPast ? 'mb-8' : ''}`}>
-          {matches.map(match => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              opponentId={getOpponentId(match)}
-              isPastMatch={isPast}
-            />
-          ))}
+          {matches.map(match => {
+            const opponentId = match.team1Id === teamId ? match.team2Id : match.team1Id;
+            return (
+              <MatchCard
+                key={match.id}
+                match={match}
+                opponentId={opponentId}
+                isPastMatch={isPast}
+              />
+            );
+          })}
         </div>
       ) : (
         <p className={`text-gray-500 ${!isPast ? 'mb-8' : ''}`}>
