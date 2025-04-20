@@ -18,10 +18,6 @@ const RecentMatches: React.FC<RecentMatchesProps> = ({
 }) => {
   return (
     <section id="recent-matches-section" className="mb-12">
-      <div className="mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy">Recent Matches</h2>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {completedMatches.map((match) => {
           const team1 = getTeamById(match.team1Id);
