@@ -1,3 +1,4 @@
+
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -7,6 +8,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { RankNumber } from "./rank/RankNumber";
 import { TeamCell } from "./rank/TeamCell";
 import { PowerScoreInfo } from "./rank/PowerScoreInfo";
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface RankingTableRowProps {
   ranking: Ranking;
@@ -21,6 +24,8 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   isExpanded,
   onToggleExpand,
 }) => {
+  const navigate = useNavigate();
+
   // Format win percentage to display with correct precision
   const formatWinPercentage = (percentage: number) => {
     if (typeof percentage !== 'number' || isNaN(percentage)) {
@@ -40,15 +45,29 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     return `${direction} ${amount} ${amount === 1 ? 'spot' : 'spots'}`;
   };
 
+  // Handle row click
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Prevent expanding if clicking the team name/cell
+    if ((e.target as HTMLElement).closest('[data-team-cell="true"]')) {
+      e.stopPropagation();
+      navigate(`/teams/${ranking.teamId}`);
+    } else {
+      onToggleExpand();
+    }
+  };
+
   return (
     <TableRow
-      className="cursor-pointer hover:bg-gray-100"
-      onClick={onToggleExpand}
+      className={cn(
+        "cursor-pointer hover:bg-gray-100",
+        "[&_[data-team-cell]]:hover:text-blue-600 [&_[data-team-cell]]:hover:underline"
+      )}
+      onClick={handleRowClick}
     >
       <TableCell>
         <RankNumber index={index} />
       </TableCell>
-      <TableCell>
+      <TableCell data-team-cell="true">
         <TeamCell
           teamName={ranking.teamName}
           imageUrl={ranking.imageUrl}

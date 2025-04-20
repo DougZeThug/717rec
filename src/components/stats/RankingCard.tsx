@@ -1,20 +1,10 @@
-
 import React from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Card, CardContent } from "@/components/ui/card";
 import { Ranking } from "@/types";
-import HeadToHeadRecords from "./HeadToHeadRecords";
-import RankTrendIndicator from "./RankTrendIndicator";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { getRowInteractionStyles } from "@/styles/interactionUtils";
+import RankTrendIndicator from "./RankTrendIndicator";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { RankNumber } from "./rank/RankNumber";
-import { TeamLogo } from "./rank/TeamLogo";
-import { TeamStatsGrid } from "./rank/TeamStatsGrid";
-import { Info } from "lucide-react";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -29,116 +19,58 @@ const RankingCard: React.FC<RankingCardProps> = ({
   index,
   expandedTeam,
   onToggleExpand,
-  compactView = false,
+  compactView = false
 }) => {
-  const isMobile = useIsMobile();
-  const isExpanded = expandedTeam === ranking.teamId && !compactView;
+  const navigate = useNavigate();
+  const isExpanded = expandedTeam === ranking.teamId;
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
-  
-  const getTrendDescription = () => {
-    if (!ranking.rankChange) return "No change";
-    const direction = ranking.rankChange > 0 ? "up" : "down";
-    const amount = Math.abs(ranking.rankChange);
-    return `${direction} ${amount} ${amount === 1 ? 'spot' : 'spots'}`;
-  };
 
-  const PowerScoreInfo = () => {
-    if (isMobile) {
-      return (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Info 
-              className="h-4 w-4 text-muted-foreground cursor-pointer" 
-              role="button"
-              aria-label="Power Score information"
-            />
-          </PopoverTrigger>
-          <PopoverContent side="top" className="max-w-[300px] text-xs">
-            Power Score combines win percentage (40%), strength of schedule (40%), and game win rate (20%) 
-            into a single rating from 0-100. Higher scores indicate stronger overall performance.
-          </PopoverContent>
-        </Popover>
-      );
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('[data-team-name="true"]')) {
+      e.stopPropagation();
+      navigate(`/teams/${ranking.teamId}`);
+    } else {
+      onToggleExpand(ranking.teamId);
     }
-
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Info 
-              className="h-4 w-4 text-muted-foreground cursor-help" 
-              role="button"
-              aria-label="Power Score information"
-            />
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-[300px] text-xs">
-            Power Score combines win percentage (40%), strength of schedule (40%), and game win rate (20%) 
-            into a single rating from 0-100. Higher scores indicate stronger overall performance.
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
   };
-  
-  const cardClasses = !compactView 
-    ? getRowInteractionStyles("border rounded-lg overflow-hidden")
-    : "border rounded-lg overflow-hidden";
-  
+
   return (
-    <Collapsible
-      className={cardClasses}
-      open={isExpanded}
-      onOpenChange={() => !compactView && onToggleExpand(ranking.teamId)}
+    <Card 
+      className={cn(
+        "cursor-pointer transition-colors",
+        "hover:bg-gray-50",
+        "[&_[data-team-name]]:hover:text-blue-600 [&_[data-team-name]]:hover:underline"
+      )}
+      onClick={handleCardClick}
     >
-      <div className={cn(
-        `p-3 bg-white ${compactView ? 'py-2' : ''}`,
-        !compactView && "cursor-pointer"
-      )}>
+      <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <RankNumber index={index} />
-            <TeamLogo imageUrl={ranking.imageUrl} teamName={ranking.teamName} />
-            <div className="flex items-center space-x-1">
-              <span className="font-medium">{ranking.teamName}</span>
+            <div className="text-lg font-semibold w-8">{index + 1}</div>
+            <div className="flex-1">
+              <div data-team-name="true" className="font-medium">
+                {ranking.teamName}
+              </div>
               {!compactView && (
-                isExpanded ? (
-                  <ChevronUp size={16} className="text-gray-500" />
-                ) : (
-                  <ChevronDown size={16} className="text-gray-500" />
-                )
+                <div className="text-sm text-gray-500">
+                  Games: {ranking.gamesWon}-{ranking.gamesLost}
+                </div>
               )}
             </div>
           </div>
-
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center gap-1">
-              <PowerScoreInfo />
-              <div className={`text-sm ${powerScoreColor} font-semibold`}>
-                {formatPowerScore(ranking.powerScore)}
-              </div>
+          <div className="text-right">
+            <div className={`text-sm font-semibold ${powerScoreColor}`}>
+              {formatPowerScore(ranking.powerScore)}
             </div>
+            {!compactView && (
+              <div className="flex items-center justify-end space-x-1 text-gray-500">
+                <RankTrendIndicator rankChange={ranking.rankChange} />
+              </div>
+            )}
           </div>
         </div>
-
-        <TeamStatsGrid
-          wins={ranking.wins}
-          losses={ranking.losses}
-          winPercentage={ranking.winPercentage}
-          gamesWon={ranking.gamesWon}
-          gamesLost={ranking.gamesLost}
-          gameWinPercentage={ranking.gameWinPercentage}
-          sos={ranking.sos}
-          streak={ranking.streak || "—"}  // Convert undefined to a dash if needed
-          compactView={compactView}
-        />
-      </div>
-
-      {!compactView && (
-        <CollapsibleContent className="bg-gray-50 p-3 border-t">
-          <HeadToHeadRecords headToHead={ranking.headToHead} />
-        </CollapsibleContent>
-      )}
-    </Collapsible>
+      </CardContent>
+    </Card>
   );
 };
 
