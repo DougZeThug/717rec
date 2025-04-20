@@ -5,7 +5,22 @@ import { Team } from "@/types";
 export const fetchTeamsFromApi = async () => {
   const { data, error } = await supabase
     .from('v_team_details')
-    .select('*')
+    .select(`
+      team_id,
+      name,
+      logo_url,
+      image_url,
+      players,
+      wins,
+      losses,
+      game_wins,
+      game_losses,
+      created_at,
+      division_id,
+      divisionname,
+      sos,
+      power_score
+    `)
     .order('name');
 
   // Enhanced logging to verify values
@@ -42,7 +57,6 @@ export const fetchTeamsFromApi = async () => {
     divisionName: team.divisionname || null,
     // Take values directly from v_team_details without transformation
     sos: team.sos || 0,
-    power_score: team.power_score || 0,
-    close_match_losses: team.close_match_losses || 0
+    power_score: team.power_score || 0
   }));
 };

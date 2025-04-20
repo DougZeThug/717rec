@@ -11,7 +11,22 @@ export const useTeamDetails = (teamId: string | undefined) => {
       
       const { data, error } = await supabase
         .from("v_team_details")
-        .select('*')
+        .select(`
+          team_id,
+          name,
+          logo_url,
+          image_url,
+          wins,
+          losses,
+          game_wins,
+          game_losses,
+          division_id,
+          divisionname,
+          sos,
+          power_score,
+          players,
+          created_at
+        `)
         .eq("team_id", teamId)
         .maybeSingle();
         
@@ -41,7 +56,6 @@ export const useTeamDetails = (teamId: string | undefined) => {
         divisionName: data.divisionname || null,
         sos: data.sos || 0,
         power_score: data.power_score || 0,
-        close_match_losses: data.close_match_losses || 0,
         players: Array.isArray(data.players) ? data.players : [],
         created_at: data.created_at || new Date().toISOString(),
       } as Team;
