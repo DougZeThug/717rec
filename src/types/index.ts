@@ -10,10 +10,10 @@ export interface Team {
   losses: number;
   game_wins?: number;
   game_losses?: number;
-  power_score?: number;
-  sos?: number;
-  win_percentage?: number;
-  game_win_percentage?: number;
+  power_score: number;
+  sos: number;
+  win_percentage: number;
+  game_win_percentage: number;
   close_match_losses?: number;
   created_at?: string;
   [key: string]: any;

@@ -43,7 +43,7 @@ export const fetchTeamsFromApi = async () => {
     throw error;
   }
 
-  // Map data directly from v_team_details with no transformations
+  // Map data directly from v_team_details with proper defaults
   return (data || []).map((team: any): Team => ({
     id: team.team_id,
     name: team.name || 'Unnamed Team',
@@ -57,8 +57,8 @@ export const fetchTeamsFromApi = async () => {
     created_at: team.created_at || new Date().toISOString(),
     division: team.division_id || null,
     divisionName: team.divisionname || null,
-    // Take values directly from v_team_details without transformation
-    sos: team.sos || 0,
+    // Take values directly from v_team_details with proper defaults
+    sos: team.sos ?? 0.5, // Default SOS to 0.5 for new teams
     power_score: team.power_score || 0,
     win_percentage: team.win_percentage || 0,
     game_win_percentage: team.game_win_percentage || 0

@@ -9,7 +9,24 @@ export const useTeamData = (divisionId?: string | null) => {
     queryFn: async () => {
       let query = supabase
         .from('v_team_details')
-        .select('*')
+        .select(`
+          team_id,
+          name,
+          logo_url,
+          image_url,
+          wins,
+          losses,
+          game_wins,
+          game_losses,
+          division_id,
+          divisionname,
+          sos,
+          power_score,
+          win_percentage,
+          game_win_percentage,
+          players,
+          created_at
+        `)
         .order('name');
       
       if (divisionId) {
@@ -27,13 +44,11 @@ export const useTeamData = (divisionId?: string | null) => {
       const uniqueTeamsMap = new Map<string, any>();
       
       (data || []).forEach(team => {
-        // Only add the team if it doesn't exist in our map already
         if (!uniqueTeamsMap.has(team.team_id)) {
           uniqueTeamsMap.set(team.team_id, team);
         }
       });
       
-      // Convert the Map values back to an array
       const uniqueTeamsArray = Array.from(uniqueTeamsMap.values());
       
       // Log the data to verify values
@@ -45,7 +60,7 @@ export const useTeamData = (divisionId?: string | null) => {
         game_win_percentage: team.game_win_percentage
       })));
       
-      const transformedTeams = uniqueTeamsArray.map((team): Team => ({
+      return uniqueTeamsArray.map((team): Team => ({
         id: team.team_id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
@@ -58,20 +73,11 @@ export const useTeamData = (divisionId?: string | null) => {
         created_at: team.created_at || new Date().toISOString(),
         division: team.division_id || null,
         divisionName: team.divisionname || null,
-        sos: typeof team.sos === 'number' ? team.sos :
-             typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
-        power_score: typeof team.power_score === 'number' ? team.power_score :
-                    typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0,
-        win_percentage: typeof team.win_percentage === 'number' ? team.win_percentage :
-                      typeof team.win_percentage === 'string' ? parseFloat(team.win_percentage) : 0,
-        game_win_percentage: typeof team.game_win_percentage === 'number' ? team.game_win_percentage :
-                            typeof team.game_win_percentage === 'string' ? parseFloat(team.game_win_percentage) : 0
+        sos: team.sos ?? 0.5, // Default SOS to 0.5 for new teams
+        power_score: team.power_score || 0,
+        win_percentage: team.win_percentage || 0,
+        game_win_percentage: team.game_win_percentage || 0
       }));
-      
-      // Log the number of unique team IDs after deduplication
-      console.log(`TeamData query result: ${data?.length || 0} total records, ${transformedTeams.length} unique teams`);
-      
-      return transformedTeams;
     },
     staleTime: 10000,
   });
