@@ -1,3 +1,4 @@
+
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -7,6 +8,14 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { RankNumber } from "./rank/RankNumber";
 import { TeamCell } from "./rank/TeamCell";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+interface RankingTableRowProps {
+  ranking: Ranking;
+  index: number;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+}
 
 const RankingTableRow: React.FC<RankingTableRowProps> = ({
   ranking,
