@@ -6,6 +6,7 @@ import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
+import { useNavigate } from "react-router-dom";
 
 interface CompactStandingsProps {
   rankings: Ranking[];
@@ -13,6 +14,12 @@ interface CompactStandingsProps {
 
 const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+
+  // Function to handle team selection
+  const handleTeamClick = (teamId: string) => {
+    navigate(`/teams/${teamId}`);
+  };
 
   // Function to get rank styling for medal positions
   const getRankStyles = (index: number) => {
@@ -28,7 +35,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
         {rankings.map((team, index) => (
           <div
             key={team.teamId}
-            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border")}
+            onClick={() => handleTeamClick(team.teamId)}
+            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer")}
           >
             <div className="flex items-center space-x-3">
               <div className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index))}>
@@ -40,7 +48,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                     <img src={team.imageUrl} alt={team.teamName} className="w-full h-full object-cover" />
                   </div>
                 )}
-                <span className="font-medium">{team.teamName}</span>
+                <span className="font-medium hover:text-blue-600 hover:underline">{team.teamName}</span>
               </div>
             </div>
             <div className="flex items-center space-x-3 text-sm">
@@ -69,7 +77,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
         </TableHeader>
         <TableBody>
           {rankings.map((team, index) => (
-            <TableRow key={team.teamId} className={getRowInteractionStyles("")}>
+            <TableRow 
+              key={team.teamId} 
+              className={getRowInteractionStyles("cursor-pointer")}
+              onClick={() => handleTeamClick(team.teamId)}
+            >
               <TableCell className={getRankStyles(index)}>
                 <div className="w-8 h-8 flex items-center justify-center rounded-full">
                   {index + 1}
@@ -86,7 +98,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                       />
                     </div>
                   )}
-                  <span className="font-medium">{team.teamName}</span>
+                  <span className="font-medium hover:text-blue-600 hover:underline">{team.teamName}</span>
                 </div>
               </TableCell>
               <TableCell className="text-center">
