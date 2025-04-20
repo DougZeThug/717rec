@@ -21,7 +21,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
     }
   };
 
-  // Find opponent details - check both team1 and team2
+  // Fix: Use team2Details when team1Id matches opponentId, and vice versa
   const opponentDetails = match.team1Id === opponentId ? match.team2Details : match.team1Details;
   const opponentName = opponentDetails?.name || "Unknown Opponent";
   const opponentImage = opponentDetails?.image_url || opponentDetails?.logo_url;
@@ -69,4 +69,3 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
 };
 
 export default MatchCard;
-
