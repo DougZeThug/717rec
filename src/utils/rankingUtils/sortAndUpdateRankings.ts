@@ -24,12 +24,13 @@ export const sortRankings = (
         valueB = b.sos || 0;
         break;
       case 'powerScore':
-        valueA = a.powerScore !== undefined ? a.powerScore : 0;
-        valueB = b.powerScore !== undefined ? b.powerScore : 0;
+        // Use the database-calculated power score directly
+        valueA = a.powerScore;
+        valueB = b.powerScore;
         break;
       case 'gameWinPercentage':
-        valueA = a.gameWinPercentage !== undefined ? a.gameWinPercentage : 0;
-        valueB = b.gameWinPercentage !== undefined ? b.gameWinPercentage : 0;
+        valueA = a.gameWinPercentage || 0;
+        valueB = b.gameWinPercentage || 0;
         break;
       case 'gamesWon':
         valueA = a.gamesWon || 0;
@@ -48,9 +49,9 @@ export const sortRankings = (
         valueB = b.losses;
         break;
       default:
-        // Default to powerScore
-        valueA = a.powerScore !== undefined ? a.powerScore : 0;
-        valueB = b.powerScore !== undefined ? b.powerScore : 0;
+        // Default to database-calculated power score
+        valueA = a.powerScore;
+        valueB = b.powerScore;
     }
     
     // Sort in ascending or descending order based on sortDirection

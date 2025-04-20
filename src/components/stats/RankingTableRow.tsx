@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -30,7 +29,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     return `${(percentage * 100).toFixed(1)}%`;
   };
 
-  // Get the power score color
+  // Get the power score color using the database-calculated value
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
   
   // Get the trend description
@@ -76,9 +75,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         {ranking.gamesWon ?? 0}–{ranking.gamesLost ?? 0}
       </TableCell>
       <TableCell className="text-center hidden lg:table-cell">
-        {ranking.gameWinPercentage !== undefined
-          ? (ranking.gameWinPercentage * 100).toFixed(1) + "%"
-          : "—"}
+        {formatWinPercentage(ranking.gameWinPercentage)}
       </TableCell>
       <TableCell className="text-center">
         {(ranking.sos || 0).toFixed(3)}
