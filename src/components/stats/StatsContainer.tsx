@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { 
   Card, 
@@ -23,6 +22,8 @@ import StatsErrorState from "./StatsErrorState";
 import FullRankings from "./FullRankings";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePowerScoresData } from "@/hooks/power-score/usePowerScoresData";
+import PowerScoreScatterPlot from "./PowerScoreScatterPlot";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -65,19 +66,23 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   }
 
   const chartLimit = isMobile ? 5 : 8;
-  const compactLimit = isMobile ? 5 : 5;
-  
-  const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
-    id: team.teamId,
-    name: team.teamName,
-    wins: team.wins,
-    losses: team.losses,
-    winPercentage: Number((team.winPercentage * 100).toFixed(1)),
-    powerScore: team.powerScore || 0,
-    sos: Number((team.sos || 0).toFixed(3)),
-    logoUrl: team.logoUrl,
-    imageUrl: team.imageUrl
-  }));
+  const { top10, allTeams, isLoadingTop, isLoadingAll } = usePowerScoresData();
+
+  const topTeamsData = (top10.length > 0 ? top10 : rankings)
+    .filter(team => team.power_score !== null && team.power_score !== undefined)
+    .slice(0, 10) // True top 10
+    .map(team => ({
+      id: team.team_id || team.teamId || team.id,
+      name: team.team_name || team.teamName || team.name,
+      wins: team.wins,
+      losses: team.losses,
+      winPercentage: Number((team.win_percentage ?? team.winPercentage ?? 0) * 100).toFixed(1),
+      powerScore: team.power_score || team.powerScore || 0,
+      sos: Number((team.sos || 0).toFixed(3)),
+      logoUrl: team.logo_url || team.logoUrl,
+      imageUrl: team.image_url || team.imageUrl,
+      divisionName: team.division || team.divisionName || undefined
+    }));
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -86,15 +91,17 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
         divisions={divisions || []} 
       />
 
-      {rankings.length > 0 ? (
+      {(isLoadingTop) ? (
+        <StatsLoadingState />
+      ) : rankings.length > 0 ? (
         <>
           <Card className="mb-6">
             <CardHeader className="pb-2">
               <CardTitle>Current Standings</CardTitle>
-              <CardDescription>Top {compactLimit} teams based on performance</CardDescription>
+              <CardDescription>Top 10 teams based on performance</CardDescription>
             </CardHeader>
             <CardContent>
-              <CompactStandings rankings={rankings.slice(0, compactLimit)} />
+              <CompactStandings rankings={topTeamsData} />
               <div className="mt-4 text-center">
                 <Button 
                   onClick={scrollToFullRankings}
@@ -114,12 +121,28 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
           </div>
 
           <StatsCharts 
-            chartData={topTeamsData} 
+            chartData={topTeamsData.slice(0, chartLimit)} 
             chartLimit={chartLimit} 
           />
 
-          <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
+          <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16 mb-8">
             <FullRankings rankings={rankings} />
+          </div>
+
+          <div className="mb-12">
+            <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">📊 Power Score vs SOS Chart</h2>
+            {(isLoadingAll || !allTeams.length) ? (
+              <div className="text-muted-foreground text-center py-8">Loading chart data…</div>
+            ) : (
+              <PowerScoreScatterPlot data={
+                allTeams
+                  .filter((t: any) => t.power_score !== null && t.sos !== null)
+                  .map((t: any) => ({
+                    ...t,
+                    division: t.division || t.divisionName || t.division_id || "Unassigned"
+                  }))
+              } />
+            )}
           </div>
         </>
       ) : (
@@ -129,7 +152,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   );
 };
 
-// Component for when no teams are available
 const NoTeamsAvailable = () => {
   return (
     <Card>
