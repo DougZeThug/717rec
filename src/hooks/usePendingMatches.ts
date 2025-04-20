@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,7 +65,7 @@ export function usePendingMatches() {
   const fetchTeams = async () => {
     try {
       const { data, error } = await supabase
-        .from('teams')
+        .from('v_team_details')
         .select('*');
 
       if (error) throw error;
@@ -72,17 +73,23 @@ export function usePendingMatches() {
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
         // Transform database team to match our Team interface
-        teamsMap[team.id] = {
-          id: team.id,
+        teamsMap[team.team_id] = {
+          id: team.team_id,
           name: team.name,
           logoUrl: team.logo_url,
           imageUrl: team.image_url,
           players: Array.isArray(team.players) ? team.players : [],
           wins: team.wins || 0,
           losses: team.losses || 0,
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0,
           created_at: team.created_at || '',
           division: team.division_id || null,
-          divisionName: null
+          divisionName: team.divisionname || null,
+          sos: team.sos || 0.5,
+          power_score: team.power_score || 0,
+          win_percentage: team.win_percentage || 0,
+          game_win_percentage: team.game_win_percentage || 0
         };
       });
       

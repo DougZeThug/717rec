@@ -85,7 +85,14 @@ export const useScoreEntryData = () => {
             players: [],
             wins: 0,
             losses: 0,
-            created_at: ""
+            game_wins: 0,
+            game_losses: 0,
+            created_at: "",
+            // Add required Team properties
+            sos: 0.5,
+            power_score: 0,
+            win_percentage: 0,
+            game_win_percentage: 0
           } : undefined,
           team2: match.team2 ? {
             id: match.team2.id,
@@ -94,7 +101,14 @@ export const useScoreEntryData = () => {
             players: [],
             wins: 0,
             losses: 0,
-            created_at: ""
+            game_wins: 0,
+            game_losses: 0,
+            created_at: "",
+            // Add required Team properties
+            sos: 0.5,
+            power_score: 0,
+            win_percentage: 0,
+            game_win_percentage: 0
           } : undefined,
           isEdited: false,
           isValid: validateMatchScores(match.team1_score, match.team2_score)

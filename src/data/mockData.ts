@@ -12,7 +12,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 3, 15).toISOString(),
-    division: "Recreational"
+    division: "Recreational",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "2",
@@ -25,7 +31,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 2).toISOString(),
-    division: "Recreational"
+    division: "Recreational",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "3",
@@ -38,7 +50,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 3, 28).toISOString(),
-    division: "Recreational"
+    division: "Recreational",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "4",
@@ -51,7 +69,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 10).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "5",
@@ -64,7 +88,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 3, 20).toISOString(),
-    division: "Recreational"
+    division: "Recreational",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "6",
@@ -77,7 +107,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 3, 25).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "7",
@@ -90,7 +126,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 5).toISOString(),
-    division: "Intermediate"
+    division: "Intermediate",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "8",
@@ -103,7 +145,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 8).toISOString(),
-    division: "Intermediate"
+    division: "Intermediate",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "9",
@@ -116,7 +164,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 12).toISOString(),
-    division: "Intermediate"
+    division: "Intermediate",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "10",
@@ -129,7 +183,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 15).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "11",
@@ -142,7 +202,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 18).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "12",
@@ -155,7 +221,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 20).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "13",
@@ -168,7 +240,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 22).toISOString(),
-    division: "Intermediate"
+    division: "Intermediate",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "14",
@@ -181,7 +259,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 25).toISOString(),
-    division: "Intermediate"
+    division: "Intermediate",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "15",
@@ -194,7 +278,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 4, 28).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "16",
@@ -207,7 +297,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 5, 1).toISOString(),
-    division: "Recreational"
+    division: "Recreational",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "17",
@@ -220,7 +316,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 5, 3).toISOString(),
-    division: "Recreational"
+    division: "Recreational",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "18",
@@ -233,7 +335,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 5, 5).toISOString(),
-    division: "Intermediate"
+    division: "Intermediate",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "19",
@@ -246,7 +354,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 5, 8).toISOString(),
-    division: "Intermediate"
+    division: "Intermediate",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "20",
@@ -259,7 +373,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 5, 10).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "21",
@@ -272,7 +392,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 5, 12).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   },
   {
     id: "22",
@@ -285,7 +411,13 @@ export const mockTeams: Team[] = [
     wins: 0,
     losses: 0,
     created_at: new Date(2023, 5, 15).toISOString(),
-    division: "Competitive"
+    division: "Competitive",
+    sos: 0.5,
+    power_score: 0,
+    win_percentage: 0,
+    game_win_percentage: 0,
+    game_wins: 0,
+    game_losses: 0
   }
 ];
 

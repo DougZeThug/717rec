@@ -54,9 +54,11 @@ export const fetchTeamsForMatch = async (
       division: team.division_id || null,
       divisionName: team.divisionname || null,
       sos: typeof team.sos === 'number' ? team.sos : 
-           typeof team.sos === 'string' ? parseFloat(team.sos) : 0,
+           typeof team.sos === 'string' ? parseFloat(team.sos) : 0.5,
       power_score: typeof team.power_score === 'number' ? team.power_score : 
-                  typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0
+                  typeof team.power_score === 'string' ? parseFloat(team.power_score) : 0,
+      win_percentage: typeof team.win_percentage === 'number' ? team.win_percentage : 0,
+      game_win_percentage: typeof team.game_win_percentage === 'number' ? team.game_win_percentage : 0
     }));
     
     return formattedTeams;

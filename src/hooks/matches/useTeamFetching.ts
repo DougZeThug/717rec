@@ -51,8 +51,10 @@ export function useTeamFetching() {
           created_at: team.created_at || '',
           division: team.division_id || null,
           divisionName: team.divisionname || null, // Changed from division_name to divisionname
-          sos: typeof team.sos === 'number' ? team.sos : 0,
-          power_score: typeof team.power_score === 'number' ? team.power_score : 0
+          sos: typeof team.sos === 'number' ? team.sos : 0.5,
+          power_score: typeof team.power_score === 'number' ? team.power_score : 0,
+          win_percentage: typeof team.win_percentage === 'number' ? team.win_percentage : 0,
+          game_win_percentage: typeof team.game_win_percentage === 'number' ? team.game_win_percentage : 0
         };
       });
       
