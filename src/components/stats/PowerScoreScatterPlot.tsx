@@ -98,8 +98,6 @@ const PowerScoreScatterPlot = ({ data }: { data: TeamPowerScore[] }) => {
                 shape="circle"
                 line={{}}
                 legendType="circle"
-                // Use Recharts' correct props for dot size
-                dot={{ r: 6 }}
               />
             ))}
           </ScatterChart>

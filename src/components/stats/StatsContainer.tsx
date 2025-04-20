@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { 
   Card, 
@@ -25,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePowerScoresData } from "@/hooks/power-score/usePowerScoresData";
 import PowerScoreScatterPlot from "./PowerScoreScatterPlot";
+import { Ranking } from "@/types";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -69,30 +69,41 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const chartLimit = isMobile ? 5 : 8;
   const { top10, allTeams, isLoadingTop, isLoadingAll } = usePowerScoresData();
 
-  // Create a safe mapping function that works with both data types
-  const mapTeamToChartData = (team: any) => {
-    return {
-      id: team.team_id || team.teamId || team.id,
-      name: team.team_name || team.teamName || team.name,
-      wins: team.wins,
-      losses: team.losses,
-      winPercentage: Number(((team.win_percentage ?? team.winPercentage ?? 0) * 100).toFixed(1)),
-      powerScore: team.power_score || team.powerScore || 0,
-      sos: Number((team.sos || 0).toFixed(3)),
-      logoUrl: team.logo_url || team.logoUrl,
-      imageUrl: team.image_url || team.imageUrl,
-      divisionName: team.division || team.divisionName || undefined
-    };
-  };
-
-  // Filter and map teams with valid power scores
-  const topTeamsData = (top10.length > 0 ? top10 : rankings)
+  // Process top teams data for display in charts
+  const topTeams = (top10.length > 0 ? top10 : rankings)
     .filter((team: any) => {
       const powerScore = team.power_score !== undefined ? team.power_score : team.powerScore;
       return powerScore !== null && powerScore !== undefined;
     })
-    .slice(0, 10)
-    .map(mapTeamToChartData);
+    .slice(0, 10);
+
+  // Transform data for the chart component that expects Ranking[]
+  const topTeamsForCharts = topTeams.map((team: any) => {
+    // If it's already a Ranking type, return it as is
+    if (team.teamId) return team as Ranking;
+    
+    // Otherwise convert from API data format
+    return {
+      teamId: team.team_id || team.id || '',
+      teamName: team.team_name || team.name || '',
+      logoUrl: team.logo_url || null,
+      imageUrl: team.image_url || null,
+      wins: team.wins || 0,
+      losses: team.losses || 0,
+      winPercentage: team.win_percentage || 0,
+      divisionName: team.division || team.divisionName || 'Unassigned',
+      sos: team.sos || 0,
+      streak: undefined,
+      headToHead: {},
+      powerScore: team.power_score || 0,
+      gamesWon: team.game_wins || 0,
+      gamesLost: team.game_losses || 0,
+      gameWinPercentage: team.game_win_percentage || 0,
+      closeMatchLosses: team.close_match_losses || 0,
+      rankChange: undefined,
+      previousRank: undefined
+    } as Ranking;
+  });
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -111,7 +122,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
               <CardDescription>Top 10 teams based on performance</CardDescription>
             </CardHeader>
             <CardContent>
-              <CompactStandings rankings={topTeamsData} />
+              <CompactStandings rankings={topTeamsForCharts} />
               <div className="mt-4 text-center">
                 <Button 
                   onClick={scrollToFullRankings}
@@ -131,7 +142,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
           </div>
 
           <StatsCharts 
-            chartData={topTeamsData.slice(0, chartLimit)} 
+            chartData={topTeamsForCharts.slice(0, chartLimit)} 
             chartLimit={chartLimit} 
           />
 
