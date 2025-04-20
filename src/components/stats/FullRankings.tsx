@@ -1,24 +1,37 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import RankingsTable from "./RankingsTable";
 import { Ranking } from "@/types";
+import ViewToggle from "./ViewToggle";
 
 interface FullRankingsProps {
   rankings: Ranking[];
 }
 
 const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
+  const [view, setView] = useState<"division" | "all">("division");
+
+  // Sort rankings by power score for the unified view
+  const sortedRankings = view === "all" 
+    ? [...rankings].sort((a, b) => b.powerScore - a.powerScore)
+    : rankings;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Complete Team Rankings</CardTitle>
-        <CardDescription>
-          Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <CardTitle>Complete Team Rankings</CardTitle>
+            <CardDescription>
+              Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
+            </CardDescription>
+          </div>
+          <ViewToggle view={view} onViewChange={setView} />
+        </div>
       </CardHeader>
       <CardContent>
-        <RankingsTable rankings={rankings} />
+        <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
       </CardContent>
     </Card>
   );

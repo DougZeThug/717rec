@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface RankingsDesktopViewProps {
   rankings: Ranking[];
@@ -23,6 +24,7 @@ interface RankingsDesktopViewProps {
   toggleExpand: (teamId: string) => void;
   sortOptions: SortOptions;
   onSortChange: (field: string) => void;
+  showUnified?: boolean;
 }
 
 const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
@@ -31,7 +33,20 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
   toggleExpand,
   sortOptions,
   onSortChange,
+  showUnified = false
 }) => {
+  // If not showing unified view, group by division
+  const rankingsByDivision = showUnified 
+    ? { "All Teams": rankings }
+    : rankings.reduce((acc, ranking) => {
+        const divisionName = ranking.divisionName || "Unassigned";
+        if (!acc[divisionName]) {
+          acc[divisionName] = [];
+        }
+        acc[divisionName].push(ranking);
+        return acc;
+      }, {} as Record<string, Ranking[]>);
+
   const isMobile = useIsMobile();
 
   const renderSortIndicator = (field: string) => {
@@ -68,15 +83,18 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
     <div>
       {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
         <div key={divisionName} className="mb-8">
-          <h3 className="text-lg font-medium mb-3 flex items-center">
-            {divisionName} <span className="text-muted-foreground ml-1">({divisionRankings.length})</span>
-          </h3>
+          {!showUnified && (
+            <h3 className="text-lg font-medium mb-3 flex items-center">
+              {divisionName} <span className="text-muted-foreground ml-1">({divisionRankings.length})</span>
+            </h3>
+          )}
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">Rank</TableHead>
                   <TableHead>Team</TableHead>
+                  {showUnified && <TableHead>Division</TableHead>}
                   <TableHead className="text-center">
                     <div className="flex items-center justify-center gap-1">
                       <PowerScoreTooltip />
@@ -104,10 +122,11 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                         index={overallIndex}
                         isExpanded={expandedTeam === ranking.teamId}
                         onToggleExpand={() => toggleExpand(ranking.teamId)}
+                        showDivision={showUnified}
                       />
                       {expandedTeam === ranking.teamId && (
                         <TableRow>
-                          <TableCell colSpan={10} className="bg-gray-50 p-0">
+                          <TableCell colSpan={showUnified ? 11 : 10} className="bg-gray-50 p-0">
                             <div className="p-4">
                               <HeadToHeadRecords headToHead={ranking.headToHead} />
                             </div>

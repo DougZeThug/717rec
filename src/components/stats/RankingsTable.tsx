@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -8,6 +7,7 @@ import { sortRankings } from "@/utils/rankingUtils";
 
 interface RankingsTableProps {
   rankings: Ranking[];
+  showUnified?: boolean;
 }
 
 export type SortDirection = 'asc' | 'desc';
@@ -16,16 +16,14 @@ export interface SortOptions {
   direction: SortDirection;
 }
 
-const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
+const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = false }) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const [sortOptions, setSortOptions] = useState<SortOptions>(() => {
-    // Try to restore last sort preference from localStorage
     const savedSort = localStorage.getItem("rankingsSortOptions");
     if (savedSort) {
       try {
         const parsed = JSON.parse(savedSort);
-        // Ensure the direction is of valid SortDirection type
         const direction: SortDirection = parsed.direction === 'asc' ? 'asc' : 'desc';
         return { 
           field: parsed.field || 'powerScore', 
@@ -42,10 +40,8 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
     setExpandedTeam(expandedTeam === teamId ? null : teamId);
   };
 
-  // Apply sorting to rankings
   const sortedRankings = sortRankings(rankings, sortOptions.field, sortOptions.direction);
 
-  // Handle column header click for sorting
   const handleSortChange = (field: string) => {
     const newDirection: SortDirection = sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc';
     const newSortOptions: SortOptions = {
@@ -54,12 +50,10 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
     };
     setSortOptions(newSortOptions);
     
-    // Save to localStorage
     localStorage.setItem("rankingsSortOptions", JSON.stringify(newSortOptions));
   };
 
   if (isMobile) {
-    // Mobile card layout
     return (
       <RankingsMobileView
         rankings={sortedRankings}
@@ -67,11 +61,11 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
         toggleExpand={toggleExpand}
         sortOptions={sortOptions}
         onSortChange={handleSortChange}
+        showUnified={showUnified}
       />
     );
   }
 
-  // Desktop table layout
   return (
     <RankingsDesktopView
       rankings={sortedRankings}
@@ -79,6 +73,7 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings }) => {
       toggleExpand={toggleExpand}
       sortOptions={sortOptions}
       onSortChange={handleSortChange}
+      showUnified={showUnified}
     />
   );
 };

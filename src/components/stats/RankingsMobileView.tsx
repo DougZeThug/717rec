@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
@@ -14,6 +13,7 @@ interface RankingsMobileViewProps {
   toggleExpand: (teamId: string) => void;
   sortOptions: SortOptions;
   onSortChange: (field: string) => void;
+  showUnified?: boolean;
 }
 
 const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
@@ -22,14 +22,13 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   toggleExpand,
   sortOptions,
   onSortChange,
+  showUnified = false
 }) => {
-  // Initialize detailed view state from localStorage or default to false
   const [detailedView, setDetailedView] = useState(() => {
     const savedView = localStorage.getItem("rankingsDetailedView");
     return savedView ? savedView === "true" : false;
   });
 
-  // Define sortable fields for mobile view
   const sortableFields = [
     { id: 'powerScore', label: 'Power Score' },
     { id: 'winPercentage', label: 'Win %' },
@@ -37,21 +36,21 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     { id: 'wins', label: 'Wins' },
   ];
 
-  // Update localStorage when view preference changes
   const toggleViewMode = (checked: boolean) => {
     setDetailedView(checked);
     localStorage.setItem("rankingsDetailedView", String(checked));
   };
 
-  // Group rankings by division
-  const rankingsByDivision: Record<string, Ranking[]> = {};
-  rankings.forEach(ranking => {
-    const divisionName = ranking.divisionName || "Unassigned";
-    if (!rankingsByDivision[divisionName]) {
-      rankingsByDivision[divisionName] = [];
-    }
-    rankingsByDivision[divisionName].push(ranking);
-  });
+  const rankingsByDivision = showUnified
+    ? { "All Teams": rankings }
+    : rankings.reduce((acc, ranking) => {
+        const divisionName = ranking.divisionName || "Unassigned";
+        if (!acc[divisionName]) {
+          acc[divisionName] = [];
+        }
+        acc[divisionName].push(ranking);
+        return acc;
+      }, {} as Record<string, Ranking[]>);
 
   return (
     <div>
@@ -94,12 +93,13 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       <div className="space-y-8">
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
           <div key={divisionName} className="space-y-4">
-            <h3 className="text-lg font-medium flex items-center">
-              {divisionName} <span className="text-muted-foreground ml-1">({divisionRankings.length})</span>
-            </h3>
+            {!showUnified && (
+              <h3 className="text-lg font-medium flex items-center">
+                {divisionName} <span className="text-muted-foreground ml-1">({divisionRankings.length})</span>
+              </h3>
+            )}
             <div className="space-y-4">
-              {divisionRankings.map((ranking, index) => {
-                // Calculate the global index for the ranking
+              {divisionRankings.map((ranking) => {
                 const globalIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
                 return (
                   <RankingCard
@@ -109,6 +109,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     expandedTeam={expandedTeam}
                     onToggleExpand={toggleExpand}
                     compactView={!detailedView}
+                    showDivision={showUnified}
                   />
                 );
               })}

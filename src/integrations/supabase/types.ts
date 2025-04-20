@@ -495,6 +495,8 @@ export type Database = {
           power_score: number | null
           sos: number | null
           team_id: string | null
+          weighted_game_win_percentage: number | null
+          weighted_win_percentage: number | null
           win_percentage: number | null
           wins: number | null
         }

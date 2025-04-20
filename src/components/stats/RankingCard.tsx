@@ -13,6 +13,7 @@ interface RankingCardProps {
   expandedTeam: string | null;
   onToggleExpand: (teamId: string) => void;
   compactView?: boolean;
+  showDivision?: boolean;
 }
 
 const RankingCard: React.FC<RankingCardProps> = ({
@@ -20,7 +21,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
   index,
   expandedTeam,
   onToggleExpand,
-  compactView = false
+  compactView = false,
+  showDivision = false
 }) => {
   const navigate = useNavigate();
   const isExpanded = expandedTeam === ranking.teamId;
@@ -49,8 +51,18 @@ const RankingCard: React.FC<RankingCardProps> = ({
           <div className="flex items-center space-x-3">
             <div className="text-lg font-semibold w-8">{index + 1}</div>
             <div className="flex-1">
-              <div data-team-name="true" className="font-medium">
-                {ranking.teamName}
+              <div className="flex items-center gap-2">
+                <div data-team-name="true" className="font-medium">
+                  {ranking.teamName}
+                </div>
+                {showDivision && (
+                  <Badge
+                    variant={ranking.divisionName?.toLowerCase() as any || "default"}
+                    className="font-normal text-xs"
+                  >
+                    {ranking.divisionName || "Unassigned"}
+                  </Badge>
+                )}
               </div>
               {!compactView && (
                 <div className="text-sm text-gray-500">
