@@ -14,12 +14,13 @@ export function useTeamsData() {
       setIsLoading(true);
       const teamsData = await fetchTeamsFromApi();
       
-      // Log fetched data to verify values
-      console.log("Teams data from v_team_details:", teamsData.map(t => ({
-        id: t.id,
+      // Log teams data to verify Power Score values
+      console.log("Teams with Power Score > 0.4:", teamsData.filter(t => t.power_score > 0.4).map(t => ({
         name: t.name,
+        power_score: t.power_score,
         sos: t.sos,
-        power_score: t.power_score
+        wins: t.wins,
+        losses: t.losses
       })));
       
       setTeams(teamsData);

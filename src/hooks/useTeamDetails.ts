@@ -23,7 +23,9 @@ export const useTeamDetails = (teamId: string | undefined) => {
         id: data.team_id,
         name: data.name,
         sos: data.sos,
-        power_score: data.power_score
+        power_score: data.power_score,
+        win_percentage: data.win_percentage,
+        game_win_percentage: data.game_win_percentage
       });
       
       return {
@@ -37,12 +39,8 @@ export const useTeamDetails = (teamId: string | undefined) => {
         game_losses: data.game_losses || 0,
         division: data.division_id,
         divisionName: data.divisionname || null,
-        // Map the database-calculated SOS value
-        sos: typeof data.sos === 'number' ? data.sos : 
-             typeof data.sos === 'string' ? parseFloat(data.sos) : undefined,
-        // Map the database-calculated power score
-        power_score: typeof data.power_score === 'number' ? data.power_score :
-                    typeof data.power_score === 'string' ? parseFloat(data.power_score) : 0,
+        sos: data.sos || 0,
+        power_score: data.power_score || 0,
         close_match_losses: data.close_match_losses || 0,
         players: Array.isArray(data.players) ? data.players : [],
         created_at: data.created_at || new Date().toISOString(),

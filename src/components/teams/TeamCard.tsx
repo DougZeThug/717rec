@@ -7,7 +7,6 @@ import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
-import { cn } from "@/lib/utils";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 
 interface TeamCardProps {
@@ -18,6 +17,15 @@ interface TeamCardProps {
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionName = team.divisionName || "";
+  
+  console.log(`TeamCard ${team.name} stats:`, {
+    powerScore: team.power_score,
+    sos: team.sos,
+    wins: team.wins,
+    losses: team.losses,
+    gameWins: team.game_wins,
+    gameLosses: team.game_losses
+  });
   
   const getDivisionColor = () => {
     if (!divisionName) return "gray";
@@ -31,12 +39,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
 
   const divisionColor = getDivisionColor();
 
-  // First check for imageUrl, then fall back to logoUrl
   const teamImage = team.imageUrl || team.logoUrl;
 
   console.debug('[TeamCard] props', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
   
-  // Get power score color
   const powerScoreColor = getPowerScoreColor(team.power_score);
 
   return (
