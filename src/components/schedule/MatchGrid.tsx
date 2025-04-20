@@ -2,11 +2,10 @@
 import React from "react";
 import MatchCard from "./MatchCard";
 import EmptyMatchList from "./EmptyMatchList";
-import { Match, Team } from "@/types";
+import { Match } from "@/types";
 
 interface MatchGridProps {
   matches: Match[];
-  teams: Team[];
   searchTerm: string;
   isCompleted: boolean;
   onEdit?: (match: Match) => void;
@@ -15,7 +14,6 @@ interface MatchGridProps {
 
 const MatchGrid: React.FC<MatchGridProps> = ({ 
   matches, 
-  teams, 
   searchTerm, 
   isCompleted,
   onEdit,

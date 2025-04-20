@@ -36,13 +36,17 @@ const MatchCard: React.FC<MatchCardProps> = ({
     }
     return "vs";
   };
+
+  // Get team names with fallbacks
+  const team1Name = match.team1Details?.name || "Unknown Team";
+  const team2Name = match.team2Details?.name || "Unknown Team";
   
   return (
     <Card className={`overflow-hidden ${match.iscompleted ? 'bg-gray-50 border-green-200' : ''}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">
-            {match.team1Details?.name || "Team 1"} vs {match.team2Details?.name || "Team 2"}
+            {team1Name} vs {team2Name}
           </CardTitle>
           <div>
             {match.iscompleted && (
@@ -60,14 +64,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
               <Avatar className="w-16 h-16">
                 <AvatarImage 
                   src={match.team1Details?.image_url || '/placeholder.svg'}
-                  alt={match.team1Details?.name || "Team 1"}
+                  alt={team1Name}
                 />
                 <AvatarFallback>
-                  {(match.team1Details?.name || "T1").charAt(0)}
+                  {team1Name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div className="mt-2 text-center font-medium">
-                {match.team1Details?.name || "Team 1"}
+                {team1Name}
               </div>
             </div>
             
@@ -79,21 +83,21 @@ const MatchCard: React.FC<MatchCardProps> = ({
               <Avatar className="w-16 h-16">
                 <AvatarImage 
                   src={match.team2Details?.image_url || '/placeholder.svg'}
-                  alt={match.team2Details?.name || "Team 2"}
+                  alt={team2Name}
                 />
                 <AvatarFallback>
-                  {(match.team2Details?.name || "T2").charAt(0)}
+                  {team2Name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div className="mt-2 text-center font-medium">
-                {match.team2Details?.name || "Team 2"}
+                {team2Name}
               </div>
             </div>
           </div>
           
           {match.iscompleted && match.team1_game_wins !== undefined && match.team2_game_wins !== undefined && (
             <div className="bg-gray-100 p-2 rounded text-center text-sm">
-              Game Wins: {match.team1Details?.name || "Team 1"} ({match.team1_game_wins}) - {match.team2Details?.name || "Team 2"} ({match.team2_game_wins})
+              Game Wins: {team1Name} ({match.team1_game_wins}) - {team2Name} ({match.team2_game_wins})
             </div>
           )}
           

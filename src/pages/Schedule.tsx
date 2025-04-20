@@ -5,7 +5,6 @@ import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
 import { useScheduleData } from "@/hooks/useScheduleData";
-import { filterAndSortMatches } from "@/utils/scheduleUtils";
 
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import ScheduleContent from "@/components/schedule/ScheduleContent";
@@ -49,19 +48,19 @@ const Schedule = () => {
     
     if (!searchTerm) return sourceMatches;
     
-    // Filter based on search term
+    // Filter based on search term - using team details directly from the match
     return sourceMatches.filter(match => {
-      const team1 = teams?.find(t => t.id === match.team1Id);
-      const team2 = teams?.find(t => t.id === match.team2Id);
+      const team1Name = match.team1Details?.name || "";
+      const team2Name = match.team2Details?.name || "";
       const searchLower = searchTerm.toLowerCase();
       
       return (
-        team1?.name.toLowerCase().includes(searchLower) ||
-        team2?.name.toLowerCase().includes(searchLower) ||
+        team1Name.toLowerCase().includes(searchLower) ||
+        team2Name.toLowerCase().includes(searchLower) ||
         match.location?.toLowerCase().includes(searchLower)
       );
     });
-  }, [activeTab, upcomingMatches, completedMatches, searchTerm, teams]);
+  }, [activeTab, upcomingMatches, completedMatches, searchTerm]);
 
   // Adapter functions to handle the parameter mismatches
   const handleCreateMatchAdapter = (matchData: any) => {

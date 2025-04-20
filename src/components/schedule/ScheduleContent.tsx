@@ -38,7 +38,6 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       <TabsContent value="upcoming" className="mt-6">
         <MatchGrid 
           matches={filteredMatches}
-          teams={teams}
           searchTerm=""
           isCompleted={false}
           onEdit={onEditMatch}
@@ -49,7 +48,6 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       <TabsContent value="completed" className="mt-6">
         <MatchGrid 
           matches={filteredMatches}
-          teams={teams}
           searchTerm=""
           isCompleted={true}
           // Explicitly remove edit and delete props for completed matches

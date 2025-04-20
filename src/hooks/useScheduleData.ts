@@ -12,7 +12,8 @@ export const useScheduleData = () => {
     queryFn: async () => {
       console.log("Fetching matches data with team details...");
       
-      // Join with v_team_details to get team information
+      // Join with v_team_details to get team information using LEFT JOIN instead of INNER JOIN
+      // Also fix column name to use divisionname (lowercase) instead of divisionName
       const { data, error } = await supabase
         .from('matches')
         .select(`
@@ -22,14 +23,14 @@ export const useScheduleData = () => {
             name,
             image_url,
             logo_url,
-            divisionName
+            divisionname
           ),
           team2:v_team_details!team2_id(
             team_id,
             name,
             image_url,
             logo_url,
-            divisionName
+            divisionname
           )
         `)
         .order('date');
@@ -40,6 +41,8 @@ export const useScheduleData = () => {
       }
       
       console.log("Raw match data with team details:", data);
+      console.log("Total matches fetched:", data.length);
+      console.log("Completed matches count:", data.filter(m => m.iscompleted).length);
       
       const formattedData = data.map((match): Match => {
         // Log individual match team data for debugging
