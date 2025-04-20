@@ -31,7 +31,6 @@ const MatchGrid: React.FC<MatchGridProps> = ({
         <MatchCard 
           key={match.id} 
           match={match}
-          teams={teams}
           isCompleted={isCompleted}
           onEdit={!isCompleted ? onEdit : undefined}
           onDelete={!isCompleted ? onDelete : undefined}

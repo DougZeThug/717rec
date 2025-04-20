@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,9 +59,9 @@ export const useScheduleData = () => {
         best_of: match.best_of,
         team1_game_wins: match.team1_game_wins,
         team2_game_wins: match.team2_game_wins,
-        // Add team details from v_team_details
-        team1Details: match.team1?.[0] || null,
-        team2Details: match.team2?.[0] || null
+        // Fix team details structure - ensure it's an object not a string
+        team1Details: match.team1 && match.team1.length > 0 ? match.team1[0] : null,
+        team2Details: match.team2 && match.team2.length > 0 ? match.team2[0] : null
       }));
       
       return formattedData;
