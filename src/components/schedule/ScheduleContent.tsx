@@ -10,8 +10,8 @@ interface ScheduleContentProps {
   setActiveTab: (value: string) => void;
   filteredMatches: Match[];
   teams: Team[];
-  onEditMatch: (match: Match) => void;
-  onDeleteMatch: (matchId: string) => void;
+  onEditMatch?: (match: Match) => void;
+  onDeleteMatch?: (matchId: string) => void;
 }
 
 const ScheduleContent: React.FC<ScheduleContentProps> = ({
@@ -52,8 +52,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           teams={teams}
           searchTerm=""
           isCompleted={true}
-          onEdit={onEditMatch}
-          // Removed onDelete prop for completed matches
+          // Explicitly remove edit and delete props for completed matches
         />
       </TabsContent>
     </Tabs>

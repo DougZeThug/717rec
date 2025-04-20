@@ -1,20 +1,25 @@
-
 import React from "react";
-import { Link } from "react-router-dom";
 import { Match, Team } from "@/types";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CheckCircle, Calendar } from "lucide-react";
+import { CheckCircle, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 interface MatchCardProps {
   match: Match;
   teams: Team[];
-  onEdit: (match: Match) => void;
+  isCompleted: boolean;
+  onEdit?: (match: Match) => void;
   onDelete?: (matchId: string) => void;
 }
 
-const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete }) => {
+const MatchCard: React.FC<MatchCardProps> = ({ 
+  match, 
+  teams, 
+  isCompleted = false, 
+  onEdit, 
+  onDelete 
+}) => {
   const team1 = teams.find(team => team.id === match.team1Id);
   const team2 = teams.find(team => team.id === match.team2Id);
   
@@ -105,16 +110,20 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, teams, onEdit, onDelete })
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-2 border-t bg-gray-50 flex justify-end space-x-2">
-        <Button variant="ghost" size="sm" onClick={() => onEdit(match)}>
-          <Edit className="h-4 w-4 mr-1" /> Edit
-        </Button>
-        {onDelete && (
-          <Button variant="ghost" size="sm" className="text-red-600" onClick={() => onDelete(match.id)}>
-            <Trash2 className="h-4 w-4 mr-1" /> Delete
-          </Button>
-        )}
-      </CardFooter>
+      {!isCompleted && (
+        <CardFooter className="pt-2 border-t bg-gray-50 flex justify-end space-x-2">
+          {onEdit && (
+            <Button variant="ghost" size="sm" onClick={() => onEdit(match)}>
+              <Edit className="h-4 w-4 mr-1" /> Edit
+            </Button>
+          )}
+          {onDelete && (
+            <Button variant="ghost" size="sm" className="text-red-600" onClick={() => onDelete(match.id)}>
+              <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+          )}
+        </CardFooter>
+      )}
     </Card>
   );
 };
