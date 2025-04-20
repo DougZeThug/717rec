@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface TeamCardProps {
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionName = team.divisionName || "";
   
+  // Enhanced logging to verify stats from v_team_details
   console.log(`TeamCard ${team.name} complete stats:`, {
     powerScore: team.power_score,
     sos: team.sos,
