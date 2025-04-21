@@ -2,6 +2,7 @@
 import React from "react";
 import { ResponsiveContainer, ScatterChart, XAxis, YAxis, CartesianGrid, Tooltip, Scatter, Legend } from "recharts";
 
+// PowerScore and division info type (all relevant fields)
 interface TeamPowerScore {
   team_id: string;
   team_name?: string;
@@ -23,9 +24,8 @@ const DIVISION_COLORS: Record<string, string> = {
 };
 
 function getDivisionColor(division: string | null | undefined) {
-  if (!division) return "#94a3b8"; // slate-400
+  if (!division) return "#94a3b8";
   if (DIVISION_COLORS[division]) return DIVISION_COLORS[division];
-  // fallback: capitalize first letter and try again
   const key = (division.charAt(0).toUpperCase() + division.slice(1).toLowerCase());
   return DIVISION_COLORS[key] || "#94a3b8";
 }
@@ -34,8 +34,8 @@ const CustomTooltip = ({ active, payload }: {active?: boolean, payload?: any[]})
   if (active && payload && payload[0]) {
     const team = payload[0].payload;
     return (
-      <div className="bg-white rounded shadow px-4 py-2 text-xs border border-gray-200">
-        <div className="font-semibold">{team.team_name}</div>
+      <div className="bg-white rounded shadow px-4 py-2 text-xs border border-gray-200 min-w-[160px]">
+        <div className="font-semibold">{team.team_name || "Unnamed Team"}</div>
         <div>
           <span>Division: </span>
           <span className="font-medium">{team.division || team.divisionName || "Unassigned"}</span>
@@ -53,28 +53,25 @@ const CustomTooltip = ({ active, payload }: {active?: boolean, payload?: any[]})
 };
 
 const PowerScoreScatterPlot = ({ data }: { data: TeamPowerScore[] }) => {
-  // Handle empty data case
   if (!data || !Array.isArray(data) || data.length === 0) {
     return <div className="text-center p-8 text-gray-500">No team data available for scatter plot</div>;
   }
   
   try {
-    // Find min/max for axis ranges, with safe defaults
     const minSOS = Math.min(...data.map(d => d.sos ?? 0));
     const maxSOS = Math.max(...data.map(d => d.sos ?? 1));
     const minPower = Math.min(...data.map(d => d.power_score ?? 0));
     const maxPower = Math.max(...data.map(d => d.power_score ?? 2));
-
-    // Division color mapping - ensure uniqueness
     const divisions = Array.from(new Set(data.map(t => t.division || t.divisionName || "Unassigned")));
-
-    // Responsive axis ticks
     const tickCount = 5;
     
     return (
       <div className="w-full overflow-x-auto">
         <div className="min-w-[360px] md:min-w-[600px]">
-          <ResponsiveContainer width="100%" minWidth={360} height={340}>
+          <div className="text-lg mb-3 font-semibold flex items-center gap-2">
+            📊 Power Score vs Strength of Schedule (SOS) — All Teams
+          </div>
+          <ResponsiveContainer width="100%" minWidth={360} height={350}>
             <ScatterChart margin={{ top: 30, right: 25, left: 10, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
@@ -104,7 +101,9 @@ const PowerScoreScatterPlot = ({ data }: { data: TeamPowerScore[] }) => {
                   shape="circle"
                   line={{}}
                   legendType="circle"
-                />
+                >
+                {/* Optionally dot size: size={Array.isArray(d) ? (d.game_wins ?? 0) + (d.game_losses ?? 0) : 8} */}
+                </Scatter>
               ))}
             </ScatterChart>
           </ResponsiveContainer>

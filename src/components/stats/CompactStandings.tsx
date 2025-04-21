@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -20,14 +21,14 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   };
 
   const getRankStyles = (index: number) => {
-    if (index === 0) return "bg-amber-100 text-amber-800 font-bold"; // Gold
-    if (index === 1) return "bg-slate-100 text-slate-700 font-bold"; // Silver
-    if (index === 2) return "bg-orange-100 text-orange-800 font-bold"; // Bronze
+    if (index === 0) return "bg-amber-100 text-amber-800 font-bold";
+    if (index === 1) return "bg-slate-100 text-slate-700 font-bold";
+    if (index === 2) return "bg-orange-100 text-orange-800 font-bold";
     return "";
   };
 
   const getLogoUrl = (team: Ranking) => {
-    return team.logoUrl || team.imageUrl || '/default-logo.png';
+    return team.logoUrl || team.imageUrl || "/default-logo.png";
   };
 
   if (isMobile) {
@@ -45,7 +46,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                  <img src={getLogoUrl(team)} alt={team.teamName} className="w-full h-full object-contain" />
+                  <img
+                    src={getLogoUrl(team)}
+                    alt={`${team.teamName} logo`}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <span className="font-medium hover:text-blue-600 hover:underline">{team.teamName}</span>
               </div>
@@ -90,8 +95,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
                     <img
-                      src={team.logoUrl || team.imageUrl || '/default-logo.png'}
-                      alt={team.teamName}
+                      src={getLogoUrl(team)}
+                      alt={`${team.teamName} logo`}
                       className="w-full h-full object-contain"
                     />
                   </div>
