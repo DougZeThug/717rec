@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from "react";
 import { 
   Card, 
@@ -8,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
-import { Match } from "@/types";
+import { Match, Ranking } from "@/types"; // Added Ranking import
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import StatsHeader from "@/components/stats/StatsHeader";
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards";
@@ -20,6 +21,7 @@ import { usePowerScoresData } from "@/hooks/power-score/usePowerScoresData";
 import ErrorBoundary from "@/components/stats/ErrorBoundary";
 import NoTeamsAvailable from "@/components/stats/NoTeamsAvailable";
 import StandingsSection from "@/components/stats/StandingsSection";
+import PowerScoreScatterPlot from "@/components/stats/PowerScoreScatterPlot"; // Added PowerScoreScatterPlot import
 
 interface StatsContainerProps {
   matches: Match[];
