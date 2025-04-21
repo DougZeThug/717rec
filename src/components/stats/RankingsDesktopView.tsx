@@ -46,6 +46,13 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 
   const isMobile = useIsMobile();
 
+  let userTheme = "dark";
+  if (typeof window !== "undefined" && window.localStorage) {
+    userTheme = document.documentElement.classList.contains('dark') ? "dark" : "light";
+  }
+
+  const isLight = userTheme === "light";
+
   const renderSortIndicator = (field: string) => {
     if (sortOptions.field === field) {
       return sortOptions.direction === 'asc' 
@@ -72,18 +79,20 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
       {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
         <div key={divisionName} className="mb-8">
           {!showUnified && (
-            <h3 className="text-lg font-medium mb-3 flex items-center font-inter text-gray-100">
-              {divisionName} <span className="text-muted-foreground ml-1">({divisionRankings.length})</span>
+            <h3 className="text-lg font-medium mb-3 flex items-center font-inter"
+              style={isLight ? { color: "#1a1a1a" } : { color: 'white' }}
+            >
+              {divisionName} <span className={`${isLight ? "text-[#333]" : "text-muted-foreground"} ml-1`}>({divisionRankings.length})</span>
             </h3>
           )}
           <div className="overflow-x-auto">
-            <Table className="bg-[#1E1E1E] rounded-xl shadow font-inter">
+            <Table className={`${isLight ? "bg-[#fff] border border-[#e0e0e0] rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "bg-[#1E1E1E] text-white rounded-xl shadow"}`}>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 font-medium font-inter text-white">Rank</TableHead>
-                  <TableHead className="font-medium font-inter text-white">Team</TableHead>
-                  {showUnified && <TableHead className="font-inter text-white">Division</TableHead>}
-                  <TableHead className="text-center font-inter text-white">
+                  <TableHead className="w-12 font-medium font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>Rank</TableHead>
+                  <TableHead className="font-medium font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>Team</TableHead>
+                  {showUnified && <TableHead className="font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>Division</TableHead>}
+                  <TableHead className="text-center font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>
                     <div className="flex items-center justify-center gap-1">
                       <Bolt className="inline-block text-purple-300" size={16} />
                       <span onClick={() => onSortChange('powerScore')} className="cursor-pointer">
@@ -91,22 +100,22 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                       </span>
                     </div>
                   </TableHead>
-                  <SortableHeader field="wins" className="text-center text-white">W-L</SortableHeader>
-                  <SortableHeader field="winPercentage" className="text-center text-white">Win %</SortableHeader>
-                  <SortableHeader field="gamesWon" className="text-center hidden md:table-cell text-white">Games (W-L)</SortableHeader>
-                  <SortableHeader field="gameWinPercentage" className="text-center hidden lg:table-cell text-white">Game %</SortableHeader>
-                  <SortableHeader field="sos" className="text-center text-white">
+                  <SortableHeader field="wins" className="text-center" ><span style={isLight ? { color: "#1a1a1a" } : { color: "#fff" }}>W-L</span></SortableHeader>
+                  <SortableHeader field="winPercentage" className="text-center"><span style={isLight ? { color: "#1a1a1a" } : { color: "#fff" }}>Win %</span></SortableHeader>
+                  <SortableHeader field="gamesWon" className="text-center hidden md:table-cell"><span style={isLight ? { color: "#1a1a1a" } : { color: "#fff" }}>Games (W-L)</span></SortableHeader>
+                  <SortableHeader field="gameWinPercentage" className="text-center hidden lg:table-cell"><span style={isLight ? { color: "#1a1a1a" } : { color: "#fff" }}>Game %</span></SortableHeader>
+                  <SortableHeader field="sos" className="text-center">
                     <div className="flex items-center gap-1 justify-center">
                       <Scale className="inline-block text-blue-300" size={15} />
-                      SOS
+                      <span style={isLight ? { color: "#1a1a1a" } : { color: "#fff" }}>SOS</span>
                     </div>
                   </SortableHeader>
-                  <TableHead className="text-center font-inter text-white">Streak</TableHead>
-                  <TableHead className="text-center font-inter text-white">Trend</TableHead>
+                  <TableHead className="text-center font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>Streak</TableHead>
+                  <TableHead className="text-center font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>Trend</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {divisionRankings.map((ranking) => {
+                {divisionRankings.map((ranking, idx) => {
                   const overallIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
                   return (
                     <React.Fragment key={ranking.teamId}>
@@ -119,7 +128,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                       />
                       {expandedTeam === ranking.teamId && (
                         <TableRow>
-                          <TableCell colSpan={showUnified ? 11 : 10} className="bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
+                          <TableCell colSpan={showUnified ? 11 : 10} className={`${isLight ? "bg-[#f5f5f5]" : "bg-gray-900/80"} p-0 rounded-b-xl shadow-inner`}>
                             <div className="p-4">
                               <HeadToHeadRecords headToHead={ranking.headToHead} />
                             </div>

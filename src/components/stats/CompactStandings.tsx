@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -10,11 +9,13 @@ import { useNavigate } from "react-router-dom";
 
 interface CompactStandingsProps {
   rankings: Ranking[];
+  theme?: string;
 }
 
-const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
+const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const isLight = theme === "light";
 
   // Function to handle team selection
   const handleTeamClick = (teamId: string) => {
@@ -36,7 +37,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
           <div
             key={team.teamId}
             onClick={() => handleTeamClick(team.teamId)}
-            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer")}
+            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer", undefined, isLight ? "#e0e0e0" : undefined)}
+            style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", border: "1px solid #e0e0e0" } : {}}
           >
             <div className="flex items-center space-x-3">
               <div className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index))}>
@@ -48,11 +50,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                     <img src={team.imageUrl} alt={team.teamName} className="w-full h-full object-cover" />
                   </div>
                 )}
-                <span className="font-medium hover:text-blue-600 hover:underline">{team.teamName}</span>
+                <span className="font-medium hover:text-blue-600 hover:underline" style={isLight ? { color: "#1a1a1a" } : {}}>{team.teamName}</span>
               </div>
             </div>
             <div className="flex items-center space-x-3 text-sm">
-              <span>{team.wins}-{team.losses}</span>
+              <span style={isLight ? { color: "#2c2c2c" } : {}}>{team.wins}-{team.losses}</span>
               <span className={getPowerScoreColor(team.powerScore)}>
                 {formatPowerScore(team.powerScore)}
               </span>
@@ -68,18 +70,19 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10">Rank</TableHead>
-            <TableHead>Team</TableHead>
-            <TableHead className="text-center">Record</TableHead>
-            <TableHead className="text-center">Win %</TableHead>
-            <TableHead className="text-center">Power Score</TableHead>
+            <TableHead className="w-10" style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Rank</TableHead>
+            <TableHead style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Team</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a" } : {}}>Record</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a" } : {}}>Win %</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a" } : {}}>Power Score</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rankings.map((team, index) => (
             <TableRow 
               key={team.teamId} 
-              className={getRowInteractionStyles("cursor-pointer")}
+              className={getRowInteractionStyles("cursor-pointer", undefined, isLight ? "#e0e0e0" : undefined)}
+              style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", color: "#1a1a1a" } : {}}
               onClick={() => handleTeamClick(team.teamId)}
             >
               <TableCell className={getRankStyles(index)}>
@@ -98,13 +101,13 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                       />
                     </div>
                   )}
-                  <span className="font-medium hover:text-blue-600 hover:underline">{team.teamName}</span>
+                  <span className="font-medium hover:text-blue-600 hover:underline" style={isLight ? { color: "#1a1a1a" } : {}}>{team.teamName}</span>
                 </div>
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className="text-center" style={isLight ? { color: "#333" } : {}}>
                 {team.wins}-{team.losses}
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className="text-center" style={isLight ? { color: "#333" } : {}}>
                 {(team.winPercentage * 100).toFixed(1)}%
               </TableCell>
               <TableCell className={cn("text-center font-semibold", getPowerScoreColor(team.powerScore))}>

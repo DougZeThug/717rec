@@ -4,7 +4,7 @@ import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
 import { SortOptions } from "./RankingsTable";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react"; // Changed LightningBolt to Bolt
+import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -31,8 +31,15 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     return savedView ? savedView === "true" : false;
   });
 
+  // detect theme for button styling, fallback to dark if unknown
+  let userTheme = "dark";
+  if (typeof window !== "undefined" && window.localStorage) {
+    userTheme = document.documentElement.classList.contains('dark') ? "dark" : "light";
+  }
+  const isLight = userTheme === "light";
+
   const sortableFields = [
-    { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) }, // Changed LightningBolt to Bolt here
+    { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) },
     { id: 'winPercentage', label: 'Win %' },
     { id: 'sos', label: (<><Scale size={15} className="inline-block mr-1" />SOS</>) },
     { id: 'wins', label: 'Wins' },
@@ -67,8 +74,12 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   size="sm"
                   onClick={() => onSortChange(field.id)}
                   className={cn(
-                    "rounded-lg py-2 px-4 font-medium bg-white text-black hover:bg-blue-50 border border-gray-200 transition-all whitespace-nowrap",
-                    sortOptions.field === field.id ? "bg-blue-600 text-white hover:bg-blue-700" : ""
+                    "rounded-lg py-2 px-4 font-medium transition-all whitespace-nowrap",
+                    isLight
+                      ? (sortOptions.field === field.id
+                          ? "bg-blue-600 text-white hover:bg-blue-700 border-[#e0e0e0]"
+                          : "bg-white text-[#1a1a1a] border border-[#e0e0e0] hover:bg-[#f0f0f0]")
+                      : ""
                   )}
                 >
                   {field.label}
@@ -87,7 +98,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               checked={detailedView}
               onCheckedChange={toggleViewMode}
             />
-            <Label htmlFor="detailed-view" className="text-sm text-gray-200">
+            <Label htmlFor="detailed-view" className={isLight ? "text-sm text-[#2c2c2c]" : "text-sm text-gray-200"}>
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
           </div>
@@ -97,8 +108,11 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
-              <h3 className="text-lg font-medium flex items-center font-inter text-gray-100">
-                {divisionName} <span className="ml-2 text-xs text-gray-400 font-inter">({divisionRankings.length})</span>
+              <h3 className={isLight
+                ? "text-lg font-medium flex items-center font-inter text-[#1a1a1a]"
+                : "text-lg font-medium flex items-center font-inter text-gray-100"
+                }>
+                {divisionName} <span className={isLight ? "ml-2 text-xs text-[#666] font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>
               </h3>
             )}
             <div className="space-y-4">
@@ -125,4 +139,3 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
 };
 
 export default RankingsMobileView;
-

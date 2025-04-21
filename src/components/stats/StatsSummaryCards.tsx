@@ -61,7 +61,9 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const highestSOS = getHighestSOS();
   const highestPowerScore = getHighestPowerScore();
 
-  const cardBg = isLight ? "bg-white border border-[#e0e0e0] text-[#1a1a1a]" : "bg-[#1E1E1E] text-white";
+  const cardBg = isLight
+    ? "bg-[#fff] border border-[#e0e0e0] text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
+    : "bg-[#1E1E1E] text-white";
   const titleColor = isLight ? "text-[#1a1a1a]" : "text-white";
   const descriptionColor = isLight ? "text-gray-600" : "text-gray-400";
   const greenNumber = isLight ? "text-green-700" : "text-green-300";
@@ -71,7 +73,7 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
 
   return (
     <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl shadow font-inter`}>
+      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl font-inter`}>
         <div className="flex items-center justify-center bg-cornhole-green/15 rounded-full w-12 h-12 mr-2">
           <Trophy size={iconSize} className="text-amber-500" />
         </div>
@@ -80,7 +82,7 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
           <div className={`font-extrabold text-xl text-cornhole-green`}>{rankings ? rankings.length : 0}</div>
         </div>
       </Card>
-      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl shadow font-inter`}>
+      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl font-inter`}>
         <div className="flex items-center justify-center bg-green-900/15 rounded-full w-12 h-12 mr-2">
           <Star size={iconSize} className="text-green-400" />
         </div>
@@ -90,7 +92,7 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
           <div className={`text-xs ${descriptionColor} font-light`}>{highestWinPercentage.teamName}</div>
         </div>
       </Card>
-      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl shadow font-inter`}>
+      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl font-inter`}>
         <div className="flex items-center justify-center bg-blue-900/15 rounded-full w-12 h-12 mr-2">
           <Scale size={iconSize} className="text-blue-400" />
         </div>
@@ -100,7 +102,7 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
           <div className={`text-xs ${descriptionColor} font-light`}>{highestSOS.teamName}</div>
         </div>
       </Card>
-      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl shadow font-inter`}>
+      <Card className={`flex flex-row items-center gap-3 py-3 ${cardBg} rounded-xl font-inter`}>
         <div className="flex items-center justify-center bg-purple-900/20 rounded-full w-12 h-12 mr-2">
           <Bolt size={iconSize} className="text-purple-300" />
         </div>

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
@@ -26,13 +25,8 @@ interface StatsChartsProps {
 
 const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
   const isMobile = useIsMobile();
-  const topByPowerScore = [...chartData]
-    .sort((a, b) => b.powerScore - a.powerScore)
-    .slice(0, 10);
-
-  // --- Theming based on mode ---
   const isLight = theme === "light";
-  const cardBg = isLight ? "bg-white border border-[#e0e0e0] text-[#1a1a1a]" : "bg-[#20232A] border-0 text-white";
+  const cardBg = isLight ? "bg-[#fff] border border-[#e0e0e0] text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "bg-[#20232A] border-0 text-white";
   const chartBg = isLight ? "#fff" : "#20232A";
   const axisText = isLight ? "#333" : "#fff";
   const gridColor = isLight ? "#e0e0e0" : "#444";
@@ -59,7 +53,7 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8 font-inter">
-      <Card className={`${isMobile ? '' : 'xl:col-span-2'} ${cardBg} p-4 shadow-lg`}>
+      <Card className={`${isMobile ? '' : 'xl:col-span-2'} ${cardBg} p-4`}>
         <CardHeader>
           <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>Win-Loss Records</CardTitle>
           <CardDescription className={isLight ? "text-gray-600" : "text-gray-200"}>
@@ -67,7 +61,7 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[350px]">
+          <div className="h-[350px] bg-[#fff] rounded-lg" style={isLight ? { background: '#fff', borderRadius: 12 } : {}}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData}
@@ -99,7 +93,7 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
         </CardContent>
       </Card>
       {!isMobile && (
-        <Card className={`${cardBg} p-4 shadow-lg`}>
+        <Card className={`${cardBg} p-4`}>
           <CardHeader>
             <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>Top 10 Power Scores</CardTitle>
             <CardDescription className={isLight ? "text-gray-600" : "text-gray-200"}>
@@ -107,7 +101,7 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[350px]">
+            <div className="h-[350px]" style={isLight ? { background: '#fff', borderRadius: 12 } : {}}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   layout="vertical"

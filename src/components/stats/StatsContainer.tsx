@@ -39,6 +39,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const fullRankingsRef = useRef<HTMLDivElement>(null);
 
   const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
 
@@ -77,8 +79,10 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 
   const themeClass = theme === 'light' ? 'light-theme' : 'dark-theme';
   const cardBg =
-    theme === 'light' ? 'bg-white border border-[#e0e0e0] text-[#1a1a1a]' : 'bg-[#1E1E1E] text-white';
-  const cardShadow = 'rounded-xl shadow font-inter';
+    isLight
+      ? 'bg-[#fff] border border-[#e0e0e0] text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
+      : 'bg-[#1E1E1E] text-white';
+  const cardShadow = 'rounded-xl font-inter';
 
   return (
     <div className={`max-w-7xl mx-auto ${themeClass}`}>
@@ -91,18 +95,20 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
           <>
             <Card className={`mb-6 ${cardBg} ${cardShadow}`}>
               <CardHeader className="pb-2">
-                <CardTitle className={`font-bold ${theme === 'light' ? 'text-[#1a1a1a]' : 'text-white'}`}>Current Standings</CardTitle>
-                <CardDescription className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
+                <CardTitle className="font-bold text-[1.15rem] sm:text-xl" style={isLight ? {color:'#1a1a1a'} : {color:'#fff'}}>Current Standings</CardTitle>
+                <CardDescription className={isLight ? 'text-[#333]' : 'text-gray-400'}>
                   Top {compactLimit} teams based on performance
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CompactStandings rankings={rankings.slice(0, compactLimit)} />
+                <CompactStandings rankings={rankings.slice(0, compactLimit)} theme={theme} />
                 <div className="mt-4 text-center">
                   <Button 
                     onClick={scrollToFullRankings}
                     variant="outline" 
-                    className="flex items-center gap-2 rounded-lg px-6 py-3 font-inter font-semibold"
+                    className={`flex items-center gap-2 rounded-lg px-6 py-3 font-inter font-semibold 
+                      ${isLight ? "bg-white text-[#1a1a1a] hover:bg-[#f0f0f0] border border-[#e0e0e0]" : ""}
+                    `}
                   >
                     View Full Standings
                     <ArrowDown className="h-4 w-4" />
@@ -112,7 +118,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             </Card>
             
             <div className="mb-8">
-              <h2 className={`text-xl font-bold mb-4 ${theme === 'light' ? 'text-[#1a1a1a]' : 'text-white'}`}>League Highlights</h2>
+              <h2 className={`text-[1.12rem] font-bold mb-4 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>League Highlights</h2>
               <StatsSummaryCards rankings={rankings} theme={theme} />
             </div>
 
