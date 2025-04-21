@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface TeamCellProps {
   teamName: string;
+  teamId: string;
   imageUrl: string | null | undefined;
   isExpanded: boolean;
   gameWins?: number;
@@ -14,6 +15,7 @@ interface TeamCellProps {
 
 export const TeamCell: React.FC<TeamCellProps> = ({ 
   teamName, 
+  teamId,
   imageUrl, 
   isExpanded,
   gameWins,
@@ -24,7 +26,12 @@ export const TeamCell: React.FC<TeamCellProps> = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center space-x-3">
-            <TeamLogo imageUrl={imageUrl} teamName={teamName} />
+            <TeamLogo 
+              imageUrl={imageUrl} 
+              teamName={teamName} 
+              teamId={teamId}
+              clickable
+            />
             <div className="flex flex-col">
               <div className="flex items-center space-x-1">
                 <span className="font-medium">{teamName}</span>

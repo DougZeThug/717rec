@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
@@ -39,8 +38,10 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
             {team.imageUrl ? (
               <img 
                 src={team.imageUrl} 
-                alt={team.name} 
-                className="max-h-36 max-w-full object-contain"
+                alt={team.name}
+                className="max-h-36 max-w-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                tabIndex={0}
+                aria-label={`View ${team.name} details`}
                 onError={(e) => {
                   console.error(`Image load error for ${team.name}:`, team.imageUrl);
                   (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
