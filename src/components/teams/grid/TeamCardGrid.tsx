@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
@@ -13,6 +14,9 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { PlayerChip } from "../shared/PlayerChip";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 interface TeamCardGridProps {
   team: Team;
@@ -21,11 +25,15 @@ interface TeamCardGridProps {
 }
 
 export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEdit }) => {
-  const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-none rounded-xl shadow-sm";
+  const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl";
   const powerScoreColor = getPowerScoreColor(team.power_score);
 
   return (
-    <div className={`${cardBg} overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter`}>
+    <div 
+      className={`${cardBg} overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter 
+        shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80
+        dark:hover:bg-[#252525] active:scale-[0.98]`}
+    >
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-24 bg-[#f0f0f0] dark:bg-black/30 flex items-center justify-center p-3">
           <TeamImage 
@@ -36,7 +44,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         </div>
       </Link>
       
-      <div className="flex flex-col flex-grow p-4">
+      <div className="flex flex-col flex-grow p-3 sm:p-4">
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline">
             <h3 className="text-base truncate pr-2 font-bold text-[#1a1a1a] dark:text-white" title={team.name}>
@@ -93,12 +101,29 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           />
         </div>
         
-        <div className="text-[10px] text-gray-600 dark:text-gray-400 w-full truncate mt-2">
-          {team.players?.length > 0
-            ? team.players.slice(0, 2).join(', ') 
-              + (team.players.length > 2 ? ` +${team.players.length - 2}` : '')
-            : "No players"
-          }
+        <div className="flex flex-wrap gap-1 mt-2 max-h-[30px] overflow-hidden">
+          {team.players?.length > 0 ? (
+            team.players.slice(0, 3).map((player, index) => (
+              <PlayerChip key={`${player}-${index}`} playerName={player} />
+            )).concat(
+              team.players.length > 3 ? [
+                <TooltipProvider key="more-players">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        +{team.players.length - 3}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{team.players.slice(3).join(', ')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ] : []
+            )
+          ) : (
+            <span className="text-xs text-gray-500 dark:text-gray-400">No players</span>
+          )}
         </div>
       </div>
     </div>

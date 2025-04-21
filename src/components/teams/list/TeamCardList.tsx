@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { PlayerChip } from "../shared/PlayerChip";
 
 interface TeamCardListProps {
   team: Team;
@@ -22,11 +23,12 @@ interface TeamCardListProps {
 }
 
 export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEdit }) => {
-  const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-none rounded-xl shadow-sm";
+  const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl";
   const powerScoreColor = getPowerScoreColor(team.power_score);
 
   return (
-    <div className={`${cardBg} overflow-hidden h-full mb-4 font-inter`}>
+    <div className={`${cardBg} overflow-hidden h-full mb-4 font-inter shadow-sm hover:shadow-md transition-all duration-200 
+      hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.995]`}>
       <div className="flex flex-col md:flex-row h-full">
         <Link to={`/teams/${team.id}`} className="w-full md:w-[150px] h-[150px] md:h-auto flex items-center justify-center p-6 bg-[#f0f0f0] dark:bg-black/30">
           <TeamImage 
@@ -109,15 +111,14 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             />
           </div>
           
-          <div className="text-xs text-gray-600 dark:text-gray-300 mt-auto">
-            <span className="font-medium">Players:</span> 
-            <span className="ml-1 text-gray-500 dark:text-gray-400">
-              {team.players && team.players.length > 0
-                ? team.players.slice(0, 4).join(', ') 
-                  + (team.players.length > 4 ? ` +${team.players.length - 4} more` : '')
-                : "No players"
-              }
-            </span>
+          <div className="flex flex-wrap gap-1.5 mt-auto">
+            {team.players && team.players.length > 0 ? (
+              team.players.map((player, index) => (
+                <PlayerChip key={`${player}-${index}`} playerName={player} />
+              ))
+            ) : (
+              <span className="text-xs text-gray-500 dark:text-gray-400">No players</span>
+            )}
           </div>
         </div>
       </div>

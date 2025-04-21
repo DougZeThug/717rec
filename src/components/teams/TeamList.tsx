@@ -42,11 +42,11 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
   }
 
   const gridClasses = viewMode === 'grid'
-    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+    ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
     : "space-y-4";
 
   return (
-    <div className={gridClasses}>
+    <div className={`${gridClasses} ${viewMode === 'grid' ? 'animate-fade-in' : 'animate-scale-in'}`}>
       {uniqueTeams.map(team => (
         <TeamCard 
           key={team.id} 

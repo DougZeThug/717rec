@@ -10,6 +10,7 @@ import { TeamEditForm } from "@/components/teams/TeamEditForm";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
 import { useDivisions } from "@/hooks/useDivisions";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Teams: React.FC = () => {
   const { 
@@ -29,7 +30,18 @@ const Teams: React.FC = () => {
   const { divisions } = useDivisions();
   const [selectedDivision, setSelectedDivision] = useState<string>("all");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
+  
+  // Handle scroll effect for sticky header
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // Deduplicate teams array first
   const uniqueTeams = useMemo(() => {
@@ -90,47 +102,68 @@ const Teams: React.FC = () => {
 
   return (
     <div className="container px-4 py-6 sm:py-8 mx-auto font-sans">
-      <TeamsHeader 
-        onRefresh={handleRefresh}
-        isRefreshing={isRefreshing}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-      />
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        <TeamsFilters 
-          selectedDivision={selectedDivision}
-          onDivisionChange={setSelectedDivision}
-          divisions={divisions}
+      <div className={`${scrolled ? 'shadow-md' : ''} transition-shadow sticky top-0 z-30 bg-background/95 backdrop-blur-sm pb-2`}>
+        <TeamsHeader 
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          <TeamsFilters 
+            selectedDivision={selectedDivision}
+            onDivisionChange={setSelectedDivision}
+            divisions={divisions}
+          />
+        </div>
       </div>
 
-      {teamToEdit && (
-        <TeamEditForm
-          team={teamToEdit}
-          onSubmit={handleUpdateTeam}
-          onCancel={() => setTeamToEdit(null)}
-        />
-      )}
+      <AnimatePresence mode="wait">
+        {teamToEdit && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <TeamEditForm
+              team={teamToEdit}
+              onSubmit={handleUpdateTeam}
+              onCancel={() => setTeamToEdit(null)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {selectedDivision === "all" ? (
-        <TeamsByDivision
-          teamsByDivision={teamsByDivision}
-          getDivisionName={getDivisionName}
-          onEditTeam={setTeamToEdit}
-          onDeleteTeam={setDeleteTeamId}
-          isLoading={isLoading}
-          viewMode={viewMode}
-        />
-      ) : (
-        <TeamList 
-          teams={filteredTeams}
-          isLoading={isLoading}
-          onEdit={setTeamToEdit}
-          onDelete={setDeleteTeamId}
-          viewMode={viewMode}
-        />
-      )}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`${viewMode}-${selectedDivision}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {selectedDivision === "all" ? (
+            <TeamsByDivision
+              teamsByDivision={teamsByDivision}
+              getDivisionName={getDivisionName}
+              onEditTeam={setTeamToEdit}
+              onDeleteTeam={setDeleteTeamId}
+              isLoading={isLoading}
+              viewMode={viewMode}
+            />
+          ) : (
+            <TeamList 
+              teams={filteredTeams}
+              isLoading={isLoading}
+              onEdit={setTeamToEdit}
+              onDelete={setDeleteTeamId}
+              viewMode={viewMode}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       <TeamDeleteDialog 
         isOpen={!!deleteTeamId}
