@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
 import { SortOptions } from "./RankingsTable";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, LightningBolt, Scale } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -30,9 +32,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   });
 
   const sortableFields = [
-    { id: 'powerScore', label: 'Power Score' },
+    { id: 'powerScore', label: (<><LightningBolt size={16} className="inline-block mr-1" />Power</>) },
     { id: 'winPercentage', label: 'Win %' },
-    { id: 'sos', label: 'SOS' },
+    { id: 'sos', label: (<><Scale size={15} className="inline-block mr-1" />SOS</>) },
     { id: 'wins', label: 'Wins' },
   ];
 
@@ -53,7 +55,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       }, {} as Record<string, Ranking[]>);
 
   return (
-    <div>
+    <div className="font-inter">
       <div className="mb-4 space-y-4">
         <div className="flex flex-col gap-4">
           <div className="overflow-x-auto pb-2">
@@ -64,7 +66,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   variant={sortOptions.field === field.id ? "default" : "outline"}
                   size="sm"
                   onClick={() => onSortChange(field.id)}
-                  className="whitespace-nowrap"
+                  className={cn(
+                    "rounded-lg py-2 px-4 font-medium bg-white text-black hover:bg-blue-50 border border-gray-200 transition-all whitespace-nowrap",
+                    sortOptions.field === field.id ? "bg-blue-600 text-white hover:bg-blue-700" : ""
+                  )}
                 >
                   {field.label}
                   {sortOptions.field === field.id && (
@@ -76,26 +81,24 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               ))}
             </div>
           </div>
-          
           <div className="flex items-center space-x-2">
             <Switch
               id="detailed-view"
               checked={detailedView}
               onCheckedChange={toggleViewMode}
             />
-            <Label htmlFor="detailed-view" className="text-sm">
+            <Label htmlFor="detailed-view" className="text-sm text-gray-200">
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
           </div>
         </div>
       </div>
-      
       <div className="space-y-8">
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
-              <h3 className="text-lg font-medium flex items-center">
-                {divisionName} <span className="text-muted-foreground ml-1">({divisionRankings.length})</span>
+              <h3 className="text-lg font-medium flex items-center font-inter text-gray-100">
+                {divisionName} <span className="ml-2 text-xs text-gray-400 font-inter">({divisionRankings.length})</span>
               </h3>
             )}
             <div className="space-y-4">

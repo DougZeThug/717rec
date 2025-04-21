@@ -10,14 +10,10 @@ import {
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import { Match } from "@/types";
-import { Loader2, AlertTriangle, ArrowDown } from "lucide-react";
-import { useTeamRankings } from "@/hooks/useTeamRankings";
+import { ArrowDown } from "lucide-react";
 import StatsHeader from "@/components/stats/StatsHeader";
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards";
 import StatsCharts from "@/components/stats/StatsCharts";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import CompactStandings from "@/components/stats/CompactStandings";
-import RankingsTable from "@/components/stats/RankingsTable";
 import StatsLoadingState from "./StatsLoadingState";
 import StatsErrorState from "./StatsErrorState";
 import FullRankings from "./FullRankings";
@@ -39,7 +35,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     error: teamsError 
   } = useTeamData(selectedDivision);
   const isMobile = useIsMobile();
-  
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
   const fullRankingsRef = useRef<HTMLDivElement>(null);
 
@@ -79,52 +74,54 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     imageUrl: team.imageUrl
   }));
 
+  // ---- FONT HIERARCHY: Wrap everything EXCEPT header in font-inter ----
   return (
     <div className="max-w-7xl mx-auto">
       <StatsHeader 
         onDivisionChange={handleDivisionChange} 
         divisions={divisions || []} 
       />
+      <div className="font-inter mt-2">
+        {rankings.length > 0 ? (
+          <>
+            <Card className="mb-6 bg-[#1E1E1E] rounded-xl shadow font-inter">
+              <CardHeader className="pb-2">
+                <CardTitle className="font-bold text-white">Current Standings</CardTitle>
+                <CardDescription className="text-gray-400">Top {compactLimit} teams based on performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CompactStandings rankings={rankings.slice(0, compactLimit)} />
+                <div className="mt-4 text-center">
+                  <Button 
+                    onClick={scrollToFullRankings}
+                    variant="outline" 
+                    className="flex items-center gap-2 rounded-lg px-6 py-3 font-inter font-semibold"
+                  >
+                    View Full Standings
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-white mb-4">League Highlights</h2>
+              <StatsSummaryCards rankings={rankings} />
+            </div>
 
-      {rankings.length > 0 ? (
-        <>
-          <Card className="mb-6">
-            <CardHeader className="pb-2">
-              <CardTitle>Current Standings</CardTitle>
-              <CardDescription>Top {compactLimit} teams based on performance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CompactStandings rankings={rankings.slice(0, compactLimit)} />
-              <div className="mt-4 text-center">
-                <Button 
-                  onClick={scrollToFullRankings}
-                  variant="outline" 
-                  className="flex items-center gap-2"
-                >
-                  View Full Standings
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-cornhole-navy mb-4">League Highlights</h2>
-            <StatsSummaryCards rankings={rankings} />
-          </div>
+            <StatsCharts 
+              chartData={topTeamsData} 
+              chartLimit={chartLimit} 
+            />
 
-          <StatsCharts 
-            chartData={topTeamsData} 
-            chartLimit={chartLimit} 
-          />
-
-          <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
-            <FullRankings rankings={rankings} />
-          </div>
-        </>
-      ) : (
-        <NoTeamsAvailable />
-      )}
+            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
+              <FullRankings rankings={rankings} />
+            </div>
+          </>
+        ) : (
+          <NoTeamsAvailable />
+        )}
+      </div>
     </div>
   );
 };
@@ -132,16 +129,21 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 // Component for when no teams are available
 const NoTeamsAvailable = () => {
   return (
-    <Card>
+    <Card className="bg-[#1E1E1E] rounded-xl shadow font-inter">
       <CardHeader>
-        <CardTitle>No Teams Available</CardTitle>
-        <CardDescription>There are no teams in the selected division or no teams have been added yet.</CardDescription>
+        <CardTitle className="text-white font-bold">No Teams Available</CardTitle>
+        <CardDescription className="text-gray-400 font-light">
+          There are no teams in the selected division or no teams have been added yet.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <p>Try selecting a different division or add teams to view statistics.</p>
+        <p className="text-gray-300 font-inter">Try selecting a different division or add teams to view statistics.</p>
       </CardContent>
     </Card>
   );
 };
+
+import { useTeamRankings } from "@/hooks/useTeamRankings";
+import CompactStandings from "@/components/stats/CompactStandings";
 
 export default StatsContainer;

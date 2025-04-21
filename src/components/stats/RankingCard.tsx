@@ -38,49 +38,50 @@ const RankingCard: React.FC<RankingCardProps> = ({
     }
   };
 
+  // Card background and styling update
   return (
     <Card 
       className={cn(
-        "cursor-pointer transition-colors",
-        "hover:bg-gray-50",
-        "[&_[data-team-name]]:hover:text-blue-600 [&_[data-team-name]]:hover:underline"
+        "bg-[#1E1E1E] rounded-xl shadow-md font-inter transition-colors duration-150 cursor-pointer",
+        "hover:bg-gray-900",
+        "[&_[data-team-name]]:hover:text-blue-400 [&_[data-team-name]]:hover:underline",
+        "p-4 mb-2",
+        isExpanded ? "ring-2 ring-purple-400" : ""
       )}
       onClick={handleCardClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="text-lg font-semibold w-8">{index + 1}</div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <div data-team-name="true" className="font-medium">
-                  {ranking.teamName}
-                </div>
-                {showDivision && (
-                  <Badge
-                    variant={ranking.divisionName?.toLowerCase() as any || "default"}
-                    className="font-normal text-xs"
-                  >
-                    {ranking.divisionName || "Unassigned"}
-                  </Badge>
-                )}
-              </div>
-              {!compactView && (
-                <div className="text-sm text-gray-500">
-                  Games: {ranking.gamesWon}-{ranking.gamesLost}
-                </div>
-              )}
+      <CardContent className="flex gap-4 items-center p-0">
+        <div className="flex flex-col items-center w-14 min-w-14">
+          {ranking.logoUrl || ranking.imageUrl ? (
+            <img 
+              src={ranking.logoUrl || ranking.imageUrl!}
+              alt={`${ranking.teamName} logo`}
+              className="rounded-full shadow w-12 h-12 object-cover mb-2"
+              style={{minWidth: 48, minHeight: 48, maxWidth: 50, maxHeight: 50}}
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mb-2" />
+          )}
+          <span className="text-xs text-gray-500">{index+1}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <div data-team-name="true" className="font-bold text-white leading-tight truncate">
+              {ranking.teamName}
             </div>
-          </div>
-          <div className="text-right">
-            <div className={`text-sm font-semibold ${powerScoreColor}`}>
-              {formatPowerScore(ranking.powerScore)}
-            </div>
-            {!compactView && (
-              <div className="flex items-center justify-end space-x-1 text-gray-500">
-                <RankTrendIndicator rankChange={ranking.rankChange} />
-              </div>
+            {showDivision && (
+              <Badge
+                variant={ranking.divisionName?.toLowerCase() as any || "default"}
+                className="font-medium text-xs ml-1"
+              >
+                {ranking.divisionName || "Unassigned"}
+              </Badge>
             )}
+            <span className="ml-2">{<RankTrendIndicator rankChange={ranking.rankChange} />}</span>
+          </div>
+          <div className="flex flex-col gap-1 mt-1">
+            <span className="text-xs text-gray-400">Record: <span className="font-medium text-white">{ranking.wins}-{ranking.losses}</span></span>
+            <span className="text-xs text-gray-400">Power Score: <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>{formatPowerScore(ranking.powerScore)}</span></span>
           </div>
         </div>
       </CardContent>

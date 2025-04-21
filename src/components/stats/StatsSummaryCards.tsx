@@ -1,26 +1,24 @@
+
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Info } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { LightningBolt, Trophy, Scale, Star } from "lucide-react";
 import { formatPowerScore } from "@/utils/powerScore";
-import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
 
 interface StatsSummaryCardsProps {
   rankings: Ranking[];
 }
 
+const iconSize = 22;
+
 const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const isMobile = useIsMobile();
-  
+
   const getHighestWinPercentage = () => {
     if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
-    
-    const highest = rankings.reduce((max, team) => 
+    const highest = rankings.reduce((max, team) =>
       (team.winPercentage > max.winPercentage) ? team : max, rankings[0]);
-    
     return {
       percentage: highest ? (highest.winPercentage * 100).toFixed(1) : 0,
       teamName: highest?.teamName || 'No teams'
@@ -29,34 +27,28 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
 
   const getMostWins = () => {
     if (!rankings || rankings.length === 0) return { wins: 0, teamName: 'No teams' };
-    
-    const mostWinsTeam = rankings.reduce((maxTeam, team) => 
+    const mostWinsTeam = rankings.reduce((maxTeam, team) =>
       ((team.wins || 0) > (maxTeam.wins || 0)) ? team : maxTeam, rankings[0]);
-    
     return {
       wins: mostWinsTeam ? mostWinsTeam.wins : 0,
       teamName: mostWinsTeam?.teamName || 'No teams'
     };
   };
-  
+
   const getHighestSOS = () => {
     if (!rankings || rankings.length === 0) return { sos: 0, teamName: 'No teams' };
-    
-    const highestSOS = rankings.reduce((max, team) => 
+    const highestSOS = rankings.reduce((max, team) =>
       ((team.sos || 0) > (max.sos || 0)) ? team : max, rankings[0]);
-    
     return {
       sos: highestSOS && highestSOS.sos ? highestSOS.sos.toFixed(3) : 0,
       teamName: highestSOS?.teamName || 'No teams'
     };
   };
-  
+
   const getHighestPowerScore = () => {
     if (!rankings || rankings.length === 0) return { score: 0, teamName: 'No teams' };
-    
-    const highest = rankings.reduce((max, team) => 
+    const highest = rankings.reduce((max, team) =>
       ((team.powerScore || 0) > (max.powerScore || 0)) ? team : max, rankings[0]);
-    
     return {
       score: highest?.powerScore || 0,
       teamName: highest?.teamName || 'No teams'
@@ -68,74 +60,48 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const highestSOS = getHighestSOS();
   const highestPowerScore = getHighestPowerScore();
 
-  const cardStyles = isMobile ? "py-3" : "pb-2";
-  const contentStyles = isMobile ? "py-3" : "";
-  const fontStyles = isMobile ? "text-3xl" : "text-4xl";
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card>
-        <CardHeader className={cardStyles}>
-          <CardTitle className="text-lg">Total Teams</CardTitle>
-          <CardDescription className="text-xs">Active teams in the league</CardDescription>
-        </CardHeader>
-        <CardContent className={contentStyles}>
-          <div className={`${fontStyles} font-bold text-cornhole-navy`}>{rankings ? rankings.length : 0}</div>
-        </CardContent>
+    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Card className="flex flex-row items-center gap-3 py-3 bg-[#1E1E1E] rounded-xl shadow font-inter">
+        <div className="flex items-center justify-center bg-cornhole-green/15 rounded-full w-12 h-12 mr-2">
+          <Trophy size={iconSize} className="text-amber-500" />
+        </div>
+        <div>
+          <CardTitle className="text-base font-bold text-white mb-0">Total Teams</CardTitle>
+          <div className="font-extrabold text-xl text-cornhole-green">{rankings ? rankings.length : 0}</div>
+        </div>
       </Card>
-      
-      <Card>
-        <CardHeader className={cardStyles}>
-          <CardTitle className="text-lg">Highest Win %</CardTitle>
-          <CardDescription className="text-xs">Best performing team</CardDescription>
-        </CardHeader>
-        <CardContent className={contentStyles}>
-          <div className="flex flex-col">
-            <span className={`${fontStyles} font-bold text-cornhole-green`}>
-              {highestWinPercentage.percentage}%
-            </span>
-            <span className="text-xs text-gray-500">
-              {highestWinPercentage.teamName}
-            </span>
-          </div>
-        </CardContent>
+      <Card className="flex flex-row items-center gap-3 py-3 bg-[#1E1E1E] rounded-xl shadow font-inter">
+        <div className="flex items-center justify-center bg-green-900/15 rounded-full w-12 h-12 mr-2">
+          <Star size={iconSize} className="text-green-400" />
+        </div>
+        <div>
+          <CardTitle className="text-base font-bold text-white mb-0">Highest Win %</CardTitle>
+          <div className="font-extrabold text-xl text-green-300">{highestWinPercentage.percentage}%</div>
+          <div className="text-xs text-gray-400 font-light">{highestWinPercentage.teamName}</div>
+        </div>
       </Card>
-      
-      <Card>
-        <CardHeader className={cardStyles}>
-          <CardTitle className="text-lg">Highest SOS</CardTitle>
-          <CardDescription className="text-xs">Team with toughest schedule</CardDescription>
-        </CardHeader>
-        <CardContent className={contentStyles}>
-          <div className="flex flex-col">
-            <span className={`${fontStyles} font-bold text-cornhole-navy`}>
-              {highestSOS.sos}
-            </span>
-            <span className="text-xs text-gray-500">
-              {highestSOS.teamName}
-            </span>
-          </div>
-        </CardContent>
+      <Card className="flex flex-row items-center gap-3 py-3 bg-[#1E1E1E] rounded-xl shadow font-inter">
+        <div className="flex items-center justify-center bg-blue-900/15 rounded-full w-12 h-12 mr-2">
+          <Scale size={iconSize} className="text-blue-400" />
+        </div>
+        <div>
+          <CardTitle className="text-base font-bold text-white mb-0">Highest SOS</CardTitle>
+          <div className="font-extrabold text-xl text-blue-300">{highestSOS.sos}</div>
+          <div className="text-xs text-gray-400 font-light">{highestSOS.teamName}</div>
+        </div>
       </Card>
-      
-      <Card>
-        <CardHeader className={cardStyles}>
-          <CardTitle className="text-lg flex items-center gap-2">
+      <Card className="flex flex-row items-center gap-3 py-3 bg-[#1E1E1E] rounded-xl shadow font-inter">
+        <div className="flex items-center justify-center bg-purple-900/20 rounded-full w-12 h-12 mr-2">
+          <LightningBolt size={iconSize} className="text-purple-300" />
+        </div>
+        <div>
+          <CardTitle className="text-base font-bold text-white mb-0 flex gap-2 items-center">
             Highest Power Score
-            <PowerScoreTooltip />
           </CardTitle>
-          <CardDescription className="text-xs">Team with best overall rating</CardDescription>
-        </CardHeader>
-        <CardContent className={contentStyles}>
-          <div className="flex flex-col">
-            <span className={`${fontStyles} font-bold text-cornhole-navy`}>
-              {formatPowerScore(highestPowerScore.score)}
-            </span>
-            <span className="text-xs text-gray-500">
-              {highestPowerScore.teamName}
-            </span>
-          </div>
-        </CardContent>
+          <div className="font-extrabold text-xl text-purple-300">{formatPowerScore(highestPowerScore.score)}</div>
+          <div className="text-xs text-gray-400 font-light">{highestPowerScore.teamName}</div>
+        </div>
       </Card>
     </div>
   );
