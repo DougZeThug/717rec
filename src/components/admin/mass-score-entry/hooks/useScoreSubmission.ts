@@ -8,7 +8,7 @@ import { validateMatchSubmission } from "../utils/matchSubmissionUtils";
 
 export const useScoreSubmission = (
   matches: MatchWithTeams[],
-  fetchMatches: () => Promise<void>
+  fetchMatches: () => Promise<MatchWithTeams[]> // Updated to match the actual return type
 ) => {
   const queryClient = useQueryClient();
   const { updateTeamRecords } = useTeamRecords();
@@ -141,7 +141,8 @@ export const useScoreSubmission = (
       invalidateAllDataQueries();
 
       if (successCount > 0) {
-        await fetchMatches();
+        // Use returned matches array and ignore it
+        const updatedMatches = await fetchMatches();
       }
     } catch (error: any) {
       console.error("[useScoreSubmission] Error in batch update:", error.message);

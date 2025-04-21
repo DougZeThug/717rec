@@ -36,7 +36,7 @@ export const useScoreEntryData = () => {
     toast
   } = useSubmissionState();
   
-  // Import the useScoreSubmission hook to get handleSubmitAll functionality
+  // Fixed: Now correctly passing the same function signature for fetchMatches
   const { handleSubmitAll } = useScoreSubmission(matches, () => fetchMatches(filters));
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const useScoreEntryData = () => {
     handleScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
-    handleSubmitAll,  // Include handleSubmitAll in the returned object
+    handleSubmitAll,
     clearErrors,
     setFilterDate,
     setBracketFilter,
