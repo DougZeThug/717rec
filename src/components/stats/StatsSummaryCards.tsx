@@ -5,6 +5,7 @@ import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Bolt, Trophy, Scale, Star } from "lucide-react";
 import { formatPowerScore } from "@/utils/powerScore";
+import { useTheme } from "next-themes";
 
 interface StatsSummaryCardsProps {
   rankings: Ranking[];
@@ -15,7 +16,8 @@ const iconSize = 22;
 
 const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const isMobile = useIsMobile();
-  const isLight = theme === "light";
+  const { theme: currentTheme } = useTheme();
+  const isLight = currentTheme === "light" || theme === "light";
 
   const getHighestWinPercentage = () => {
     if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
@@ -63,7 +65,7 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const highestPowerScore = getHighestPowerScore();
 
   const cardBase = "flex flex-row items-center gap-3 py-5 px-4 sm:px-5 rounded-xl font-inter";
-  const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
+  const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none shadow-sm";
   const titleColor = "text-[#1a1a1a] dark:text-white";
   const descriptionColor = "text-gray-600 dark:text-gray-400";
   const greenNumber = "text-green-700 dark:text-green-300";

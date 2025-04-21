@@ -16,6 +16,7 @@ import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "next-themes";
 
 interface RankingsDesktopViewProps {
   rankings: Ranking[];
@@ -46,13 +47,8 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
       }, {} as Record<string, Ranking[]>);
 
   const isMobile = useIsMobile();
-
-  let userTheme = "dark";
-  if (typeof window !== "undefined" && window.localStorage) {
-    userTheme = document.documentElement.classList.contains('dark') ? "dark" : "light";
-  }
-
-  const isLight = userTheme === "light";
+  const { theme } = useTheme();
+  const isLight = theme === "light";
 
   const renderSortIndicator = (field: string) => {
     if (sortOptions.field === field) {

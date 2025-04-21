@@ -7,6 +7,7 @@ import RankTrendIndicator from "./RankTrendIndicator";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "next-themes";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -28,6 +29,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const navigate = useNavigate();
   const isExpanded = expandedTeam === ranking.teamId;
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
+  const { theme } = useTheme();
+  const isLight = theme === "light";
 
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('[data-team-name="true"]')) {
@@ -38,15 +41,17 @@ const RankingCard: React.FC<RankingCardProps> = ({
     }
   };
 
-  // Card background and styling update
+  // Card background and styling update for light/dark mode
   return (
     <Card 
       className={cn(
-        "bg-[#1E1E1E] rounded-xl shadow-md font-inter transition-colors duration-150 cursor-pointer",
-        "hover:bg-gray-900",
-        "[&_[data-team-name]]:hover:text-blue-400 [&_[data-team-name]]:hover:underline",
+        "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-none",
+        "rounded-xl shadow-sm font-inter transition-colors duration-150 cursor-pointer",
+        "hover:bg-gray-50 dark:hover:bg-gray-900",
+        "[&_[data-team-name]]:hover:text-blue-600 dark:[&_[data-team-name]]:hover:text-blue-400",
+        "[&_[data-team-name]]:hover:underline",
         "p-4 mb-2",
-        isExpanded ? "ring-2 ring-purple-400" : ""
+        isExpanded ? (isLight ? "ring-2 ring-purple-200" : "ring-2 ring-purple-400") : ""
       )}
       onClick={handleCardClick}
     >
@@ -60,13 +65,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
               style={{minWidth: 48, minHeight: 48, maxWidth: 50, maxHeight: 50}}
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mb-2" />
+            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-2" />
           )}
           <span className="text-xs text-gray-500">{index+1}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <div data-team-name="true" className="font-bold text-white leading-tight truncate">
+            <div data-team-name="true" className="font-bold text-[#1a1a1a] dark:text-white leading-tight truncate">
               {ranking.teamName}
             </div>
             {showDivision && (
@@ -80,8 +85,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <span className="ml-2">{<RankTrendIndicator rankChange={ranking.rankChange} />}</span>
           </div>
           <div className="flex flex-col gap-1 mt-1">
-            <span className="text-xs text-gray-400">Record: <span className="font-medium text-white">{ranking.wins}-{ranking.losses}</span></span>
-            <span className="text-xs text-gray-400">Power Score: <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>{formatPowerScore(ranking.powerScore)}</span></span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Record: <span className="font-medium text-[#1a1a1a] dark:text-white">{ranking.wins}-{ranking.losses}</span></span>
+            <span className="text-xs text-gray-600 dark:text-gray-400">Power Score: <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>{formatPowerScore(ranking.powerScore)}</span></span>
           </div>
         </div>
       </CardContent>

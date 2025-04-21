@@ -8,6 +8,7 @@ import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -31,12 +32,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     return savedView ? savedView === "true" : false;
   });
 
-  // detect theme for button styling, fallback to dark if unknown
-  let userTheme = "dark";
-  if (typeof window !== "undefined" && window.localStorage) {
-    userTheme = document.documentElement.classList.contains('dark') ? "dark" : "light";
-  }
-  const isLight = userTheme === "light";
+  const { theme } = useTheme();
+  const isLight = theme === "light";
 
   const sortableFields = [
     { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) },

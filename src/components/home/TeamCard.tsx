@@ -28,7 +28,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   console.debug('[HomeTeamCard]', team.id, 'imageUrl:', team.imageUrl);
   
   return (
-    <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0")}>
+    <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0 text-[#1a1a1a] border border-[#e0e0e0]")}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-44 bg-gray-200 relative flex items-center justify-center p-3">
           <div className="w-full h-full flex items-center justify-center">
@@ -49,8 +49,8 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
             )}
           </div>
         </div>
-        <div className="p-3">
-          <h3 className="text-lg font-bold mb-1.5 truncate" title={team.name}>{team.name}</h3>
+        <div className="p-3 font-inter">
+          <h3 className="text-lg font-bold mb-1.5 truncate text-[#1a1a1a]" title={team.name}>{team.name}</h3>
           <div className="flex justify-between text-xs">
             <span>Record:</span>
             <span className="font-medium">{wins} - {losses}</span>

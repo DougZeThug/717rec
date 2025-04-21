@@ -7,6 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 
 interface CompactStandingsProps {
   rankings: Ranking[];
@@ -16,7 +17,8 @@ interface CompactStandingsProps {
 const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const isLight = theme === "light";
+  const { theme: currentTheme } = useTheme();
+  const isLight = currentTheme === "light" || theme === "light";
 
   // Function to handle team selection
   const handleTeamClick = (teamId: string) => {
