@@ -50,6 +50,7 @@ const BatchMatchForm = () => {
   const handleFormSubmit = async () => {
     const result = await handleSubmit();
     
+    // Fix: Check if result is explicitly false, not just truthy/falsy
     if (result !== false) {
       toast({
         title: "Matches Created",
