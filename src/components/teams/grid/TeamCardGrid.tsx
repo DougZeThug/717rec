@@ -1,10 +1,9 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
 import { TeamImage } from "../shared/TeamImage";
 import { StatBlock } from "../shared/StatBlock";
-import { Trophy, X, MoreHorizontal } from "lucide-react";
+import { Trophy, X, MoreHorizontal, Edit, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
