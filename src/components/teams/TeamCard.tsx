@@ -6,8 +6,8 @@ import { TeamCardList } from "./list/TeamCardList";
 
 interface TeamCardProps {
   team: Team;
-  onDelete: (id: string) => void;
-  onEdit: (team: Team) => void;
+  onDelete?: (id: string) => void;
+  onEdit?: (team: Team) => void;
   viewMode: 'grid' | 'list';
 }
 
