@@ -11,14 +11,13 @@ import { useTheme } from "next-themes";
 
 interface CompactStandingsProps {
   rankings: Ranking[];
-  theme?: string;
 }
 
-const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme: themeProp }) => {
+const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { theme: currentTheme } = useTheme();
-  const isLight = currentTheme === "light" || themeProp === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   // Function to handle team selection
   const handleTeamClick = (teamId: string) => {

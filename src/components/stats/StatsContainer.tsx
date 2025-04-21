@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { 
   Card, 
@@ -38,8 +39,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
   const fullRankingsRef = useRef<HTMLDivElement>(null);
 
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
 
   const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
@@ -96,7 +97,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6 pt-2 sm:pt-6">
-                <CompactStandings rankings={rankings.slice(0, compactLimit)} theme={theme} />
+                <CompactStandings rankings={rankings.slice(0, compactLimit)} />
                 <div className="mt-4 text-center">
                   <Button 
                     onClick={scrollToFullRankings}
@@ -112,24 +113,27 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             
             <div className="mb-8">
               <h2 className="text-[1.12rem] font-bold mb-4 text-[#1a1a1a] dark:text-white">League Highlights</h2>
-              <StatsSummaryCards rankings={rankings} theme={theme} />
+              <StatsSummaryCards rankings={rankings} />
             </div>
 
-            <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} theme={theme} />
+            <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} />
 
             <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
               <FullRankings rankings={rankings} />
             </div>
           </>
         ) : (
-          <NoTeamsAvailable theme={theme} />
+          <NoTeamsAvailable />
         )}
       </div>
     </div>
   );
 };
 
-const NoTeamsAvailable = ({ theme }: { theme: string }) => {
+const NoTeamsAvailable = () => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
   return (
     <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] font-inter">
       <CardHeader>

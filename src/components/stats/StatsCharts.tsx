@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, Cell
@@ -22,13 +22,31 @@ interface ChartDataItem {
 interface StatsChartsProps {
   chartData: ChartDataItem[];
   chartLimit: number;
-  theme?: string;
 }
 
-const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsProps) => {
+const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
-  const { theme: currentTheme } = useTheme();
-  const isLight = currentTheme === "light" || themeProp === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
+  // Theme-aware styles for charts
+  const chartStyles = useMemo(() => {
+    return {
+      cardBg: "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm",
+      chartBg: isLight ? "#fff" : "#20232A",
+      chartInnerBg: isLight ? "#fafafa" : "#20232A",
+      axisText: isLight ? "#333" : "#fff",
+      gridColor: isLight ? "#ddd" : "#444",
+      legendText: isLight ? "#333" : "#fff",
+      tooltipBg: isLight ? "#f5f5f5" : "#23262b",
+      tooltipBorder: isLight ? "#ccc" : "#444",
+      tooltipText: isLight ? "#333" : "#fff",
+      barColorWin: "#45c47e",
+      barColorLoss: "#e13d3d",
+      barColorPower: "#a288f5",
+      fontFamily: "'Inter', sans-serif"
+    };
+  }, [isLight]);
   
   // Create a sorted array for power scores to use in the vertical bar chart
   const topByPowerScore = [...chartData]
@@ -39,31 +57,16 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
       powerScore: team.powerScore
     }));
   
-  // Light and dark styles - dynamically set based on theme
-  const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm";
-  const chartBg = isLight ? "#fff" : "#20232A";
-  const chartInnerBg = isLight ? "#fafafa" : "#20232A";
-  const axisText = isLight ? "#333" : "#fff";
-  const gridColor = isLight ? "#ddd" : "#444";
-  const legendText = isLight ? "#333" : "#fff";
-  const tooltipBg = isLight ? "#f5f5f5" : "#23262b";
-  const tooltipBorder = isLight ? "#ccc" : "#444";
-  const tooltipText = isLight ? "#333" : "#fff";
-  const barColorWin = "#45c47e";
-  const barColorLoss = "#e13d3d";
-  const barColorPower = "#a288f5";
-  const fontFamily = "'Inter', sans-serif"; // Apply consistent font family
-
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
     return (
       <text 
         x={x + width + 5} 
         y={y + 15} 
-        fill={axisText}
+        fill={chartStyles.axisText}
         fontSize={12} 
         textAnchor="start"
-        fontFamily={fontFamily}
+        fontFamily={chartStyles.fontFamily}
       >
         {formatPowerScore(value)}
       </text>
@@ -77,10 +80,10 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
     return (
       <div className="p-2 rounded-md shadow-lg" 
         style={{
-          backgroundColor: tooltipBg,
-          border: `1px solid ${tooltipBorder}`,
-          color: tooltipText,
-          fontFamily: fontFamily
+          backgroundColor: chartStyles.tooltipBg,
+          border: `1px solid ${chartStyles.tooltipBorder}`,
+          color: chartStyles.tooltipText,
+          fontFamily: chartStyles.fontFamily
         }}>
         <p className="font-medium mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
@@ -99,13 +102,13 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
     return (
       <div className="p-2 rounded-md shadow-lg" 
         style={{
-          backgroundColor: tooltipBg,
-          border: `1px solid ${tooltipBorder}`,
-          color: tooltipText,
-          fontFamily: fontFamily
+          backgroundColor: chartStyles.tooltipBg,
+          border: `1px solid ${chartStyles.tooltipBorder}`,
+          color: chartStyles.tooltipText,
+          fontFamily: chartStyles.fontFamily
         }}>
         <p className="font-medium mb-1">{payload[0].payload.name}</p>
-        <p style={{ color: barColorPower }}>
+        <p style={{ color: chartStyles.barColorPower }}>
           Power Score: {formatPowerScore(payload[0].value)}
         </p>
       </div>
@@ -114,7 +117,7 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8 font-inter">
-      <Card className={`${isMobile ? '' : 'xl:col-span-2'} ${cardBg}`}>
+      <Card className={`${isMobile ? '' : 'xl:col-span-2'} ${chartStyles.cardBg}`}>
         <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background:'#fff'} : {}}>
           <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>Win-Loss Records</CardTitle>
           <CardDescription className={isLight ? "text-gray-600" : "text-gray-200"}>
@@ -123,7 +126,7 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
         </CardHeader>
         <CardContent className="p-6 pt-4">
           <div className="h-[350px] w-full rounded-xl" style={{ 
-            background: chartInnerBg, 
+            background: chartStyles.chartInnerBg, 
             borderRadius: 16,
             boxShadow: isLight ? "0 1px 2px rgba(0,0,0,0.05)" : "none"
           }}>
@@ -131,10 +134,10 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
               <BarChart
                 data={chartData}
                 style={{ 
-                  background: chartBg, 
+                  background: chartStyles.chartBg, 
                   borderRadius: 12, 
                   padding: 8,
-                  fontFamily: fontFamily
+                  fontFamily: chartStyles.fontFamily
                 }}
                 margin={{
                   top: 20,
@@ -143,30 +146,30 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
                   bottom: isMobile ? 90 : 60,
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartStyles.gridColor} />
                 <XAxis 
                   dataKey="name" 
                   angle={-45} 
                   textAnchor="end"
                   height={isMobile ? 80 : 70}
                   interval={0}
-                  tick={{fontSize: isMobile ? 10 : 12, fill: axisText, fontFamily: fontFamily}}
+                  tick={{fontSize: isMobile ? 10 : 12, fill: chartStyles.axisText, fontFamily: chartStyles.fontFamily}}
                 />
-                <YAxis tick={{fill: axisText, fontFamily: fontFamily}} />
+                <YAxis tick={{fill: chartStyles.axisText, fontFamily: chartStyles.fontFamily}} />
                 <Tooltip content={<CustomWinLossTooltip />} />
                 <Legend 
-                  wrapperStyle={{color: legendText, marginTop: 20, fontFamily: fontFamily}}
-                  formatter={(value) => <span style={{ color: legendText, fontFamily: fontFamily }}>{value}</span>}
+                  wrapperStyle={{color: chartStyles.legendText, marginTop: 20, fontFamily: chartStyles.fontFamily}}
+                  formatter={(value) => <span style={{ color: chartStyles.legendText, fontFamily: chartStyles.fontFamily }}>{value}</span>}
                 />
-                <Bar dataKey="wins" fill={barColorWin} name="Wins" />
-                <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
+                <Bar dataKey="wins" fill={chartStyles.barColorWin} name="Wins" />
+                <Bar dataKey="losses" fill={chartStyles.barColorLoss} name="Losses" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
       {!isMobile && (
-        <Card className={`${cardBg}`}>
+        <Card className={`${chartStyles.cardBg}`}>
           <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
             <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>Top 10 Power Scores</CardTitle>
             <CardDescription className={isLight ? "text-gray-600" : "text-gray-200"}>
@@ -175,7 +178,7 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
           </CardHeader>
           <CardContent className="p-6 pt-4">
             <div className="h-[350px] w-full rounded-xl" style={{ 
-              background: chartInnerBg, 
+              background: chartStyles.chartInnerBg, 
               borderRadius: 16,
               boxShadow: isLight ? "0 1px 2px rgba(0,0,0,0.05)" : "none"
             }}>
@@ -184,38 +187,38 @@ const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsPro
                   layout="vertical"
                   data={topByPowerScore}
                   style={{ 
-                    background: chartBg, 
+                    background: chartStyles.chartBg, 
                     borderRadius: 12, 
                     padding: 8,
-                    fontFamily: fontFamily
+                    fontFamily: chartStyles.fontFamily
                   }}
                   margin={{
                     top: 5, right: 60, left: 60, bottom: 5,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke={gridColor}/>
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartStyles.gridColor}/>
                   <XAxis 
                     type="number" 
                     domain={[0, 100]} 
-                    tick={{fill: axisText, fontFamily: fontFamily}}
+                    tick={{fill: chartStyles.axisText, fontFamily: chartStyles.fontFamily}}
                   />
                   <YAxis 
                     type="category" 
                     dataKey="name"
                     width={80}
                     tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-                    tick={{fill: axisText, fontFamily: fontFamily}}
+                    tick={{fill: chartStyles.axisText, fontFamily: chartStyles.fontFamily}}
                   />
                   <Tooltip content={<CustomPowerScoreTooltip />} />
                   <Bar 
                     dataKey="powerScore" 
-                    fill={barColorPower} 
+                    fill={chartStyles.barColorPower} 
                     name="Power Score"
                     background={{ fill: isLight ? '#f1f0fb' : '#26282d' }}
                     radius={[0, 5, 5, 0]}
                   >
                     {topByPowerScore.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? "#805fff" : barColorPower} />
+                      <Cell key={`cell-${index}`} fill={index === 0 ? "#805fff" : chartStyles.barColorPower} />
                     ))}
                     <LabelList 
                       dataKey="powerScore" 

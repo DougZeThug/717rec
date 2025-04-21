@@ -9,7 +9,7 @@ const Stats = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [matchesError, setMatchesError] = useState<Error | null>(null);
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -58,7 +58,7 @@ const Stats = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen cornhole-bg py-8 px-4 md:px-8 ${theme === 'light' ? 'bg-gray-50' : ''}`}>
+    <div className={`min-h-screen cornhole-bg py-8 px-4 md:px-8 ${resolvedTheme === 'light' ? 'bg-gray-50' : ''}`}>
       <StatsContainer 
         matches={matches} 
         isLoadingMatches={isLoadingMatches} 
