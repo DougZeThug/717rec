@@ -32,11 +32,16 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       className={`cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-gray-50' : ''}`}
       onClick={onToggleExpand}
     >
-      <TableCell className="font-medium" style={isLight ? { color: "#222222" } : {}}>{index + 1}</TableCell>
+      <TableCell
+        className={`font-medium${isLight ? " !text-[#222222]" : ""}`}
+        style={isLight ? { color: "#222222" } : {}}
+      >
+        {index + 1}
+      </TableCell>
       <TableCell>
         <Link 
           to={`/teams/${ranking.teamId}`}
-          className="hover:text-blue-600 hover:underline"
+          className={isLight ? "!text-[#111111] hover:text-blue-600 hover:underline" : "hover:text-blue-600 hover:underline"}
           onClick={(e) => e.stopPropagation()}
           style={isLight ? { color: "#111111", fontWeight: 600 } : {}}
         >
@@ -53,18 +58,24 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           </Badge>
         </TableCell>
       )}
-      <TableCell className={`text-center ${powerScoreColor}`}>
+      <TableCell className={`text-center ${powerScoreColor}${isLight ? " !text-[#222222]" : ""}`}>
         {formatPowerScore(ranking.powerScore)}
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>{`${ranking.wins}-${ranking.losses}`}</TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
+        {`${ranking.wins}-${ranking.losses}`}
+      </TableCell>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
+        {(ranking.winPercentage * 100).toFixed(1)}%
+      </TableCell>
       <TableCell className="text-center hidden md:table-cell" style={isLight ? { color: "#222222" } : {}}>
         {`${ranking.gamesWon}-${ranking.gamesLost}`}
       </TableCell>
       <TableCell className="text-center hidden lg:table-cell" style={isLight ? { color: "#222222" } : {}}>
         {(ranking.gameWinPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>{ranking.sos.toFixed(3)}</TableCell>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
+        {ranking.sos.toFixed(3)}
+      </TableCell>
       <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
         {ranking.streak || '-'}
       </TableCell>

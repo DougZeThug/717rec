@@ -50,7 +50,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             style={isLight ? { border: "1px solid #e0e0e0" } : { borderColor: "#333" }}
           >
             <div className="flex items-center space-x-3">
-              <div className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index))}>
+              <div className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index), isLight && "!text-[#222222]")}>
                 {index + 1}
               </div>
               <div className="flex items-center space-x-2">
@@ -59,10 +59,12 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                     <img src={team.imageUrl} alt={team.teamName} className="w-full h-full object-cover" />
                   </div>
                 )}
-                <span className={cn(
-                  "font-medium hover:text-blue-600 hover:underline",
-                  isLight ? "!text-[#111111] !font-semibold" : "text-white"
-                )}>
+                <span
+                  className={cn(
+                    "font-medium hover:text-blue-600 hover:underline",
+                    isLight ? "!text-[#111111] !font-semibold" : "text-white"
+                  )}
+                >
                   {team.teamName}
                 </span>
               </div>
@@ -84,11 +86,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
       <Table className="bg-white dark:bg-transparent border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
         <TableHeader>
           <TableRow className={isLight ? "bg-gray-50" : ""}>
-            <TableHead className="w-10" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Rank</TableHead>
-            <TableHead style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Team</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Record</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Win %</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Power Score</TableHead>
+            <TableHead className="w-10" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Rank</TableHead>
+            <TableHead style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Team</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Record</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Win %</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Power Score</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -99,7 +101,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5" } : {}}
               onClick={() => handleTeamClick(team.teamId)}
             >
-              <TableCell className={getRankStyles(index)}>
+              <TableCell className={cn(getRankStyles(index), isLight && "!text-[#222222]")}>
                 <div className="w-8 h-8 flex items-center justify-center rounded-full">
                   {index + 1}
                 </div>
@@ -115,10 +117,12 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                       />
                     </div>
                   )}
-                  <span className={cn(
-                    "font-medium hover:text-blue-600 hover:underline", 
-                    isLight ? "!text-[#111111] !font-semibold" : "text-white"
-                  )}>
+                  <span
+                    className={cn(
+                      "font-medium hover:text-blue-600 hover:underline", 
+                      isLight ? "!text-[#111111] !font-semibold" : "text-white"
+                    )}
+                  >
                     {team.teamName}
                   </span>
                 </div>

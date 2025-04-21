@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
@@ -95,7 +94,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               checked={detailedView}
               onCheckedChange={toggleViewMode}
             />
-            <Label htmlFor="detailed-view" className={isLight ? "text-sm !text-gray-800 font-medium" : "text-sm text-gray-200"}>
+            <Label htmlFor="detailed-view" className={isLight ? "text-sm !text-[#444444] font-medium" : "text-sm text-gray-200"}>
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
           </div>
@@ -106,10 +105,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
               <h3 className={isLight
-                ? "text-lg font-medium flex items-center font-inter !text-[#111111] !font-semibold"
+                ? "text-lg font-medium flex items-center font-inter !text-[#444444] !font-semibold"
                 : "text-lg font-medium flex items-center font-inter text-gray-100"
                 }>
-                {divisionName} <span className={isLight ? "ml-2 text-xs !text-[#222222] font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>
+                {divisionName} <span className={isLight ? "ml-2 text-xs !text-[#444444] font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>
               </h3>
             )}
             <div className="space-y-4">

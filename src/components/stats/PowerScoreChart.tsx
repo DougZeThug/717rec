@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell
@@ -20,8 +19,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  // Use a deep, readable color in light mode
-  const chartTextColor = isLight ? "#111111" : "#e5e7eb";
+  const chartTextColor = isLight ? "#222222" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
@@ -29,7 +27,6 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const barColorPower = "#a288f5";
   const highlightFirst = "#805fff";
 
-  // Custom tooltip
   const CustomPowerScoreTooltip = ({ active, payload }: any) => {
     if (!active || !payload || !payload.length) return null;
     return (
@@ -50,7 +47,6 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     );
   };
 
-  // Custom label for bar
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
     return (
@@ -61,7 +57,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
         fontSize={12}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
-        fontWeight={isLight ? "600" : "400"}
+        fontWeight={isLight ? "700" : "400"}
       >
         {formatPowerScore(value)}
       </text>
@@ -97,14 +93,14 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }}
+            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 700 : 400 }}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }}
+            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 700 : 400 }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar
