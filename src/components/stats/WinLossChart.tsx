@@ -28,18 +28,19 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  const chartTextColor = isLight ? "#222222" : "#e5e7eb";
+  // Enhanced contrast for light mode
+  const chartTextColor = isLight ? "#111111" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isDark ? "#f9fafb" : "#111111";
-  const legendTextColor = isLight ? "#444444" : "#e5e7eb";
-  // custom: pass inline styles to XAxis/YAxis/Legend/Title
+  const tooltipTextColor = isLight ? "#111111" : "#f9fafb";
+  const legendTextColor = isLight ? "#111111" : "#e5e7eb";
+  const axisLabelColor = isLight ? "#222222" : "#e5e7eb";
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
-  // Custom tooltip
+  // Custom tooltip with improved contrast
   const CustomWinLossTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
     return (
@@ -99,23 +100,24 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             interval={0}
             tick={{
               fontSize: isMobile ? 10 : 12,
-              fill: isLight ? "#222222" : "#e5e7eb",
-              style: isLight ? { color: "#222222" } : {}
+              fill: axisLabelColor,
+              style: { color: axisLabelColor }
             }}
-            style={isLight ? { color: "#222222" } : {}}
+            style={{ color: axisLabelColor }}
           />
           <YAxis
             tick={{
-              fill: isLight ? "#222222" : "#e5e7eb",
-              style: isLight ? { color: "#222222" } : {}
+              fill: axisLabelColor,
+              style: { color: axisLabelColor }
             }}
-            style={isLight ? { color: "#222222" } : {}}
+            style={{ color: axisLabelColor }}
           />
           <Tooltip content={<CustomWinLossTooltip />} />
           <Legend
             wrapperStyle={{
               color: legendTextColor,
               fontFamily: "'Inter', sans-serif",
+              fontWeight: isLight ? 600 : 400
             }}
             formatter={(_value) => (
               <span style={{

@@ -26,14 +26,20 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
-  // for inline color in light mode
+  
+  // Enhanced power score inline color for better visibility in light mode
   const powerScoreInlineStyle = isLight
-    ? { color: ranking.powerScore >= 75 ? '#45c47e' : ranking.powerScore >= 60 ? '#3887e6' : ranking.powerScore >= 45 ? '#e9b022' : '#e13d3d' }
+    ? { 
+        color: ranking.powerScore >= 80 ? '#45c47e' : 
+              ranking.powerScore >= 70 ? '#3887e6' : 
+              ranking.powerScore < 40 ? '#e13d3d' : 
+              '#222222'  // default dark gray for mid-range scores
+      }
     : {};
 
   return (
     <TableRow 
-      className={`cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-gray-50' : ''}`}
+      className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${isExpanded ? 'bg-gray-50 dark:bg-gray-800/40' : ''}`}
       onClick={onToggleExpand}
     >
       <TableCell
@@ -67,7 +73,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         className="text-center"
         style={powerScoreInlineStyle}
       >
-        <span className={powerScoreColor}>
+        <span className={isLight ? "" : powerScoreColor}>
           {formatPowerScore(ranking.powerScore)}
         </span>
       </TableCell>

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -43,12 +44,14 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
         <CardHeader className="pb-2 rounded-t-xl"
           style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
           <CardTitle
-            className={`${isLight ? "" : "text-white"} !font-bold`}
-            style={isLight ? { color: "#111111" } : {}}
+            className="font-bold"
+            style={isLight ? { color: "#111111" } : { color: "#ffffff" }}
           >
             Win-Loss Records
           </CardTitle>
-          <CardDescription className={isLight ? "!text-[#444444] !font-medium" : "text-gray-200"}>
+          <CardDescription 
+            style={isLight ? { color: "#444444", fontWeight: 500 } : { color: "#e5e7eb" }}
+          >
             Top {chartLimit} teams by win percentage
           </CardDescription>
         </CardHeader>
@@ -58,14 +61,17 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
       </Card>
       {!isMobile && (
         <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm">
-          <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
+          <CardHeader className="pb-2 rounded-t-xl" 
+            style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
             <CardTitle
-              className={`${isLight ? "" : "text-white"} !font-bold`}
-              style={isLight ? { color: "#111111" } : {}}
+              className="font-bold"
+              style={isLight ? { color: "#111111" } : { color: "#ffffff" }}
             >
               Top 10 Power Scores
             </CardTitle>
-            <CardDescription className={isLight ? "!text-[#444444] !font-medium" : "text-gray-200"}>
+            <CardDescription 
+              style={isLight ? { color: "#444444", fontWeight: 500 } : { color: "#e5e7eb" }}
+            >
               Elite team performance ranking
             </CardDescription>
           </CardHeader>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Table,
@@ -77,11 +78,14 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
           {!showUnified && (
             <h3
               className="text-lg font-medium mb-3 flex items-center font-inter"
-              style={isLight ? { color: "#111111", fontWeight: 700 } : { color: 'white' }}
+              style={{ 
+                color: isLight ? "#111111" : 'white',
+                fontWeight: isLight ? 700 : 400
+              }}
             >
-              <span style={isLight ? { color: "#111111" } : {}}>{divisionName}</span>{" "}
-              <span className={`${isLight ? "" : "text-muted-foreground"} ml-1`}
-                style={isLight ? { color: "#222222" } : {}}>
+              <span>{divisionName}</span>{" "}
+              <span className="ml-1"
+                style={{ color: isLight ? "#444444" : "" }}>
                 ({divisionRankings.length})
               </span>
             </h3>
@@ -96,8 +100,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                   <TableHead className="text-center font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>
                     <div className="flex items-center justify-center gap-1">
                       <Bolt className="inline-block text-purple-300" size={16} />
-                      <span onClick={() => onSortChange('powerScore')} className="cursor-pointer"
-                        style={isLight ? { color: "#111111" } : {}}>
+                      <span onClick={() => onSortChange('powerScore')} className="cursor-pointer">
                         Power Score {renderSortIndicator('powerScore')}
                       </span>
                     </div>

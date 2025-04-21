@@ -27,12 +27,19 @@ const RankingCard: React.FC<RankingCardProps> = ({
   showDivision = false
 }) => {
   const navigate = useNavigate();
-  const isExpanded = expandedTeam === ranking.teamId;
-  const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  const isExpanded = expandedTeam === ranking.teamId;
+  const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
+  
+  // Enhanced power score colors to match desktop view
   const powerScoreInlineStyle = isLight
-    ? { color: ranking.powerScore >= 75 ? '#45c47e' : ranking.powerScore >= 60 ? '#3887e6' : ranking.powerScore >= 45 ? '#e9b022' : '#e13d3d' }
+    ? { 
+        color: ranking.powerScore >= 80 ? '#45c47e' : 
+               ranking.powerScore >= 70 ? '#3887e6' : 
+               ranking.powerScore < 40 ? '#e13d3d' : 
+               '#222222'  // default dark gray for mid-range scores
+      }
     : {};
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -84,7 +91,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               <Badge
                 variant={ranking.divisionName?.toLowerCase() as any || "default"}
                 className="font-medium text-xs ml-1"
-                style={isLight ? { color: "#444444" } : {}}
+                style={isLight ? { color: "#111111" } : {}}
               >
                 {ranking.divisionName || "Unassigned"}
               </Badge>
@@ -101,7 +108,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <span style={isLight ? { color: "#222222" } : {}} className="text-xs">
               Power Score:{" "}
               <span
-                className={powerScoreColorClass}
+                className={isLight ? "" : powerScoreColorClass}
                 style={powerScoreInlineStyle}
               >
                 {formatPowerScore(ranking.powerScore)}

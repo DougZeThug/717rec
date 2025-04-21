@@ -43,10 +43,8 @@ export const ChartLegendContent = React.forwardRef<
           return (
             <div
               key={item.value}
-              className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3",
-                isLight ? "[&>svg]:!text-[#222222] font-semibold" : "[&>svg]:text-muted-foreground"
-              )}
+              className="flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3"
+              style={isLight ? { color: "#111111" } : {}}
             >
               {itemConfig?.icon && !hideIcon ? (
                 <itemConfig.icon />
@@ -58,7 +56,12 @@ export const ChartLegendContent = React.forwardRef<
                   }}
                 />
               )}
-              <span style={{ color: isLight ? "#222222" : "", fontWeight: isLight ? 600 : 400 }}>{itemConfig?.label}</span>
+              <span style={{ 
+                color: isLight ? "#111111" : "#e5e7eb", 
+                fontWeight: isLight ? 600 : 400 
+              }}>
+                {itemConfig?.label}
+              </span>
             </div>
           );
         })}

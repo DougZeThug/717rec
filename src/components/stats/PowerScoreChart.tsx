@@ -20,15 +20,16 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  // chart theming
-  const chartTextColor = isLight ? "#222222" : "#e5e7eb";
+  // chart theming with improved light mode readability
+  const chartTextColor = isLight ? "#111111" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
   const tooltipTextColor = isDark ? "#f9fafb" : "#111111";
   const barColorPower = "#a288f5";
   const highlightFirst = "#805fff";
-  const legendTextColor = isLight ? "#444444" : "#e5e7eb";
+  const legendTextColor = isLight ? "#111111" : "#e5e7eb";
+  const axisLabelColor = isLight ? "#222222" : "#e5e7eb";
 
   const CustomPowerScoreTooltip = ({ active, payload }: any) => {
     if (!active || !payload || !payload.length) return null;
@@ -36,7 +37,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       <div
         style={{
           backgroundColor: tooltipBgColor,
-          color: isLight ? "#111111" : tooltipTextColor,
+          color: tooltipTextColor,
           border: `1px solid ${isDark ? "#374151" : "#e5e7eb"}`,
           fontFamily: "'Inter', sans-serif",
           borderRadius: 8,
@@ -56,7 +57,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       <text
         x={x + width + 5}
         y={y + 15}
-        fill={isLight ? "#222222" : "#e5e7eb"}
+        fill={axisLabelColor}
         fontSize={12}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
@@ -97,10 +98,10 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             type="number"
             domain={[0, 100]}
             tick={{
-              fill: isLight ? "#222222" : "#e5e7eb",
-              style: isLight ? { color: "#222222" } : {}
+              fill: axisLabelColor,
+              style: { color: axisLabelColor }
             }}
-            style={isLight ? { color: "#222222" } : {}}
+            style={{ color: axisLabelColor }}
           />
           <YAxis
             type="category"
@@ -108,10 +109,10 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
             tick={{
-              fill: isLight ? "#222222" : "#e5e7eb",
-              style: isLight ? { color: "#222222" } : {}
+              fill: axisLabelColor,
+              style: { color: axisLabelColor }
             }}
-            style={isLight ? { color: "#222222" } : {}}
+            style={{ color: axisLabelColor }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar
