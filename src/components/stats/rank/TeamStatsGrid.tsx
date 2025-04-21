@@ -1,5 +1,8 @@
 
 import React from "react";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface TeamStatsGridProps {
   wins: number;
@@ -10,6 +13,7 @@ interface TeamStatsGridProps {
   gameWinPercentage: number;
   sos: number;
   streak?: string;
+  powerScore: number;
   compactView?: boolean;
 }
 
@@ -22,39 +26,77 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   gameWinPercentage,
   sos,
   streak = "—",
+  powerScore,
   compactView = false
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  const powerScoreColor = getPowerScoreColor(powerScore);
+
   if (compactView) {
     return (
-      <div className="mt-1 text-xs text-gray-500">
-        <span className="inline-block mr-2">{wins}-{losses}</span>
-        <span className="inline-block mr-2">
-          Win: {(winPercentage * 100).toFixed(1)}%
+      <div className="mt-1 flex items-center gap-3 text-xs">
+        <span style={isLight ? { color: "#222222" } : {}}>
+          {wins}-{losses}
         </span>
-        <span className="inline-block">
-          SOS: {sos.toFixed(2)}
+        <span 
+          className={isLight ? "" : powerScoreColor}
+          style={isLight ? {
+            color: powerScore >= 80 ? '#45c47e' : 
+                   powerScore >= 70 ? '#3887e6' : 
+                   powerScore < 40 ? '#e13d3d' : 
+                   '#222222'
+          } : {}}
+        >
+          {formatPowerScore(powerScore)}
         </span>
       </div>
     );
   }
 
   return (
-    <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <div className="p-1 bg-gray-50 rounded">
+    <div className={cn(
+      "mt-2 grid gap-2",
+      "grid-cols-2 sm:grid-cols-4"
+    )}>
+      <div className={cn(
+        "p-2 rounded",
+        isLight ? "bg-gray-50" : "bg-gray-800/30"
+      )}>
         <div className="text-xs text-gray-500">Record</div>
-        <div className="font-semibold">{wins}-{losses}</div>
+        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
+          {wins}-{losses}
+        </div>
       </div>
-      <div className="p-1 bg-gray-50 rounded">
-        <div className="text-xs text-gray-500">Win %</div>
-        <div className="font-semibold">{(winPercentage * 100).toFixed(1)}%</div>
-      </div>
-      <div className="p-1 bg-gray-50 rounded">
-        <div className="text-xs text-gray-500">SOS</div>
-        <div className="font-semibold">{sos.toFixed(2)}</div>
-      </div>
-      <div className="p-1 bg-gray-50 rounded">
+
+      <div className={cn(
+        "p-2 rounded",
+        isLight ? "bg-gray-50" : "bg-gray-800/30"
+      )}>
         <div className="text-xs text-gray-500">Games</div>
-        <div className="font-semibold">{gamesWon}-{gamesLost}</div>
+        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
+          {gamesWon}-{gamesLost}
+        </div>
+      </div>
+
+      <div className={cn(
+        "p-2 rounded",
+        isLight ? "bg-gray-50" : "bg-gray-800/30"
+      )}>
+        <div className="text-xs text-gray-500">SOS</div>
+        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
+          {sos.toFixed(3)}
+        </div>
+      </div>
+
+      <div className={cn(
+        "p-2 rounded",
+        isLight ? "bg-gray-50" : "bg-gray-800/30"
+      )}>
+        <div className="text-xs text-gray-500">Streak</div>
+        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
+          {streak}
+        </div>
       </div>
     </div>
   );

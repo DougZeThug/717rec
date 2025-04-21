@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
+import { TeamStatsGrid } from "./rank/TeamStatsGrid";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -31,14 +32,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const isLight = resolvedTheme === "light";
   const isExpanded = expandedTeam === ranking.teamId;
   const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
-  
-  // Enhanced power score colors to match desktop view
+
   const powerScoreInlineStyle = isLight
     ? { 
         color: ranking.powerScore >= 80 ? '#45c47e' : 
                ranking.powerScore >= 70 ? '#3887e6' : 
                ranking.powerScore < 40 ? '#e13d3d' : 
-               '#222222'  // default dark gray for mid-range scores
+               '#222222'
       }
     : {};
 
@@ -54,30 +54,44 @@ const RankingCard: React.FC<RankingCardProps> = ({
   return (
     <Card 
       className={cn(
-        "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-none",
-        "rounded-xl shadow-sm font-inter transition-colors duration-150 cursor-pointer",
+        "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
+        "border border-[#e0e0e0] dark:border-none rounded-xl shadow-sm",
+        "font-inter transition-colors duration-150 cursor-pointer",
         "hover:bg-gray-50 dark:hover:bg-gray-900",
         "[&_[data-team-name]]:hover:text-blue-600 dark:[&_[data-team-name]]:hover:text-blue-400",
         "[&_[data-team-name]]:hover:underline",
-        "p-4 mb-2",
-        isExpanded ? (isLight ? "ring-2 ring-purple-200" : "ring-2 ring-purple-400") : ""
+        isExpanded ? (isLight ? "ring-2 ring-purple-200" : "ring-2 ring-purple-400") : "",
+        compactView ? "p-3" : "p-4"
       )}
       onClick={handleCardClick}
     >
-      <CardContent className="flex gap-4 items-center p-0">
-        <div className="flex flex-col items-center w-14 min-w-14">
-          {ranking.logoUrl || ranking.imageUrl ? (
+      <CardContent className={cn(
+        "flex gap-4 items-center p-0",
+        compactView ? "min-h-[60px]" : ""
+      )}>
+        <div className={cn(
+          "flex flex-col items-center",
+          compactView ? "w-10 min-w-10" : "w-14 min-w-14"
+        )}>
+          {!compactView && (ranking.logoUrl || ranking.imageUrl) ? (
             <img 
               src={ranking.logoUrl || ranking.imageUrl!}
               alt={`${ranking.teamName} logo`}
               className="rounded-full shadow w-12 h-12 object-cover mb-2"
               style={{minWidth: 48, minHeight: 48, maxWidth: 50, maxHeight: 50}}
             />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-2" />
-          )}
-          <span style={isLight ? { color: "#222222" } : {}} className="text-xs font-medium">{index+1}</span>
+          ) : null}
+          <span 
+            style={isLight ? { color: "#222222" } : {}} 
+            className={cn(
+              "font-medium",
+              compactView ? "text-sm" : "text-xs"
+            )}
+          >
+            {index + 1}
+          </span>
         </div>
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <div
@@ -87,7 +101,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             >
               {ranking.teamName}
             </div>
-            {showDivision && (
+            {showDivision && !compactView && (
               <Badge
                 variant={ranking.divisionName?.toLowerCase() as any || "default"}
                 className="font-medium text-xs ml-1"
@@ -96,25 +110,21 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 {ranking.divisionName || "Unassigned"}
               </Badge>
             )}
-            <span className="ml-2"><RankTrendIndicator rankChange={ranking.rankChange} /></span>
+            {!compactView && <span className="ml-2"><RankTrendIndicator rankChange={ranking.rankChange} /></span>}
           </div>
-          <div className="flex flex-col gap-1 mt-1">
-            <span style={isLight ? { color: "#222222" } : {}} className="text-xs">
-              Record:{" "}
-              <span style={isLight ? { color: "#222222", fontWeight: 600 } : { fontWeight: 600 }}>
-                {ranking.wins}-{ranking.losses}
-              </span>
-            </span>
-            <span style={isLight ? { color: "#222222" } : {}} className="text-xs">
-              Power Score:{" "}
-              <span
-                className={isLight ? "" : powerScoreColorClass}
-                style={powerScoreInlineStyle}
-              >
-                {formatPowerScore(ranking.powerScore)}
-              </span>
-            </span>
-          </div>
+
+          <TeamStatsGrid
+            wins={ranking.wins}
+            losses={ranking.losses}
+            winPercentage={ranking.winPercentage}
+            gamesWon={ranking.gamesWon}
+            gamesLost={ranking.gamesLost}
+            gameWinPercentage={ranking.gameWinPercentage}
+            sos={ranking.sos}
+            streak={ranking.streak}
+            powerScore={ranking.powerScore}
+            compactView={compactView}
+          />
         </div>
       </CardContent>
     </Card>
