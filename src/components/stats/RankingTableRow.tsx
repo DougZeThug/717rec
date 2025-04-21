@@ -26,6 +26,10 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  // for inline color in light mode
+  const powerScoreInlineStyle = isLight
+    ? { color: ranking.powerScore >= 75 ? '#45c47e' : ranking.powerScore >= 60 ? '#3887e6' : ranking.powerScore >= 45 ? '#e9b022' : '#e13d3d' }
+    : {};
 
   return (
     <TableRow 
@@ -53,14 +57,19 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           <Badge
             variant={ranking.divisionName?.toLowerCase() as any || "default"}
             className="font-normal"
-            style={isLight ? { color: "#444444" } : {}}
+            style={isLight ? { color: "#111111" } : {}}
           >
             {ranking.divisionName || "Unassigned"}
           </Badge>
         </TableCell>
       )}
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
-        {formatPowerScore(ranking.powerScore)}
+      <TableCell
+        className="text-center"
+        style={powerScoreInlineStyle}
+      >
+        <span className={powerScoreColor}>
+          {formatPowerScore(ranking.powerScore)}
+        </span>
       </TableCell>
       <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
         {`${ranking.wins}-${ranking.losses}`}
@@ -88,4 +97,3 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
 };
 
 export default RankingTableRow;
-

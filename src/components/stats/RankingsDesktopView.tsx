@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Table,
@@ -78,11 +77,11 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
           {!showUnified && (
             <h3
               className="text-lg font-medium mb-3 flex items-center font-inter"
-              style={isLight ? { color: "#444444", fontWeight: 700 } : { color: 'white' }}
+              style={isLight ? { color: "#111111", fontWeight: 700 } : { color: 'white' }}
             >
-              <span style={isLight ? { color: "#444444" } : {}}>{divisionName}</span>{" "}
+              <span style={isLight ? { color: "#111111" } : {}}>{divisionName}</span>{" "}
               <span className={`${isLight ? "" : "text-muted-foreground"} ml-1`}
-                style={isLight ? { color: "#444444" } : {}}>
+                style={isLight ? { color: "#222222" } : {}}>
                 ({divisionRankings.length})
               </span>
             </h3>

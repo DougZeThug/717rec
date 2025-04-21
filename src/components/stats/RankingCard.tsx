@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -28,7 +27,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const isExpanded = expandedTeam === ranking.teamId;
-  const powerScoreColor = getPowerScoreColor(ranking.powerScore);
+  const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
+  const powerScoreInlineStyle = isLight
+    ? { color: ranking.powerScore >= 75 ? '#45c47e' : ranking.powerScore >= 60 ? '#3887e6' : ranking.powerScore >= 45 ? '#e9b022' : '#e13d3d' }
+    : {};
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
@@ -97,7 +99,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </span>
             <span style={isLight ? { color: "#222222" } : {}} className="text-xs">
               Power Score:{" "}
-              <span className={getPowerScoreColor(ranking.powerScore)} style={isLight ? { color: "#222222" } : {}}>
+              <span
+                className={powerScoreColorClass}
+                style={powerScoreInlineStyle}
+              >
                 {formatPowerScore(ranking.powerScore)}
               </span>
             </span>

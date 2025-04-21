@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
@@ -110,12 +109,12 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
               <h3
-                style={isLight ? { color: "#444444", fontWeight: 600 } : {}}
+                style={isLight ? { color: "#111111", fontWeight: 600 } : {}}
                 className="text-lg font-medium flex items-center font-inter"
               >
                 {divisionName}{" "}
                 <span
-                  style={isLight ? { color: "#444444" } : {}}
+                  style={isLight ? { color: "#222222" } : {}}
                   className="ml-2 text-xs font-inter"
                 >
                   ({divisionRankings.length})

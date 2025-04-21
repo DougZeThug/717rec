@@ -33,7 +33,8 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
   const tooltipTextColor = isDark ? "#f9fafb" : "#111111";
-  const legendTextColor = isLight ? "#222222" : "#e5e7eb";
+  const legendTextColor = isLight ? "#444444" : "#e5e7eb";
+  // custom: pass inline styles to XAxis/YAxis/Legend/Title
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
@@ -101,11 +102,15 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
               fill: isLight ? "#222222" : "#e5e7eb",
               style: isLight ? { color: "#222222" } : {}
             }}
+            style={isLight ? { color: "#222222" } : {}}
           />
-          <YAxis tick={{
-            fill: isLight ? "#222222" : "#e5e7eb",
-            style: isLight ? { color: "#222222" } : {}
-          }}/>
+          <YAxis
+            tick={{
+              fill: isLight ? "#222222" : "#e5e7eb",
+              style: isLight ? { color: "#222222" } : {}
+            }}
+            style={isLight ? { color: "#222222" } : {}}
+          />
           <Tooltip content={<CustomWinLossTooltip />} />
           <Legend
             wrapperStyle={{
@@ -129,4 +134,3 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
-

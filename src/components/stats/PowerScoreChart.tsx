@@ -20,6 +20,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
+  // chart theming
   const chartTextColor = isLight ? "#222222" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
@@ -27,6 +28,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const tooltipTextColor = isDark ? "#f9fafb" : "#111111";
   const barColorPower = "#a288f5";
   const highlightFirst = "#805fff";
+  const legendTextColor = isLight ? "#444444" : "#e5e7eb";
 
   const CustomPowerScoreTooltip = ({ active, payload }: any) => {
     if (!active || !payload || !payload.length) return null;
@@ -94,14 +96,22 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fill: isLight ? "#222222" : "#e5e7eb", style: isLight ? { color: "#222222" } : {} }}
+            tick={{
+              fill: isLight ? "#222222" : "#e5e7eb",
+              style: isLight ? { color: "#222222" } : {}
+            }}
+            style={isLight ? { color: "#222222" } : {}}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-            tick={{ fill: isLight ? "#222222" : "#e5e7eb", style: isLight ? { color: "#222222" } : {} }}
+            tick={{
+              fill: isLight ? "#222222" : "#e5e7eb",
+              style: isLight ? { color: "#222222" } : {}
+            }}
+            style={isLight ? { color: "#222222" } : {}}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar
@@ -120,6 +130,20 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
               content={renderCustomizedLabel}
             />
           </Bar>
+          <Legend
+            wrapperStyle={{
+              color: legendTextColor,
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: isLight ? 600 : 400
+            }}
+            formatter={(_value) => (
+              <span style={{
+                color: legendTextColor,
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: isLight ? 600 : 400
+              }}>{_value}</span>
+            )}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -127,4 +151,3 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
 };
 
 export default PowerScoreChart;
-

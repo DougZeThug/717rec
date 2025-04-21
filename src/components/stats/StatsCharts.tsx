@@ -1,4 +1,3 @@
-
 import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -41,8 +40,14 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8 font-inter">
       <Card className={`${isMobile ? "" : "xl:col-span-2"} bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm`}>
-        <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
-          <CardTitle className={`${isLight ? "!text-[#111111]" : "text-white"} !font-bold`}>Win-Loss Records</CardTitle>
+        <CardHeader className="pb-2 rounded-t-xl"
+          style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
+          <CardTitle
+            className={`${isLight ? "" : "text-white"} !font-bold`}
+            style={isLight ? { color: "#111111" } : {}}
+          >
+            Win-Loss Records
+          </CardTitle>
           <CardDescription className={isLight ? "!text-[#444444] !font-medium" : "text-gray-200"}>
             Top {chartLimit} teams by win percentage
           </CardDescription>
@@ -54,7 +59,12 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
       {!isMobile && (
         <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm">
           <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
-            <CardTitle className={`${isLight ? "!text-[#111111]" : "text-white"} !font-bold`}>Top 10 Power Scores</CardTitle>
+            <CardTitle
+              className={`${isLight ? "" : "text-white"} !font-bold`}
+              style={isLight ? { color: "#111111" } : {}}
+            >
+              Top 10 Power Scores
+            </CardTitle>
             <CardDescription className={isLight ? "!text-[#444444] !font-medium" : "text-gray-200"}>
               Elite team performance ranking
             </CardDescription>
