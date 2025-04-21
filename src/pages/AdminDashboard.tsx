@@ -1,9 +1,9 @@
 
 import React from "react";
-import { Navigate } from "react-router-dom";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { AdminAccessModal } from "@/components/admin/AdminAccessModal";
 import AdminTabs from "@/components/admin/dashboard/AdminTabs";
+import { motion } from "framer-motion";
 
 const AdminDashboard = () => {
   const { isAdminAccessGranted, checkAdminAccess } = useAdminAccess();
@@ -18,10 +18,15 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <motion.div 
+      className="container mx-auto py-8 px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
       <AdminTabs />
-    </div>
+    </motion.div>
   );
 };
 

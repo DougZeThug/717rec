@@ -1,6 +1,8 @@
 
 import React from "react";
 import ScoreInput from "./ScoreInput";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface ScoreSectionProps {
   value: {
@@ -15,6 +17,7 @@ interface ScoreSectionProps {
   errorMessage?: string;
   onClearError?: (matchId: string) => void;
   matchId: string;
+  isCompleted?: boolean;
 }
 
 const ScoreSection: React.FC<ScoreSectionProps> = ({
@@ -26,16 +29,29 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
   hasError,
   errorMessage,
   onClearError,
-  matchId
+  matchId,
+  isCompleted = false
 }) => {
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <motion.div 
+      className={cn(
+        "flex flex-col items-center space-y-4 p-3 rounded-md transition-all duration-200",
+        isCompleted ? "bg-muted/30" : "",
+        disabled ? "opacity-90" : ""
+      )}
+      animate={{ 
+        opacity: disabled ? 0.9 : 1,
+        scale: disabled ? 0.98 : 1
+      }}
+      transition={{ duration: 0.2 }}
+    >
       <ScoreInput
         value={value}
         onChange={onScoreChange}
         onChangeGameWins={onGameWinsChange}
         onComplete={onComplete}
         disabled={disabled}
+        isCompleted={isCompleted}
       />
       
       {hasError && (
@@ -51,7 +67,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

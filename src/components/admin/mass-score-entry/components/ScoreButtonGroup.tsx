@@ -8,13 +8,15 @@ interface ScoreButtonGroupProps {
   onChange: (scores: { team1Score: number; team2Score: number }) => void;
   disabled?: boolean;
   onComplete?: () => void;
+  isCompleted?: boolean;
 }
 
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   value,
   onChange,
   disabled = false,
-  onComplete
+  onComplete,
+  isCompleted = false
 }) => {
   const isSelected = (option: typeof SCORE_OPTIONS[number]) =>
     value?.team1Score === option.team1Score && 
@@ -37,7 +39,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
         <span>Team 1</span>
         <span>Team 2</span>
       </div>
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap justify-center">
         {SCORE_OPTIONS.map((option) => (
           <ScoreButton
             key={option.label}
@@ -45,6 +47,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
             isSelected={isSelected(option)}
             onClick={() => handleSelect(option)}
             disabled={disabled}
+            isCompleted={isCompleted}
           />
         ))}
       </div>

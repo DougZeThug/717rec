@@ -5,6 +5,8 @@ import TeamDisplay from "./components/TeamDisplay";
 import ScoreSection from "./components/ScoreSection";
 import MatchStatusSection from "./components/MatchStatusSection";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Crown } from "lucide-react";
 
 interface MatchRowProps {
   match: MatchWithTeams;
@@ -36,13 +38,34 @@ const MatchRow: React.FC<MatchRowProps> = ({
   const handleGameWinsChange = (gameWins: { team1GameWins: number; team2GameWins: number }) => {
     onGameWinsChange(index, gameWins.team1GameWins, gameWins.team2GameWins);
   };
-
+  
+  const isCompleted = match.iscompleted || false;
+  
+  // Determine which team is winning (if any)
+  const team1Winning = match.team1Score !== null && match.team2Score !== null && match.team1Score > match.team2Score;
+  const team2Winning = match.team1Score !== null && match.team2Score !== null && match.team2Score > match.team1Score;
+  
   return (
-    <div className={cn("flex flex-col space-y-4", hasError && "text-destructive")}>
+    <motion.div 
+      className={cn(
+        "flex flex-col space-y-4 p-4 border rounded-lg transition-all duration-200",
+        isCompleted ? "bg-muted/20" : "bg-card",
+        hasError ? "border-destructive" : isCompleted ? "border-green-500/30" : "border-border"
+      )}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="flex justify-between items-center">
-        <TeamDisplay team={match.team1} />
+        <div className={cn("flex items-center gap-2", team1Winning && isCompleted && "text-primary font-medium")}>
+          <TeamDisplay team={match.team1} />
+          {team1Winning && isCompleted && <Crown className="h-4 w-4 text-yellow-500" />}
+        </div>
         <div className="text-sm text-muted-foreground">vs</div>
-        <TeamDisplay team={match.team2} />
+        <div className={cn("flex items-center gap-2", team2Winning && isCompleted && "text-primary font-medium")}>
+          {team2Winning && isCompleted && <Crown className="h-4 w-4 text-yellow-500" />}
+          <TeamDisplay team={match.team2} />
+        </div>
       </div>
 
       <ScoreSection
@@ -53,21 +76,22 @@ const MatchRow: React.FC<MatchRowProps> = ({
         onScoreChange={handleScoreChange}
         onGameWinsChange={handleGameWinsChange}
         onComplete={() => onMarkCompleted(index, true)}
-        disabled={isSubmitting}
+        disabled={isSubmitting || (isCompleted && !match.isEdited)}
         hasError={hasError}
         errorMessage={errorMessage}
         onClearError={onClearError}
         matchId={match.id}
+        isCompleted={isCompleted}
       />
 
       <MatchStatusSection
-        isCompleted={match.iscompleted || false}
+        isCompleted={isCompleted}
         onCompletedChange={(checked) => onMarkCompleted(index, checked)}
         isEdited={match.isEdited || false}
         isValid={match.isValid || false}
         disabled={isSubmitting}
       />
-    </div>
+    </motion.div>
   );
 };
 

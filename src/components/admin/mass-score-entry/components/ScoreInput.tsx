@@ -1,6 +1,7 @@
 
 import React from "react";
 import ScoreButtonGroup from "./ScoreButtonGroup";
+import { motion } from "framer-motion";
 
 interface ScoreInputProps {
   value: { team1Score: number | null; team2Score: number | null };
@@ -10,6 +11,7 @@ interface ScoreInputProps {
   isValid?: boolean;
   disabled?: boolean;
   className?: string;
+  isCompleted?: boolean;
 }
 
 const ScoreInput: React.FC<ScoreInputProps> = ({
@@ -19,10 +21,17 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   onComplete,
   isValid = true,
   disabled = false,
-  className = ""
+  className = "",
+  isCompleted = false
 }) => {
   return (
-    <div className={`w-full flex justify-center ${className}`}>
+    <motion.div 
+      className={`w-full flex justify-center ${className}`}
+      animate={{ 
+        opacity: disabled ? 0.8 : 1
+      }}
+      transition={{ duration: 0.2 }}
+    >
       <ScoreButtonGroup
         value={value}
         onChange={(scores) => {
@@ -36,8 +45,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
         }}
         onComplete={onComplete}
         disabled={disabled}
+        isCompleted={isCompleted}
       />
-    </div>
+    </motion.div>
   );
 };
 

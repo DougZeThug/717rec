@@ -4,9 +4,9 @@ import { format } from "date-fns";
 import { MatchWithTeams } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import MatchRow from "./MatchRow";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
 
 interface MatchesTableProps {
   matches: MatchWithTeams[];
@@ -64,21 +64,30 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   return (
     <div className="space-y-8">
       {Object.entries(matchesByDate).map(([dateKey, dayMatches]) => (
-        <div key={dateKey} className="space-y-4">
-          <h3 className="text-lg font-semibold">
-            {format(new Date(dateKey), "EEEE, MMMM d, yyyy")}
-          </h3>
+        <motion.div 
+          key={dateKey} 
+          className="space-y-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold">
+              {format(new Date(dateKey), "EEEE, MMMM d, yyyy")}
+            </h3>
+          </div>
           
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {dayMatches.map((match, idx) => {
               const originalIndex = matches.findIndex(m => m.id === match.id);
               const hasError = failedMatches?.includes(match.id);
               const errorMessage = errorMessages?.[match.id];
               
               return (
-                <div key={match.id}>
+                <div key={match.id} className="flex flex-col gap-2">
                   {hasError && errorMessage && (
-                    <Alert variant="destructive" className="mb-2">
+                    <Alert variant="destructive" className="mb-2 py-2">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription className="flex items-center justify-between">
                         <span>{errorMessage}</span>
@@ -93,26 +102,22 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
                       </AlertDescription>
                     </Alert>
                   )}
-                  <Card className="overflow-hidden">
-                    <CardContent className="p-4">
-                      <MatchRow
-                        match={match}
-                        index={originalIndex}
-                        isSubmitting={submitting}
-                        hasError={hasError}
-                        errorMessage={errorMessage}
-                        onScoreChange={onScoreChange}
-                        onGameWinsChange={onGameWinsChange}
-                        onMarkCompleted={onMarkCompleted}
-                        onClearError={onClearError}
-                      />
-                    </CardContent>
-                  </Card>
+                  <MatchRow
+                    match={match}
+                    index={originalIndex}
+                    isSubmitting={submitting}
+                    hasError={hasError}
+                    errorMessage={errorMessage}
+                    onScoreChange={onScoreChange}
+                    onGameWinsChange={onGameWinsChange}
+                    onMarkCompleted={onMarkCompleted}
+                    onClearError={onClearError}
+                  />
                 </div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );

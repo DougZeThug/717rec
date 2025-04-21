@@ -1,13 +1,12 @@
 
 import React from "react";
-import { CardTitle } from "@/components/ui/card";
-import { TableProperties } from "lucide-react";
-import FilterBar from "../FilterBar";
 import { FilterState } from "../types";
+import FilterBar from "../FilterBar";
+import { motion } from "framer-motion";
 
 interface ScoreEntryToolbarProps {
   filters: FilterState;
-  brackets: { id: string; title: string; }[];
+  brackets: { id: string; title: string }[];
   onDateChange: (date?: Date) => void;
   onBracketChange: (bracketId?: string) => void;
   onClearFilters: () => void;
@@ -21,12 +20,13 @@ const ScoreEntryToolbar: React.FC<ScoreEntryToolbarProps> = ({
   onClearFilters
 }) => {
   return (
-    <div className="flex flex-col space-y-4 w-full">
-      <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-        <TableProperties size={20} />
-        Mass Score Entry
-      </CardTitle>
-
+    <motion.div 
+      className="w-full space-y-3"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <h3 className="text-lg font-semibold">Filter Matches</h3>
       <FilterBar
         filters={filters}
         brackets={brackets}
@@ -34,7 +34,7 @@ const ScoreEntryToolbar: React.FC<ScoreEntryToolbarProps> = ({
         onBracketChange={onBracketChange}
         onClearFilters={onClearFilters}
       />
-    </div>
+    </motion.div>
   );
 };
 

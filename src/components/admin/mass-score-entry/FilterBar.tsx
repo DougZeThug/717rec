@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Filter } from "lucide-react";
+import { CalendarIcon, Filter, X } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FilterState } from "./types";
+import { motion } from "framer-motion";
 
 interface FilterBarProps {
   filters: FilterState;
@@ -29,12 +30,14 @@ const FilterBar: React.FC<FilterBarProps> = ({
   onBracketChange,
   onClearFilters
 }) => {
+  const hasActiveFilters = filters.date || filters.bracketId;
+  
   return (
     <div className="flex flex-col gap-3 w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start min-h-[44px] transition-all duration-200">
               <CalendarIcon className="mr-2 h-4 w-4" />
               {filters.date ? format(filters.date, "MMM d, yyyy") : "Filter by Date"}
             </Button>
@@ -49,12 +52,15 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </PopoverContent>
         </Popover>
 
-        <Select value={filters.bracketId} onValueChange={onBracketChange}>
-          <SelectTrigger className="w-full">
+        <Select 
+          value={filters.bracketId} 
+          onValueChange={(value) => onBracketChange(value || undefined)}
+        >
+          <SelectTrigger className="w-full min-h-[44px]">
             <SelectValue placeholder="Filter by Bracket" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={undefined}>All Brackets</SelectItem>
+            <SelectItem value="">All Brackets</SelectItem>
             {brackets.map(bracket => (
               <SelectItem key={bracket.id} value={bracket.id}>
                 {bracket.title}
@@ -64,14 +70,25 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </div>
 
-      <Button 
-        variant="ghost" 
-        onClick={onClearFilters}
-        className="w-full sm:w-auto justify-center"
-      >
-        <Filter className="mr-2 h-4 w-4" />
-        Clear Filters
-      </Button>
+      {hasActiveFilters ? (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="self-start"
+        >
+          <Button 
+            variant="ghost" 
+            onClick={onClearFilters}
+            size="sm"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200"
+          >
+            <X className="h-3 w-3" />
+            Clear All Filters
+          </Button>
+        </motion.div>
+      ) : (
+        <div className="h-6" /> // Spacer to keep layout consistent
+      )}
     </div>
   );
 };
