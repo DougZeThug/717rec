@@ -9,6 +9,7 @@ import { useSubmissionState } from "./useSubmissionState";
 import { useMatchScores } from "./useMatchScores";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTeamRecords } from "@/hooks/useTeamRecords";
+import { useScoreSubmission } from "./useScoreSubmission";
 
 export const useScoreEntryData = () => {
   const {
@@ -34,6 +35,9 @@ export const useScoreEntryData = () => {
     addError,
     toast
   } = useSubmissionState();
+  
+  // Import the useScoreSubmission hook to get handleSubmitAll functionality
+  const { handleSubmitAll } = useScoreSubmission(matches, () => fetchMatches(filters));
 
   useEffect(() => {
     const loadData = async () => {
@@ -55,6 +59,7 @@ export const useScoreEntryData = () => {
     handleScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
+    handleSubmitAll,  // Include handleSubmitAll in the returned object
     clearErrors,
     setFilterDate,
     setBracketFilter,
