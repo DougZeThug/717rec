@@ -1,7 +1,7 @@
 
 import React from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell, Legend
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell, Legend,
 } from "recharts";
 import { useTheme } from "next-themes";
 import { formatPowerScore } from "@/utils/powerScore";
@@ -20,36 +20,17 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  // chart theming with improved light mode readability
-  const chartTextColor = isLight ? "#111111" : "#e5e7eb";
+  // Base colors for consistent theming
+  const baseTextColor = isLight ? '#111111' : '#ffffff';
+  const axisLineColor = isLight ? '#cccccc' : '#444444';
+  const tickColor = isLight ? '#222222' : '#dddddd';
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
-  const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isDark ? "#f9fafb" : "#111111";
+  const tooltipBorderColor = isLight ? "#e5e7eb" : "#374151";
+  const chartGridColor = isDark ? "#374151" : "#e5e7eb";
+  
   const barColorPower = "#a288f5";
   const highlightFirst = "#805fff";
-  const legendTextColor = isLight ? "#111111" : "#e5e7eb";
-  const axisLabelColor = isLight ? "#222222" : "#e5e7eb";
-
-  const CustomPowerScoreTooltip = ({ active, payload }: any) => {
-    if (!active || !payload || !payload.length) return null;
-    return (
-      <div
-        style={{
-          backgroundColor: tooltipBgColor,
-          color: tooltipTextColor,
-          border: `1px solid ${isDark ? "#374151" : "#e5e7eb"}`,
-          fontFamily: "'Inter', sans-serif",
-          borderRadius: 8,
-          padding: 8,
-          boxShadow: "0 2px 8px rgba(0,0,0,.14)",
-        }}
-      >
-        <p style={{ fontWeight: 600, marginBottom: 4, color: isLight ? "#111111" : "#ffffff" }}>{payload[0].payload.name}</p>
-        <p style={{ color: barColorPower, fontWeight: 500 }}>Power Score: {formatPowerScore(payload[0].value)}</p>
-      </div>
-    );
-  };
 
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
@@ -57,62 +38,72 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       <text
         x={x + width + 5}
         y={y + 15}
-        fill={axisLabelColor}
+        fill={tickColor}
         fontSize={12}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
-        fontWeight={isLight ? "700" : "400"}
+        fontWeight={isLight ? "600" : "400"}
       >
         {formatPowerScore(value)}
       </text>
     );
   };
 
+  const CustomPowerScoreTooltip = ({ active, payload }: any) => {
+    if (!active || !payload || !payload.length) return null;
+    return (
+      <div
+        className="rounded-md shadow-lg p-2"
+        style={{
+          backgroundColor: tooltipBgColor,
+          border: `1px solid ${tooltipBorderColor}`,
+          color: baseTextColor,
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "12px",
+          fontWeight: isLight ? 500 : 400
+        }}
+      >
+        <p style={{ fontWeight: 600, marginBottom: 4, color: baseTextColor }}>{payload[0].payload.name}</p>
+        <p style={{ color: barColorPower, fontWeight: 500 }}>
+          Power Score: {formatPowerScore(payload[0].value)}
+        </p>
+      </div>
+    );
+  };
+
   return (
-    <div
-      className="w-full h-[350px] rounded-xl"
-      style={{
-        backgroundColor: chartBgColor,
-        borderRadius: 16,
-        boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
-        fontFamily: "'Inter', sans-serif",
-        overflow: "hidden",
-      }}
-    >
-      <ResponsiveContainer width="100%" height="100%" style={{ backgroundColor: chartBgColor }}>
+    <div className="w-full h-[350px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           layout="vertical"
           data={data}
+          margin={{ top: 5, right: 60, left: 60, bottom: 5 }}
           style={{
-            background: chartBgColor,
-            borderRadius: 12,
-            padding: 8,
             fontFamily: "'Inter', sans-serif",
           }}
-          margin={{
-            top: 5, right: 60, left: 60, bottom: 5,
-          }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor}/>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
           <XAxis
             type="number"
             domain={[0, 100]}
+            stroke={axisLineColor}
             tick={{
-              fill: axisLabelColor,
-              style: { color: axisLabelColor }
+              fill: tickColor,
+              fontSize: 12,
+              fontFamily: "'Inter', sans-serif"
             }}
-            style={{ color: axisLabelColor }}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
+            stroke={axisLineColor}
             tick={{
-              fill: axisLabelColor,
-              style: { color: axisLabelColor }
+              fill: tickColor,
+              fontSize: 12,
+              fontFamily: "'Inter', sans-serif"
             }}
-            style={{ color: axisLabelColor }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar
@@ -133,17 +124,11 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           </Bar>
           <Legend
             wrapperStyle={{
-              color: legendTextColor,
+              color: baseTextColor,
               fontFamily: "'Inter', sans-serif",
+              fontSize: "12px",
               fontWeight: isLight ? 600 : 400
             }}
-            formatter={(_value) => (
-              <span style={{
-                color: legendTextColor,
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: isLight ? 600 : 400
-              }}>{_value}</span>
-            )}
           />
         </BarChart>
       </ResponsiveContainer>
@@ -152,3 +137,4 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
 };
 
 export default PowerScoreChart;
+

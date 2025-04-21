@@ -28,33 +28,33 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  // Enhanced contrast for light mode
-  const chartTextColor = isLight ? "#111111" : "#e5e7eb";
+  // Base colors for consistent theming
+  const baseTextColor = isLight ? '#111111' : '#ffffff';
+  const axisLineColor = isLight ? '#cccccc' : '#444444';
+  const tickColor = isLight ? '#222222' : '#dddddd';
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
-  const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isLight ? "#111111" : "#f9fafb";
-  const legendTextColor = isLight ? "#111111" : "#e5e7eb";
-  const axisLabelColor = isLight ? "#222222" : "#e5e7eb";
+  const tooltipBorderColor = isLight ? "#e5e7eb" : "#374151";
+  const chartGridColor = isDark ? "#374151" : "#e5e7eb";
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
-  // Custom tooltip with improved contrast
+  // Custom tooltip with theme-aware colors
   const CustomWinLossTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
     return (
       <div
-        className="rounded-md shadow-lg"
+        className="rounded-md shadow-lg p-2"
         style={{
           backgroundColor: tooltipBgColor,
-          border: `1px solid ${isDark ? "#374151" : "#e5e7eb"}`,
-          color: tooltipTextColor,
+          border: `1px solid ${tooltipBorderColor}`,
+          color: baseTextColor,
           fontFamily: "'Inter', sans-serif",
-          padding: 8,
+          fontSize: isMobile ? "13px" : "12px",
           fontWeight: isLight ? 500 : 400
         }}>
-        <p style={{ fontWeight: 600, marginBottom: 4, color: isLight ? "#111111" : chartTextColor }}>{label}</p>
+        <p style={{ fontWeight: 600, marginBottom: 4, color: baseTextColor }}>{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={`tooltip-${index}`} style={{ color: entry.color, margin: 0, fontWeight: isLight ? 500 : 400 }}>
             {entry.name}: {entry.value}
@@ -65,30 +65,18 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   };
 
   return (
-    <div
-      className="w-full h-[350px] rounded-xl"
-      style={{
-        backgroundColor: chartBgColor,
-        borderRadius: 16,
-        boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
-        fontFamily: "'Inter', sans-serif",
-        overflow: "hidden",
-      }}
-    >
-      <ResponsiveContainer width="100%" height="100%" style={{ backgroundColor: chartBgColor }}>
+    <div className="w-full h-[350px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
-          style={{
-            background: chartBgColor,
-            borderRadius: 12,
-            padding: 8,
-            fontFamily: "'Inter', sans-serif",
-          }}
           margin={{
             top: 20,
             right: 30,
             left: 20,
             bottom: isMobile ? 90 : 60,
+          }}
+          style={{
+            fontFamily: "'Inter', sans-serif",
           }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
@@ -98,34 +86,29 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             textAnchor="end"
             height={isMobile ? 80 : 70}
             interval={0}
+            stroke={axisLineColor}
             tick={{
-              fontSize: isMobile ? 10 : 12,
-              fill: axisLabelColor,
-              style: { color: axisLabelColor }
+              fill: tickColor,
+              fontSize: isMobile ? 13 : 12,
+              fontFamily: "'Inter', sans-serif"
             }}
-            style={{ color: axisLabelColor }}
           />
           <YAxis
+            stroke={axisLineColor}
             tick={{
-              fill: axisLabelColor,
-              style: { color: axisLabelColor }
+              fill: tickColor,
+              fontSize: isMobile ? 13 : 12,
+              fontFamily: "'Inter', sans-serif"
             }}
-            style={{ color: axisLabelColor }}
           />
           <Tooltip content={<CustomWinLossTooltip />} />
           <Legend
             wrapperStyle={{
-              color: legendTextColor,
+              color: baseTextColor,
               fontFamily: "'Inter', sans-serif",
+              fontSize: isMobile ? "13px" : "12px",
               fontWeight: isLight ? 600 : 400
             }}
-            formatter={(_value) => (
-              <span style={{
-                color: legendTextColor,
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: isLight ? 600 : 400
-              }}>{_value}</span>
-            )}
           />
           <Bar dataKey="wins" fill={barColorWin} name="Wins" />
           <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
@@ -136,3 +119,4 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
+
