@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { TransitionLink } from '@/components/transitions/TransitionLink';
 
 interface MatchCardProps {
   match: Match;
