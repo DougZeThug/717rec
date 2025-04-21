@@ -52,107 +52,109 @@ const MatchCard: React.FC<MatchCardProps> = ({
       </div>
 
       <CardContent className="p-6 pt-8">
-        <div className="grid grid-cols-[auto_1fr_auto_1fr_auto] items-center gap-4">
-          {/* Team 1 */}
-          <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
-            <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
-              <AvatarImage 
-                src={match.team1Details?.image_url || ''} 
-                alt={team1Name}
-                className="object-contain bg-white dark:bg-gray-800"
-              />
-              <AvatarFallback className={cn(
-                "font-semibold",
-                isLight ? "bg-gray-100" : "bg-gray-800"
-              )}>
-                {team1Name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          </TransitionLink>
-          
-          <TransitionLink 
-            to={`/teams/${match.team1Id}`}
-            className={cn(
-              "flex items-center gap-2 min-w-0 hover:underline",
-              team1IsWinner && "font-semibold"
-            )}
-          >
-            <span className={cn(
-              "truncate",
-              team1IsWinner 
-                ? isLight ? "text-green-700" : "text-green-400"
-                : isLight ? "text-gray-700" : "text-gray-400"
-            )}>
-              {team1Name}
-            </span>
-            {team1IsWinner && (
-              <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-            )}
-          </TransitionLink>
+        <div className="flex flex-col space-y-4">
+          {/* Top Row: Logos and Score */}
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
+            {/* Team 1 Logo */}
+            <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
+              <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
+                <AvatarImage 
+                  src={match.team1Details?.image_url || ''} 
+                  alt={team1Name}
+                  className="object-contain bg-white dark:bg-gray-800"
+                />
+                <AvatarFallback className={cn(
+                  "font-semibold",
+                  isLight ? "bg-gray-100" : "bg-gray-800"
+                )}>
+                  {team1Name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </TransitionLink>
 
-          {/* Score */}
-          <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800/50">
-            <span className={getScoreStyle(team1IsWinner)}>
-              {match.team1Score || 0}
-            </span>
-            <span className="text-xl font-bold text-gray-400">-</span>
-            <span className={getScoreStyle(team2IsWinner)}>
-              {match.team2Score || 0}
-            </span>
+            {/* Score */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800/50">
+                <span className={getScoreStyle(team1IsWinner)}>
+                  {match.team1Score || 0}
+                </span>
+                <span className="text-xl font-bold text-gray-400">-</span>
+                <span className={getScoreStyle(team2IsWinner)}>
+                  {match.team2Score || 0}
+                </span>
+              </div>
+            </div>
+
+            {/* Team 2 Logo */}
+            <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
+              <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
+                <AvatarImage 
+                  src={match.team2Details?.image_url || ''} 
+                  alt={team2Name}
+                  className="object-contain bg-white dark:bg-gray-800"
+                />
+                <AvatarFallback className={cn(
+                  "font-semibold",
+                  isLight ? "bg-gray-100" : "bg-gray-800"
+                )}>
+                  {team2Name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </TransitionLink>
           </div>
 
-          {/* Team 2 */}
-          <TransitionLink 
-            to={`/teams/${match.team2Id}`}
-            className={cn(
-              "flex items-center justify-end gap-2 min-w-0 hover:underline",
-              team2IsWinner && "font-semibold"
-            )}
-          >
-            {team2IsWinner && (
-              <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-            )}
-            <span className={cn(
-              "truncate text-right",
-              team2IsWinner 
-                ? isLight ? "text-green-700" : "text-green-400"
-                : isLight ? "text-gray-700" : "text-gray-400"
-            )}>
-              {team2Name}
-            </span>
-          </TransitionLink>
-
-          <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
-            <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
-              <AvatarImage 
-                src={match.team2Details?.image_url || ''} 
-                alt={team2Name}
-                className="object-contain bg-white dark:bg-gray-800"
-              />
-              <AvatarFallback className={cn(
-                "font-semibold",
-                isLight ? "bg-gray-100" : "bg-gray-800"
+          {/* Bottom Row: Team Names and Game Wins */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+            {/* Team 1 Name and Wins */}
+            <TransitionLink 
+              to={`/teams/${match.team1Id}`}
+              className={cn(
+                "flex items-center gap-2 min-w-0 hover:underline text-center justify-center",
+                team1IsWinner && "font-semibold"
+              )}
+            >
+              <span className={cn(
+                "truncate",
+                team1IsWinner 
+                  ? isLight ? "text-green-700" : "text-green-400"
+                  : isLight ? "text-gray-700" : "text-gray-400"
               )}>
-                {team2Name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-          </TransitionLink>
+                {team1Name} ({match.team1_game_wins || 0})
+              </span>
+              {team1IsWinner && (
+                <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+              )}
+            </TransitionLink>
+
+            {/* Center Spacer */}
+            <div className="w-4"></div>
+
+            {/* Team 2 Name and Wins */}
+            <TransitionLink 
+              to={`/teams/${match.team2Id}`}
+              className={cn(
+                "flex items-center gap-2 min-w-0 hover:underline text-center justify-center",
+                team2IsWinner && "font-semibold"
+              )}
+            >
+              {team2IsWinner && (
+                <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+              )}
+              <span className={cn(
+                "truncate",
+                team2IsWinner 
+                  ? isLight ? "text-green-700" : "text-green-400"
+                  : isLight ? "text-gray-700" : "text-gray-400"
+              )}>
+                {team2Name} ({match.team2_game_wins || 0})
+              </span>
+            </TransitionLink>
+          </div>
         </div>
-
-        {/* Game Wins Summary */}
-        {match.team1_game_wins !== undefined && match.team2_game_wins !== undefined && (
-          <div className={cn(
-            "mt-4 text-sm text-center px-3 py-2 rounded-md font-mono",
-            isLight 
-              ? "bg-gray-800 text-white" 
-              : "bg-gray-900 text-gray-200"
-          )}>
-            Game Wins: {team1Name} ({match.team1_game_wins}) - {team2Name} ({match.team2_game_wins})
-          </div>
-        )}
       </CardContent>
     </Card>
   );
 };
 
 export default MatchCard;
+
