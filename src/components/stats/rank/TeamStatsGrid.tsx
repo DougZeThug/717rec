@@ -42,11 +42,11 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
     );
   }
 
-  // New detailed mobile view layout
+  // New detailed mobile view layout with consistent styling matching StatBreakdown
   return (
     <div className="grid grid-cols-2 gap-2 text-sm">
       {/* Record Stats */}
-      <div className="space-y-1">
+      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/30 p-2 rounded-lg">
         <div className="flex flex-col">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Record</span>
           <span className="font-medium">{wins}-{losses}</span>
@@ -54,7 +54,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
       </div>
 
       {/* Game Stats */}
-      <div className="space-y-1">
+      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/30 p-2 rounded-lg">
         <div className="flex flex-col">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Games</span>
           <span className="font-medium">{gamesWon}-{gamesLost}</span>
@@ -62,7 +62,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
       </div>
 
       {/* SOS */}
-      <div className="space-y-1">
+      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/30 p-2 rounded-lg">
         <div className="flex flex-col">
           <span className="text-gray-500 dark:text-gray-400 text-xs">SOS</span>
           <span className="font-medium">{sos.toFixed(3)}</span>
@@ -70,7 +70,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
       </div>
 
       {/* Streak */}
-      <div className="space-y-1">
+      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/30 p-2 rounded-lg">
         <div className="flex flex-col">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Streak</span>
           <span className="font-medium">{streak || '-'}</span>
@@ -78,7 +78,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
       </div>
 
       {/* Power Score */}
-      <div className="space-y-1">
+      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/30 p-2 rounded-lg">
         <div className="flex flex-col">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Power Score</span>
           <span className={cn("font-medium", powerScoreColorClass)}>
@@ -88,7 +88,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
       </div>
 
       {/* Trend */}
-      <div className="space-y-1">
+      <div className="space-y-1 bg-slate-50 dark:bg-slate-800/30 p-2 rounded-lg">
         <div className="flex flex-col">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Trend</span>
           <RankTrendIndicator rankChange={rankChange} />

@@ -5,17 +5,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
 import { useTeamDetails } from "@/hooks/useTeamDetails";
 import TeamHeader from "@/components/teams/TeamHeader";
-import TeamStats from "@/components/teams/TeamStats";
-import MatchList from "@/components/teams/MatchList";
 import StatBreakdown from "@/components/teams/StatBreakdown";
+import MatchList from "@/components/teams/MatchList";
 import { useTeamMatches } from "@/hooks/useTeamMatches";
+import { useTeamRankings } from "@/hooks/useTeamRankings";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
   
   const { team, isLoading } = useTeamDetails(teamId);
-  const { upcomingMatches, pastMatches, isLoadingMatches } = useTeamMatches(teamId);
+  const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
+  const { rankings } = useTeamRankings();
+  
+  // Find team ranking details if available
+  const teamRanking = rankings?.find(r => r.teamId === teamId);
+  const teamRank = teamRanking ? rankings.findIndex(r => r.teamId === teamId) + 1 : undefined;
+  const totalTeams = rankings?.length;
 
   // Log team data to verify we're using the correct values
   console.log("TeamDetails rendering with team data:", team ? {
@@ -64,20 +70,7 @@ const TeamDetails = () => {
       {/* Team Header */}
       <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
       
-      {/* Team Stats */}
-      <TeamStats 
-        wins={team.wins}
-        losses={team.losses}
-        gameWins={team.game_wins}
-        gameLosses={team.game_losses}
-        winPercentage={winPct.toFixed(1) + "%"}
-        gameWinPercentage={gamePct.toFixed(1) + "%"}
-        sos={team.sos}
-        closeMatchLosses={team.close_match_losses}
-        powerScore={team.power_score}
-      />
-      
-      {/* Stat Breakdown */}
+      {/* Unified Stat Breakdown */}
       <StatBreakdown
         wins={team.wins}
         losses={team.losses}
@@ -85,22 +78,17 @@ const TeamDetails = () => {
         gamesWon={team.game_wins}
         gamesLost={team.game_losses}
         gameWinPercentage={gamePct.toFixed(1)}
-        strengthOfSchedule={team.sos?.toString() || "0.0"}
+        strengthOfSchedule={team.sos?.toFixed(3) || "0.000"}
         closeMatchLosses={team.close_match_losses || 0}
         powerScore={team.power_score || 0}
-      />
-      
-      {/* Upcoming Matches */}
-      <MatchList
-        title="Upcoming Matches"
-        matches={upcomingMatches}
-        isLoading={isLoadingMatches}
-        teamId={teamId || ''}
+        rank={teamRank}
+        totalTeams={totalTeams}
+        rankChange={teamRanking?.rankChange}
       />
       
       {/* Past Matches */}
       <MatchList
-        title="Past Matches"
+        title="Match History"
         matches={pastMatches}
         isLoading={isLoadingMatches}
         teamId={teamId || ''}

@@ -3,7 +3,6 @@ import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, X } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TeamHeaderProps {
   team: Team;
@@ -11,9 +10,6 @@ interface TeamHeaderProps {
 }
 
 const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
-  console.log("TeamHeader image URL:", team?.imageUrl);
-  console.log("TeamHeader logo URL:", team?.logoUrl);
-
   return (
     <div className="flex flex-col items-center">
       <div className="flex justify-center mb-4 w-full">
@@ -37,24 +33,6 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
               {team.divisionName}
             </Badge>
           )}
-          
-          <div className="flex items-center text-emerald-600 font-semibold">
-            <Trophy size={16} className="mr-1" /> 
-            {team.wins} Wins
-          </div>
-          
-          <div className="flex items-center text-rose-600 font-semibold">
-            <X size={16} className="mr-1" /> 
-            {team.losses} Losses
-          </div>
-          
-          <div className="font-semibold">
-            {winPercentage}% Win Rate
-          </div>
-
-          <div className="font-medium text-gray-600">
-            Games: {team.game_wins ?? 0}–{team.game_losses ?? 0}
-          </div>
         </div>
       </div>
     </div>

@@ -21,6 +21,9 @@ interface StatBreakdownProps {
   strengthOfSchedule: string;
   closeMatchLosses: number;
   powerScore: number;
+  rank?: number;
+  totalTeams?: number;
+  rankChange?: number;
 }
 
 const StatBreakdown = ({
@@ -32,7 +35,10 @@ const StatBreakdown = ({
   gameWinPercentage,
   strengthOfSchedule,
   closeMatchLosses,
-  powerScore
+  powerScore,
+  rank,
+  totalTeams,
+  rankChange
 }: StatBreakdownProps) => {
   const isMobile = useIsMobile();
 
@@ -53,54 +59,94 @@ const StatBreakdown = ({
     return "text-red-600";
   };
 
+  // Rank change display
+  const renderRankChange = () => {
+    if (!rankChange) return null;
+    
+    if (rankChange > 0) {
+      return (
+        <span className="text-green-500 text-sm font-medium inline-flex items-center ml-2">
+          ▲ Up {rankChange} {rankChange === 1 ? 'spot' : 'spots'}
+        </span>
+      );
+    } else if (rankChange < 0) {
+      return (
+        <span className="text-red-500 text-sm font-medium inline-flex items-center ml-2">
+          ▼ Down {Math.abs(rankChange)} {Math.abs(rankChange) === 1 ? 'spot' : 'spots'}
+        </span>
+      );
+    }
+    
+    return null;
+  };
+
   const StatItem = ({ 
     icon, 
     title, 
     value, 
     color,
-    isHighlighted = false
+    isHighlighted = false,
+    ariaLabel
   }: { 
     icon: React.ReactNode; 
     title: string; 
     value: string | number;
     color?: string;
     isHighlighted?: boolean;
+    ariaLabel?: string;
   }) => (
-    <div className={cn(
-      `flex rounded-lg transition-all ${isMobile ? 'py-3 px-2' : 'p-4'}`,
-      isHighlighted && "bg-slate-50 dark:bg-slate-800/30 shadow-sm"
-    )}>
+    <div 
+      className={cn(
+        "flex rounded-lg transition-all",
+        isMobile ? 'py-3 px-2' : 'p-4',
+        isHighlighted && "bg-slate-50 dark:bg-slate-800/30 shadow-sm"
+      )}
+      aria-label={ariaLabel}
+    >
       <div className={cn("flex items-center justify-center mr-3", color || "text-slate-600")}>
         {icon}
       </div>
-      <div>
-        <p className="text-sm text-muted-foreground font-medium">{title}</p>
-        <p className={cn(
+      <dl>
+        <dt className="text-sm text-muted-foreground font-medium">{title}</dt>
+        <dd className={cn(
           "text-lg font-semibold",
           isHighlighted && "text-xl"
-        )}>{value}</p>
-      </div>
+        )}>{value}</dd>
+      </dl>
     </div>
   );
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-bold mb-4">📊 Stat Breakdown</h2>
+      <div className="mb-4">
+        <h2 className="text-xl font-bold inline-flex items-center">📊 Stat Breakdown</h2>
+        {rank && totalTeams && (
+          <div className="mt-1 flex items-center">
+            <span className="text-sm font-medium">
+              Ranked #{rank} of {totalTeams}
+            </span>
+            {renderRankChange()}
+          </div>
+        )}
+      </div>
+      
       <Card>
         <CardContent className="pt-6">
-          <div className={`grid ${isMobile ? 'grid-cols-1 gap-1' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2'}`}>
+          <div className={`grid ${isMobile ? 'grid-cols-1 gap-1' : 'grid-cols-2 md:grid-cols-3 gap-4'}`}>
             <StatItem 
               icon={<Trophy size={20} />} 
               title="Match Record" 
               value={`${wins}–${losses}`}
               color="text-amber-500"
               isHighlighted
+              ariaLabel={`Match Record: ${wins} wins and ${losses} losses`}
             />
             <StatItem 
               icon={<Percent size={20} />} 
               title="Match Win %" 
               value={`${winPercentage}%`}
               color={getWinPercentageColor(winPercentage)}
+              ariaLabel={`Match Win Percentage: ${winPercentage}%`}
             />
             <StatItem 
               icon={<BarChart2 size={20} />} 
@@ -108,31 +154,36 @@ const StatBreakdown = ({
               value={`${gamesWon}–${gamesLost}`}
               color="text-blue-500"
               isHighlighted
+              ariaLabel={`Game Record: ${gamesWon} games won and ${gamesLost} games lost`}
             />
             <StatItem 
               icon={<Percent size={20} />} 
               title="Game Win %" 
               value={`${gameWinPercentage}%`}
               color={getWinPercentageColor(gameWinPercentage)}
+              ariaLabel={`Game Win Percentage: ${gameWinPercentage}%`}
             />
             <StatItem 
               icon={<Award size={20} />} 
               title="Strength of Schedule" 
               value={strengthOfSchedule}
               color="text-indigo-500"
+              ariaLabel={`Strength of Schedule: ${strengthOfSchedule}`}
             />
             <StatItem 
               icon={<ShieldAlert size={20} />} 
               title="Close Match Losses" 
               value={closeMatchLosses}
               color="text-orange-500"
+              ariaLabel={`Close Match Losses: ${closeMatchLosses}`}
             />
             <StatItem 
               icon={<Star size={20} />} 
               title="Power Score" 
-              value={powerScore}
+              value={powerScore.toFixed(1)}
               color={getPowerScoreColor(powerScore)}
               isHighlighted
+              ariaLabel={`Power Score: ${powerScore.toFixed(1)}`}
             />
           </div>
         </CardContent>

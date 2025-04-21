@@ -6,16 +6,16 @@ import { usePreviousRankings } from "./rankings/usePreviousRankings";
 import { updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
 import { calculateStreak } from "@/utils/rankingUtils";
 
-export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | undefined) => {
+export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const previousRankings = usePreviousRankings();
-  const { latestMatches, matchesLoading } = useRankingsData();
+  const { latestTeams, latestMatches, teamsLoading, matchesLoading } = useRankingsData();
 
   useEffect(() => {
     const updateRankings = async () => {
-      const teamsToUse = teams;
-      const matchesToUse = latestMatches || matches;
+      const teamsToUse = teams || latestTeams;
+      const matchesToUse = matches || latestMatches;
       
       if (!teamsToUse || teamsToUse.length === 0) {
         setRankings([]);
@@ -70,10 +70,10 @@ export const useTeamRankings = (teams: Team[] | undefined, matches: Match[] | un
     };
     
     updateRankings();
-  }, [teams, latestMatches, matches, previousRankings]);
+  }, [teams, latestTeams, latestMatches, matches, previousRankings]);
 
   return {
     rankings,
-    isLoading: isLoading || matchesLoading,
+    isLoading: isLoading || teamsLoading || matchesLoading,
   };
 };
