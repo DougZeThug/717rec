@@ -77,7 +77,7 @@ const Schedule = () => {
 
   if (teamsLoading || matchesLoading) {
     return (
-      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center">
+      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center font-inter">
         <div className="flex flex-col items-center">
           <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
           <p className="text-lg">Loading data...</p>
@@ -87,7 +87,7 @@ const Schedule = () => {
   }
 
   return (
-    <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
+    <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 font-inter">
       <div className="max-w-7xl mx-auto">
         <ScheduleHeader 
           searchTerm={searchTerm}
@@ -126,6 +126,7 @@ const Schedule = () => {
           setActiveTab={setActiveTab}
           filteredMatches={filteredMatches}
           teams={teams || []}
+          selectedDate={selectedDate}
           onEditMatch={(match) => {
             setEditingMatch(match);
             setIsFormOpen(true);

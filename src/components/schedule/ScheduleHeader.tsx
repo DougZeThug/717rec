@@ -6,6 +6,7 @@ import ScheduleSearch from "./ScheduleSearch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { useTheme } from "next-themes";
 
 interface ScheduleHeaderProps {
   searchTerm: string;
@@ -22,6 +23,9 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   selectedDate = new Date(),
   onDateSelect
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
   const handleDateSelect = (date: Date | undefined) => {
     if (date && onDateSelect) {
       onDateSelect(date);
@@ -29,33 +33,39 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   };
 
   return (
-    <div className="mb-6">
+    <div className="mb-6 font-inter">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <h1 className="text-3xl font-bold text-cornhole-navy">Schedule</h1>
         <div className="flex flex-col sm:flex-row gap-3">
           {onDateSelect && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button 
+                  variant="outline" 
+                  className={`gap-2 px-4 py-2 shadow-sm border ${
+                    isLight ? "border-gray-300 hover:bg-gray-50" : "border-gray-700 hover:bg-gray-800"
+                  }`}
+                >
                   <Calendar className="h-4 w-4" />
-                  {format(selectedDate, 'PP')}
+                  {format(selectedDate, 'MMMM d, yyyy')}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
+              <PopoverContent className="w-auto p-0 shadow-md border" align="end">
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleDateSelect}
                   initialFocus
+                  className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
           )}
           <Button 
             onClick={onNewMatch}
-            className="bg-cornhole-navy hover:bg-cornhole-navy/90"
+            className="bg-cornhole-navy hover:bg-cornhole-navy/90 gap-2"
           >
-            <Plus className="h-5 w-5 mr-1" />
+            <Plus className="h-5 w-5" />
             New Match
           </Button>
         </div>
