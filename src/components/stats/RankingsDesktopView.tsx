@@ -77,19 +77,19 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
         <div key={divisionName} className="mb-8">
           {!showUnified && (
             <h3 className="text-lg font-medium mb-3 flex items-center font-inter"
-              style={isLight ? { color: "#000" } : { color: 'white' }}
+              style={isLight ? { color: "#111111" } : { color: 'white' }}
             >
-              {divisionName} <span className={`${isLight ? "text-gray-800" : "text-muted-foreground"} ml-1`}>({divisionRankings.length})</span>
+              {divisionName} <span className={`${isLight ? "text-[#222222]" : "text-muted-foreground"} ml-1`}>({divisionRankings.length})</span>
             </h3>
           )}
           <div className="overflow-x-auto">
             <Table className="bg-white text-gray-800 dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 font-medium font-inter" style={isLight ? { color: "#000", fontWeight: 700 } : { color: "#fff" }}>Rank</TableHead>
-                  <TableHead className="font-medium font-inter" style={isLight ? { color: "#000", fontWeight: 700 } : { color: "#fff" }}>Team</TableHead>
-                  {showUnified && <TableHead className="font-inter" style={isLight ? { color: "#000", fontWeight: 700 } : { color: "#fff" }}>Division</TableHead>}
-                  <TableHead className="text-center font-inter" style={isLight ? { color: "#000", fontWeight: 700 } : { color: "#fff" }}>
+                  <TableHead className="w-12 font-medium font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>Rank</TableHead>
+                  <TableHead className="font-medium font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>Team</TableHead>
+                  {showUnified && <TableHead className="font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>Division</TableHead>}
+                  <TableHead className="text-center font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>
                     <div className="flex items-center justify-center gap-1">
                       <Bolt className="inline-block text-purple-300" size={16} />
                       <span onClick={() => onSortChange('powerScore')} className="cursor-pointer">
@@ -97,18 +97,18 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                       </span>
                     </div>
                   </TableHead>
-                  <SortableHeader field="wins" className="text-center" ><span style={isLight ? { color: "#000" } : { color: "#fff" }}>W-L</span></SortableHeader>
-                  <SortableHeader field="winPercentage" className="text-center"><span style={isLight ? { color: "#000" } : { color: "#fff" }}>Win %</span></SortableHeader>
-                  <SortableHeader field="gamesWon" className="text-center hidden md:table-cell"><span style={isLight ? { color: "#000" } : { color: "#fff" }}>Games (W-L)</span></SortableHeader>
-                  <SortableHeader field="gameWinPercentage" className="text-center hidden lg:table-cell"><span style={isLight ? { color: "#000" } : { color: "#fff" }}>Game %</span></SortableHeader>
+                  <SortableHeader field="wins" className="text-center" ><span style={isLight ? { color: "#111111" } : { color: "#fff" }}>W-L</span></SortableHeader>
+                  <SortableHeader field="winPercentage" className="text-center"><span style={isLight ? { color: "#111111" } : { color: "#fff" }}>Win %</span></SortableHeader>
+                  <SortableHeader field="gamesWon" className="text-center hidden md:table-cell"><span style={isLight ? { color: "#111111" } : { color: "#fff" }}>Games (W-L)</span></SortableHeader>
+                  <SortableHeader field="gameWinPercentage" className="text-center hidden lg:table-cell"><span style={isLight ? { color: "#111111" } : { color: "#fff" }}>Game %</span></SortableHeader>
                   <SortableHeader field="sos" className="text-center">
                     <div className="flex items-center gap-1 justify-center">
                       <Scale className="inline-block text-blue-300" size={15} />
-                      <span style={isLight ? { color: "#000" } : { color: "#fff" }}>SOS</span>
+                      <span style={isLight ? { color: "#111111" } : { color: "#fff" }}>SOS</span>
                     </div>
                   </SortableHeader>
-                  <TableHead className="text-center font-inter" style={isLight ? { color: "#000", fontWeight: 700 } : { color: "#fff" }}>Streak</TableHead>
-                  <TableHead className="text-center font-inter" style={isLight ? { color: "#000", fontWeight: 700 } : { color: "#fff" }}>Trend</TableHead>
+                  <TableHead className="text-center font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>Streak</TableHead>
+                  <TableHead className="text-center font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>Trend</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

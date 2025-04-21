@@ -21,11 +21,11 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isLight = resolvedTheme === "light";
 
   // Use a deep, readable color in light mode
-  const chartTextColor = isLight ? "#000000" : "#e5e7eb";
+  const chartTextColor = isLight ? "#111111" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isDark ? "#f9fafb" : "#111827";
+  const tooltipTextColor = isDark ? "#111111" : "#f9fafb";
   const barColorPower = "#a288f5";
   const highlightFirst = "#805fff";
 
@@ -44,7 +44,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           boxShadow: "0 2px 8px rgba(0,0,0,.14)",
         }}
       >
-        <p style={{ fontWeight: 600, marginBottom: 4 }}>{payload[0].payload.name}</p>
+        <p style={{ fontWeight: 600, marginBottom: 4, color: isLight ? "#111111" : "#ffffff" }}>{payload[0].payload.name}</p>
         <p style={{ color: barColorPower, fontWeight: 500 }}>Power Score: {formatPowerScore(payload[0].value)}</p>
       </div>
     );

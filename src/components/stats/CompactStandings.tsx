@@ -61,14 +61,14 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 )}
                 <span className={cn(
                   "font-medium hover:text-blue-600 hover:underline",
-                  isLight ? "text-black" : "text-white"  // Darkened team name color for light mode
+                  isLight ? "text-[#111111]" : "text-white"
                 )}>
                   {team.teamName}
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-3 text-sm">
-              <span className={isLight ? "text-gray-800" : "text-gray-200"}>{team.wins}-{team.losses}</span> {/* Darkened record text */}
+              <span className={isLight ? "text-[#222222]" : "text-gray-200"}>{team.wins}-{team.losses}</span>
               <span className={getPowerScoreColor(team.powerScore)}>
                 {formatPowerScore(team.powerScore)}
               </span>
@@ -84,11 +84,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
       <Table className="bg-white dark:bg-transparent border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
         <TableHeader>
           <TableRow className={isLight ? "bg-gray-50" : ""}>
-            <TableHead className="w-10" style={isLight ? { color: "#111", fontWeight: 600 } : {}}>Rank</TableHead>
-            <TableHead style={isLight ? { color: "#111", fontWeight: 600 } : {}}>Team</TableHead> {/* Darkened team name */}
-            <TableHead className="text-center" style={isLight ? { color: "#111", fontWeight: 600 } : {}}>Record</TableHead> {/* Darkened record */}
-            <TableHead className="text-center" style={isLight ? { color: "#111", fontWeight: 600 } : {}}>Win %</TableHead> {/* Darkened win % */}
-            <TableHead className="text-center" style={isLight ? { color: "#111", fontWeight: 600 } : {}}>Power Score</TableHead>
+            <TableHead className="w-10" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Rank</TableHead>
+            <TableHead style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Team</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Record</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Win %</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#111111", fontWeight: 600 } : {}}>Power Score</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -96,7 +96,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             <TableRow 
               key={team.teamId} 
               className={getRowInteractionStyles("cursor-pointer")}
-              style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", color: "#111" } : {}}  // Darkened text color for all rows in light mode
+              style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5" } : {}}
               onClick={() => handleTeamClick(team.teamId)}
             >
               <TableCell className={getRankStyles(index)}>
@@ -117,16 +117,16 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   )}
                   <span className={cn(
                     "font-medium hover:text-blue-600 hover:underline", 
-                    isLight ? "text-black" : "text-white"  // Darkened team name color for light mode
+                    isLight ? "text-[#111111]" : "text-white"
                   )}>
                     {team.teamName}
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="text-center" style={isLight ? { color: "#111" } : { color: "#e0e0e0" }}> {/* Darkened record */}
+              <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
                 {team.wins}-{team.losses}
               </TableCell>
-              <TableCell className="text-center" style={isLight ? { color: "#111" } : { color: "#e0e0e0" }}> {/* Darkened win % */}
+              <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
                 {(team.winPercentage * 100).toFixed(1)}%
               </TableCell>
               <TableCell className={cn("text-center font-semibold", getPowerScoreColor(team.powerScore))}>

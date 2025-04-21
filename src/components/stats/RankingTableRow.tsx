@@ -32,13 +32,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       className={`cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-gray-50' : ''}`}
       onClick={onToggleExpand}
     >
-      <TableCell className="font-medium" style={isLight ? { color: "#111" } : {}}>{index + 1}</TableCell>
+      <TableCell className="font-medium" style={isLight ? { color: "#222222" } : {}}>{index + 1}</TableCell>
       <TableCell>
         <Link 
           to={`/teams/${ranking.teamId}`}
           className="hover:text-blue-600 hover:underline"
           onClick={(e) => e.stopPropagation()}
-          style={isLight ? { color: "#000" } : {}}
+          style={isLight ? { color: "#111111" } : {}}
         >
           {ranking.teamName}
         </Link>
@@ -56,16 +56,16 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <TableCell className={`text-center ${powerScoreColor}`}>
         {formatPowerScore(ranking.powerScore)}
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222" } : {}}>{`${ranking.wins}-${ranking.losses}`}</TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222" } : {}}>{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
-      <TableCell className="text-center hidden md:table-cell" style={isLight ? { color: "#222" } : {}}>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>{`${ranking.wins}-${ranking.losses}`}</TableCell>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
+      <TableCell className="text-center hidden md:table-cell" style={isLight ? { color: "#222222" } : {}}>
         {`${ranking.gamesWon}-${ranking.gamesLost}`}
       </TableCell>
-      <TableCell className="text-center hidden lg:table-cell" style={isLight ? { color: "#222" } : {}}>
+      <TableCell className="text-center hidden lg:table-cell" style={isLight ? { color: "#222222" } : {}}>
         {(ranking.gameWinPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222" } : {}}>{ranking.sos.toFixed(3)}</TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222" } : {}}>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>{ranking.sos.toFixed(3)}</TableCell>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
         {ranking.streak || '-'}
       </TableCell>
       <TableCell className="text-center">
