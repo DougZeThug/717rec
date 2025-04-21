@@ -65,7 +65,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 
   const SortableHeader = ({ field, children, className }: { field: string, children: React.ReactNode, className?: string }) => (
     <TableHead 
-      className={`cursor-pointer hover:bg-gray-50 ${className || ''} font-medium font-inter`}
+      className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${className || ''} font-medium font-inter`}
       onClick={() => onSortChange(field)}
     >
       <div className="flex items-center justify-center">
@@ -87,7 +87,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
             </h3>
           )}
           <div className="overflow-x-auto">
-            <Table className={`${isLight ? "bg-white border border-[#e0e0e0] rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "bg-[#1E1E1E] text-white rounded-xl shadow"}`}>
+            <Table className="bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12 font-medium font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>Rank</TableHead>
@@ -129,7 +129,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                       />
                       {expandedTeam === ranking.teamId && (
                         <TableRow>
-                          <TableCell colSpan={showUnified ? 11 : 10} className={`${isLight ? "bg-[#f5f5f5]" : "bg-gray-900/80"} p-0 rounded-b-xl shadow-inner`}>
+                          <TableCell colSpan={showUnified ? 11 : 10} className="bg-[#f5f5f5] dark:bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
                             <div className="p-4">
                               <HeadToHeadRecords headToHead={ranking.headToHead} />
                             </div>

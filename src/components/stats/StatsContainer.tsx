@@ -78,13 +78,11 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     imageUrl: team.imageUrl
   }));
 
-  // Card/container shared class for light mode
-  const lightCard = "bg-white text-[#1a1a1a] border border-[#e0e0e0] rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] font-inter";
-  const darkCard = "bg-[#1E1E1E] text-white rounded-xl font-inter";
-  const cardBg = isLight ? lightCard : darkCard;
+  // Card/container shared styles
+  const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
   
   return (
-    <div className={`max-w-7xl mx-auto ${isLight ? "bg-[#fafafa]" : ""}`}>
+    <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent">
       <StatsHeader 
         onDivisionChange={handleDivisionChange} 
         divisions={divisions || []} 
@@ -94,8 +92,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
           <>
             <Card className={`mb-6 ${cardBg} p-0`}>
               <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
-                <CardTitle className="font-bold text-[1.15rem] sm:text-xl" style={isLight ? {color:'#1a1a1a'} : {color:'#fff'}}>Current Standings</CardTitle>
-                <CardDescription className={isLight ? 'text-[#333]' : 'text-gray-400'}>
+                <CardTitle className="font-bold text-[1.15rem] sm:text-xl text-[#1a1a1a] dark:text-white">Current Standings</CardTitle>
+                <CardDescription className="text-[#333] dark:text-gray-400">
                   Top {compactLimit} teams based on performance
                 </CardDescription>
               </CardHeader>
@@ -105,9 +103,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
                   <Button 
                     onClick={scrollToFullRankings}
                     variant="outline" 
-                    className={`flex items-center gap-2 rounded-lg px-6 py-3 font-inter font-semibold 
-                      ${isLight ? "bg-white text-[#1a1a1a] hover:bg-[#f0f0f0] border border-[#e0e0e0]" : ""}
-                    `}
+                    className="flex items-center gap-2 rounded-lg px-6 py-3 font-inter font-semibold bg-white text-[#1a1a1a] hover:bg-[#f0f0f0] border border-[#e0e0e0] dark:bg-transparent dark:text-white dark:border-gray-700"
                   >
                     View Full Standings
                     <ArrowDown className="h-4 w-4" />
@@ -117,7 +113,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             </Card>
             
             <div className="mb-8">
-              <h2 className={`text-[1.12rem] font-bold mb-4 ${isLight ? 'text-[#1a1a1a]' : 'text-white'}`}>League Highlights</h2>
+              <h2 className="text-[1.12rem] font-bold mb-4 text-[#1a1a1a] dark:text-white">League Highlights</h2>
               <StatsSummaryCards rankings={rankings} theme={theme} />
             </div>
 
@@ -136,17 +132,16 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 };
 
 const NoTeamsAvailable = ({ theme }: { theme: string }) => {
-  const cardBg = theme === 'light' ? 'bg-white border border-[#e0e0e0] text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : 'bg-[#1E1E1E] text-white';
   return (
-    <Card className={`${cardBg} rounded-xl shadow font-inter`}>
+    <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] font-inter">
       <CardHeader>
-        <CardTitle className={theme === "light" ? "text-[#1a1a1a] font-bold" : "text-white font-bold"}>No Teams Available</CardTitle>
-        <CardDescription className={theme === "light" ? "text-gray-600 font-light" : "text-gray-400 font-light"}>
+        <CardTitle className="text-[#1a1a1a] dark:text-white font-bold">No Teams Available</CardTitle>
+        <CardDescription className="text-gray-600 dark:text-gray-400 font-light">
           There are no teams in the selected division or no teams have been added yet.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className={theme === "light" ? "text-gray-700 font-inter" : "text-gray-300 font-inter"}>
+        <p className="text-gray-700 dark:text-gray-300 font-inter">
           Try selecting a different division or add teams to view statistics.
         </p>
       </CardContent>

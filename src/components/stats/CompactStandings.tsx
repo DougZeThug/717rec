@@ -38,8 +38,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) 
           <div
             key={team.teamId}
             onClick={() => handleTeamClick(team.teamId)}
-            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer")}
-            style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", border: "1px solid #e0e0e0" } : {}}
+            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-white dark:bg-transparent")}
+            style={isLight ? { border: "1px solid #e0e0e0" } : {}}
           >
             <div className="flex items-center space-x-3">
               <div className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index))}>
@@ -68,7 +68,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) 
 
   return (
     <div className="overflow-x-auto">
-      <Table className={isLight ? "bg-white border border-[#e0e0e0] rounded-xl shadow-sm" : ""}>
+      <Table className="bg-white dark:bg-transparent border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
         <TableHeader>
           <TableRow>
             <TableHead className="w-10" style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Rank</TableHead>
