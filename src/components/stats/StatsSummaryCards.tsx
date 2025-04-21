@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -62,7 +63,7 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const highestPowerScore = getHighestPowerScore();
 
   const cardBase = "flex flex-row items-center gap-3 py-5 px-4 sm:px-5 rounded-xl font-inter";
-  const lightCard = "bg-[#f9f9f9] text-[#1a1a1a] border border-[#e0e0e0] shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
+  const lightCard = "bg-white text-[#1a1a1a] border border-[#e0e0e0] shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
   const darkCard = "bg-[#1E1E1E] text-white";
   const cardBg = isLight ? lightCard : darkCard;
   const titleColor = isLight ? "text-[#1a1a1a]" : "text-white";

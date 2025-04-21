@@ -73,9 +73,9 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) 
           <TableRow>
             <TableHead className="w-10" style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Rank</TableHead>
             <TableHead style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Team</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a" } : {}}>Record</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a" } : {}}>Win %</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a" } : {}}>Power Score</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Record</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Win %</TableHead>
+            <TableHead className="text-center" style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Power Score</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

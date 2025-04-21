@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { 
   Card, 
@@ -83,7 +84,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const cardBg = isLight ? lightCard : darkCard;
   
   return (
-    <div className={`max-w-7xl mx-auto ${theme === "light" ? "bg-[#fafafa]" : ""}`}>
+    <div className={`max-w-7xl mx-auto ${isLight ? "bg-[#fafafa]" : ""}`}>
       <StatsHeader 
         onDivisionChange={handleDivisionChange} 
         divisions={divisions || []} 
@@ -135,7 +136,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 };
 
 const NoTeamsAvailable = ({ theme }: { theme: string }) => {
-  const cardBg = theme === 'light' ? 'bg-[#f5f5f5] border border-[#e0e0e0] text-[#1a1a1a]' : 'bg-[#1E1E1E] text-white';
+  const cardBg = theme === 'light' ? 'bg-white border border-[#e0e0e0] text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.08)]' : 'bg-[#1E1E1E] text-white';
   return (
     <Card className={`${cardBg} rounded-xl shadow font-inter`}>
       <CardHeader>

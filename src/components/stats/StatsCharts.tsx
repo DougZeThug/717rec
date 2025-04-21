@@ -27,6 +27,16 @@ interface StatsChartsProps {
 const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const isLight = theme === "light";
+  
+  // Create a sorted array for power scores to use in the vertical bar chart
+  const topByPowerScore = [...chartData]
+    .sort((a, b) => b.powerScore - a.powerScore)
+    .slice(0, 10)
+    .map(team => ({
+      name: team.name,
+      powerScore: team.powerScore
+    }));
+  
   // Light and dark styles
   const cardBg = isLight
     ? "bg-white border border-[#e0e0e0] text-[#1a1a1a] rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
@@ -40,15 +50,6 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
   const barColorPower = "#a288f5";
-
-  // Create a sorted array for power scores to use in the vertical bar chart
-  const topByPowerScore = [...chartData]
-    .sort((a, b) => b.powerScore - a.powerScore)
-    .slice(0, 10)
-    .map(team => ({
-      name: team.name,
-      powerScore: team.powerScore
-    }));
 
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
