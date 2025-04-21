@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { 
   Card, 
@@ -78,7 +77,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     imageUrl: team.imageUrl
   }));
 
-  // Card/container shared styles
   const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
   
   return (
