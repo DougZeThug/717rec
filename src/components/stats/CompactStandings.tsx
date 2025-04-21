@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -37,7 +38,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) 
           <div
             key={team.teamId}
             onClick={() => handleTeamClick(team.teamId)}
-            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer", undefined, isLight ? "#e0e0e0" : undefined)}
+            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer")}
             style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", border: "1px solid #e0e0e0" } : {}}
           >
             <div className="flex items-center space-x-3">
@@ -81,7 +82,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) 
           {rankings.map((team, index) => (
             <TableRow 
               key={team.teamId} 
-              className={getRowInteractionStyles("cursor-pointer", undefined, isLight ? "#e0e0e0" : undefined)}
+              className={getRowInteractionStyles("cursor-pointer")}
               style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", color: "#1a1a1a" } : {}}
               onClick={() => handleTeamClick(team.teamId)}
             >

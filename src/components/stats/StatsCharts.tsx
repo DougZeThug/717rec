@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import {
@@ -35,6 +36,15 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
   const barColorPower = "#a288f5";
+
+  // Create a sorted array for power scores to use in the vertical bar chart
+  const topByPowerScore = [...chartData]
+    .sort((a, b) => b.powerScore - a.powerScore)
+    .slice(0, 10)
+    .map(team => ({
+      name: team.name,
+      powerScore: team.powerScore
+    }));
 
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
