@@ -77,15 +77,13 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     imageUrl: team.imageUrl
   }));
 
-  const themeClass = theme === 'light' ? 'light-theme' : 'dark-theme';
-  const cardBg =
-    isLight
-      ? 'bg-[#fff] border border-[#e0e0e0] text-[#1a1a1a] shadow-[0_1px_3px_rgba(0,0,0,0.08)]'
-      : 'bg-[#1E1E1E] text-white';
-  const cardShadow = 'rounded-xl font-inter';
-
+  // Card/container shared class for light mode
+  const lightCard = "bg-white text-[#1a1a1a] border border-[#e0e0e0] rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] font-inter";
+  const darkCard = "bg-[#1E1E1E] text-white rounded-xl font-inter";
+  const cardBg = isLight ? lightCard : darkCard;
+  
   return (
-    <div className={`max-w-7xl mx-auto ${themeClass}`}>
+    <div className={`max-w-7xl mx-auto ${theme === "light" ? "bg-[#fafafa]" : ""}`}>
       <StatsHeader 
         onDivisionChange={handleDivisionChange} 
         divisions={divisions || []} 
@@ -93,14 +91,14 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       <div className="font-inter mt-2">
         {rankings.length > 0 ? (
           <>
-            <Card className={`mb-6 ${cardBg} ${cardShadow}`}>
-              <CardHeader className="pb-2">
+            <Card className={`mb-6 ${cardBg} p-0`}>
+              <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
                 <CardTitle className="font-bold text-[1.15rem] sm:text-xl" style={isLight ? {color:'#1a1a1a'} : {color:'#fff'}}>Current Standings</CardTitle>
                 <CardDescription className={isLight ? 'text-[#333]' : 'text-gray-400'}>
                   Top {compactLimit} teams based on performance
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6 pt-2 sm:pt-6">
                 <CompactStandings rankings={rankings.slice(0, compactLimit)} theme={theme} />
                 <div className="mt-4 text-center">
                   <Button 
