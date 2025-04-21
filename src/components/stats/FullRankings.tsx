@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import RankingsTable from "./RankingsTable";
 import { Ranking } from "@/types";
 import ViewToggle from "./ViewToggle";
+import { useTheme } from "next-themes";
 
 interface FullRankingsProps {
   rankings: Ranking[];
@@ -17,8 +18,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
     ? [...rankings].sort((a, b) => b.powerScore - a.powerScore)
     : rankings;
 
-  // Determine if theme is light for subtitle style
-  const { resolvedTheme } = require("next-themes").useTheme();
+  // Get theme using the proper import instead of require
+  const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
   return (
@@ -44,4 +45,3 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
   );
 };
 export default FullRankings;
-
