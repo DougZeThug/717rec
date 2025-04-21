@@ -21,7 +21,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isLight = resolvedTheme === "light";
 
   // Use a deep, readable color in light mode
-  const chartTextColor = isLight ? "#1A1F2C" : "#e5e7eb";
+  const chartTextColor = isLight ? "#000000" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";

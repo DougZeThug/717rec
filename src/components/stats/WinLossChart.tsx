@@ -34,7 +34,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
   const tooltipTextColor = isDark ? "#f9fafb" : "#111827";
-  const legendTextColor = isLight ? "#222222" : "#e5e7eb"; // Darkened legend text in light mode
+  const legendTextColor = isLight ? "#000000" : "#e5e7eb"; // Darkened legend text in light mode
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
@@ -52,7 +52,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
           fontFamily: "'Inter', sans-serif",
           padding: 8,
         }}>
-        <p style={{ fontWeight: 600, marginBottom: 4, color: chartTextColor }}>{label}</p> {/* Darkened label */}
+        <p style={{ fontWeight: 600, marginBottom: 4, color: isLight ? "#000" : chartTextColor }}>{label}</p> {/* Darkened label */}
         {payload.map((entry: any, index: number) => (
           <p key={`tooltip-${index}`} style={{ color: entry.color, margin: 0 }}>
             {entry.name}: {entry.value}
@@ -123,4 +123,3 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
-
