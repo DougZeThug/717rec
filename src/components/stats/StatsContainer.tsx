@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
+
+import React, { useRef, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -9,22 +10,22 @@ import {
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import { Match } from "@/types";
-import { Loader2, AlertTriangle, ArrowDown } from "lucide-react";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import StatsHeader from "@/components/stats/StatsHeader";
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards";
 import StatsCharts from "@/components/stats/StatsCharts";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import CompactStandings from "@/components/stats/CompactStandings";
-import RankingsTable from "@/components/stats/RankingsTable";
 import StatsLoadingState from "./StatsLoadingState";
 import StatsErrorState from "./StatsErrorState";
 import FullRankings from "./FullRankings";
-import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePowerScoresData } from "@/hooks/power-score/usePowerScoresData";
 import PowerScoreScatterPlot from "./PowerScoreScatterPlot";
 import { Ranking } from "@/types";
+
+// Newly extracted components
+import ErrorBoundary from "@/components/stats/ErrorBoundary";
+import NoTeamsAvailable from "@/components/stats/NoTeamsAvailable";
+import StandingsSection from "@/components/stats/StandingsSection";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -32,7 +33,6 @@ interface StatsContainerProps {
   matchesError: Error | null;
 }
 
-// Define the expected chart data item type to match what StatsCharts expects
 interface ChartDataItem {
   name: string;
   id: string;
@@ -123,7 +123,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const topTeamsForRankings = topTeams.map((team: any) => {
     try {
       if (team.teamId) return team as Ranking;
-      
       return {
         teamId: team.team_id || team.id || '',
         teamName: team.team_name || team.name || '',
@@ -191,25 +190,10 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
         <StatsLoadingState />
       ) : rankings.length > 0 ? (
         <>
-          <Card className="mb-6">
-            <CardHeader className="pb-2">
-              <CardTitle>Current Standings</CardTitle>
-              <CardDescription>Top 10 teams based on performance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CompactStandings rankings={topTeamsForRankings} />
-              <div className="mt-4 text-center">
-                <Button 
-                  onClick={scrollToFullRankings}
-                  variant="outline" 
-                  className="flex items-center gap-2"
-                >
-                  View Full Standings
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <StandingsSection 
+            topTeamsForRankings={topTeamsForRankings}
+            onViewFullStandings={scrollToFullRankings}
+          />
           
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-cornhole-navy mb-4">League Highlights</h2>
@@ -254,45 +238,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
         <NoTeamsAvailable />
       )}
     </div>
-  );
-};
-
-const ErrorBoundary = ({ children, fallback }: { children: React.ReactNode, fallback: React.ReactNode }) => {
-  const [hasError, setHasError] = useState(false);
-  
-  useEffect(() => {
-    const errorHandler = (error: ErrorEvent) => {
-      console.error("Caught error:", error);
-      setHasError(true);
-    };
-    
-    window.addEventListener('error', errorHandler);
-    return () => window.removeEventListener('error', errorHandler);
-  }, []);
-  
-  if (hasError) {
-    return <>{fallback}</>;
-  }
-  
-  try {
-    return <>{children}</>;
-  } catch (error) {
-    console.error("Error in component:", error);
-    return <>{fallback}</>;
-  }
-};
-
-const NoTeamsAvailable = () => {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>No Teams Available</CardTitle>
-        <CardDescription>There are no teams in the selected division or no teams have been added yet.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p>Try selecting a different division or add teams to view statistics.</p>
-      </CardContent>
-    </Card>
   );
 };
 
