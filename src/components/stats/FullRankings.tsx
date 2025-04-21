@@ -31,6 +31,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
         </div>
       </CardHeader>
       <CardContent>
+        {/* Ensure logos always display in RankingsTable */}
         <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
       </CardContent>
     </Card>

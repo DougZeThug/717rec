@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from "react";
 import { 
   Card, 
@@ -13,16 +12,11 @@ import { Match } from "@/types";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import StatsHeader from "@/components/stats/StatsHeader";
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards";
-import StatsCharts from "@/components/stats/StatsCharts";
 import StatsLoadingState from "./StatsLoadingState";
 import StatsErrorState from "./StatsErrorState";
 import FullRankings from "./FullRankings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePowerScoresData } from "@/hooks/power-score/usePowerScoresData";
-import PowerScoreScatterPlot from "./PowerScoreScatterPlot";
-import { Ranking } from "@/types";
-
-// Newly extracted components
 import ErrorBoundary from "@/components/stats/ErrorBoundary";
 import NoTeamsAvailable from "@/components/stats/NoTeamsAvailable";
 import StandingsSection from "@/components/stats/StandingsSection";
@@ -31,17 +25,6 @@ interface StatsContainerProps {
   matches: Match[];
   isLoadingMatches: boolean;
   matchesError: Error | null;
-}
-
-interface ChartDataItem {
-  name: string;
-  id: string;
-  wins: number;
-  losses: number;
-  winPercentage: number;
-  powerScore: number;
-  logoUrl?: string | null;
-  imageUrl?: string | null;
 }
 
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
@@ -53,10 +36,9 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     error: teamsError 
   } = useTeamData(selectedDivision);
   const isMobile = useIsMobile();
-  
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
-  const fullRankingsRef = useRef<HTMLDivElement>(null);
 
+  const fullRankingsRef = React.useRef<HTMLDivElement>(null);
   const { top10 = [], allTeams = [], isLoadingTop = false, isLoadingAll = false } = usePowerScoresData();
 
   const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
@@ -72,19 +54,12 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     }
   };
 
-  useEffect(() => {
-    console.log("Rankings data:", rankings);
-    console.log("Top10 data:", top10);
-  }, [rankings, top10]);
-
   if (isLoading) {
     return <StatsLoadingState />;
   }
-
   if (hasError) {
     return <StatsErrorState teamsError={teamsError} matchesError={matchesError} />;
   }
-
   if (!rankings || rankings.length === 0) {
     return (
       <div className="max-w-7xl mx-auto p-8">
@@ -100,8 +75,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       </div>
     );
   }
-
-  const chartLimit = isMobile ? 5 : 8;
 
   const topTeams = (() => {
     try {
@@ -126,8 +99,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       return {
         teamId: team.team_id || team.id || '',
         teamName: team.team_name || team.name || '',
-        logoUrl: team.logo_url || null,
-        imageUrl: team.image_url || null,
+        logoUrl: team.logo_url || team.logoUrl || null,
+        imageUrl: team.image_url || team.imageUrl || team.logo_url || null,
         wins: team.wins || 0,
         losses: team.losses || 0,
         winPercentage: team.win_percentage || 0,
@@ -168,16 +141,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     }
   });
 
-  const chartData: ChartDataItem[] = topTeamsForRankings.map(team => ({
-    id: team.teamId,
-    name: team.teamName,
-    wins: team.wins,
-    losses: team.losses,
-    winPercentage: team.winPercentage,
-    powerScore: team.powerScore,
-    logoUrl: team.logoUrl,
-    imageUrl: team.imageUrl
-  }));
+  console.log("topTeamsForRankings:", topTeamsForRankings);
+  console.log("rankings (full):", rankings);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -186,7 +151,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
         divisions={divisions || []} 
       />
 
-      {(isLoadingTop) ? (
+      {isLoadingTop ? (
         <StatsLoadingState />
       ) : rankings.length > 0 ? (
         <>
@@ -198,15 +163,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-cornhole-navy mb-4">League Highlights</h2>
             <StatsSummaryCards rankings={rankings} />
-          </div>
-
-          <StatsCharts 
-            chartData={chartData.slice(0, chartLimit)} 
-            chartLimit={chartLimit} 
-          />
-
-          <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16 mb-8">
-            <FullRankings rankings={rankings} />
           </div>
 
           <div className="mb-12">
@@ -232,6 +188,10 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
                 } />
               </ErrorBoundary>
             )}
+          </div>
+
+          <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16 mb-8">
+            <FullRankings rankings={rankings} />
           </div>
         </>
       ) : (

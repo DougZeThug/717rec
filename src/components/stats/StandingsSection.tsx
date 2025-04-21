@@ -18,6 +18,7 @@ const StandingsSection: React.FC<StandingsSectionProps> = ({ topTeamsForRankings
       <CardDescription>Top 10 teams based on performance</CardDescription>
     </CardHeader>
     <CardContent>
+      {/* CompactStandings now always gets logoUrl + fallback */}
       <CompactStandings rankings={topTeamsForRankings} />
       <div className="mt-4 text-center">
         <Button 
