@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -45,8 +44,8 @@ const ChartContainer = React.forwardRef<
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId()
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
-  const { theme } = useTheme()
-  const isLight = theme === "light"
+  const { resolvedTheme } = useTheme()
+  const isLight = resolvedTheme === "light"
 
   return (
     <ChartContext.Provider value={{ config }}>
@@ -163,6 +162,8 @@ const ChartTooltipContent = React.forwardRef<
     ref
   ) => {
     const { config } = useChart()
+    const { resolvedTheme } = useTheme()
+    const isLight = resolvedTheme === "light"
 
     const tooltipLabel = React.useMemo(() => {
       if (hideLabel || !payload?.length) {
@@ -210,7 +211,8 @@ const ChartTooltipContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 text-xs shadow-xl",
+          isLight ? "bg-white text-[#333]" : "bg-[#1f2937] text-white",
           className
         )}
       >
@@ -220,12 +222,14 @@ const ChartTooltipContent = React.forwardRef<
             const key = `${nameKey || item.name || item.dataKey || "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
             const indicatorColor = color || item.payload.fill || item.color
+            const textColor = isLight ? "#333" : "#fff"
 
             return (
               <div
                 key={item.dataKey}
                 className={cn(
-                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
+                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
+                  isLight ? "[&>svg]:text-gray-500" : "[&>svg]:text-gray-300",
                   indicator === "dot" && "items-center"
                 )}
               >
@@ -265,12 +269,15 @@ const ChartTooltipContent = React.forwardRef<
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
+                        <span style={{ color: isLight ? "#666" : "#ccc" }}>
                           {itemConfig?.label || item.name}
                         </span>
                       </div>
                       {item.value && (
-                        <span className="font-mono font-medium tabular-nums text-foreground">
+                        <span 
+                          className="font-mono font-medium tabular-nums" 
+                          style={{ color: textColor }}
+                        >
                           {item.value.toLocaleString()}
                         </span>
                       )}

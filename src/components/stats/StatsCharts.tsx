@@ -34,7 +34,7 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
     return {
       cardBg: "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm",
       chartBg: isLight ? "#fff" : "#20232A",
-      chartInnerBg: isLight ? "#fafafa" : "#20232A",
+      chartInnerBg: isLight ? "#fafafa" : "#20232A", 
       axisText: isLight ? "#333" : "#fff",
       gridColor: isLight ? "#ddd" : "#444",
       legendText: isLight ? "#333" : "#fff",
