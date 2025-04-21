@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -28,11 +29,11 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const navigate = useNavigate();
   const isExpanded = expandedTeam === ranking.teamId;
   const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
   const powerScoreInlineStyle = isLight
     ? { color: ranking.powerScore >= 75 ? '#45c47e' : ranking.powerScore >= 60 ? '#3887e6' : ranking.powerScore >= 45 ? '#e9b022' : '#e13d3d' }
     : {};
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
 
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('[data-team-name="true"]')) {

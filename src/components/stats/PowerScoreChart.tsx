@@ -1,7 +1,7 @@
 
 import React from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell, Legend
 } from "recharts";
 import { useTheme } from "next-themes";
 import { formatPowerScore } from "@/utils/powerScore";
