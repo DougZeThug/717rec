@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Match } from '@/types';
-import { format, parseISO } from 'date-fns';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
+import { TransitionLink } from '@/components/transitions/TransitionLink';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface MatchCardProps {
   match: Match;
@@ -15,7 +16,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "No date";
     try {
-      return format(parseISO(dateStr), "MMM d, yyyy");
+      return new Date(dateStr).toLocaleDateString();
     } catch (e) {
       return "Invalid date";
     }
@@ -31,16 +32,23 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={opponentImage || ''} alt={opponentName} />
-              <AvatarFallback>
-                {opponentName.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
+            <TransitionLink 
+              to={`/teams/${opponentId}`}
+              className="hover:opacity-80 transition-opacity"
+            >
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={opponentImage || ''} alt={opponentName} />
+                <AvatarFallback>
+                  {opponentName.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </TransitionLink>
+            <TransitionLink
+              to={`/teams/${opponentId}`}
+              className="hover:underline"
+            >
               <h3 className="font-medium">{opponentName}</h3>
-              <p className="text-sm text-gray-500">{formatDate(match.date)}</p>
-            </div>
+            </TransitionLink>
           </div>
           <div className="text-right">
             {match.iscompleted && (
