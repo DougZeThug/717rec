@@ -1,8 +1,8 @@
 
 import React from "react";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
 
 interface TeamStatsGridProps {
   wins: number;
@@ -12,7 +12,7 @@ interface TeamStatsGridProps {
   gamesLost: number;
   gameWinPercentage: number;
   sos: number;
-  streak?: string;
+  streak: string;
   powerScore: number;
   compactView?: boolean;
 }
@@ -25,79 +25,62 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   gamesLost,
   gameWinPercentage,
   sos,
-  streak = "—",
+  streak,
   powerScore,
   compactView = false
 }) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  const powerScoreColor = getPowerScoreColor(powerScore);
+  const isMobile = useIsMobile();
+  const powerScoreColorClass = getPowerScoreColor(powerScore);
 
-  if (compactView) {
+  if (compactView || isMobile) {
     return (
-      <div className="mt-1 flex items-center gap-3 text-xs">
-        <span style={isLight ? { color: "#222222" } : {}}>
-          {wins}-{losses}
-        </span>
-        <span 
-          className={isLight ? "" : powerScoreColor}
-          style={isLight ? {
-            color: powerScore >= 80 ? '#45c47e' : 
-                   powerScore >= 70 ? '#3887e6' : 
-                   powerScore < 40 ? '#e13d3d' : 
-                   '#222222'
-          } : {}}
-        >
-          {formatPowerScore(powerScore)}
-        </span>
+      <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+        <span>{wins}-{losses}</span>
+        <span className={powerScoreColorClass}>{formatPowerScore(powerScore)}</span>
       </div>
     );
   }
 
   return (
-    <div className={cn(
-      "mt-2 grid gap-2",
-      "grid-cols-2 sm:grid-cols-4"
-    )}>
-      <div className={cn(
-        "p-2 rounded",
-        isLight ? "bg-gray-50" : "bg-gray-800/30"
-      )}>
-        <div className="text-xs text-gray-500">Record</div>
-        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
-          {wins}-{losses}
-        </div>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+      <div className="space-y-0.5">
+        <p className="text-gray-500 dark:text-gray-400 text-xs">Record</p>
+        <p className="font-medium">{wins}-{losses}</p>
+      </div>
+      
+      <div className="space-y-0.5">
+        <p className="text-gray-500 dark:text-gray-400 text-xs">Games</p>
+        <p className="font-medium">{gamesWon}-{gamesLost}</p>
+      </div>
+      
+      <div className="space-y-0.5">
+        <p className="text-gray-500 dark:text-gray-400 text-xs">SOS</p>
+        <p className="font-medium">{sos.toFixed(3)}</p>
+      </div>
+      
+      <div className="space-y-0.5">
+        <p className="text-gray-500 dark:text-gray-400 text-xs">Power</p>
+        <p className={cn("font-medium", powerScoreColorClass)}>
+          {formatPowerScore(powerScore)}
+        </p>
       </div>
 
-      <div className={cn(
-        "p-2 rounded",
-        isLight ? "bg-gray-50" : "bg-gray-800/30"
-      )}>
-        <div className="text-xs text-gray-500">Games</div>
-        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
-          {gamesWon}-{gamesLost}
-        </div>
+      <div className="space-y-0.5">
+        <p className="text-gray-500 dark:text-gray-400 text-xs">Win %</p>
+        <p className="font-medium">{(winPercentage * 100).toFixed(1)}%</p>
       </div>
 
-      <div className={cn(
-        "p-2 rounded",
-        isLight ? "bg-gray-50" : "bg-gray-800/30"
-      )}>
-        <div className="text-xs text-gray-500">SOS</div>
-        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
-          {sos.toFixed(3)}
-        </div>
+      <div className="space-y-0.5">
+        <p className="text-gray-500 dark:text-gray-400 text-xs">Game Win %</p>
+        <p className="font-medium">{(gameWinPercentage * 100).toFixed(1)}%</p>
       </div>
 
-      <div className={cn(
-        "p-2 rounded",
-        isLight ? "bg-gray-50" : "bg-gray-800/30"
-      )}>
-        <div className="text-xs text-gray-500">Streak</div>
-        <div className="font-semibold" style={isLight ? { color: "#222222" } : {}}>
-          {streak}
+      {streak && (
+        <div className="space-y-0.5">
+          <p className="text-gray-500 dark:text-gray-400 text-xs">Streak</p>
+          <p className="font-medium">{streak}</p>
         </div>
-      </div>
+      )}
     </div>
   );
 };

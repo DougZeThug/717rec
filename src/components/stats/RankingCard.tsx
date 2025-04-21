@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
 import { TeamStatsGrid } from "./rank/TeamStatsGrid";
+import { TeamLogo } from "./rank/TeamLogo";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -33,15 +34,6 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const isExpanded = expandedTeam === ranking.teamId;
   const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
 
-  const powerScoreInlineStyle = isLight
-    ? { 
-        color: ranking.powerScore >= 80 ? '#45c47e' : 
-               ranking.powerScore >= 70 ? '#3887e6' : 
-               ranking.powerScore < 40 ? '#e13d3d' : 
-               '#222222'
-      }
-    : {};
-
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('[data-team-name="true"]')) {
       e.stopPropagation();
@@ -61,71 +53,103 @@ const RankingCard: React.FC<RankingCardProps> = ({
         "[&_[data-team-name]]:hover:text-blue-600 dark:[&_[data-team-name]]:hover:text-blue-400",
         "[&_[data-team-name]]:hover:underline",
         isExpanded ? (isLight ? "ring-2 ring-purple-200" : "ring-2 ring-purple-400") : "",
-        compactView ? "p-3" : "p-4"
+        compactView ? "p-2" : "p-4"
       )}
       onClick={handleCardClick}
     >
       <CardContent className={cn(
-        "flex gap-4 items-center p-0",
-        compactView ? "min-h-[60px]" : ""
+        "flex gap-3 items-center p-0",
+        compactView ? "min-h-[48px]" : "flex-wrap"
       )}>
+        {/* Rank Number */}
         <div className={cn(
-          "flex flex-col items-center",
-          compactView ? "w-10 min-w-10" : "w-14 min-w-14"
+          "flex items-center justify-center",
+          compactView ? "w-8" : "w-10"
         )}>
-          {!compactView && (ranking.logoUrl || ranking.imageUrl) ? (
-            <img 
-              src={ranking.logoUrl || ranking.imageUrl!}
-              alt={`${ranking.teamName} logo`}
-              className="rounded-full shadow w-12 h-12 object-cover mb-2"
-              style={{minWidth: 48, minHeight: 48, maxWidth: 50, maxHeight: 50}}
-            />
-          ) : null}
           <span 
             style={isLight ? { color: "#222222" } : {}} 
             className={cn(
-              "font-medium",
-              compactView ? "text-sm" : "text-xs"
+              "font-medium rounded-full flex items-center justify-center",
+              compactView ? "text-sm h-6 w-6" : "text-base h-8 w-8",
+              index < 3 ? "bg-amber-100/50 dark:bg-amber-900/30" : ""
             )}
           >
             {index + 1}
           </span>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <div
+        {/* Team Logo */}
+        <div className={cn(
+          "flex-shrink-0",
+          compactView ? "w-8 h-8" : "w-10 h-10"
+        )}>
+          <TeamLogo 
+            imageUrl={ranking.logoUrl || ranking.imageUrl} 
+            teamName={ranking.teamName}
+            teamId={ranking.teamId}
+            clickable
+          />
+        </div>
+
+        {/* Team Info & Stats */}
+        <div className={cn(
+          "flex-1 min-w-0",
+          compactView ? "flex items-center gap-2" : "space-y-2"
+        )}>
+          {/* Team Name Row */}
+          <div className={cn(
+            "flex items-center gap-2",
+            compactView ? "flex-1 min-w-0" : "w-full"
+          )}>
+            <span
               data-team-name="true"
-              className="leading-tight truncate"
-              style={isLight ? { color: "#111111", fontWeight: 700 } : { fontWeight: 700 }}
+              className={cn(
+                "truncate font-semibold",
+                compactView ? "text-sm" : "text-base"
+              )}
+              style={isLight ? { color: "#111111" } : {}}
             >
               {ranking.teamName}
-            </div>
+            </span>
+            
             {showDivision && !compactView && (
               <Badge
                 variant={ranking.divisionName?.toLowerCase() as any || "default"}
-                className="font-medium text-xs ml-1"
-                style={isLight ? { color: "#111111" } : {}}
+                className="text-xs font-medium px-2"
               >
                 {ranking.divisionName || "Unassigned"}
               </Badge>
             )}
-            {!compactView && <span className="ml-2"><RankTrendIndicator rankChange={ranking.rankChange} /></span>}
           </div>
 
-          <TeamStatsGrid
-            wins={ranking.wins}
-            losses={ranking.losses}
-            winPercentage={ranking.winPercentage}
-            gamesWon={ranking.gamesWon}
-            gamesLost={ranking.gamesLost}
-            gameWinPercentage={ranking.gameWinPercentage}
-            sos={ranking.sos}
-            streak={ranking.streak}
-            powerScore={ranking.powerScore}
-            compactView={compactView}
-          />
+          {/* Stats Grid */}
+          {compactView ? (
+            <div className="flex items-center gap-3 ml-auto text-sm">
+              <span className="text-gray-600 dark:text-gray-300">
+                {ranking.wins}-{ranking.losses}
+              </span>
+              <span className={powerScoreColorClass}>
+                {formatPowerScore(ranking.powerScore)}
+              </span>
+            </div>
+          ) : (
+            <TeamStatsGrid
+              wins={ranking.wins}
+              losses={ranking.losses}
+              winPercentage={ranking.winPercentage}
+              gamesWon={ranking.gamesWon}
+              gamesLost={ranking.gamesLost}
+              gameWinPercentage={ranking.gameWinPercentage}
+              sos={ranking.sos}
+              streak={ranking.streak}
+              powerScore={ranking.powerScore}
+              compactView={false}
+            />
+          )}
         </div>
+
+        {/* Trend Indicator (Only in detailed view) */}
+        {!compactView && <RankTrendIndicator rankChange={ranking.rankChange} />}
       </CardContent>
     </Card>
   );
