@@ -26,15 +26,7 @@ export const useMatchFilters = () => {
   };
 
   const setBracketFilter = (bracketId?: string) => {
-    // Handle the "all" value specially
-    if (bracketId === "all") {
-      setFilters(prev => {
-        const { bracketId: _, ...rest } = prev;
-        return rest;
-      });
-    } else {
-      setFilters(prev => ({ ...prev, bracketId }));
-    }
+    setFilters(prev => ({ ...prev, bracketId }));
   };
 
   const clearFilters = () => {

@@ -1,15 +1,9 @@
 
 import { useEffect } from "react";
-import { MatchWithTeams } from "../types";
-import { useMatchFilters } from "./useMatchFilters";
-import { useMatchFetching } from "./useMatchFetching";
-import { useMatchValidation } from "./useMatchValidation";
-import { useMatchUpdates } from "./useMatchUpdates";
-import { useSubmissionState } from "./useSubmissionState";
 import { useMatchScores } from "./useMatchScores";
-import { useQueryClient } from "@tanstack/react-query";
-import { useTeamRecords } from "@/hooks/useTeamRecords";
-import { useScoreSubmission } from "./useScoreSubmission";
+import { useMatchFilters } from "./useMatchFilters";
+import { useMatchSubmission } from "./useMatchSubmission";
+import { useMatchFetching } from "./useMatchFetching";
 
 export const useScoreEntryData = () => {
   const {
@@ -20,57 +14,49 @@ export const useScoreEntryData = () => {
     handleMarkCompleted
   } = useMatchScores();
 
-  const { filters, brackets, fetchBrackets, setFilterDate, setBracketFilter, clearFilters } = useMatchFilters();
-  const { loading, fetchMatches } = useMatchFetching();
-  const { updateMatchInDatabase } = useMatchUpdates();
-  const { updateTeamRecords } = useTeamRecords();
-  const queryClient = useQueryClient();
-  
   const { 
-    submitting, 
-    setSubmitting,
-    failedMatches,
-    errorMessages,
-    clearErrors,
-    addError,
-    toast
-  } = useSubmissionState();
-  
-  // Fixed: Now correctly passing the same function signature for fetchMatches
-  const { handleSubmitAll } = useScoreSubmission(matches, () => fetchMatches(filters));
+    filters,
+    brackets,
+    fetchBrackets,
+    setFilterDate,
+    setBracketFilter,
+    clearFilters
+  } = useMatchFilters();
+
+  const { loading, fetchMatches } = useMatchFetching();
+  const { submitting, handleSubmitMatches } = useMatchSubmission();
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-        await fetchBrackets();
-        const fetchedMatches = await fetchMatches(filters);
-        if (Array.isArray(fetchedMatches)) {
-          setMatches(fetchedMatches);
-        } else {
-          console.error("Fetched matches is not an array:", fetchedMatches);
-          setMatches([]);
-        }
-      } catch (error) {
-        console.error("Error loading match data:", error);
-        setMatches([]);
+      await fetchBrackets();
+      const fetchedMatches = await fetchMatches(filters);
+      if (Array.isArray(fetchedMatches)) {
+        setMatches(fetchedMatches);
       }
     };
     loadData();
   }, [filters.date, filters.bracketId]);
 
+  const handleSubmitAll = async () => {
+    const editedMatches = matches.filter(match => match.isEdited);
+    await handleSubmitMatches(editedMatches);
+    // Refresh matches after submission
+    const updatedMatches = await fetchMatches(filters);
+    if (Array.isArray(updatedMatches)) {
+      setMatches(updatedMatches);
+    }
+  };
+
   return {
     matches,
     loading,
     submitting,
-    failedMatches,
-    errorMessages,
     brackets,
     filters,
     handleScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
     handleSubmitAll,
-    clearErrors,
     setFilterDate,
     setBracketFilter,
     clearFilters
