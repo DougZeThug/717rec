@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +42,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
         ? "from-gray-50 to-gray-100 border-gray-200 hover:shadow-md" 
         : "from-gray-800/50 to-gray-900/50 border-gray-700 hover:shadow-[0_0_15px_rgba(0,0,0,0.3)]"
     )}>
-      {/* Final Badge */}
       <div className={cn(
         "absolute -top-3 left-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase",
         "bg-indigo-600 text-white rounded-md transform -translate-y-1/2 shadow-sm"
@@ -53,9 +51,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
       <CardContent className="p-6 pt-8">
         <div className="flex flex-col space-y-4">
-          {/* Top Row: Logos and Score */}
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
-            {/* Team 1 Logo */}
             <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
               <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
                 <AvatarImage 
@@ -72,7 +68,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
               </Avatar>
             </TransitionLink>
 
-            {/* Score */}
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800/50">
                 <span className={getScoreStyle(team1IsWinner)}>
@@ -85,7 +80,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
               </div>
             </div>
 
-            {/* Team 2 Logo */}
             <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
               <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
                 <AvatarImage 
@@ -103,37 +97,33 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </TransitionLink>
           </div>
 
-          {/* Bottom Row: Team Names and Game Wins */}
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-            {/* Team 1 Name and Wins */}
             <TransitionLink 
               to={`/teams/${match.team1Id}`}
               className={cn(
-                "flex items-center gap-2 min-w-0 hover:underline text-center justify-center",
+                "flex items-center gap-2 justify-center min-w-0",
                 team1IsWinner && "font-semibold"
               )}
             >
+              {team1IsWinner && (
+                <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+              )}
               <span className={cn(
                 "truncate",
                 team1IsWinner 
                   ? isLight ? "text-green-700" : "text-green-400"
                   : isLight ? "text-gray-700" : "text-gray-400"
               )}>
-                {team1Name} ({match.team1_game_wins || 0})
+                ({match.team1_game_wins || 0}) {team1Name}
               </span>
-              {team1IsWinner && (
-                <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-              )}
             </TransitionLink>
 
-            {/* Center Spacer */}
             <div className="w-4"></div>
 
-            {/* Team 2 Name and Wins */}
             <TransitionLink 
               to={`/teams/${match.team2Id}`}
               className={cn(
-                "flex items-center gap-2 min-w-0 hover:underline text-center justify-center",
+                "flex items-center gap-2 justify-center min-w-0",
                 team2IsWinner && "font-semibold"
               )}
             >
@@ -146,7 +136,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   ? isLight ? "text-green-700" : "text-green-400"
                   : isLight ? "text-gray-700" : "text-gray-400"
               )}>
-                {team2Name} ({match.team2_game_wins || 0})
+                ({match.team2_game_wins || 0}) {team2Name}
               </span>
             </TransitionLink>
           </div>
@@ -157,4 +147,3 @@ const MatchCard: React.FC<MatchCardProps> = ({
 };
 
 export default MatchCard;
-
