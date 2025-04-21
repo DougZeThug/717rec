@@ -54,19 +54,36 @@ const ChartContainer = React.forwardRef<
         data-chart={chartId}
         ref={ref}
         className={cn(
-          "flex aspect-video justify-center text-xs",
-          isLight ? "[&_.recharts-cartesian-axis-tick_text]:fill-[#333]" : "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
-          isLight ? "[&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#ddd]" : "[&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50",
-          isLight ? "[&_.recharts-curve.recharts-tooltip-cursor]:stroke-[#ccc]" : "[&_.recharts-curve.recharts-tooltip-cursor]:stroke-border",
+          "flex aspect-video justify-center text-xs font-inter",
+          isLight 
+            ? "[&_.recharts-cartesian-axis-tick_text]:fill-[#333]" 
+            : "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
+          isLight 
+            ? "[&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#ddd]" 
+            : "[&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50",
+          isLight 
+            ? "[&_.recharts-curve.recharts-tooltip-cursor]:stroke-[#ccc]" 
+            : "[&_.recharts-curve.recharts-tooltip-cursor]:stroke-border",
           "[&_.recharts-dot[stroke='#fff']]:stroke-transparent",
           "[&_.recharts-layer]:outline-none",
-          isLight ? "[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[#ddd]" : "[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border",
-          isLight ? "[&_.recharts-radial-bar-background-sector]:fill-[#f5f5f5]" : "[&_.recharts-radial-bar-background-sector]:fill-muted",
-          isLight ? "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[#f5f5f5]/70" : "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted",
-          isLight ? "[&_.recharts-reference-line_[stroke='#ccc']]:stroke-[#ddd]" : "[&_.recharts-reference-line_[stroke='#ccc']]:stroke-border",
+          isLight 
+            ? "[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[#ddd]" 
+            : "[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border",
+          isLight 
+            ? "[&_.recharts-radial-bar-background-sector]:fill-[#f5f5f5]" 
+            : "[&_.recharts-radial-bar-background-sector]:fill-muted",
+          isLight 
+            ? "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[#f5f5f5]/70" 
+            : "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted",
+          isLight 
+            ? "[&_.recharts-reference-line_[stroke='#ccc']]:stroke-[#ddd]" 
+            : "[&_.recharts-reference-line_[stroke='#ccc']]:stroke-border",
           "[&_.recharts-sector[stroke='#fff']]:stroke-transparent",
           "[&_.recharts-sector]:outline-none",
           "[&_.recharts-surface]:outline-none",
+          isLight 
+            ? "bg-white text-[#333]" 
+            : "bg-[#111827] text-white",
           className
         )}
         {...props}

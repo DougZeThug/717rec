@@ -25,10 +25,10 @@ interface StatsChartsProps {
   theme?: string;
 }
 
-const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
+const StatsCharts = ({ chartData, chartLimit, theme: themeProp }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { theme: currentTheme } = useTheme();
-  const isLight = currentTheme === "light" || theme === "light";
+  const isLight = currentTheme === "light" || themeProp === "light";
   
   // Create a sorted array for power scores to use in the vertical bar chart
   const topByPowerScore = [...chartData]
@@ -39,7 +39,7 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
       powerScore: team.powerScore
     }));
   
-  // Light and dark styles
+  // Light and dark styles - dynamically set based on theme
   const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm";
   const chartBg = isLight ? "#fff" : "#20232A";
   const chartInnerBg = isLight ? "#fafafa" : "#20232A";
@@ -47,9 +47,12 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
   const gridColor = isLight ? "#ddd" : "#444";
   const legendText = isLight ? "#333" : "#fff";
   const tooltipBg = isLight ? "#f5f5f5" : "#23262b";
+  const tooltipBorder = isLight ? "#ccc" : "#444";
+  const tooltipText = isLight ? "#333" : "#fff";
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
   const barColorPower = "#a288f5";
+  const fontFamily = "'Inter', sans-serif"; // Apply consistent font family
 
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
@@ -60,9 +63,52 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
         fill={axisText}
         fontSize={12} 
         textAnchor="start"
+        fontFamily={fontFamily}
       >
         {formatPowerScore(value)}
       </text>
+    );
+  };
+
+  // Custom tooltip component for Win-Loss chart
+  const CustomWinLossTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload || !payload.length) return null;
+    
+    return (
+      <div className="p-2 rounded-md shadow-lg" 
+        style={{
+          backgroundColor: tooltipBg,
+          border: `1px solid ${tooltipBorder}`,
+          color: tooltipText,
+          fontFamily: fontFamily
+        }}>
+        <p className="font-medium mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={`tooltip-${index}`} style={{ color: entry.color }}>
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
+  // Custom tooltip component for Power Score chart
+  const CustomPowerScoreTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload || !payload.length) return null;
+    
+    return (
+      <div className="p-2 rounded-md shadow-lg" 
+        style={{
+          backgroundColor: tooltipBg,
+          border: `1px solid ${tooltipBorder}`,
+          color: tooltipText,
+          fontFamily: fontFamily
+        }}>
+        <p className="font-medium mb-1">{payload[0].payload.name}</p>
+        <p style={{ color: barColorPower }}>
+          Power Score: {formatPowerScore(payload[0].value)}
+        </p>
+      </div>
     );
   };
 
@@ -76,11 +122,20 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 pt-4">
-          <div className={`h-[350px] w-full rounded-xl bg-white dark:bg-[#20232A]`} style={isLight ? { background: chartInnerBg, borderRadius: 16 } : {}}>
+          <div className="h-[350px] w-full rounded-xl" style={{ 
+            background: chartInnerBg, 
+            borderRadius: 16,
+            boxShadow: isLight ? "0 1px 2px rgba(0,0,0,0.05)" : "none"
+          }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData}
-                style={{ background: chartBg, borderRadius: 12, padding: 8 }}
+                style={{ 
+                  background: chartBg, 
+                  borderRadius: 12, 
+                  padding: 8,
+                  fontFamily: fontFamily
+                }}
                 margin={{
                   top: 20,
                   right: 30,
@@ -95,11 +150,14 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
                   textAnchor="end"
                   height={isMobile ? 80 : 70}
                   interval={0}
-                  tick={{fontSize: isMobile ? 10 : 12, fill: axisText}}
+                  tick={{fontSize: isMobile ? 10 : 12, fill: axisText, fontFamily: fontFamily}}
                 />
-                <YAxis tick={{fill: axisText}} />
-                <Tooltip contentStyle={{backgroundColor: tooltipBg, borderRadius: 8, color: axisText}} />
-                <Legend wrapperStyle={{color: legendText, marginTop: 20}} />
+                <YAxis tick={{fill: axisText, fontFamily: fontFamily}} />
+                <Tooltip content={<CustomWinLossTooltip />} />
+                <Legend 
+                  wrapperStyle={{color: legendText, marginTop: 20, fontFamily: fontFamily}}
+                  formatter={(value) => <span style={{ color: legendText, fontFamily: fontFamily }}>{value}</span>}
+                />
                 <Bar dataKey="wins" fill={barColorWin} name="Wins" />
                 <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
               </BarChart>
@@ -116,26 +174,39 @@ const StatsCharts = ({ chartData, chartLimit, theme }: StatsChartsProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 pt-4">
-            <div className="h-[350px] w-full rounded-xl bg-white dark:bg-[#20232A]" style={isLight ? { background: chartInnerBg, borderRadius: 16 } : {}}>
+            <div className="h-[350px] w-full rounded-xl" style={{ 
+              background: chartInnerBg, 
+              borderRadius: 16,
+              boxShadow: isLight ? "0 1px 2px rgba(0,0,0,0.05)" : "none"
+            }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   layout="vertical"
                   data={topByPowerScore}
-                  style={{ background: chartBg, borderRadius: 12, padding: 8 }}
+                  style={{ 
+                    background: chartBg, 
+                    borderRadius: 12, 
+                    padding: 8,
+                    fontFamily: fontFamily
+                  }}
                   margin={{
                     top: 5, right: 60, left: 60, bottom: 5,
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={gridColor}/>
-                  <XAxis type="number" domain={[0, 100]} tick={{fill: axisText}} />
+                  <XAxis 
+                    type="number" 
+                    domain={[0, 100]} 
+                    tick={{fill: axisText, fontFamily: fontFamily}}
+                  />
                   <YAxis 
                     type="category" 
                     dataKey="name"
                     width={80}
                     tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-                    tick={{fill: axisText}}
+                    tick={{fill: axisText, fontFamily: fontFamily}}
                   />
-                  <Tooltip contentStyle={{backgroundColor: tooltipBg, borderRadius: 8, color: axisText}} />
+                  <Tooltip content={<CustomPowerScoreTooltip />} />
                   <Bar 
                     dataKey="powerScore" 
                     fill={barColorPower} 

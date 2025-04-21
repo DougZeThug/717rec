@@ -63,7 +63,6 @@ const Stats = () => {
         matches={matches} 
         isLoadingMatches={isLoadingMatches} 
         matchesError={matchesError}
-        // Remove theme prop as we're now handling theme directly in StatsContainer
       />
     </div>
   );
