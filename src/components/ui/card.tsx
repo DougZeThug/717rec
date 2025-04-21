@@ -16,7 +16,7 @@ const Card = React.forwardRef<
       ref={ref}
       className={cn(
         "rounded-lg border bg-card text-card-foreground shadow-sm",
-        isLight ? "text-[#222222]" : "",
+        isLight ? "!text-[#222222]" : "",
         className
       )}
       {...props}
@@ -49,7 +49,7 @@ const CardTitle = React.forwardRef<
       ref={ref}
       className={cn(
         "text-2xl font-semibold leading-none tracking-tight",
-        isLight ? "text-[#111111]" : "",
+        isLight ? "!text-[#111111]" : "",
         className
       )}
       {...props}
@@ -70,7 +70,7 @@ const CardDescription = React.forwardRef<
       ref={ref}
       className={cn(
         "text-sm text-muted-foreground",
-        isLight ? "text-gray-700" : "",
+        isLight ? "!text-[#444444] !font-medium" : "",
         className
       )}
       {...props}

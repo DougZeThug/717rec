@@ -61,6 +61,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
         fontSize={12}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
+        fontWeight={isLight ? "600" : "400"}
       >
         {formatPowerScore(value)}
       </text>
@@ -96,14 +97,14 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar

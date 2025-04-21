@@ -66,11 +66,11 @@ const RankingCard: React.FC<RankingCardProps> = ({
           ) : (
             <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-2" />
           )}
-          <span className="text-xs text-gray-500">{index+1}</span>
+          <span className={isLight ? "text-xs !text-[#222222] font-medium" : "text-xs text-gray-500"}>{index+1}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <div data-team-name="true" className="font-bold text-[#111111] dark:text-white leading-tight truncate">
+            <div data-team-name="true" className={isLight ? "font-bold !text-[#111111] !font-semibold leading-tight truncate" : "font-bold text-white leading-tight truncate"}>
               {ranking.teamName}
             </div>
             {showDivision && (
@@ -84,8 +84,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <span className="ml-2">{<RankTrendIndicator rankChange={ranking.rankChange} />}</span>
           </div>
           <div className="flex flex-col gap-1 mt-1">
-            <span className="text-xs text-gray-700 dark:text-gray-400">Record: <span className="font-medium text-[#222222] dark:text-white">{ranking.wins}-{ranking.losses}</span></span>
-            <span className="text-xs text-gray-700 dark:text-gray-400">Power Score: <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>{formatPowerScore(ranking.powerScore)}</span></span>
+            <span className={isLight ? "text-xs !text-[#444444]" : "text-xs text-gray-400"}>Record: <span className={isLight ? "font-medium !text-[#222222]" : "font-medium text-white"}>{ranking.wins}-{ranking.losses}</span></span>
+            <span className={isLight ? "text-xs !text-[#444444]" : "text-xs text-gray-400"}>Power Score: <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>{formatPowerScore(ranking.powerScore)}</span></span>
           </div>
         </div>
       </CardContent>

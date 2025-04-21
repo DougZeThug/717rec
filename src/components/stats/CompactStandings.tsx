@@ -27,10 +27,10 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   // Function to get rank styling for medal positions
   const getRankStyles = (index: number) => {
     if (isLight) {
-      if (index === 0) return "bg-amber-100 text-amber-900 font-bold"; // Gold, darker text
-      if (index === 1) return "bg-slate-100 text-slate-800 font-bold"; // Silver, darker text
-      if (index === 2) return "bg-orange-100 text-orange-900 font-bold"; // Bronze, darker text
-      return "bg-gray-50 text-gray-800"; // Use dark gray for all other ranks
+      if (index === 0) return "bg-amber-100 text-amber-900 !font-bold"; // Gold, darker text
+      if (index === 1) return "bg-slate-100 text-slate-800 !font-bold"; // Silver, darker text
+      if (index === 2) return "bg-orange-100 text-orange-900 !font-bold"; // Bronze, darker text
+      return "bg-gray-50 !text-gray-800"; // Use dark gray for all other ranks
     } else {
       if (index === 0) return "bg-amber-900/30 text-amber-200 font-bold";
       if (index === 1) return "bg-slate-800/30 text-slate-300 font-bold";
@@ -61,7 +61,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 )}
                 <span className={cn(
                   "font-medium hover:text-blue-600 hover:underline",
-                  isLight ? "!text-[#111111]" : "text-white"
+                  isLight ? "!text-[#111111] !font-semibold" : "text-white"
                 )}>
                   {team.teamName}
                 </span>
@@ -117,17 +117,17 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   )}
                   <span className={cn(
                     "font-medium hover:text-blue-600 hover:underline", 
-                    isLight ? "!text-[#111111]" : "text-white"
+                    isLight ? "!text-[#111111] !font-semibold" : "text-white"
                   )}>
                     {team.teamName}
                   </span>
                 </div>
               </TableCell>
               <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
-                {team.wins}-{team.losses}
+                <span className={isLight ? "!text-[#222222]" : ""}>{team.wins}-{team.losses}</span>
               </TableCell>
               <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
-                {(team.winPercentage * 100).toFixed(1)}%
+                <span className={isLight ? "!text-[#222222]" : ""}>{(team.winPercentage * 100).toFixed(1)}%</span>
               </TableCell>
               <TableCell className={cn("text-center font-semibold", getPowerScoreColor(team.powerScore))}>
                 {formatPowerScore(team.powerScore)}

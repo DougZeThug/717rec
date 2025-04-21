@@ -50,7 +50,7 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
           className={cn(
             "flex aspect-video justify-center text-xs font-inter",
             isLight 
-              ? "[&_.recharts-cartesian-axis-tick_text]:fill-[#333]" 
+              ? "[&_.recharts-cartesian-axis-tick_text]:!fill-[#222222] [&_.recharts-cartesian-axis-tick_text]:!font-semibold" 
               : "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
             isLight 
               ? "[&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#ddd]" 
@@ -76,7 +76,7 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
             "[&_.recharts-sector]:outline-none",
             "[&_.recharts-surface]:outline-none",
             isLight 
-              ? "bg-white text-[#333]" 
+              ? "bg-white !text-[#111111]" 
               : "bg-[#111827] text-white",
             className
           )}

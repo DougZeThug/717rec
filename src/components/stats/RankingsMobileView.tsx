@@ -106,7 +106,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
               <h3 className={isLight
-                ? "text-lg font-medium flex items-center font-inter !text-[#111111]"
+                ? "text-lg font-medium flex items-center font-inter !text-[#111111] !font-semibold"
                 : "text-lg font-medium flex items-center font-inter text-gray-100"
                 }>
                 {divisionName} <span className={isLight ? "ml-2 text-xs !text-[#222222] font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>

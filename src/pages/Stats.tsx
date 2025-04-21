@@ -58,7 +58,7 @@ const Stats = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen cornhole-bg py-8 px-4 md:px-8 ${resolvedTheme === 'light' ? 'bg-gray-50' : ''}`}>
+    <div className={`min-h-screen cornhole-bg py-8 px-4 md:px-8 ${resolvedTheme === 'light' ? 'bg-gray-50' : ''}`} style={resolvedTheme === 'light' ? { background: "#f8f8f8" } : {}}>
       <StatsContainer 
         matches={matches} 
         isLoadingMatches={isLoadingMatches} 

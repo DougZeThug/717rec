@@ -51,10 +51,11 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
           color: tooltipTextColor,
           fontFamily: "'Inter', sans-serif",
           padding: 8,
+          fontWeight: isLight ? 500 : 400
         }}>
         <p style={{ fontWeight: 600, marginBottom: 4, color: isLight ? "#111111" : chartTextColor }}>{label}</p> {/* Darkened label */}
         {payload.map((entry: any, index: number) => (
-          <p key={`tooltip-${index}`} style={{ color: entry.color, margin: 0 }}>
+          <p key={`tooltip-${index}`} style={{ color: entry.color, margin: 0, fontWeight: isLight ? 500 : 400 }}>
             {entry.name}: {entry.value}
           </p>
         ))}
@@ -96,9 +97,9 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             textAnchor="end"
             height={isMobile ? 80 : 70}
             interval={0}
-            tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontFamily: "'Inter', sans-serif" }} // Darkened axis labels
+            tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }} // Darkened axis labels and bold in light mode
           />
-          <YAxis tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }} />
+          <YAxis tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }} /> 
           <Tooltip content={<CustomWinLossTooltip />} />
           <Legend
             wrapperStyle={{
@@ -110,7 +111,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
               <span style={{
                 color: legendTextColor,
                 fontFamily: "'Inter', sans-serif",
-                fontWeight: 600
+                fontWeight: isLight ? 600 : 400 
               }}>{value}</span>
             )}
           />
