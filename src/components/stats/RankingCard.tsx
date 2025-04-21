@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -58,54 +57,44 @@ const RankingCard: React.FC<RankingCardProps> = ({
       onClick={handleCardClick}
     >
       <CardContent className={cn(
-        "flex gap-3 items-center p-0",
-        compactView ? "min-h-[48px]" : "flex-wrap"
+        "flex gap-3 p-0",
+        compactView ? "items-center min-h-[48px]" : "flex-col"
       )}>
-        {/* Rank Number */}
-        <div className={cn(
-          "flex items-center justify-center",
-          compactView ? "w-8" : "w-10"
-        )}>
-          <span 
-            style={isLight ? { color: "#222222" } : {}} 
-            className={cn(
-              "font-medium rounded-full flex items-center justify-center",
-              compactView ? "text-sm h-6 w-6" : "text-base h-8 w-8",
-              index < 3 ? "bg-amber-100/50 dark:bg-amber-900/30" : ""
-            )}
-          >
-            {index + 1}
-          </span>
-        </div>
-
-        {/* Team Logo */}
-        <div className={cn(
-          "flex-shrink-0",
-          compactView ? "w-8 h-8" : "w-10 h-10"
-        )}>
-          <TeamLogo 
-            imageUrl={ranking.logoUrl || ranking.imageUrl} 
-            teamName={ranking.teamName}
-            teamId={ranking.teamId}
-            clickable
-          />
-        </div>
-
-        {/* Team Info & Stats */}
-        <div className={cn(
-          "flex-1 min-w-0",
-          compactView ? "flex items-center gap-2" : "space-y-2"
-        )}>
-          {/* Team Name Row */}
+        <div className="flex items-center gap-3 w-full">
           <div className={cn(
-            "flex items-center gap-2",
-            compactView ? "flex-1 min-w-0" : "w-full"
+            "flex items-center justify-center",
+            compactView ? "w-8" : "w-10"
           )}>
+            <span 
+              style={isLight ? { color: "#222222" } : {}} 
+              className={cn(
+                "font-medium rounded-full flex items-center justify-center",
+                compactView ? "text-sm h-6 w-6" : "text-base h-8 w-8",
+                index < 3 ? "bg-amber-100/50 dark:bg-amber-900/30" : ""
+              )}
+            >
+              {index + 1}
+            </span>
+          </div>
+
+          <div className={cn(
+            "flex-shrink-0",
+            compactView ? "w-8 h-8" : "w-12 h-12"
+          )}>
+            <TeamLogo 
+              imageUrl={ranking.logoUrl || ranking.imageUrl} 
+              teamName={ranking.teamName}
+              teamId={ranking.teamId}
+              clickable
+            />
+          </div>
+
+          <div className="flex-1 min-w-0">
             <span
               data-team-name="true"
               className={cn(
-                "truncate font-semibold",
-                compactView ? "text-sm" : "text-base"
+                "block truncate font-semibold",
+                compactView ? "text-sm" : "text-base mb-1"
               )}
               style={isLight ? { color: "#111111" } : {}}
             >
@@ -115,24 +104,27 @@ const RankingCard: React.FC<RankingCardProps> = ({
             {showDivision && !compactView && (
               <Badge
                 variant={ranking.divisionName?.toLowerCase() as any || "default"}
-                className="text-xs font-medium px-2"
+                className="text-xs font-medium px-2 mt-1"
               >
                 {ranking.divisionName || "Unassigned"}
               </Badge>
             )}
           </div>
 
-          {/* Stats Grid */}
-          {compactView ? (
-            <div className="flex items-center gap-3 ml-auto text-sm">
+          {compactView && (
+            <div className="flex items-center gap-3 ml-auto">
               <span className="text-gray-600 dark:text-gray-300">
                 {ranking.wins}-{ranking.losses}
               </span>
-              <span className={powerScoreColorClass}>
+              <span className={getPowerScoreColor(ranking.powerScore)}>
                 {formatPowerScore(ranking.powerScore)}
               </span>
             </div>
-          ) : (
+          )}
+        </div>
+
+        {!compactView && (
+          <div className="mt-3 w-full">
             <TeamStatsGrid
               wins={ranking.wins}
               losses={ranking.losses}
@@ -141,15 +133,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
               gamesLost={ranking.gamesLost}
               gameWinPercentage={ranking.gameWinPercentage}
               sos={ranking.sos}
-              streak={ranking.streak}
+              streak={ranking.streak || ''}
               powerScore={ranking.powerScore}
-              compactView={false}
+              rankChange={ranking.rankChange}
+              compactView={compactView}
             />
-          )}
-        </div>
-
-        {/* Trend Indicator (Only in detailed view) */}
-        {!compactView && <RankTrendIndicator rankChange={ranking.rankChange} />}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
