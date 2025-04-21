@@ -32,11 +32,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   return (
     <Card className={cn(
-      "group overflow-hidden transition-all duration-200 transform",
+      "group overflow-hidden transition-all duration-200 transform hover:scale-[1.01] hover:shadow-lg",
       isLight 
         ? "bg-white border-gray-300" 
-        : "bg-[#1F2937] border-gray-700",
-      "hover:scale-[1.01] hover:shadow-lg"
+        : "bg-[#1F2937] border-gray-700"
     )}>
       <div className="relative">
         {/* Status Badge */}

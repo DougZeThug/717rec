@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit, viewMode })
       <Card className={`${cardBg} overflow-hidden h-full mb-4 font-inter`}>
         <div className="flex flex-col md:flex-row h-full">
           {/* Team Logo Section */}
-          <div className="w-full md:w-[150px] h-[150px] md:h-auto flex items-center justify-center p-6 bg-[#f0f0f0] dark:bg-black/30">
+          <Link to={`/teams/${team.id}`} className="w-full md:w-[150px] h-[150px] md:h-auto flex items-center justify-center p-6 bg-[#f0f0f0] dark:bg-black/30">
             {!teamImage ? (
               <div className="flex items-center justify-center h-full text-gray-400 text-sm">
                 No Team Image
@@ -70,7 +69,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit, viewMode })
                 }}
               />
             )}
-          </div>
+          </Link>
 
           {/* Team Info Section */}
           <div className="flex flex-col flex-grow p-4">

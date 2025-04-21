@@ -20,18 +20,18 @@ const Footer = () => {
 
           <div className="md:border-l md:border-gray-700 md:pl-8">
             <h3 className="text-lg font-bold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm text-gray-300">
+            <ul className="flex flex-col space-y-2 text-sm text-gray-300">
               <li>
-                <Link to="/teams" className="hover:text-white transition-colors">Teams</Link>
+                <Link to="/teams" className="hover:text-white transition-colors hover:underline">Teams</Link>
               </li>
               <li>
-                <Link to="/schedule" className="hover:text-white transition-colors">Schedule</Link>
+                <Link to="/schedule" className="hover:text-white transition-colors hover:underline">Schedule</Link>
               </li>
               <li>
-                <Link to="/stats" className="hover:text-white transition-colors">Stats</Link>
+                <Link to="/stats" className="hover:text-white transition-colors hover:underline">Stats</Link>
               </li>
               <li>
-                <Link to="/playoffs" className="hover:text-white transition-colors">Playoffs</Link>
+                <Link to="/playoffs" className="hover:text-white transition-colors hover:underline">Playoffs</Link>
               </li>
             </ul>
           </div>
@@ -41,7 +41,7 @@ const Footer = () => {
             <p className="text-sm text-gray-300">
               Have questions or suggestions?
               <br />
-              <a href="mailto:info@717rec.com" className="flex items-center gap-2 mt-2 underline hover:text-white transition-colors">
+              <a href="mailto:info@717rec.com" className="flex items-center gap-2 mt-2 hover:underline hover:text-white transition-colors">
                 <Mail size={16} />
                 <span>info@717rec.com</span>
               </a>

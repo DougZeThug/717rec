@@ -15,15 +15,18 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   const { theme } = useTheme();
   const isLight = theme === "light";
   
-  console.debug('[HomeTeamCard]', team.id, 'imageUrl:', team.imageUrl);
+  // console.debug('[HomeTeamCard]', team.id, 'imageUrl:', team.imageUrl);
   
   return (
-    <div className={getCardInteractionStyles("bg-white rounded-lg shadow-md overflow-hidden mb-4 sm:mb-0 text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none")}>
+    <div className="overflow-hidden mb-4 sm:mb-0 transition duration-200 hover:shadow-md">
       <Link to={`/teams/${team.id}`} className="block">
-        <div className="h-44 bg-gray-200 relative flex items-center justify-center p-3">
+        <div className="h-40 bg-gray-100 dark:bg-gray-800/50 relative flex items-center justify-center p-3">
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
         </div>
-        <TeamStats team={team} />
+        <div className="p-4">
+          <h3 className="font-semibold text-gray-800 dark:text-white mb-2 truncate">{team.name}</h3>
+          <TeamStats team={team} />
+        </div>
       </Link>
     </div>
   );

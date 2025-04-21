@@ -6,13 +6,13 @@ import { Users, Calendar } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <section className="bg-cornhole-navy text-white pt-10 pb-8 md:py-14 px-3 md:px-4 transition-all duration-200">
+    <section className="bg-cornhole-navy text-white py-10 md:py-16 px-3 md:px-4 transition-all duration-200">
       <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans">
         <div className="flex justify-center mb-4 md:mb-6">
           <img 
             src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
             alt="717 Rec Logo" 
-            className="h-20 md:h-28 w-auto transition-all duration-200"
+            className="h-20 md:h-28 w-auto transition-all duration-200 drop-shadow-md"
             style={{ maxHeight: 90, minHeight: 60 }} // Shrinked about 30%
           />
         </div>
@@ -26,7 +26,7 @@ const HeroSection = () => {
           <Button
             asChild
             size="lg"
-            className="bg-cornhole-green hover:bg-cornhole-green/90 flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow"
+            className="bg-green-700 hover:bg-green-800 text-white flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow w-full xs:w-auto"
             style={{ minWidth: 160 }}
           >
             <Link to="/teams" className="flex items-center gap-2">
@@ -38,7 +38,7 @@ const HeroSection = () => {
             asChild
             size="lg"
             variant="outline"
-            className="bg-cornhole-cream text-cornhole-navy border-cornhole-navy hover:bg-white hover:text-cornhole-navy flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow"
+            className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow w-full xs:w-auto"
             style={{ minWidth: 170 }}
           >
             <Link to="/schedule" className="flex items-center gap-2">
