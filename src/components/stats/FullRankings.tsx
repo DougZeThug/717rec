@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import RankingsTable from "./RankingsTable";
 import { Ranking } from "@/types";
 import ViewToggle from "./ViewToggle";
+import { useTheme } from "next-themes";
 
 interface FullRankingsProps {
   rankings: Ranking[];
@@ -11,6 +12,8 @@ interface FullRankingsProps {
 
 const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
   const [view, setView] = useState<"division" | "all">("division");
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   // Sort rankings by power score for the unified view
   const sortedRankings = view === "all" 
@@ -23,7 +26,10 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <CardTitle>Complete Team Rankings</CardTitle>
-            <CardDescription>
+            <CardDescription
+              className={isLight ? "text-[#403E43]" : "text-gray-400"}
+              // #403E43 is a neutral deep gray for better contrast in light mode
+            >
               Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
             </CardDescription>
           </div>

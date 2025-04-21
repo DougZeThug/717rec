@@ -26,12 +26,15 @@ interface WinLossChartProps {
 const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const isLight = resolvedTheme === "light";
 
-  const chartTextColor = isDark ? "#e5e7eb" : "#333333";
+  // Deep dark for chart/legend text in light mode, otherwise fallback to existing colors
+  const chartTextColor = isLight ? "#1A1F2C" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
   const tooltipTextColor = isDark ? "#f9fafb" : "#111827";
+  const legendTextColor = isLight ? "#1A1F2C" : "#e5e7eb";
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
@@ -94,13 +97,22 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             height={isMobile ? 80 : 70}
             interval={0}
             tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            // X-axis label is always chartTextColor
           />
           <YAxis tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }} />
           <Tooltip content={<CustomWinLossTooltip />} />
           <Legend
-            wrapperStyle={{ color: chartTextColor, marginTop: 20, fontFamily: "'Inter', sans-serif" }}
+            wrapperStyle={{
+              color: legendTextColor,
+              marginTop: 20,
+              fontFamily: "'Inter', sans-serif",
+            }}
             formatter={(value) => (
-              <span style={{ color: chartTextColor, fontFamily: "'Inter', sans-serif" }}>{value}</span>
+              <span style={{
+                color: legendTextColor,
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 600
+              }}>{value}</span>
             )}
           />
           <Bar dataKey="wins" fill={barColorWin} name="Wins" />
