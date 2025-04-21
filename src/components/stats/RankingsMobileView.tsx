@@ -4,7 +4,7 @@ import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
 import { SortOptions } from "./RankingsTable";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, LightningBolt, Scale } from "lucide-react";
+import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react"; // Changed LightningBolt to Bolt
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   });
 
   const sortableFields = [
-    { id: 'powerScore', label: (<><LightningBolt size={16} className="inline-block mr-1" />Power</>) },
+    { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) }, // Changed LightningBolt to Bolt here
     { id: 'winPercentage', label: 'Win %' },
     { id: 'sos', label: (<><Scale size={15} className="inline-block mr-1" />SOS</>) },
     { id: 'wins', label: 'Wins' },
@@ -125,3 +125,4 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
 };
 
 export default RankingsMobileView;
+

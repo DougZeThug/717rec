@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Table,
@@ -12,7 +11,7 @@ import { Ranking } from "@/types";
 import RankingTableRow from "./RankingTableRow";
 import HeadToHeadRecords from "./HeadToHeadRecords";
 import { SortOptions } from "./RankingsTable";
-import { ArrowDown, ArrowUp, LightningBolt, Scale } from "lucide-react";
+import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +33,6 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
   onSortChange,
   showUnified = false
 }) => {
-  // If not showing unified view, group by division
   const rankingsByDivision = showUnified 
     ? { "All Teams": rankings }
     : rankings.reduce((acc, ranking) => {
@@ -87,7 +85,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                   {showUnified && <TableHead className="font-inter text-white">Division</TableHead>}
                   <TableHead className="text-center font-inter text-white">
                     <div className="flex items-center justify-center gap-1">
-                      <LightningBolt className="inline-block text-purple-300" size={16} />
+                      <Bolt className="inline-block text-purple-300" size={16} />
                       <span onClick={() => onSortChange('powerScore')} className="cursor-pointer">
                         Power Score {renderSortIndicator('powerScore')}
                       </span>
@@ -121,7 +119,6 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                       />
                       {expandedTeam === ranking.teamId && (
                         <TableRow>
-                          {/* Soft shadow divider */}
                           <TableCell colSpan={showUnified ? 11 : 10} className="bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
                             <div className="p-4">
                               <HeadToHeadRecords headToHead={ranking.headToHead} />

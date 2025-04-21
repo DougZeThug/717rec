@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LightningBolt, Trophy, Scale, Star } from "lucide-react";
+import { Bolt, Trophy, Scale, Star } from "lucide-react"; // Changed LightningBolt to Bolt
 import { formatPowerScore } from "@/utils/powerScore";
 
 interface StatsSummaryCardsProps {
@@ -93,7 +93,7 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
       </Card>
       <Card className="flex flex-row items-center gap-3 py-3 bg-[#1E1E1E] rounded-xl shadow font-inter">
         <div className="flex items-center justify-center bg-purple-900/20 rounded-full w-12 h-12 mr-2">
-          <LightningBolt size={iconSize} className="text-purple-300" />
+          <Bolt size={iconSize} className="text-purple-300" />
         </div>
         <div>
           <CardTitle className="text-base font-bold text-white mb-0 flex gap-2 items-center">
@@ -108,3 +108,4 @@ const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
 };
 
 export default StatsSummaryCards;
+
