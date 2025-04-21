@@ -84,8 +84,8 @@ export const useBatchMatchForm = (teams: Team[]) => {
     return true;
   };
 
-  const handleSubmit = async () => {
-    if (!validateMatches()) return;
+  const handleSubmit = async (): Promise<boolean> => {
+    if (!validateMatches()) return false;
     
     setIsSubmitting(true);
 
@@ -144,7 +144,8 @@ export const useBatchMatchForm = (teams: Team[]) => {
       // Reset form
       setMatchPairs([{ id: '1', team1Id: null, team2Id: null, timeslot: null }]);
       setSelectedDate(null);
-
+      
+      return true;
     } catch (error: any) {
       toast({
         title: "Error",
@@ -152,6 +153,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
         variant: "destructive"
       });
       console.error("Error creating matches:", error);
+      return false;
     } finally {
       setIsSubmitting(false);
     }
