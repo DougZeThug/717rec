@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { 
   Card, 
@@ -19,6 +18,7 @@ import StatsErrorState from "./StatsErrorState";
 import FullRankings from "./FullRankings";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "next-themes";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -38,6 +38,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
   const fullRankingsRef = useRef<HTMLDivElement>(null);
 
+  const { theme } = useTheme();
   const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
 
@@ -74,9 +75,13 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     imageUrl: team.imageUrl
   }));
 
-  // ---- FONT HIERARCHY: Wrap everything EXCEPT header in font-inter ----
+  const themeClass = theme === 'light' ? 'light-theme' : 'dark-theme';
+  const cardBg =
+    theme === 'light' ? 'bg-white border border-[#e0e0e0] text-[#1a1a1a]' : 'bg-[#1E1E1E] text-white';
+  const cardShadow = 'rounded-xl shadow font-inter';
+
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className={`max-w-7xl mx-auto ${themeClass}`}>
       <StatsHeader 
         onDivisionChange={handleDivisionChange} 
         divisions={divisions || []} 
@@ -84,10 +89,12 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       <div className="font-inter mt-2">
         {rankings.length > 0 ? (
           <>
-            <Card className="mb-6 bg-[#1E1E1E] rounded-xl shadow font-inter">
+            <Card className={`mb-6 ${cardBg} ${cardShadow}`}>
               <CardHeader className="pb-2">
-                <CardTitle className="font-bold text-white">Current Standings</CardTitle>
-                <CardDescription className="text-gray-400">Top {compactLimit} teams based on performance</CardDescription>
+                <CardTitle className={`font-bold ${theme === 'light' ? 'text-[#1a1a1a]' : 'text-white'}`}>Current Standings</CardTitle>
+                <CardDescription className={theme === 'light' ? 'text-gray-600' : 'text-gray-400'}>
+                  Top {compactLimit} teams based on performance
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <CompactStandings rankings={rankings.slice(0, compactLimit)} />
@@ -105,39 +112,38 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             </Card>
             
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-white mb-4">League Highlights</h2>
-              <StatsSummaryCards rankings={rankings} />
+              <h2 className={`text-xl font-bold mb-4 ${theme === 'light' ? 'text-[#1a1a1a]' : 'text-white'}`}>League Highlights</h2>
+              <StatsSummaryCards rankings={rankings} theme={theme} />
             </div>
 
-            <StatsCharts 
-              chartData={topTeamsData} 
-              chartLimit={chartLimit} 
-            />
+            <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} theme={theme} />
 
             <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
               <FullRankings rankings={rankings} />
             </div>
           </>
         ) : (
-          <NoTeamsAvailable />
+          <NoTeamsAvailable theme={theme} />
         )}
       </div>
     </div>
   );
 };
 
-// Component for when no teams are available
-const NoTeamsAvailable = () => {
+const NoTeamsAvailable = ({ theme }: { theme: string }) => {
+  const cardBg = theme === 'light' ? 'bg-[#f5f5f5] border border-[#e0e0e0] text-[#1a1a1a]' : 'bg-[#1E1E1E] text-white';
   return (
-    <Card className="bg-[#1E1E1E] rounded-xl shadow font-inter">
+    <Card className={`${cardBg} rounded-xl shadow font-inter`}>
       <CardHeader>
-        <CardTitle className="text-white font-bold">No Teams Available</CardTitle>
-        <CardDescription className="text-gray-400 font-light">
+        <CardTitle className={theme === "light" ? "text-[#1a1a1a] font-bold" : "text-white font-bold"}>No Teams Available</CardTitle>
+        <CardDescription className={theme === "light" ? "text-gray-600 font-light" : "text-gray-400 font-light"}>
           There are no teams in the selected division or no teams have been added yet.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-300 font-inter">Try selecting a different division or add teams to view statistics.</p>
+        <p className={theme === "light" ? "text-gray-700 font-inter" : "text-gray-300 font-inter"}>
+          Try selecting a different division or add teams to view statistics.
+        </p>
       </CardContent>
     </Card>
   );
