@@ -22,12 +22,12 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
   const isMobile = useIsMobile();
 
   return (
-    <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sticky top-0 z-10 
-      pt-2 pb-4 bg-background transition-shadow backdrop-blur-sm`}>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sticky top-0 z-10 
+      pt-2 pb-3 bg-background/95 backdrop-blur-sm">
       <h1 className="text-2xl sm:text-3xl font-bold">Teams</h1>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
         <TooltipProvider>
-          <div className="flex bg-muted rounded-md p-1 mr-2">
+          <div className="flex bg-muted rounded-md p-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Toggle
@@ -38,7 +38,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                   className="data-[state=on]:bg-white data-[state=off]:bg-transparent dark:data-[state=on]:bg-gray-800"
                   aria-label="List view"
                 >
-                  <List size={isMobile ? 16 : 18} />
+                  <List size={16} />
                 </Toggle>
               </TooltipTrigger>
               <TooltipContent>
@@ -56,7 +56,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                   className="data-[state=on]:bg-white data-[state=off]:bg-transparent dark:data-[state=on]:bg-gray-800"
                   aria-label="Grid view"
                 >
-                  <Grid2X2 size={isMobile ? 16 : 18} />
+                  <Grid2X2 size={16} />
                 </Toggle>
               </TooltipTrigger>
               <TooltipContent>
@@ -71,11 +71,11 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 onClick={onRefresh} 
                 variant="outline"
                 disabled={isRefreshing}
-                className="flex items-center gap-1 h-9 px-2 sm:px-3"
-                size={isMobile ? "sm" : "default"}
+                className="h-9 px-2 sm:px-3"
+                size="sm"
               >
-                <RefreshCw size={isMobile ? 15 : 16} className={isRefreshing ? "animate-spin" : ""} /> 
-                {!isMobile && (isRefreshing ? "Refreshing..." : "Refresh")}
+                <RefreshCw size={15} className={isRefreshing ? "animate-spin" : ""} />
+                {!isMobile && <span className="ml-2">{isRefreshing ? "Refreshing..." : "Refresh"}</span>}
               </Button>
             </TooltipTrigger>
             <TooltipContent>

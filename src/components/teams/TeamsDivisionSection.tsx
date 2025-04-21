@@ -3,9 +3,9 @@ import React, { useRef, useEffect } from 'react';
 import { Team } from "@/types";
 import { TeamList } from "@/components/teams/TeamList";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDivisionColor } from '@/utils/divisionColors';
 
 interface TeamsDivisionSectionProps {
   divisionName: string;
@@ -32,48 +32,37 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   
-  // Auto-scroll when expanded
   useEffect(() => {
     if (isExpanded && sectionRef.current) {
-      const yOffset = -100; // Adjust this value based on your header height
+      const yOffset = -100;
       const y = sectionRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      
-      window.scrollTo({
-        top: y,
-        behavior: 'smooth'
-      });
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   }, [isExpanded]);
 
   if (teams.length === 0) return null;
 
-  // Division color mapping
-  const getDivisionVariant = () => {
-    if (!divisionName) return "outline";
-    
-    const lowerDivName = divisionName.toLowerCase();
-    if (lowerDivName.includes("competitive")) return "competitive";
-    if (lowerDivName.includes("intermediate")) return "intermediate";
-    if (lowerDivName.includes("recreational")) return "recreational";
-    return "outline";
-  };
-
-  const divisionVariant = getDivisionVariant();
-
   return (
     <div className="space-y-3 border-b pb-6 last:border-b-0" ref={sectionRef}>
       <div 
-        className="flex justify-between items-center cursor-pointer bg-muted/30 rounded-md px-3 py-2 
-          hover:bg-muted/50 transition-colors border border-transparent hover:border-muted" 
+        className="flex justify-between items-center cursor-pointer bg-gray-50/50 dark:bg-gray-900/50 
+          rounded-lg px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
         onClick={onToggleExpand}
       >
-        <div className="flex items-center gap-2">
-          <Badge variant={divisionVariant} className="px-3 py-1.5">
-            {divisionName} <span className="ml-1.5 opacity-80">({teams.length})</span>
-          </Badge>
+        <div className="flex items-center gap-3">
+          <h3 className="text-lg font-semibold">
+            {divisionName} 
+            <span className="ml-2 text-gray-500 dark:text-gray-400 text-base font-normal">
+              ({teams.length})
+            </span>
+          </h3>
         </div>
-        <Button variant="ghost" size="sm" className="p-1 h-8 w-8 transition-transform duration-300" 
-          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="p-1 h-8 w-8 transition-transform duration-300" 
+          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        >
           <ChevronDown size={20} />
         </Button>
       </div>
