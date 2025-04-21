@@ -2,15 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowDown } from "lucide-react";
 import StatsContainer from "@/components/stats/StatsContainer";
+import { useTheme } from "next-themes";
 
 const Stats = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [matchesError, setMatchesError] = useState<Error | null>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -59,11 +58,12 @@ const Stats = () => {
   }, []);
 
   return (
-    <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
+    <div className={`min-h-screen cornhole-bg py-8 px-4 md:px-8 ${theme === 'light' ? 'bg-gray-50' : ''}`}>
       <StatsContainer 
         matches={matches} 
         isLoadingMatches={isLoadingMatches} 
-        matchesError={matchesError} 
+        matchesError={matchesError}
+        theme={theme}
       />
     </div>
   );

@@ -41,7 +41,6 @@ const RankingCard: React.FC<RankingCardProps> = ({
     }
   };
 
-  // Card background and styling update for light/dark mode
   return (
     <Card 
       className={cn(
