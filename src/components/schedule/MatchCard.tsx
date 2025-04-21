@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,13 +25,23 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team1Name = match.team1Details?.name || "Unknown Team";
   const team2Name = match.team2Details?.name || "Unknown Team";
 
+  // Determine winner only if scores are defined and match is completed
   const team1IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team1Score > match.team2Score;
-  const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team2Score;
+  const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team1Score;
 
+  // Updated score style function with stronger green for winners
   const getScoreStyle = (isWinner: boolean) => cn(
     "text-2xl font-black tracking-wide tabular-nums transition-colors",
     isWinner 
-      ? isLight ? "text-green-600" : "text-green-400"
+      ? isLight ? "text-green-600" : "text-green-500"
+      : isLight ? "text-gray-600" : "text-gray-400"
+  );
+
+  // Updated team name style function for consistent coloring
+  const getTeamStyle = (isWinner: boolean) => cn(
+    "truncate",
+    isWinner 
+      ? isLight ? "text-green-600 font-medium" : "text-green-500 font-medium"
       : isLight ? "text-gray-600" : "text-gray-400"
   );
 
@@ -108,12 +119,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {team1IsWinner && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              <span className={cn(
-                "truncate",
-                team1IsWinner 
-                  ? isLight ? "text-green-700" : "text-green-400"
-                  : isLight ? "text-gray-700" : "text-gray-400"
-              )}>
+              <span className={getTeamStyle(team1IsWinner)}>
                 ({match.team1_game_wins || 0}) {team1Name}
               </span>
             </TransitionLink>
@@ -130,12 +136,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {team2IsWinner && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              <span className={cn(
-                "truncate",
-                team2IsWinner 
-                  ? isLight ? "text-green-700" : "text-green-400"
-                  : isLight ? "text-gray-700" : "text-gray-400"
-              )}>
+              <span className={getTeamStyle(team2IsWinner)}>
                 ({match.team2_game_wins || 0}) {team2Name}
               </span>
             </TransitionLink>
