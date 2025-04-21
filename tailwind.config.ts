@@ -70,9 +70,10 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
-			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
-			},
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        bebas: ['Bebas Neue', 'sans-serif'], // Added for hero section
+      },
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

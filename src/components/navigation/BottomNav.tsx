@@ -9,9 +9,7 @@ export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  
-  console.log("BottomNav rendering, current path:", location.pathname);
-  
+
   const navItems = [
     {
       path: "/stats",
@@ -30,19 +28,17 @@ export const BottomNav = () => {
     }
   ];
 
-  // Add effect to debug current route
   useEffect(() => {
-    console.log("BottomNav: Current route is:", location.pathname);
+    // For debugging route changes
+    // console.log("BottomNav: Current route is:", location.pathname);
   }, [location.pathname]);
 
-  // Don't render on desktop if specified
   if (!isMobile) {
-    console.log("Not rendering BottomNav on desktop");
     return null;
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 py-2 shadow-[0_-1px_5px_rgba(0,0,0,0.05)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 py-2 shadow-[0_-2px_16px_rgba(30,58,95,0.04)]">
       <div className="flex justify-around items-center max-w-md mx-auto">
         {navItems.map((item) => (
           <NavItem
