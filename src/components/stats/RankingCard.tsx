@@ -56,12 +56,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 <div data-team-name="true" className="font-medium">
                   {ranking.teamName}
                 </div>
-                {showDivision && ranking.divisionName && (
+                {showDivision && (
                   <Badge
-                    variant="outline"
+                    variant={ranking.divisionName?.toLowerCase() as any || "default"}
                     className="font-normal text-xs"
                   >
-                    {ranking.divisionName}
+                    {ranking.divisionName || "Unassigned"}
                   </Badge>
                 )}
               </div>

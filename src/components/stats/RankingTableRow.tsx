@@ -24,10 +24,6 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
 }) => {
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
 
-  // Helper to choose fallback logo if missing
-  const getLogoUrl = (team: Ranking) =>
-    team.logoUrl || team.imageUrl || '/default-logo.png';
-
   return (
     <TableRow 
       className={`cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-gray-50' : ''}`}
@@ -35,20 +31,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     >
       <TableCell className="font-medium">{index + 1}</TableCell>
       <TableCell>
-        <div className="flex items-center space-x-3">
-          <img
-            src={getLogoUrl(ranking)}
-            alt={ranking.teamName}
-            className="w-8 h-8 rounded-full object-contain bg-gray-100"
-          />
-          <Link 
-            to={`/teams/${ranking.teamId}`}
-            className="hover:text-blue-600 hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {ranking.teamName}
-          </Link>
-        </div>
+        <Link 
+          to={`/teams/${ranking.teamId}`}
+          className="hover:text-blue-600 hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {ranking.teamName}
+        </Link>
       </TableCell>
       {showDivision && (
         <TableCell>
