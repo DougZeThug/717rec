@@ -53,58 +53,72 @@ const CustomTooltip = ({ active, payload }: {active?: boolean, payload?: any[]})
 };
 
 const PowerScoreScatterPlot = ({ data }: { data: TeamPowerScore[] }) => {
-  // Find min/max for axis ranges
-  const minSOS = Math.min(...data.map(d => d.sos ?? 0));
-  const maxSOS = Math.max(...data.map(d => d.sos ?? 1));
-  const minPower = Math.min(...data.map(d => d.power_score ?? 0));
-  const maxPower = Math.max(...data.map(d => d.power_score ?? 2));
-
-  // Division color mapping
-  const divisions = Array.from(new Set(data.map(t => t.division || t.divisionName || "Unassigned")));
-
-  // Responsive axis ticks
-  const tickCount = 5;
+  // Handle empty data case
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <div className="text-center p-8 text-gray-500">No team data available for scatter plot</div>;
+  }
   
-  return (
-    <div className="w-full overflow-x-auto">
-      <div className="min-w-[360px] md:min-w-[600px]">
-        <ResponsiveContainer width="100%" minWidth={360} height={340}>
-          <ScatterChart margin={{ top: 30, right: 25, left: 10, bottom: 30 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              type="number" 
-              dataKey="sos" 
-              name="SOS" 
-              label={{ value: "Strength of Schedule (SOS)", position: "insideBottom", offset: -8 }}
-              domain={[minSOS, maxSOS]}
-              tickCount={tickCount}
-            />
-            <YAxis 
-              type="number" 
-              dataKey="power_score" 
-              name="Power Score"
-              label={{ value: "Power Score", angle: -90, position: "insideLeft", offset: 8 }}
-              domain={[minPower, maxPower]}
-              tickCount={tickCount}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-            {divisions.map((division, idx) => (
-              <Scatter
-                key={division}
-                name={division}
-                data={data.filter(d => (d.division || d.divisionName || "Unassigned") === division)}
-                fill={getDivisionColor(division)}
-                shape="circle"
-                line={{}}
-                legendType="circle"
+  try {
+    // Find min/max for axis ranges, with safe defaults
+    const minSOS = Math.min(...data.map(d => d.sos ?? 0));
+    const maxSOS = Math.max(...data.map(d => d.sos ?? 1));
+    const minPower = Math.min(...data.map(d => d.power_score ?? 0));
+    const maxPower = Math.max(...data.map(d => d.power_score ?? 2));
+
+    // Division color mapping - ensure uniqueness
+    const divisions = Array.from(new Set(data.map(t => t.division || t.divisionName || "Unassigned")));
+
+    // Responsive axis ticks
+    const tickCount = 5;
+    
+    return (
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-[360px] md:min-w-[600px]">
+          <ResponsiveContainer width="100%" minWidth={360} height={340}>
+            <ScatterChart margin={{ top: 30, right: 25, left: 10, bottom: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                type="number" 
+                dataKey="sos" 
+                name="SOS" 
+                label={{ value: "Strength of Schedule (SOS)", position: "insideBottom", offset: -8 }}
+                domain={[minSOS, maxSOS]}
+                tickCount={tickCount}
               />
-            ))}
-          </ScatterChart>
-        </ResponsiveContainer>
+              <YAxis 
+                type="number" 
+                dataKey="power_score" 
+                name="Power Score"
+                label={{ value: "Power Score", angle: -90, position: "insideLeft", offset: 8 }}
+                domain={[minPower, maxPower]}
+                tickCount={tickCount}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              {divisions.map((division, idx) => (
+                <Scatter
+                  key={division}
+                  name={division}
+                  data={data.filter(d => (d.division || d.divisionName || "Unassigned") === division)}
+                  fill={getDivisionColor(division)}
+                  shape="circle"
+                  line={{}}
+                  legendType="circle"
+                />
+              ))}
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error("Error rendering PowerScoreScatterPlot:", error);
+    return (
+      <div className="text-center p-8 text-gray-500">
+        Error rendering scatter plot. Please try again later.
+      </div>
+    );
+  }
 };
 
 export default PowerScoreScatterPlot;

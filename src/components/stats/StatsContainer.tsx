@@ -1,5 +1,4 @@
-
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -58,6 +57,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
   const fullRankingsRef = useRef<HTMLDivElement>(null);
 
+  const { top10 = [], allTeams = [], isLoadingTop = false, isLoadingAll = false } = usePowerScoresData();
+
   const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
 
@@ -71,6 +72,11 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     }
   };
 
+  useEffect(() => {
+    console.log("Rankings data:", rankings);
+    console.log("Top10 data:", top10);
+  }, [rankings, top10]);
+
   if (isLoading) {
     return <StatsLoadingState />;
   }
@@ -79,46 +85,90 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     return <StatsErrorState teamsError={teamsError} matchesError={matchesError} />;
   }
 
+  if (!rankings || rankings.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>No Rankings Available</CardTitle>
+            <CardDescription>There are no rankings data available at this time.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Please check back later or contact your administrator.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const chartLimit = isMobile ? 5 : 8;
-  const { top10, allTeams, isLoadingTop, isLoadingAll } = usePowerScoresData();
 
-  // Process top teams data for display in charts
-  const topTeams = (top10.length > 0 ? top10 : rankings)
-    .filter((team: any) => {
-      const powerScore = team.power_score !== undefined ? team.power_score : team.powerScore;
-      return powerScore !== null && powerScore !== undefined;
-    })
-    .slice(0, 10);
+  const topTeams = (() => {
+    try {
+      if (Array.isArray(top10) && top10.length > 0) {
+        return top10.filter((team: any) => {
+          const powerScore = team.power_score !== undefined ? team.power_score : team.powerScore;
+          return powerScore !== null && powerScore !== undefined;
+        }).slice(0, 10);
+      } else {
+        return rankings.filter(team => team.powerScore !== undefined && team.powerScore !== null)
+                       .slice(0, 10);
+      }
+    } catch (err) {
+      console.error("Error processing top teams data:", err);
+      return rankings.slice(0, 10);
+    }
+  })();
 
-  // Transform data for the chart component that expects Ranking[]
   const topTeamsForRankings = topTeams.map((team: any) => {
-    // If it's already a Ranking type, return it as is
-    if (team.teamId) return team as Ranking;
-    
-    // Otherwise convert from API data format
-    return {
-      teamId: team.team_id || team.id || '',
-      teamName: team.team_name || team.name || '',
-      logoUrl: team.logo_url || null,
-      imageUrl: team.image_url || null,
-      wins: team.wins || 0,
-      losses: team.losses || 0,
-      winPercentage: team.win_percentage || 0,
-      divisionName: team.division || team.divisionName || 'Unassigned',
-      sos: team.sos || 0,
-      streak: undefined,
-      headToHead: {},
-      powerScore: team.power_score || 0,
-      gamesWon: team.game_wins || 0,
-      gamesLost: team.game_losses || 0,
-      gameWinPercentage: team.game_win_percentage || 0,
-      closeMatchLosses: team.close_match_losses || 0,
-      rankChange: undefined,
-      previousRank: undefined
-    } as Ranking;
+    try {
+      if (team.teamId) return team as Ranking;
+      
+      return {
+        teamId: team.team_id || team.id || '',
+        teamName: team.team_name || team.name || '',
+        logoUrl: team.logo_url || null,
+        imageUrl: team.image_url || null,
+        wins: team.wins || 0,
+        losses: team.losses || 0,
+        winPercentage: team.win_percentage || 0,
+        divisionName: team.division || team.divisionName || 'Unassigned',
+        sos: team.sos || 0,
+        streak: undefined,
+        headToHead: {},
+        powerScore: team.power_score || 0,
+        gamesWon: team.game_wins || 0,
+        gamesLost: team.game_losses || 0,
+        gameWinPercentage: team.game_win_percentage || 0,
+        closeMatchLosses: team.close_match_losses || 0,
+        rankChange: undefined,
+        previousRank: undefined
+      } as Ranking;
+    } catch (err) {
+      console.error("Error mapping team data:", err, team);
+      return {
+        teamId: team.team_id || team.id || 'unknown',
+        teamName: team.team_name || team.name || 'Unknown Team',
+        logoUrl: null,
+        imageUrl: null,
+        wins: 0,
+        losses: 0,
+        winPercentage: 0,
+        divisionName: 'Unassigned',
+        sos: 0,
+        streak: undefined,
+        headToHead: {},
+        powerScore: 0,
+        gamesWon: 0,
+        gamesLost: 0,
+        gameWinPercentage: 0,
+        closeMatchLosses: 0,
+        rankChange: undefined,
+        previousRank: undefined
+      } as Ranking;
+    }
   });
 
-  // Create chart data items in the format expected by StatsCharts
   const chartData: ChartDataItem[] = topTeamsForRankings.map(team => ({
     id: team.teamId,
     name: team.teamName,
@@ -180,14 +230,23 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             {(isLoadingAll || !allTeams.length) ? (
               <div className="text-muted-foreground text-center py-8">Loading chart data…</div>
             ) : (
-              <PowerScoreScatterPlot data={
-                allTeams
-                  .filter((t: any) => t.power_score !== null && t.sos !== null)
-                  .map((t: any) => ({
-                    ...t,
-                    division: t.division || t.divisionName || t.division_id || "Unassigned"
-                  }))
-              } />
+              <ErrorBoundary fallback={<div className="text-center p-8 text-gray-500">Error loading chart. Please try again later.</div>}>
+                <PowerScoreScatterPlot data={
+                  allTeams
+                    .filter((t: any) => {
+                      return t && 
+                            typeof t === 'object' && 
+                            t.power_score !== null && 
+                            t.power_score !== undefined && 
+                            t.sos !== null && 
+                            t.sos !== undefined;
+                    })
+                    .map((t: any) => ({
+                      ...t,
+                      division: t.division || t.divisionName || t.division_id || "Unassigned"
+                    }))
+                } />
+              </ErrorBoundary>
             )}
           </div>
         </>
@@ -196,6 +255,31 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       )}
     </div>
   );
+};
+
+const ErrorBoundary = ({ children, fallback }: { children: React.ReactNode, fallback: React.ReactNode }) => {
+  const [hasError, setHasError] = useState(false);
+  
+  useEffect(() => {
+    const errorHandler = (error: ErrorEvent) => {
+      console.error("Caught error:", error);
+      setHasError(true);
+    };
+    
+    window.addEventListener('error', errorHandler);
+    return () => window.removeEventListener('error', errorHandler);
+  }, []);
+  
+  if (hasError) {
+    return <>{fallback}</>;
+  }
+  
+  try {
+    return <>{children}</>;
+  } catch (error) {
+    console.error("Error in component:", error);
+    return <>{fallback}</>;
+  }
 };
 
 const NoTeamsAvailable = () => {
