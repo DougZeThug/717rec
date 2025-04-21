@@ -59,10 +59,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       }, {} as Record<string, Ranking[]>);
 
   return (
-    <div className={cn(
-      "font-inter",
-      isLight ? "bg-[#fafbfc]" : ""
-    )}>
+    <div className="font-inter">
       <div className="mb-4 space-y-4">
         <div className="flex flex-col gap-4">
           <div className="overflow-x-auto pb-2">
@@ -78,7 +75,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     isLight
                       ? (sortOptions.field === field.id
                           ? "bg-blue-600 text-white hover:bg-blue-700 border-[#e0e0e0]"
-                          : "bg-white text-[#111111] border border-[#e0e0e0] hover:bg-[#f0f0f0]")
+                          : "bg-white text-[#1a1a1a] border border-[#e0e0e0] hover:bg-[#f0f0f0]")
                       : ""
                   )}
                 >
@@ -98,7 +95,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               checked={detailedView}
               onCheckedChange={toggleViewMode}
             />
-            <Label htmlFor="detailed-view" className={isLight ? "text-sm text-[#4b5563]" : "text-sm text-gray-200"}>
+            <Label htmlFor="detailed-view" className={isLight ? "text-sm text-[#2c2c2c]" : "text-sm text-gray-200"}>
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
           </div>
@@ -109,10 +106,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
               <h3 className={isLight
-                ? "text-lg font-medium flex items-center font-inter text-[#111111]"
+                ? "text-lg font-medium flex items-center font-inter text-[#1a1a1a]"
                 : "text-lg font-medium flex items-center font-inter text-gray-100"
                 }>
-                {divisionName} <span className={isLight ? "ml-2 text-xs text-[#6b7280] font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>
+                {divisionName} <span className={isLight ? "ml-2 text-xs text-[#666] font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>
               </h3>
             )}
             <div className="space-y-4">
