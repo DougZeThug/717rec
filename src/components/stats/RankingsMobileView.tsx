@@ -95,7 +95,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               checked={detailedView}
               onCheckedChange={toggleViewMode}
             />
-            <Label htmlFor="detailed-view" className={isLight ? "text-sm text-gray-800" : "text-sm text-gray-200"}>
+            <Label htmlFor="detailed-view" className={isLight ? "text-sm text-gray-800 font-medium" : "text-sm text-gray-200"}>
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
           </div>
@@ -106,7 +106,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
               <h3 className={isLight
-                ? "text-lg font-medium flex items-center font-inter text-gray-900"
+                ? "text-lg font-medium flex items-center font-inter text-black"
                 : "text-lg font-medium flex items-center font-inter text-gray-100"
                 }>
                 {divisionName} <span className={isLight ? "ml-2 text-xs text-gray-800 font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>

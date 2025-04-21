@@ -32,13 +32,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       className={`cursor-pointer hover:bg-gray-50 ${isExpanded ? 'bg-gray-50' : ''}`}
       onClick={onToggleExpand}
     >
-      <TableCell className="font-medium" style={isLight ? { color: "#222" } : {}}>{index + 1}</TableCell>
+      <TableCell className="font-medium" style={isLight ? { color: "#111" } : {}}>{index + 1}</TableCell>
       <TableCell>
         <Link 
           to={`/teams/${ranking.teamId}`}
           className="hover:text-blue-600 hover:underline"
           onClick={(e) => e.stopPropagation()}
-          style={isLight ? { color: "#222" } : {}}
+          style={isLight ? { color: "#000" } : {}}
         >
           {ranking.teamName}
         </Link>

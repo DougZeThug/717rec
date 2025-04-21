@@ -29,12 +29,12 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const isLight = resolvedTheme === "light";
 
   // Deep dark for chart/legend text in light mode, otherwise fallback to existing colors
-  const chartTextColor = isLight ? "#222222" : "#e5e7eb"; // Darkened for better readability in light mode
+  const chartTextColor = isLight ? "#111111" : "#e5e7eb"; // Darkened for better readability in light mode
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isDark ? "#f9fafb" : "#111827";
-  const legendTextColor = isLight ? "#000000" : "#e5e7eb"; // Darkened legend text in light mode
+  const tooltipTextColor = isDark ? "#f9fafb" : "#000000"; // Black text for light mode tooltips
+  const legendTextColor = isLight ? "#000000" : "#e5e7eb"; // Black legend text in light mode
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";

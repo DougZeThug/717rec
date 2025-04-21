@@ -3,6 +3,7 @@ import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 import { cn } from "@/lib/utils";
 import { useChart } from "./ChartContainer";
+import { useTheme } from "next-themes";
 
 export const ChartLegend = RechartsPrimitive.Legend;
 
@@ -19,6 +20,8 @@ export const ChartLegendContent = React.forwardRef<
     ref
   ) => {
     const { config } = useChart();
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === "light";
 
     if (!payload?.length) {
       return null;
@@ -41,7 +44,8 @@ export const ChartLegendContent = React.forwardRef<
             <div
               key={item.value}
               className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3",
+                isLight ? "[&>svg]:text-black" : "[&>svg]:text-muted-foreground"
               )}
             >
               {itemConfig?.icon && !hideIcon ? (
@@ -54,7 +58,7 @@ export const ChartLegendContent = React.forwardRef<
                   }}
                 />
               )}
-              {itemConfig?.label}
+              <span style={{ color: isLight ? "#000" : "" }}>{itemConfig?.label}</span>
             </div>
           );
         })}

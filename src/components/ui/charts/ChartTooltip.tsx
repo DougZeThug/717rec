@@ -87,7 +87,7 @@ export const ChartTooltipContent = React.forwardRef<
         ref={ref}
         className={cn(
           "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 text-xs shadow-xl",
-          isLight ? "bg-white text-[#333]" : "bg-[#1f2937] text-white",
+          isLight ? "bg-white text-[#111]" : "bg-[#1f2937] text-white",
           className
         )}
       >
@@ -97,7 +97,7 @@ export const ChartTooltipContent = React.forwardRef<
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color || item.payload.fill || item.color;
-            const textColor = isLight ? "#333" : "#fff";
+            const textColor = isLight ? "#111" : "#fff";
 
             return (
               <div
@@ -144,7 +144,7 @@ export const ChartTooltipContent = React.forwardRef<
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span style={{ color: isLight ? "#666" : "#ccc" }}>
+                        <span style={{ color: isLight ? "#111" : "#ccc" }}>
                           {itemConfig?.label || item.name}
                         </span>
                       </div>

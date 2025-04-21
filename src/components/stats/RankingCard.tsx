@@ -70,7 +70,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <div data-team-name="true" className="font-bold text-[#1a1a1a] dark:text-white leading-tight truncate">
+            <div data-team-name="true" className="font-bold text-black dark:text-white leading-tight truncate">
               {ranking.teamName}
             </div>
             {showDivision && (
@@ -84,8 +84,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <span className="ml-2">{<RankTrendIndicator rankChange={ranking.rankChange} />}</span>
           </div>
           <div className="flex flex-col gap-1 mt-1">
-            <span className="text-xs text-gray-600 dark:text-gray-400">Record: <span className="font-medium text-[#1a1a1a] dark:text-white">{ranking.wins}-{ranking.losses}</span></span>
-            <span className="text-xs text-gray-600 dark:text-gray-400">Power Score: <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>{formatPowerScore(ranking.powerScore)}</span></span>
+            <span className="text-xs text-gray-700 dark:text-gray-400">Record: <span className="font-medium text-black dark:text-white">{ranking.wins}-{ranking.losses}</span></span>
+            <span className="text-xs text-gray-700 dark:text-gray-400">Power Score: <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>{formatPowerScore(ranking.powerScore)}</span></span>
           </div>
         </div>
       </CardContent>
