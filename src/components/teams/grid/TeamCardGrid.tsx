@@ -1,6 +1,6 @@
 import React from "react";
 import { Team } from "@/types";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { TeamImage } from "../shared/TeamImage";
 import { StatBlock } from "../shared/StatBlock";
 import { Trophy, X, MoreHorizontal, Edit, Trash2, ExternalLink } from "lucide-react";
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import { PlayerChip } from "../shared/PlayerChip";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 interface TeamCardGridProps {
@@ -24,15 +23,13 @@ interface TeamCardGridProps {
 }
 
 export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEdit }) => {
+  const location = useLocation();
+  const isAdminPage = location.pathname.includes('/admin');
   const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl";
   const powerScoreColor = getPowerScoreColor(team.power_score);
 
   return (
-    <div 
-      className={`${cardBg} overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter 
-        shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80
-        dark:hover:bg-[#252525] active:scale-[0.98]`}
-    >
+    <div className={`${cardBg} overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.98]`}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-24 bg-[#f0f0f0] dark:bg-black/30 flex items-center justify-center p-3">
           <TeamImage 
@@ -51,33 +48,31 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
             </h3>
           </Link>
           
-          {(onEdit || onDelete) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
-                  <MoreHorizontal size={15} />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
-                    <Edit className="mr-2 h-4 w-4" /> Edit
-                  </DropdownMenuItem>
-                )}
-                {onDelete && (
-                  <DropdownMenuItem onClick={() => onDelete(team.id)} className="text-destructive focus:text-destructive cursor-pointer">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to={`/teams/${team.id}`}>
-                    <ExternalLink className="mr-2 h-4 w-4" /> View Details
-                  </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                <MoreHorizontal size={15} />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px]">
+              {isAdminPage && onEdit && (
+                <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
+                  <Edit className="mr-2 h-4 w-4" /> Edit
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+              )}
+              {isAdminPage && onDelete && (
+                <DropdownMenuItem onClick={() => onDelete(team.id)} className="text-destructive focus:text-destructive cursor-pointer">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <Link to={`/teams/${team.id}`}>
+                  <ExternalLink className="mr-2 h-4 w-4" /> View Details
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
         {team.divisionName && (
