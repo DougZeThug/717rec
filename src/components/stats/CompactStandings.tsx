@@ -61,14 +61,14 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 )}
                 <span className={cn(
                   "font-medium hover:text-blue-600 hover:underline",
-                  isLight ? "text-[#221F26]" : "text-white"
+                  isLight ? "text-[#221F26]" : "text-white"  // Darkened team name color for light mode
                 )}>
                   {team.teamName}
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-3 text-sm">
-              <span className={isLight ? "text-[#333333]" : "text-gray-200"}>{team.wins}-{team.losses}</span>
+              <span className={isLight ? "text-[#333333]" : "text-gray-200"}>{team.wins}-{team.losses}</span> {/* Darkened record text */}
               <span className={getPowerScoreColor(team.powerScore)}>
                 {formatPowerScore(team.powerScore)}
               </span>
@@ -85,9 +85,9 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
         <TableHeader>
           <TableRow className={isLight ? "bg-gray-50" : ""}>
             <TableHead className="w-10" style={isLight ? { color: "#222", fontWeight: 600 } : {}}>Rank</TableHead>
-            <TableHead style={isLight ? { color: "#1A1F2C", fontWeight: 600 } : {}}>Team</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#333", fontWeight: 600 } : {}}>Record</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#333", fontWeight: 600 } : {}}>Win %</TableHead>
+            <TableHead style={isLight ? { color: "#221F26", fontWeight: 600 } : {}}>Team</TableHead> {/* Darkened team name */}
+            <TableHead className="text-center" style={isLight ? { color: "#333", fontWeight: 600 } : {}}>Record</TableHead> {/* Darkened record */}
+            <TableHead className="text-center" style={isLight ? { color: "#333", fontWeight: 600 } : {}}>Win %</TableHead> {/* Darkened win % */}
             <TableHead className="text-center" style={isLight ? { color: "#333", fontWeight: 600 } : {}}>Power Score</TableHead>
           </TableRow>
         </TableHeader>
@@ -96,7 +96,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             <TableRow 
               key={team.teamId} 
               className={getRowInteractionStyles("cursor-pointer")}
-              style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", color: "#1A1F2C" } : {}}
+              style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5", color: "#1A1F26" } : {}}  // Darkened text color for all rows in light mode
               onClick={() => handleTeamClick(team.teamId)}
             >
               <TableCell className={getRankStyles(index)}>
@@ -117,16 +117,16 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   )}
                   <span className={cn(
                     "font-medium hover:text-blue-600 hover:underline", 
-                    isLight ? "text-[#1A1F2C]" : "text-white"
+                    isLight ? "text-[#221F26]" : "text-white"  // Darkened team name color for light mode
                   )}>
                     {team.teamName}
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
+              <TableCell className="text-center" style={isLight ? { color: "#333" } : { color: "#e0e0e0" }}> {/* Darkened record */}
                 {team.wins}-{team.losses}
               </TableCell>
-              <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
+              <TableCell className="text-center" style={isLight ? { color: "#333" } : { color: "#e0e0e0" }}> {/* Darkened win % */}
                 {(team.winPercentage * 100).toFixed(1)}%
               </TableCell>
               <TableCell className={cn("text-center font-semibold", getPowerScoreColor(team.powerScore))}>
@@ -141,3 +141,4 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
 };
 
 export default CompactStandings;
+

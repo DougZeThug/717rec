@@ -29,12 +29,12 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const isLight = resolvedTheme === "light";
 
   // Deep dark for chart/legend text in light mode, otherwise fallback to existing colors
-  const chartTextColor = isLight ? "#1A1F2C" : "#e5e7eb";
+  const chartTextColor = isLight ? "#222222" : "#e5e7eb"; // Darkened for better readability in light mode
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
   const tooltipTextColor = isDark ? "#f9fafb" : "#111827";
-  const legendTextColor = isLight ? "#1A1F2C" : "#e5e7eb";
+  const legendTextColor = isLight ? "#222222" : "#e5e7eb"; // Darkened legend text in light mode
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
@@ -52,7 +52,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
           fontFamily: "'Inter', sans-serif",
           padding: 8,
         }}>
-        <p style={{ fontWeight: 600, marginBottom: 4 }}>{label}</p>
+        <p style={{ fontWeight: 600, marginBottom: 4, color: chartTextColor }}>{label}</p> {/* Darkened label */}
         {payload.map((entry: any, index: number) => (
           <p key={`tooltip-${index}`} style={{ color: entry.color, margin: 0 }}>
             {entry.name}: {entry.value}
@@ -96,8 +96,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             textAnchor="end"
             height={isMobile ? 80 : 70}
             interval={0}
-            tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
-            // X-axis label is always chartTextColor
+            tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontFamily: "'Inter', sans-serif" }} // Darkened axis labels
           />
           <YAxis tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }} />
           <Tooltip content={<CustomWinLossTooltip />} />
@@ -124,3 +123,4 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
+
