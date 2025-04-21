@@ -28,6 +28,7 @@ const Teams: React.FC = () => {
   
   const { divisions } = useDivisions();
   const [selectedDivision, setSelectedDivision] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const isMobile = useIsMobile();
   
   // Deduplicate teams array first
@@ -40,8 +41,6 @@ const Teams: React.FC = () => {
     });
     return Array.from(uniqueTeamMap.values());
   }, [teams]);
-  
-  console.log(`Teams page: ${teams.length} total teams, ${uniqueTeams.length} unique teams`);
   
   // Group teams by division
   const teamsByDivision = useMemo(() => {
@@ -89,24 +88,13 @@ const Teams: React.FC = () => {
     return division ? division.name : "Unknown Division";
   };
 
-  // Initialize expandedDivision on component mount
-  useEffect(() => {
-    if (!isMobile) {
-      const firstNonEmptyDivision = Object.entries(teamsByDivision)
-        .find(([_, teams]) => teams.length > 0);
-      
-      if (firstNonEmptyDivision) {
-        // This will be handled by TeamsByDivision component now
-        // We don't need to set it here
-      }
-    }
-  }, [isMobile, teamsByDivision]);
-
   return (
-    <div className="container px-4 py-6 sm:py-8 mx-auto">
+    <div className="container px-4 py-6 sm:py-8 mx-auto font-sans">
       <TeamsHeader 
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
       <div className="flex flex-wrap gap-2 mb-6">
@@ -132,6 +120,7 @@ const Teams: React.FC = () => {
           onEditTeam={setTeamToEdit}
           onDeleteTeam={setDeleteTeamId}
           isLoading={isLoading}
+          viewMode={viewMode}
         />
       ) : (
         <TeamList 
@@ -139,6 +128,7 @@ const Teams: React.FC = () => {
           isLoading={isLoading}
           onEdit={setTeamToEdit}
           onDelete={setDeleteTeamId}
+          viewMode={viewMode}
         />
       )}
 

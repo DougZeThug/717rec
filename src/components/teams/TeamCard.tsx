@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,26 +10,17 @@ import { Link } from "react-router-dom";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface TeamCardProps {
   team: Team;
   onDelete: (id: string) => void;
   onEdit: (team: Team) => void;
+  viewMode: 'grid' | 'list';
 }
 
-const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
+const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit, viewMode }) => {
   const divisionName = team.divisionName || "";
-  
-  console.log(`TeamCard ${team.name} complete stats:`, {
-    powerScore: team.power_score,
-    sos: team.sos,
-    wins: team.wins,
-    losses: team.losses,
-    gameWins: team.game_wins,
-    gameLosses: team.game_losses,
-    winPercentage: team.wins / (team.wins + team.losses || 1),
-    gameWinPercentage: team.game_wins / (team.game_wins + team.game_losses || 1)
-  });
   
   const getDivisionColor = () => {
     if (!divisionName) return "gray";
@@ -43,17 +35,127 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
   const divisionColor = getDivisionColor();
 
   const teamImage = team.imageUrl || team.logoUrl;
-
-  console.debug('[TeamCard] props', team.id, 'logoUrl:', team.logoUrl, 'imageUrl:', team.imageUrl, 'using:', teamImage);
   
   const powerScoreColor = getPowerScoreColor(team.power_score);
 
+  const isListView = viewMode === 'list';
+
+  if (isListView) {
+    return (
+      <Card className="bg-[#1E1E1E] text-white rounded-xl shadow-md overflow-hidden h-full mb-4">
+        <div className="flex flex-col md:flex-row h-full">
+          {/* Team Logo Section */}
+          <div className="w-full md:w-[150px] h-[150px] md:h-auto flex items-center justify-center p-6 bg-black/30">
+            {!teamImage ? (
+              <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                No Team Image
+              </div>
+            ) : (
+              <img 
+                src={teamImage} 
+                alt={team.name} 
+                className="max-h-28 max-w-full object-contain"
+                onError={(e) => {
+                  console.error(`Image load error for ${team.name}:`, teamImage);
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                }}
+              />
+            )}
+          </div>
+
+          {/* Team Info Section */}
+          <div className="flex flex-col flex-grow p-4">
+            <div className="flex justify-between items-start mb-2">
+              <Link to={`/teams/${team.id}`} className="hover:underline">
+                <h3 className="text-xl font-bold text-white">{team.name}</h3>
+              </Link>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-300 hover:text-white hover:bg-white/10">
+                    <MoreHorizontal size={18} />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDelete(team.id)} className="text-destructive focus:text-destructive cursor-pointer">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={`/teams/${team.id}`}>
+                      <ExternalLink className="mr-2 h-4 w-4" /> View Details
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            {divisionName && (
+              <Badge 
+                variant={divisionName.toLowerCase().includes("competitive") ? "competitive" : 
+                  divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
+                className="mb-3 self-start"
+              >
+                {divisionName}
+              </Badge>
+            )}
+            
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 text-sm">
+              <div className="bg-black/20 p-2 rounded">
+                <div className="text-gray-400 text-xs">Record</div>
+                <div className="font-medium flex items-center gap-1">
+                  <Trophy size={12} className="text-emerald-400" /> {team.wins || 0}
+                  <span className="mx-1">-</span>
+                  <X size={12} className="text-rose-400" /> {team.losses || 0}
+                </div>
+              </div>
+              
+              <div className="bg-black/20 p-2 rounded">
+                <div className="text-gray-400 text-xs">Games</div>
+                <div className="font-medium">{team.game_wins ?? 0} - {team.game_losses ?? 0}</div>
+              </div>
+              
+              <div className="bg-black/20 p-2 rounded">
+                <div className="text-gray-400 text-xs flex items-center gap-1">
+                  Power Score <PowerScoreTooltip />
+                </div>
+                <div className={`font-medium ${powerScoreColor}`}>
+                  {formatPowerScore(team.power_score)}
+                </div>
+              </div>
+              
+              <div className="bg-black/20 p-2 rounded">
+                <div className="text-gray-400 text-xs">SOS</div>
+                <div className="font-medium">{team.sos?.toFixed(3) || '0.000'}</div>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-300 mt-auto">
+              <span className="font-medium">Players:</span> 
+              <span className="ml-1 text-gray-400">
+                {team.players.length > 0
+                  ? team.players.slice(0, 4).join(', ') 
+                    + (team.players.length > 4 ? ` +${team.players.length - 4} more` : '')
+                  : "No players"
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Grid View
   return (
-    <Card className={getCardInteractionStyles("overflow-hidden h-full flex flex-col mb-4 sm:mb-0")}>
-      <Link to={`/teams/${team.id}`} className="hover:opacity-80 transition-opacity">
-        <div className="h-32 sm:h-40 bg-gray-100 flex items-center justify-center p-4">
+    <Card className="bg-[#1E1E1E] text-white rounded-xl shadow-md overflow-hidden h-full flex flex-col mb-4 sm:mb-0">
+      <Link to={`/teams/${team.id}`} className="block">
+        <div className="h-24 bg-black/30 flex items-center justify-center p-3">
           {!teamImage ? (
-            <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+            <div className="flex items-center justify-center h-full text-gray-400 text-xs">
               No Team Image
             </div>
           ) : (
@@ -61,104 +163,80 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit }) => {
               <img 
                 src={teamImage} 
                 alt={team.name} 
-                className="max-h-28 sm:max-h-36 max-w-full object-contain"
+                className="max-h-20 max-w-full object-contain"
                 onError={(e) => {
                   console.error(`Image load error for ${team.name}:`, teamImage);
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop'; // Fallback image
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
                 }}
               />
             </div>
           )}
         </div>
       </Link>
-      <CardHeader className="pb-1 pt-2 space-y-1">
+      
+      <CardHeader className="pb-2 pt-3 space-y-1">
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline">
-            <CardTitle className="text-lg truncate pr-2" title={team.name}>{team.name}</CardTitle>
+            <CardTitle className="text-base truncate pr-2 font-bold text-white" title={team.name}>{team.name}</CardTitle>
           </Link>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 active:scale-[0.95] transition-transform duration-150">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-300 hover:text-white hover:bg-white/10">
                 <MoreHorizontal size={15} />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem 
-                onClick={() => onEdit(team)}
-                className="cursor-pointer active:scale-[0.98] transition-transform duration-150"
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
+              <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
+                <Edit className="mr-2 h-4 w-4" /> Edit
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="text-destructive focus:text-destructive cursor-pointer active:scale-[0.98] transition-transform duration-150" 
-                onClick={() => onDelete(team.id)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+              <DropdownMenuItem onClick={() => onDelete(team.id)} className="text-destructive focus:text-destructive cursor-pointer">
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to={`/teams/${team.id}`} className="active:scale-[0.98] transition-transform duration-150">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Details
+                <Link to={`/teams/${team.id}`}>
+                  <ExternalLink className="mr-2 h-4 w-4" /> View Details
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        
         {divisionName && (
-          <div className="flex items-center gap-2">
-            <div className={`w-2.5 h-2.5 rounded-full bg-${divisionColor} flex-shrink-0`}></div>
-            <Badge variant="outline" className="mr-auto text-xs">
-              {divisionName}
-            </Badge>
-          </div>
+          <Badge 
+            variant={divisionName.toLowerCase().includes("competitive") ? "competitive" : 
+              divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
+            className="self-start"
+          >
+            {divisionName}
+          </Badge>
         )}
       </CardHeader>
-      <CardContent className="flex-grow py-1">
-        <div className="text-xs text-muted-foreground">
-          <div className="flex items-center gap-1 mb-1">
-            <span className="font-medium">{team.players.length}</span> 
-            {team.players.length === 1 ? "Player" : "Players"}
+      
+      <CardContent className="flex-grow py-2">
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="bg-black/20 p-1.5 rounded">
+            <div className="text-gray-400 text-[10px]">Record</div>
+            <div className="font-medium">{team.wins}-{team.losses}</div>
           </div>
-          <div className="flex items-center justify-start gap-4 mb-1 text-xs">
-            <div className="flex items-center gap-1 text-emerald-600">
-              <Trophy size={12} /> {team.wins || 0} {team.wins === 1 ? 'Win' : 'Wins'}
-            </div>
-            <div className="flex items-center gap-1 text-rose-600">
-              <X size={12} /> {team.losses || 0} {team.losses === 1 ? 'Loss' : 'Losses'}
-            </div>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 mb-1">
-            <span>Games:</span> {team.game_wins ?? 0}–{team.game_losses ?? 0}
-          </div>
-          <div className="flex items-center justify-between gap-1 text-gray-500 mb-1">
-            <span className="flex items-center gap-1">
-              <BarChart size={12} /> Power Score <PowerScoreTooltip />
-            </span>
-            <span className={powerScoreColor}>
+          
+          <div className="bg-black/20 p-1.5 rounded">
+            <div className="text-gray-400 text-[10px]">Power Score</div>
+            <div className={`font-medium ${powerScoreColor}`}>
               {formatPowerScore(team.power_score)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-1 text-gray-500 mb-1">
-            <span>SOS:</span>
-            <span className="font-medium">
-              {team.sos?.toFixed(3) || '0.000'}
-            </span>
+            </div>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="pt-0 pb-2">
-        <div className="text-xs w-full">
-          <span className="font-semibold">Players:</span> 
-          <span className="text-muted-foreground ml-1 block truncate text-xs">
-            {team.players.length > 0
-              ? team.players.slice(0, 3).join(', ') 
-                + (team.players.length > 3 ? ` +${team.players.length - 3} more` : '')
-              : "No players"
-            }
-          </span>
+      
+      <CardFooter className="pt-0 pb-3">
+        <div className="text-[10px] text-gray-400 w-full truncate">
+          {team.players.length > 0
+            ? team.players.slice(0, 2).join(', ') 
+              + (team.players.length > 2 ? ` +${team.players.length - 2}` : '')
+            : "No players"
+          }
         </div>
       </CardFooter>
     </Card>

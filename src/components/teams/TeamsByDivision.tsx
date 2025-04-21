@@ -9,6 +9,7 @@ interface TeamsByDivisionProps {
   onEditTeam: (team: Team) => void;
   onDeleteTeam: (teamId: string) => void;
   isLoading: boolean;
+  viewMode: 'grid' | 'list';
 }
 
 export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({ 
@@ -16,7 +17,8 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   getDivisionName,
   onEditTeam,
   onDeleteTeam,
-  isLoading
+  isLoading,
+  viewMode
 }) => {
   // Track expanded division (only one can be expanded at a time)
   const [expandedDivision, setExpandedDivision] = useState<string | null>(null);
@@ -35,16 +37,20 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
         const divisionName = getDivisionName(divisionId === "unassigned" ? undefined : divisionId);
         const isExpanded = expandedDivision === divisionId;
         
+        if (divisionTeams.length === 0) return null;
+        
         return (
           <TeamsDivisionSection
             key={divisionId}
             divisionName={divisionName}
+            divisionId={divisionId}
             teams={divisionTeams}
             isExpanded={isExpanded}
             onToggleExpand={() => toggleDivision(divisionId)}
             onEditTeam={onEditTeam}
             onDeleteTeam={onDeleteTeam}
             isLoading={isLoading}
+            viewMode={viewMode}
           />
         );
       })}

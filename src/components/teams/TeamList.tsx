@@ -10,9 +10,10 @@ interface TeamListProps {
   isLoading: boolean;
   onEdit: (team: Team) => void;
   onDelete: (teamId: string) => void;
+  viewMode: 'grid' | 'list';
 }
 
-export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, onDelete }) => {
+export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, onDelete, viewMode }) => {
   const isMobile = useIsMobile();
   
   // Create a deduplicated array of teams by team ID
@@ -29,11 +30,8 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
   }, [teams]);
   
   if (isLoading) {
-    return <TeamListSkeleton />;
+    return <TeamListSkeleton viewMode={viewMode} />;
   }
-
-  // Debug unique team data
-  console.log("TeamList rendering unique teams:", uniqueTeams.length, "out of", teams.length, "total teams");
 
   if (uniqueTeams.length === 0) {
     return (
@@ -43,14 +41,19 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
     );
   }
 
+  const gridClasses = viewMode === 'grid'
+    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+    : "space-y-4";
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div className={gridClasses}>
       {uniqueTeams.map(team => (
         <TeamCard 
           key={team.id} 
           team={team}
           onDelete={(teamId) => onDelete(teamId)}
           onEdit={(team) => onEdit(team)}
+          viewMode={viewMode}
         />
       ))}
     </div>
