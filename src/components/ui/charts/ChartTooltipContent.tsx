@@ -6,12 +6,19 @@ import { useChart } from "./ChartContainer";
 import { useTheme } from "next-themes";
 import { getPayloadConfigFromPayload } from "./utils/tooltipUtils";
 
-interface ChartTooltipContentProps extends React.ComponentProps<typeof RechartsPrimitive.Tooltip>, React.ComponentProps<"div"> {
+// Use Pick instead of extends to avoid conflicting property definitions
+interface ChartTooltipContentProps extends 
+  Pick<React.ComponentProps<typeof RechartsPrimitive.Tooltip>, 
+    'active' | 'payload' | 'label' | 'labelFormatter' | 'formatter'>,
+  Omit<React.HTMLAttributes<HTMLDivElement>, 'label' | 'content'>  
+{
   hideLabel?: boolean;
   hideIndicator?: boolean;
   indicator?: "line" | "dot" | "dashed";
   nameKey?: string;
   labelKey?: string;
+  labelClassName?: string;
+  color?: string;
 }
 
 export const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContentProps>(
@@ -164,4 +171,4 @@ export const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltip
     );
   }
 );
-ChartTooltipContent.displayName = "ChartTooltip";
+ChartTooltipContent.displayName = "ChartTooltipContent";
