@@ -41,9 +41,17 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8 font-inter">
       <Card className={`${isMobile ? "" : "xl:col-span-2"} bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm`}>
-        <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
-          <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>Win-Loss Records</CardTitle>
-          <CardDescription className={isLight ? "text-gray-600" : "text-gray-200"}>
+        <CardHeader
+          className="pb-2 rounded-t-xl"
+          style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}
+        >
+          <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>
+            Win-Loss Records
+          </CardTitle>
+          <CardDescription
+            className={isLight ? "text-[#4b5563]" : "text-gray-200"}
+            style={isLight ? { color: "#4b5563" } : {}}
+          >
             Top {chartLimit} teams by win percentage
           </CardDescription>
         </CardHeader>
@@ -53,9 +61,19 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
       </Card>
       {!isMobile && (
         <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm">
-          <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
-            <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>Top 10 Power Scores</CardTitle>
-            <CardDescription className={isLight ? "text-gray-600" : "text-gray-200"}>
+          <CardHeader className="pb-2 rounded-t-xl"
+            style={isLight
+              ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" }
+              : {}
+            }
+          >
+            <CardTitle className={`${isLight ? "text-[#1a1a1a]" : "text-white"} font-bold`}>
+              Top 10 Power Scores
+            </CardTitle>
+            <CardDescription
+              className={isLight ? "text-[#4b5563]" : "text-gray-200"}
+              style={isLight ? { color: "#4b5563" } : {}}
+            >
               Elite team performance ranking
             </CardDescription>
           </CardHeader>
@@ -67,5 +85,5 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
     </div>
   );
 };
-
 export default StatsCharts;
+

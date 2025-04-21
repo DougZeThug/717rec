@@ -13,9 +13,13 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
   const [view, setView] = useState<"division" | "all">("division");
 
   // Sort rankings by power score for the unified view
-  const sortedRankings = view === "all" 
+  const sortedRankings = view === "all"
     ? [...rankings].sort((a, b) => b.powerScore - a.powerScore)
     : rankings;
+
+  // Determine if theme is light for subtitle style
+  const { resolvedTheme } = require("next-themes").useTheme();
+  const isLight = resolvedTheme === "light";
 
   return (
     <Card>
@@ -23,7 +27,10 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <CardTitle>Complete Team Rankings</CardTitle>
-            <CardDescription>
+            <CardDescription
+              className={isLight ? "text-[#4b5563]" : ""}
+              style={isLight ? { color: "#4b5563" } : {}}
+            >
               Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
             </CardDescription>
           </div>
@@ -36,5 +43,5 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
     </Card>
   );
 };
-
 export default FullRankings;
+

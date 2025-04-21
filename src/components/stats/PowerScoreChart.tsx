@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell
@@ -18,16 +17,17 @@ interface PowerScoreChartProps {
 const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const isLight = resolvedTheme === "light";
 
-  const chartTextColor = isDark ? "#e5e7eb" : "#333333";
-  const chartBgColor = isDark ? "#1f2937" : "#ffffff";
-  const chartGridColor = isDark ? "#374151" : "#e5e7eb";
-  const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isDark ? "#f9fafb" : "#111827";
+  const chartTextColor = isLight ? "#111111" : "#e5e7eb";
+  const chartBgColor = isLight ? "#ffffff" : "#1f2937";
+  const chartGridColor = isLight ? "#e5e7eb" : "#374151";
+  const tooltipBgColor = isLight ? "#ffffff" : "#111827";
+  const tooltipTextColor = isLight ? "#111827" : "#f9fafb";
   const barColorPower = "#a288f5";
   const highlightFirst = "#805fff";
+  const legendTextColor = isLight ? "#111111" : "#e5e7eb";
 
-  // Custom tooltip
   const CustomPowerScoreTooltip = ({ active, payload }: any) => {
     if (!active || !payload || !payload.length) return null;
     return (
@@ -48,7 +48,6 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     );
   };
 
-  // Custom label for bar
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
     return (
@@ -74,6 +73,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
         boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
         fontFamily: "'Inter', sans-serif",
         overflow: "hidden",
+        border: `1px solid ${isLight ? "#e5e7eb" : "transparent"}`
       }}
     >
       <ResponsiveContainer width="100%" height="100%" style={{ backgroundColor: chartBgColor }}>
@@ -94,14 +94,14 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar
