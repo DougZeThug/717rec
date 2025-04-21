@@ -46,21 +46,27 @@ const MatchCard: React.FC<MatchCardProps> = ({
   
   return (
     <Card className={cn(
-      "overflow-hidden font-inter border transition-shadow hover:shadow-md",
+      "overflow-hidden font-inter border transition-all duration-200",
       isLight 
-        ? "bg-white border-gray-200 shadow-sm" 
+        ? "bg-white border-gray-200 hover:shadow-md" 
         : "bg-gray-800/50 border-gray-700"
     )}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
           <span className={cn(
-            "text-sm font-medium",
-            isLight ? "text-gray-700" : "text-gray-300"
+            "text-sm uppercase tracking-wide",
+            isLight ? "text-gray-500" : "text-gray-400"
           )}>
             Match
           </span>
           {isCompleted && (
-            <Badge variant="success" className="text-xs">
+            <Badge 
+              variant="success" 
+              className={cn(
+                "text-xs",
+                isLight && "bg-green-100 text-green-800 hover:bg-green-200"
+              )}
+            >
               Completed
             </Badge>
           )}
@@ -85,9 +91,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
               </Avatar>
               <div className="mt-2 text-center">
                 <span className={cn(
-                  "font-medium",
+                  "font-medium text-base",
                   isLight 
-                    ? team1IsWinner ? "text-green-700" : "text-gray-900"
+                    ? team1IsWinner ? "text-green-700 font-bold" : "text-gray-900"
                     : team1IsWinner ? "text-green-400" : "text-gray-300"
                 )}>
                   {team1Name}
@@ -120,9 +126,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
               </Avatar>
               <div className="mt-2 text-center">
                 <span className={cn(
-                  "font-medium",
+                  "font-medium text-base",
                   isLight 
-                    ? team2IsWinner ? "text-green-700" : "text-gray-900"
+                    ? team2IsWinner ? "text-green-700 font-bold" : "text-gray-900"
                     : team2IsWinner ? "text-green-400" : "text-gray-300"
                 )}>
                   {team2Name}
@@ -142,7 +148,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
           
           <div className={cn(
             "flex items-center text-sm",
-            isLight ? "text-gray-700" : "text-gray-400"
+            isLight ? "text-gray-500" : "text-gray-400"
           )}>
             <Clock className="h-4 w-4 mr-1" />
             <span>{formatTime(match.date)}</span>
@@ -151,7 +157,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
           {match.location && (
             <div className={cn(
               "flex items-center text-sm",
-              isLight ? "text-gray-700" : "text-gray-400"
+              isLight ? "text-gray-500" : "text-gray-400"
             )}>
               <MapPin className="h-4 w-4 mr-1" />
               <span>{match.location}</span>

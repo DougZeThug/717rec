@@ -42,13 +42,13 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
     >
       <CollapsibleTrigger 
         className={cn(
-          "flex w-full items-center justify-between p-4 text-left font-semibold text-sm focus:outline-none shadow-inner border-b",
+          "flex w-full items-center justify-between p-4 text-left font-semibold text-sm rounded-t transition-all",
           isLight 
-            ? "bg-gray-100 text-gray-700 border-gray-200" 
+            ? "bg-gray-50 text-gray-700 shadow-sm border-b border-gray-200" 
             : "bg-gray-800 text-white border-gray-700",
           isCompleted 
             ? isLight 
-              ? "bg-green-50 border-green-100" 
+              ? "bg-green-50/50 border-green-100" 
               : "bg-green-900/20 border-green-800/30" 
             : ""
         )}
