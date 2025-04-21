@@ -24,7 +24,16 @@ export const useScoreSubmission = (
   } = useSubmissionState();
 
   const handleSubmitAll = async () => {
-    const editedMatches = matches.filter(match => match.isEdited);
+    if (!matches || !Array.isArray(matches)) {
+      toast({
+        title: "Error",
+        description: "No match data available",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const editedMatches = matches.filter(match => match && match.isEdited);
     
     if (editedMatches.length === 0) {
       toast({
@@ -141,8 +150,12 @@ export const useScoreSubmission = (
       invalidateAllDataQueries();
 
       if (successCount > 0) {
-        // Use returned matches array and ignore it
-        const updatedMatches = await fetchMatches();
+        try {
+          // Use returned matches array and ignore it
+          const updatedMatches = await fetchMatches();
+        } catch (error) {
+          console.error("Error refreshing matches:", error);
+        }
       }
     } catch (error: any) {
       console.error("[useScoreSubmission] Error in batch update:", error.message);

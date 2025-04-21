@@ -1,8 +1,7 @@
 
 import React from "react";
-import { FilterState } from "../types";
 import FilterBar from "../FilterBar";
-import { motion } from "framer-motion";
+import { FilterState } from "../types";
 
 interface ScoreEntryToolbarProps {
   filters: FilterState;
@@ -20,13 +19,7 @@ const ScoreEntryToolbar: React.FC<ScoreEntryToolbarProps> = ({
   onClearFilters
 }) => {
   return (
-    <motion.div 
-      className="w-full space-y-3"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      <h3 className="text-lg font-semibold">Filter Matches</h3>
+    <div className="w-full">
       <FilterBar
         filters={filters}
         brackets={brackets}
@@ -34,7 +27,7 @@ const ScoreEntryToolbar: React.FC<ScoreEntryToolbarProps> = ({
         onBracketChange={onBracketChange}
         onClearFilters={onClearFilters}
       />
-    </motion.div>
+    </div>
   );
 };
 

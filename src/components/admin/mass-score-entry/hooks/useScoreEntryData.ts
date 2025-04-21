@@ -41,9 +41,19 @@ export const useScoreEntryData = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      await fetchBrackets();
-      const fetchedMatches = await fetchMatches(filters);
-      setMatches(fetchedMatches);
+      try {
+        await fetchBrackets();
+        const fetchedMatches = await fetchMatches(filters);
+        if (Array.isArray(fetchedMatches)) {
+          setMatches(fetchedMatches);
+        } else {
+          console.error("Fetched matches is not an array:", fetchedMatches);
+          setMatches([]);
+        }
+      } catch (error) {
+        console.error("Error loading match data:", error);
+        setMatches([]);
+      }
     };
     loadData();
   }, [filters.date, filters.bracketId]);

@@ -48,19 +48,20 @@ const FilterBar: React.FC<FilterBarProps> = ({
               selected={filters.date}
               onSelect={onDateChange}
               initialFocus
+              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
 
         <Select 
-          value={filters.bracketId} 
+          value={filters.bracketId || undefined} 
           onValueChange={(value) => onBracketChange(value || undefined)}
         >
           <SelectTrigger className="w-full min-h-[44px]">
             <SelectValue placeholder="Filter by Bracket" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Brackets</SelectItem>
+            <SelectItem value="all">All Brackets</SelectItem>
             {brackets.map(bracket => (
               <SelectItem key={bracket.id} value={bracket.id}>
                 {bracket.title}
