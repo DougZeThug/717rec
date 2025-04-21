@@ -25,7 +25,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isDark ? "#111111" : "#f9fafb";
+  const tooltipTextColor = isDark ? "#f9fafb" : "#111111";
   const barColorPower = "#a288f5";
   const highlightFirst = "#805fff";
 
@@ -36,7 +36,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       <div
         style={{
           backgroundColor: tooltipBgColor,
-          color: tooltipTextColor,
+          color: isLight ? "#111111" : tooltipTextColor,
           border: `1px solid ${isDark ? "#374151" : "#e5e7eb"}`,
           fontFamily: "'Inter', sans-serif",
           borderRadius: 8,

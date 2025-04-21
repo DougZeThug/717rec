@@ -27,7 +27,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
           <div>
             <CardTitle>Complete Team Rankings</CardTitle>
             <CardDescription
-              className={isLight ? "text-[#444444] font-medium" : "text-gray-400"} // Darkened subtitle text in light mode
+              className={isLight ? "!text-[#444444] font-medium" : "text-gray-400"} // Darkened subtitle text in light mode
             >
               Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
             </CardDescription>

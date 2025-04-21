@@ -61,14 +61,14 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 )}
                 <span className={cn(
                   "font-medium hover:text-blue-600 hover:underline",
-                  isLight ? "text-[#111111]" : "text-white"
+                  isLight ? "!text-[#111111]" : "text-white"
                 )}>
                   {team.teamName}
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-3 text-sm">
-              <span className={isLight ? "text-[#222222]" : "text-gray-200"}>{team.wins}-{team.losses}</span>
+              <span className={isLight ? "!text-[#222222]" : "text-gray-200"}>{team.wins}-{team.losses}</span>
               <span className={getPowerScoreColor(team.powerScore)}>
                 {formatPowerScore(team.powerScore)}
               </span>
@@ -117,7 +117,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   )}
                   <span className={cn(
                     "font-medium hover:text-blue-600 hover:underline", 
-                    isLight ? "text-[#111111]" : "text-white"
+                    isLight ? "!text-[#111111]" : "text-white"
                   )}>
                     {team.teamName}
                   </span>

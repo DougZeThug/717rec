@@ -79,7 +79,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
             <h3 className="text-lg font-medium mb-3 flex items-center font-inter"
               style={isLight ? { color: "#111111" } : { color: 'white' }}
             >
-              {divisionName} <span className={`${isLight ? "text-[#222222]" : "text-muted-foreground"} ml-1`}>({divisionRankings.length})</span>
+              {divisionName} <span className={`${isLight ? "!text-[#222222]" : "text-muted-foreground"} ml-1`}>({divisionRankings.length})</span>
             </h3>
           )}
           <div className="overflow-x-auto">
