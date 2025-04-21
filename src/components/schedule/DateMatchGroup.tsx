@@ -38,14 +38,19 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
     <Collapsible
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="mb-4 border rounded-lg overflow-hidden"
-      style={isLight ? { borderColor: "#e5e7eb" } : { borderColor: "#2d2d2d" }}
+      className="mb-4 overflow-hidden font-inter"
     >
       <CollapsibleTrigger 
         className={cn(
-          "flex w-full items-center justify-between p-4 text-left font-semibold text-lg focus:outline-none",
-          isLight ? "bg-gray-50 text-gray-900" : "bg-gray-800 text-white",
-          isCompleted ? (isLight ? "bg-green-50" : "bg-green-900/20") : ""
+          "flex w-full items-center justify-between p-4 text-left font-semibold text-sm focus:outline-none shadow-inner border-b",
+          isLight 
+            ? "bg-gray-100 text-gray-700 border-gray-200" 
+            : "bg-gray-800 text-white border-gray-700",
+          isCompleted 
+            ? isLight 
+              ? "bg-green-50 border-green-100" 
+              : "bg-green-900/20 border-green-800/30" 
+            : ""
         )}
         aria-expanded={isOpen}
         aria-controls={`content-${formattedDate}`}
@@ -53,28 +58,29 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
         <span>{formattedDate}</span>
         <ChevronDown 
           className={cn(
-            "h-5 w-5 transition-transform duration-200",
+            "h-4 w-4 transition-transform duration-200",
             isOpen ? "transform rotate-180" : ""
           )} 
         />
       </CollapsibleTrigger>
       <CollapsibleContent id={`content-${formattedDate}`}>
-        <div className="p-4">
+        <div className="p-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {matches.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {matches.map(match => (
-                <MatchCard 
-                  key={match.id} 
-                  match={match}
-                  isCompleted={match.iscompleted}
-                  onEdit={!match.iscompleted ? onEditMatch : undefined}
-                  onDelete={!match.iscompleted ? onDeleteMatch : undefined}
-                />
-              ))}
-            </div>
+            matches.map(match => (
+              <MatchCard 
+                key={match.id} 
+                match={match}
+                isCompleted={match.iscompleted}
+                onEdit={!match.iscompleted ? onEditMatch : undefined}
+                onDelete={!match.iscompleted ? onDeleteMatch : undefined}
+              />
+            ))
           ) : (
-            <div className="py-8 text-center">
-              <CalendarX className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+            <div className="col-span-full py-8 text-center">
+              <CalendarX className={cn(
+                "mx-auto h-12 w-12 mb-2",
+                isLight ? "text-gray-400" : "text-gray-500"
+              )} />
               <p className={isLight ? "text-gray-500" : "text-gray-400"}>
                 No matches scheduled for this date.
               </p>
