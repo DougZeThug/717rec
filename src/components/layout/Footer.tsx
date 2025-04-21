@@ -14,7 +14,7 @@ const Footer = () => {
             <img 
               src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
               alt="717 Rec Logo" 
-              className="h-12 w-auto"
+              className="h-10 w-auto"
             />
           </div>
 
@@ -24,7 +24,7 @@ const Footer = () => {
               <Mail size={16} className="text-gray-600 dark:text-gray-300" />
               <a 
                 href="mailto:info@717rec.com" 
-                className="hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="hover:text-gray-900 dark:hover:text-white transition-colors font-medium"
               >
                 info@717rec.com
               </a>
@@ -33,7 +33,7 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-4 text-center text-sm text-gray-400 dark:text-gray-500">
+        <div className="mt-3 text-center text-sm text-gray-400 dark:text-gray-500">
           &copy; {currentYear} 717 Rec. All rights reserved.
         </div>
       </div>

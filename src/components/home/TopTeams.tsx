@@ -11,13 +11,17 @@ interface TopTeamsProps {
 
 const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   return (
-    <section id="top-teams-section" className="bg-gray-50 dark:bg-gray-900 py-8 md:py-12 rounded-xl shadow-sm mb-4 md:mb-6">
+    <section id="top-teams-section" className="bg-gray-50 dark:bg-gray-900 py-6 md:py-8 rounded-xl shadow-sm mb-4">
       <div className="flex flex-wrap justify-between items-center px-3 md:px-0 mb-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-cornhole-navy dark:text-white font-sans">Top Teams</h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-sans">Based on highest power score ranking</p>
         </div>
-        <Button asChild variant="outline" className="text-cornhole-navy dark:text-white border-cornhole-navy dark:border-white hover:bg-cornhole-navy hover:text-white dark:hover:bg-white/20 font-sans">
+        <Button 
+          asChild 
+          variant="default"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+        >
           <Link to="/teams">View All</Link>
         </Button>
       </div>

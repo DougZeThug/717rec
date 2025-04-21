@@ -39,13 +39,17 @@ const CallToAction = () => {
   const currentMessage = ctaMessages[currentMessageIndex];
 
   return (
-    <section className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white py-8 px-4 mt-8">
+    <section className="bg-gray-100 dark:bg-gray-800 py-6 px-4 mt-6">
       <div className="max-w-5xl mx-auto text-center">
-        <h2 className="text-xl md:text-3xl font-semibold mb-4">{currentMessage.heading}</h2>
-        <p className="text-base md:text-lg mb-6 max-w-2xl mx-auto text-gray-700 dark:text-gray-300">
+        <h2 className="text-xl md:text-3xl font-semibold mb-3">{currentMessage.heading}</h2>
+        <p className="text-base md:text-lg mb-5 max-w-2xl mx-auto text-gray-700 dark:text-gray-300">
           {currentMessage.subheading}
         </p>
-        <Button asChild size="lg" className="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md font-medium">
+        <Button 
+          asChild 
+          size="lg" 
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+        >
           <a href={currentMessage.buttonLink}>{currentMessage.buttonText}</a>
         </Button>
       </div>
