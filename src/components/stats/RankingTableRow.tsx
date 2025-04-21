@@ -33,7 +33,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       onClick={onToggleExpand}
     >
       <TableCell
-        className={`font-medium${isLight ? " !text-[#222222]" : ""}`}
+        className="font-medium"
         style={isLight ? { color: "#222222" } : {}}
       >
         {index + 1}
@@ -41,7 +41,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <TableCell>
         <Link 
           to={`/teams/${ranking.teamId}`}
-          className={isLight ? "!text-[#111111] hover:text-blue-600 hover:underline" : "hover:text-blue-600 hover:underline"}
+          className="hover:text-blue-600 hover:underline"
           onClick={(e) => e.stopPropagation()}
           style={isLight ? { color: "#111111", fontWeight: 600 } : {}}
         >
@@ -53,12 +53,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           <Badge
             variant={ranking.divisionName?.toLowerCase() as any || "default"}
             className="font-normal"
+            style={isLight ? { color: "#444444" } : {}}
           >
             {ranking.divisionName || "Unassigned"}
           </Badge>
         </TableCell>
       )}
-      <TableCell className={`text-center ${powerScoreColor}${isLight ? " !text-[#222222]" : ""}`}>
+      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
         {formatPowerScore(ranking.powerScore)}
       </TableCell>
       <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
@@ -87,3 +88,4 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
 };
 
 export default RankingTableRow;
+

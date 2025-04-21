@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Table,
@@ -46,8 +47,8 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
       }, {} as Record<string, Ranking[]>);
 
   const isMobile = useIsMobile();
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const renderSortIndicator = (field: string) => {
     if (sortOptions.field === field) {
@@ -79,8 +80,9 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
               className="text-lg font-medium mb-3 flex items-center font-inter"
               style={isLight ? { color: "#444444", fontWeight: 700 } : { color: 'white' }}
             >
-              <span className="!text-[#444444] !font-semibold">{divisionName}</span>{" "}
-              <span className={`${isLight ? "!text-[#444444]" : "text-muted-foreground"} ml-1`}>
+              <span style={isLight ? { color: "#444444" } : {}}>{divisionName}</span>{" "}
+              <span className={`${isLight ? "" : "text-muted-foreground"} ml-1`}
+                style={isLight ? { color: "#444444" } : {}}>
                 ({divisionRankings.length})
               </span>
             </h3>
@@ -95,7 +97,8 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                   <TableHead className="text-center font-inter" style={isLight ? { color: "#111111", fontWeight: 700 } : { color: "#fff" }}>
                     <div className="flex items-center justify-center gap-1">
                       <Bolt className="inline-block text-purple-300" size={16} />
-                      <span onClick={() => onSortChange('powerScore')} className="cursor-pointer">
+                      <span onClick={() => onSortChange('powerScore')} className="cursor-pointer"
+                        style={isLight ? { color: "#111111" } : {}}>
                         Power Score {renderSortIndicator('powerScore')}
                       </span>
                     </div>

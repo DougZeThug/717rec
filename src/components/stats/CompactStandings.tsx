@@ -27,14 +27,14 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   // Function to get rank styling for medal positions
   const getRankStyles = (index: number) => {
     if (isLight) {
-      if (index === 0) return "bg-amber-100 text-amber-900 !font-bold"; // Gold, darker text
-      if (index === 1) return "bg-slate-100 text-slate-800 !font-bold"; // Silver, darker text
-      if (index === 2) return "bg-orange-100 text-orange-900 !font-bold"; // Bronze, darker text
-      return "bg-gray-50 !text-gray-800"; // Use dark gray for all other ranks
+      if (index === 0) return "bg-amber-100 !font-bold";
+      if (index === 1) return "bg-slate-100 !font-bold";
+      if (index === 2) return "bg-orange-100 !font-bold";
+      return "bg-gray-50";
     } else {
-      if (index === 0) return "bg-amber-900/30 text-amber-200 font-bold";
-      if (index === 1) return "bg-slate-800/30 text-slate-300 font-bold";
-      if (index === 2) return "bg-orange-900/30 text-orange-200 font-bold";
+      if (index === 0) return "bg-amber-900/30 font-bold";
+      if (index === 1) return "bg-slate-800/30 font-bold";
+      if (index === 2) return "bg-orange-900/30 font-bold";
       return "bg-gray-800/30 text-white";
     }
   };
@@ -50,7 +50,10 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             style={isLight ? { border: "1px solid #e0e0e0" } : { borderColor: "#333" }}
           >
             <div className="flex items-center space-x-3">
-              <div className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index), isLight && "!text-[#222222]")}>
+              <div
+                className={cn("w-7 h-7 flex items-center justify-center rounded-full", getRankStyles(index))}
+                style={isLight ? { color: "#222222" } : {}}
+              >
                 {index + 1}
               </div>
               <div className="flex items-center space-x-2">
@@ -60,18 +63,16 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   </div>
                 )}
                 <span
-                  className={cn(
-                    "font-medium hover:text-blue-600 hover:underline",
-                    isLight ? "!text-[#111111] !font-semibold" : "text-white"
-                  )}
+                  className="font-medium hover:text-blue-600 hover:underline"
+                  style={isLight ? { color: "#111111", fontWeight: 600 } : {}}
                 >
                   {team.teamName}
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-3 text-sm">
-              <span className={isLight ? "!text-[#222222]" : "text-gray-200"}>{team.wins}-{team.losses}</span>
-              <span className={getPowerScoreColor(team.powerScore)}>
+              <span style={isLight ? { color: "#222222" } : {}}>{team.wins}-{team.losses}</span>
+              <span className={getPowerScoreColor(team.powerScore)} style={isLight ? { color: "#222222" } : {}}>
                 {formatPowerScore(team.powerScore)}
               </span>
             </div>
@@ -86,22 +87,49 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
       <Table className="bg-white dark:bg-transparent border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
         <TableHeader>
           <TableRow className={isLight ? "bg-gray-50" : ""}>
-            <TableHead className="w-10" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Rank</TableHead>
-            <TableHead style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Team</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Record</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Win %</TableHead>
-            <TableHead className="text-center" style={isLight ? { color: "#444444", fontWeight: 600 } : {}}>Power Score</TableHead>
+            <TableHead
+              className="w-10"
+              style={isLight ? { color: "#444444", fontWeight: 600 } : {}}
+            >
+              Rank
+            </TableHead>
+            <TableHead
+              style={isLight ? { color: "#444444", fontWeight: 600 } : {}}
+            >
+              Team
+            </TableHead>
+            <TableHead
+              className="text-center"
+              style={isLight ? { color: "#444444", fontWeight: 600 } : {}}
+            >
+              Record
+            </TableHead>
+            <TableHead
+              className="text-center"
+              style={isLight ? { color: "#444444", fontWeight: 600 } : {}}
+            >
+              Win %
+            </TableHead>
+            <TableHead
+              className="text-center"
+              style={isLight ? { color: "#444444", fontWeight: 600 } : {}}
+            >
+              Power Score
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rankings.map((team, index) => (
-            <TableRow 
-              key={team.teamId} 
+            <TableRow
+              key={team.teamId}
               className={getRowInteractionStyles("cursor-pointer")}
               style={isLight ? { background: index % 2 === 0 ? "#fff" : "#f5f5f5" } : {}}
               onClick={() => handleTeamClick(team.teamId)}
             >
-              <TableCell className={cn(getRankStyles(index), isLight && "!text-[#222222]")}>
+              <TableCell
+                className={cn(getRankStyles(index))}
+                style={isLight ? { color: "#222222" } : {}}
+              >
                 <div className="w-8 h-8 flex items-center justify-center rounded-full">
                   {index + 1}
                 </div>
@@ -118,22 +146,33 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                     </div>
                   )}
                   <span
-                    className={cn(
-                      "font-medium hover:text-blue-600 hover:underline", 
-                      isLight ? "!text-[#111111] !font-semibold" : "text-white"
-                    )}
+                    className="font-medium hover:text-blue-600 hover:underline"
+                    style={isLight ? { color: "#111111", fontWeight: 600 } : {}}
                   >
                     {team.teamName}
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
-                <span className={isLight ? "!text-[#222222]" : ""}>{team.wins}-{team.losses}</span>
+              <TableCell
+                className="text-center"
+                style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}
+              >
+                <span style={isLight ? { color: "#222222" } : {}}>
+                  {team.wins}-{team.losses}
+                </span>
               </TableCell>
-              <TableCell className="text-center" style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}>
-                <span className={isLight ? "!text-[#222222]" : ""}>{(team.winPercentage * 100).toFixed(1)}%</span>
+              <TableCell
+                className="text-center"
+                style={isLight ? { color: "#222222" } : { color: "#e0e0e0" }}
+              >
+                <span style={isLight ? { color: "#222222" } : {}}>
+                  {(team.winPercentage * 100).toFixed(1)}%
+                </span>
               </TableCell>
-              <TableCell className={cn("text-center font-semibold", getPowerScoreColor(team.powerScore))}>
+              <TableCell
+                className={cn("text-center font-semibold", getPowerScoreColor(team.powerScore))}
+                style={isLight ? { color: "#222222" } : {}}
+              >
                 {formatPowerScore(team.powerScore)}
               </TableCell>
             </TableRow>

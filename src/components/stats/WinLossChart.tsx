@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -28,13 +28,12 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  // Deep dark for chart/legend text in light mode, otherwise fallback to existing colors
-  const chartTextColor = isLight ? "#111111" : "#e5e7eb"; // Darkened for better readability in light mode
+  const chartTextColor = isLight ? "#222222" : "#e5e7eb";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
-  const tooltipTextColor = isDark ? "#f9fafb" : "#111111"; // Dark text for light mode tooltips
-  const legendTextColor = isLight ? "#111111" : "#e5e7eb"; // Black legend text in light mode
+  const tooltipTextColor = isDark ? "#f9fafb" : "#111111";
+  const legendTextColor = isLight ? "#222222" : "#e5e7eb";
 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
@@ -53,7 +52,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
           padding: 8,
           fontWeight: isLight ? 500 : 400
         }}>
-        <p style={{ fontWeight: 600, marginBottom: 4, color: isLight ? "#111111" : chartTextColor }}>{label}</p> {/* Darkened label */}
+        <p style={{ fontWeight: 600, marginBottom: 4, color: isLight ? "#111111" : chartTextColor }}>{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={`tooltip-${index}`} style={{ color: entry.color, margin: 0, fontWeight: isLight ? 500 : 400 }}>
             {entry.name}: {entry.value}
@@ -97,22 +96,28 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             textAnchor="end"
             height={isMobile ? 80 : 70}
             interval={0}
-            tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }} // Darkened axis labels and bold in light mode
+            tick={{
+              fontSize: isMobile ? 10 : 12,
+              fill: isLight ? "#222222" : "#e5e7eb",
+              style: isLight ? { color: "#222222" } : {}
+            }}
           />
-          <YAxis tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 600 : 400 }} /> 
+          <YAxis tick={{
+            fill: isLight ? "#222222" : "#e5e7eb",
+            style: isLight ? { color: "#222222" } : {}
+          }}/>
           <Tooltip content={<CustomWinLossTooltip />} />
           <Legend
             wrapperStyle={{
               color: legendTextColor,
-              marginTop: 20,
               fontFamily: "'Inter', sans-serif",
             }}
-            formatter={(value) => (
+            formatter={(_value) => (
               <span style={{
                 color: legendTextColor,
                 fontFamily: "'Inter', sans-serif",
-                fontWeight: isLight ? 600 : 400 
-              }}>{value}</span>
+                fontWeight: isLight ? 600 : 400
+              }}>{_value}</span>
             )}
           />
           <Bar dataKey="wins" fill={barColorWin} name="Wins" />
@@ -124,3 +129,4 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
+

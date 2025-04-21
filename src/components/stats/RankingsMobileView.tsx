@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
@@ -31,8 +32,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     return savedView ? savedView === "true" : false;
   });
 
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const sortableFields = [
     { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) },
@@ -74,7 +75,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     isLight
                       ? (sortOptions.field === field.id
                           ? "bg-blue-600 text-white hover:bg-blue-700 border-[#e0e0e0]"
-                          : "bg-white !text-gray-800 border border-[#e0e0e0] hover:bg-[#f0f0f0]")
+                          : "bg-white border border-[#e0e0e0] hover:bg-[#f0f0f0]")
                       : ""
                   )}
                 >
@@ -94,7 +95,11 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               checked={detailedView}
               onCheckedChange={toggleViewMode}
             />
-            <Label htmlFor="detailed-view" className={isLight ? "text-sm !text-[#444444] font-medium" : "text-sm text-gray-200"}>
+            <Label
+              htmlFor="detailed-view"
+              style={isLight ? { color: "#444444", fontWeight: 500 } : {}}
+              className="text-sm"
+            >
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
           </div>
@@ -104,11 +109,17 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
-              <h3 className={isLight
-                ? "text-lg font-medium flex items-center font-inter !text-[#444444] !font-semibold"
-                : "text-lg font-medium flex items-center font-inter text-gray-100"
-                }>
-                {divisionName} <span className={isLight ? "ml-2 text-xs !text-[#444444] font-inter" : "ml-2 text-xs text-gray-400 font-inter"}>({divisionRankings.length})</span>
+              <h3
+                style={isLight ? { color: "#444444", fontWeight: 600 } : {}}
+                className="text-lg font-medium flex items-center font-inter"
+              >
+                {divisionName}{" "}
+                <span
+                  style={isLight ? { color: "#444444" } : {}}
+                  className="ml-2 text-xs font-inter"
+                >
+                  ({divisionRankings.length})
+                </span>
               </h3>
             )}
             <div className="space-y-4">

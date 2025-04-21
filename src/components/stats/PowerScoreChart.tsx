@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell
@@ -53,7 +54,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       <text
         x={x + width + 5}
         y={y + 15}
-        fill={chartTextColor}
+        fill={isLight ? "#222222" : "#e5e7eb"}
         fontSize={12}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
@@ -93,14 +94,14 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 700 : 400 }}
+            tick={{ fill: isLight ? "#222222" : "#e5e7eb", style: isLight ? { color: "#222222" } : {} }}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif", fontWeight: isLight ? 700 : 400 }}
+            tick={{ fill: isLight ? "#222222" : "#e5e7eb", style: isLight ? { color: "#222222" } : {} }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar
@@ -126,3 +127,4 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
 };
 
 export default PowerScoreChart;
+

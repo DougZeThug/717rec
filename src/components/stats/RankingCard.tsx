@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -28,8 +29,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const navigate = useNavigate();
   const isExpanded = expandedTeam === ranking.teamId;
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const handleCardClick = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('[data-team-name="true"]')) {
@@ -65,14 +66,14 @@ const RankingCard: React.FC<RankingCardProps> = ({
           ) : (
             <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-2" />
           )}
-          <span className={isLight ? "text-xs !text-[#222222] font-medium" : "text-xs text-gray-500"}>{index+1}</span>
+          <span style={isLight ? { color: "#222222" } : {}} className="text-xs font-medium">{index+1}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <div
               data-team-name="true"
-              className={isLight ? "!text-[#111111] !font-semibold leading-tight truncate" : "font-bold text-white leading-tight truncate"}
-              style={isLight ? { color: "#111111", fontWeight: 700 } : {}}
+              className="leading-tight truncate"
+              style={isLight ? { color: "#111111", fontWeight: 700 } : { fontWeight: 700 }}
             >
               {ranking.teamName}
             </div>
@@ -80,22 +81,23 @@ const RankingCard: React.FC<RankingCardProps> = ({
               <Badge
                 variant={ranking.divisionName?.toLowerCase() as any || "default"}
                 className="font-medium text-xs ml-1"
+                style={isLight ? { color: "#444444" } : {}}
               >
                 {ranking.divisionName || "Unassigned"}
               </Badge>
             )}
-            <span className="ml-2">{<RankTrendIndicator rankChange={ranking.rankChange} />}</span>
+            <span className="ml-2"><RankTrendIndicator rankChange={ranking.rankChange} /></span>
           </div>
           <div className="flex flex-col gap-1 mt-1">
-            <span className={isLight ? "text-xs !text-[#444444]" : "text-xs text-gray-400"}>
+            <span style={isLight ? { color: "#222222" } : {}} className="text-xs">
               Record:{" "}
-              <span className={isLight ? "!text-[#222222] font-semibold" : "font-medium text-white"}>
+              <span style={isLight ? { color: "#222222", fontWeight: 600 } : { fontWeight: 600 }}>
                 {ranking.wins}-{ranking.losses}
               </span>
             </span>
-            <span className={isLight ? "text-xs !text-[#444444]" : "text-xs text-gray-400"}>
+            <span style={isLight ? { color: "#222222" } : {}} className="text-xs">
               Power Score:{" "}
-              <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
+              <span className={getPowerScoreColor(ranking.powerScore)} style={isLight ? { color: "#222222" } : {}}>
                 {formatPowerScore(ranking.powerScore)}
               </span>
             </span>
