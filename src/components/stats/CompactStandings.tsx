@@ -50,6 +50,10 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                     src={getLogoUrl(team)}
                     alt={`${team.teamName} logo`}
                     className="w-full h-full object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/default-logo.png";
+                      console.log(`Failed to load logo for ${team.teamName}, using default`);
+                    }}
                   />
                 </div>
                 <span className="font-medium hover:text-blue-600 hover:underline">{team.teamName}</span>
@@ -98,6 +102,10 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                       src={getLogoUrl(team)}
                       alt={`${team.teamName} logo`}
                       className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/default-logo.png";
+                        console.log(`Failed to load logo for ${team.teamName}, using default`);
+                      }}
                     />
                   </div>
                   <span className="font-medium hover:text-blue-600 hover:underline">{team.teamName}</span>

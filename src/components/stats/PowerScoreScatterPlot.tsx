@@ -18,9 +18,9 @@ interface TeamPowerScore {
 }
 
 const DIVISION_COLORS: Record<string, string> = {
-  Competitive: "#ef4444",    // red-500
-  Intermediate: "#3b82f6",   // blue-500
-  Recreational: "#22c55e",   // green-500
+  Competitive: "#8B5CF6",    // vivid purple
+  Intermediate: "#0EA5E9",   // ocean blue
+  Recreational: "#F97316",   // bright orange
 };
 
 function getDivisionColor(division: string | null | undefined) {
