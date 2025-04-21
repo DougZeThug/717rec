@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { 
   Card, 
@@ -30,6 +31,18 @@ interface StatsContainerProps {
   matches: Match[];
   isLoadingMatches: boolean;
   matchesError: Error | null;
+}
+
+// Define the expected chart data item type to match what StatsCharts expects
+interface ChartDataItem {
+  name: string;
+  id: string;
+  wins: number;
+  losses: number;
+  winPercentage: number;
+  powerScore: number;
+  logoUrl?: string | null;
+  imageUrl?: string | null;
 }
 
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
@@ -78,7 +91,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     .slice(0, 10);
 
   // Transform data for the chart component that expects Ranking[]
-  const topTeamsForCharts = topTeams.map((team: any) => {
+  const topTeamsForRankings = topTeams.map((team: any) => {
     // If it's already a Ranking type, return it as is
     if (team.teamId) return team as Ranking;
     
@@ -105,6 +118,18 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     } as Ranking;
   });
 
+  // Create chart data items in the format expected by StatsCharts
+  const chartData: ChartDataItem[] = topTeamsForRankings.map(team => ({
+    id: team.teamId,
+    name: team.teamName,
+    wins: team.wins,
+    losses: team.losses,
+    winPercentage: team.winPercentage,
+    powerScore: team.powerScore,
+    logoUrl: team.logoUrl,
+    imageUrl: team.imageUrl
+  }));
+
   return (
     <div className="max-w-7xl mx-auto">
       <StatsHeader 
@@ -122,7 +147,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
               <CardDescription>Top 10 teams based on performance</CardDescription>
             </CardHeader>
             <CardContent>
-              <CompactStandings rankings={topTeamsForCharts} />
+              <CompactStandings rankings={topTeamsForRankings} />
               <div className="mt-4 text-center">
                 <Button 
                   onClick={scrollToFullRankings}
@@ -142,7 +167,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
           </div>
 
           <StatsCharts 
-            chartData={topTeamsForCharts.slice(0, chartLimit)} 
+            chartData={chartData.slice(0, chartLimit)} 
             chartLimit={chartLimit} 
           />
 
