@@ -5,12 +5,14 @@ import { useRankingsData } from "./rankings/useRankingsData";
 import { usePreviousRankings } from "./rankings/usePreviousRankings";
 import { updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
 import { calculateStreak } from "@/utils/rankingUtils";
+import { useTeams } from "./useTeams";
 
 export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const previousRankings = usePreviousRankings();
-  const { latestTeams, latestMatches, teamsLoading, matchesLoading } = useRankingsData();
+  const { latestMatches, matchesLoading } = useRankingsData();
+  const { teams: latestTeams, isLoading: teamsLoading } = useTeams();
 
   useEffect(() => {
     const updateRankings = async () => {
