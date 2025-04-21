@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Table,
@@ -86,7 +87,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
             </h3>
           )}
           <div className="overflow-x-auto">
-            <Table className={`${isLight ? "bg-[#fff] border border-[#e0e0e0] rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "bg-[#1E1E1E] text-white rounded-xl shadow"}`}>
+            <Table className={`${isLight ? "bg-white border border-[#e0e0e0] rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "bg-[#1E1E1E] text-white rounded-xl shadow"}`}>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12 font-medium font-inter" style={isLight ? { color: "#1a1a1a", fontWeight: 700 } : { color: "#fff" }}>Rank</TableHead>

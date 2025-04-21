@@ -68,7 +68,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings, theme }) 
 
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className={isLight ? "bg-white border border-[#e0e0e0] rounded-xl shadow-sm" : ""}>
         <TableHeader>
           <TableRow>
             <TableHead className="w-10" style={isLight ? { color: "#1a1a1a", fontWeight: 600 } : {}}>Rank</TableHead>
