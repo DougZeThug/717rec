@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ const Navbar = () => {
                 alt="717Rec League Logo" 
                 className="h-8 w-8 object-contain"
               />
-              <span className="text-xl font-bold">717Rec</span>
+              <span className="text-xl font-bebas tracking-wider">717Rec</span>
             </Link>
           </div>
 
