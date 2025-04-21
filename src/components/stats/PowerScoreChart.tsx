@@ -18,8 +18,9 @@ interface PowerScoreChartProps {
 const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const isLight = resolvedTheme === "light";
 
-  const chartTextColor = isDark ? "#e5e7eb" : "#333333";
+  const chartTextColor = isDark ? "#e5e7eb" : "#111111";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
@@ -57,6 +58,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
         y={y + 15}
         fill={chartTextColor}
         fontSize={12}
+        fontWeight={600}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
       >
@@ -71,7 +73,8 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       style={{
         backgroundColor: chartBgColor,
         borderRadius: 16,
-        boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
+        border: isLight ? "1px solid #e5e7eb" : undefined,
+        boxShadow: isLight ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
         fontFamily: "'Inter', sans-serif",
         overflow: "hidden",
       }}
@@ -94,14 +97,14 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            tick={{ fill: chartTextColor, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
           />
           <YAxis
             type="category"
             dataKey="name"
             width={80}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-            tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            tick={{ fill: chartTextColor, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
           />
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar

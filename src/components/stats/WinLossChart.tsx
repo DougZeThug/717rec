@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -26,13 +26,13 @@ interface WinLossChartProps {
 const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const isLight = resolvedTheme === "light";
 
-  const chartTextColor = isDark ? "#e5e7eb" : "#333333";
+  const chartTextColor = isDark ? "#e5e7eb" : "#111111";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
   const tooltipBgColor = isDark ? "#111827" : "#ffffff";
   const tooltipTextColor = isDark ? "#f9fafb" : "#111827";
-
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
@@ -65,7 +65,8 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
       style={{
         backgroundColor: chartBgColor,
         borderRadius: 16,
-        boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.05)",
+        border: isLight ? "1px solid #e5e7eb" : undefined,
+        boxShadow: isLight ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
         fontFamily: "'Inter', sans-serif",
         overflow: "hidden",
       }}
@@ -93,14 +94,19 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             textAnchor="end"
             height={isMobile ? 80 : 70}
             interval={0}
-            tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontFamily: "'Inter', sans-serif" }}
+            tick={{ fontSize: isMobile ? 10 : 12, fill: chartTextColor, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
           />
-          <YAxis tick={{ fill: chartTextColor, fontFamily: "'Inter', sans-serif" }} />
+          <YAxis tick={{ fill: chartTextColor, fontWeight: 600, fontFamily: "'Inter', sans-serif" }} />
           <Tooltip content={<CustomWinLossTooltip />} />
           <Legend
-            wrapperStyle={{ color: chartTextColor, marginTop: 20, fontFamily: "'Inter', sans-serif" }}
+            wrapperStyle={{
+              color: chartTextColor,
+              marginTop: 20,
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+            }}
             formatter={(value) => (
-              <span style={{ color: chartTextColor, fontFamily: "'Inter', sans-serif" }}>{value}</span>
+              <span style={{ color: chartTextColor, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{value}</span>
             )}
           />
           <Bar dataKey="wins" fill={barColorWin} name="Wins" />
