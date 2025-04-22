@@ -13,11 +13,20 @@ interface TeamGameScoreRowProps {
   teamId: string;
 }
 
+// Define a type for team details to avoid type errors
+interface TeamDetails {
+  team_id?: string;
+  name?: string;
+  image_url?: string | null;
+  logo_url?: string | null;
+  divisionname?: string | null;
+}
+
 export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamId }) => {
   // Identify teams
   const isHome = match.team1Id === teamId;
-  const homeTeam = match.team1Details || {};
-  const awayTeam = match.team2Details || {};
+  const homeTeam = match.team1Details || {} as TeamDetails;
+  const awayTeam = match.team2Details || {} as TeamDetails;
   const homeTeamId = match.team1Id;
   const awayTeamId = match.team2Id;
 
