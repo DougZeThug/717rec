@@ -55,7 +55,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               </div>
               <div className="flex items-center space-x-2">
                 {team.imageUrl && (
-                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
                     <img
                       src={team.imageUrl}
                       alt={team.teamName}

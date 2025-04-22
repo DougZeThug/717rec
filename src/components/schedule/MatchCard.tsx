@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,11 +24,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team1Name = match.team1Details?.name || "Unknown Team";
   const team2Name = match.team2Details?.name || "Unknown Team";
 
-  // Determine winner only if scores are defined and match is completed
   const team1IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team1Score > match.team2Score;
   const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team1Score;
 
-  // Updated score style function with stronger green for winners
   const getScoreStyle = (isWinner: boolean) => cn(
     "text-2xl font-black tracking-wide tabular-nums transition-colors",
     isWinner 
@@ -37,7 +34,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
       : isLight ? "text-gray-600" : "text-gray-400"
   );
 
-  // Updated team name style function for consistent coloring
   const getTeamStyle = (isWinner: boolean) => cn(
     "truncate",
     isWinner 
@@ -152,4 +148,3 @@ const MatchCard: React.FC<MatchCardProps> = ({
 };
 
 export default MatchCard;
-

@@ -57,12 +57,19 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
               to={`/teams/${opponentId}`}
               className="hover:opacity-80 transition-opacity"
             >
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={opponentImage || ''} alt={opponentName} />
-                <AvatarFallback>
-                  {opponentName.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                {opponentImage ? (
+                  <img
+                    src={opponentImage}
+                    alt={opponentName}
+                    className="w-10 h-10 rounded-none object-contain"
+                  />
+                ) : (
+                  <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400">
+                    <span className="text-xs">{opponentName.charAt(0)}</span>
+                  </div>
+                )}
+              </div>
             </TransitionLink>
             <TransitionLink
               to={`/teams/${opponentId}`}
