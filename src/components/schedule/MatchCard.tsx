@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,9 +25,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team1Name = match.team1Details?.name || "Unknown Team";
   const team2Name = match.team2Details?.name || "Unknown Team";
 
+  // Determine winner only if scores are defined and match is completed
   const team1IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team1Score > match.team2Score;
   const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team1Score;
 
+  // Updated score style function with stronger green for winners
   const getScoreStyle = (isWinner: boolean) => cn(
     "text-2xl font-black tracking-wide tabular-nums transition-colors",
     isWinner 
@@ -34,6 +37,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
       : isLight ? "text-gray-600" : "text-gray-400"
   );
 
+  // Updated team name style function for consistent coloring
   const getTeamStyle = (isWinner: boolean) => cn(
     "truncate",
     isWinner 
@@ -55,23 +59,24 @@ const MatchCard: React.FC<MatchCardProps> = ({
       )}>
         Final
       </div>
+
       <CardContent className="p-6 pt-8">
         <div className="flex flex-col space-y-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
             <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
-              <div className="w-12 h-12 rounded-md overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center ring-2 ring-white/10 dark:ring-black/10">
-                {match.team1Details?.image_url ? (
-                  <img
-                    src={match.team1Details.image_url}
-                    alt={team1Name}
-                    className="w-full h-full object-contain bg-white dark:bg-gray-800"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-semibold">
-                    {team1Name.charAt(0)}
-                  </div>
-                )}
-              </div>
+              <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
+                <AvatarImage 
+                  src={match.team1Details?.image_url || ''} 
+                  alt={team1Name}
+                  className="object-contain bg-white dark:bg-gray-800"
+                />
+                <AvatarFallback className={cn(
+                  "font-semibold",
+                  isLight ? "bg-gray-100" : "bg-gray-800"
+                )}>
+                  {team1Name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
             </TransitionLink>
 
             <div className="flex items-center justify-center">
@@ -87,21 +92,22 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
 
             <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
-              <div className="w-12 h-12 rounded-md overflow-hidden bg-white dark:bg-gray-800 flex items-center justify-center ring-2 ring-white/10 dark:ring-black/10">
-                {match.team2Details?.image_url ? (
-                  <img
-                    src={match.team2Details.image_url}
-                    alt={team2Name}
-                    className="w-full h-full object-contain bg-white dark:bg-gray-800"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg font-semibold">
-                    {team2Name.charAt(0)}
-                  </div>
-                )}
-              </div>
+              <Avatar className="w-12 h-12 ring-2 ring-white/10 dark:ring-black/10">
+                <AvatarImage 
+                  src={match.team2Details?.image_url || ''} 
+                  alt={team2Name}
+                  className="object-contain bg-white dark:bg-gray-800"
+                />
+                <AvatarFallback className={cn(
+                  "font-semibold",
+                  isLight ? "bg-gray-100" : "bg-gray-800"
+                )}>
+                  {team2Name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
             </TransitionLink>
           </div>
+
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
             <TransitionLink 
               to={`/teams/${match.team1Id}`}
