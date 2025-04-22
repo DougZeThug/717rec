@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,7 +66,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   <AvatarImage 
                     src={match.team1Details?.image_url || ''} 
                     alt={team1Name}
-                    className="w-10 h-10 rounded-none object-contain bg-white dark:bg-gray-800"
+                    className="w-10 h-10 object-contain rounded-none bg-white dark:bg-gray-800"
                   />
                   <AvatarFallback className={cn(
                     "font-semibold rounded-none",
@@ -95,7 +96,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   <AvatarImage 
                     src={match.team2Details?.image_url || ''} 
                     alt={team2Name}
-                    className="w-10 h-10 rounded-none object-contain bg-white dark:bg-gray-800"
+                    className="w-10 h-10 object-contain rounded-none bg-white dark:bg-gray-800"
                   />
                   <AvatarFallback className={cn(
                     "font-semibold rounded-none",

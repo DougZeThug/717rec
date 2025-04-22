@@ -3,7 +3,6 @@ import React from 'react';
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface MatchCardProps {
   match: Match;
@@ -35,18 +34,18 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
   const gameScoreDisplay = hasGameScores ? `${teamGameWins}-${opponentGameWins}` : '';
 
   // For debugging
-  console.log("Match data:", {
-    id: match.id,
-    team1Id: match.team1Id,
-    team2Id: match.team2Id,
-    isTeam1,
-    team1GameWins: match.team1_game_wins,
-    team2GameWins: match.team2_game_wins,
-    teamGameWins,
-    opponentGameWins,
-    hasGameScores,
-    gameScoreDisplay
-  });
+  // console.log("Match data:", {
+  //   id: match.id,
+  //   team1Id: match.team1Id,
+  //   team2Id: match.team2Id,
+  //   isTeam1,
+  //   team1GameWins: match.team1_game_wins,
+  //   team2GameWins: match.team2_game_wins,
+  //   teamGameWins,
+  //   opponentGameWins,
+  //   hasGameScores,
+  //   gameScoreDisplay
+  // });
 
   return (
     <Card className="mb-4">
@@ -62,7 +61,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
                   <img
                     src={opponentImage}
                     alt={opponentName}
-                    className="w-10 h-10 rounded-none object-contain"
+                    className="w-10 h-10 object-contain rounded-none"
                   />
                 ) : (
                   <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400">

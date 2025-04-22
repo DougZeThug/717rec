@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Match, Team } from "@/types";
@@ -29,7 +30,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   <img 
                     src={team1.imageUrl} 
                     alt={team1.name} 
-                    className="w-10 h-10 rounded-none object-contain"
+                    className="w-10 h-10 object-contain rounded-none"
                     onError={(e) => {
                       console.error(`Image load error for ${team1.name}:`, team1.imageUrl);
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
@@ -51,7 +52,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   <img 
                     src={team2.imageUrl} 
                     alt={team2.name} 
-                    className="w-10 h-10 rounded-none object-contain"
+                    className="w-10 h-10 object-contain rounded-none"
                     onError={(e) => {
                       console.error(`Image load error for ${team2.name}:`, team2.imageUrl);
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
