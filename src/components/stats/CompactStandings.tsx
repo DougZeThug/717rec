@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -56,8 +55,12 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               </div>
               <div className="flex items-center space-x-2">
                 {team.imageUrl && (
-                  <div className="w-6 h-6 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                    <img src={team.imageUrl} alt={team.teamName} className="w-full h-full object-contain" />
+                  <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <img
+                      src={team.imageUrl}
+                      alt={team.teamName}
+                      className="w-10 h-10 rounded-none object-contain"
+                    />
                   </div>
                 )}
                 <span
