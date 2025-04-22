@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -32,16 +33,23 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
+  // Process the data to create display names while preserving original data structure
   const processedData = data.map(item => ({
     ...item,
-    displayName: item.name.length > 12 ? `${item.name.slice(0, 10)}...` : item.name,
-    fullName: item.name
+    displayName: item.name.length > 10 ? `${item.name.slice(0, 8)}...` : item.name,
   }));
 
+  // Custom tooltip that shows the full team name
   const CustomWinLossTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
     
-    const fullName = processedData.find(item => item.displayName === label)?.fullName || label;
+    // Find the original team name using the label (displayName)
+    const originalItem = data.find(item => {
+      const shortName = item.name.length > 10 ? `${item.name.slice(0, 8)}...` : item.name;
+      return shortName === label;
+    });
+    
+    const fullName = originalItem?.name || label;
     
     return (
       <div className="rounded-md shadow-lg p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -68,7 +76,8 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   return (
     <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
       <div className="w-full flex flex-col">
-        <div className="w-full flex justify-center mb-1">
+        {/* Moved legend above chart for better spacing */}
+        <div className="w-full flex justify-center mb-1 mt-1">
           <Legend
             layout="horizontal"
             align="center"
@@ -112,7 +121,6 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
                   fontWeight: 500
                 }}
                 minTickGap={2}
-                tickFormatter={(value) => value}
               />
               <YAxis
                 stroke="#64748b"
