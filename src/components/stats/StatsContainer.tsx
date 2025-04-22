@@ -78,35 +78,25 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     imageUrl: team.imageUrl
   }));
 
-  // Card layout classes
-  const sectionCard = "bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 mb-6";
-  const headerClass = "text-xl font-semibold font-oswald uppercase tracking-wide flex items-center";
-  const dividerClass = "border-b border-gray-200 dark:border-gray-700 w-full mt-2 mb-4";
-  const sectionSpacing = "mt-6";
-
-  // Wrap each major block in a card
+  const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
+  
   return (
     <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent">
-      {/* Filters/Header outside cards for clarity */}
-      <div className="mb-4">
-        <StatsHeader 
-          onDivisionChange={handleDivisionChange} 
-          divisions={divisions || []} 
-        />
-      </div>
-      <div className="font-inter">
+      <StatsHeader 
+        onDivisionChange={handleDivisionChange} 
+        divisions={divisions || []} 
+      />
+      <div className="font-inter mt-2">
         {rankings.length > 0 ? (
           <>
-            {/* Current Standings Card */}
-            <div className={sectionCard}>
-              <div className={headerClass}>
-                <span>Current Standings</span>
-              </div>
-              <div className={dividerClass}></div>
-              <CardDescription className="!text-[#444444] dark:!text-gray-400 mb-2">
-                Top {compactLimit} teams based on performance
-              </CardDescription>
-              <CardContent className="p-0">
+            <Card className={`mb-6 ${cardBg} p-0`}>
+              <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
+                <CardTitle className="font-bold text-[1.15rem] sm:text-xl text-[#1a1a1a] dark:text-white">Current Standings</CardTitle>
+                <CardDescription className="text-[#333] dark:text-gray-400">
+                  Top {compactLimit} teams based on performance
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 pt-2 sm:pt-6">
                 <CompactStandings rankings={rankings.slice(0, compactLimit)} />
                 <div className="mt-4 text-center">
                   <Button 
@@ -119,29 +109,17 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
                   </Button>
                 </div>
               </CardContent>
-            </div>
+            </Card>
             
-            {/* League Highlights Card */}
-            <div className={sectionCard}>
-              <div className={headerClass}>
-                <span>League Highlights</span>
-              </div>
-              <div className={dividerClass}></div>
-              <div>
-                <StatsSummaryCards rankings={rankings} />
-              </div>
+            <div className="mb-8">
+              <h2 className="text-[1.12rem] font-bold mb-4 text-[#1a1a1a] dark:text-white">League Highlights</h2>
+              <StatsSummaryCards rankings={rankings} />
             </div>
 
-            {/* Charts Card */}
-            <div className={sectionCard}>
-              <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} dividerClass={dividerClass} />
-            </div>
-            
-            {/* Complete Team Rankings */}
-            <div ref={fullRankingsRef} id="rankings" className={sectionSpacing}>
-              <div className={sectionCard + " mb-10"}>
-                <FullRankings rankings={rankings} />
-              </div>
+            <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} />
+
+            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
+              <FullRankings rankings={rankings} />
             </div>
           </>
         ) : (
