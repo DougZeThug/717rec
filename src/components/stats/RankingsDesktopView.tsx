@@ -17,6 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
+import { getSosColor } from "@/utils/powerScore/getSosColor";
 
 interface RankingsDesktopViewProps {
   rankings: Ranking[];
@@ -162,9 +163,12 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                         <TableCell className="text-center font-mono">{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
                         <TableCell className="hidden md:table-cell text-center font-mono">{ranking.gamesWon}-{ranking.gamesLost}</TableCell>
                         <TableCell className="hidden lg:table-cell text-center font-mono">{(ranking.gameWinPercentage * 100).toFixed(1)}%</TableCell>
-                        <TableCell className="text-center font-mono">{ranking.sos?.toFixed(3)}</TableCell>
+                        <TableCell className="text-center font-mono">
+                          <span className={getSosColor(ranking.sos)}>
+                            {ranking.sos?.toFixed(3)}
+                          </span>
+                        </TableCell>
                         <TableCell className="text-center">
-                          {/* Streak rendering logic, usually with a badge */}
                           <span className="font-mono">{ranking.streak}</span>
                         </TableCell>
                         <TableCell className="text-center">

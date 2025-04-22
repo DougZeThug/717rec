@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { getSosColor } from "@/utils/powerScore/getSosColor";
 import { Link } from "react-router-dom";
 import { useTheme } from "next-themes";
 
@@ -24,6 +25,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   showDivision = false
 }) => {
   const powerScoreColor = getPowerScoreColor(ranking.powerScore);
+  const sosColor = getSosColor(ranking.sos);
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   
@@ -93,8 +95,10 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <TableCell className="text-center hidden lg:table-cell font-mono" style={isLight ? { color: "#222222" } : {}}>
         {(ranking.gameWinPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
-        {ranking.sos.toFixed(3)}
+      <TableCell className="text-center font-mono">
+        <span className={sosColor} style={isLight ? { color: isLight && sosColor ? sosColor.replace('text-', '').replace('-500', '') : "#222222" } : {}}>
+          {ranking.sos.toFixed(3)}
+        </span>
       </TableCell>
       <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
         {ranking.streak || '-'}
