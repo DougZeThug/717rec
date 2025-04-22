@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -33,11 +33,24 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
+  // Log chart data to help diagnose issues
+  useEffect(() => {
+    console.log("Win-Loss Chart Data:", data);
+  }, [data]);
+
   // Process the data to create display names while preserving original data structure
-  const processedData = data.map(item => ({
-    ...item,
-    displayName: item.name.length > 10 ? `${item.name.slice(0, 8)}...` : item.name,
-  }));
+  const processedData = data.map(item => {
+    // Ensure wins and losses are numeric
+    const wins = typeof item.wins === 'number' ? item.wins : 0;
+    const losses = typeof item.losses === 'number' ? item.losses : 0;
+    
+    return {
+      ...item,
+      wins,
+      losses,
+      displayName: item.name.length > 10 ? `${item.name.slice(0, 8)}...` : item.name,
+    };
+  });
 
   // Custom tooltip that shows the full team name
   const CustomWinLossTooltip = ({ active, payload, label }: any) => {
@@ -72,6 +85,15 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
     left: 8,
     bottom: isMobile ? 28 : 24,
   };
+
+  // If no data or empty array, show a placeholder
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-[260px] flex items-center justify-center text-gray-500 dark:text-gray-400">
+        Chart data could not be loaded.
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
