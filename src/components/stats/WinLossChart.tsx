@@ -50,8 +50,8 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
         ...team,
         // Force recalculation of win percentage to ensure consistency
         calculatedWinPct: team.wins + team.losses === 0 ? 0 : team.wins / (team.wins + team.losses),
-        // Add displayName and sortIndex to ensure correct ordering
-        displayName: team.name,
+        // Add displayName with fallback to ensure it's always defined
+        displayName: team.name || `Team ${index + 1}`,
         sortIndex: index // Store original position
       }))
       .sort((a, b) => {
@@ -71,7 +71,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
       // Limit to chartLimit
       .slice(0, chartLimit);
       
-    // Create an array with displayKeys as ordered names
+    // Return processed data
     return processedData;
   }, [data, chartLimit]);
 
@@ -93,9 +93,12 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   // Custom X-axis tick with truncation and tooltip
   const CustomXAxisTick = (props: any) => {
     const { x, y, payload } = props;
-    const label = payload.value;
+    // Add safety check for payload and value
+    if (!payload || typeof payload.value === 'undefined') return null;
+    
+    const label = payload.value || "";
     const truncated = truncateLabel(label, maxLabelLength);
-    // Only show the tooltip if truncated
+    
     return (
       <g transform={`translate(${x},${y})`}>
         <title>{label}</title>
@@ -129,6 +132,15 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
       </div>
     );
   };
+
+  // Add error handling for empty data
+  if (!sortedData.length) {
+    return (
+      <div className="w-full h-[230px] rounded-xl overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+        <p className="text-gray-500 dark:text-gray-400">No data available</p>
+      </div>
+    );
+  }
 
   return (
     <div
