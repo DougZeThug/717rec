@@ -75,19 +75,12 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
     return processedData;
   }, [data, chartLimit]);
 
-  // Log sorted data to confirm ordering
-  console.log("Win-Loss Chart Sorted Data:", sortedData.map(team => ({
-    name: team.displayName,
-    record: `${team.wins}-${team.losses}`,
-    winPct: team.calculatedWinPct.toFixed(3)
-  })));
-
-  // Final verification log before rendering
-  console.log("Final sorted data passed to BarChart", sortedData.map(t => ({ 
-    name: t.displayName, 
-    wins: t.wins, 
-    losses: t.losses, 
-    pct: t.calculatedWinPct 
+  // Log sorted data to confirm ordering - change to more visible format
+  console.log("✅ Final sorted chart data", sortedData.map(t => ({
+    name: t.displayName,
+    wins: t.wins,
+    losses: t.losses,
+    pct: t.calculatedWinPct
   })));
 
   // Custom X-axis tick with truncation and tooltip
