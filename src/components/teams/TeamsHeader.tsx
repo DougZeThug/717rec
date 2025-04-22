@@ -7,17 +7,17 @@ import { Toggle } from "@/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TeamsHeaderProps {
-  onRefresh: () => void;
-  isRefreshing: boolean;
-  viewMode: 'grid' | 'list';
-  onViewModeChange: (mode: 'grid' | 'list') => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  viewMode?: 'grid' | 'list';
+  onViewModeChange?: (mode: 'grid' | 'list') => void;
 }
 
 export const TeamsHeader: React.FC<TeamsHeaderProps> = ({ 
-  onRefresh,
-  isRefreshing,
-  viewMode,
-  onViewModeChange
+  onRefresh = () => {},
+  isRefreshing = false,
+  viewMode = 'list',
+  onViewModeChange = () => {}
 }) => {
   const isMobile = useIsMobile();
 

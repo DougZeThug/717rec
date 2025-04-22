@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import TeamsHeader from "@/components/teams/TeamsHeader";
+import { TeamsHeader } from "@/components/teams/TeamsHeader"; // Changed to named import
 import TeamsContainer from "@/components/teams/TeamsContainer";
 
 export type DisplayMode = "all" | "grouped";
@@ -28,4 +28,3 @@ const TeamsPageContainer: React.FC = () => {
 
 import TeamsDisplayModeToggle from "./TeamsDisplayModeToggle";
 export default TeamsPageContainer;
-
