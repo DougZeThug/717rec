@@ -39,6 +39,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const rankingsByDivision = showUnified 
     ? { "All Teams": rankings }
@@ -150,15 +151,29 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                             <span className="font-inter">{ranking.divisionName}</span>
                           </TableCell>
                         )}
-                        <TableCell className={`text-center font-mono font-semibold ${getPowerScoreColor(ranking.powerScore)}`}>
-                          {ranking.powerScore?.toFixed(2)}
+                        <TableCell className="text-center font-mono font-semibold">
+                          <span className={isLight ? '' : getPowerScoreColor(ranking.powerScore)} 
+                                style={{ color: isLight ? (
+                                  ranking.powerScore >= 75 ? '#2f855a' : // green-600 equivalent
+                                  ranking.powerScore >= 60 ? '#3182ce' : // blue-500 equivalent
+                                  ranking.powerScore >= 40 ? '#dd6b20' : // orange-500 equivalent
+                                  '#e53e3e' // red-500 equivalent
+                                ) : undefined }}>
+                            {ranking.powerScore?.toFixed(2)}
+                          </span>
                         </TableCell>
                         <TableCell className="text-center font-mono">{ranking.wins}-{ranking.losses}</TableCell>
                         <TableCell className="text-center font-mono">{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
                         <TableCell className="hidden md:table-cell text-center font-mono">{ranking.gamesWon}-{ranking.gamesLost}</TableCell>
                         <TableCell className="hidden lg:table-cell text-center font-mono">{(ranking.gameWinPercentage * 100).toFixed(1)}%</TableCell>
                         <TableCell className="text-center font-mono">
-                          <span className={getSosColor(ranking.sos)}>
+                          <span className={isLight ? '' : getSosColor(ranking.sos)}
+                                style={{ color: isLight ? (
+                                  ranking.sos >= 75 ? '#2f855a' : // green-600 equivalent
+                                  ranking.sos >= 60 ? '#3182ce' : // blue-500 equivalent
+                                  ranking.sos >= 40 ? '#dd6b20' : // orange-500 equivalent
+                                  '#e53e3e' // red-500 equivalent
+                                ) : undefined }}>
                             {ranking.sos?.toFixed(3)}
                           </span>
                         </TableCell>

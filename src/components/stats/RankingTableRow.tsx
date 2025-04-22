@@ -24,8 +24,6 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   onToggleExpand,
   showDivision = false
 }) => {
-  const powerScoreColor = getPowerScoreColor(ranking.powerScore);
-  const sosColor = getSosColor(ranking.sos);
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   
@@ -85,11 +83,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           </Badge>
         </TableCell>
       )}
-      <TableCell
-        className={`text-center font-mono ${!isLight && powerScoreColor}`}
-        style={{ color: isLight ? getPowerScoreInlineColor(ranking.powerScore) : undefined }}
-      >
-        {formatPowerScore(ranking.powerScore)}
+      <TableCell className="text-center font-mono">
+        <span 
+          className={!isLight ? getPowerScoreColor(ranking.powerScore) : ''}
+          style={{ color: isLight ? getPowerScoreInlineColor(ranking.powerScore) : undefined }}
+        >
+          {formatPowerScore(ranking.powerScore)}
+        </span>
       </TableCell>
       <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
         {`${ranking.wins}-${ranking.losses}`}
@@ -105,7 +105,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       </TableCell>
       <TableCell className="text-center font-mono">
         <span 
-          className={!isLight ? sosColor : ''}
+          className={!isLight ? getSosColor(ranking.sos) : ''}
           style={{ color: isLight ? getSosInlineColor(ranking.sos) : undefined }}
         >
           {ranking.sos.toFixed(3)}
