@@ -56,8 +56,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               </div>
               <div className="flex items-center space-x-2">
                 {team.imageUrl && (
-                  <div className="w-6 h-6 rounded-full overflow-hidden">
-                    <img src={team.imageUrl} alt={team.teamName} className="w-full h-full object-cover" />
+                  <div className="w-6 h-6 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <img src={team.imageUrl} alt={team.teamName} className="w-full h-full object-contain" />
                   </div>
                 )}
                 <span
@@ -134,13 +134,13 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 min-w-0">
                   {team.imageUrl && (
-                    <div className="w-8 h-8 rounded-full overflow-hidden">
+                    <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
                       <img
                         src={team.imageUrl}
                         alt={team.teamName}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </div>
                   )}
