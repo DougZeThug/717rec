@@ -54,6 +54,11 @@ export interface Match {
     logo_url: string | null;
     divisionName: string | null;
   } | null;
+  stats?: Array<{
+    team_id: string;
+    games_won: number;
+    [key: string]: any;
+  }>;
 }
 
 // Types for playoff brackets

@@ -26,7 +26,8 @@ export const useTeamMatches = (teamId: string | undefined) => {
             image_url,
             logo_url,
             divisionname
-          )
+          ),
+          stats:v_team_match_stats(team_id, games_won)
         `)
         .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
         .order('date');
@@ -59,7 +60,8 @@ export const useTeamMatches = (teamId: string | undefined) => {
         team1_game_wins: row.team1_game_wins,
         team2_game_wins: row.team2_game_wins,
         team1Details: row.team1 ? (Array.isArray(row.team1) ? row.team1[0] : row.team1) : null,
-        team2Details: row.team2 ? (Array.isArray(row.team2) ? row.team2[0] : row.team2) : null
+        team2Details: row.team2 ? (Array.isArray(row.team2) ? row.team2[0] : row.team2) : null,
+        stats: row.stats ? (Array.isArray(row.stats) ? row.stats : [row.stats]) : []
       })) as Match[];
       
       return {

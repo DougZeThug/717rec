@@ -22,8 +22,8 @@ interface TeamDetails {
 function getGameScoresForTeams(match: Match, teamId: string) {
   // If stats are available, use them
   if (match.stats && Array.isArray(match.stats)) {
-    let thisTeamStat = match.stats.find((s: any) => s.team_id === teamId);
-    let opponentStat = match.stats.find((s: any) => s.team_id !== teamId);
+    let thisTeamStat = match.stats.find((s) => s.team_id === teamId);
+    let opponentStat = match.stats.find((s) => s.team_id !== teamId);
 
     return {
       homeGameWins: thisTeamStat ? thisTeamStat.games_won : 0,
