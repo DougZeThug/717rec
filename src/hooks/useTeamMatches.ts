@@ -48,7 +48,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
       // Map database rows to Match interface with camelCase properties
       const mappedMatches = matchData.map(row => {
         // Enhanced logging to debug specific match data
-        // console.log("Processing match:", row.id, "stats:", row.stats);
+        console.log("Processing match:", row.id, "iscompleted:", row.iscompleted);
         
         return {
           id: row.id,
@@ -58,7 +58,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
           team2Score: row.team2_score,
           date: row.date,
           location: row.location,
-          iscompleted: row.iscompleted,
+          iscompleted: row.iscompleted ?? false, // Ensure this has a default value
           winnerId: row.winner_id,
           loserId: row.loser_id,
           round_number: row.round_number,

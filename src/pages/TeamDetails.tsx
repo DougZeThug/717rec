@@ -35,7 +35,12 @@ const TeamDetails = () => {
     pastMatches: pastMatches?.length || 0,
     upcomingMatches: upcomingMatches?.length || 0,
     isLoadingMatches,
-    hasError: !!matchesError
+    hasError: !!matchesError,
+    sampleMatch: pastMatches?.length > 0 ? {
+      id: pastMatches[0].id,
+      iscompleted: pastMatches[0].iscompleted ?? false,
+      hasStats: Boolean(pastMatches[0].stats)
+    } : "No matches"
   });
 
   if (isLoading || isLoadingMatches) {

@@ -46,6 +46,9 @@ function getGameScoresForTeams(match: Match, teamId: string) {
 }
 
 export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamId }) => {
+  // Check if match is completed to determine display
+  const isCompleted = match.iscompleted ?? false;
+
   // Identify teams
   const isHome = match.team1Id === teamId;
   const homeTeam = isHome ? match.team1Details as TeamDetails : match.team2Details as TeamDetails;

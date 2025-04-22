@@ -27,7 +27,14 @@ const MatchList: React.FC<MatchListProps> = ({
     matchCount: matches?.length, 
     isLoading, 
     teamId,
-    error: error ? "Error exists" : "No error" 
+    error: error ? "Error exists" : "No error",
+    matchSample: matches?.length > 0 ? {
+      id: matches[0].id,
+      iscompleted: matches[0].iscompleted,
+      team1Id: matches[0].team1Id,
+      team2Id: matches[0].team2Id,
+      hasStats: Boolean(matches[0].stats)
+    } : "No matches" 
   });
 
   if (isLoading) {
@@ -40,6 +47,7 @@ const MatchList: React.FC<MatchListProps> = ({
   }
 
   if (error) {
+    console.error("Match list error:", error);
     return (
       <div className="mt-10">
         {title && <h2 className="text-lg sm:text-xl font-semibold mb-3">{title}</h2>}
