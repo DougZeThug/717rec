@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import WinLossChart from "./WinLossChart";
@@ -25,7 +25,6 @@ interface StatsChartsProps {
 const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
 
   // Top 10 for PowerScore chart
   const topByPowerScore = useMemo(() => (
@@ -42,15 +41,14 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8 font-inter">
       <Card className={`${isMobile ? "" : "xl:col-span-2"} bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm`}>
         <CardHeader className="pb-2 rounded-t-xl"
-          style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
-          <CardTitle
-            className="font-bold"
-            style={isLight ? { color: "#111111" } : { color: "#ffffff" }}
+          style={resolvedTheme === "light" ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
+          <CardTitle 
+            className="text-lg font-semibold text-gray-800 dark:text-white"
           >
             Win-Loss Records
           </CardTitle>
           <CardDescription 
-            style={isLight ? { color: "#444444", fontWeight: 500 } : { color: "#e5e7eb" }}
+            className="text-sm text-gray-600 dark:text-gray-300"
           >
             Top {chartLimit} teams by win percentage
           </CardDescription>
@@ -62,15 +60,14 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
       {!isMobile && (
         <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm">
           <CardHeader className="pb-2 rounded-t-xl" 
-            style={isLight ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
+            style={resolvedTheme === "light" ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
             <CardTitle
-              className="font-bold"
-              style={isLight ? { color: "#111111" } : { color: "#ffffff" }}
+              className="text-lg font-semibold text-gray-800 dark:text-white"
             >
               Top 10 Power Scores
             </CardTitle>
             <CardDescription 
-              style={isLight ? { color: "#444444", fontWeight: 500 } : { color: "#e5e7eb" }}
+              className="text-sm text-gray-600 dark:text-gray-300"
             >
               Elite team performance ranking
             </CardDescription>
@@ -85,3 +82,4 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
 };
 
 export default StatsCharts;
+
