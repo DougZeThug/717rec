@@ -4,7 +4,6 @@ import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
 
 interface MatchCardProps {
   match: Match;
@@ -22,10 +21,18 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
     }
   };
 
-  // Get opponent details by checking which team ID matches the opponentId
   const opponent = match.team1Id === opponentId ? match.team1Details : match.team2Details;
   const opponentName = opponent?.name || "Unknown Team";
   const opponentImage = opponent?.image_url || opponent?.logo_url;
+  
+  // Determine game scores based on perspective
+  const isTeam1 = match.team1Id === opponentId;
+  const teamGameWins = isTeam1 ? match.team2_game_wins : match.team1_game_wins;
+  const opponentGameWins = isTeam1 ? match.team1_game_wins : match.team2_game_wins;
+  
+  // Format game score display
+  const hasGameScores = teamGameWins !== undefined && opponentGameWins !== undefined;
+  const gameScoreDisplay = hasGameScores ? `${teamGameWins}-${opponentGameWins}` : '';
 
   return (
     <Card className="mb-4">
@@ -52,20 +59,18 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
           </div>
           <div className="text-right">
             {match.iscompleted && (
-              <div className="text-lg font-semibold">
-                {match.team1Id === opponentId ? (
-                  `${match.team2Score || 0} - ${match.team1Score || 0}`
-                ) : (
-                  `${match.team1Score || 0} - ${match.team2Score || 0}`
-                )}
-              </div>
-            )}
-            {match.team1_game_wins !== undefined && match.team2_game_wins !== undefined && (
-              <div className="text-sm text-gray-600">
-                Games: {match.team1Id === opponentId ? (
-                  `${match.team2_game_wins}-${match.team1_game_wins}`
-                ) : (
-                  `${match.team1_game_wins}-${match.team2_game_wins}`
+              <div className="space-y-1">
+                <div className="text-lg font-semibold">
+                  {match.team1Id === opponentId ? (
+                    `${match.team2Score || 0} - ${match.team1Score || 0}`
+                  ) : (
+                    `${match.team1Score || 0} - ${match.team2Score || 0}`
+                  )}
+                </div>
+                {hasGameScores && (
+                  <div className="text-sm text-muted-foreground">
+                    Games: {gameScoreDisplay}
+                  </div>
                 )}
               </div>
             )}
