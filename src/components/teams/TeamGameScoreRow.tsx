@@ -70,6 +70,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
           <span
             className={cn(
               "truncate",
+              "font-bebas uppercase tracking-wide", // 🟢 Apply font update for completed match team names
               highlightWinnerLoser && winnerTeamId === homeTeamId && "text-green-600 font-medium",
               highlightWinnerLoser && loserTeamId === homeTeamId && "text-red-500"
             )}
@@ -89,6 +90,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
           <span
             className={cn(
               "truncate text-right",
+              "font-bebas uppercase tracking-wide", // 🟢 Apply font update for completed match team names
               highlightWinnerLoser && winnerTeamId === awayTeamId && "text-green-600 font-medium",
               highlightWinnerLoser && loserTeamId === awayTeamId && "text-red-500"
             )}
@@ -109,3 +111,4 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
 };
 
 export default TeamGameScoreRow;
+
