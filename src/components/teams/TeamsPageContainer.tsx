@@ -18,38 +18,26 @@ const TeamsPageContainer: React.FC = () => {
 
   return (
     <div>
-      {/* Header Section */}
-      <div className="mt-2 pt-1 space-y-2 sm:space-y-4">
-        {/* Page Title */}
+      {/* Condensed Header Section */}
+      <div className="mt-2 mb-2 space-y-2">
         <h1 className="font-oswald text-3xl font-semibold uppercase tracking-wide text-gray-900 dark:text-white">
           Teams
         </h1>
-
-        {/* Toggles & Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-          {/* Display Mode & Hint */}
-          <div className="flex flex-col min-w-[180px]">
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-muted-foreground mr-2">Display Mode:</span>
-              <TeamsDisplayModeToggle displayMode={displayMode} setDisplayMode={setDisplayMode} />
-            </div>
-            <div className="mt-1 ml-0.5 text-xs text-muted-foreground">
-              Switch between grouped and ungrouped team views.
-            </div>
+        {/* Compact controls layout */}
+        <div className="flex flex-wrap items-center gap-2 justify-between">
+          {/* Display Mode Toggle with compact View label */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">View:</span>
+            <TeamsDisplayModeToggle displayMode={displayMode} setDisplayMode={setDisplayMode} />
           </div>
-
-          {/* View Mode Toggle + Sort Toggle + Refresh */}
-          <div className="flex flex-col sm:flex-row gap-1 sm:gap-3 items-start sm:items-center">
-            {/* Grid/List toggle, smaller */}
-            <div className="flex items-center mr-1">
-              <TeamsHeader
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                onRefresh={handleRefresh}
-                isRefreshing={isRefreshing}
-                // Reduce button size via passed viewMode & styling
-              />
-            </div>
+          {/* View Mode (list/grid), sort toggle, refresh */}
+          <div className="flex gap-2 items-center">
+            <TeamsHeader
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
           </div>
         </div>
         {/* Divider */}

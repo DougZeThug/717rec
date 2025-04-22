@@ -14,26 +14,27 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
     type="single"
     value={displayMode}
     onValueChange={val => setDisplayMode((val as DisplayMode) || "all")}
-    className="bg-muted rounded-md p-1"
+    className="bg-muted rounded-md p-0.5"
     aria-label="Display Mode"
   >
     <ToggleGroupItem
       value="all"
       aria-label="Show All Teams"
-      className={displayMode === "all" ? "bg-primary text-primary-foreground" : ""}
+      className={`px-2 py-1 text-sm rounded-md ${displayMode === "all" ? "bg-primary text-primary-foreground" : ""}`}
     >
       <List size={16} className="mr-1" />
-      All Teams
+      All
     </ToggleGroupItem>
     <ToggleGroupItem
       value="grouped"
       aria-label="Group By Division"
-      className={displayMode === "grouped" ? "bg-primary text-primary-foreground" : ""}
+      className={`px-2 py-1 text-sm rounded-md ${displayMode === "grouped" ? "bg-primary text-primary-foreground" : ""}`}
     >
       <Users size={16} className="mr-1" />
-      Grouped by Division
+      Grouped
     </ToggleGroupItem>
   </ToggleGroup>
 );
 
 export default TeamsDisplayModeToggle;
+
