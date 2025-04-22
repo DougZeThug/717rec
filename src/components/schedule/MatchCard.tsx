@@ -25,6 +25,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team1Name = match.team1Details?.name || "Unknown Team";
   const team2Name = match.team2Details?.name || "Unknown Team";
 
+  const team1Logo = match.team1Details?.image_url || '';
+  const team2Logo = match.team2Details?.image_url || '';
+
   const team1IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team1Score > match.team2Score;
   const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team1Score;
 
@@ -40,6 +43,27 @@ const MatchCard: React.FC<MatchCardProps> = ({
     isWinner 
       ? isLight ? "text-green-600 font-medium" : "text-green-500 font-medium"
       : isLight ? "text-gray-600" : "text-gray-400"
+  );
+
+  // Custom Avatar for square logos (override any rounded/overflow for completed matches)
+  const SquareLogo = ({ src, alt, fallback }: { src: string, alt: string, fallback: string }) => (
+    <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
+      {src ? (
+        <img
+          src={src}
+          alt={alt}
+          className="w-10 h-10 object-contain rounded-none"
+          draggable={false}
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+      ) : (
+        <div className={cn(
+          "w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 font-semibold text-md rounded-none"
+        )}>
+          {fallback}
+        </div>
+      )}
+    </div>
   );
 
   return (
@@ -61,23 +85,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
         <div className="flex flex-col space-y-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
             <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage 
-                    src={match.team1Details?.image_url || ''} 
-                    alt={team1Name}
-                    className="w-10 h-10 object-contain rounded-none bg-white dark:bg-gray-800"
-                  />
-                  <AvatarFallback className={cn(
-                    "font-semibold rounded-none",
-                    isLight ? "bg-gray-100" : "bg-gray-800"
-                  )}>
-                    {team1Name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
+              {/* SQUARE LOGO */}
+              <SquareLogo src={team1Logo} alt={team1Name} fallback={team1Name.charAt(0)} />
             </TransitionLink>
-
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800/50">
                 <span className={getScoreStyle(team1IsWinner)}>
@@ -89,23 +99,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 </span>
               </div>
             </div>
-
             <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage 
-                    src={match.team2Details?.image_url || ''} 
-                    alt={team2Name}
-                    className="w-10 h-10 object-contain rounded-none bg-white dark:bg-gray-800"
-                  />
-                  <AvatarFallback className={cn(
-                    "font-semibold rounded-none",
-                    isLight ? "bg-gray-100" : "bg-gray-800"
-                  )}>
-                    {team2Name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              </div>
+              {/* SQUARE LOGO */}
+              <SquareLogo src={team2Logo} alt={team2Name} fallback={team2Name.charAt(0)} />
             </TransitionLink>
           </div>
 
@@ -149,3 +145,4 @@ const MatchCard: React.FC<MatchCardProps> = ({
 };
 
 export default MatchCard;
+

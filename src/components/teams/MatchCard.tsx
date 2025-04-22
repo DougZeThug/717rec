@@ -33,19 +33,24 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
   const hasGameScores = teamGameWins !== undefined && opponentGameWins !== undefined;
   const gameScoreDisplay = hasGameScores ? `${teamGameWins}-${opponentGameWins}` : '';
 
-  // For debugging
-  // console.log("Match data:", {
-  //   id: match.id,
-  //   team1Id: match.team1Id,
-  //   team2Id: match.team2Id,
-  //   isTeam1,
-  //   team1GameWins: match.team1_game_wins,
-  //   team2GameWins: match.team2_game_wins,
-  //   teamGameWins,
-  //   opponentGameWins,
-  //   hasGameScores,
-  //   gameScoreDisplay
-  // });
+  // CUSTOM: Always render logo as square
+  const SquareLogo = ({ src, alt, fallback }: { src: string, alt: string, fallback: string }) => (
+    <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
+      {src ? (
+        <img
+          src={src}
+          alt={alt}
+          className="w-10 h-10 object-contain rounded-none"
+          draggable={false}
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+      ) : (
+        <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400 text-xs rounded-none">
+          {fallback}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <Card className="mb-4">
@@ -56,19 +61,8 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
               to={`/teams/${opponentId}`}
               className="hover:opacity-80 transition-opacity"
             >
-              <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-                {opponentImage ? (
-                  <img
-                    src={opponentImage}
-                    alt={opponentName}
-                    className="w-10 h-10 object-contain rounded-none"
-                  />
-                ) : (
-                  <div className="w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-400">
-                    <span className="text-xs">{opponentName.charAt(0)}</span>
-                  </div>
-                )}
-              </div>
+              {/* SQUARE LOGO */}
+              <SquareLogo src={opponentImage} alt={opponentName} fallback={opponentName.charAt(0)} />
             </TransitionLink>
             <TransitionLink
               to={`/teams/${opponentId}`}
@@ -102,3 +96,4 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
 };
 
 export default MatchCard;
+
