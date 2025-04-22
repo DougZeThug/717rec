@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Match } from "@/types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -81,7 +80,10 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
         </TransitionLink>
       </div>
       {/* Game score - center */}
-      <div className="flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center">
+      <div className={cn(
+        "flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center",
+        "font-mono" // Apply IBM Plex Mono to game scores
+      )}>
         {homeGameWins} <span className="mx-1">–</span> {awayGameWins}
       </div>
       {/* Away - Right side */}
@@ -111,4 +113,3 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
 };
 
 export default TeamGameScoreRow;
-
