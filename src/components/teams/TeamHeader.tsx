@@ -2,7 +2,6 @@
 import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, X } from "lucide-react";
 
 interface TeamHeaderProps {
   team: Team;
@@ -25,11 +24,13 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
       </div>
       
       <div className="text-center">
-        <h1 className="text-3xl font-bold">{team.name}</h1>
+        <h1 className="font-bebas font-normal uppercase tracking-wide text-3xl text-[#202020] dark:text-white">
+          {team.name}
+        </h1>
         
         <div className="flex flex-wrap justify-center items-center gap-2 mt-2">
           {team.divisionName && (
-            <Badge variant="outline" className="font-medium">
+            <Badge variant="outline" className="font-inter uppercase text-xs tracking-widest font-medium">
               {team.divisionName}
             </Badge>
           )}
@@ -40,3 +41,4 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
 };
 
 export default TeamHeader;
+
