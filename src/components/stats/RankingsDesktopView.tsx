@@ -12,11 +12,17 @@ import { Ranking } from "@/types";
 import RankingTableRow from "./RankingTableRow";
 import HeadToHeadRecords from "./HeadToHeadRecords";
 import { SortOptions } from "./RankingsTable";
-import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
+
+// -- SOS Color Logic Function --
+const getSOSColor = (sos: number) => {
+  if (sos >= 0.75) return "text-green-600";
+  if (sos >= 0.5) return "text-amber-600";
+  return "text-red-600";
+};
 
 interface RankingsDesktopViewProps {
   rankings: Ranking[];
@@ -123,16 +129,22 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
               <TableBody>
                 {divisionRankings.map((ranking) => {
                   const overallIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
+
+                  // --- Division Rank parenthesis logic ---
+                  const divisionRankText = (
+                    !showUnified && ranking.divisionRank
+                      ? <span className="ml-1 font-inter text-sm text-gray-500 dark:text-gray-400">{`(${ranking.divisionRank}${ranking.divisionName ? ` in ${ranking.divisionName}` : ""})`}</span>
+                      : null
+                  );
+
                   return (
                     <React.Fragment key={ranking.teamId}>
                       <TableRow className="font-inter">
                         <TableCell className="font-mono font-semibold text-lg">
-                          {overallIndex + 1}
-                          {!showUnified && ranking.divisionRank && (
-                            <span className="ml-1 text-xs text-gray-500 dark:text-gray-400 font-inter">
-                              ({ranking.divisionRank})
-                            </span>
-                          )}
+                          <span>
+                            {overallIndex + 1}
+                            {divisionRankText}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
@@ -162,9 +174,11 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                         <TableCell className="text-center font-mono">{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
                         <TableCell className="hidden md:table-cell text-center font-mono">{ranking.gamesWon}-{ranking.gamesLost}</TableCell>
                         <TableCell className="hidden lg:table-cell text-center font-mono">{(ranking.gameWinPercentage * 100).toFixed(1)}%</TableCell>
-                        <TableCell className="text-center font-mono">{ranking.sos?.toFixed(3)}</TableCell>
+                        {/* SOS with conditional color */}
+                        <TableCell className={`text-center font-inter font-semibold ${getSOSColor(ranking.sos)}`}>
+                          {ranking.sos?.toFixed(3)}
+                        </TableCell>
                         <TableCell className="text-center">
-                          {/* Streak rendering logic, usually with a badge */}
                           <span className="font-mono">{ranking.streak}</span>
                         </TableCell>
                         <TableCell className="text-center">
