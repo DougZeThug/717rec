@@ -45,7 +45,7 @@ const StatBreakdown = ({
   const getPowerScoreColor = (score: number) => {
     if (score >= 75) return "text-emerald-600";
     if (score >= 60) return "text-blue-600";
-    if (score >= 45) return "text-amber-600";
+    if (score >= 40) return "text-amber-600";
     return "text-red-600";
   };
 
@@ -179,7 +179,7 @@ const StatBreakdown = ({
               ariaLabel={`Close Match Losses: ${closeMatchLosses}`}
             />
             <StatItem 
-              icon={<Star size={20} />} 
+              icon={<Star size={20} className={getPowerScoreColor(powerScore)} />} 
               title="Power Score" 
               value={Number(powerScore).toFixed(1)}
               color={getPowerScoreColor(powerScore)}
