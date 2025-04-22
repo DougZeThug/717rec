@@ -43,7 +43,8 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
       <div className="flex flex-col flex-grow p-3 sm:p-4">
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline">
-            <h3 className="font-bebas uppercase tracking-wide font-bold text-base truncate pr-2 text-[#1a1a1a] dark:text-white" title={team.name}>
+            <h3 className="font-bebas uppercase tracking-wide font-bold text-lg sm:text-xl md:text-2xl truncate pr-2" 
+                style={{ letterSpacing: '0.04em' }}>
               {team.name}
             </h3>
           </Link>
@@ -89,14 +90,14 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           <StatBlock 
             label="Record" 
             value={
-              <span className="font-mono text-sm">{`${team.wins}-${team.losses}`}</span>
+              <span className="font-mono text-base text-center block">{`${team.wins}-${team.losses}`}</span>
             }
           />
           
           <StatBlock 
             label="Power Score" 
             value={
-              <span className={`font-mono text-sm ${powerScoreColor}`}>
+              <span className={`font-mono text-base text-center block ${powerScoreColor}`}>
                 {formatPowerScore(team.power_score)}
               </span>
             }

@@ -42,7 +42,8 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
         <div className="flex flex-col flex-grow p-4">
           <div className="flex justify-between items-start mb-2">
             <Link to={`/teams/${team.id}`} className="hover:underline">
-              <h3 className="font-bebas uppercase tracking-wide font-bold text-xl text-[#1a1a1a] dark:text-white">
+              <h3 className="font-bebas uppercase tracking-wide font-bold text-2xl md:text-2xl lg:text-3xl"
+                style={{ letterSpacing: '0.04em' }}>
                 {team.name}
               </h3>
             </Link>
@@ -88,32 +89,32 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <StatBlock 
               label="Record" 
               value={
-                <div className="flex items-center gap-1">
+                <div className="flex items-center justify-end gap-1">
                   <Trophy size={12} className="text-emerald-400" /> 
-                  <span className="font-mono text-sm">{team.wins}</span>
-                  <span className="mx-1 font-mono">-</span>
+                  <span className="font-mono text-base">{team.wins}</span>
+                  <span className="mx-1 font-mono text-base">-</span>
                   <X size={12} className="text-rose-400" /> 
-                  <span className="font-mono text-sm">{team.losses}</span>
+                  <span className="font-mono text-base">{team.losses}</span>
                 </div>
               }
             />
             <StatBlock 
               label="Games" 
               value={
-                <span className="font-mono text-sm">{`${team.game_wins ?? 0} - ${team.game_losses ?? 0}`}</span>
+                <span className="font-mono text-base text-right block">{`${team.game_wins ?? 0} - ${team.game_losses ?? 0}`}</span>
               }
             />
             <StatBlock 
               label="Power Score"
               value={
-                <span className={`font-mono text-sm ${powerScoreColor}`}>
+                <span className={`font-mono text-base text-right block ${powerScoreColor}`}>
                   {formatPowerScore(team.power_score)}
                 </span>
               }
             />
             <StatBlock 
               label="SOS" 
-              value={<span className="font-mono text-sm">{team.sos?.toFixed(3) || '0.000'}</span>}
+              value={<span className="font-mono text-base text-right block">{team.sos?.toFixed(3) || '0.000'}</span>}
             />
           </div>
           
