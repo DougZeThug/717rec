@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -74,10 +73,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 index < 3 ? "bg-amber-100/50 dark:bg-amber-900/30" : ""
               )}
             >
-              {/* Display overall rank */}
               {index + 1}
               
-              {/* Add division rank if available and not in division view */}
               {!showDivision && ranking.divisionRank && (
                 <span className="ml-0.5 text-[10px] text-muted-foreground opacity-80" style={{ marginTop: "-1px" }}>
                   ({ranking.divisionRank})
@@ -102,8 +99,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <span
               data-team-name="true"
               className={cn(
-                "block truncate font-semibold",
-                compactView ? "text-sm" : "text-base mb-1"
+                "block truncate font-bebas tracking-wide uppercase",
+                compactView ? "text-base" : "text-base mb-1"
               )}
               style={isLight ? { color: "#111111" } : {}}
             >

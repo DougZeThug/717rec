@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
@@ -60,7 +61,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   </div>
                 )}
                 <span
-                  className="font-inter font-semibold hover:text-blue-600 hover:underline"
+                  className="font-bebas tracking-wide uppercase text-base"
                   style={isLight ? { color: "#111111" } : {}}
                 >
                   {team.teamName}
@@ -144,7 +145,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                     </div>
                   )}
                   <span
-                    className="font-inter text-base font-semibold hover:text-blue-600 hover:underline"
+                    className="font-bebas tracking-wide uppercase text-base"
                     style={isLight ? { color: "#111111" } : {}}
                   >
                     {team.teamName}
