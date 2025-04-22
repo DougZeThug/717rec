@@ -77,15 +77,18 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
         <div key={divisionName} className="mb-8">
           {!showUnified && (
             <h3
-              className="text-lg font-medium mb-3 flex items-center font-inter"
-              style={{ 
-                color: isLight ? "#111111" : 'white',
-                fontWeight: isLight ? 700 : 400
-              }}
+              className={`
+                text-lg font-medium mb-3 flex items-center font-inter
+                ${isLight 
+                  ? 'text-gray-800 font-bold' 
+                  : 'text-white font-normal'
+                }
+              `}
             >
               <span>{divisionName}</span>{" "}
-              <span className="ml-1"
-                style={{ color: isLight ? "#444444" : "" }}>
+              <span 
+                className={`ml-1 ${isLight ? 'text-gray-600' : ''}`}
+              >
                 ({divisionRankings.length})
               </span>
             </h3>
