@@ -5,15 +5,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TransitionLink } from "@/components/transitions/TransitionLink";
 import { cn } from "@/lib/utils";
 
-/**
- * Props for showing a single row of a match game score between two teams.
- */
 interface TeamGameScoreRowProps {
   match: Match;
   teamId: string;
 }
 
-// Define a type for team details to avoid type errors
 interface TeamDetails {
   team_id?: string;
   name?: string;
@@ -22,25 +18,43 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
+// Helper function to get the number of games won from v_team_match_stats
+function getGameScoresForTeams(match: Match, teamId: string) {
+  // If stats are available, use them
+  if (match.stats && Array.isArray(match.stats)) {
+    let thisTeamStat = match.stats.find((s: any) => s.team_id === teamId);
+    let opponentStat = match.stats.find((s: any) => s.team_id !== teamId);
+
+    return {
+      homeGameWins: thisTeamStat ? thisTeamStat.games_won : 0,
+      awayGameWins: opponentStat ? opponentStat.games_won : 0,
+    };
+  }
+
+  // fallback to match.team1_game_wins, team2_game_wins
+  return {
+    homeGameWins: match.team1_game_wins ?? 0,
+    awayGameWins: match.team2_game_wins ?? 0,
+  };
+}
+
 export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamId }) => {
   // Identify teams
   const isHome = match.team1Id === teamId;
-  const homeTeam = match.team1Details || {} as TeamDetails;
-  const awayTeam = match.team2Details || {} as TeamDetails;
+  const homeTeam = match.team1Details as TeamDetails || {};
+  const awayTeam = match.team2Details as TeamDetails || {};
   const homeTeamId = match.team1Id;
   const awayTeamId = match.team2Id;
 
   // Fallbacks for labels
-  const homeName = homeTeam.name || "Unknown Team";
-  const awayName = awayTeam.name || "Unknown Team";
+  const homeName = homeTeam.name ? homeTeam.name.toUpperCase() : "UNKNOWN TEAM";
+  const awayName = awayTeam.name ? awayTeam.name.toUpperCase() : "UNKNOWN TEAM";
   const homeLogo = homeTeam.image_url || homeTeam.logo_url || "";
   const awayLogo = awayTeam.image_url || awayTeam.logo_url || "";
 
-  // Get game wins from match fields - directly use team1_game_wins and team2_game_wins
-  const homeGameWins = match.team1_game_wins ?? 0;
-  const awayGameWins = match.team2_game_wins ?? 0;
+  // Game scores: try to use stats, fallback to match fields
+  const { homeGameWins, awayGameWins } = getGameScoresForTeams(match, homeTeamId);
 
-  // Compose row
   return (
     <div className={cn(
       "flex items-center w-full justify-between gap-x-3 py-2",
@@ -51,26 +65,28 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
         <TransitionLink to={`/teams/${homeTeamId}`} className="shrink-0">
           <Avatar className="h-7 w-7 md:h-8 md:w-8">
             <AvatarImage src={homeLogo} alt={homeName} />
-            <AvatarFallback>{homeName.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="font-bebas font-bold uppercase">{homeName.charAt(0)}</AvatarFallback>
           </Avatar>
         </TransitionLink>
         <TransitionLink to={`/teams/${homeTeamId}`} className="truncate hover:underline">
-          <span className="truncate" title={homeName}>{homeName}</span>
+          <span className="truncate font-bebas font-bold uppercase tracking-wide" title={homeName}>{homeName}</span>
         </TransitionLink>
       </div>
       {/* Game score - center */}
-      <div className="flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center">
-        {homeGameWins} <span className="mx-1">–</span> {awayGameWins}
+      <div className="flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap min-w-[3ch] text-center font-mono font-medium text-base md:text-lg">
+        {homeGameWins}
+        <span className="mx-1 font-inter text-base">–</span>
+        {awayGameWins}
       </div>
       {/* Away - Right side */}
       <div className="flex items-center min-w-0 gap-x-2 flex-1 justify-end">
         <TransitionLink to={`/teams/${awayTeamId}`} className="truncate hover:underline">
-          <span className="truncate text-right" title={awayName}>{awayName}</span>
+          <span className="truncate text-right font-bebas font-bold uppercase tracking-wide" title={awayName}>{awayName}</span>
         </TransitionLink>
         <TransitionLink to={`/teams/${awayTeamId}`} className="shrink-0">
           <Avatar className="h-7 w-7 md:h-8 md:w-8">
             <AvatarImage src={awayLogo} alt={awayName} />
-            <AvatarFallback>{awayName.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="font-bebas font-bold uppercase">{awayName.charAt(0)}</AvatarFallback>
           </Avatar>
         </TransitionLink>
       </div>
