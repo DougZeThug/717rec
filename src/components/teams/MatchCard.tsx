@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,16 +23,13 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
   const opponentName = opponent?.name || "Unknown Team";
   const opponentImage = opponent?.image_url || opponent?.logo_url;
   
-  // Determine game scores based on perspective
   const isTeam1 = match.team1Id === opponentId;
   const teamGameWins = isTeam1 ? match.team2_game_wins : match.team1_game_wins;
   const opponentGameWins = isTeam1 ? match.team1_game_wins : match.team2_game_wins;
   
-  // Format game score display
   const hasGameScores = teamGameWins !== undefined && opponentGameWins !== undefined;
   const gameScoreDisplay = hasGameScores ? `${teamGameWins}-${opponentGameWins}` : '';
 
-  // CUSTOM: Always render logo as square
   const SquareLogo = ({ src, alt, fallback }: { src: string, alt: string, fallback: string }) => (
     <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
       {src ? (
@@ -61,14 +57,13 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
               to={`/teams/${opponentId}`}
               className="hover:opacity-80 transition-opacity"
             >
-              {/* SQUARE LOGO */}
               <SquareLogo src={opponentImage} alt={opponentName} fallback={opponentName.charAt(0)} />
             </TransitionLink>
             <TransitionLink
               to={`/teams/${opponentId}`}
               className="hover:underline"
             >
-              <h3 className="font-medium">{opponentName}</h3>
+              <h3 className="font-bebas uppercase tracking-wide font-normal m-0">{opponentName}</h3>
             </TransitionLink>
           </div>
           <div className="text-right">
@@ -96,4 +91,3 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
 };
 
 export default MatchCard;
-

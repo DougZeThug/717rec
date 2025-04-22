@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,7 +44,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
       : isLight ? "text-gray-600" : "text-gray-400"
   );
 
-  // Custom Avatar for square logos (override any rounded/overflow for completed matches)
   const SquareLogo = ({ src, alt, fallback }: { src: string, alt: string, fallback: string }) => (
     <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
       {src ? (
@@ -85,7 +83,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
         <div className="flex flex-col space-y-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
             <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
-              {/* SQUARE LOGO */}
               <SquareLogo src={team1Logo} alt={team1Name} fallback={team1Name.charAt(0)} />
             </TransitionLink>
             <div className="flex items-center justify-center">
@@ -100,7 +97,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
               </div>
             </div>
             <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
-              {/* SQUARE LOGO */}
               <SquareLogo src={team2Logo} alt={team2Name} fallback={team2Name.charAt(0)} />
             </TransitionLink>
           </div>
@@ -116,7 +112,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {team1IsWinner && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              <span className={getTeamStyle(team1IsWinner)}>
+              <span className={cn(
+                getTeamStyle(team1IsWinner),
+                "font-bebas uppercase tracking-wide"
+              )}>
                 ({match.team1_game_wins || 0}) {team1Name}
               </span>
             </TransitionLink>
@@ -133,7 +132,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {team2IsWinner && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              <span className={getTeamStyle(team2IsWinner)}>
+              <span className={cn(
+                getTeamStyle(team2IsWinner),
+                "font-bebas uppercase tracking-wide"
+              )}>
                 ({match.team2_game_wins || 0}) {team2Name}
               </span>
             </TransitionLink>
@@ -145,4 +147,3 @@ const MatchCard: React.FC<MatchCardProps> = ({
 };
 
 export default MatchCard;
-
