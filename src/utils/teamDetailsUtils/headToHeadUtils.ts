@@ -1,7 +1,7 @@
 
-import { Team, Match, HeadToHeadMap } from "@/types";
+import { Team, Match, HeadToHeadMap, HeadToHeadEntry } from "@/types";
 
-export const calculateHeadToHead = (teamId: string, allTeams: Team[], allMatches: Match[]) => {
+export const calculateHeadToHead = (teamId: string, allTeams: Team[], allMatches: Match[]): HeadToHeadMap => {
   const result: HeadToHeadMap = {};
   
   // Initialize records for all teams

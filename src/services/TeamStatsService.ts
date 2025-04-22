@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Match, Team } from "@/types";
+import { Match, Team, HeadToHeadMap } from "@/types";
 import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
 import { calculateSOS } from "@/utils/rankingUtils/calculateSOS";
 import { calculatePowerScore } from "@/utils/powerScore";
@@ -133,6 +133,10 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
     const previousRank = previousStats && previousStats.length > 0 ? 
       previousStats[0].current_rank : undefined;
     
+    // Convert HeadToHeadMap to a plain object for JSON storage
+    // This is the key fix - ensuring the HeadToHeadMap is properly serialized for the database
+    const headToHeadJson = JSON.parse(JSON.stringify(headToHead));
+    
     const { error: insertError } = await supabase
       .from('team_stats')
       .insert({
@@ -143,7 +147,7 @@ const updateSingleTeamStats = async (teamId: string, teams: Team[], matches: Mat
         sos,
         streak,
         previous_rank: previousRank,
-        head_to_head: headToHead,
+        head_to_head: headToHeadJson,
         snapshot_date: snapshotDate,
         power_score: powerScore
       });
