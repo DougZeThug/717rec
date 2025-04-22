@@ -111,17 +111,18 @@ export interface Ranking {
   wins: number;
   losses: number;
   winPercentage: number;
-  divisionName?: string | null;
-  sos: number;
-  streak?: string | undefined;
-  headToHead: HeadToHeadMap;
-  previousRank?: number;
-  rankChange?: number;
   gamesWon: number;
   gamesLost: number;
   gameWinPercentage: number;
+  sos: number;
   powerScore: number;
+  streak?: string;
+  rankChange?: number;
+  previousRank?: number;
+  divisionName?: string | null;
+  headToHead: Record<string, { wins: number; losses: number; }>;
   closeMatchLosses: number;
+  divisionRank?: number;
 }
 
 export interface HeadToHeadMap {

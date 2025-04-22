@@ -46,7 +46,15 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         className="font-medium"
         style={isLight ? { color: "#222222" } : {}}
       >
-        {index + 1}
+        {/* Display overall rank and division rank if available */}
+        <div className="flex items-center">
+          <span>{index + 1}</span>
+          {!showDivision && ranking.divisionRank && (
+            <span className="ml-1 text-xs text-muted-foreground opacity-80">
+              ({ranking.divisionRank})
+            </span>
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <Link 

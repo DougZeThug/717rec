@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -40,7 +41,27 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
     setExpandedTeam(expandedTeam === teamId ? null : teamId);
   };
 
+  // Sort overall rankings by selected criteria
   const sortedRankings = sortRankings(rankings, sortOptions.field, sortOptions.direction);
+  
+  // Calculate division-specific ranks
+  const rankingsWithDivisionRanks = sortedRankings.map(ranking => {
+    // Find all teams in this team's division
+    const divisionTeams = sortedRankings.filter(
+      r => r.divisionName === ranking.divisionName
+    );
+    
+    // Sort division teams by the selected criteria
+    const sortedDivisionTeams = sortRankings(divisionTeams, sortOptions.field, sortOptions.direction);
+    
+    // Find this team's position within its division (1-based index)
+    const divisionRank = sortedDivisionTeams.findIndex(r => r.teamId === ranking.teamId) + 1;
+    
+    return {
+      ...ranking,
+      divisionRank: ranking.divisionName ? divisionRank : undefined,
+    };
+  });
 
   const handleSortChange = (field: string) => {
     const newDirection: SortDirection = sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc';
@@ -56,7 +77,7 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
   if (isMobile) {
     return (
       <RankingsMobileView
-        rankings={sortedRankings}
+        rankings={rankingsWithDivisionRanks}
         expandedTeam={expandedTeam}
         toggleExpand={toggleExpand}
         sortOptions={sortOptions}
@@ -68,7 +89,7 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
 
   return (
     <RankingsDesktopView
-      rankings={sortedRankings}
+      rankings={rankingsWithDivisionRanks}
       expandedTeam={expandedTeam}
       toggleExpand={toggleExpand}
       sortOptions={sortOptions}
