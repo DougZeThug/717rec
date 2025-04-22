@@ -59,7 +59,7 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 
   const SortableHeader = ({ field, children, className }: { field: string, children: React.ReactNode, className?: string }) => (
     <TableHead 
-      className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium text-gray-800 dark:text-white ${className || ''}`}
+      className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium text-gray-800 dark:text-white font-mono ${className || ''}`}
       onClick={() => onSortChange(field)}
     >
       <div className="flex items-center justify-center">
@@ -85,16 +85,17 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
             <Table className="bg-white text-gray-800 dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 text-sm font-medium text-gray-800 dark:text-white">Rank</TableHead>
-                  <TableHead className="text-sm font-medium text-gray-800 dark:text-white">Team</TableHead>
+                  <TableHead className="w-12 text-sm font-mono font-semibold text-gray-800 dark:text-white tracking-wide">Rank</TableHead>
+                  <TableHead className="text-sm font-semibold font-oswald uppercase tracking-wide text-gray-800 dark:text-white">
+                    Team
+                  </TableHead>
                   {showUnified && (
-                    <TableHead className="text-sm font-medium text-gray-800 dark:text-white">Division</TableHead>
+                    <TableHead className="text-sm font-semibold font-oswald uppercase tracking-wide text-gray-800 dark:text-white">Division</TableHead>
                   )}
-                  <TableHead className="text-center text-sm font-medium text-gray-800 dark:text-white">
+                  <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">
                     <div className="flex items-center justify-center gap-1">
-                      <Bolt className="inline-block text-purple-300" size={16} />
-                      <span onClick={() => onSortChange('powerScore')} className="cursor-pointer">
-                        Power Score {renderSortIndicator('powerScore')}
+                      <span onClick={() => onSortChange('powerScore')} className="cursor-pointer flex items-center">
+                        <span className="mr-1 font-mono">Power Score</span> {renderSortIndicator('powerScore')}
                       </span>
                     </div>
                   </TableHead>
@@ -104,12 +105,11 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                   <SortableHeader field="gameWinPercentage" className="hidden lg:table-cell">Game %</SortableHeader>
                   <SortableHeader field="sos">
                     <div className="flex items-center gap-1 justify-center">
-                      <Scale className="inline-block text-blue-300" size={15} />
                       <span>SOS</span>
                     </div>
                   </SortableHeader>
-                  <TableHead className="text-center text-sm font-medium text-gray-800 dark:text-white">Streak</TableHead>
-                  <TableHead className="text-center text-sm font-medium text-gray-800 dark:text-white">Trend</TableHead>
+                  <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">Streak</TableHead>
+                  <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">Trend</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -117,13 +117,43 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                   const overallIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
                   return (
                     <React.Fragment key={ranking.teamId}>
-                      <RankingTableRow
-                        ranking={ranking}
-                        index={overallIndex}
-                        isExpanded={expandedTeam === ranking.teamId}
-                        onToggleExpand={() => toggleExpand(ranking.teamId)}
-                        showDivision={showUnified}
-                      />
+                      <TableRow className="font-inter">
+                        <TableCell className="font-mono font-semibold text-lg">{overallIndex + 1}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {ranking.logoUrl || ranking.imageUrl ? (
+                              <img
+                                src={ranking.logoUrl || ranking.imageUrl}
+                                alt={ranking.teamName}
+                                className="w-7 h-7 rounded-full object-cover mr-2"
+                              />
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-500 text-base mr-2">
+                                {ranking.teamName?.charAt(0) || "T"}
+                              </div>
+                            )}
+                            <span className="font-inter font-medium">{ranking.teamName}</span>
+                          </div>
+                        </TableCell>
+                        {showUnified && (
+                          <TableCell>
+                            <span className="font-inter">{ranking.divisionName}</span>
+                          </TableCell>
+                        )}
+                        <TableCell className="text-center font-mono font-semibold">{ranking.powerScore?.toFixed(2)}</TableCell>
+                        <TableCell className="text-center font-mono">{ranking.wins}-{ranking.losses}</TableCell>
+                        <TableCell className="text-center font-mono">{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
+                        <TableCell className="hidden md:table-cell text-center font-mono">{ranking.gamesWon}-{ranking.gamesLost}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-center font-mono">{(ranking.gameWinPercentage * 100).toFixed(1)}%</TableCell>
+                        <TableCell className="text-center font-mono">{ranking.sos?.toFixed(3)}</TableCell>
+                        <TableCell className="text-center">
+                          {/* Streak rendering logic, usually with a badge */}
+                          <span className="font-mono">{ranking.streak}</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {/* Trend indicator (icon/text), can style with font-mono if desired */}
+                        </TableCell>
+                      </TableRow>
                       {expandedTeam === ranking.teamId && (
                         <TableRow>
                           <TableCell colSpan={showUnified ? 11 : 10} className="bg-[#f5f5f5] dark:bg-gray-900/80 p-0 rounded-b-xl shadow-inner">

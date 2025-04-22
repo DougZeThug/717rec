@@ -19,7 +19,15 @@ export default {
 			}
 		},
 		extend: {
-			colors: {
+			fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        inter: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        oswald: ['Oswald', 'League Spartan', 'Bebas Neue', 'Arial', 'sans-serif'],
+        source: ['Source Sans Pro', 'Work Sans', 'system-ui', 'sans-serif'],
+        bebas: ['Bebas Neue', 'sans-serif'],
+      },
+      colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -70,15 +78,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				division: {
-					competitive: '#d97706',  // amber-600
-					intermediate: '#3b82f6', // blue-500 
-					recreational: '#10b981', // emerald-500
+					competitive: '#d97706',
+					intermediate: '#3b82f6',
+					recreational: '#10b981',
 				}
 			},
-      fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        bebas: ['Bebas Neue', 'sans-serif'], // Added for hero section
-      },
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import RankingsTable from "./RankingsTable";
@@ -25,9 +24,14 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <CardTitle>Complete Team Rankings</CardTitle>
+            <CardTitle
+              className="font-oswald uppercase tracking-wide text-xl sm:text-2xl !font-bold"
+              style={{ letterSpacing: "0.5px" }}
+            >
+              Complete Team Rankings
+            </CardTitle>
             <CardDescription
-              className={isLight ? "!text-[#444444] !font-medium" : "text-gray-400"} // Darkened subtitle text in light mode
+              className={isLight ? "!text-[#444444] !font-medium font-source" : "text-gray-400 font-source"}
             >
               Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
             </CardDescription>

@@ -20,11 +20,11 @@ const Footer = () => {
 
           {/* Contact Section */}
           <div className="text-center md:text-left w-full md:w-auto">
-            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center md:justify-start gap-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center md:justify-start gap-2 font-inter">
               <Mail size={16} className="text-gray-600 dark:text-gray-300" />
               <a 
                 href="mailto:info@717rec.com" 
-                className="hover:text-gray-900 dark:hover:text-white transition-colors font-medium"
+                className="hover:text-gray-900 dark:hover:text-white transition-colors font-inter font-medium"
               >
                 info@717rec.com
               </a>
@@ -33,7 +33,7 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-3 text-center text-sm text-gray-400 dark:text-gray-500">
+        <div className="mt-3 text-center text-[0.85rem] text-gray-400 dark:text-gray-500 font-source" style={{ fontSize: "0.85rem" }}>
           &copy; {currentYear} 717 Rec. All rights reserved.
         </div>
       </div>
