@@ -30,7 +30,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
             logo_url,
             divisionname
           ),
-          stats:v_team_match_stats(team_id, games_won)
+          stats:v_team_game_totals(team_id, game_wins)
         `)
         .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
         .order('date');
@@ -48,7 +48,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
       // Map database rows to Match interface with camelCase properties
       const mappedMatches = matchData.map(row => {
         // Enhanced logging to debug specific match data
-        console.log("Processing match:", row.id, "iscompleted:", row.iscompleted);
+        console.log("Processing match:", row.id, "iscompleted:", row.iscompleted, "stats:", row.stats);
         
         return {
           id: row.id,

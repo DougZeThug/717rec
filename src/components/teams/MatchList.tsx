@@ -28,6 +28,12 @@ const MatchList: React.FC<MatchListProps> = ({
     isLoading, 
     teamId,
     error: error ? "Error exists" : "No error",
+    errorDetails: error ? {
+      message: error.message,
+      code: error.code,
+      hint: error.hint,
+      details: error.details
+    } : "No error details",
     matchSample: matches?.length > 0 ? {
       id: matches[0].id,
       iscompleted: matches[0].iscompleted,
@@ -55,6 +61,9 @@ const MatchList: React.FC<MatchListProps> = ({
           <AlertTriangle className="mx-auto h-6 w-6 text-red-500 mb-2" />
           <p className="text-sm text-red-600 dark:text-red-400">
             Error loading matches. Please try again later.
+          </p>
+          <p className="text-xs text-red-500 dark:text-red-300 mt-1">
+            Error: {error.message || "Unknown error"}
           </p>
         </div>
       </div>

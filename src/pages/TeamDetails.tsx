@@ -36,10 +36,18 @@ const TeamDetails = () => {
     upcomingMatches: upcomingMatches?.length || 0,
     isLoadingMatches,
     hasError: !!matchesError,
+    errorDetails: matchesError ? {
+      message: matchesError.message,
+      code: matchesError.code,
+      hint: matchesError.hint,
+      details: matchesError.details
+    } : "No error details",
     sampleMatch: pastMatches?.length > 0 ? {
       id: pastMatches[0].id,
       iscompleted: pastMatches[0].iscompleted ?? false,
-      hasStats: Boolean(pastMatches[0].stats)
+      hasStats: Boolean(pastMatches[0].stats),
+      statsSample: pastMatches[0].stats?.length > 0 ? 
+        JSON.stringify(pastMatches[0].stats[0]).substring(0, 100) : "No stats"
     } : "No matches"
   });
 

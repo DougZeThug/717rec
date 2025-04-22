@@ -18,16 +18,20 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
-// Helper function to get the number of games won from v_team_match_stats
+// Helper function to get the number of games won from team stats
 function getGameScoresForTeams(match: Match, teamId: string) {
   // If stats are available, use them
   if (match.stats && Array.isArray(match.stats) && match.stats.length > 0) {
     const thisTeamStat = match.stats.find((s) => s.team_id === teamId);
     const opponentStat = match.stats.find((s) => s.team_id !== teamId);
 
+    // Check if stats have games_won or game_wins field
+    const thisTeamGames = thisTeamStat ? (thisTeamStat.games_won ?? thisTeamStat.game_wins ?? 0) : 0;
+    const opponentGames = opponentStat ? (opponentStat.games_won ?? opponentStat.game_wins ?? 0) : 0;
+
     return {
-      homeGameWins: thisTeamStat ? thisTeamStat.games_won : 0,
-      awayGameWins: opponentStat ? opponentStat.games_won : 0,
+      homeGameWins: thisTeamGames,
+      awayGameWins: opponentGames,
     };
   }
 
