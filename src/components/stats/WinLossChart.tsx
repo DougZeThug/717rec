@@ -45,11 +45,14 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
     const dataClone = [...data];
     
     // Process and sort the data
-    return dataClone
-      .map(team => ({
+    const processedData = dataClone
+      .map((team, index) => ({
         ...team,
         // Force recalculation of win percentage to ensure consistency
-        calculatedWinPct: team.wins + team.losses === 0 ? 0 : team.wins / (team.wins + team.losses)
+        calculatedWinPct: team.wins + team.losses === 0 ? 0 : team.wins / (team.wins + team.losses),
+        // Add displayName and sortIndex to ensure correct ordering
+        displayName: team.name,
+        sortIndex: index // Store original position
       }))
       .sort((a, b) => {
         // Primary sort: win percentage (descending)
@@ -67,13 +70,24 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
       })
       // Limit to chartLimit
       .slice(0, chartLimit);
+      
+    // Create an array with displayKeys as ordered names
+    return processedData;
   }, [data, chartLimit]);
 
   // Log sorted data to confirm ordering
   console.log("Win-Loss Chart Sorted Data:", sortedData.map(team => ({
-    name: team.name,
+    name: team.displayName,
     record: `${team.wins}-${team.losses}`,
     winPct: team.calculatedWinPct.toFixed(3)
+  })));
+
+  // Final verification log before rendering
+  console.log("Final sorted data passed to BarChart", sortedData.map(t => ({ 
+    name: t.displayName, 
+    wins: t.wins, 
+    losses: t.losses, 
+    pct: t.calculatedWinPct 
   })));
 
   // Custom X-axis tick with truncation and tooltip
@@ -141,7 +155,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
       </div>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={sortedData} /* Using the explicitly sorted data */
+          data={sortedData}
           margin={{
             top: 8,
             right: 14,
@@ -154,7 +168,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
         >
           <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
           <XAxis
-            dataKey="name"
+            dataKey="displayName"
             interval={0}
             height={isMobile ? 30 : 34}
             tickLine={false}
