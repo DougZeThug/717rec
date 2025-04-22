@@ -20,9 +20,10 @@ const SORT_MODES = [
 
 interface TeamsContainerProps {
   displayMode: DisplayMode;
+  viewMode: 'grid' | 'list';
 }
 
-const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode }) => {
+const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }) => {
   const { 
     teams, 
     isLoading, 
@@ -38,7 +39,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode }) => {
   } = useTeamManagement();
   
   const { divisions } = useDivisions();
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
 
@@ -151,7 +151,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode }) => {
       </AnimatePresence>
       <AnimatePresence mode="wait">
         <motion.div
-          key={`${viewMode}-${displayMode}-${sortMode}`}
+          key={`${displayMode}-${sortMode}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

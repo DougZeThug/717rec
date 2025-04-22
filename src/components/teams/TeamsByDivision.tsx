@@ -46,6 +46,27 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   const nonEmptyDivisions = Object.keys(teamsByDivision)
     .filter(divId => teamsByDivision[divId].length > 0);
 
+  // Re-sort teams in each division appropriately
+  const sortedTeamsByDivision = useMemo(() => {
+    const sorted: Record<string, Team[]> = {};
+    for (const divId of Object.keys(teamsByDivision)) {
+      const divisionTeams = teamsByDivision[divId] || [];
+      
+      if (sortMode === "alpha") {
+        // Sort alphabetically by team name
+        sorted[divId] = [...divisionTeams].sort((a, b) => 
+          a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        );
+      } else {
+        // Sort by power_score (descending)
+        sorted[divId] = [...divisionTeams].sort((a, b) => 
+          (b.power_score ?? 0) - (a.power_score ?? 0)
+        );
+      }
+    }
+    return sorted;
+  }, [teamsByDivision, sortMode]);
+
   if (nonEmptyDivisions.length === 0) {
     return (
       <div className="text-center py-12">
@@ -78,7 +99,7 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
       </div>
 
       {nonEmptyDivisions.map(divisionId => {
-        const divisionTeams = teamsByDivision[divisionId];
+        const divisionTeams = sortedTeamsByDivision[divisionId];
         const divisionName = getDivisionName(divisionId === "unassigned" ? undefined : divisionId);
         const isExpanded = expandedDivision === divisionId;
         

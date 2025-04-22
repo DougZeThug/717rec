@@ -34,8 +34,8 @@ const TeamsPageContainer: React.FC = () => {
           </div>
         </div>
       </div>
-      <TeamsContainer displayMode={displayMode} />
-    </>
+      <TeamsContainer displayMode={displayMode} viewMode={viewMode} />
+    </div>
   );
 };
 
