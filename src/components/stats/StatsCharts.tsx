@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import WinLossChart from "./WinLossChart";
@@ -82,4 +82,3 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
 };
 
 export default StatsCharts;
-
