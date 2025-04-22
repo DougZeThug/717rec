@@ -21,9 +21,9 @@ interface TeamDetails {
 // Helper function to get the number of games won from v_team_match_stats
 function getGameScoresForTeams(match: Match, teamId: string) {
   // If stats are available, use them
-  if (match.stats && Array.isArray(match.stats)) {
-    let thisTeamStat = match.stats.find((s) => s.team_id === teamId);
-    let opponentStat = match.stats.find((s) => s.team_id !== teamId);
+  if (match.stats && Array.isArray(match.stats) && match.stats.length > 0) {
+    const thisTeamStat = match.stats.find((s) => s.team_id === teamId);
+    const opponentStat = match.stats.find((s) => s.team_id !== teamId);
 
     return {
       homeGameWins: thisTeamStat ? thisTeamStat.games_won : 0,
@@ -32,28 +32,35 @@ function getGameScoresForTeams(match: Match, teamId: string) {
   }
 
   // fallback to match.team1_game_wins, team2_game_wins
-  return {
-    homeGameWins: match.team1_game_wins ?? 0,
-    awayGameWins: match.team2_game_wins ?? 0,
-  };
+  if (match.team1Id === teamId) {
+    return {
+      homeGameWins: match.team1_game_wins ?? 0,
+      awayGameWins: match.team2_game_wins ?? 0,
+    };
+  } else {
+    return {
+      homeGameWins: match.team2_game_wins ?? 0,
+      awayGameWins: match.team1_game_wins ?? 0,
+    };
+  }
 }
 
 export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamId }) => {
   // Identify teams
   const isHome = match.team1Id === teamId;
-  const homeTeam = match.team1Details as TeamDetails || {};
-  const awayTeam = match.team2Details as TeamDetails || {};
-  const homeTeamId = match.team1Id;
-  const awayTeamId = match.team2Id;
+  const homeTeam = isHome ? match.team1Details as TeamDetails : match.team2Details as TeamDetails;
+  const awayTeam = isHome ? match.team2Details as TeamDetails : match.team1Details as TeamDetails;
+  const homeTeamId = isHome ? match.team1Id : match.team2Id;
+  const awayTeamId = isHome ? match.team2Id : match.team1Id;
 
   // Fallbacks for labels
-  const homeName = homeTeam.name ? homeTeam.name.toUpperCase() : "UNKNOWN TEAM";
-  const awayName = awayTeam.name ? awayTeam.name.toUpperCase() : "UNKNOWN TEAM";
-  const homeLogo = homeTeam.image_url || homeTeam.logo_url || "";
-  const awayLogo = awayTeam.image_url || awayTeam.logo_url || "";
+  const homeName = homeTeam?.name ? homeTeam.name.toUpperCase() : "UNKNOWN TEAM";
+  const awayName = awayTeam?.name ? awayTeam.name.toUpperCase() : "UNKNOWN TEAM";
+  const homeLogo = homeTeam?.image_url || homeTeam?.logo_url || "";
+  const awayLogo = awayTeam?.image_url || awayTeam?.logo_url || "";
 
   // Game scores: try to use stats, fallback to match fields
-  const { homeGameWins, awayGameWins } = getGameScoresForTeams(match, homeTeamId);
+  const { homeGameWins, awayGameWins } = getGameScoresForTeams(match, teamId);
 
   return (
     <div className={cn(

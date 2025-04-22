@@ -23,13 +23,13 @@ export interface Match {
   id: string;
   team1Id: string;
   team2Id: string;
-  team1Score?: number | null;
-  team2Score?: number | null;
-  date?: string;
+  team1Score?: number;
+  team2Score?: number;
+  date: string;
   location?: string;
-  iscompleted?: boolean;
-  winnerId?: string | null;
-  loserId?: string | null;
+  iscompleted: boolean;
+  winnerId?: string;
+  loserId?: string;
   round_number?: number;
   position?: number;
   bracket_id?: string;
@@ -37,27 +37,14 @@ export interface Match {
   next_match_id?: string;
   next_loser_match_id?: string;
   best_of?: number;
+  created_at?: string;
   team1_game_wins?: number;
   team2_game_wins?: number;
-  created_at?: string;
-  team1Details?: {
-    team_id: string;
-    name: string;
-    image_url: string | null;
-    logo_url: string | null;
-    divisionName: string | null;
-  } | null;
-  team2Details?: {
-    team_id: string;
-    name: string;
-    image_url: string | null;
-    logo_url: string | null;
-    divisionName: string | null;
-  } | null;
+  team1Details?: any;
+  team2Details?: any;
   stats?: Array<{
     team_id: string;
     games_won: number;
-    [key: string]: any;
   }>;
 }
 

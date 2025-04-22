@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,7 +16,7 @@ const TeamDetails = () => {
   const navigate = useNavigate();
   
   const { team, isLoading } = useTeamDetails(teamId);
-  const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
+  const { pastMatches, upcomingMatches, isLoadingMatches, error: matchesError } = useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
   
   const teamRanking = rankings?.find(r => r.teamId === teamId);
@@ -29,6 +30,13 @@ const TeamDetails = () => {
     win_percentage: team.win_percentage || 0,
     game_win_percentage: team.game_win_percentage || 0
   } : "Loading team...");
+
+  console.log("Match data status:", {
+    pastMatches: pastMatches?.length || 0,
+    upcomingMatches: upcomingMatches?.length || 0,
+    isLoadingMatches,
+    hasError: !!matchesError
+  });
 
   if (isLoading || isLoadingMatches) {
     return (
@@ -89,6 +97,7 @@ const TeamDetails = () => {
         isLoading={isLoadingMatches}
         teamId={teamId || ''}
         isPast={true}
+        error={matchesError}
       />
     </div>
   );
