@@ -14,62 +14,62 @@ interface TeamStatsProps {
   powerScore?: number;
 }
 
-const TeamStats: React.FC<TeamStatsProps> = ({ 
-  wins, 
-  losses, 
-  gameWins, 
-  gameLosses, 
-  winPercentage, 
+const labelClass =
+  "font-inter uppercase text-xs sm:text-sm tracking-widest text-gray-500 dark:text-gray-400";
+const valueClass =
+  "font-mono text-base text-gray-800 dark:text-white text-center";
+
+const TeamStats: React.FC<TeamStatsProps> = ({
+  wins,
+  losses,
+  gameWins,
+  gameLosses,
+  winPercentage,
   gameWinPercentage,
   sos,
   closeMatchLosses,
-  powerScore 
+  powerScore,
 }) => {
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1">
-            <h3 className="text-sm font-medium text-gray-500">Match Record</h3>
-            <p className="text-2xl font-bold text-emerald-600">
+            <h3 className={labelClass}>Match Record</h3>
+            <p className={`${valueClass}`}>
               {wins}-{losses}
             </p>
           </div>
-          
           <div className="space-y-1">
-            <h3 className="text-sm font-medium text-gray-500">Win Percentage</h3>
-            <p className="text-2xl font-bold">
+            <h3 className={labelClass}>Win Percentage</h3>
+            <p className={valueClass}>
               {winPercentage}
             </p>
           </div>
-          
           <div className="space-y-1">
-            <h3 className="text-sm font-medium text-gray-500">Game Record</h3>
-            <p className="text-2xl font-bold text-blue-600">
+            <h3 className={labelClass}>Game Record</h3>
+            <p className={valueClass}>
               {gameWins}-{gameLosses}
             </p>
           </div>
-          
           <div className="space-y-1">
-            <h3 className="text-sm font-medium text-gray-500">Game Win %</h3>
-            <p className="text-2xl font-bold">
+            <h3 className={labelClass}>Game Win %</h3>
+            <p className={valueClass}>
               {gameWinPercentage}
             </p>
           </div>
-          
           {sos !== undefined && (
             <div className="space-y-1">
-              <h3 className="text-sm font-medium text-gray-500">Strength of Schedule</h3>
-              <p className="text-2xl font-bold text-indigo-600">
+              <h3 className={labelClass}>Strength of Schedule</h3>
+              <p className={`${valueClass} text-indigo-600 dark:text-indigo-400`}>
                 {sos.toFixed(3)}
               </p>
             </div>
           )}
-          
           {powerScore !== undefined && (
             <div className="space-y-1">
-              <h3 className="text-sm font-medium text-gray-500">Power Score</h3>
-              <p className="text-2xl font-bold text-purple-600">
+              <h3 className={labelClass}>Power Score</h3>
+              <p className={`${valueClass} text-purple-600 dark:text-purple-400`}>
                 {powerScore.toFixed(1)}
               </p>
             </div>

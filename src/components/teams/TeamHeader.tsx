@@ -23,13 +23,14 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
           className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl object-contain shadow-md mx-auto"
         />
       </div>
-      
       <div className="text-center">
-        <h1 className="text-3xl font-bold">{team.name}</h1>
-        
+        {/* Team Name with Bebas Neue, all caps, tracking-wide, no bold */}
+        <h1 className="font-bebas uppercase tracking-wide text-3xl sm:text-4xl font-normal text-gray-900 dark:text-white">
+          {team.name}
+        </h1>
         <div className="flex flex-wrap justify-center items-center gap-2 mt-2">
           {team.divisionName && (
-            <Badge variant="outline" className="font-medium">
+            <Badge variant="outline" className="font-inter uppercase font-medium tracking-widest text-xs sm:text-sm py-1 px-3">
               {team.divisionName}
             </Badge>
           )}

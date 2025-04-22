@@ -59,7 +59,6 @@ const StatBreakdown = ({
 
   const renderRankChange = () => {
     if (!rankChange) return null;
-    
     if (rankChange > 0) {
       return (
         <span className="text-green-500 text-sm font-medium inline-flex items-center ml-2">
@@ -73,20 +72,23 @@ const StatBreakdown = ({
         </span>
       );
     }
-    
     return null;
   };
 
-  const StatItem = ({ 
-    icon, 
-    title, 
-    value, 
+  const labelClass = "font-inter uppercase text-xs sm:text-sm tracking-widest text-muted-foreground";
+  const statClass = "font-mono text-base text-gray-800 dark:text-white";
+  const statHighlight = "text-xl sm:text-2xl";
+
+  const StatItem = ({
+    icon,
+    title,
+    value,
     color,
     isHighlighted = false,
     ariaLabel
-  }: { 
-    icon: React.ReactNode; 
-    title: string; 
+  }: {
+    icon: React.ReactNode;
+    title: string;
     value: string | number;
     color?: string;
     isHighlighted?: boolean;
@@ -104,10 +106,11 @@ const StatBreakdown = ({
         {icon}
       </div>
       <dl>
-        <dt className="text-sm text-muted-foreground font-medium">{title}</dt>
+        <dt className={labelClass}>{title}</dt>
         <dd className={cn(
-          "text-lg font-semibold",
-          isHighlighted && "text-xl"
+          statClass,
+          isHighlighted && statHighlight,
+          !isMobile && "text-center"
         )}>{value}</dd>
       </dl>
     </div>
@@ -128,7 +131,6 @@ const StatBreakdown = ({
           </div>
         )}
       </div>
-      
       <Card>
         <CardContent className="pt-6">
           <div className={`grid ${isMobile ? 'grid-cols-1 gap-1' : 'grid-cols-2 md:grid-cols-3 gap-4'}`}>
@@ -179,10 +181,10 @@ const StatBreakdown = ({
             <StatItem 
               icon={<Star size={20} />} 
               title="Power Score" 
-              value={powerScore.toFixed(1)}
+              value={Number(powerScore).toFixed(1)}
               color={getPowerScoreColor(powerScore)}
               isHighlighted
-              ariaLabel={`Power Score: ${powerScore.toFixed(1)}`}
+              ariaLabel={`Power Score: ${Number(powerScore).toFixed(1)}`}
             />
           </div>
         </CardContent>
