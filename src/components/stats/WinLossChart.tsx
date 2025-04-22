@@ -106,7 +106,9 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
                   fontSize: xAxisFontSize,
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 500,
-                  wordBreak: "break-all" // helps prevent label overflow
+                  // Remove the wordBreak property which is causing the TypeScript error
+                  // Instead we'll use width control and text overflow handling
+                  style: { textOverflow: 'ellipsis', overflow: 'hidden' }
                 }}
                 minTickGap={2}
               />
@@ -133,4 +135,3 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
-
