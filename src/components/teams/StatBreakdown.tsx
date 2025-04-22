@@ -1,11 +1,11 @@
-
 import {
   Trophy,
   Percent,
   BarChart2,
   ShieldAlert,
   Star,
-  Award
+  Award,
+  Activity
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -42,15 +42,13 @@ const StatBreakdown = ({
 }: StatBreakdownProps) => {
   const isMobile = useIsMobile();
 
-  // Determine the power score color based on value
   const getPowerScoreColor = (score: number) => {
     if (score >= 75) return "text-emerald-600";
     if (score >= 60) return "text-blue-600";
     if (score >= 45) return "text-amber-600";
     return "text-red-600";
   };
-  
-  // Get win percentage color
+
   const getWinPercentageColor = (percentage: string) => {
     const value = parseFloat(percentage);
     if (value >= 75) return "text-emerald-600";
@@ -59,7 +57,6 @@ const StatBreakdown = ({
     return "text-red-600";
   };
 
-  // Rank change display
   const renderRankChange = () => {
     if (!rankChange) return null;
     
@@ -119,7 +116,9 @@ const StatBreakdown = ({
   return (
     <div className="mt-8">
       <div className="mb-4">
-        <h2 className="text-xl font-bold inline-flex items-center">📊 Stat Breakdown</h2>
+        <h2 className="text-xl font-bold inline-flex items-center">
+          <Activity size={24} className="mr-2" /> Stat Breakdown
+        </h2>
         {rank && totalTeams && (
           <div className="mt-1 flex items-center">
             <span className="text-sm font-medium">
