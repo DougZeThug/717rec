@@ -65,9 +65,9 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <TableCell>
         <Link 
           to={`/teams/${ranking.teamId}`}
-          className="hover:text-blue-600 hover:underline"
+          className="font-bebas tracking-wide uppercase hover:text-blue-600 hover:underline"
           onClick={(e) => e.stopPropagation()}
-          style={isLight ? { color: "#111111", fontWeight: 600 } : {}}
+          style={isLight ? { color: "#111111" } : {}}
         >
           {ranking.teamName}
         </Link>
