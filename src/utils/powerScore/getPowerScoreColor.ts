@@ -5,8 +5,8 @@
 export const getPowerScoreColor = (powerScore: number | undefined): string => {
   if (powerScore === undefined) return 'text-gray-500';
   
-  if (powerScore >= 80) return 'text-emerald-600';
-  if (powerScore >= 70) return 'text-blue-600';
-  if (powerScore >= 50) return 'text-amber-600';
-  return 'text-red-600';
+  if (powerScore >= 75) return 'text-green-600';
+  if (powerScore >= 60) return 'text-blue-500';
+  if (powerScore >= 40) return 'text-orange-500';
+  return 'text-red-500';
 };

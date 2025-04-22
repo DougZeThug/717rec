@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Table,
@@ -18,6 +17,7 @@ import { PowerScoreTooltip } from "@/components/shared/PowerScoreTooltip";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "next-themes";
 import { getSosColor } from "@/utils/powerScore/getSosColor";
+import { getPowerScoreColor } from "@/utils/powerScore";
 
 interface RankingsDesktopViewProps {
   rankings: Ranking[];
