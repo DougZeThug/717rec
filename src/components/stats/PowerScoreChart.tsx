@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell, Legend,
@@ -20,7 +19,6 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  // Base colors for consistent theming
   const baseTextColor = isLight ? '#111111' : '#ffffff';
   const axisLineColor = isLight ? '#cccccc' : '#444444';
   const tickColor = isLight ? '#222222' : '#dddddd';
@@ -137,4 +135,3 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
 };
 
 export default PowerScoreChart;
-

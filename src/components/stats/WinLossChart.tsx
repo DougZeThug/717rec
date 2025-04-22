@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -28,7 +27,6 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const isDark = resolvedTheme === "dark";
   const isLight = resolvedTheme === "light";
 
-  // Base colors for consistent theming
   const baseTextColor = isLight ? '#111111' : '#ffffff';
   const axisLineColor = isLight ? '#cccccc' : '#444444';
   const tickColor = isLight ? '#222222' : '#dddddd';
@@ -40,7 +38,6 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
-  // Custom tooltip with theme-aware colors
   const CustomWinLossTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
     return (
@@ -119,4 +116,3 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
-
