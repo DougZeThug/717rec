@@ -29,10 +29,10 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     const { x, y, width, value } = props;
     return (
       <text
-        x={x + width + 5}
-        y={y + 15}
+        x={x + width + 6}
+        y={y + 14}
         fill={isDark ? "#e5e7eb" : "#334155"}
-        fontSize={12}
+        fontSize={11}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
         fontWeight="500"
@@ -55,12 +55,12 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   };
 
   return (
-    <div className="w-full h-[350px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
+    <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           layout="vertical"
           data={data}
-          margin={{ top: 5, right: 60, left: 60, bottom: 5 }}
+          margin={{ top: 5, right: 45, left: 40, bottom: 5 }}
           style={{
             fontFamily: "'Inter', sans-serif",
           }}
@@ -72,19 +72,19 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             stroke="#64748b"
             tick={{
               fill: isDark ? "#e5e7eb" : "#334155",
-              fontSize: 12,
+              fontSize: 11,
               fontFamily: "'Inter', sans-serif"
             }}
           />
           <YAxis
             type="category"
             dataKey="name"
-            width={80}
+            width={68}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
             stroke="#64748b"
             tick={{
               fill: isDark ? "#e5e7eb" : "#334155",
-              fontSize: 12,
+              fontSize: 11,
               fontFamily: "'Inter', sans-serif"
             }}
           />

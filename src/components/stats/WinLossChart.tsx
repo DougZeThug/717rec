@@ -48,15 +48,15 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   };
 
   return (
-    <div className="w-full h-[350px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
+    <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
           margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: isMobile ? 90 : 60,
+            top: 10,
+            right: 15,
+            left: 8,
+            bottom: isMobile ? 60 : 45,
           }}
           style={{
             fontFamily: "'Inter', sans-serif",
@@ -65,14 +65,14 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
           <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
           <XAxis
             dataKey="name"
-            angle={-45}
+            angle={-36}
             textAnchor="end"
-            height={isMobile ? 80 : 70}
+            height={isMobile ? 55 : 45}
             interval={0}
             stroke="#64748b"
             tick={{
               fill: isDark ? "#e5e7eb" : "#334155",
-              fontSize: isMobile ? 13 : 12,
+              fontSize: 11,
               fontFamily: "'Inter', sans-serif"
             }}
           />
@@ -80,7 +80,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             stroke="#64748b"
             tick={{
               fill: isDark ? "#e5e7eb" : "#334155",
-              fontSize: isMobile ? 13 : 12,
+              fontSize: 11,
               fontFamily: "'Inter', sans-serif"
             }}
           />
@@ -88,7 +88,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
           <Legend
             wrapperStyle={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: isMobile ? "13px" : "12px"
+              fontSize: "12px"
             }}
             formatter={(value) => (
               <span className="text-gray-700 dark:text-gray-300 font-medium">{value}</span>

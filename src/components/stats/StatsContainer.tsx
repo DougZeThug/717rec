@@ -1,17 +1,10 @@
 
 import React, { useRef } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import { Match } from "@/types";
 import { ArrowDown } from "lucide-react";
-import StatsHeader from "@/components/stats/StatsHeader";
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards";
 import StatsCharts from "@/components/stats/StatsCharts";
 import StatsLoadingState from "./StatsLoadingState";
@@ -29,7 +22,8 @@ interface StatsContainerProps {
 
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
   const [selectedDivision, setSelectedDivision] = React.useState<string | null>(null);
-  const { divisions, isLoading: isLoadingDivisions } = useDivisions();
+  // The division dropdown/header will be removed per new design (see below)
+  // const { divisions, isLoading: isLoadingDivisions } = useDivisions();
   const { 
     data: teams, 
     isLoading: isLoadingTeams, 
@@ -42,13 +36,11 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
 
-  const isLoading = isLoadingTeams || isLoadingDivisions || isLoadingMatches || isLoadingRankings;
+  const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
 
-  const handleDivisionChange = (value: string) => {
-    setSelectedDivision(value === "all" ? null : value);
-  };
-  
+  // No division dropdown anymore on /stats
+
   const scrollToFullRankings = () => {
     if (fullRankingsRef.current) {
       fullRankingsRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -65,7 +57,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 
   const chartLimit = isMobile ? 5 : 8;
   const compactLimit = isMobile ? 5 : 5;
-  
+
   const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
     id: team.teamId,
     name: team.teamName,
@@ -78,31 +70,38 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     imageUrl: team.imageUrl
   }));
 
+  // Update: tighter, consistent background for stats sections
   const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
-  
+
   return (
-    <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent">
-      <StatsHeader 
-        onDivisionChange={handleDivisionChange} 
-        divisions={divisions || []} 
-      />
-      <div className="font-inter mt-2">
+    <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent px-2 sm:px-4">
+      {/* Main header as requested (Oswald, uppercase, tight spacing) */}
+      <div className="mt-2 mb-1">
+        <h1 className="font-oswald text-3xl sm:text-4xl uppercase font-semibold tracking-wide text-cornhole-navy mb-1 sm:mb-2" style={{ letterSpacing: ".05em" }}>
+          Team Statistics
+        </h1>
+      </div>
+      <div className="font-inter">
         {rankings.length > 0 ? (
           <>
-            <Card className={`mb-6 ${cardBg} p-0`}>
-              <CardHeader className="pb-2 rounded-t-xl" style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
-                <CardTitle className="font-bold text-[1.15rem] sm:text-xl text-[#1a1a1a] dark:text-white">Current Standings</CardTitle>
-                <CardDescription className="text-[#333] dark:text-gray-400">
+            {/* Current Standings */}
+            <Card className={`mb-4 ${cardBg} p-0`}>
+              <CardHeader className="pb-1.5 rounded-t-xl"
+                style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
+                <CardTitle className="font-semibold text-lg sm:text-xl font-inter tracking-wide text-[#1a1a1a] dark:text-white uppercase" style={{ letterSpacing: ".03em" }}>
+                  Current Standings
+                </CardTitle>
+                <CardDescription className="text-[#333] dark:text-gray-400 font-light font-inter mt-1 mb-0">
                   Top {compactLimit} teams based on performance
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-6 pt-2 sm:pt-6">
+              <CardContent className="p-4 pt-1 sm:pt-4">
                 <CompactStandings rankings={rankings.slice(0, compactLimit)} />
-                <div className="mt-4 text-center">
-                  <Button 
+                <div className="mt-3 text-center">
+                  <Button
                     onClick={scrollToFullRankings}
-                    variant="outline" 
-                    className="flex items-center gap-2 rounded-lg px-6 py-3 font-inter font-semibold bg-white text-[#1a1a1a] hover:bg-[#f0f0f0] border border-[#e0e0e0] dark:bg-transparent dark:text-white dark:border-gray-700"
+                    variant="outline"
+                    className="flex items-center gap-2 rounded-lg px-5 py-2 font-inter font-semibold bg-white text-[#1a1a1a] hover:bg-[#f0f0f0] border border-[#e0e0e0] dark:bg-transparent dark:text-white dark:border-gray-700 text-base"
                   >
                     View Full Standings
                     <ArrowDown className="h-4 w-4" />
@@ -111,12 +110,17 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
               </CardContent>
             </Card>
             
-            <div className="mb-8">
-              <h2 className="text-[1.12rem] font-bold mb-4 text-[#1a1a1a] dark:text-white">League Highlights</h2>
+            {/* Tight spacing between "Current Standings", League Highlights, and Charts */}
+            <div className="mb-5">
+              <h2 className="font-inter text-lg sm:text-xl font-semibold tracking-wide text-[#1a1a1a] dark:text-white mb-1 uppercase" style={{ letterSpacing: ".03em" }}>
+                League Highlights
+              </h2>
               <StatsSummaryCards rankings={rankings} />
             </div>
 
-            <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} />
+            <div className="mb-4">
+              <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} />
+            </div>
 
             <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
               <FullRankings rankings={rankings} />
@@ -155,3 +159,4 @@ import { useTeamRankings } from "@/hooks/useTeamRankings";
 import CompactStandings from "@/components/stats/CompactStandings";
 
 export default StatsContainer;
+

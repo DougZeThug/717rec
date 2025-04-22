@@ -12,7 +12,7 @@ interface StatsSummaryCardsProps {
   theme?: string;
 }
 
-const iconSize = 22;
+const iconSize = 18; // Slightly smaller for tighter grid
 
 const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const isMobile = useIsMobile();
@@ -64,56 +64,80 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const highestSOS = getHighestSOS();
   const highestPowerScore = getHighestPowerScore();
 
-  const cardBase = "flex flex-row items-center gap-3 py-5 px-4 sm:px-5 rounded-xl font-inter";
-  const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none shadow-sm";
-  const titleColor = "text-[#1a1a1a] dark:text-white";
-  const descriptionColor = "text-gray-600 dark:text-gray-400";
-  const greenNumber = "text-green-700 dark:text-green-300";
-  const blueNumber = "text-blue-700 dark:text-blue-300";
-  const purpleNumber = "text-purple-700 dark:text-purple-300";
-  const yellowNumber = "text-amber-600 dark:text-amber-500";
+  // Update: bg-muted card style, gap-2 or gap-3, even tighter padding
+  const cardBase = "flex flex-row items-center gap-2 sm:gap-3 py-3 px-2 sm:px-3 rounded-xl font-inter shadow-sm bg-muted border";
+  const titleLabel = "uppercase tracking-widest text-xs font-medium text-gray-700 dark:text-gray-300 font-inter";
+  const statVal = "font-mono text-lg sm:text-xl font-extrabold";
+  const descriptionColor = "text-gray-500 dark:text-gray-400 text-xs font-medium";
+
+  // Color coding for highlight values
+  const getColorFor = (type: string, value: number) => {
+    if (type === "power") {
+      if (value >= 75) return "text-green-600";
+      if (value >= 60) return "text-blue-500";
+      if (value >= 40) return "text-orange-500";
+      return "text-red-500";
+    }
+    if (type === "sos") {
+      if (value >= 75) return "text-green-600";
+      if (value >= 60) return "text-blue-500";
+      if (value >= 40) return "text-orange-500";
+      return "text-red-500";
+    }
+    if (type === "win" || type === "percentage") {
+      if (value >= 75) return "text-green-600";
+      if (value >= 60) return "text-blue-500";
+      if (value >= 40) return "text-orange-500";
+      return "text-red-500";
+    }
+    return "";
+  };
 
   return (
-    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Card className={`${cardBase} ${cardBg}`}>
-        <div className="flex items-center justify-center bg-cornhole-green/15 rounded-full w-12 h-12 mr-2">
+    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+      <Card className={cardBase}>
+        <div className="flex items-center justify-center bg-cornhole-green/15 rounded-full w-9 h-9 mr-2">
           <Trophy size={iconSize} className="text-amber-500" />
         </div>
         <div>
-          <CardTitle className={`text-base font-bold mb-0 ${titleColor}`}>Total Teams</CardTitle>
-          <div className={`font-extrabold text-xl text-cornhole-green`}>{rankings ? rankings.length : 0}</div>
+          <CardTitle className={titleLabel}>Total Teams</CardTitle>
+          <div className="font-mono text-lg font-extrabold text-cornhole-green">{rankings ? rankings.length : 0}</div>
         </div>
       </Card>
-      <Card className={`${cardBase} ${cardBg}`}>
-        <div className="flex items-center justify-center bg-green-900/15 rounded-full w-12 h-12 mr-2">
+      <Card className={cardBase}>
+        <div className="flex items-center justify-center bg-green-900/15 rounded-full w-9 h-9 mr-2">
           <Star size={iconSize} className="text-green-400" />
         </div>
         <div>
-          <CardTitle className={`text-base font-bold mb-0 ${titleColor}`}>Highest Win %</CardTitle>
-          <div className={`font-extrabold text-xl ${greenNumber}`}>{highestWinPercentage.percentage}%</div>
-          <div className={`text-xs ${descriptionColor} font-light`}>{highestWinPercentage.teamName}</div>
+          <CardTitle className={titleLabel}>Highest Win %</CardTitle>
+          <div className={`${statVal} ${getColorFor("percentage", Number(highestWinPercentage.percentage))}`}>
+            {highestWinPercentage.percentage}%
+          </div>
+          <div className={descriptionColor}>{highestWinPercentage.teamName}</div>
         </div>
       </Card>
-      <Card className={`${cardBase} ${cardBg}`}>
-        <div className="flex items-center justify-center bg-blue-900/15 rounded-full w-12 h-12 mr-2">
+      <Card className={cardBase}>
+        <div className="flex items-center justify-center bg-blue-900/15 rounded-full w-9 h-9 mr-2">
           <Scale size={iconSize} className="text-blue-400" />
         </div>
         <div>
-          <CardTitle className={`text-base font-bold mb-0 ${titleColor}`}>Highest SOS</CardTitle>
-          <div className={`font-extrabold text-xl ${blueNumber}`}>{highestSOS.sos}</div>
-          <div className={`text-xs ${descriptionColor} font-light`}>{highestSOS.teamName}</div>
+          <CardTitle className={titleLabel}>Highest SOS</CardTitle>
+          <div className={`${statVal} ${getColorFor("sos", Number(highestSOS.sos))}`}>
+            {highestSOS.sos}
+          </div>
+          <div className={descriptionColor}>{highestSOS.teamName}</div>
         </div>
       </Card>
-      <Card className={`${cardBase} ${cardBg}`}>
-        <div className="flex items-center justify-center bg-purple-900/20 rounded-full w-12 h-12 mr-2">
+      <Card className={cardBase}>
+        <div className="flex items-center justify-center bg-purple-900/20 rounded-full w-9 h-9 mr-2">
           <Bolt size={iconSize} className="text-purple-300" />
         </div>
         <div>
-          <CardTitle className={`text-base font-bold mb-0 flex gap-2 items-center ${titleColor}`}>
-            Highest Power Score
-          </CardTitle>
-          <div className={`font-extrabold text-xl ${purpleNumber}`}>{formatPowerScore(highestPowerScore.score)}</div>
-          <div className={`text-xs ${descriptionColor} font-light`}>{highestPowerScore.teamName}</div>
+          <CardTitle className={titleLabel}>Highest Power Score</CardTitle>
+          <div className={`${statVal} ${getColorFor("power", Number(highestPowerScore.score))}`}>
+            {formatPowerScore(highestPowerScore.score)}
+          </div>
+          <div className={descriptionColor}>{highestPowerScore.teamName}</div>
         </div>
       </Card>
     </div>
