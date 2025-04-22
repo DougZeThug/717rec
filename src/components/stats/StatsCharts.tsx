@@ -1,4 +1,3 @@
-
 import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -26,7 +25,6 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
 
-  // Top 10 for PowerScore chart
   const topByPowerScore = useMemo(() => (
     [...chartData]
       .sort((a, b) => b.powerScore - a.powerScore)
@@ -64,7 +62,7 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
             <CardTitle
               className="text-lg font-semibold text-gray-800 dark:text-white"
             >
-              Top 10 Power Scores
+              Top 8 Power Scores
             </CardTitle>
             <CardDescription 
               className="text-sm text-gray-600 dark:text-gray-300"
