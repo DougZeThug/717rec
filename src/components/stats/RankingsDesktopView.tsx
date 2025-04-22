@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Table,
@@ -76,14 +75,9 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
       {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
         <div key={divisionName} className="mb-8">
           {!showUnified && (
-            <h3 className={`
-              text-lg font-semibold mb-3 flex items-center font-inter
-              ${isLight 
-                ? 'text-gray-800 dark:text-white' 
-                : 'text-white'}
-            `}>
+            <h3 className="text-lg font-semibold mb-3 flex items-center font-inter text-gray-800 dark:text-white">
               <span>{divisionName}</span>{" "}
-              <span className={`ml-1 ${isLight ? 'text-gray-600 dark:text-gray-300' : 'text-gray-300'}`}>
+              <span className="ml-1 text-gray-600 dark:text-gray-300">
                 ({divisionRankings.length})
               </span>
             </h3>
@@ -151,4 +145,3 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 };
 
 export default RankingsDesktopView;
-
