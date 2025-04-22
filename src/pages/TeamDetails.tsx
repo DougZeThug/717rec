@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +6,7 @@ import { useTeamDetails } from "@/hooks/useTeamDetails";
 import TeamHeader from "@/components/teams/TeamHeader";
 import StatBreakdown from "@/components/teams/StatBreakdown";
 import MatchList from "@/components/teams/MatchList";
+import PlayerList from "@/components/teams/PlayerList";
 import { useTeamMatches } from "@/hooks/useTeamMatches";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 
@@ -18,12 +18,10 @@ const TeamDetails = () => {
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
   
-  // Find team ranking details if available
   const teamRanking = rankings?.find(r => r.teamId === teamId);
   const teamRank = teamRanking ? rankings.findIndex(r => r.teamId === teamId) + 1 : undefined;
   const totalTeams = rankings?.length;
 
-  // Log team data to verify we're using the correct values
   console.log("TeamDetails rendering with team data:", team ? {
     name: team.name,
     power_score: team.power_score,
@@ -53,7 +51,6 @@ const TeamDetails = () => {
     );
   }
 
-  // Use values directly from v_team_details instead of calculating
   const winPct = team.win_percentage ? team.win_percentage * 100 : 0;
   const gamePct = team.game_win_percentage ? team.game_win_percentage * 100 : 0;
 
@@ -67,10 +64,8 @@ const TeamDetails = () => {
         <ArrowLeft size={16} className="mr-2" /> Back
       </Button>
       
-      {/* Team Header */}
       <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
       
-      {/* Unified Stat Breakdown */}
       <StatBreakdown
         wins={team.wins}
         losses={team.losses}
@@ -85,8 +80,9 @@ const TeamDetails = () => {
         totalTeams={totalTeams}
         rankChange={teamRanking?.rankChange}
       />
+
+      <PlayerList players={team.players || []} />
       
-      {/* Past Matches */}
       <MatchList
         title="Match History"
         matches={pastMatches}
