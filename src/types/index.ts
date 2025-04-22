@@ -1,3 +1,4 @@
+
 export interface Team {
   id: string;
   name: string;
@@ -44,7 +45,8 @@ export interface Match {
   team2Details?: any;
   stats?: Array<{
     team_id: string;
-    games_won: number;
+    games_won?: number;
+    game_wins?: number;
   }>;
 }
 

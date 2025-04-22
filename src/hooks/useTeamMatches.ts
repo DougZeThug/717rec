@@ -30,7 +30,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
             logo_url,
             divisionname
           ),
-          stats:v_team_game_totals(team_id, game_wins)
+          stats:v_team_game_totals!matches_team1_id_fkey(team_id, game_wins)
         `)
         .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
         .order('date');

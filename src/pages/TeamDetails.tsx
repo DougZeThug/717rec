@@ -11,6 +11,13 @@ import PlayerList from "@/components/teams/PlayerList";
 import { useTeamMatches } from "@/hooks/useTeamMatches";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 
+// Define the extended Error interface for Supabase errors
+interface SupabaseError extends Error {
+  code?: string;
+  hint?: string;
+  details?: any;
+}
+
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
@@ -38,9 +45,9 @@ const TeamDetails = () => {
     hasError: !!matchesError,
     errorDetails: matchesError ? {
       message: matchesError.message,
-      code: matchesError.code,
-      hint: matchesError.hint,
-      details: matchesError.details
+      code: (matchesError as SupabaseError).code,
+      hint: (matchesError as SupabaseError).hint,
+      details: (matchesError as SupabaseError).details
     } : "No error details",
     sampleMatch: pastMatches?.length > 0 ? {
       id: pastMatches[0].id,

@@ -5,13 +5,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import TeamGameScoreRow from "./TeamGameScoreRow";
 import { AlertTriangle } from "lucide-react";
 
+// Define the extended Error interface for Supabase errors
+interface SupabaseError extends Error {
+  code?: string;
+  hint?: string;
+  details?: any;
+}
+
 interface MatchListProps {
   matches: Match[];
   isLoading?: boolean;
   teamId: string;
   title?: string;
   isPast?: boolean;
-  error?: any;
+  error?: Error | SupabaseError | null;
 }
 
 const MatchList: React.FC<MatchListProps> = ({
@@ -30,9 +37,9 @@ const MatchList: React.FC<MatchListProps> = ({
     error: error ? "Error exists" : "No error",
     errorDetails: error ? {
       message: error.message,
-      code: error.code,
-      hint: error.hint,
-      details: error.details
+      code: (error as SupabaseError).code,
+      hint: (error as SupabaseError).hint,
+      details: (error as SupabaseError).details
     } : "No error details",
     matchSample: matches?.length > 0 ? {
       id: matches[0].id,
