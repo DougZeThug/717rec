@@ -1,18 +1,16 @@
 
 import React, { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Clock } from "lucide-react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
 import { useScheduleData } from "@/hooks/useScheduleData";
-
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import ScheduleContent from "@/components/schedule/ScheduleContent";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
 import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Clock } from "lucide-react";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,17 +41,12 @@ const Schedule = () => {
   } = useMatchManagement(matchesData || []);
 
   const filteredMatches = React.useMemo(() => {
-    // Use the pre-sorted upcoming and completed match lists
     const sourceMatches = activeTab === "upcoming" ? upcomingMatches : completedMatches;
-    
     if (!searchTerm) return sourceMatches;
-    
-    // Filter based on search term - using team details directly from the match
     return sourceMatches.filter(match => {
       const team1Name = match.team1Details?.name || "";
       const team2Name = match.team2Details?.name || "";
       const searchLower = searchTerm.toLowerCase();
-      
       return (
         team1Name.toLowerCase().includes(searchLower) ||
         team2Name.toLowerCase().includes(searchLower) ||
@@ -62,18 +55,9 @@ const Schedule = () => {
     });
   }, [activeTab, upcomingMatches, completedMatches, searchTerm]);
 
-  // Adapter functions to handle the parameter mismatches
-  const handleCreateMatchAdapter = (matchData: any) => {
-    return handleCreateMatch(matchData, teams || []);
-  };
-
-  const handleUpdateMatchAdapter = (matchData: any) => {
-    return handleUpdateMatch(matchData, teams || []);
-  };
-
-  const handleDeleteMatchAdapter = () => {
-    return handleDeleteMatch(teams || []);
-  };
+  const handleCreateMatchAdapter = (matchData: any) => handleCreateMatch(matchData, teams || []);
+  const handleUpdateMatchAdapter = (matchData: any) => handleUpdateMatch(matchData, teams || []);
+  const handleDeleteMatchAdapter = () => handleDeleteMatch(teams || []);
 
   if (teamsLoading || matchesLoading) {
     return (
@@ -92,33 +76,27 @@ const Schedule = () => {
         <ScheduleHeader 
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          onNewMatch={() => {
-            setEditingMatch(undefined);
-            setIsFormOpen(true);
-          }}
           selectedDate={selectedDate}
           onDateSelect={setSelectedDate}
         />
 
-        <div className="mb-8">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-xl">
-                <Clock className="h-5 w-5 mr-2" />
+        <div className="mb-8 mt-2">
+          <div className="bg-muted border rounded-md p-4 shadow-sm transition-all">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              <span className="text-base font-inter tracking-wide font-semibold">
                 Timeslots for {selectedDate.toLocaleDateString('en-US', { 
                   weekday: 'long',
                   month: 'long', 
                   day: 'numeric' 
                 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TimeslotGrouping 
-                groupedTimeslots={groupedTimeslots} 
-                isLoading={timeslotsLoading} 
-              />
-            </CardContent>
-          </Card>
+              </span>
+            </div>
+            <TimeslotGrouping 
+              groupedTimeslots={groupedTimeslots} 
+              isLoading={timeslotsLoading} 
+            />
+          </div>
         </div>
 
         <ScheduleContent 
@@ -153,3 +131,4 @@ const Schedule = () => {
 };
 
 export default Schedule;
+

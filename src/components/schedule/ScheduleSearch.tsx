@@ -16,11 +16,19 @@ const ScheduleSearch: React.FC<ScheduleSearchProps> = ({ value, onChange }) => {
         type="text"
         placeholder="Search matches"
         value={value}
+        autoComplete="off"
         onChange={e => onChange(e.target.value)}
-        className="pl-9"
+        className="
+          pl-9 h-9 rounded-md text-sm font-inter tracking-wide
+          border border-gray-300 dark:border-gray-700
+          placeholder:text-gray-400 placeholder:italic
+          focus:border-cornhole-navy focus:outline-none 
+          transition
+        "
       />
     </div>
   );
 };
 
 export default ScheduleSearch;
+

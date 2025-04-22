@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import ScheduleSearch from "./ScheduleSearch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -11,7 +11,7 @@ import { useTheme } from "next-themes";
 interface ScheduleHeaderProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  onNewMatch: () => void;
+  onNewMatch?: () => void; // now optional, function removed from UI
   selectedDate?: Date;
   onDateSelect?: (date: Date) => void;
 }
@@ -19,7 +19,6 @@ interface ScheduleHeaderProps {
 const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   searchTerm,
   setSearchTerm,
-  onNewMatch,
   selectedDate = new Date(),
   onDateSelect
 }) => {
@@ -33,21 +32,30 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   };
 
   return (
-    <div className="mb-6 font-inter">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <h1 className="text-3xl font-bold text-cornhole-navy">Schedule</h1>
-        <div className="flex flex-col sm:flex-row gap-3">
+    <header className="mt-2 mb-2 font-inter">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4 w-full">
+          {/* Main Title */}
+          <h1
+            className="font-oswald text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-cornhole-navy"
+            style={{ letterSpacing: "0.07em" }}
+          >
+            Schedule
+          </h1>
+          {/* Date Picker */}
           {onDateSelect && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className={`gap-2 px-4 py-2 shadow-sm border ${
-                    isLight ? "border-gray-300 hover:bg-gray-50" : "border-gray-700 hover:bg-gray-800"
-                  }`}
+                <Button
+                  variant="outline"
+                  className={`gap-2 px-3 py-1.5 h-9 rounded-md text-base font-inter tracking-wide shadow-none border
+                    ${isLight ? "border-gray-300 hover:bg-gray-50" : "border-gray-700 hover:bg-gray-800"}
+                  `}
                 >
-                  <Calendar className="h-4 w-4" />
-                  {format(selectedDate, 'MMMM d, yyyy')}
+                  <Calendar className={`h-4 w-4 ${isLight ? "text-gray-500" : "text-gray-400"}`} />
+                  <span className="text-base font-inter tracking-wide">
+                    {format(selectedDate, 'MMMM d, yyyy')}
+                  </span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 shadow-md border" align="end">
@@ -61,18 +69,15 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
               </PopoverContent>
             </Popover>
           )}
-          <Button 
-            onClick={onNewMatch}
-            className="bg-cornhole-navy hover:bg-cornhole-navy/90 gap-2"
-          >
-            <Plus className="h-5 w-5" />
-            New Match
-          </Button>
+        </div>
+        {/* Search bar */}
+        <div className="w-full sm:w-auto">
+          <ScheduleSearch value={searchTerm} onChange={setSearchTerm} />
         </div>
       </div>
-      <ScheduleSearch value={searchTerm} onChange={setSearchTerm} />
-    </div>
+    </header>
   );
 };
 
 export default ScheduleHeader;
+
