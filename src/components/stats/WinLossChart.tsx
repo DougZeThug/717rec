@@ -141,7 +141,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
       </div>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={sortedData}
+          data={sortedData} {/* ✅ Explicitly using the sorted data here */}
           margin={{
             top: 8,
             right: 14,
