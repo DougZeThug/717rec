@@ -1,10 +1,7 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
 import { TeamList } from "@/components/teams/TeamList";
-import { TeamsHeader } from "@/components/teams/TeamsHeader";
-import { TeamsFilters } from "@/components/teams/TeamsFilters";
 import { TeamsByDivision } from "@/components/teams/TeamsByDivision";
 import { TeamEditForm } from "@/components/teams/TeamEditForm";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
@@ -12,6 +9,7 @@ import { useDivisions } from "@/hooks/useDivisions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from 'framer-motion';
 import TeamsSortToggle, { SortMode } from './TeamsSortToggle';
+import { DisplayMode } from "./TeamsPageContainer";
 
 // State for sort mode
 const SORT_MODES = [
@@ -19,7 +17,11 @@ const SORT_MODES = [
   { key: 'alpha', label: 'A–Z' }
 ] as const;
 
-const TeamsContainer: React.FC = () => {
+interface TeamsContainerProps {
+  displayMode: DisplayMode;
+}
+
+const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode }) => {
   const { 
     teams, 
     isLoading, 
@@ -35,7 +37,6 @@ const TeamsContainer: React.FC = () => {
   } = useTeamManagement();
   
   const { divisions } = useDivisions();
-  const [selectedDivision, setSelectedDivision] = useState<string>("all");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
@@ -93,46 +94,46 @@ const TeamsContainer: React.FC = () => {
     return grouped;
   }, [uniqueTeams, divisions]);
 
-  // Filter teams based on selection
-  const filteredTeams = useMemo(() => {
-    if (selectedDivision === "all") {
-      return uniqueTeams;
-    }
-    if (selectedDivision === "unassigned") {
-      return uniqueTeams.filter(team => !team.division);
-    }
-    return uniqueTeams.filter(team => team.division === selectedDivision);
-  }, [uniqueTeams, selectedDivision]);
+  // Sorting utils (fix rank sort to use powerScore)
+  const sortTeams = (arr: Team[]) => {
+    if (sortMode === "alpha") {
+      return [...arr].sort((a, b) => 
+        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+      );
+    } 
+    // sort by powerScore (descending)
+    return [...arr].sort((a, b) => (b.powerScore ?? 0) - (a.powerScore ?? 0));
+  };
 
+  // For grouped mode, apply sorting to each division group
+  const sortedTeamsByDivision = useMemo(() => {
+    const sorted: Record<string, Team[]> = {};
+    for (const divId of Object.keys(teamsByDivision)) {
+      sorted[divId] = sortTeams(teamsByDivision[divId]);
+    }
+    return sorted;
+  }, [teamsByDivision, sortMode]);
+
+  // For all teams mode, apply sort to all
+  const sortedAllTeams = useMemo(() => sortTeams(uniqueTeams), [uniqueTeams, sortMode]);
+  
   // Get division name by ID
   const getDivisionName = (divisionId: string | undefined): string => {
-    if (!divisionId) return "Unassigned Division";
+    if (!divisionId || divisionId === "unassigned") return "Unassigned Division";
     const division = divisions.find(d => d.id === divisionId);
     return division ? division.name : "Unknown Division";
   };
 
   return (
     <div>
+      {/* Remove filter, keep layout as before */}
       <div className={`${scrolled ? 'shadow-md' : ''} transition-shadow sticky top-0 z-30 bg-background/95 backdrop-blur-sm pb-2`}>
-        <TeamsHeader 
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
+        {/* Move TeamsHeader up in page container */}
         <div className="flex flex-wrap gap-2 mb-6">
-          <TeamsFilters 
-            selectedDivision={selectedDivision}
-            onDivisionChange={setSelectedDivision}
-            divisions={divisions}
-          />
+          {/* Display mode toggle moved to parent container */}
         </div>
-        {/* Show sort toggle in "All" view */}
-        {selectedDivision === "all" && (
-          <TeamsSortToggle sortMode={sortMode} setSortMode={setSortMode} />
-        )}
+        <TeamsSortToggle sortMode={sortMode} setSortMode={setSortMode} />
       </div>
-
       <AnimatePresence mode="wait">
         {teamToEdit && (
           <motion.div
@@ -151,15 +152,15 @@ const TeamsContainer: React.FC = () => {
       </AnimatePresence>
       <AnimatePresence mode="wait">
         <motion.div
-          key={`${viewMode}-${selectedDivision}-${sortMode}`}
+          key={`${viewMode}-${displayMode}-${sortMode}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {selectedDivision === "all" ? (
+          {displayMode === "grouped" ? (
             <TeamsByDivision
-              teamsByDivision={teamsByDivision}
+              teamsByDivision={sortedTeamsByDivision}
               getDivisionName={getDivisionName}
               onEditTeam={setTeamToEdit}
               onDeleteTeam={setDeleteTeamId}
@@ -169,7 +170,7 @@ const TeamsContainer: React.FC = () => {
             />
           ) : (
             <TeamList 
-              teams={filteredTeams}
+              teams={sortedAllTeams}
               isLoading={isLoading}
               onEdit={setTeamToEdit}
               onDelete={setDeleteTeamId}
