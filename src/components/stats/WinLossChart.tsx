@@ -47,90 +47,59 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
     );
   };
 
-  // XAxis label adjustments for better readability
-  const xAxisFontSize = isMobile ? 11 : 12;
-  const xAxisAngle = isMobile ? 0 : -22; // Was -36; now -22 for better readability
-
-  // Margin adjustments for reduced whitespace and legend clearance
-  const chartMargins = {
-    top: 10,
-    right: 15,
-    left: 8,
-    bottom: isMobile ? 30 : 28, // Tightened, was 60/45
-  };
-
   return (
     <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
-      <div className="w-full flex flex-col">
-        {/* Legend ABOVE the chart for clarity and no overlap */}
-        <div className="w-full flex justify-center mb-1 mt-1">
-          <Legend
-            layout="horizontal"
-            align="center"
-            verticalAlign="top"
-            iconSize={12}
-            wrapperStyle={{
-              paddingTop: 2,
-              paddingBottom: 2,
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 13,
-              color: isDark ? "#e5e7eb" : "#222",
-              fontWeight: 500,
-              lineHeight: 1,
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          margin={{
+            top: 10,
+            right: 15,
+            left: 8,
+            bottom: isMobile ? 60 : 45,
+          }}
+          style={{
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+          <XAxis
+            dataKey="name"
+            angle={-36}
+            textAnchor="end"
+            height={isMobile ? 55 : 45}
+            interval={0}
+            stroke="#64748b"
+            tick={{
+              fill: isDark ? "#e5e7eb" : "#334155",
+              fontSize: 11,
+              fontFamily: "'Inter', sans-serif"
             }}
-            formatter={(value: string) => (
+          />
+          <YAxis
+            stroke="#64748b"
+            tick={{
+              fill: isDark ? "#e5e7eb" : "#334155",
+              fontSize: 11,
+              fontFamily: "'Inter', sans-serif"
+            }}
+          />
+          <Tooltip content={<CustomWinLossTooltip />} />
+          <Legend
+            wrapperStyle={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "12px"
+            }}
+            formatter={(value) => (
               <span className="text-gray-700 dark:text-gray-300 font-medium">{value}</span>
             )}
           />
-        </div>
-        {/* Chart below the legend with reduced bottom space */}
-        <div className="w-full flex-grow">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={chartMargins}
-              style={{
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
-              <XAxis
-                dataKey="name"
-                angle={xAxisAngle}
-                textAnchor={isMobile ? "middle" : "end"}
-                height={isMobile ? 28 : 35}
-                interval={0}
-                stroke="#64748b"
-                tick={{
-                  fill: isDark ? "#e5e7eb" : "#334155",
-                  fontSize: xAxisFontSize,
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 500,
-                  wordBreak: "break-all" // helps prevent label overflow
-                }}
-                minTickGap={2}
-              />
-              <YAxis
-                stroke="#64748b"
-                tick={{
-                  fill: isDark ? "#e5e7eb" : "#334155",
-                  fontSize: 11,
-                  fontFamily: "'Inter', sans-serif"
-                }}
-                allowDecimals={false}
-                width={32}
-              />
-              <Tooltip content={<CustomWinLossTooltip />} />
-              {/* Remove legend from inside Recharts: we've placed it above. */}
-              <Bar dataKey="wins" fill={barColorWin} name="Wins" />
-              <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+          <Bar dataKey="wins" fill={barColorWin} name="Wins" />
+          <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 };
 
 export default WinLossChart;
-
