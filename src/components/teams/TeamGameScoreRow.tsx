@@ -36,7 +36,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
   const homeLogo = homeTeam.image_url || homeTeam.logo_url || "";
   const awayLogo = awayTeam.image_url || awayTeam.logo_url || "";
 
-  // Get game wins from fields
+  // Get game wins from match fields - directly use team1_game_wins and team2_game_wins
   const homeGameWins = match.team1_game_wins ?? 0;
   const awayGameWins = match.team2_game_wins ?? 0;
 
@@ -59,7 +59,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
         </TransitionLink>
       </div>
       {/* Game score - center */}
-      <div className="flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg">
+      <div className="flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center">
         {homeGameWins} <span className="mx-1">–</span> {awayGameWins}
       </div>
       {/* Away - Right side */}
