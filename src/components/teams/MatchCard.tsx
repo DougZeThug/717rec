@@ -34,6 +34,20 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
   const hasGameScores = teamGameWins !== undefined && opponentGameWins !== undefined;
   const gameScoreDisplay = hasGameScores ? `${teamGameWins}-${opponentGameWins}` : '';
 
+  // For debugging
+  console.log("Match data:", {
+    id: match.id,
+    team1Id: match.team1Id,
+    team2Id: match.team2Id,
+    isTeam1,
+    team1GameWins: match.team1_game_wins,
+    team2GameWins: match.team2_game_wins,
+    teamGameWins,
+    opponentGameWins,
+    hasGameScores,
+    gameScoreDisplay
+  });
+
   return (
     <Card className="mb-4">
       <CardContent className="p-4">
