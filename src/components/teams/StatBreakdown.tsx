@@ -1,3 +1,4 @@
+
 import {
   Trophy,
   Percent,
@@ -42,12 +43,11 @@ const StatBreakdown = ({
 }: StatBreakdownProps) => {
   const isMobile = useIsMobile();
 
-  const getPowerScoreColor = (score: number) => {
-    if (score >= 75) return "text-emerald-600";
-    if (score >= 60) return "text-blue-600";
-    if (score >= 40) return "text-amber-600";
-    return "text-red-600";
-  };
+  const getPowerScoreColor = (score: number) =>
+    score >= 75 ? "text-green-600"
+    : score >= 60 ? "text-blue-500"
+    : score >= 40 ? "text-orange-500"
+    : "text-red-500";
 
   const getWinPercentageColor = (percentage: string) => {
     const value = parseFloat(percentage);
@@ -110,7 +110,9 @@ const StatBreakdown = ({
         <dd className={cn(
           statClass,
           isHighlighted && statHighlight,
-          !isMobile && "text-center"
+          !isMobile && "text-center",
+          // If this is the Power Score, apply the color directly to override any parent styles
+          title === "Power Score" ? getPowerScoreColor(powerScore as number) : ""
         )}>{value}</dd>
       </dl>
     </div>
