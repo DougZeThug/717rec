@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Link, useLocation } from "react-router-dom";
@@ -42,7 +43,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
         <div className="flex flex-col flex-grow p-4">
           <div className="flex justify-between items-start mb-2">
             <Link to={`/teams/${team.id}`} className="hover:underline">
-              <h3 className="text-xl font-bold text-[#1a1a1a] dark:text-white">
+              <h3 className="font-bebas font-normal uppercase tracking-wide text-xl text-[#1a1a1a] dark:text-white">
                 {team.name}
               </h3>
             </Link>
@@ -78,7 +79,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <Badge 
               variant={team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
                 team.divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
-              className="mb-3 self-start"
+              className="mb-3 self-start font-inter uppercase text-xs tracking-widest"
             >
               {team.divisionName}
             </Badge>
@@ -88,7 +89,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <StatBlock 
               label="Record" 
               value={
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 font-mono text-base justify-end">
                   <Trophy size={12} className="text-emerald-400" /> {team.wins}
                   <span className="mx-1">-</span>
                   <X size={12} className="text-rose-400" /> {team.losses}
@@ -98,13 +99,17 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             
             <StatBlock 
               label="Games" 
-              value={`${team.game_wins ?? 0} - ${team.game_losses ?? 0}`}
+              value={
+                <span className="font-mono text-base justify-end flex">
+                  {team.game_wins ?? 0} - {team.game_losses ?? 0}
+                </span>
+              }
             />
             
             <StatBlock 
               label="Power Score" 
               value={
-                <span className={powerScoreColor}>
+                <span className={`font-mono text-base justify-end flex ${powerScoreColor}`}>
                   {formatPowerScore(team.power_score)}
                 </span>
               }
@@ -112,7 +117,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             
             <StatBlock 
               label="SOS" 
-              value={team.sos?.toFixed(3) || '0.000'}
+              value={<span className="font-mono text-base justify-end flex">{team.sos?.toFixed(3) || '0.000'}</span>}
             />
           </div>
           

@@ -14,9 +14,7 @@ interface TeamCardProps {
 const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
   const { theme } = useTheme();
   const isLight = theme === "light";
-  
-  // console.debug('[HomeTeamCard]', team.id, 'imageUrl:', team.imageUrl);
-  
+
   return (
     <div className="overflow-hidden mb-4 sm:mb-0 transition duration-200 hover:shadow-md">
       <Link to={`/teams/${team.id}`} className="block">
@@ -24,7 +22,9 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
         </div>
         <div className="p-4">
-          <h3 className="font-semibold text-gray-800 dark:text-white mb-2 truncate">{team.name}</h3>
+          <h3 className="font-bebas font-normal uppercase tracking-wide text-xl text-gray-800 dark:text-white mb-2 truncate">
+            {team.name}
+          </h3>
           <TeamStats team={team} />
         </div>
       </Link>
