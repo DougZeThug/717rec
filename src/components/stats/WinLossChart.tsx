@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 import { formatPowerScore } from "@/utils/powerScore";
 
 // Simple truncation utility
-const truncateLabel = (label: string, max = 10) => 
+const truncateLabel = (label: string, max = 10) =>
   label.length > max ? label.slice(0, max - 1) + "…" : label;
 
 interface ChartDataItem {
@@ -36,6 +36,31 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
   const maxLabelLength = isMobile ? 7 : 12;
+
+  // --- New Logic: Sort by win percentage (highest to lowest), use wins as tiebreaker, 0-0 teams to end ---
+  const sortedData = React.useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    // Teams with at least one game played
+    const withGames = data.filter(team => team.wins + team.losses > 0);
+    // Teams with 0-0 record
+    const noGames = data.filter(team => team.wins + team.losses === 0);
+    // Sort by win percentage, then by wins (higher first)
+    withGames.sort((a, b) => {
+      if (b.winPercentage !== a.winPercentage) {
+        return b.winPercentage - a.winPercentage;
+      }
+      return b.wins - a.wins; // tiebreaker: more total wins first
+    });
+    // Then optionally trim to chartLimit
+    let combined = withGames.slice(0, chartLimit);
+    // Optionally add 0-0 teams only if space remains (rare)
+    if (combined.length < chartLimit && noGames.length > 0) {
+      // add to fill up to limit
+      combined = combined.concat(noGames.slice(0, chartLimit - combined.length));
+    }
+    // Never show more than chartLimit bars
+    return combined;
+  }, [data, chartLimit]);
 
   // Custom X-axis tick with truncation and tooltip
   const CustomXAxisTick = (props: any) => {
@@ -102,7 +127,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
       </div>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={data}
+          data={sortedData}
           margin={{
             top: 8,
             right: 14,
@@ -144,4 +169,3 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
-
