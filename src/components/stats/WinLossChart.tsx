@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -33,40 +33,11 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
-  // Log chart data to help diagnose issues
-  useEffect(() => {
-    console.log("Win-Loss Chart Data:", data);
-  }, [data]);
-
-  // Process the data to create display names while preserving original data structure
-  const processedData = data.map(item => {
-    // Ensure wins and losses are numeric
-    const wins = typeof item.wins === 'number' ? item.wins : 0;
-    const losses = typeof item.losses === 'number' ? item.losses : 0;
-    
-    return {
-      ...item,
-      wins,
-      losses,
-      displayName: item.name.length > 10 ? `${item.name.slice(0, 8)}...` : item.name,
-    };
-  });
-
-  // Custom tooltip that shows the full team name
   const CustomWinLossTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
-    
-    // Find the original team name using the label (displayName)
-    const originalItem = data.find(item => {
-      const shortName = item.name.length > 10 ? `${item.name.slice(0, 8)}...` : item.name;
-      return shortName === label;
-    });
-    
-    const fullName = originalItem?.name || label;
-    
     return (
       <div className="rounded-md shadow-lg p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-        <p className="text-gray-800 dark:text-white font-semibold mb-1">{fullName}</p>
+        <p className="text-gray-800 dark:text-white font-semibold mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={`tooltip-${index}`} style={{ color: entry.color }} className="m-0 text-sm">
             {entry.name}: {entry.value}
@@ -76,29 +47,22 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
     );
   };
 
+  // XAxis label adjustments for better readability
   const xAxisFontSize = isMobile ? 11 : 12;
-  const xAxisAngle = isMobile ? 0 : -22;
+  const xAxisAngle = isMobile ? 0 : -22; // Was -36; now -22 for better readability
 
+  // Margin adjustments for reduced whitespace and legend clearance
   const chartMargins = {
-    top: 5,
+    top: 10,
     right: 15,
     left: 8,
-    bottom: isMobile ? 28 : 24,
+    bottom: isMobile ? 30 : 28, // Tightened, was 60/45
   };
-
-  // If no data or empty array, show a placeholder
-  if (!data || data.length === 0) {
-    return (
-      <div className="w-full h-[260px] flex items-center justify-center text-gray-500 dark:text-gray-400">
-        Chart data could not be loaded.
-      </div>
-    );
-  }
 
   return (
     <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
       <div className="w-full flex flex-col">
-        {/* Moved legend above chart for better spacing */}
+        {/* Legend ABOVE the chart for clarity and no overlap */}
         <div className="w-full flex justify-center mb-1 mt-1">
           <Legend
             layout="horizontal"
@@ -119,10 +83,11 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             )}
           />
         </div>
+        {/* Chart below the legend with reduced bottom space */}
         <div className="w-full flex-grow">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={processedData}
+              data={data}
               margin={chartMargins}
               style={{
                 fontFamily: "'Inter', sans-serif",
@@ -130,7 +95,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             >
               <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
               <XAxis
-                dataKey="displayName"
+                dataKey="name"
                 angle={xAxisAngle}
                 textAnchor={isMobile ? "middle" : "end"}
                 height={isMobile ? 28 : 35}
@@ -140,7 +105,8 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
                   fill: isDark ? "#e5e7eb" : "#334155",
                   fontSize: xAxisFontSize,
                   fontFamily: "'Inter', sans-serif",
-                  fontWeight: 500
+                  fontWeight: 500,
+                  wordBreak: "break-all" // helps prevent label overflow
                 }}
                 minTickGap={2}
               />
@@ -155,6 +121,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
                 width={32}
               />
               <Tooltip content={<CustomWinLossTooltip />} />
+              {/* Remove legend from inside Recharts: we've placed it above. */}
               <Bar dataKey="wins" fill={barColorWin} name="Wins" />
               <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
             </BarChart>
@@ -166,3 +133,4 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
 };
 
 export default WinLossChart;
+
