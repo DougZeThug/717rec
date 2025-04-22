@@ -31,10 +31,18 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   
   // Enhanced power score inline color for better visibility in light mode
   const getPowerScoreInlineColor = (score: number) => {
-    if (score >= 80) return isLight ? '#45c47e' : '';
-    if (score >= 70) return isLight ? '#3887e6' : '';
-    if (score >= 50) return isLight ? '#e8a228' : ''; 
-    return isLight ? '#e13d3d' : '';
+    if (score >= 75) return isLight ? '#2f855a' : '';  // green-600 equivalent
+    if (score >= 60) return isLight ? '#3182ce' : '';  // blue-500 equivalent
+    if (score >= 40) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
+    return isLight ? '#e53e3e' : '';  // red-500 equivalent
+  };
+  
+  // Enhanced SOS inline color for better visibility in light mode
+  const getSosInlineColor = (score: number) => {
+    if (score >= 75) return isLight ? '#2f855a' : '';  // green-600 equivalent
+    if (score >= 60) return isLight ? '#3182ce' : '';  // blue-500 equivalent
+    if (score >= 40) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
+    return isLight ? '#e53e3e' : '';  // red-500 equivalent
   };
 
   return (
@@ -96,7 +104,10 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         {(ranking.gameWinPercentage * 100).toFixed(1)}%
       </TableCell>
       <TableCell className="text-center font-mono">
-        <span className={sosColor} style={isLight ? { color: isLight && sosColor ? sosColor.replace('text-', '').replace('-500', '') : "#222222" } : {}}>
+        <span 
+          className={!isLight ? sosColor : ''}
+          style={{ color: isLight ? getSosInlineColor(ranking.sos) : undefined }}
+        >
           {ranking.sos.toFixed(3)}
         </span>
       </TableCell>
