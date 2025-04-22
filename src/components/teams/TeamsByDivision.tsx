@@ -52,10 +52,19 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
     for (const divId of Object.keys(teamsByDivision)) {
       const divisionTeams = teamsByDivision[divId] || [];
       let sortedDivisionTeams = divisionTeams;
+      
       if (sortMode === "alpha") {
-        sortedDivisionTeams = [...divisionTeams].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+        // Sort alphabetically by team name
+        sortedDivisionTeams = [...divisionTeams].sort((a, b) => 
+          a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        );
+      } else if (sortMode === "rank") {
+        // Sort by power score in descending order (highest first)
+        sortedDivisionTeams = [...divisionTeams].sort((a, b) => 
+          b.power_score - a.power_score
+        );
       }
-      // else: by rank (default order)
+      
       sorted[divId] = sortedDivisionTeams;
     }
     return sorted;
