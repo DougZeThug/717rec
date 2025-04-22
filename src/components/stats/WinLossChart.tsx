@@ -37,43 +37,44 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorLoss = "#e13d3d";
   const maxLabelLength = isMobile ? 7 : 12;
 
-  // Explicitly calculate and sort by win percentage
+  // Force explicit sorting by win percentage calculation to ensure correct order
   const sortedData = React.useMemo(() => {
     if (!Array.isArray(data)) return [];
     
-    // Make a copy of the data to avoid mutating props
-    const dataCopy = [...data];
+    // Clone array to avoid mutating props
+    const dataClone = [...data];
     
-    // Teams with at least one game played
-    const withGames = dataCopy.filter(team => team.wins + team.losses > 0);
-    
-    // Teams with 0-0 record
-    const noGames = dataCopy.filter(team => team.wins + team.losses === 0);
-    
-    // Sort by win percentage, then by wins (higher first)
-    withGames.sort((a, b) => {
-      // Calculate win percentages directly to ensure accuracy
-      const aWinPercentage = a.wins / (a.wins + a.losses);
-      const bWinPercentage = b.wins / (b.wins + b.losses);
-      
-      if (bWinPercentage !== aWinPercentage) {
-        return bWinPercentage - aWinPercentage;
-      }
-      return b.wins - a.wins; // tiebreaker: more total wins first
-    });
-    
-    // Then optionally trim to chartLimit
-    let combined = withGames.slice(0, chartLimit);
-    
-    // Optionally add 0-0 teams only if space remains (rare)
-    if (combined.length < chartLimit && noGames.length > 0) {
-      // add to fill up to limit
-      combined = combined.concat(noGames.slice(0, chartLimit - combined.length));
-    }
-    
-    // Never show more than chartLimit bars
-    return combined;
+    // Process and sort the data
+    return dataClone
+      .map(team => ({
+        ...team,
+        // Force recalculation of win percentage to ensure consistency
+        calculatedWinPct: team.wins + team.losses === 0 ? 0 : team.wins / (team.wins + team.losses)
+      }))
+      .sort((a, b) => {
+        // Primary sort: win percentage (descending)
+        if (b.calculatedWinPct !== a.calculatedWinPct) {
+          return b.calculatedWinPct - a.calculatedWinPct;
+        }
+        // Secondary sort: total wins (descending)
+        return b.wins - a.wins;
+      })
+      .filter((team, index) => {
+        // Teams with games get priority
+        const hasPlayed = team.wins + team.losses > 0;
+        // Return all teams with games, or teams without games if we have room
+        return hasPlayed || index < chartLimit;
+      })
+      // Limit to chartLimit
+      .slice(0, chartLimit);
   }, [data, chartLimit]);
+
+  // Log sorted data to confirm ordering
+  console.log("Win-Loss Chart Sorted Data:", sortedData.map(team => ({
+    name: team.name,
+    record: `${team.wins}-${team.losses}`,
+    winPct: team.calculatedWinPct.toFixed(3)
+  })));
 
   // Custom X-axis tick with truncation and tooltip
   const CustomXAxisTick = (props: any) => {
