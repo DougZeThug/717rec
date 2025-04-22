@@ -1,8 +1,9 @@
 
 import React from "react";
+import { HeadToHeadMap } from "@/types";
 
 interface HeadToHeadRecordsProps {
-  headToHead: Record<string, { wins: number; losses: number; opponentName: string }> | undefined;
+  headToHead: HeadToHeadMap | undefined;
 }
 
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ headToHead }) => {

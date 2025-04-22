@@ -102,6 +102,18 @@ export interface TeamTimeslot {
   };
 }
 
+// Define the HeadToHead entry structure for consistency
+export interface HeadToHeadEntry {
+  opponentName: string;
+  wins: number;
+  losses: number;
+}
+
+// Updated HeadToHeadMap to use the consistent HeadToHeadEntry
+export interface HeadToHeadMap {
+  [teamId: string]: HeadToHeadEntry;
+}
+
 // Types for team rankings
 export interface Ranking {
   teamId: string;
@@ -120,17 +132,9 @@ export interface Ranking {
   rankChange?: number;
   previousRank?: number;
   divisionName?: string | null;
-  headToHead: Record<string, { wins: number; losses: number; }>;
+  headToHead: HeadToHeadMap;
   closeMatchLosses: number;
   divisionRank?: number;
-}
-
-export interface HeadToHeadMap {
-  [teamId: string]: {
-    opponentName: string;
-    wins: number;
-    losses: number;
-  };
 }
 
 // Division type
