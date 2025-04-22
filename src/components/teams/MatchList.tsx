@@ -1,51 +1,45 @@
 
+import React from "react";
 import { Match } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import MatchCard from "./MatchCard";
+import TeamGameScoreRow from "./TeamGameScoreRow";
 
 interface MatchListProps {
-  title: string;
   matches: Match[];
-  isLoading: boolean;
+  isLoading?: boolean;
   teamId: string;
+  title?: string;
   isPast?: boolean;
 }
 
-const MatchList = ({
-  title,
+const MatchList: React.FC<MatchListProps> = ({
   matches,
   isLoading,
   teamId,
-  isPast = false,
-}: MatchListProps) => {
+  title = "Match History",
+  isPast = true
+}) => {
   return (
-    <>
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
-      {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-24 w-full rounded-lg" />
-          <Skeleton className="h-24 w-full rounded-lg" />
-        </div>
-      ) : matches.length > 0 ? (
-        <div className={`space-y-4 ${!isPast ? 'mb-8' : ''}`}>
-          {matches.map(match => {
-            const opponentId = match.team1Id === teamId ? match.team2Id : match.team1Id;
-            return (
-              <MatchCard
-                key={match.id}
-                match={match}
-                opponentId={opponentId}
-                isPastMatch={isPast}
-              />
-            );
-          })}
-        </div>
-      ) : (
-        <p className={`text-gray-500 ${!isPast ? 'mb-8' : ''}`}>
-          {isPast ? 'No past matches found.' : 'No upcoming matches scheduled.'}
-        </p>
+    <div className="mt-10">
+      {title && (
+        <h2 className="text-lg sm:text-xl font-semibold mb-3">{title}</h2>
       )}
-    </>
+      {isLoading ? (
+        <Skeleton className="h-32 w-full rounded mb-4" />
+      ) : matches.length === 0 ? (
+        <div className="text-center text-gray-500 text-sm py-6">No matches found.</div>
+      ) : (
+        <div className="divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm overflow-hidden">
+          {matches.map((match) => (
+            <TeamGameScoreRow
+              key={match.id}
+              match={match}
+              teamId={teamId}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
