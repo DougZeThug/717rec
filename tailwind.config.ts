@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,7 +25,7 @@ export default {
         mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
         oswald: ['Oswald', 'League Spartan', 'Bebas Neue', 'Arial', 'sans-serif'],
         source: ['Source Sans Pro', 'Work Sans', 'system-ui', 'sans-serif'],
-        bebas: ['Bebas Neue', 'Oswald', 'League Spartan', 'Arial', 'sans-serif'],
+        bebas: ['Bebas Neue', 'sans-serif'],
       },
       colors: {
 				border: 'hsl(var(--border))',

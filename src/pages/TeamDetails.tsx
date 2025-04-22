@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,19 +10,12 @@ import PlayerList from "@/components/teams/PlayerList";
 import { useTeamMatches } from "@/hooks/useTeamMatches";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 
-// Define the extended Error interface for Supabase errors
-interface SupabaseError extends Error {
-  code?: string;
-  hint?: string;
-  details?: any;
-}
-
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
   
   const { team, isLoading } = useTeamDetails(teamId);
-  const { pastMatches, upcomingMatches, isLoadingMatches, error: matchesError } = useTeamMatches(teamId);
+  const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
   
   const teamRanking = rankings?.find(r => r.teamId === teamId);
@@ -37,26 +29,6 @@ const TeamDetails = () => {
     win_percentage: team.win_percentage || 0,
     game_win_percentage: team.game_win_percentage || 0
   } : "Loading team...");
-
-  console.log("Match data status:", {
-    pastMatches: pastMatches?.length || 0,
-    upcomingMatches: upcomingMatches?.length || 0,
-    isLoadingMatches,
-    hasError: !!matchesError,
-    errorDetails: matchesError ? {
-      message: matchesError.message,
-      code: (matchesError as SupabaseError).code,
-      hint: (matchesError as SupabaseError).hint,
-      details: (matchesError as SupabaseError).details
-    } : "No error details",
-    sampleMatch: pastMatches?.length > 0 ? {
-      id: pastMatches[0].id,
-      iscompleted: pastMatches[0].iscompleted ?? false,
-      hasStats: Boolean(pastMatches[0].stats),
-      statsSample: pastMatches[0].stats?.length > 0 ? 
-        JSON.stringify(pastMatches[0].stats[0]).substring(0, 100) : "No stats"
-    } : "No matches"
-  });
 
   if (isLoading || isLoadingMatches) {
     return (
@@ -117,7 +89,6 @@ const TeamDetails = () => {
         isLoading={isLoadingMatches}
         teamId={teamId || ''}
         isPast={true}
-        error={matchesError}
       />
     </div>
   );

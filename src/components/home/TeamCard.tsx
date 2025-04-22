@@ -24,10 +24,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
         </div>
         <div className="p-4">
-          <h3 className="font-bebas uppercase tracking-wide font-bold text-xl sm:text-2xl md:text-3xl mb-2 truncate"
-            style={{ letterSpacing: "0.04em" }}>
-            {team.name}
-          </h3>
+          <h3 className="font-semibold text-gray-800 dark:text-white mb-2 truncate">{team.name}</h3>
           <TeamStats team={team} />
         </div>
       </Link>

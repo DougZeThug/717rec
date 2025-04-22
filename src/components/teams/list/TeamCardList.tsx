@@ -42,8 +42,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
         <div className="flex flex-col flex-grow p-4">
           <div className="flex justify-between items-start mb-2">
             <Link to={`/teams/${team.id}`} className="hover:underline">
-              <h3 className="font-bebas uppercase tracking-wide font-bold text-2xl md:text-2xl lg:text-3xl"
-                style={{ letterSpacing: '0.04em' }}>
+              <h3 className="text-xl font-bold text-[#1a1a1a] dark:text-white">
                 {team.name}
               </h3>
             </Link>
@@ -79,7 +78,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <Badge 
               variant={team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
                 team.divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
-              className="mb-3 self-start font-inter uppercase tracking-widest text-xs"
+              className="mb-3 self-start"
             >
               {team.divisionName}
             </Badge>
@@ -89,32 +88,31 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <StatBlock 
               label="Record" 
               value={
-                <div className="flex items-center justify-end gap-1">
-                  <Trophy size={12} className="text-emerald-400" /> 
-                  <span className="font-mono text-base">{team.wins}</span>
-                  <span className="mx-1 font-mono text-base">-</span>
-                  <X size={12} className="text-rose-400" /> 
-                  <span className="font-mono text-base">{team.losses}</span>
+                <div className="flex items-center gap-1">
+                  <Trophy size={12} className="text-emerald-400" /> {team.wins}
+                  <span className="mx-1">-</span>
+                  <X size={12} className="text-rose-400" /> {team.losses}
                 </div>
               }
             />
+            
             <StatBlock 
               label="Games" 
-              value={
-                <span className="font-mono text-base text-right block">{`${team.game_wins ?? 0} - ${team.game_losses ?? 0}`}</span>
-              }
+              value={`${team.game_wins ?? 0} - ${team.game_losses ?? 0}`}
             />
+            
             <StatBlock 
-              label="Power Score"
+              label="Power Score" 
               value={
-                <span className={`font-mono text-base text-right block ${powerScoreColor}`}>
+                <span className={powerScoreColor}>
                   {formatPowerScore(team.power_score)}
                 </span>
               }
             />
+            
             <StatBlock 
               label="SOS" 
-              value={<span className="font-mono text-base text-right block">{team.sos?.toFixed(3) || '0.000'}</span>}
+              value={team.sos?.toFixed(3) || '0.000'}
             />
           </div>
           

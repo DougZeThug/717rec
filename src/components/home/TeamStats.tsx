@@ -12,22 +12,17 @@ export const TeamStats: React.FC<TeamStatsProps> = ({ team }) => {
   return (
     <div className="grid grid-cols-2 gap-3">
       <div className="flex flex-col">
-        <span className="font-inter uppercase tracking-widest text-xs text-gray-500 dark:text-gray-400">
-          Record
-        </span>
-        <div className="text-base font-mono font-medium text-gray-800 dark:text-white flex items-center">
-          <Trophy size={14} className="text-emerald-500 mr-1" /> 
-          <span className="font-mono text-base">{team.wins || 0}</span>
-          <span className="mx-1 font-mono text-base">-</span>
-          <X size={14} className="text-rose-500 mr-1" />
-          <span className="font-mono text-base">{team.losses || 0}</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">Record</span>
+        <div className="text-base font-medium text-gray-800 dark:text-white flex items-center">
+          <Trophy size={14} className="text-emerald-500 mr-1" /> {team.wins || 0}
+          <span className="mx-1">-</span>
+          <X size={14} className="text-rose-500 mr-1" /> {team.losses || 0}
         </div>
       </div>
+      
       <div className="flex flex-col">
-        <span className="font-inter uppercase tracking-widest text-xs text-gray-500 dark:text-gray-400">
-          Power Score
-        </span>
-        <span className={`font-mono text-base font-medium ${getPowerScoreColor(team.power_score)}`}>
+        <span className="text-sm text-gray-500 dark:text-gray-400">Power Score</span>
+        <span className={`text-base font-medium ${getPowerScoreColor(team.power_score)}`}>
           {formatPowerScore(team.power_score)}
         </span>
       </div>
