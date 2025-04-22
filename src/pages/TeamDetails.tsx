@@ -89,6 +89,7 @@ const TeamDetails = () => {
         isLoading={isLoadingMatches}
         teamId={teamId || ''}
         isPast={true}
+        highlightWinnerLoser={true}
       />
     </div>
   );

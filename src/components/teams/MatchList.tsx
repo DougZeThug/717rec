@@ -10,6 +10,7 @@ interface MatchListProps {
   teamId: string;
   title?: string;
   isPast?: boolean;
+  highlightWinnerLoser?: boolean; // new prop to explicitly turn on highlight
 }
 
 const MatchList: React.FC<MatchListProps> = ({
@@ -17,7 +18,8 @@ const MatchList: React.FC<MatchListProps> = ({
   isLoading,
   teamId,
   title = "Match History",
-  isPast = true
+  isPast = true,
+  highlightWinnerLoser = false
 }) => {
   return (
     <div className="mt-10">
@@ -35,6 +37,7 @@ const MatchList: React.FC<MatchListProps> = ({
               key={match.id}
               match={match}
               teamId={teamId}
+              highlightWinnerLoser={highlightWinnerLoser}
             />
           ))}
         </div>
