@@ -37,27 +37,40 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorLoss = "#e13d3d";
   const maxLabelLength = isMobile ? 7 : 12;
 
-  // --- New Logic: Sort by win percentage (highest to lowest), use wins as tiebreaker, 0-0 teams to end ---
+  // Explicitly calculate and sort by win percentage
   const sortedData = React.useMemo(() => {
     if (!Array.isArray(data)) return [];
+    
+    // Make a copy of the data to avoid mutating props
+    const dataCopy = [...data];
+    
     // Teams with at least one game played
-    const withGames = data.filter(team => team.wins + team.losses > 0);
+    const withGames = dataCopy.filter(team => team.wins + team.losses > 0);
+    
     // Teams with 0-0 record
-    const noGames = data.filter(team => team.wins + team.losses === 0);
+    const noGames = dataCopy.filter(team => team.wins + team.losses === 0);
+    
     // Sort by win percentage, then by wins (higher first)
     withGames.sort((a, b) => {
-      if (b.winPercentage !== a.winPercentage) {
-        return b.winPercentage - a.winPercentage;
+      // Calculate win percentages directly to ensure accuracy
+      const aWinPercentage = a.wins / (a.wins + a.losses);
+      const bWinPercentage = b.wins / (b.wins + b.losses);
+      
+      if (bWinPercentage !== aWinPercentage) {
+        return bWinPercentage - aWinPercentage;
       }
       return b.wins - a.wins; // tiebreaker: more total wins first
     });
+    
     // Then optionally trim to chartLimit
     let combined = withGames.slice(0, chartLimit);
+    
     // Optionally add 0-0 teams only if space remains (rare)
     if (combined.length < chartLimit && noGames.length > 0) {
       // add to fill up to limit
       combined = combined.concat(noGames.slice(0, chartLimit - combined.length));
     }
+    
     // Never show more than chartLimit bars
     return combined;
   }, [data, chartLimit]);
