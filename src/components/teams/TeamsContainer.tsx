@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
@@ -94,15 +95,15 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode }) => {
     return grouped;
   }, [uniqueTeams, divisions]);
 
-  // Sorting utils (fix rank sort to use powerScore)
+  // Sorting utils - fix to use power_score for rank sorting
   const sortTeams = (arr: Team[]) => {
     if (sortMode === "alpha") {
       return [...arr].sort((a, b) => 
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
     } 
-    // sort by powerScore (descending)
-    return [...arr].sort((a, b) => (b.powerScore ?? 0) - (a.powerScore ?? 0));
+    // Fix: Sort by power_score (descending)
+    return [...arr].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0));
   };
 
   // For grouped mode, apply sorting to each division group
@@ -126,9 +127,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode }) => {
 
   return (
     <div>
-      {/* Remove filter, keep layout as before */}
       <div className={`${scrolled ? 'shadow-md' : ''} transition-shadow sticky top-0 z-30 bg-background/95 backdrop-blur-sm pb-2`}>
-        {/* Move TeamsHeader up in page container */}
         <div className="flex flex-wrap gap-2 mb-6">
           {/* Display mode toggle moved to parent container */}
         </div>

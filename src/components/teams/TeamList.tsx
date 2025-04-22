@@ -46,7 +46,7 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
     : "space-y-4";
 
   return (
-    <div className={`${gridClasses} ${viewMode === 'grid' ? 'animate-fade-in' : 'animate-scale-in'}`}>
+    <div className={`${gridClasses}`}>
       {uniqueTeams.map(team => (
         <TeamCard 
           key={team.id} 
