@@ -1,14 +1,6 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Ranking } from "@/types";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
-import RankTrendIndicator from "./RankTrendIndicator";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { useTheme } from "next-themes";
-import { TeamStatsGrid } from "./rank/TeamStatsGrid";
-import { TeamLogo } from "./rank/TeamLogo";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -24,130 +16,66 @@ const RankingCard: React.FC<RankingCardProps> = ({
   index,
   expandedTeam,
   onToggleExpand,
-  compactView = false,
-  showDivision = false
+  compactView,
+  showDivision
 }) => {
-  const navigate = useNavigate();
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
   const isExpanded = expandedTeam === ranking.teamId;
-  const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('[data-team-name="true"]')) {
-      e.stopPropagation();
-      navigate(`/teams/${ranking.teamId}`);
-    } else {
-      onToggleExpand(ranking.teamId);
-    }
-  };
 
   return (
-    <Card 
+    <div
       className={cn(
-        "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
-        "border border-[#e0e0e0] dark:border-none rounded-xl shadow-sm",
-        "font-inter transition-colors duration-150 cursor-pointer",
-        "hover:bg-gray-50 dark:hover:bg-gray-900",
-        "[&_[data-team-name]]:hover:text-blue-600 dark:[&_[data-team-name]]:hover:text-blue-400",
-        "[&_[data-team-name]]:hover:underline",
-        isExpanded ? (isLight ? "ring-2 ring-purple-200" : "ring-2 ring-purple-400") : "",
-        compactView ? "p-2" : "p-4"
+        "bg-white dark:bg-gray-800 rounded-md shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200",
+        "hover:shadow-lg hover:border-blue-500",
+        "cursor-pointer",
+        isExpanded && "border-blue-500 shadow-lg",
+        compactView ? "p-3" : "p-4"
       )}
-      onClick={handleCardClick}
+      onClick={() => onToggleExpand(ranking.teamId)}
+      data-teamid={ranking.teamId}
     >
-      <CardContent className={cn(
-        "flex gap-3 p-0",
-        compactView ? "items-center min-h-[48px]" : "flex-col"
-      )}>
-        <div className="flex items-center gap-3 w-full">
-          <div className={cn(
-            "flex items-center justify-center",
-            compactView ? "w-8" : "w-10"
-          )}>
-            <span 
-              style={isLight ? { color: "#222222" } : {}} 
-              className={cn(
-                "font-medium rounded-full flex items-center justify-center",
-                compactView ? "text-sm h-6 w-6" : "text-base h-8 w-8",
-                index < 3 ? "bg-amber-100/50 dark:bg-amber-900/30" : ""
-              )}
-            >
-              {index + 1}
-              
-              {!showDivision && ranking.divisionRank && (
-                <span className="ml-0.5 text-[10px] text-muted-foreground opacity-80" style={{ marginTop: "-1px" }}>
-                  ({ranking.divisionRank})
-                </span>
-              )}
-            </span>
-          </div>
-
-          <div className={cn(
-            "flex-shrink-0",
-            compactView ? "w-8 h-8" : "w-12 h-12"
-          )}>
-            <TeamLogo 
-              imageUrl={ranking.logoUrl || ranking.imageUrl} 
-              teamName={ranking.teamName}
-              teamId={ranking.teamId}
-              clickable
-            />
-          </div>
-
-          <div className="flex-1 min-w-0">
+      <div className="flex items-center justify-between gap-3 w-full">
+        <div className="flex items-center min-w-0 gap-3">
+          {ranking.imageUrl ? (
+            <div className="w-9 h-9 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+              <img
+                src={ranking.imageUrl}
+                alt={ranking.teamName}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          ) : (
+            <div className="w-9 h-9 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
+              N/A
+            </div>
+          )}
+          <div className="flex flex-col min-w-0">
             <span
-              data-team-name="true"
-              className={cn(
-                "block truncate font-bebas tracking-wide uppercase",
-                compactView ? "text-base" : "text-base mb-1"
-              )}
-              style={isLight ? { color: "#111111" } : {}}
+              className="font-bebas uppercase tracking-wide text-base truncate"
+              style={{ color: "#111111" }}
+              title={ranking.teamName}
             >
               {ranking.teamName}
             </span>
-            
-            {showDivision && !compactView && (
-              <Badge
-                variant={ranking.divisionName?.toLowerCase() as any || "default"}
-                className="text-xs font-medium px-2 mt-1"
-              >
-                {ranking.divisionName || "Unassigned"}
-              </Badge>
-            )}
-          </div>
-
-          {compactView && (
-            <div className="flex items-center gap-3 ml-auto">
-              <span className="text-gray-600 dark:text-gray-300">
-                {ranking.wins}-{ranking.losses}
-              </span>
-              <span className={getPowerScoreColor(ranking.powerScore)}>
-                {formatPowerScore(ranking.powerScore)}
-              </span>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="font-mono">{`${ranking.wins}-${ranking.losses}`}</span>
+              <span className="font-mono">{`${(ranking.winPercentage * 100).toFixed(1)}%`}</span>
             </div>
-          )}
-        </div>
-
-        {!compactView && (
-          <div className="mt-3 w-full">
-            <TeamStatsGrid
-              wins={ranking.wins}
-              losses={ranking.losses}
-              winPercentage={ranking.winPercentage}
-              gamesWon={ranking.gamesWon}
-              gamesLost={ranking.gamesLost}
-              gameWinPercentage={ranking.gameWinPercentage}
-              sos={ranking.sos}
-              streak={ranking.streak || ''}
-              powerScore={ranking.powerScore}
-              rankChange={ranking.rankChange}
-              compactView={compactView}
-            />
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-sm font-semibold">{ranking.powerScore.toFixed(1)}</span>
+          <button
+            className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand(ranking.teamId);
+            }}
+          >
+            {isExpanded ? "▲" : "▼"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

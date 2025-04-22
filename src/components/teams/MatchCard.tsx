@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,16 +24,13 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
   const opponentName = opponent?.name || "Unknown Team";
   const opponentImage = opponent?.image_url || opponent?.logo_url;
   
-  // Determine game scores based on perspective
   const isTeam1 = match.team1Id === opponentId;
   const teamGameWins = isTeam1 ? match.team2_game_wins : match.team1_game_wins;
   const opponentGameWins = isTeam1 ? match.team1_game_wins : match.team2_game_wins;
   
-  // Format game score display
   const hasGameScores = teamGameWins !== undefined && opponentGameWins !== undefined;
   const gameScoreDisplay = hasGameScores ? `${teamGameWins}-${opponentGameWins}` : '';
 
-  // For debugging
   console.log("Match data:", {
     id: match.id,
     team1Id: match.team1Id,
@@ -57,12 +53,23 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, opponentId, isPastMatch = 
               to={`/teams/${opponentId}`}
               className="hover:opacity-80 transition-opacity"
             >
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={opponentImage || ''} alt={opponentName} />
-                <AvatarFallback>
-                  {opponentName.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                {opponentImage ? (
+                  <img
+                    src={opponentImage}
+                    alt={opponentName}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                    {opponentName.charAt(0)}
+                  </div>
+                )}
+              </div>
             </TransitionLink>
             <TransitionLink
               to={`/teams/${opponentId}`}

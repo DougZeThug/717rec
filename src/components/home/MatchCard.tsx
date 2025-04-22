@@ -24,7 +24,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+              <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 flex items-center justify-center">
                 {team1?.imageUrl ? (
                   <img 
                     src={team1.imageUrl} 
@@ -46,7 +46,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <span className="text-lg font-bold mx-2">VS</span>
             <div className="flex items-center">
               <span className="mr-3 font-medium">{team2.name}</span>
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+              <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 flex items-center justify-center">
                 {team2?.imageUrl ? (
                   <img 
                     src={team2.imageUrl} 
