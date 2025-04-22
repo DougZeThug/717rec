@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -33,11 +32,20 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
   const barColorWin = "#45c47e";
   const barColorLoss = "#e13d3d";
 
+  const processedData = data.map(item => ({
+    ...item,
+    displayName: item.name.length > 12 ? `${item.name.slice(0, 10)}...` : item.name,
+    fullName: item.name
+  }));
+
   const CustomWinLossTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
+    
+    const fullName = processedData.find(item => item.displayName === label)?.fullName || label;
+    
     return (
       <div className="rounded-md shadow-lg p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-        <p className="text-gray-800 dark:text-white font-semibold mb-1">{label}</p>
+        <p className="text-gray-800 dark:text-white font-semibold mb-1">{fullName}</p>
         {payload.map((entry: any, index: number) => (
           <p key={`tooltip-${index}`} style={{ color: entry.color }} className="m-0 text-sm">
             {entry.name}: {entry.value}
@@ -47,23 +55,20 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
     );
   };
 
-  // XAxis label adjustments for better readability
   const xAxisFontSize = isMobile ? 11 : 12;
-  const xAxisAngle = isMobile ? 0 : -22; // Was -36; now -22 for better readability
+  const xAxisAngle = isMobile ? 0 : -22;
 
-  // Margin adjustments for reduced whitespace and legend clearance
   const chartMargins = {
-    top: 10,
+    top: 5,
     right: 15,
     left: 8,
-    bottom: isMobile ? 30 : 28, // Tightened, was 60/45
+    bottom: isMobile ? 28 : 24,
   };
 
   return (
     <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
       <div className="w-full flex flex-col">
-        {/* Legend ABOVE the chart for clarity and no overlap */}
-        <div className="w-full flex justify-center mb-1 mt-1">
+        <div className="w-full flex justify-center mb-1">
           <Legend
             layout="horizontal"
             align="center"
@@ -83,11 +88,10 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             )}
           />
         </div>
-        {/* Chart below the legend with reduced bottom space */}
         <div className="w-full flex-grow">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={data}
+              data={processedData}
               margin={chartMargins}
               style={{
                 fontFamily: "'Inter', sans-serif",
@@ -95,7 +99,7 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
             >
               <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
               <XAxis
-                dataKey="name"
+                dataKey="displayName"
                 angle={xAxisAngle}
                 textAnchor={isMobile ? "middle" : "end"}
                 height={isMobile ? 28 : 35}
@@ -105,12 +109,10 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
                   fill: isDark ? "#e5e7eb" : "#334155",
                   fontSize: xAxisFontSize,
                   fontFamily: "'Inter', sans-serif",
-                  fontWeight: 500,
-                  // Remove the wordBreak property which is causing the TypeScript error
-                  // Instead we'll use width control and text overflow handling
-                  style: { textOverflow: 'ellipsis', overflow: 'hidden' }
+                  fontWeight: 500
                 }}
                 minTickGap={2}
+                tickFormatter={(value) => value}
               />
               <YAxis
                 stroke="#64748b"
@@ -123,7 +125,6 @@ const WinLossChart: React.FC<WinLossChartProps> = ({ data, chartLimit, isMobile 
                 width={32}
               />
               <Tooltip content={<CustomWinLossTooltip />} />
-              {/* Remove legend from inside Recharts: we've placed it above. */}
               <Bar dataKey="wins" fill={barColorWin} name="Wins" />
               <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
             </BarChart>
