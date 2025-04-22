@@ -28,14 +28,12 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   const isLight = resolvedTheme === "light";
   
   // Enhanced power score inline color for better visibility in light mode
-  const powerScoreInlineStyle = isLight
-    ? { 
-        color: ranking.powerScore >= 80 ? '#45c47e' : 
-              ranking.powerScore >= 70 ? '#3887e6' : 
-              ranking.powerScore < 40 ? '#e13d3d' : 
-              '#222222'  // default dark gray for mid-range scores
-      }
-    : {};
+  const getPowerScoreInlineColor = (score: number) => {
+    if (score >= 80) return isLight ? '#45c47e' : '';
+    if (score >= 70) return isLight ? '#3887e6' : '';
+    if (score >= 50) return isLight ? '#e8a228' : ''; 
+    return isLight ? '#e13d3d' : '';
+  };
 
   return (
     <TableRow 
@@ -48,9 +46,9 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       >
         {/* Display overall rank and division rank if available */}
         <div className="flex items-center">
-          <span>{index + 1}</span>
+          <span className="font-mono">{index + 1}</span>
           {!showDivision && ranking.divisionRank && (
-            <span className="ml-1 text-xs text-muted-foreground opacity-80">
+            <span className="ml-1 text-xs text-gray-500 dark:text-gray-400 font-inter">
               ({ranking.divisionRank})
             </span>
           )}
@@ -78,29 +76,27 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </TableCell>
       )}
       <TableCell
-        className="text-center"
-        style={powerScoreInlineStyle}
+        className={`text-center font-mono ${!isLight && powerScoreColor}`}
+        style={{ color: isLight ? getPowerScoreInlineColor(ranking.powerScore) : undefined }}
       >
-        <span className={isLight ? "" : powerScoreColor}>
-          {formatPowerScore(ranking.powerScore)}
-        </span>
+        {formatPowerScore(ranking.powerScore)}
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
         {`${ranking.wins}-${ranking.losses}`}
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
         {(ranking.winPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center hidden md:table-cell" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center hidden md:table-cell font-mono" style={isLight ? { color: "#222222" } : {}}>
         {`${ranking.gamesWon}-${ranking.gamesLost}`}
       </TableCell>
-      <TableCell className="text-center hidden lg:table-cell" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center hidden lg:table-cell font-mono" style={isLight ? { color: "#222222" } : {}}>
         {(ranking.gameWinPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
         {ranking.sos.toFixed(3)}
       </TableCell>
-      <TableCell className="text-center" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
         {ranking.streak || '-'}
       </TableCell>
       <TableCell className="text-center">

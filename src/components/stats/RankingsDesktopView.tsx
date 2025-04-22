@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Table,
@@ -69,6 +70,13 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
     </TableHead>
   );
 
+  const getPowerScoreColor = (score: number) => {
+    if (score >= 80) return "text-emerald-600";
+    if (score >= 70) return "text-blue-600";
+    if (score >= 50) return "text-amber-600";
+    return "text-red-600";
+  };
+
   return (
     <div className="font-inter">
       {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
@@ -118,7 +126,14 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                   return (
                     <React.Fragment key={ranking.teamId}>
                       <TableRow className="font-inter">
-                        <TableCell className="font-mono font-semibold text-lg">{overallIndex + 1}</TableCell>
+                        <TableCell className="font-mono font-semibold text-lg">
+                          {overallIndex + 1}
+                          {!showUnified && ranking.divisionRank && (
+                            <span className="ml-1 text-xs text-gray-500 dark:text-gray-400 font-inter">
+                              ({ranking.divisionRank})
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             {ranking.logoUrl || ranking.imageUrl ? (
@@ -140,7 +155,9 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
                             <span className="font-inter">{ranking.divisionName}</span>
                           </TableCell>
                         )}
-                        <TableCell className="text-center font-mono font-semibold">{ranking.powerScore?.toFixed(2)}</TableCell>
+                        <TableCell className={`text-center font-mono font-semibold ${getPowerScoreColor(ranking.powerScore)}`}>
+                          {ranking.powerScore?.toFixed(2)}
+                        </TableCell>
                         <TableCell className="text-center font-mono">{ranking.wins}-{ranking.losses}</TableCell>
                         <TableCell className="text-center font-mono">{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
                         <TableCell className="hidden md:table-cell text-center font-mono">{ranking.gamesWon}-{ranking.gamesLost}</TableCell>
