@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamsDivisionSection } from "@/components/teams/TeamsDivisionSection";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ interface TeamsByDivisionProps {
   onDeleteTeam: (teamId: string) => void;
   isLoading: boolean;
   viewMode: 'grid' | 'list';
+  sortMode: 'rank' | 'alpha'; // New prop
 }
 
 export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({ 
@@ -20,35 +21,45 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   onEditTeam,
   onDeleteTeam,
   isLoading,
-  viewMode
+  viewMode,
+  sortMode
 }) => {
-  // Track expanded division (only one can be expanded at a time)
-  const [expandedDivision, setExpandedDivision] = useState<string | null>(null);
-  
-  // Toggle division expansion - ensure only one is expanded at a time
+  const [expandedDivision, setExpandedDivision] = React.useState<string | null>(null);
   const toggleDivision = (divisionId: string) => {
     setExpandedDivision(prevExpanded => 
       prevExpanded === divisionId ? null : divisionId
     );
   };
 
-  // Expand all divisions
   const expandAll = () => {
-    // Find the first division with teams
     const firstDivisionWithTeams = Object.keys(teamsByDivision).find(
       divId => teamsByDivision[divId].length > 0
     );
     setExpandedDivision(firstDivisionWithTeams || null);
   };
 
-  // Collapse all divisions
   const collapseAll = () => {
     setExpandedDivision(null);
   };
-  
+
   // Filter out empty divisions
   const nonEmptyDivisions = Object.keys(teamsByDivision)
     .filter(divId => teamsByDivision[divId].length > 0);
+
+  // Re-sort teams in each division appropriately
+  const sortedTeamsByDivision: Record<string, Team[]> = useMemo(() => {
+    const sorted: Record<string, Team[]> = {};
+    for (const divId of Object.keys(teamsByDivision)) {
+      const divisionTeams = teamsByDivision[divId] || [];
+      let sortedDivisionTeams = divisionTeams;
+      if (sortMode === "alpha") {
+        sortedDivisionTeams = [...divisionTeams].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      }
+      // else: by rank (default order)
+      sorted[divId] = sortedDivisionTeams;
+    }
+    return sorted;
+  }, [teamsByDivision, sortMode]);
 
   if (nonEmptyDivisions.length === 0) {
     return (
@@ -82,7 +93,7 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
       </div>
 
       {nonEmptyDivisions.map(divisionId => {
-        const divisionTeams = teamsByDivision[divisionId];
+        const divisionTeams = sortedTeamsByDivision[divisionId];
         const divisionName = getDivisionName(divisionId === "unassigned" ? undefined : divisionId);
         const isExpanded = expandedDivision === divisionId;
         

@@ -11,6 +11,15 @@ import { useTeamManagement } from "@/hooks/useTeamManagement";
 import { useDivisions } from "@/hooks/useDivisions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from 'framer-motion';
+import { ListOrdered, ArrowDownAZ, ArrowUpZA } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const SORT_MODES = [
+  { key: 'rank', label: 'Rank', icon: ListOrdered },
+  { key: 'alpha', label: 'A–Z', icon: ArrowDownAZ }
+] as const;
+
+type SortMode = 'rank' | 'alpha';
 
 const Teams: React.FC = () => {
   const { 
@@ -32,6 +41,18 @@ const Teams: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
+
+  // NEW: Sort mode state, persisted to localStorage
+  const [sortMode, setSortMode] = useState<SortMode>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("teamsSortMode") as SortMode) || "rank";
+    }
+    return "rank";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("teamsSortMode", sortMode);
+  }, [sortMode]);
   
   // Handle scroll effect for sticky header
   useEffect(() => {
@@ -100,6 +121,31 @@ const Teams: React.FC = () => {
     return division ? division.name : "Unknown Division";
   };
 
+  // Global sort toggle for "all teams" (does not appear in non-all mode)
+  const renderSortToggle = () => (
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-sm font-semibold text-muted-foreground mr-1">Sort by:</span>
+      <div className="inline-flex rounded-lg bg-muted p-0.5">
+        {SORT_MODES.map(({ key, label, icon: Icon }) => (
+          <Button
+            variant={sortMode === key ? "default" : "ghost"}
+            size="sm"
+            aria-pressed={sortMode === key}
+            key={key}
+            onClick={() => setSortMode(key as SortMode)}
+            className={`flex items-center px-2 py-1 rounded-md transition-colors gap-1 ${
+              sortMode === key ? "bg-primary text-white" : "hover:bg-muted-foreground/10"
+            }`}
+            style={{ minWidth: 74 }}
+          >
+            <Icon size={16} className="mr-1" />
+            {label}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="container px-4 py-6 sm:py-8 mx-auto font-sans">
       <div className={`${scrolled ? 'shadow-md' : ''} transition-shadow sticky top-0 z-30 bg-background/95 backdrop-blur-sm pb-2`}>
@@ -117,6 +163,8 @@ const Teams: React.FC = () => {
             divisions={divisions}
           />
         </div>
+        {/* Show sort toggle in "All" view */}
+        {selectedDivision === "all" && renderSortToggle()}
       </div>
 
       <AnimatePresence mode="wait">
@@ -138,7 +186,7 @@ const Teams: React.FC = () => {
 
       <AnimatePresence mode="wait">
         <motion.div
-          key={`${viewMode}-${selectedDivision}`}
+          key={`${viewMode}-${selectedDivision}-${sortMode}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -152,6 +200,7 @@ const Teams: React.FC = () => {
               onDeleteTeam={setDeleteTeamId}
               isLoading={isLoading}
               viewMode={viewMode}
+              sortMode={sortMode}
             />
           ) : (
             <TeamList 
