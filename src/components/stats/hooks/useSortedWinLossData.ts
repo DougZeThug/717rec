@@ -66,4 +66,3 @@ export function useSortedWinLossData(
     return processedData;
   }, [data, chartLimit]);
 }
-
