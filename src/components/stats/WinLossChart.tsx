@@ -1,15 +1,15 @@
 
 import React from "react";
 import WinLossBarChart from "./WinLossBarChart";
-import { useTheme } from "next-themes";
 import { useSortedWinLossData } from "./hooks/useSortedWinLossData";
 
 interface ChartDataItem {
   name: string;
   wins: number;
   losses: number;
-  winPercentage: number;
-  powerScore: number;
+  winPercentage?: number;
+  win_percentage?: number;
+  powerScore?: number;
   imageUrl?: string | null;
   logoUrl?: string | null;
   id: string;
@@ -26,16 +26,24 @@ const WinLossChart: React.FC<WinLossChartProps> = ({
   chartLimit,
   isMobile,
 }) => {
-  const sortedData = useSortedWinLossData(data, chartLimit);
+  // Add debug logging to see what's coming from upstream
+  console.log(
+    "📊 WinLossChart received data:",
+    data?.length,
+    "teams with win_percentage example:",
+    data?.[0]?.win_percentage
+  );
 
-  // Log sorted data for debugging
+  const sortedData = useSortedWinLossData(data, chartLimit);
+  
+  // More debugging information
   console.log(
     "✅ Final sorted chart data (as used by WinLossChart):",
     sortedData.map((t) => ({
       name: t.displayName,
       wins: t.wins,
       losses: t.losses,
-      pct: t.calculatedWinPct,
+      pct: t.calculatedWinPct || t.win_percentage,
     }))
   );
 

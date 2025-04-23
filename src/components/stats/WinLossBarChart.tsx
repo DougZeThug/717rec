@@ -63,7 +63,11 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
     );
   };
 
-  if (!data.length) {
+  // Add more detailed logging to help diagnose the issue
+  console.log("WinLossBarChart rendering with data length:", data?.length);
+  
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    console.log("No valid chart data available:", data);
     return (
       <div className="w-full h-[230px] rounded-xl overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-800">
         <p className="text-gray-500 dark:text-gray-400">No data available</p>
