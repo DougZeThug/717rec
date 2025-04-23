@@ -12,6 +12,15 @@ export const validateMatchSubmission = (match: MatchWithTeams): { isValid: boole
     return { isValid: false, errorMessage: "Match object is missing" };
   }
   
+  console.log("🔍 Validating match submission:", {
+    matchId: match.id,
+    team1Score: match.team1Score,
+    team2Score: match.team2Score,
+    team1GameWins: match.team1_game_wins,
+    team2GameWins: match.team2_game_wins,
+    isCompleted: match.iscompleted
+  });
+  
   // Required fields check
   if (!match.team1Id || !match.team2Id) {
     return { isValid: false, errorMessage: "Match missing team IDs" };

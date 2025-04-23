@@ -16,6 +16,11 @@ export const useMatchScores = () => {
     match.isEdited = true;
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
+    console.log(`🏆 useMatchScores handleScoreChange for match ${match.id}:`, {
+      team1Score,
+      team2Score
+    });
+    
     setMatches(newMatches);
   };
 
@@ -27,6 +32,11 @@ export const useMatchScores = () => {
     match.team1_game_wins = parseInt(String(team1GameWins)) || 0;
     match.team2_game_wins = parseInt(String(team2GameWins)) || 0;
     match.isEdited = true;
+    
+    console.log(`🎮 useMatchScores handleGameWinsChange for match ${match.id}:`, {
+      team1GameWins: match.team1_game_wins,
+      team2GameWins: match.team2_game_wins
+    });
     
     // Calculate binary match scores based on game wins
     // This ensures consistency between game wins and match scores
@@ -41,8 +51,6 @@ export const useMatchScores = () => {
     // Revalidate match with updated scores
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
-    console.log(`Setting game wins for match ${match.id}: Team1: ${match.team1_game_wins}, Team2: ${match.team2_game_wins}`);
-    console.log(`Binary match scores: Team1: ${match.team1Score}, Team2: ${match.team2Score}`);
     setMatches(newMatches);
   };
 

@@ -48,7 +48,7 @@ export const useMatchUpdates = () => {
         team2_game_wins: team2GameWins
       };
       
-      console.log(`Update payload for match ${match.id}:`, updatePayload);
+      console.log(`🚀 Update payload for match ${match.id}:`, updatePayload);
 
       const { data, error } = await supabase
         .from('matches')

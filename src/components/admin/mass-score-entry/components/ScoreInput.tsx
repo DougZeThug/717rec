@@ -35,6 +35,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
       <ScoreButtonGroup
         value={value}
         onChange={(gameWins) => {
+          console.log("🎮 ScoreInput onChange called with game wins:", gameWins);
+          
           // Calculate binary match scores based on game wins
           const team1Won = gameWins.team1Score > gameWins.team2Score;
           const matchScores = {

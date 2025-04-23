@@ -27,13 +27,14 @@ export const updateMatchScore = async ({
   const processedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
   const processedTeam2GameWins = parseInt(String(team2GameWins)) || 0;
   
-  console.log('Submitting match:', {
+  console.log('🚀 Submitting match to Supabase:', {
     matchId,
     team1GameWins: processedTeam1GameWins,
     team2GameWins: processedTeam2GameWins,
     team1_score: team1Win ? 1 : 0,
     team2_score: team1Win ? 0 : 1,
-    winner_id: team1Win ? team1_id : team2_id
+    winner_id: team1Win ? team1_id : team2_id,
+    loser_id: team1Win ? team2_id : team1_id
   });
 
   const updatePayload = {

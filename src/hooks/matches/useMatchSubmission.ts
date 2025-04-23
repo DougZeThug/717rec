@@ -23,6 +23,11 @@ export const useMatchSubmission = () => {
       const parsedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
       const parsedTeam2GameWins = parseInt(String(team2GameWins)) || 0;
       
+      console.log('🎮 handleSubmitScore received game wins:', {
+        team1GameWins: parsedTeam1GameWins,
+        team2GameWins: parsedTeam2GameWins
+      });
+      
       // Update match score and get result details
       const { data, team1_id, team2_id, team1Win } = await updateMatchScore({
         matchId,

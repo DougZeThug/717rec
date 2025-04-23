@@ -81,6 +81,17 @@ export const useScoreSubmission = (
             continue;
           }
 
+          // Debug log: what's being sent to updateMatchInDatabase
+          console.log("🚀 Submitting match to updateMatchInDatabase:", {
+            matchId: match.id,
+            team1Score: match.team1Score,
+            team2Score: match.team2Score,
+            team1GameWins,
+            team2GameWins,
+            winner_id: match.team1Score === 1 ? match.team1Id : match.team2Id,
+            loser_id: match.team1Score === 1 ? match.team2Id : match.team1Id
+          });
+
           const success = await updateMatchInDatabase(match);
           if (!success) {
             addError(match.id, "Failed to update match");
