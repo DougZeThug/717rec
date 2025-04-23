@@ -51,8 +51,16 @@ export const useScoreSubmission = (
     try {
       for (const match of editedMatches) {
         try {
+          // Ensure game wins are properly parsed as integers
+          const team1GameWins = parseInt(String(match.team1_game_wins)) || 0;
+          const team2GameWins = parseInt(String(match.team2_game_wins)) || 0;
+          
           console.log(`[useScoreSubmission] Processing match ${match.id}: Team1(${match.team1Id}): ${match.team1Score} - Team2(${match.team2Id}): ${match.team2Score}`);
-          console.log(`[useScoreSubmission] Game wins: Team1: ${match.team1_game_wins || 0}, Team2: ${match.team2_game_wins || 0}`);
+          console.log(`[useScoreSubmission] Game wins: Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
+          
+          // Update match object with parsed game wins to ensure integer values
+          match.team1_game_wins = team1GameWins;
+          match.team2_game_wins = team2GameWins;
           
           const validation = validateMatchSubmission(match);
           if (!validation.isValid) {
@@ -95,9 +103,9 @@ export const useScoreSubmission = (
                 losses: team.losses 
               })));
               
-            // Get the game wins for each team as integers
-            const winnerGameWins = parseInt(String(winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0))) || 0;
-            const loserGameWins = parseInt(String(loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0))) || 0;
+            // Use the parsed game wins for winner and loser
+            const winnerGameWins = parseInt(String(winnerId === match.team1Id ? team1GameWins : team2GameWins)) || 0;
+            const loserGameWins = parseInt(String(loserId === match.team1Id ? team1GameWins : team2GameWins)) || 0;
               
             console.log(`[useScoreSubmission] Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
               

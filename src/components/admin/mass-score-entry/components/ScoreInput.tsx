@@ -37,9 +37,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
         onChange={(scores) => {
           onChange(scores);
           if (onChangeGameWins) {
-            // Ensure we pass the numeric game wins
-            const team1GameWins = scores.team1Score || 0;
-            const team2GameWins = scores.team2Score || 0;
+            // Ensure we pass the numeric game wins - parse and default to 0 if invalid
+            const team1GameWins = parseInt(String(scores.team1Score)) || 0;
+            const team2GameWins = parseInt(String(scores.team2Score)) || 0;
             onChangeGameWins({
               team1GameWins,
               team2GameWins

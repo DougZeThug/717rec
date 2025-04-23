@@ -22,10 +22,12 @@ export const useMatchScores = () => {
     const newMatches = [...matches];
     const match = newMatches[index];
     
-    match.team1_game_wins = team1GameWins;
-    match.team2_game_wins = team2GameWins;
+    // Ensure we store integer values
+    match.team1_game_wins = parseInt(String(team1GameWins)) || 0;
+    match.team2_game_wins = parseInt(String(team2GameWins)) || 0;
     match.isEdited = true;
     
+    console.log(`Setting game wins for match ${match.id}: Team1: ${match.team1_game_wins}, Team2: ${match.team2_game_wins}`);
     setMatches(newMatches);
   };
 

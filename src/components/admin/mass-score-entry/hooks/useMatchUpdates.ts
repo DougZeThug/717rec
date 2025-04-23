@@ -27,8 +27,12 @@ export const useMatchUpdates = () => {
         }
       }
 
+      // Ensure game wins are properly parsed as integers
+      const team1GameWins = parseInt(String(match.team1_game_wins)) || 0;
+      const team2GameWins = parseInt(String(match.team2_game_wins)) || 0;
+      
       console.log(`Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);
-      console.log(`Game wins - Team1: ${match.team1_game_wins}, Team2: ${match.team2_game_wins}`);
+      console.log(`Game wins - Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
 
       // Set match scores as 1/0 binary indicators (not game totals)
       const team1Score = winnerId === match.team1Id ? 1 : 0;
@@ -40,8 +44,8 @@ export const useMatchUpdates = () => {
         iscompleted: match.iscompleted,
         winner_id: winnerId,
         loser_id: loserId,
-        team1_game_wins: match.team1_game_wins || 0,
-        team2_game_wins: match.team2_game_wins || 0
+        team1_game_wins: team1GameWins,
+        team2_game_wins: team2GameWins
       };
       
       console.log(`Update payload for match ${match.id}:`, updatePayload);
@@ -65,8 +69,8 @@ export const useMatchUpdates = () => {
         const teams = [match.team1, match.team2]; 
         
         // Get the actual game wins for winner and loser
-        const winnerGameWins = winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
-        const loserGameWins = loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+        const winnerGameWins = winnerId === match.team1Id ? team1GameWins : team2GameWins;
+        const loserGameWins = loserId === match.team1Id ? team1GameWins : team2GameWins;
         
         console.log('Team objects being passed:', teams);
         console.log(`Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
