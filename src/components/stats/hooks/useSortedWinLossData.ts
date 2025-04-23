@@ -20,17 +20,17 @@ export function useSortedWinLossData(
   return React.useMemo(() => {
     if (!Array.isArray(data)) return [];
 
-    // Defensive: assign displayName, fallback, and pre-calculate for sort
-    const dataClone = data.map((team, index) => {
+    // Map data with calculated win percentage
+    const dataWithCalculations = data.map((team, index) => {
       const wins = typeof team.wins === "number" ? team.wins : 0;
       const losses = typeof team.losses === "number" ? team.losses : 0;
       const totalGames = wins + losses;
-      // Fallback for tooltipName (full string)
       const tooltipName =
         typeof team.name === "string" && team.name.trim().length > 0
           ? team.name
           : `Team ${index + 1}`;
       const calculatedWinPct = totalGames === 0 ? 0 : wins / totalGames;
+      
       return {
         ...team,
         wins,
@@ -41,7 +41,8 @@ export function useSortedWinLossData(
       };
     });
 
-    const processedData = dataClone
+    // Sort data by win percentage (descending), then wins (descending), then alphabetically
+    const processedData = dataWithCalculations
       .sort((a, b) => {
         // Primary: win percentage
         if (b.calculatedWinPct !== a.calculatedWinPct) {
