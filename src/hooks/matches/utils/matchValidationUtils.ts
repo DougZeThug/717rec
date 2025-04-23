@@ -1,3 +1,4 @@
+
 export interface MatchValidationResult {
   isValid: boolean;
   errorMessage?: string;
