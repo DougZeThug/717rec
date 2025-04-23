@@ -37,6 +37,11 @@ export const updateMatchInDatabase = async (
     throw new Error('Match scores must be 1/0 based on winner/loser');
   }
   
+  // Validation for completed matches with zero game wins
+  if (parsedTeam1GameWins === 0 && parsedTeam2GameWins === 0) {
+    console.warn("⚠️ Completed match has zero game wins:", matchId);
+  }
+  
   const updateData = {
     team1_score: team1MatchScore,          // Binary winner indicator (1/0)
     team2_score: team2MatchScore,          // Binary winner indicator (1/0)
