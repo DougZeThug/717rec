@@ -64,8 +64,15 @@ export const useTeamRecords = () => {
       console.log("Step 1 SUCCESSFUL: Team stats refreshed");
       console.log("Step 2: Updating detailed team statistics");
   
-      // Then update the detailed team stats
-      const statsSuccess = await updateTeamStatsRecord(winnerId, loserId);
+      // Then update the detailed team stats - pass all required parameters
+      const statsSuccess = await updateTeamStatsRecord(
+        winnerId, 
+        loserId, 
+        teams,
+        winnerGameWins, 
+        loserGameWins
+      );
+      
       if (!statsSuccess) {
         console.error("WARNING: Failed to update detailed team stats (power scores, etc.)");
         toast({
