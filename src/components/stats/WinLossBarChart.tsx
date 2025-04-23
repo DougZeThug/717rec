@@ -23,7 +23,7 @@ interface BarChartProps {
 }
 
 /**
- * Presentational chart only, expects sorted data with .displayName.
+ * Presentational chart only, expects sorted data with .displayName and .tooltipName.
  */
 const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   const { resolvedTheme } = useTheme();
@@ -71,13 +71,18 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
     );
   }
 
-  // Log final data for debugging
-  console.log("✅ WinLossBarChart receives data:", data.map((t: any) => ({
-    name: t.displayName,
-    wins: t.wins,
-    losses: t.losses,
-    pct: t.calculatedWinPct
-  })));
+  // Log final data for debugging - ensure displayName is unique and in correct order
+  console.log(
+    "🔥 Rendering chart with data",
+    data.map((t: any, i: number) => ({
+      displayName: t.displayName,
+      tooltipName: t.tooltipName,
+      wins: t.wins,
+      losses: t.losses,
+      winPct: t.calculatedWinPct?.toFixed(3),
+      idx: i
+    }))
+  );
 
   return (
     <div

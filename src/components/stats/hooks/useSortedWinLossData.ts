@@ -25,8 +25,8 @@ export function useSortedWinLossData(
       const wins = typeof team.wins === "number" ? team.wins : 0;
       const losses = typeof team.losses === "number" ? team.losses : 0;
       const totalGames = wins + losses;
-      // Fallback for displayName
-      const displayName =
+      // Fallback for tooltipName (full string)
+      const tooltipName =
         typeof team.name === "string" && team.name.trim().length > 0
           ? team.name
           : `Team ${index + 1}`;
@@ -35,8 +35,8 @@ export function useSortedWinLossData(
         wins,
         losses,
         calculatedWinPct: totalGames === 0 ? 0 : wins / totalGames,
-        displayName,
         sortIndex: index,
+        tooltipName,
       };
     });
 
@@ -54,15 +54,28 @@ export function useSortedWinLossData(
         // Allow teams with no games if we still have chart space
         return hasPlayed || index < chartLimit;
       })
-      .slice(0, chartLimit);
+      .slice(0, chartLimit)
+      .map((team, index) => {
+        // Unique displayName for chart category: "1. Team Name" etc
+        const displayName = `${index + 1}. ${team.tooltipName}`;
+        return {
+          ...team,
+          displayName,
+        };
+      });
 
-    // Console log for debugging sorted order
-    console.log("✅ useSortedWinLossData: Sorted", processedData.map(t => ({
-      name: t.displayName,
-      wins: t.wins,
-      losses: t.losses,
-      pct: t.calculatedWinPct,
-    })));
+    // Console log for debugging sorted order and display keys
+    console.log(
+      "✅ useSortedWinLossData result",
+      processedData.map((t, i) => ({
+        displayName: t.displayName,
+        tooltipName: t.tooltipName,
+        wins: t.wins,
+        losses: t.losses,
+        winPct: t.calculatedWinPct.toFixed(3),
+        idx: i,
+      }))
+    );
     return processedData;
   }, [data, chartLimit]);
 }
