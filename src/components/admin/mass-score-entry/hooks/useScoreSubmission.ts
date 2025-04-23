@@ -62,6 +62,19 @@ export const useScoreSubmission = (
           match.team1_game_wins = team1GameWins;
           match.team2_game_wins = team2GameWins;
           
+          // Recalculate binary match scores based on game wins to ensure consistency
+          if (team1GameWins > team2GameWins) {
+            match.team1Score = 1;
+            match.team2Score = 0;
+          } else if (team1GameWins < team2GameWins) {
+            match.team1Score = 0;
+            match.team2Score = 1;
+          } else {
+            // Tied game wins should be caught by validation
+            addError(match.id, "Game wins cannot be tied");
+            continue;
+          }
+          
           const validation = validateMatchSubmission(match);
           if (!validation.isValid) {
             addError(match.id, validation.errorMessage || "Invalid match data");
@@ -74,18 +87,16 @@ export const useScoreSubmission = (
             continue;
           }
 
-          // Determine winner and loser IDs
+          // Determine winner and loser IDs from binary match scores
           let winnerId = null;
           let loserId = null;
           
-          if (match.team1Score !== null && match.team2Score !== null) {
-            if (match.team1Score > match.team2Score) {
-              winnerId = match.team1Id;
-              loserId = match.team2Id;
-            } else if (match.team2Score > match.team1Score) {
-              winnerId = match.team2Id;
-              loserId = match.team1Id;
-            }
+          if (match.team1Score === 1) {
+            winnerId = match.team1Id;
+            loserId = match.team2Id;
+          } else if (match.team2Score === 1) {
+            winnerId = match.team2Id;
+            loserId = match.team1Id;
           }
 
           console.log(`[useScoreSubmission] Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);

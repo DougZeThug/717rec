@@ -16,15 +16,15 @@ export const useMatchUpdates = () => {
       let winnerId = null;
       let loserId = null;
       
-      // Determine winner and loser based on match scores (not game wins)
-      if (match.team1Score !== null && match.team2Score !== null) {
-        if (match.team1Score > match.team2Score) {
-          winnerId = match.team1Id;
-          loserId = match.team2Id;
-        } else if (match.team2Score > match.team1Score) {
-          winnerId = match.team2Id;
-          loserId = match.team1Id;
-        }
+      // Determine winner and loser based on match scores (binary 1/0 indicators)
+      if (match.team1Score === 1) {
+        winnerId = match.team1Id;
+        loserId = match.team2Id;
+      } else if (match.team2Score === 1) {
+        winnerId = match.team2Id;
+        loserId = match.team1Id;
+      } else {
+        throw new Error('Invalid match scores: exactly one team must win');
       }
 
       // Ensure game wins are properly parsed as integers
@@ -34,7 +34,7 @@ export const useMatchUpdates = () => {
       console.log(`Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);
       console.log(`Game wins - Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
 
-      // Set match scores as 1/0 binary indicators (not game totals)
+      // Set match scores as 1/0 binary indicators
       const team1Score = winnerId === match.team1Id ? 1 : 0;
       const team2Score = winnerId === match.team2Id ? 1 : 0;
 

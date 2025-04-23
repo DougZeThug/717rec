@@ -34,15 +34,22 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
     >
       <ScoreButtonGroup
         value={value}
-        onChange={(scores) => {
-          onChange(scores);
+        onChange={(gameWins) => {
+          // Calculate binary match scores based on game wins
+          const team1Won = gameWins.team1Score > gameWins.team2Score;
+          const matchScores = {
+            team1Score: team1Won ? 1 : 0,
+            team2Score: team1Won ? 0 : 1
+          };
+          
+          // Update match scores (binary win/loss)
+          onChange(matchScores);
+          
+          // If we have a game wins handler, pass the actual game wins
           if (onChangeGameWins) {
-            // Ensure we pass the numeric game wins - parse and default to 0 if invalid
-            const team1GameWins = parseInt(String(scores.team1Score)) || 0;
-            const team2GameWins = parseInt(String(scores.team2Score)) || 0;
             onChangeGameWins({
-              team1GameWins,
-              team2GameWins
+              team1GameWins: gameWins.team1Score,
+              team2GameWins: gameWins.team2Score
             });
           }
         }}

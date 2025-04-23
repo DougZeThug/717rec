@@ -36,7 +36,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   };
 
   const handleGameWinsChange = (gameWins: { team1GameWins: number; team2GameWins: number }) => {
-    // Ensure we pass integer values
+    // Ensure we pass integer values for game wins
     const team1GameWins = parseInt(String(gameWins.team1GameWins)) || 0;
     const team2GameWins = parseInt(String(gameWins.team2GameWins)) || 0;
     onGameWinsChange(index, team1GameWins, team2GameWins);
@@ -44,9 +44,9 @@ const MatchRow: React.FC<MatchRowProps> = ({
   
   const isCompleted = match.iscompleted || false;
   
-  // Determine which team is winning (if any)
-  const team1Winning = match.team1Score !== null && match.team2Score !== null && match.team1Score > match.team2Score;
-  const team2Winning = match.team1Score !== null && match.team2Score !== null && match.team2Score > match.team1Score;
+  // Determine which team is winning (if any) based on match scores (binary indicators)
+  const team1Winning = match.team1Score === 1;
+  const team2Winning = match.team2Score === 1;
   
   return (
     <motion.div 
@@ -73,8 +73,12 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
       <ScoreSection
         value={{
-          team1Score: typeof match.team1Score === 'number' ? match.team1Score : null,
-          team2Score: typeof match.team2Score === 'number' ? match.team2Score : null
+          team1Score: match.team1_game_wins !== null && typeof match.team1_game_wins !== 'undefined' 
+            ? match.team1_game_wins 
+            : null,
+          team2Score: match.team2_game_wins !== null && typeof match.team2_game_wins !== 'undefined' 
+            ? match.team2_game_wins 
+            : null
         }}
         onScoreChange={handleScoreChange}
         onGameWinsChange={handleGameWinsChange}
