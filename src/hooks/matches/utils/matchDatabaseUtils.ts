@@ -23,10 +23,14 @@ export const updateMatchScore = async ({
   // Determine match results based on match scores (1/0), not game wins
   const team1Win = team1Score > team2Score;
   
+  // Ensure game wins are integers
+  const processedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
+  const processedTeam2GameWins = parseInt(String(team2GameWins)) || 0;
+  
   console.log('Submitting match:', {
     matchId,
-    team1GameWins,
-    team2GameWins,
+    team1GameWins: processedTeam1GameWins,
+    team2GameWins: processedTeam2GameWins,
     team1_score: team1Win ? 1 : 0,
     team2_score: team1Win ? 0 : 1,
     winner_id: team1Win ? team1_id : team2_id
@@ -35,8 +39,8 @@ export const updateMatchScore = async ({
   const updatePayload = {
     team1_score: team1Win ? 1 : 0,
     team2_score: team1Win ? 0 : 1,
-    team1_game_wins: team1GameWins,
-    team2_game_wins: team2GameWins,
+    team1_game_wins: processedTeam1GameWins,
+    team2_game_wins: processedTeam2GameWins,
     iscompleted: true,
     winner_id: team1Win ? team1_id : team2_id,
     loser_id: team1Win ? team2_id : team1_id

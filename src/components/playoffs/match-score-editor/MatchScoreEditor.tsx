@@ -15,7 +15,9 @@ interface MatchScoreEditorProps {
     matchId: string,
     team1Score: number,
     team2Score: number,
-    games: { team1Score: number; team2Score: number; }[]
+    games: { team1Score: number; team2Score: number; }[],
+    team1GameWins: number,
+    team2GameWins: number
   ) => Promise<void>;
   onCancel: () => void;
 }
@@ -94,7 +96,8 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       const team1Score = team1Wins > team2Wins ? 1 : 0;
       const team2Score = team2Wins > team1Wins ? 1 : 0;
       
-      await onSave(match.id, team1Score, team2Score, games);
+      // Pass the game win counts to onSave
+      await onSave(match.id, team1Score, team2Score, games, team1Wins, team2Wins);
       onCancel();
     } catch (error) {
       console.error("Error saving match scores:", error);

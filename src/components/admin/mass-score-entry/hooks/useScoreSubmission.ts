@@ -52,6 +52,7 @@ export const useScoreSubmission = (
       for (const match of editedMatches) {
         try {
           console.log(`[useScoreSubmission] Processing match ${match.id}: Team1(${match.team1Id}): ${match.team1Score} - Team2(${match.team2Id}): ${match.team2Score}`);
+          console.log(`[useScoreSubmission] Game wins: Team1: ${match.team1_game_wins || 0}, Team2: ${match.team2_game_wins || 0}`);
           
           const validation = validateMatchSubmission(match);
           if (!validation.isValid) {
@@ -94,9 +95,9 @@ export const useScoreSubmission = (
                 losses: team.losses 
               })));
               
-            // Get the game wins for each team
-            const winnerGameWins = winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
-            const loserGameWins = loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+            // Get the game wins for each team as integers
+            const winnerGameWins = parseInt(String(winnerId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0))) || 0;
+            const loserGameWins = parseInt(String(loserId === match.team1Id ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0))) || 0;
               
             console.log(`[useScoreSubmission] Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
               

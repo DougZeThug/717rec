@@ -10,11 +10,17 @@ export const updateTeamStatsRecord = async (
   loserGameWins: number = 0
 ) => {
   try {
+    // Ensure game wins are integers
+    const parsedWinnerGameWins = parseInt(String(winnerGameWins)) || 0;
+    const parsedLoserGameWins = parseInt(String(loserGameWins)) || 0;
+    
+    console.log(`[TeamStatsService] Updating team stats: Winner (${winnerId}): ${parsedWinnerGameWins} game wins, Loser (${loserId}): ${parsedLoserGameWins} game wins`);
+    
     const success = await applyMatchResult(
       winnerId,
       loserId,
-      winnerGameWins,
-      loserGameWins
+      parsedWinnerGameWins,
+      parsedLoserGameWins
     );
 
     if (!success) {

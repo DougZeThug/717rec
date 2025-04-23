@@ -36,7 +36,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
   };
 
   const handleGameWinsChange = (gameWins: { team1GameWins: number; team2GameWins: number }) => {
-    onGameWinsChange(index, gameWins.team1GameWins, gameWins.team2GameWins);
+    // Ensure we pass integer values
+    const team1GameWins = parseInt(String(gameWins.team1GameWins)) || 0;
+    const team2GameWins = parseInt(String(gameWins.team2GameWins)) || 0;
+    onGameWinsChange(index, team1GameWins, team2GameWins);
   };
   
   const isCompleted = match.iscompleted || false;
