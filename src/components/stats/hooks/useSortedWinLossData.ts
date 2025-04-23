@@ -5,87 +5,73 @@ export interface ChartDataItem {
   name: string;
   wins: number;
   losses: number;
-  winPercentage: number;
+  winPercentage: number; // legacy, but data uses win_percentage
   powerScore: number;
   imageUrl?: string | null;
   logoUrl?: string | null;
   id: string;
+  win_percentage?: number; // add for compatibility with v_team_details
 }
 
 export function useSortedWinLossData(
   data: ChartDataItem[] = [],
   chartLimit: number
 ) {
-  // Always memoize on data and chartLimit
   return React.useMemo(() => {
     if (!Array.isArray(data)) return [];
 
-    // Map data with calculated win percentage
-    const dataWithCalculations = data.map((team, index) => {
-      const wins = typeof team.wins === "number" ? team.wins : 0;
-      const losses = typeof team.losses === "number" ? team.losses : 0;
-      const totalGames = wins + losses;
-      const tooltipName =
-        typeof team.name === "string" && team.name.trim().length > 0
-          ? team.name
-          : `Team ${index + 1}`;
-      const calculatedWinPct = totalGames === 0 ? 0 : wins / totalGames;
-      
-      return {
-        ...team,
-        wins,
-        losses,
-        calculatedWinPct,
-        sortIndex: index,
-        tooltipName,
-      };
-    });
+    // Filter out teams without win_percentage (safety for correct input)
+    const filtered = data.filter(
+      (team) => typeof team.win_percentage === "number"
+    );
 
-    // Sort data by win percentage (descending), then wins (descending), then alphabetically
-    const processedData = dataWithCalculations
+    const sortedData = filtered
       .sort((a, b) => {
-        // Primary: win percentage
-        if (b.calculatedWinPct !== a.calculatedWinPct) {
-          return b.calculatedWinPct - a.calculatedWinPct;
+        // 1. win_percentage descending
+        if (b.win_percentage !== a.win_percentage) {
+          return (b.win_percentage ?? 0) - (a.win_percentage ?? 0);
         }
-        // Secondary: total wins
+        // 2. total wins descending
         if (b.wins !== a.wins) {
           return b.wins - a.wins;
         }
-        // Tertiary: alphabetical by name (case-insensitive)
-        const aName = (a.tooltipName || "").toLowerCase();
-        const bName = (b.tooltipName || "").toLowerCase();
-        if (aName < bName) return -1;
-        if (aName > bName) return 1;
-        return 0;
+        // 3. alphabetical
+        const aName = (a.name ?? "").toLowerCase();
+        const bName = (b.name ?? "").toLowerCase();
+        return aName.localeCompare(bName);
       })
+      // Allow teams with 0–0 or undefined records if chartLimit not reached
       .filter((team, index) => {
-        const hasPlayed = team.wins + team.losses > 0;
-        // Allow teams with no games if we still have chart space
+        const hasPlayed = (team.wins ?? 0) + (team.losses ?? 0) > 0;
         return hasPlayed || index < chartLimit;
       })
       .slice(0, chartLimit)
-      .map((team, index) => {
-        // Unique displayName for chart category: "1. Team Name" etc
-        const displayName = `${index + 1}. ${team.tooltipName}`;
+      .map((team, idx) => {
+        const tooltipName =
+          typeof team.name === "string" && team.name.trim().length > 0
+            ? team.name
+            : `Team ${idx + 1}`;
+        // Unique, ordered display name for chart X axis
         return {
           ...team,
-          displayName,
+          displayName: `${idx + 1}. ${tooltipName}`,
+          tooltipName,
+          calculatedWinPct: team.win_percentage ?? 0, // for backward compat/tooltips
         };
       });
 
-    // Console log for debugging sorted order and display keys
+    // Debug output for chart order and win pct
     console.log(
-      "✅ useSortedWinLossData result",
-      processedData.map((t, i) => ({
+      "✅ [useSortedWinLossData] Sorted Win-Loss Chart Data:",
+      sortedData.map((t, i) => ({
         displayName: t.displayName,
-        tooltipName: t.tooltipName,
+        winPct: t.win_percentage?.toFixed(3),
         wins: t.wins,
         losses: t.losses,
-        winPct: t.calculatedWinPct.toFixed(3),
         idx: i,
       }))
     );
-    return processedData;
+
+    return sortedData;
   }, [data, chartLimit]);
 }
