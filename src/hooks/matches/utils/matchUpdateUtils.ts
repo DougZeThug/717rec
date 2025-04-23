@@ -14,14 +14,18 @@ export const updateMatchInDatabase = async (
   const team1MatchScore = winnerId === matchResult.team1Id ? 1 : 0;
   const team2MatchScore = winnerId === matchResult.team2Id ? 1 : 0;
   
+  // Ensure game wins are parsed as integers
+  const parsedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
+  const parsedTeam2GameWins = parseInt(String(team2GameWins)) || 0;
+  
   console.log(`[matchUpdateUtils] Processing match ${matchId}:`, {
     match_scores: {
       team1: { id: matchResult.team1Id, matchScore: team1MatchScore },
       team2: { id: matchResult.team2Id, matchScore: team2MatchScore }
     },
     game_scores: {
-      team1: { id: matchResult.team1Id, gameWins: team1GameWins },
-      team2: { id: matchResult.team2Id, gameWins: team2GameWins }
+      team1: { id: matchResult.team1Id, gameWins: parsedTeam1GameWins },
+      team2: { id: matchResult.team2Id, gameWins: parsedTeam2GameWins }
     },
     winner_id: winnerId,
     loser_id: loserId
@@ -39,9 +43,12 @@ export const updateMatchInDatabase = async (
     iscompleted: true,
     winner_id: winnerId,
     loser_id: loserId,
-    team1_game_wins: team1GameWins,  // Actual game wins
-    team2_game_wins: team2GameWins   // Actual game wins
+    team1_game_wins: parsedTeam1GameWins,  // Actual game wins
+    team2_game_wins: parsedTeam2GameWins   // Actual game wins
   };
+
+  // Debug log to confirm payload just before Supabase update
+  console.log('✅ Final updateData to Supabase:', updateData);
 
   const { data: matchData, error: matchError } = await supabase
     .from('matches')

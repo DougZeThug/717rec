@@ -92,6 +92,7 @@ export const useScoreSubmission = (
             loser_id: match.team1Score === 1 ? match.team2Id : match.team1Id
           });
 
+          // Ensure the full match object is passed with all properties
           const success = await updateMatchInDatabase(match);
           if (!success) {
             addError(match.id, "Failed to update match");

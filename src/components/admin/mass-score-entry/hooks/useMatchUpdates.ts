@@ -38,17 +38,19 @@ export const useMatchUpdates = () => {
       const team1Score = winnerId === match.team1Id ? 1 : 0;
       const team2Score = winnerId === match.team2Id ? 1 : 0;
 
+      // Create the update payload, ensuring all values are explicitly set
       const updatePayload = {
         team1_score: team1Score,
         team2_score: team2Score,
         iscompleted: match.iscompleted,
         winner_id: winnerId,
         loser_id: loserId,
-        team1_game_wins: team1GameWins,
-        team2_game_wins: team2GameWins
+        team1_game_wins: team1GameWins, // Explicitly set parsed game wins
+        team2_game_wins: team2GameWins  // Explicitly set parsed game wins
       };
       
-      console.log(`🚀 Update payload for match ${match.id}:`, updatePayload);
+      // Add debug log to verify the payload before submission
+      console.log(`✅ Payload sent to Supabase for match ${match.id}:`, updatePayload);
 
       const { data, error } = await supabase
         .from('matches')

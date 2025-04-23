@@ -47,6 +47,9 @@ export const updateMatchScore = async ({
     loser_id: team1Win ? team2_id : team1_id
   };
 
+  // Debug log to confirm payload just before Supabase update
+  console.log('✅ Final updatePayload to Supabase:', updatePayload);
+
   const { data, error } = await supabase
     .from('matches')
     .update(updatePayload)
