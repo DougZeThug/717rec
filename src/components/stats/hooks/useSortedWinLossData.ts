@@ -30,11 +30,12 @@ export function useSortedWinLossData(
         typeof team.name === "string" && team.name.trim().length > 0
           ? team.name
           : `Team ${index + 1}`;
+      const calculatedWinPct = totalGames === 0 ? 0 : wins / totalGames;
       return {
         ...team,
         wins,
         losses,
-        calculatedWinPct: totalGames === 0 ? 0 : wins / totalGames,
+        calculatedWinPct,
         sortIndex: index,
         tooltipName,
       };
@@ -47,7 +48,15 @@ export function useSortedWinLossData(
           return b.calculatedWinPct - a.calculatedWinPct;
         }
         // Secondary: total wins
-        return b.wins - a.wins;
+        if (b.wins !== a.wins) {
+          return b.wins - a.wins;
+        }
+        // Tertiary: alphabetical by name (case-insensitive)
+        const aName = (a.tooltipName || "").toLowerCase();
+        const bName = (b.tooltipName || "").toLowerCase();
+        if (aName < bName) return -1;
+        if (aName > bName) return 1;
+        return 0;
       })
       .filter((team, index) => {
         const hasPlayed = team.wins + team.losses > 0;
