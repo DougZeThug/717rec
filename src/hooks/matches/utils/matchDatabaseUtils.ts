@@ -47,10 +47,11 @@ export const updateMatchScore = async ({
   };
 
   // Add detailed type logging
-  console.log("🧪 FINAL payload to Supabase (with types):", {
+  console.log("🛠 FINAL payload to Supabase (with types):", {
+    matchId,
     ...updatePayload,
-    team1_game_wins_type: typeof updatePayload.team1_game_wins,
-    team2_game_wins_type: typeof updatePayload.team2_game_wins
+    typeof_team1GameWins: typeof updatePayload.team1_game_wins,
+    typeof_team2GameWins: typeof updatePayload.team2_game_wins
   });
 
   // Warning for zero-win submissions
