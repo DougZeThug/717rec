@@ -1,0 +1,54 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { SubmitScoreParams } from "../types/matchSubmissionTypes";
+
+export const updateMatchScore = async ({
+  matchId,
+  team1Score,
+  team2Score,
+  team1GameWins = 0,
+  team2GameWins = 0
+}: SubmitScoreParams) => {
+  // Fetch the match data to get team IDs
+  const { data: matchData, error: matchError } = await supabase
+    .from('matches')
+    .select('team1_id, team2_id')
+    .eq('id', matchId)
+    .single();
+    
+  if (matchError) throw matchError;
+  
+  const { team1_id, team2_id } = matchData;
+  
+  // Determine match results based on match scores (1/0), not game wins
+  const team1Win = team1Score > team2Score;
+  
+  console.log('Submitting match:', {
+    matchId,
+    team1GameWins,
+    team2GameWins,
+    team1_score: team1Win ? 1 : 0,
+    team2_score: team1Win ? 0 : 1,
+    winner_id: team1Win ? team1_id : team2_id
+  });
+
+  const updatePayload = {
+    team1_score: team1Win ? 1 : 0,
+    team2_score: team1Win ? 0 : 1,
+    team1_game_wins: team1GameWins,
+    team2_game_wins: team2GameWins,
+    iscompleted: true,
+    winner_id: team1Win ? team1_id : team2_id,
+    loser_id: team1Win ? team2_id : team1_id
+  };
+
+  const { data, error } = await supabase
+    .from('matches')
+    .update(updatePayload)
+    .eq('id', matchId)
+    .select();
+
+  if (error) throw error;
+  
+  return { data, team1_id, team2_id, team1Win };
+};
