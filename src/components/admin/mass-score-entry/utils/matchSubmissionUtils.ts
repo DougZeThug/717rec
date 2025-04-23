@@ -1,3 +1,4 @@
+
 export const validateMatchSubmission = (match: any) => {
   // Basic validation that we have a match object
   if (!match) {
