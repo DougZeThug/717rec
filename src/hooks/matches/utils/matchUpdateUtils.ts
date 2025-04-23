@@ -15,8 +15,8 @@ export const updateMatchInDatabase = async (
   const team2MatchScore = winnerId === matchResult.team2Id ? 1 : 0;
   
   // Ensure game wins are parsed as integers
-  const parsedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
-  const parsedTeam2GameWins = parseInt(String(team2GameWins)) || 0;
+  const parsedTeam1GameWins = Number.isInteger(team1GameWins) ? team1GameWins : parseInt(String(team1GameWins)) || 0;
+  const parsedTeam2GameWins = Number.isInteger(team2GameWins) ? team2GameWins : parseInt(String(team2GameWins)) || 0;
   
   console.log(`[matchUpdateUtils] Processing match ${matchId}:`, {
     match_scores: {
@@ -53,7 +53,11 @@ export const updateMatchInDatabase = async (
   };
 
   // Debug log to confirm payload just before Supabase update
-  console.log('✅ Final updateData to Supabase:', updateData);
+  console.log('✅ Final updateData to Supabase:', {
+    ...updateData,
+    team1_game_wins_type: typeof updateData.team1_game_wins,
+    team2_game_wins_type: typeof updateData.team2_game_wins
+  });
 
   const { data: matchData, error: matchError } = await supabase
     .from('matches')
@@ -68,7 +72,7 @@ export const updateMatchInDatabase = async (
 
   // Check if no rows were updated
   if (!matchData || matchData.length === 0) {
-    console.warn(`⚠️ Supabase update matched no rows. Check matchId:`, matchId);
+    console.warn(`⚠️ Supabase update returned 0 rows affected — possible match ID mismatch:`, matchId);
   }
 
   console.log(`[matchUpdateUtils] Match ${matchId} updated successfully:`, matchData);

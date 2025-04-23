@@ -13,8 +13,12 @@ export const validateMatchSubmission = (match: any) => {
     }
 
     // Parse game wins as integers or default to 0
-    const team1GameWins = parseInt(String(match.team1_game_wins)) || 0;
-    const team2GameWins = parseInt(String(match.team2_game_wins)) || 0;
+    const team1GameWins = Number.isInteger(match.team1_game_wins) ? 
+      match.team1_game_wins : 
+      parseInt(String(match.team1_game_wins)) || 0;
+    const team2GameWins = Number.isInteger(match.team2_game_wins) ? 
+      match.team2_game_wins : 
+      parseInt(String(match.team2_game_wins)) || 0;
 
     // Warn if a completed match has zero game wins
     if (team1GameWins === 0 && team2GameWins === 0) {

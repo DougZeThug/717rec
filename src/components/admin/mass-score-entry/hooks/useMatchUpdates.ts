@@ -28,8 +28,12 @@ export const useMatchUpdates = () => {
       }
 
       // Ensure game wins are properly parsed as integers
-      const team1GameWins = parseInt(String(match.team1_game_wins)) || 0;
-      const team2GameWins = parseInt(String(match.team2_game_wins)) || 0;
+      const team1GameWins = Number.isInteger(match.team1_game_wins) ? 
+          match.team1_game_wins : 
+          parseInt(String(match.team1_game_wins)) || 0;
+      const team2GameWins = Number.isInteger(match.team2_game_wins) ? 
+          match.team2_game_wins : 
+          parseInt(String(match.team2_game_wins)) || 0;
       
       console.log(`Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);
       console.log(`Game wins - Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
@@ -52,8 +56,15 @@ export const useMatchUpdates = () => {
       // Debug log to verify the payload before submission
       console.log(`🧪 Final Supabase update payload for match ${match.id}:`, {
         id: match.id,
-        ...updatePayload
+        ...updatePayload,
+        team1_game_wins_type: typeof updatePayload.team1_game_wins,
+        team2_game_wins_type: typeof updatePayload.team2_game_wins
       });
+
+      // Warning if submitting a match with zero game wins
+      if (updatePayload.team1_game_wins === 0 && updatePayload.team2_game_wins === 0) {
+        console.warn("⚠️ Submitting match with 0-0 game wins. This may be incorrect.");
+      }
 
       const { data, error } = await supabase
         .from('matches')
@@ -68,7 +79,7 @@ export const useMatchUpdates = () => {
       
       // Check if no rows were updated
       if (!data || data.length === 0) {
-        console.warn(`⚠️ Supabase update matched no rows. Check matchId:`, match.id);
+        console.warn(`⚠️ Supabase update returned 0 rows affected — possible match ID mismatch:`, match.id);
         throw new Error(`No rows updated for match ${match.id}`);
       }
       
