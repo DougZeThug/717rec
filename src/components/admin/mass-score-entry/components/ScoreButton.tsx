@@ -22,10 +22,15 @@ const ScoreButton = ({
   disabled = false,
   isCompleted = false
 }: ScoreButtonProps) => {
+  const handleClick = () => {
+    console.log(`Selected game score: ${option.team1Score}-${option.team2Score}`);
+    onClick();
+  };
+
   return (
     <motion.button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
       whileTap={{ scale: 0.95 }}
       className={cn(

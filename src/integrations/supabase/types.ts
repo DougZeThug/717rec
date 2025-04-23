@@ -41,6 +41,36 @@ export type Database = {
           },
         ]
       }
+      debug_match_updates: {
+        Row: {
+          id: string
+          inserted_at: string | null
+          match_id: string | null
+          team1_game_wins: number | null
+          team1_score: number | null
+          team2_game_wins: number | null
+          team2_score: number | null
+        }
+        Insert: {
+          id?: string
+          inserted_at?: string | null
+          match_id?: string | null
+          team1_game_wins?: number | null
+          team1_score?: number | null
+          team2_game_wins?: number | null
+          team2_score?: number | null
+        }
+        Update: {
+          id?: string
+          inserted_at?: string | null
+          match_id?: string | null
+          team1_game_wins?: number | null
+          team1_score?: number | null
+          team2_game_wins?: number | null
+          team2_score?: number | null
+        }
+        Relationships: []
+      }
       divisions: {
         Row: {
           created_at: string | null

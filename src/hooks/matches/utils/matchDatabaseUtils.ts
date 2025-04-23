@@ -24,37 +24,36 @@ export const updateMatchScore = async ({
   const team1Win = team1Score > team2Score;
   
   // Ensure game wins are integers
-  const processedTeam1GameWins = Number.isInteger(team1GameWins) ? team1GameWins : parseInt(String(team1GameWins)) || 0;
-  const processedTeam2GameWins = Number.isInteger(team2GameWins) ? team2GameWins : parseInt(String(team2GameWins)) || 0;
+  const processedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
+  const processedTeam2GameWins = parseInt(String(team2GameWins)) || 0;
   
-  console.log('🚀 Submitting match to Supabase:', {
-    matchId,
-    team1GameWins: processedTeam1GameWins,
-    team2GameWins: processedTeam2GameWins,
-    team1_score: team1Win ? 1 : 0,
-    team2_score: team1Win ? 0 : 1,
-    winner_id: team1Win ? team1_id : team2_id,
-    loser_id: team1Win ? team2_id : team1_id
-  });
-
-  const updatePayload = {
+  // Insert into debug table before Supabase update
+  await supabase.from("debug_match_updates").insert({
+    match_id: matchId,
     team1_score: team1Win ? 1 : 0,
     team2_score: team1Win ? 0 : 1,
     team1_game_wins: processedTeam1GameWins,
     team2_game_wins: processedTeam2GameWins,
+  });
+
+  const updatePayload = {
+    team1_score: team1Win ? 1 : 0,          // Binary winner indicator (1/0)
+    team2_score: team1Win ? 0 : 1,          // Binary winner indicator (1/0)
     iscompleted: true,
     winner_id: team1Win ? team1_id : team2_id,
-    loser_id: team1Win ? team2_id : team1_id
+    loser_id: team1Win ? team2_id : team1_id,
+    team1_game_wins: Number.isInteger(processedTeam1GameWins) ? processedTeam1GameWins : parseInt(String(processedTeam1GameWins)) || 0,
+    team2_game_wins: Number.isInteger(processedTeam2GameWins) ? processedTeam2GameWins : parseInt(String(processedTeam2GameWins)) || 0
   };
 
-  // Debug log to confirm payload just before Supabase update
-  console.log('✅ Final updatePayload to Supabase:', {
+  // Add detailed type logging
+  console.log("🧪 FINAL payload to Supabase (with types):", {
     ...updatePayload,
     team1_game_wins_type: typeof updatePayload.team1_game_wins,
     team2_game_wins_type: typeof updatePayload.team2_game_wins
   });
 
-  // Warning if submitting a match with zero game wins
+  // Warning for zero-win submissions
   if (updatePayload.team1_game_wins === 0 && updatePayload.team2_game_wins === 0) {
     console.warn("⚠️ Submitting match with 0-0 game wins. This may be incorrect.");
   }
@@ -65,12 +64,12 @@ export const updateMatchScore = async ({
     .eq('id', matchId)
     .select();
 
-  if (error) throw error;
-  
-  // Check if no rows were updated
+  // Fallback logging for empty update
   if (!data || data.length === 0) {
-    console.warn("⚠️ Supabase update returned 0 rows affected — possible match ID mismatch:", matchId);
+    console.warn("⚠️ No rows updated in Supabase. Check for RLS or malformed payload.");
   }
+
+  if (error) throw error;
   
   return { data, team1_id, team2_id, team1Win };
 };
