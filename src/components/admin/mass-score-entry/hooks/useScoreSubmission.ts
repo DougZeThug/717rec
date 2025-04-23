@@ -58,6 +58,11 @@ export const useScoreSubmission = (
           console.log(`[useScoreSubmission] Processing match ${match.id}: Team1(${match.team1Id}): ${match.team1Score} - Team2(${match.team2Id}): ${match.team2Score}`);
           console.log(`[useScoreSubmission] Game wins: Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
           
+          // Warning for completed matches with zero game wins
+          if (match.iscompleted && team1GameWins === 0 && team2GameWins === 0) {
+            console.warn("⚠️ Completed match has zero game wins:", match.id);
+          }
+          
           // Update match object with parsed game wins to ensure integer values
           match.team1_game_wins = team1GameWins;
           match.team2_game_wins = team2GameWins;

@@ -49,8 +49,11 @@ export const useMatchUpdates = () => {
         team2_game_wins: team2GameWins  // Explicitly set parsed game wins
       };
       
-      // Add debug log to verify the payload before submission
-      console.log(`✅ Payload sent to Supabase for match ${match.id}:`, updatePayload);
+      // Debug log to verify the payload before submission
+      console.log(`🧪 Final Supabase update payload for match ${match.id}:`, {
+        id: match.id,
+        ...updatePayload
+      });
 
       const { data, error } = await supabase
         .from('matches')
@@ -61,6 +64,12 @@ export const useMatchUpdates = () => {
       if (error) {
         console.error(`Error updating match ${match.id}:`, error);
         throw error;
+      }
+      
+      // Check if no rows were updated
+      if (!data || data.length === 0) {
+        console.warn(`⚠️ Supabase update matched no rows. Check matchId:`, match.id);
+        throw new Error(`No rows updated for match ${match.id}`);
       }
       
       console.log(`Match ${match.id} updated successfully:`, data);

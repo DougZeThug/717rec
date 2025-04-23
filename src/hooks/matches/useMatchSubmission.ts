@@ -28,6 +28,11 @@ export const useMatchSubmission = () => {
         team2GameWins: parsedTeam2GameWins
       });
       
+      // Validation for completed matches with zero game wins
+      if (parsedTeam1GameWins === 0 && parsedTeam2GameWins === 0) {
+        console.warn("⚠️ Attempting to submit match with zero game wins:", matchId);
+      }
+      
       // Update match score and get result details
       const { data, team1_id, team2_id, team1Win } = await updateMatchScore({
         matchId,

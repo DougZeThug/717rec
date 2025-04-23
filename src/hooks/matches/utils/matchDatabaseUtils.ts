@@ -58,5 +58,10 @@ export const updateMatchScore = async ({
 
   if (error) throw error;
   
+  // Check if no rows were updated
+  if (!data || data.length === 0) {
+    console.warn("⚠️ Supabase update matched no rows. Check matchId:", matchId);
+  }
+  
   return { data, team1_id, team2_id, team1Win };
 };

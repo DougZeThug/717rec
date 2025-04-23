@@ -61,6 +61,11 @@ export const updateMatchInDatabase = async (
     throw matchError;
   }
 
+  // Check if no rows were updated
+  if (!matchData || matchData.length === 0) {
+    console.warn(`⚠️ Supabase update matched no rows. Check matchId:`, matchId);
+  }
+
   console.log(`[matchUpdateUtils] Match ${matchId} updated successfully:`, matchData);
   return matchData;
 };
