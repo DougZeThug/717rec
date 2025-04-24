@@ -12,12 +12,6 @@ const ctaMessages = [
     buttonLink: `mailto:${LEAGUE_CONTACT_EMAIL}`
   },
   {
-    heading: "Check Out The Standings",
-    subheading: "See who's leading the league and follow your favorite teams as they climb the rankings!",
-    buttonText: "View Standings",
-    buttonLink: "/stats"
-  },
-  {
     heading: "New Season Starting Soon",
     subheading: "Get your team registered for the upcoming season. Limited spots available!",
     buttonText: "Learn More",
