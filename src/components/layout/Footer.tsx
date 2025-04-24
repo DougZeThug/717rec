@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Mail } from "lucide-react";
+import { LEAGUE_CONTACT_EMAIL } from "@/config/contact";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -23,10 +24,10 @@ const Footer = () => {
             <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center md:justify-start gap-2 font-inter">
               <Mail size={16} className="text-gray-600 dark:text-gray-300" />
               <a 
-                href="mailto:info@717rec.com" 
+                href={`mailto:${LEAGUE_CONTACT_EMAIL}`} 
                 className="hover:text-gray-900 dark:hover:text-white transition-colors font-inter font-medium"
               >
-                info@717rec.com
+                {LEAGUE_CONTACT_EMAIL}
               </a>
             </p>
           </div>
