@@ -18,14 +18,23 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   onComplete,
   isCompleted = false
 }) => {
-  const isSelected = (option: typeof SCORE_OPTIONS[number]) =>
-    value?.team1Score === option.team1Score && 
-    value?.team2Score === option.team2Score;
+  // More robust check for selected button - handles null, undefined and number values
+  const isSelected = (option: typeof SCORE_OPTIONS[number]) => {
+    if (!value) return false;
+    
+    const team1Score = typeof value.team1Score === 'number' ? value.team1Score : null;
+    const team2Score = typeof value.team2Score === 'number' ? value.team2Score : null;
+    
+    return team1Score === option.team1Score && team2Score === option.team2Score;
+  };
 
   const handleSelect = (option: typeof SCORE_OPTIONS[number]) => {
+    console.log(`ScoreButtonGroup: selected option ${option.label} (${option.team1Score}-${option.team2Score})`);
+    
+    // Always ensure we pass actual numbers
     onChange({
-      team1Score: option.team1Score,
-      team2Score: option.team2Score
+      team1Score: Number(option.team1Score),
+      team2Score: Number(option.team2Score)
     });
     
     if (onComplete) {

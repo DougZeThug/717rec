@@ -8,9 +8,15 @@
  * @returns boolean indicating if scores are valid
  */
 export const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
+  // Ensure both scores are numbers
+  if (typeof score1 !== 'number' || typeof score2 !== 'number') {
+    return false;
+  }
+  
   // Binary match scores must be 1 for one team and 0 for the other
   if (score1 === 1 && score2 === 0) return true;
   if (score1 === 0 && score2 === 1) return true;
+  
   return false;
 };
 
@@ -21,10 +27,25 @@ export const validateMatchScores = (score1?: number | null, score2?: number | nu
  * @returns boolean indicating if game wins are valid
  */
 export const validateGameWins = (gameWins1?: number | null, gameWins2?: number | null): boolean => {
-  // Game wins must be integers and cannot be tied
-  if (typeof gameWins1 !== 'number' || typeof gameWins2 !== 'number') return false;
-  if (isNaN(gameWins1) || isNaN(gameWins2)) return false;
-  if (gameWins1 === gameWins2) return false;
+  // Game wins must be integers
+  if (typeof gameWins1 !== 'number' || typeof gameWins2 !== 'number') {
+    return false;
+  }
+  
+  if (isNaN(gameWins1) || isNaN(gameWins2)) {
+    return false;
+  }
+  
+  // Game wins cannot be tied (one team must have more wins than the other)
+  if (gameWins1 === gameWins2) {
+    return false;
+  }
+  
+  // Game wins must be non-negative
+  if (gameWins1 < 0 || gameWins2 < 0) {
+    return false;
+  }
+  
   return true;
 };
 
@@ -42,19 +63,24 @@ export const validateMatchResult = (
   team1GameWins?: number | null,
   team2GameWins?: number | null
 ): { isValid: boolean; message?: string } => {
-  // Check binary scores are valid
+  // First ensure the binary scores are valid
   if (!validateMatchScores(team1Score, team2Score)) {
     return { isValid: false, message: "Invalid match scores: one team must win" };
   }
   
+  // Convert possible null/undefined to numbers
+  const t1GameWins = typeof team1GameWins === 'number' ? team1GameWins : 0;
+  const t2GameWins = typeof team2GameWins === 'number' ? team2GameWins : 0;
+  
   // Check game wins are valid
-  if (!validateGameWins(team1GameWins, team2GameWins)) {
-    return { isValid: false, message: "Invalid game wins: teams cannot tie" };
+  if (!validateGameWins(t1GameWins, t2GameWins)) {
+    return { isValid: false, message: "Invalid game wins: teams cannot tie and must have non-negative wins" };
   }
   
   // Check consistency between match score and game wins
+  // The team with more game wins must be the match winner
   const team1Won = team1Score === 1;
-  const team1HasMoreGameWins = (team1GameWins || 0) > (team2GameWins || 0);
+  const team1HasMoreGameWins = t1GameWins > t2GameWins;
   
   if (team1Won !== team1HasMoreGameWins) {
     return { 

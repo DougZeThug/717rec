@@ -22,10 +22,17 @@ const ScoreButton = ({
   disabled = false,
   isCompleted = false
 }: ScoreButtonProps) => {
+  // Handle click event with a small debounce to prevent double-clicks
+  const handleClick = () => {
+    if (!disabled) {
+      onClick();
+    }
+  };
+
   return (
     <motion.button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
       whileTap={{ scale: 0.95 }}
       className={cn(
@@ -38,6 +45,8 @@ const ScoreButton = ({
         isCompleted && !isSelected && "opacity-60",
         disabled && "opacity-50 cursor-not-allowed"
       )}
+      data-testid={`score-button-${option.label}`}
+      aria-pressed={isSelected}
     >
       {option.label}
     </motion.button>
