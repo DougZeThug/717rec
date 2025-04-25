@@ -56,7 +56,6 @@ export const useMatchScores = () => {
     
     match.team1_game_wins = numericTeam1GameWins;
     match.team2_game_wins = numericTeam2GameWins;
-    match.isEdited = true;
     
     // Calculate binary match scores based on game wins
     if (numericTeam1GameWins > numericTeam2GameWins) {
@@ -65,9 +64,16 @@ export const useMatchScores = () => {
     } else if (numericTeam1GameWins < numericTeam2GameWins) {
       match.team1Score = 0;
       match.team2Score = 1;
+    } else {
+      console.warn(`Game wins cannot be tied for match ${match.id}:`, {
+        team1GameWins: numericTeam1GameWins,
+        team2GameWins: numericTeam2GameWins
+      });
+      // Keep previous scores in case of tie
+      return;
     }
     
-    // Revalidate match with updated scores
+    match.isEdited = true;
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
     setMatches(newMatches);
