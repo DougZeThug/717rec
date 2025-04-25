@@ -104,7 +104,14 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <TableCell className="text-center font-mono">
         <span 
           className={!isLight ? getSosColor(ranking.sos) : ''}
-          style={{ color: isLight ? getSosInlineColor(ranking.sos) : undefined }}
+          style={{ 
+            color: isLight ? (
+              ranking.sos >= 0.875 ? '#b91c1c' :  // red-700
+              ranking.sos >= 0.750 ? '#ef4444' :  // red-500
+              ranking.sos >= 0.550 ? '#f97316' :  // orange-500
+              '#16a34a'  // green-600
+            ) : undefined 
+          }}
         >
           {ranking.sos.toFixed(3)}
         </span>

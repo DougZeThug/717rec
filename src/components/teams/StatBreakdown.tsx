@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Laptop, Trophy, X, Target, Users, Zap, Scale, GitBranch, Medal } from "lucide-react";
 import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/powerScore";
 import RankTrendIndicator from "@/components/stats/RankTrendIndicator";
+import { useTheme } from "next-themes";
 
 interface StatBreakdownProps {
   wins: number;
@@ -33,6 +34,10 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   totalTeams,
   rankChange
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  const sos = parseFloat(strengthOfSchedule);
+  
   React.useEffect(() => {
     if (rankChange !== undefined && rankChange !== 0) {
       console.log(`Team details - Rank: ${rank}, RankChange: ${rankChange}`);
@@ -75,7 +80,15 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
               <Scale size={16} className="mr-1" /> Strength of Schedule
             </div>
             <div className="text-2xl font-bold font-mono">
-              <span className={getSosColor(parseFloat(strengthOfSchedule))}>
+              <span className={!isLight ? getSosColor(sos) : ''}
+                    style={{ 
+                      color: isLight ? (
+                        sos >= 0.875 ? '#b91c1c' :  // red-700
+                        sos >= 0.750 ? '#ef4444' :  // red-500
+                        sos >= 0.550 ? '#f97316' :  // orange-500
+                        '#16a34a'  // green-600
+                      ) : undefined 
+                    }}>
                 {strengthOfSchedule}
               </span>
             </div>

@@ -103,9 +103,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 className={`font-mono ${isLight ? "" : getSosColor(ranking.sos)}`}
                 style={{
                   color: isLight ? (
-                    ranking.sos >= 0.800 ? "#e53e3e" :
-                    ranking.sos >= 0.560 ? "#dd6b20" :
-                    "#2f855a"
+                    ranking.sos >= 0.875 ? '#b91c1c' :  // red-700
+                    ranking.sos >= 0.750 ? '#ef4444' :  // red-500
+                    ranking.sos >= 0.550 ? '#f97316' :  // orange-500
+                    '#16a34a'  // green-600
                   ) : undefined
                 }}
               >
