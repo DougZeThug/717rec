@@ -1,8 +1,10 @@
 
-import React from "react";
-import DivisionRankingsTable from "./DivisionRankingsTable";
+import React, { useMemo } from "react";
 import { Ranking } from "@/types";
 import { SortOptions } from "../RankingsTable";
+import { Table, TableHeader, TableRow, TableHead, TableBody } from "@/components/ui/table";
+import RankingTableRow from "../RankingTableRow";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface DivisionRankingsSectionProps {
   divisionName: string;
@@ -12,7 +14,7 @@ interface DivisionRankingsSectionProps {
   toggleExpand: (teamId: string) => void;
   sortOptions: SortOptions;
   onSortChange: (field: string) => void;
-  showUnified: boolean;
+  showUnified?: boolean;
   isLight: boolean;
 }
 
@@ -24,29 +26,111 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
   toggleExpand,
   sortOptions,
   onSortChange,
-  showUnified,
+  showUnified = false,
   isLight,
-}) => (
-  <div className="mb-8">
-    {!showUnified && (
-      <h3 className="text-lg font-semibold mb-3 flex items-center font-inter text-gray-800 dark:text-white">
-        <span>{divisionName}</span>
-        <span className="ml-1 text-gray-600 dark:text-gray-300">
-          ({rankings.length})
-        </span>
-      </h3>
-    )}
-    <DivisionRankingsTable
-      rankings={rankings}
-      allRankings={allRankings}
-      expandedTeam={expandedTeam}
-      toggleExpand={toggleExpand}
-      sortOptions={sortOptions}
-      onSortChange={onSortChange}
-      showUnified={showUnified}
-      isLight={isLight}
-    />
-  </div>
-);
+}) => {
+  const getSortIndicator = (field: string) => {
+    if (sortOptions.field !== field) return null;
+    return sortOptions.direction === "asc" ? (
+      <ChevronUp className="inline h-4 w-4" />
+    ) : (
+      <ChevronDown className="inline h-4 w-4" />
+    );
+  };
+
+  // Calculate division-specific ranks if not showing unified view
+  const rankedDivisionTeams = useMemo(() => {
+    return rankings.map((team, index) => ({
+      ...team,
+      divisionRank: !showUnified ? index + 1 : undefined,
+    }));
+  }, [rankings, showUnified]);
+
+  return (
+    <div className="mb-8">
+      <h2 className="mb-4 text-xl font-bold font-bebas tracking-widest">
+        {divisionName}
+      </h2>
+      <div className="overflow-auto rounded-lg border">
+        <Table>
+          <TableHeader className="bg-slate-100 dark:bg-gray-800/60">
+            <TableRow>
+              <TableHead 
+                className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 w-12" 
+                onClick={() => onSortChange("rank")}
+              >
+                # {getSortIndicator("rank")}
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("teamName")}
+              >
+                Team {getSortIndicator("teamName")}
+              </TableHead>
+              {showUnified && (
+                <TableHead>Division</TableHead>
+              )}
+              <TableHead 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("powerScore")}
+              >
+                Power {getSortIndicator("powerScore")}
+              </TableHead>
+              <TableHead 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("wins")}
+              >
+                W-L {getSortIndicator("wins")}
+              </TableHead>
+              <TableHead 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("winPercentage")}
+              >
+                Win % {getSortIndicator("winPercentage")}
+              </TableHead>
+              <TableHead 
+                className="text-center hidden md:table-cell cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("gamesWon")}
+              >
+                Games {getSortIndicator("gamesWon")}
+              </TableHead>
+              <TableHead 
+                className="text-center hidden lg:table-cell cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("gameWinPercentage")}
+              >
+                Game % {getSortIndicator("gameWinPercentage")}
+              </TableHead>
+              <TableHead 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("sos")}
+              >
+                SOS {getSortIndicator("sos")}
+              </TableHead>
+              <TableHead 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                onClick={() => onSortChange("streak")}
+              >
+                Streak {getSortIndicator("streak")}
+              </TableHead>
+              <TableHead className="text-center">Trend</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rankedDivisionTeams.map((ranking, index) => (
+              <RankingTableRow
+                key={ranking.teamId}
+                ranking={ranking}
+                index={showUnified ? allRankings.findIndex(r => r.teamId === ranking.teamId) : index}
+                isExpanded={expandedTeam === ranking.teamId}
+                onToggleExpand={() => toggleExpand(ranking.teamId)}
+                showDivision={showUnified}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
 
 export default DivisionRankingsSection;
