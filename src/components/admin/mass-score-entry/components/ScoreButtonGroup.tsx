@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 import ScoreButton from "./ScoreButton";
 import { SCORE_OPTIONS } from "./types";
 
@@ -21,8 +22,23 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   matchId = "unknown",
   matchDate
 }) => {
-  // Log on initial render and value changes
+  // Internal state to track selection
+  const [selectedOption, setSelectedOption] = useState<{
+    team1Score: number;
+    team2Score: number;
+  } | null>(null);
+  
+  // Initialize selection from props
   useEffect(() => {
+    if (value && value.team1Score !== null && value.team2Score !== null) {
+      setSelectedOption({
+        team1Score: Number(value.team1Score),
+        team2Score: Number(value.team2Score)
+      });
+    } else {
+      setSelectedOption(null);
+    }
+    
     console.log(`ScoreButtonGroup initialized for match ${matchId}:`, {
       matchId,
       matchDate,
@@ -32,33 +48,42 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
       team1Score: value?.team1Score,
       team1ScoreType: typeof value?.team1Score,
       team2Score: value?.team2Score,
-      team2ScoreType: typeof value?.team2Score
+      team2ScoreType: typeof value?.team2Score,
+      internalState: selectedOption
     });
-  }, [matchId, matchDate, value]);
+  }, [matchId, matchDate]);
+  
+  // Update internal state when props change
+  useEffect(() => {
+    if (value && value.team1Score !== null && value.team2Score !== null) {
+      console.log(`ScoreButtonGroup value prop changed for match ${matchId}:`, {
+        newValue: value,
+        team1Score: Number(value.team1Score),
+        team2Score: Number(value.team2Score),
+        previousState: selectedOption
+      });
+      
+      setSelectedOption({
+        team1Score: Number(value.team1Score),
+        team2Score: Number(value.team2Score)
+      });
+    }
+  }, [value?.team1Score, value?.team2Score, matchId]);
 
   // Strict numeric comparison for selection state
   const isSelected = (option: typeof SCORE_OPTIONS[number]) => {
-    if (!value) {
-      console.log(`Selection check failed: value is null/undefined for match ${matchId}`);
+    if (!selectedOption) {
       return false;
     }
     
-    // Convert scores to numbers and handle null/undefined
-    const team1Score = value.team1Score === null || value.team1Score === undefined 
-      ? null 
-      : Number(value.team1Score);
-    const team2Score = value.team2Score === null || value.team2Score === undefined 
-      ? null 
-      : Number(value.team2Score);
-    
-    // Detailed logging for selection checking
-    const isMatch = team1Score === Number(option.team1Score) && team2Score === Number(option.team2Score);
+    // Convert to numbers for strict comparison
+    const isMatch = 
+      Number(selectedOption.team1Score) === Number(option.team1Score) && 
+      Number(selectedOption.team2Score) === Number(option.team2Score);
     
     console.log(`Selection check for ${matchId}:`, {
       buttonScores: `${option.team1Score}-${option.team2Score}`,
-      currentValue: `${team1Score}-${team2Score}`,
-      team1Score,
-      team2Score,
+      currentValue: selectedOption ? `${selectedOption.team1Score}-${selectedOption.team2Score}` : 'null',
       optionTeam1Score: Number(option.team1Score),
       optionTeam2Score: Number(option.team2Score),
       isMatch
@@ -71,19 +96,20 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     console.log(`ScoreButtonGroup: selected option for match ${matchId}:`, {
       matchId,
       matchDate,
-      dateType: typeof matchDate,
       label: option.label,
       scores: `${option.team1Score}-${option.team2Score}`,
-      previousValue: value
+      previousValue: selectedOption
     });
     
-    // Always pass numbers
-    const newScores = {
+    // Update internal state first
+    const newSelection = {
       team1Score: Number(option.team1Score),
       team2Score: Number(option.team2Score)
     };
+    setSelectedOption(newSelection);
     
-    onChange(newScores);
+    // Then call the onChange prop
+    onChange(newSelection);
     
     if (onComplete) {
       console.log(`Calling onComplete for match ${matchId}`);

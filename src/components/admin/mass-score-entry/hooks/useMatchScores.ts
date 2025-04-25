@@ -30,6 +30,14 @@ export const useMatchScores = () => {
     match.isEdited = true;
     match.isValid = validateScores(match.team1Score, match.team2Score);
     
+    console.log(`useMatchScores handleScoreChange AFTER update for match ${match.id}:`, {
+      updatedScores: {
+        team1Score: match.team1Score,
+        team2Score: match.team2Score
+      },
+      isValid: match.isValid
+    });
+    
     setMatches(newMatches);
   };
 
@@ -37,13 +45,39 @@ export const useMatchScores = () => {
     const newMatches = [...matches];
     const match = newMatches[index];
     
-    if (!validateGameWins(team1GameWins, team2GameWins)) {
+    // Convert inputs to numbers to ensure consistency
+    const numericTeam1GameWins = Number(team1GameWins);
+    const numericTeam2GameWins = Number(team2GameWins);
+    
+    console.log(`useMatchScores handleGameWinsChange BEFORE update for match ${match.id}:`, {
+      matchId: match.id,
+      previousGameWins: {
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins
+      },
+      newGameWins: {
+        team1GameWins: numericTeam1GameWins,
+        team2GameWins: numericTeam2GameWins
+      }
+    });
+    
+    if (!validateGameWins(numericTeam1GameWins, numericTeam2GameWins)) {
       setValidationError(match.id, "Game wins cannot be tied");
       return;
     }
     
-    const updates = processGameWinsChange(match, team1GameWins, team2GameWins);
+    const updates = processGameWinsChange(match, numericTeam1GameWins, numericTeam2GameWins);
     Object.assign(match, updates);
+    
+    console.log(`useMatchScores handleGameWinsChange AFTER update for match ${match.id}:`, {
+      updatedMatch: {
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins,
+        team1Score: match.team1Score,
+        team2Score: match.team2Score,
+        isValid: match.isValid
+      }
+    });
     
     setMatches(newMatches);
   };

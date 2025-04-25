@@ -25,13 +25,20 @@ export const useGameWinsHandler = () => {
       newGameWins: {
         team1GameWins: numericTeam1GameWins,
         team2GameWins: numericTeam2GameWins
+      },
+      gameWinsTypes: {
+        team1GameWinsType: typeof numericTeam1GameWins,
+        team2GameWinsType: typeof numericTeam2GameWins
       }
     });
     
     const matchScore = calculateMatchScore(numericTeam1GameWins, numericTeam2GameWins);
     if (!matchScore) {
+      console.warn(`Cannot determine match score from game wins: ${numericTeam1GameWins}-${numericTeam2GameWins}`);
       return {};
     }
+
+    console.log(`Match score calculated from game wins ${numericTeam1GameWins}-${numericTeam2GameWins}:`, matchScore);
 
     return {
       team1_game_wins: numericTeam1GameWins,
