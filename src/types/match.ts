@@ -1,5 +1,5 @@
-
 import { Team } from "./index";
+import { Match } from "./index";
 import { UseFormReturn } from "react-hook-form";
 
 export interface MatchFormProps {
