@@ -32,12 +32,17 @@ const ScoreButton = ({
       console.log("%c ScoreButton clicked:", "background: #e0f7fa; color: #006064; font-weight: bold", {
         matchId,
         matchDate,
+        dateType: typeof matchDate,
         scores: `${option.team1Score}-${option.team2Score}`,
         isSelected: Boolean(isSelected),
         wasSelected: isSelected,
         isCompleted,
         label: option.label,
-        timeOfClick: new Date().toISOString()
+        timeOfClick: new Date().toISOString(),
+        optionType: {
+          team1ScoreType: typeof option.team1Score,
+          team2ScoreType: typeof option.team2Score
+        }
       });
       onClick();
       
@@ -46,6 +51,7 @@ const ScoreButton = ({
         console.log("%c ScoreButton after click:", "background: #b2ebf2; color: #006064", {
           matchId,
           matchDate,
+          dateType: typeof matchDate,
           scores: `${option.team1Score}-${option.team2Score}`,
           isSelected: Boolean(isSelected), // This won't reflect changes yet due to React re-render cycle
           label: option.label
@@ -82,6 +88,7 @@ const ScoreButton = ({
       data-score2={option.team2Score}
       data-match-id={matchId} // Added for debugging
       data-match-date={matchDate} // Added for debugging
+      data-date-type={typeof matchDate} // Added for debugging type verification
       aria-pressed={selected}
     >
       {option.label}

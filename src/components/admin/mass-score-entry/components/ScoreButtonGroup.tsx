@@ -27,6 +27,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     console.log(`%c ScoreButtonGroup initialized`, "background: #004d40; color: white", {
       matchId,
       matchDate,
+      dateType: typeof matchDate,
       initialValue: value,
       valueType: typeof value,
       team1Score: value?.team1Score,
@@ -34,13 +35,15 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
       team2Score: value?.team2Score,
       team2ScoreType: typeof value?.team2Score
     });
-  }, [matchId, matchDate]);
+  }, [matchId, matchDate, value]);
 
   // Log on every render
   console.log(`%c ScoreButtonGroup rendering`, "background: #e0f2f1; color: #004d40", {
     matchId,
     matchDate,
+    dateType: typeof matchDate,
     currentValue: value,
+    valueContents: JSON.stringify(value),
     isCompleted
   });
 
@@ -65,8 +68,13 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     console.log(`%c Selection check for ${matchId?.substring(0, 8) || 'unknown'}`, "color: #004d40", {
       buttonScores: `${option.team1Score}-${option.team2Score}`,
       currentValue: `${team1Score}-${team2Score}`,
+      team1Score,
+      team2Score,
+      optionTeam1Score: option.team1Score,
+      optionTeam2Score: option.team2Score,
       isMatch,
       matchDate,
+      dateType: typeof matchDate,
       option
     });
     
@@ -77,9 +85,11 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     console.log(`%c ScoreButtonGroup: selected option`, "background: #b2dfdb; color: #004d40; font-weight: bold", {
       matchId,
       matchDate,
+      dateType: typeof matchDate,
       label: option.label,
       scores: `${option.team1Score}-${option.team2Score}`,
-      previousValue: value
+      previousValue: value,
+      valueJSON: JSON.stringify(value)
     });
     
     // Always pass numbers to prevent type issues
@@ -94,13 +104,16 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     console.log(`%c After onChange call:`, "background: #80cbc4; color: #004d40", {
       matchId,
       matchDate,
-      newScores
+      dateType: typeof matchDate,
+      newScores,
+      newScoresJSON: JSON.stringify(newScores)
     });
     
     if (onComplete) {
       console.log(`%c Calling onComplete for match`, "background: #4db6ac; color: white", {
         matchId,
-        matchDate
+        matchDate,
+        dateType: typeof matchDate
       });
       onComplete();
     }

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { MatchWithTeams } from "./types";
 import TeamDisplay from "./components/TeamDisplay";
@@ -32,16 +33,28 @@ const MatchRow: React.FC<MatchRowProps> = ({
 }) => {
   // Add date type verification on mount
   React.useEffect(() => {
-    console.log(`🔍 MatchRow date verification [${match.id}]:`, {
+    console.log(`🔍 MatchRow mount verification [${match.id}]:`, {
       date: match.date,
       type: typeof match.date,
-      isISOString: typeof match.date === 'string' && !isNaN(Date.parse(match.date))
+      isISOString: typeof match.date === 'string' && !isNaN(Date.parse(match.date)),
+      scores: {
+        team1Score: match.team1Score,
+        team2Score: match.team2Score,
+        team1_game_wins: match.team1_game_wins, 
+        team2_game_wins: match.team2_game_wins
+      },
+      types: {
+        team1ScoreType: typeof match.team1Score,
+        team2ScoreType: typeof match.team2Score,
+        team1GameWinsType: typeof match.team1_game_wins,
+        team2GameWinsType: typeof match.team2_game_wins
+      }
     });
   }, [match.id, match.date]);
 
-  // Log match data at component initialization
+  // Log match data on every render to track changes
   React.useEffect(() => {
-    console.log(`🔍 DIAGNOSTIC: MatchRow initialized for match:`, {
+    console.log(`🔍 DIAGNOSTIC: MatchRow render for match:`, {
       matchId: match.id,
       matchDate: match.date,
       dateType: typeof match.date,
@@ -62,10 +75,11 @@ const MatchRow: React.FC<MatchRowProps> = ({
         team2GameWinsType: typeof match.team2_game_wins
       },
       isCompleted: match.iscompleted,
-      hasError,
-      fullMatch: JSON.stringify(match)
+      isEdited: match.isEdited,
+      isValid: match.isValid,
+      hasError
     });
-  }, [match.id]);
+  }, [match, index, hasError]);
 
   const handleScoreChange = (scores: { team1Score: number; team2Score: number }) => {
     console.log(`🔍 DIAGNOSTIC: MatchRow handleScoreChange for match ${match.id}:`, {
@@ -74,6 +88,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
       dateType: typeof match.date,
       index,
       scores,
+      scoresJSON: JSON.stringify(scores),
       previousScores: {
         team1Score: match.team1Score,
         team2Score: match.team2Score
@@ -83,6 +98,19 @@ const MatchRow: React.FC<MatchRowProps> = ({
     // Ensure we're passing numbers, not strings or null
     const team1Score = Number(scores.team1Score);
     const team2Score = Number(scores.team2Score);
+    
+    if (isNaN(team1Score) || isNaN(team2Score)) {
+      console.error(`❌ DIAGNOSTIC ERROR: Invalid score values in handleScoreChange:`, {
+        matchId: match.id,
+        scores,
+        team1Score,
+        team2Score,
+        isNaN: {
+          team1Score: isNaN(team1Score),
+          team2Score: isNaN(team2Score) 
+        }
+      });
+    }
     
     onScoreChange(index, team1Score, team2Score);
   };
@@ -99,15 +127,32 @@ const MatchRow: React.FC<MatchRowProps> = ({
       index,
       team1GameWins,
       team2GameWins,
+      team1GameWinsRaw: gameWins.team1GameWins,
+      team2GameWinsRaw: gameWins.team2GameWins,
+      isNaN: {
+        team1GameWins: isNaN(team1GameWins),
+        team2GameWins: isNaN(team2GameWins)
+      },
       previousGameWins: {
         team1GameWins: match.team1_game_wins,
         team2GameWins: match.team2_game_wins
       },
       gameWinsType: {
         team1GameWinsType: typeof team1GameWins,
-        team2GameWinsType: typeof team2GameWins
+        team2GameWinsType: typeof team2GameWins,
+        team1GameWinsRawType: typeof gameWins.team1GameWins,
+        team2GameWinsRawType: typeof gameWins.team2GameWins
       }
     });
+    
+    if (isNaN(team1GameWins) || isNaN(team2GameWins)) {
+      console.error(`❌ DIAGNOSTIC ERROR: Invalid game win values in handleGameWinsChange:`, {
+        matchId: match.id, 
+        gameWins,
+        team1GameWins,
+        team2GameWins
+      });
+    }
     
     onGameWinsChange(index, team1GameWins, team2GameWins);
   };
@@ -139,6 +184,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
       transition={{ duration: 0.2 }}
       data-match-id={match.id}
       data-match-date={match.date}
+      data-date-type={typeof match.date}
       data-index={index}
     >
       <div className="flex justify-between items-center">
@@ -198,6 +244,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
         isValid={match.isValid || false}
         disabled={isSubmitting}
       />
+      
+      <div className="text-[10px] text-gray-400 opacity-50">
+        Match ID: {match.id} | Date: {match.date} | Type: {typeof match.date}
+      </div>
     </motion.div>
   );
 };

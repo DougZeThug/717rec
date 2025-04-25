@@ -1,3 +1,4 @@
+
 import React from "react";
 import ScoreButtonGroup from "./ScoreButtonGroup";
 import { motion } from "framer-motion";
@@ -27,14 +28,20 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   matchId,
   matchDate
 }) => {
-  // Add date type verification on mount
+  // Add date type verification on mount and value changes
   React.useEffect(() => {
-    console.log(`🔍 ScoreInput date verification [${matchId}]:`, {
+    console.log(`🔍 ScoreInput initial state [${matchId}]:`, {
       date: matchDate,
-      type: typeof matchDate,
-      isISOString: typeof matchDate === 'string' && !isNaN(Date.parse(matchDate))
+      dateType: typeof matchDate,
+      isISOString: typeof matchDate === 'string' && !isNaN(Date.parse(matchDate)),
+      value,
+      valueJSON: JSON.stringify(value),
+      valueTypes: {
+        team1ScoreType: typeof value.team1Score,
+        team2ScoreType: typeof value.team2Score
+      }
     });
-  }, [matchId, matchDate]);
+  }, [matchId, matchDate, value]);
 
   return (
     <motion.div 
@@ -45,6 +52,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
       transition={{ duration: 0.2 }}
       data-match-id={matchId}
       data-match-date={matchDate}
+      data-date-type={typeof matchDate}
     >
       <ScoreButtonGroup
         value={value}
@@ -54,11 +62,13 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
             matchDate,
             dateType: typeof matchDate,
             gameWins,
+            gameWinsJSON: JSON.stringify(gameWins),
             gameWinsTypes: {
               team1ScoreType: typeof gameWins.team1Score,
               team2ScoreType: typeof gameWins.team2Score
             },
             previousValue: value,
+            previousValueJSON: JSON.stringify(value),
             isCompleted
           });
           
@@ -73,8 +83,11 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
           console.log("🔍 DIAGNOSTIC: Converting game wins to match result:", {
             matchId,
             matchDate,
+            dateType: typeof matchDate,
             gameWins,
+            gameWinsJSON: JSON.stringify(gameWins),
             resultingMatchScores: matchScores,
+            matchScoresJSON: JSON.stringify(matchScores),
             team1Won
           });
           
@@ -91,7 +104,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
             console.log("🔍 DIAGNOSTIC: Passing game wins to handler:", {
               matchId,
               matchDate,
+              dateType: typeof matchDate,
               gameWinsData,
+              gameWinsDataJSON: JSON.stringify(gameWinsData),
               gameWinsDataTypes: {
                 team1GameWinsType: typeof gameWins.team1Score,
                 team2GameWinsType: typeof gameWins.team2Score

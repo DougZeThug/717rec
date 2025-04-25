@@ -21,10 +21,23 @@ export const useMatchFetching = () => {
       console.log("🔍 Raw matches fetched:", {
         count: data?.length || 0,
         sampleDate: data?.[0]?.date,
-        sampleDateType: data?.[0]?.date ? typeof data[0].date : 'undefined'
+        sampleDateType: data?.[0]?.date ? typeof data[0].date : 'undefined',
+        bracketId: filters.bracketId,
+        date: filters.date
       });
 
-      const formattedMatches: MatchWithTeams[] = (data || []).map(match => {
+      const formattedMatches: MatchWithTeams[] = (data || []).map((match, index) => {
+        // Raw data inspection
+        console.log(`🔍 Raw match data from database [${index}]:`, {
+          matchId: match.id, 
+          date: match.date,
+          dateType: typeof match.date,
+          team1_game_wins: match.team1_game_wins,
+          team1_game_wins_type: typeof match.team1_game_wins,
+          team2_game_wins: match.team2_game_wins,
+          team2_game_wins_type: typeof match.team2_game_wins
+        });
+        
         const transformed = transformDatabaseMatchToMatchWithTeams(match);
         
         // Verify date normalization
@@ -33,11 +46,24 @@ export const useMatchFetching = () => {
           originalType: typeof match.date,
           transformedDate: transformed.date,
           transformedType: typeof transformed.date,
-          isISOString: typeof transformed.date === 'string' && !isNaN(Date.parse(transformed.date))
+          isISOString: typeof transformed.date === 'string' && !isNaN(Date.parse(transformed.date)),
+          team1_game_wins: transformed.team1_game_wins,
+          team1_game_wins_type: typeof transformed.team1_game_wins,
+          team2_game_wins: transformed.team2_game_wins, 
+          team2_game_wins_type: typeof transformed.team2_game_wins
         });
         
         return transformed;
       });
+      
+      // Log the final formatted matches
+      if (formattedMatches.length > 0) {
+        console.log("🔍 Sample transformed match:", {
+          match: formattedMatches[0],
+          matchDate: formattedMatches[0].date,
+          matchDateType: typeof formattedMatches[0].date
+        });
+      }
 
       setLoading(false);
       return formattedMatches;
