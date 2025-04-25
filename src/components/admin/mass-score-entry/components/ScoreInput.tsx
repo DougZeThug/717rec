@@ -1,19 +1,22 @@
 
 import React from "react";
 import ScoreButtonGroup from "./ScoreButtonGroup";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 interface ScoreInputProps {
-  value: { team1Score: number | null; team2Score: number | null };
+  value: {
+    team1Score: number | null;
+    team2Score: number | null;
+  };
   onChange: (scores: { team1Score: number; team2Score: number }) => void;
   onChangeGameWins?: (gameWins: { team1GameWins: number; team2GameWins: number }) => void;
-  onComplete?: () => void;
-  isValid?: boolean;
-  disabled?: boolean;
+  onComplete: () => void;
+  disabled: boolean;
   className?: string;
   isCompleted?: boolean;
-  matchId?: string; // Match ID for debugging
-  matchDate?: string; // Match date for debugging
+  matchId: string;
+  matchDate?: string;
 }
 
 const ScoreInput: React.FC<ScoreInputProps> = ({
@@ -21,98 +24,51 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   onChange,
   onChangeGameWins,
   onComplete,
-  isValid = true,
-  disabled = false,
+  disabled,
   className = "",
   isCompleted = false,
   matchId,
   matchDate
 }) => {
-  // Add date type verification on mount and value changes
-  React.useEffect(() => {
-    console.log(`🔍 ScoreInput initial state [${matchId}]:`, {
-      date: matchDate,
-      dateType: typeof matchDate,
-      isISOString: typeof matchDate === 'string' && !isNaN(Date.parse(matchDate)),
-      value,
-      valueJSON: JSON.stringify(value),
-      valueTypes: {
-        team1ScoreType: typeof value.team1Score,
-        team2ScoreType: typeof value.team2Score
-      }
-    });
-  }, [matchId, matchDate, value]);
-
   return (
     <motion.div 
-      className={`w-full flex justify-center ${className}`}
-      animate={{ 
-        opacity: disabled ? 0.8 : 1
-      }}
+      className={cn("w-full flex justify-center", className)}
+      animate={{ opacity: disabled ? 0.8 : 1 }}
       transition={{ duration: 0.2 }}
-      data-match-id={matchId}
-      data-match-date={matchDate}
-      data-date-type={typeof matchDate}
     >
       <ScoreButtonGroup
         value={value}
-        onChange={(gameWins) => {
-          console.log("🔍 DIAGNOSTIC: ScoreInput onChange called for match", {
-            matchId,
-            matchDate,
-            dateType: typeof matchDate,
-            gameWins,
-            gameWinsJSON: JSON.stringify(gameWins),
-            gameWinsTypes: {
-              team1ScoreType: typeof gameWins.team1Score,
-              team2ScoreType: typeof gameWins.team2Score
-            },
-            previousValue: value,
-            previousValueJSON: JSON.stringify(value),
-            isCompleted
-          });
-          
-          // Calculate binary match scores based on game wins
-          const team1Won = gameWins.team1Score > gameWins.team2Score;
-          const matchScores = {
-            team1Score: team1Won ? 1 : 0,
-            team2Score: team1Won ? 0 : 1
+        onChange={(scores) => {
+          // Ensure numeric scores
+          const numericScores = {
+            team1Score: Number(scores.team1Score),
+            team2Score: Number(scores.team2Score)
           };
           
-          // Log detailed state transformation
-          console.log("🔍 DIAGNOSTIC: Converting game wins to match result:", {
+          console.log(`ScoreInput onChange called for match ${matchId}:`, {
             matchId,
             matchDate,
             dateType: typeof matchDate,
-            gameWins,
-            gameWinsJSON: JSON.stringify(gameWins),
-            resultingMatchScores: matchScores,
-            matchScoresJSON: JSON.stringify(matchScores),
-            team1Won
+            scores: numericScores,
+            previousValue: value
           });
           
-          // Update match scores (binary win/loss)
-          onChange(matchScores);
+          onChange(numericScores);
           
-          // If we have a game wins handler, pass the actual game wins
+          // If we have a game wins handler, pass numeric values
           if (onChangeGameWins) {
-            const gameWinsData = {
-              team1GameWins: gameWins.team1Score,
-              team2GameWins: gameWins.team2Score
+            const numericGameWins = {
+              team1GameWins: Number(scores.team1Score),
+              team2GameWins: Number(scores.team2Score)
             };
             
-            console.log("🔍 DIAGNOSTIC: Passing game wins to handler:", {
+            console.log(`ScoreInput onChangeGameWins called for match ${matchId}:`, {
               matchId,
               matchDate,
-              dateType: typeof matchDate,
-              gameWinsData,
-              gameWinsDataJSON: JSON.stringify(gameWinsData),
-              gameWinsDataTypes: {
-                team1GameWinsType: typeof gameWins.team1Score,
-                team2GameWinsType: typeof gameWins.team2Score
-              }
+              numericGameWins
             });
-            onChangeGameWins(gameWinsData);
+            
+            onChangeGameWins(numericGameWins);
           }
         }}
         onComplete={onComplete}
