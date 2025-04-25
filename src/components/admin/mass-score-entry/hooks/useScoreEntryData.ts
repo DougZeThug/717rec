@@ -67,29 +67,15 @@ export const useScoreEntryData = () => {
     const newMatches = [...matches];
     const match = newMatches[index];
     
-    // Normalize game wins to numbers
-    const t1Wins = Number(team1GameWins);
-    const t2Wins = Number(team2GameWins);
+    match.team1_game_wins = Number(team1GameWins);
+    match.team2_game_wins = Number(team2GameWins);
     
-    match.team1_game_wins = t1Wins;
-    match.team2_game_wins = t2Wins;
-    
-    console.log(`useScoreEntryData handleGameWinsChange for match ${match.id}:`, {
-      team1GameWins: t1Wins,
-      team2GameWins: t2Wins
-    });
-    
-    // Set binary match score based on game wins
-    if (t1Wins > t2Wins) {
+    if (team1GameWins > team2GameWins) {
       match.team1Score = 1;
       match.team2Score = 0;
-    } else if (t1Wins < t2Wins) {
+    } else if (team2GameWins > team1GameWins) {
       match.team1Score = 0;
       match.team2Score = 1;
-    } else {
-      console.warn("Game wins cannot be tied:", t1Wins, t2Wins);
-      // Don't update scores if tied
-      return;
     }
     
     match.isEdited = true;
