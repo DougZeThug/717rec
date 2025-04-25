@@ -17,7 +17,21 @@ export const useMatchFetching = () => {
 
       if (error) throw error;
 
-      const formattedMatches: MatchWithTeams[] = (data || []).map(transformDatabaseMatchToMatchWithTeams);
+      console.log("🔍 DIAGNOSTIC: Raw match data from database:", {
+        matchCount: data?.length || 0,
+        sampleDate: data?.[0]?.date,
+        sampleDateType: data?.[0]?.date ? typeof data[0].date : 'undefined'
+      });
+
+      const formattedMatches: MatchWithTeams[] = (data || []).map(match => {
+        const transformed = transformDatabaseMatchToMatchWithTeams(match);
+        console.log("🔍 DIAGNOSTIC: Transformed match:", {
+          id: transformed.id,
+          date: transformed.date,
+          dateType: typeof transformed.date
+        });
+        return transformed;
+      });
 
       setLoading(false);
       return formattedMatches;
