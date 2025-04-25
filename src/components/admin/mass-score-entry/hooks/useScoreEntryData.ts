@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { useMatchesState } from "./state/useMatchesState";
 import { useFiltersState } from "./state/useFiltersState";
 import { useMatchSubmission } from "./submission/useMatchSubmission";
@@ -108,36 +108,6 @@ export const useScoreEntryData = () => {
     loadData();
   }, [filters.date, filters.bracketId]);
 
-  const submitScores = async () => {
-    const editedMatches = matches.filter(match => match.isEdited && match.isValid);
-    setSubmitting(true);
-    clearErrors();
-    
-    try {
-      const success = await handleSubmitAll(editedMatches);
-      if (success) {
-        const updatedMatches = await fetchMatches(filters);
-        setMatches(updatedMatches);
-      }
-    } catch (error) {
-      console.error("Error submitting scores:", error);
-      // Add to failed matches list if there was an error
-      setFailedMatches(prevFailed => [
-        ...prevFailed,
-        ...editedMatches.map(m => m.id)
-      ]);
-      // Set a generic error message for all failed matches
-      const errorMsg = "Failed to submit scores";
-      const newErrorMessages: Record<string, string> = {};
-      editedMatches.forEach(m => {
-        newErrorMessages[m.id] = errorMsg;
-      });
-      setErrorMessages(prev => ({...prev, ...newErrorMessages}));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return {
     matches,
     loading,
@@ -150,7 +120,7 @@ export const useScoreEntryData = () => {
     handleIndividualTeamScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
-    handleSubmitAll: submitScores,
+    handleSubmitAll,
     setFilterDate,
     setBracketFilter,
     clearFilters,
