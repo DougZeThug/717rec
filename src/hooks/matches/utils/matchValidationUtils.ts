@@ -38,6 +38,9 @@ export function validateGameScore(
     return { isValid: false, errorMessage: `Invalid match format (bestOf: ${bestOf})` };
   }
   
+  // Allow selection even if validation would fail
+  // We'll just show a warning but not block the selection
+  
   const totalGames = gameWins1 + gameWins2;
   const maxGames = bestOf;
   const minGamesForWin = Math.ceil(bestOf / 2);
@@ -63,16 +66,24 @@ export function validateGameScore(
     return { isValid: false, errorMessage: `Invalid score: both teams can't win in a best of ${bestOf}` };
   }
   
-  // At least one team must have enough wins
-  if (!team1HasEnoughWins && !team2HasEnoughWins) {
-    console.error(`Validation failed: neither team has enough wins`);
-    return { isValid: false, errorMessage: `Invalid score: a team must win at least ${minGamesForWin} games in a best of ${bestOf}` };
+  // Allow partially filled data to be selected even if not a valid final score
+  // This handles the case where users are in the process of entering scores
+  if (gameWins1 === 0 && gameWins2 === 0) {
+    // Allow zeros as a temporary state
+    console.log(`Zero scores are allowed temporarily`);
+    return { isValid: true };
   }
   
   // The total games must not exceed the maximum possible for the match format
   if (totalGames > maxGames) {
     console.error(`Validation failed: total games exceeds maximum`);
     return { isValid: false, errorMessage: `Invalid score: total games (${totalGames}) exceeds maximum (${maxGames}) for best of ${bestOf}` };
+  }
+  
+  // At least one team should have enough wins for completion
+  if (!team1HasEnoughWins && !team2HasEnoughWins) {
+    console.warn(`Warning: neither team has enough wins yet`);
+    return { isValid: false, errorMessage: `Incomplete score: a team must win at least ${minGamesForWin} games in a best of ${bestOf}` };
   }
   
   // Validate the game counts
@@ -106,7 +117,9 @@ export function validateGameScoreWithMetadata(
     matchDate: matchDate || 'unknown',
     gameWins1,
     gameWins2,
-    bestOf
+    bestOf,
+    gameWins1Type: typeof gameWins1,
+    gameWins2Type: typeof gameWins2
   });
   
   const result = validateGameScore(gameWins1, gameWins2, bestOf);

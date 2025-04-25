@@ -71,7 +71,12 @@ const MatchRow: React.FC<MatchRowProps> = ({
         team2Score: match.team2Score
       }
     });
-    onScoreChange(index, scores.team1Score, scores.team2Score);
+    
+    // Ensure we're passing numbers, not strings or null
+    const team1Score = Number(scores.team1Score);
+    const team2Score = Number(scores.team2Score);
+    
+    onScoreChange(index, team1Score, team2Score);
   };
 
   const handleGameWinsChange = (gameWins: { team1GameWins: number; team2GameWins: number }) => {
@@ -88,6 +93,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
       previousGameWins: {
         team1GameWins: match.team1_game_wins,
         team2GameWins: match.team2_game_wins
+      },
+      gameWinsType: {
+        team1GameWinsType: typeof team1GameWins,
+        team2GameWinsType: typeof team2GameWins
       }
     });
     
@@ -99,6 +108,15 @@ const MatchRow: React.FC<MatchRowProps> = ({
   // Determine which team is winning (if any) based on match scores (binary indicators)
   const team1Winning = match.team1Score === 1;
   const team2Winning = match.team2Score === 1;
+  
+  // Make sure game wins are treated as numbers
+  const team1GameWins = match.team1_game_wins !== null && typeof match.team1_game_wins !== 'undefined' 
+    ? Number(match.team1_game_wins) 
+    : null;
+    
+  const team2GameWins = match.team2_game_wins !== null && typeof match.team2_game_wins !== 'undefined' 
+    ? Number(match.team2_game_wins) 
+    : null;
   
   return (
     <motion.div 
@@ -128,12 +146,8 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
       <ScoreSection
         value={{
-          team1Score: match.team1_game_wins !== null && typeof match.team1_game_wins !== 'undefined' 
-            ? match.team1_game_wins 
-            : null,
-          team2Score: match.team2_game_wins !== null && typeof match.team2_game_wins !== 'undefined' 
-            ? match.team2_game_wins 
-            : null
+          team1Score: team1GameWins,
+          team2Score: team2GameWins
         }}
         onScoreChange={handleScoreChange}
         onGameWinsChange={handleGameWinsChange}

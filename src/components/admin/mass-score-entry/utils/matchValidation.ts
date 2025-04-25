@@ -8,7 +8,12 @@
  * @returns boolean indicating if scores are valid
  */
 export const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-  console.log("validateMatchScores called with:", { score1, score2 });
+  console.log("validateMatchScores called with:", { 
+    score1, 
+    score2, 
+    score1Type: typeof score1, 
+    score2Type: typeof score2 
+  });
   
   // Ensure both scores are numbers and not NaN
   if (score1 === null || score1 === undefined || score2 === null || score2 === undefined) {
@@ -40,7 +45,12 @@ export const validateMatchScores = (score1?: number | null, score2?: number | nu
  * @returns boolean indicating if game wins are valid
  */
 export const validateGameWins = (gameWins1?: number | null, gameWins2?: number | null): boolean => {
-  console.log("validateGameWins called with:", { gameWins1, gameWins2 });
+  console.log("validateGameWins called with:", { 
+    gameWins1, 
+    gameWins2, 
+    gameWins1Type: typeof gameWins1, 
+    gameWins2Type: typeof gameWins2 
+  });
   
   // Game wins must be integers
   if (gameWins1 === null || gameWins1 === undefined || gameWins2 === null || gameWins2 === undefined) {
@@ -55,6 +65,13 @@ export const validateGameWins = (gameWins1?: number | null, gameWins2?: number |
   if (isNaN(parsedGameWins1) || isNaN(parsedGameWins2)) {
     console.log("Game wins validation failed: NaN values");
     return false;
+  }
+  
+  // Allow interim states where game wins might be equal (0-0)
+  // This ensures we don't block the UI for incomplete data entry
+  if (parsedGameWins1 === 0 && parsedGameWins2 === 0) {
+    console.log("Game wins temporarily valid: both teams have 0 wins");
+    return true;
   }
   
   // Game wins cannot be tied (one team must have more wins than the other)
@@ -88,8 +105,22 @@ export const validateMatchResult = (
   team2GameWins?: number | null
 ): { isValid: boolean; message?: string } => {
   console.log("validateMatchResult called with:", { 
-    team1Score, team2Score, team1GameWins, team2GameWins 
+    team1Score, team2Score, team1GameWins, team2GameWins,
+    types: {
+      team1ScoreType: typeof team1Score,
+      team2ScoreType: typeof team2Score,
+      team1GameWinsType: typeof team1GameWins,
+      team2GameWinsType: typeof team2GameWins
+    }
   });
+  
+  // Allow incomplete scores to be selected (intermediary states)
+  if (
+    (team1GameWins === 0 && team2GameWins === 0) || 
+    (team1Score === 0 && team2Score === 0)
+  ) {
+    return { isValid: true, message: "Score selection in progress" };
+  }
   
   // First ensure the binary scores are valid
   if (!validateMatchScores(team1Score, team2Score)) {
