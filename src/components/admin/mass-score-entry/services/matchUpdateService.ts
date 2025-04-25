@@ -1,32 +1,20 @@
 
 import { MatchWithTeams } from "../types";
-import { useMatchUpdates } from "../hooks/useMatchUpdates";
-import { useTeamRecords } from "@/hooks/useTeamRecords";
+import { updateMatchInDatabase } from "./matchUpdateCore";
+import { useTeamRecordUpdate } from "./teamRecordUpdate";
 import { useToast } from "@/hooks/use-toast";
 
 export const useMatchUpdateService = () => {
-  const { updateMatchInDatabase } = useMatchUpdates();
-  const { updateTeamRecords } = useTeamRecords();
+  const { updateTeamRecordsForMatch } = useTeamRecordUpdate();
   const { toast } = useToast();
 
   const updateMatch = async (match: MatchWithTeams): Promise<boolean> => {
     try {
-      console.log("🚀 Submitting match to updateMatchInDatabase:", {
-        matchId: match.id,
-        team1Score: match.team1Score,
-        team2Score: match.team2Score,
-        team1GameWins: match.team1_game_wins,
-        team2GameWins: match.team2_game_wins,
-        winnerId: match.team1Score === 1 ? match.team1Id : match.team2Id,
-        loserId: match.team1Score === 1 ? match.team2Id : match.team1Id
-      });
-
       const success = await updateMatchInDatabase(match);
       if (!success) {
         return false;
       }
 
-      // Determine winner and loser IDs from binary match scores
       let winnerId = null;
       let loserId = null;
       
@@ -44,21 +32,13 @@ export const useMatchUpdateService = () => {
         const winnerGameWins = parseInt(String(winnerId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)) || 0;
         const loserGameWins = parseInt(String(loserId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)) || 0;
               
-        const updateSuccess = await updateTeamRecords(
-          winnerId, 
-          loserId, 
+        await updateTeamRecordsForMatch(
+          winnerId,
+          loserId,
           teams,
           winnerGameWins,
           loserGameWins
         );
-        
-        if (!updateSuccess) {
-          toast({
-            title: "Partial Success",
-            description: `Match updated, but team records may not have been updated properly.`,
-            variant: "default"
-          });
-        }
       }
 
       return true;
