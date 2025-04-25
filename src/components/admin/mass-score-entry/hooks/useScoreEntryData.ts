@@ -5,6 +5,7 @@ import { useFiltersState } from "./state/useFiltersState";
 import { useMatchSubmission } from "./submission/useMatchSubmission";
 import { useMatchesFetching } from "./fetching/useMatchesFetching";
 import { useMatchScores } from "./useMatchScores";
+import { useErrorHandling } from "./error/useErrorHandling";
 import { MatchWithTeams } from "../types";
 
 export const useScoreEntryData = () => {
@@ -26,9 +27,11 @@ export const useScoreEntryData = () => {
     clearFilters
   } = useFiltersState();
 
-  // Error handling state
-  const [failedMatches, setFailedMatches] = useState<string[]>([]);
-  const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
+  const {
+    failedMatches,
+    errorMessages,
+    clearErrors
+  } = useErrorHandling();
 
   const { fetchMatches } = useMatchesFetching();
   const { handleSubmitAll } = useMatchSubmission();
@@ -38,21 +41,6 @@ export const useScoreEntryData = () => {
     handleMarkCompleted,
     validationErrors 
   } = useMatchScores();
-
-  // Clear error messages
-  const clearErrors = (matchId?: string) => {
-    if (matchId) {
-      setErrorMessages(prev => {
-        const newErrors = {...prev};
-        delete newErrors[matchId];
-        return newErrors;
-      });
-      setFailedMatches(prev => prev.filter(id => id !== matchId));
-    } else {
-      setErrorMessages({});
-      setFailedMatches([]);
-    }
-  };
 
   useEffect(() => {
     const loadData = async () => {

@@ -1,20 +1,21 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useErrorHandling } from "../error/useErrorHandling";
 import { MatchWithTeams } from "../../types";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
+  const { clearErrors, addError } = useErrorHandling();
 
-  // Change this to accept no arguments and get the edited matches internally
   const handleSubmitAll = async () => {
     try {
-      // This will now be handled by the parent hook
-      // Process matches one by one to handle winner_id and loser_id
-      const result = true; // Simplified for now, will be populated by parent hook
-      
+      clearErrors(); // Clear any existing errors before submission
+      const result = true; // Simplified for now
       return result;
     } catch (error: any) {
       console.error("Error updating matches:", error.message);
+      addError("general", error.message);
       toast({
         title: "Error",
         description: `Failed to update matches: ${error.message}`,
