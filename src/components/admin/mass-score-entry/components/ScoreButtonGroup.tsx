@@ -23,7 +23,6 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     value?.team2Score === option.team2Score;
 
   const handleSelect = (option: typeof SCORE_OPTIONS[number]) => {
-    console.log("📊 ScoreButtonGroup selected:", option);
     onChange({
       team1Score: option.team1Score,
       team2Score: option.team2Score
