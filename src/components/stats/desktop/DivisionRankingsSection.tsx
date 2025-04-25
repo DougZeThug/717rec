@@ -1,4 +1,3 @@
-
 import React, { useMemo } from "react";
 import { Ranking } from "@/types";
 import { SortOptions } from "../RankingsTable";
@@ -38,7 +37,6 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
     );
   };
 
-  // Calculate division-specific ranks if not showing unified view
   const rankedDivisionTeams = useMemo(() => {
     return rankings.map((team, index) => ({
       ...team,
@@ -48,27 +46,27 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
 
   return (
     <div className="mb-8">
-      <h2 className="mb-4 text-xl font-bold font-bebas tracking-widest">
+      <h2 className="mb-4 text-xl font-bold font-bebas tracking-widest text-gray-900 dark:text-gray-100">
         {divisionName}
       </h2>
       <div className="overflow-auto rounded-lg border">
         <Table>
-          <TableHeader className="bg-slate-100 dark:bg-gray-800/60">
+          <TableHeader className="bg-gray-50 dark:bg-gray-800/60">
             <TableRow>
               <TableHead 
-                className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300 w-12" 
+                className="text-gray-700 dark:text-gray-300 w-12 hover:text-gray-900 dark:hover:text-gray-100 transition-colors cursor-pointer" 
                 onClick={() => onSortChange("rank")}
               >
                 # {getSortIndicator("rank")}
               </TableHead>
               <TableHead 
-                className="cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors cursor-pointer" 
                 onClick={() => onSortChange("teamName")}
               >
                 Team {getSortIndicator("teamName")}
               </TableHead>
               {showUnified && (
-                <TableHead>Division</TableHead>
+                <TableHead className="text-gray-700 dark:text-gray-300">Division</TableHead>
               )}
               <TableHead 
                 className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-gray-300" 

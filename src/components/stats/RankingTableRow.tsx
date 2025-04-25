@@ -6,8 +6,6 @@ import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import { getSosColor } from "@/utils/powerScore/getSosColor";
-import { Link } from "react-router-dom";
-import { useTheme } from "next-themes";
 import { TransitionLink } from "@/components/transitions/TransitionLink";
 
 interface RankingTableRowProps {
@@ -25,18 +23,6 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   onToggleExpand,
   showDivision = false
 }) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  
-  // Enhanced power score inline color for better visibility in light mode
-  const getPowerScoreInlineColor = (score: number) => {
-    if (score >= 75) return isLight ? '#2f855a' : '';  // green-600 equivalent
-    if (score >= 50) return isLight ? '#3182ce' : '';  // blue-600 equivalent
-    if (score >= 30) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
-    return isLight ? '#e53e3e' : '';  // red-600 equivalent
-  };
-
-  // Handle team link click without triggering row expansion
   const handleTeamLinkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
@@ -46,11 +32,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${isExpanded ? 'bg-gray-50 dark:bg-gray-800/40' : ''}`}
       onClick={onToggleExpand}
     >
-      <TableCell
-        className="font-medium"
-        style={isLight ? { color: "#222222" } : {}}
-      >
-        {/* Display overall rank and division rank if available */}
+      <TableCell className="font-medium text-gray-900 dark:text-gray-100">
         <div className="flex items-center">
           <span className="font-mono">{index + 1}</span>
           {!showDivision && ranking.divisionRank && (
@@ -61,77 +43,59 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <div className="flex items-center space-x-2">
-          <TransitionLink 
-            to={`/teams/${ranking.teamId}`}
-            className="flex items-center space-x-2 font-bebas tracking-wide uppercase hover:text-blue-600 group"
-          >
-            {/* Logo section */}
-            {(ranking.logoUrl || ranking.imageUrl) && (
-              <div className="w-8 h-8 flex-shrink-0 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <img
-                  src={ranking.logoUrl || ranking.imageUrl}
-                  alt={`${ranking.teamName} logo`}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            )}
-            <span 
-              className="group-hover:underline"
-              style={isLight ? { color: "#111111" } : {}}
-            >
-              {ranking.teamName}
-            </span>
-          </TransitionLink>
-        </div>
+        <TransitionLink 
+          to={`/teams/${ranking.teamId}`}
+          className="flex items-center space-x-2 font-bebas tracking-wide uppercase group"
+          onClick={handleTeamLinkClick}
+        >
+          {/* Logo section */}
+          {(ranking.logoUrl || ranking.imageUrl) && (
+            <div className="w-8 h-8 flex-shrink-0 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <img
+                src={ranking.logoUrl || ranking.imageUrl}
+                alt={`${ranking.teamName} logo`}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          )}
+          <span className="group-hover:text-blue-600 transition-colors">
+            {ranking.teamName}
+          </span>
+        </TransitionLink>
       </TableCell>
       {showDivision && (
         <TableCell>
           <Badge
             variant={ranking.divisionName?.toLowerCase() as any || "default"}
-            className="font-normal"
-            style={isLight ? { color: "#111111" } : {}}
+            className="font-normal text-gray-900 dark:text-gray-100"
           >
             {ranking.divisionName || "Unassigned"}
           </Badge>
         </TableCell>
       )}
       <TableCell className="text-center font-mono">
-        <span 
-          className={!isLight ? getPowerScoreColor(ranking.powerScore) : ''}
-          style={{ color: isLight ? getPowerScoreInlineColor(ranking.powerScore) : undefined }}
-        >
+        <span className={getPowerScoreColor(ranking.powerScore)}>
           {formatPowerScore(ranking.powerScore)}
         </span>
       </TableCell>
-      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center font-mono text-gray-900 dark:text-gray-100">
         {`${ranking.wins}-${ranking.losses}`}
       </TableCell>
-      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center font-mono text-gray-900 dark:text-gray-100">
         {(ranking.winPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center hidden md:table-cell font-mono" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center hidden md:table-cell font-mono text-gray-900 dark:text-gray-100">
         {`${ranking.gamesWon}-${ranking.gamesLost}`}
       </TableCell>
-      <TableCell className="text-center hidden lg:table-cell font-mono" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center hidden lg:table-cell font-mono text-gray-900 dark:text-gray-100">
         {(ranking.gameWinPercentage * 100).toFixed(1)}%
       </TableCell>
       <TableCell className="text-center font-mono">
-        <span 
-          className={!isLight ? getSosColor(ranking.sos) : ''}
-          style={{ 
-            color: isLight ? (
-              ranking.sos >= 0.875 ? '#b91c1c' :  // red-700
-              ranking.sos >= 0.750 ? '#ef4444' :  // red-500
-              ranking.sos >= 0.550 ? '#f97316' :  // orange-500
-              '#16a34a'  // green-600
-            ) : undefined 
-          }}
-        >
+        <span className={getSosColor(ranking.sos)}>
           {ranking.sos.toFixed(3)}
         </span>
       </TableCell>
-      <TableCell className="text-center font-mono" style={isLight ? { color: "#222222" } : {}}>
+      <TableCell className="text-center font-mono text-gray-900 dark:text-gray-100">
         {ranking.streak || '-'}
       </TableCell>
       <TableCell className="text-center">
