@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LEAGUE_CONTACT_EMAIL } from "@/config/contact";
 
 // Define the possible CTA messages
 const ctaMessages = [
@@ -9,7 +8,13 @@ const ctaMessages = [
     heading: "Join The League Today!",
     subheading: "Looking to compete in the next season? Contact us to register your team and join the excitement!",
     buttonText: "Register Now",
-    buttonLink: `mailto:${LEAGUE_CONTACT_EMAIL}`
+    buttonLink: "mailto:register@bagitupleague.com"
+  },
+  {
+    heading: "Check Out The Standings",
+    subheading: "See who's leading the league and follow your favorite teams as they climb the rankings!",
+    buttonText: "View Standings",
+    buttonLink: "/stats"
   },
   {
     heading: "New Season Starting Soon",

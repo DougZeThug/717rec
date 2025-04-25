@@ -54,32 +54,17 @@ export const useMatchUpdates = () => {
       };
       
       // Debug log to verify the payload before submission
-      console.log(`🛠 Final Supabase update payload for match ${match.id}:`, {
+      console.log(`🧪 Final Supabase update payload for match ${match.id}:`, {
         id: match.id,
         ...updatePayload,
-        typeof_team1GameWins: typeof team1GameWins,
-        typeof_team2GameWins: typeof team2GameWins
+        team1_game_wins_type: typeof updatePayload.team1_game_wins,
+        team2_game_wins_type: typeof updatePayload.team2_game_wins
       });
 
       // Warning if submitting a match with zero game wins
       if (updatePayload.team1_game_wins === 0 && updatePayload.team2_game_wins === 0) {
         console.warn("⚠️ Submitting match with 0-0 game wins. This may be incorrect.");
       }
-
-      // Temporary force test payload with hardcoded values for debugging
-      // updatePayload.team1_game_wins = 2;  
-      // updatePayload.team2_game_wins = 1;
-      
-      // Add to debug table before the actual update
-      console.log("🧠 Verifying Match ID:", match.id);
-      
-      await supabase.from("debug_match_updates").insert({
-        match_id: match.id,
-        team1_score: updatePayload.team1_score,
-        team2_score: updatePayload.team2_score,
-        team1_game_wins: updatePayload.team1_game_wins,
-        team2_game_wins: updatePayload.team2_game_wins
-      });
 
       const { data, error } = await supabase
         .from('matches')

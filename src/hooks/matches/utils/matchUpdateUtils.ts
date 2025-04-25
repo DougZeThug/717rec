@@ -53,21 +53,10 @@ export const updateMatchInDatabase = async (
   };
 
   // Debug log to confirm payload just before Supabase update
-  console.log('🛠 Final updateData to Supabase:', {
+  console.log('✅ Final updateData to Supabase:', {
     ...updateData,
-    typeof_team1GameWins: typeof updateData.team1_game_wins,
-    typeof_team2GameWins: typeof updateData.team2_game_wins
-  });
-  
-  // Add to debug table before the actual update
-  console.log("🧠 Verifying Match ID:", matchId);
-
-  await supabase.from("debug_match_updates").insert({
-    match_id: matchId,
-    team1_score: updateData.team1_score,
-    team2_score: updateData.team2_score,
-    team1_game_wins: updateData.team1_game_wins,
-    team2_game_wins: updateData.team2_game_wins
+    team1_game_wins_type: typeof updateData.team1_game_wins,
+    team2_game_wins_type: typeof updateData.team2_game_wins
   });
 
   const { data: matchData, error: matchError } = await supabase
