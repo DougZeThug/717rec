@@ -3,13 +3,12 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
 import StatsContainer from "@/components/stats/StatsContainer";
-import { useTheme } from "next-themes";
+import PageLayout from "@/components/layout/PageLayout";
 
 const Stats = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [matchesError, setMatchesError] = useState<Error | null>(null);
-  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -58,13 +57,13 @@ const Stats = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen cornhole-bg py-8 px-4 md:px-8 ${resolvedTheme === 'light' ? 'bg-gray-50' : ''}`} style={resolvedTheme === 'light' ? { background: "#f8f8f8" } : {}}>
+    <PageLayout>
       <StatsContainer 
         matches={matches} 
         isLoadingMatches={isLoadingMatches} 
         matchesError={matchesError}
       />
-    </div>
+    </PageLayout>
   );
 };
 

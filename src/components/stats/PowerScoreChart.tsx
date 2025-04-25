@@ -4,7 +4,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell, Legend,
 } from "recharts";
 import { useTheme } from "next-themes";
-import { formatPowerScore } from "@/utils/powerScore";
+import { formatPowerScore } from "@/utils/colors";
+import { useChartColors } from "@/utils/charts/chartStyleUtils";
 
 interface PowerScoreDataItem {
   name: string;
@@ -18,12 +19,7 @@ interface PowerScoreChartProps {
 const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-
-  const chartBgColor = isDark ? "#1f2937" : "#ffffff";
-  const chartGridColor = isDark ? "#374151" : "#e5e7eb";
-  
-  const barColorPower = "#a288f5";
-  const highlightFirst = "#805fff";
+  const colors = useChartColors();
 
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
@@ -31,7 +27,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       <text
         x={x + width + 6}
         y={y + 14}
-        fill={isDark ? "#e5e7eb" : "#334155"}
+        fill={colors.textColor}
         fontSize={11}
         textAnchor="start"
         fontFamily="'Inter', sans-serif"
@@ -47,7 +43,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     return (
       <div className="rounded-md shadow-lg p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <p className="text-gray-800 dark:text-white font-semibold mb-1">{payload[0].payload.name}</p>
-        <p className="text-sm" style={{ color: barColorPower, fontWeight: 500 }}>
+        <p className="text-sm" style={{ color: colors.powerScore.bar, fontWeight: 500 }}>
           Power Score: {formatPowerScore(payload[0].value)}
         </p>
       </div>
@@ -55,7 +51,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   };
 
   return (
-    <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: chartBgColor }}>
+    <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: colors.background }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           layout="vertical"
@@ -65,13 +61,13 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             fontFamily: "'Inter', sans-serif",
           }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} />
           <XAxis
             type="number"
             domain={[0, 100]}
-            stroke="#64748b"
+            stroke={colors.mutedTextColor}
             tick={{
-              fill: isDark ? "#e5e7eb" : "#334155",
+              fill: colors.textColor,
               fontSize: 11,
               fontFamily: "'Inter', sans-serif"
             }}
@@ -81,9 +77,9 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             dataKey="name"
             width={68}
             tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
-            stroke="#64748b"
+            stroke={colors.mutedTextColor}
             tick={{
-              fill: isDark ? "#e5e7eb" : "#334155",
+              fill: colors.textColor,
               fontSize: 11,
               fontFamily: "'Inter', sans-serif"
             }}
@@ -91,13 +87,13 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <Tooltip content={<CustomPowerScoreTooltip />} />
           <Bar
             dataKey="powerScore"
-            fill={barColorPower}
+            fill={colors.powerScore.bar}
             name="Power Score"
-            background={{ fill: isDark ? '#26282d' : '#f1f0fb' }}
+            background={{ fill: colors.powerScore.background }}
             radius={[0, 5, 5, 0]}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={index === 0 ? highlightFirst : barColorPower} />
+              <Cell key={`cell-${index}`} fill={index === 0 ? colors.powerScore.highlight : colors.powerScore.bar} />
             ))}
             <LabelList
               dataKey="powerScore"

@@ -1,3 +1,5 @@
+
+// Team related types
 export interface Team {
   id: string;
   name: string;
@@ -19,6 +21,7 @@ export interface Team {
   [key: string]: any;
 }
 
+// Match related types
 export interface Match {
   id: string;
   team1Id: string;
@@ -56,6 +59,40 @@ export interface Match {
   } | null;
 }
 
+// Head to Head types
+export interface HeadToHeadEntry {
+  opponentName: string;
+  wins: number;
+  losses: number;
+}
+
+export interface HeadToHeadMap {
+  [teamId: string]: HeadToHeadEntry;
+}
+
+// Rankings related types
+export interface Ranking {
+  teamId: string;
+  teamName: string;
+  logoUrl?: string | null;
+  imageUrl?: string | null;
+  wins: number;
+  losses: number;
+  winPercentage: number;
+  gamesWon: number;
+  gamesLost: number;
+  gameWinPercentage: number;
+  sos: number;
+  powerScore: number;
+  streak?: string;
+  rankChange?: number;
+  previousRank?: number;
+  divisionName?: string | null;
+  headToHead: HeadToHeadMap;
+  closeMatchLosses: number;
+  divisionRank?: number;
+}
+
 // Types for playoff brackets
 export interface PlayoffMatch {
   id: string;
@@ -87,6 +124,14 @@ export interface PlayoffBracket {
   champion?: string | null;
 }
 
+// Division type
+export interface Division {
+  id: string;
+  name: string;
+  division_weight?: number;
+  created_at?: string;
+}
+
 // Types for team timeslots
 export interface TeamTimeslot {
   id: string;
@@ -102,45 +147,6 @@ export interface TeamTimeslot {
   };
 }
 
-// Define the HeadToHead entry structure for consistency
-export interface HeadToHeadEntry {
-  opponentName: string;
-  wins: number;
-  losses: number;
-}
-
-// Updated HeadToHeadMap to use the consistent HeadToHeadEntry
-export interface HeadToHeadMap {
-  [teamId: string]: HeadToHeadEntry;
-}
-
-// Types for team rankings
-export interface Ranking {
-  teamId: string;
-  teamName: string;
-  logoUrl?: string | null;
-  imageUrl?: string | null;
-  wins: number;
-  losses: number;
-  winPercentage: number;
-  gamesWon: number;
-  gamesLost: number;
-  gameWinPercentage: number;
-  sos: number;
-  powerScore: number;
-  streak?: string;
-  rankChange?: number;
-  previousRank?: number;
-  divisionName?: string | null;
-  headToHead: HeadToHeadMap;
-  closeMatchLosses: number;
-  divisionRank?: number;
-}
-
-// Division type
-export interface Division {
-  id: string;
-  name: string;
-  division_weight?: number;
-  created_at?: string;
-}
+export * from './chart';
+export * from './match';
+export * from './admin';

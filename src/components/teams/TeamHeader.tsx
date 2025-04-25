@@ -2,7 +2,7 @@
 import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { TeamLogo } from "@/components/shared/TeamLogo";
+import { TeamLogo } from "@/components/ui/team/TeamLogo";
 
 interface TeamHeaderProps {
   team: Team;

@@ -43,3 +43,5 @@ export const PowerScoreTooltip = () => {
     </TooltipProvider>
   );
 };
+
+export default PowerScoreTooltip;

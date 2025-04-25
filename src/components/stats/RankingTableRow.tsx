@@ -4,9 +4,9 @@ import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Ranking } from "@/types";
 import RankTrendIndicator from "./RankTrendIndicator";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
-import { getSosColor } from "@/utils/powerScore/getSosColor";
-import { TransitionLink } from "@/components/transitions/TransitionLink";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
+import { getSosColor } from "@/utils/colors";
+import { RouterLink } from "@/components/navigation";
 
 interface RankingTableRowProps {
   ranking: Ranking;
@@ -43,7 +43,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <TransitionLink 
+        <RouterLink 
           to={`/teams/${ranking.teamId}`}
           className="flex items-center space-x-2 font-bebas tracking-wide uppercase group"
           onClick={handleTeamLinkClick}
@@ -61,7 +61,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           <span className="group-hover:text-blue-600 transition-colors">
             {ranking.teamName}
           </span>
-        </TransitionLink>
+        </RouterLink>
       </TableCell>
       {showDivision && (
         <TableCell>
