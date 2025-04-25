@@ -1,74 +1,54 @@
 
 import { useEffect } from "react";
-import { useMatchScores } from "./useMatchScores";
-import { useMatchFilters } from "./useMatchFilters";
-import { useMatchSubmission } from "./useMatchSubmission";
-import { useMatchFetching } from "./useMatchFetching";
-import { useSubmissionState } from "./useSubmissionState";
+import { useMatchesState } from "./state/useMatchesState";
+import { useFiltersState } from "./state/useFiltersState";
+import { useMatchSubmission } from "./submission/useMatchSubmission";
+import { useMatchesFetching } from "./fetching/useMatchesFetching";
 
 export const useScoreEntryData = () => {
   const {
     matches,
     setMatches,
+    loading,
+    setLoading,
+    submitting,
+    setSubmitting,
     handleScoreChange,
-    handleGameWinsChange,
     handleMarkCompleted
-  } = useMatchScores();
+  } = useMatchesState();
 
-  const { 
+  const {
     filters,
     brackets,
     fetchBrackets,
     setFilterDate,
     setBracketFilter,
     clearFilters
-  } = useMatchFilters();
+  } = useFiltersState();
 
-  const { loading, fetchMatches } = useMatchFetching();
-  
-  const { 
-    submitting, 
-    failedMatches,
-    errorMessages,
-    clearErrors,
-    setSubmitting,
-    addError
-  } = useSubmissionState();
-  
-  const { handleSubmitMatches } = useMatchSubmission();
+  const { fetchMatches } = useMatchesFetching();
+  const { handleSubmitAll } = useMatchSubmission();
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       await fetchBrackets();
       const fetchedMatches = await fetchMatches(filters);
-      if (Array.isArray(fetchedMatches)) {
-        setMatches(fetchedMatches);
-      }
+      setMatches(fetchedMatches);
+      setLoading(false);
     };
     loadData();
   }, [filters.date, filters.bracketId]);
 
-  const handleSubmitAll = async () => {
+  const handleSubmit = async () => {
     const editedMatches = matches.filter(match => match.isEdited && match.isValid);
-    
-    // Reset any previous errors
-    clearErrors();
-    
-    // Process the edited matches
     setSubmitting(true);
     
     try {
-      await handleSubmitMatches(editedMatches);
-      // Refresh matches after submission
-      const updatedMatches = await fetchMatches(filters);
-      if (Array.isArray(updatedMatches)) {
+      const success = await handleSubmitAll(editedMatches);
+      if (success) {
+        const updatedMatches = await fetchMatches(filters);
         setMatches(updatedMatches);
-      }
-    } catch (error: any) {
-      console.error("Error in handleSubmitAll:", error);
-      // If there was a general error, add it to the first match
-      if (editedMatches.length > 0) {
-        addError(editedMatches[0].id, error.message || "Unknown error occurred");
       }
     } finally {
       setSubmitting(false);
@@ -79,15 +59,11 @@ export const useScoreEntryData = () => {
     matches,
     loading,
     submitting,
-    failedMatches,
-    errorMessages,
     brackets,
     filters,
     handleScoreChange,
-    handleGameWinsChange,
     handleMarkCompleted,
-    handleSubmitAll,
-    clearErrors,
+    handleSubmitAll: handleSubmit,
     setFilterDate,
     setBracketFilter,
     clearFilters
