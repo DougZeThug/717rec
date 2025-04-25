@@ -8,6 +8,7 @@ import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import { getSosColor } from "@/utils/powerScore/getSosColor";
 import { Link } from "react-router-dom";
 import { useTheme } from "next-themes";
+import { TransitionLink } from "@/components/transitions/TransitionLink";
 
 interface RankingTableRowProps {
   ranking: Ranking;
@@ -55,14 +56,30 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <Link 
-          to={`/teams/${ranking.teamId}`}
-          className="font-bebas tracking-wide uppercase hover:text-blue-600 hover:underline"
-          onClick={(e) => e.stopPropagation()}
-          style={isLight ? { color: "#111111" } : {}}
-        >
-          {ranking.teamName}
-        </Link>
+        <div className="flex items-center space-x-2">
+          <TransitionLink 
+            to={`/teams/${ranking.teamId}`}
+            className="flex items-center space-x-2 font-bebas tracking-wide uppercase hover:text-blue-600 group"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Logo section */}
+            {(ranking.logoUrl || ranking.imageUrl) && (
+              <div className="w-8 h-8 flex-shrink-0 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <img
+                  src={ranking.logoUrl || ranking.imageUrl}
+                  alt={`${ranking.teamName} logo`}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+            <span 
+              className="group-hover:underline"
+              style={isLight ? { color: "#111111" } : {}}
+            >
+              {ranking.teamName}
+            </span>
+          </TransitionLink>
+        </div>
       </TableCell>
       {showDivision && (
         <TableCell>
