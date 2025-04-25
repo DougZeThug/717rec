@@ -33,9 +33,11 @@ const MatchRow: React.FC<MatchRowProps> = ({
 }) => {
   // Log match data at component initialization
   React.useEffect(() => {
-    console.log(`%c MatchRow initialized for match:`, "background: #f3e5f5; color: #6a1b9a; font-weight: bold", {
+    console.log(`🔍 DIAGNOSTIC: MatchRow initialized for match:`, {
       matchId: match.id,
       matchDate: match.date,
+      dateType: typeof match.date,
+      dateObj: match.date ? new Date(match.date).toISOString() : null,
       index,
       team1: match.team1?.name,
       team2: match.team2?.name, 
@@ -45,25 +47,23 @@ const MatchRow: React.FC<MatchRowProps> = ({
         team1GameWins: match.team1_game_wins,
         team2GameWins: match.team2_game_wins
       },
+      types: {
+        team1ScoreType: typeof match.team1Score,
+        team2ScoreType: typeof match.team2Score,
+        team1GameWinsType: typeof match.team1_game_wins,
+        team2GameWinsType: typeof match.team2_game_wins
+      },
       isCompleted: match.iscompleted,
-      hasError
+      hasError,
+      fullMatch: JSON.stringify(match)
     });
   }, [match.id]);
 
-  // Log on every render
-  console.log(`%c MatchRow rendering:`, "color: #6a1b9a", {
-    matchId: match.id,
-    matchDate: match.date,
-    team1GameWins: match.team1_game_wins,
-    team2GameWins: match.team2_game_wins,
-    isCompleted: match.iscompleted,
-    hasError
-  });
-
   const handleScoreChange = (scores: { team1Score: number; team2Score: number }) => {
-    console.log(`%c 🏆 MatchRow handleScoreChange for match ${match.id}:`, "background: #e1bee7; color: #6a1b9a; font-weight: bold", {
+    console.log(`🔍 DIAGNOSTIC: MatchRow handleScoreChange for match ${match.id}:`, {
       matchId: match.id,
       matchDate: match.date,
+      dateType: typeof match.date,
       index,
       scores,
       previousScores: {
@@ -84,9 +84,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
     const team1GameWins = parseInt(String(gameWins.team1GameWins)) || 0;
     const team2GameWins = parseInt(String(gameWins.team2GameWins)) || 0;
     
-    console.log(`%c 🎲 MatchRow handleGameWinsChange for match ${match.id}:`, "background: #d1c4e9; color: #6a1b9a; font-weight: bold", {
+    console.log(`🔍 DIAGNOSTIC: MatchRow handleGameWinsChange for match ${match.id}:`, {
       matchId: match.id,
       matchDate: match.date,
+      dateType: typeof match.date,
       index,
       team1GameWins,
       team2GameWins,
@@ -152,10 +153,13 @@ const MatchRow: React.FC<MatchRowProps> = ({
         onScoreChange={handleScoreChange}
         onGameWinsChange={handleGameWinsChange}
         onComplete={() => {
-          console.log(`%c MatchRow onComplete called for match ${match.id}:`, "background: #b39ddb; color: #6a1b9a", {
+          console.log(`🔍 DIAGNOSTIC: MatchRow onComplete called for match ${match.id}:`, {
             matchId: match.id,
             matchDate: match.date,
-            index
+            dateType: typeof match.date,
+            index,
+            team1GameWins,
+            team2GameWins
           });
           onMarkCompleted(index, true);
         }}
@@ -171,11 +175,14 @@ const MatchRow: React.FC<MatchRowProps> = ({
       <MatchStatusSection
         isCompleted={isCompleted}
         onCompletedChange={(checked) => {
-          console.log(`%c MatchRow onCompletedChange to ${checked} for match ${match.id}:`, "background: #9575cd; color: white", {
+          console.log(`🔍 DIAGNOSTIC: MatchRow onCompletedChange to ${checked} for match ${match.id}:`, {
             matchId: match.id,
             matchDate: match.date,
+            dateType: typeof match.date,
             index,
-            previousState: isCompleted
+            previousState: isCompleted,
+            team1GameWins,
+            team2GameWins
           });
           onMarkCompleted(index, checked);
         }}

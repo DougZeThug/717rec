@@ -30,24 +30,19 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
 }) => {
   // Log data at initialization
   React.useEffect(() => {
-    console.log(`%c ScoreInput for match ${matchId} initialized with:`, "background: #e8f5e9; color: #2e7d32; font-weight: bold", {
+    console.log(`🔍 DIAGNOSTIC: ScoreInput for match ${matchId} initialized with:`, {
       matchId,
       matchDate,
+      dateType: typeof matchDate,
       initialValue: value,
+      valueTypes: {
+        team1ScoreType: typeof value.team1Score,
+        team2ScoreType: typeof value.team2Score
+      },
       isCompleted,
       disabled
     });
   }, [matchId, matchDate]);
-
-  // Log on each render to track state changes
-  console.log(`%c ScoreInput rendering`, "background: #c8e6c9; color: #2e7d32", {
-    matchId,
-    matchDate,
-    currentValue: value,
-    isCompleted,
-    disabled,
-    isValid
-  });
 
   return (
     <motion.div 
@@ -62,11 +57,17 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
       <ScoreButtonGroup
         value={value}
         onChange={(gameWins) => {
-          console.log("%c 🎮 ScoreInput onChange called for match", "background: #81c784; color: #1b5e20; font-weight: bold", {
+          console.log("🔍 DIAGNOSTIC: ScoreInput onChange called for match", {
             matchId,
             matchDate,
+            dateType: typeof matchDate,
             gameWins,
-            previousValue: value
+            gameWinsTypes: {
+              team1ScoreType: typeof gameWins.team1Score,
+              team2ScoreType: typeof gameWins.team2Score
+            },
+            previousValue: value,
+            isCompleted
           });
           
           // Calculate binary match scores based on game wins
@@ -77,7 +78,9 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
           };
           
           // Log detailed state transformation
-          console.log("%c Converting game wins to match result:", "color: #1b5e20", {
+          console.log("🔍 DIAGNOSTIC: Converting game wins to match result:", {
+            matchId,
+            matchDate,
             gameWins,
             resultingMatchScores: matchScores,
             team1Won
@@ -93,7 +96,15 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
               team2GameWins: gameWins.team2Score
             };
             
-            console.log("%c Passing game wins to handler:", "color: #1b5e20", gameWinsData);
+            console.log("🔍 DIAGNOSTIC: Passing game wins to handler:", {
+              matchId,
+              matchDate,
+              gameWinsData,
+              gameWinsDataTypes: {
+                team1GameWinsType: typeof gameWins.team1Score,
+                team2GameWinsType: typeof gameWins.team2Score
+              }
+            });
             onChangeGameWins(gameWinsData);
           }
         }}

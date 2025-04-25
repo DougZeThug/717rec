@@ -1,3 +1,4 @@
+
 // This file provides validation functions for match scores and other match data
 
 /**
@@ -7,10 +8,14 @@
  * @returns boolean indicating if scores are valid
  */
 export const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-  console.log(`Validating match scores:`, { score1, score2, types: { score1: typeof score1, score2: typeof score2 } });
+  console.log(`🔍 DIAGNOSTIC: Validating match scores:`, { 
+    score1, 
+    score2, 
+    types: { score1: typeof score1, score2: typeof score2 } 
+  });
   
   if (score1 === null || score1 === undefined || score2 === null || score2 === undefined) {
-    console.log("Score validation failed: null or undefined values");
+    console.log("🔍 DIAGNOSTIC: Score validation failed: null or undefined values");
     return false;
   }
   
@@ -18,10 +23,16 @@ export const validateMatchScores = (score1?: number | null, score2?: number | nu
   const parsedScore1 = Number(score1);
   const parsedScore2 = Number(score2);
   
+  console.log(`🔍 DIAGNOSTIC: Parsed scores:`, {
+    parsedScore1,
+    parsedScore2,
+    types: { parsedScore1: typeof parsedScore1, parsedScore2: typeof parsedScore2 }
+  });
+  
   if (parsedScore1 === 1 && parsedScore2 === 0) return true;
   if (parsedScore1 === 0 && parsedScore2 === 1) return true;
   
-  console.log("Score validation failed: invalid score combination", { parsedScore1, parsedScore2 });
+  console.log("🔍 DIAGNOSTIC: Score validation failed: invalid score combination", { parsedScore1, parsedScore2 });
   return false;
 };
 
@@ -32,7 +43,7 @@ export const validateMatchScores = (score1?: number | null, score2?: number | nu
  * @returns boolean indicating if game wins are valid
  */
 export const validateGameWins = (gameWins1?: number | null, gameWins2?: number | null): boolean => {
-  console.log(`Validating game wins:`, { 
+  console.log(`🔍 DIAGNOSTIC: Validating game wins:`, { 
     gameWins1, 
     gameWins2, 
     types: { gameWins1: typeof gameWins1, gameWins2: typeof gameWins2 } 
@@ -42,24 +53,31 @@ export const validateGameWins = (gameWins1?: number | null, gameWins2?: number |
   const wins1 = Number(gameWins1 ?? 0);
   const wins2 = Number(gameWins2 ?? 0);
   
+  console.log(`🔍 DIAGNOSTIC: Normalized game wins:`, { 
+    wins1, 
+    wins2, 
+    types: { wins1: typeof wins1, wins2: typeof wins2 } 
+  });
+  
   // Allow 0-0 for initial state
   if (wins1 === 0 && wins2 === 0) {
-    console.log("Game wins temporarily valid: both teams have 0 wins");
+    console.log("🔍 DIAGNOSTIC: Game wins temporarily valid: both teams have 0 wins");
     return true;
   }
   
   // Ensure positive integers
   if (wins1 < 0 || wins2 < 0 || !Number.isInteger(wins1) || !Number.isInteger(wins2)) {
-    console.log("Game wins validation failed: invalid numbers", { wins1, wins2 });
+    console.log("🔍 DIAGNOSTIC: Game wins validation failed: invalid numbers", { wins1, wins2 });
     return false;
   }
   
   // Prevent ties except for 0-0
   if (wins1 === wins2 && wins1 !== 0) {
-    console.log("Game wins validation failed: tied non-zero scores", { wins1, wins2 });
+    console.log("🔍 DIAGNOSTIC: Game wins validation failed: tied non-zero scores", { wins1, wins2 });
     return false;
   }
   
+  console.log("🔍 DIAGNOSTIC: Game wins validation passed", { wins1, wins2 });
   return true;
 };
 
@@ -77,7 +95,7 @@ export const validateMatchResult = (
   team1GameWins?: number | null,
   team2GameWins?: number | null
 ): { isValid: boolean; message?: string } => {
-  console.log("validateMatchResult called with:", { 
+  console.log("🔍 DIAGNOSTIC: validateMatchResult called with:", { 
     team1Score, team2Score, team1GameWins, team2GameWins,
     types: {
       team1ScoreType: typeof team1Score,
@@ -91,15 +109,24 @@ export const validateMatchResult = (
   const t1GameWins = Number(team1GameWins ?? 0);
   const t2GameWins = Number(team2GameWins ?? 0);
   
+  console.log("🔍 DIAGNOSTIC: Normalized game wins in validateMatchResult:", { 
+    t1GameWins, 
+    t2GameWins,
+    types: { t1GameWinsType: typeof t1GameWins, t2GameWinsType: typeof t2GameWins }
+  });
+  
   if (t1GameWins === 0 && t2GameWins === 0) {
+    console.log("🔍 DIAGNOSTIC: Score selection in progress (0-0 game wins)");
     return { isValid: true, message: "Score selection in progress" };
   }
   
   if (!validateMatchScores(team1Score, team2Score)) {
+    console.log("🔍 DIAGNOSTIC: Invalid match scores detected");
     return { isValid: false, message: "Invalid match scores: one team must win" };
   }
   
   if (!validateGameWins(t1GameWins, t2GameWins)) {
+    console.log("🔍 DIAGNOSTIC: Invalid game wins detected");
     return { isValid: false, message: "Invalid game wins: teams cannot tie and must have non-negative wins" };
   }
   
@@ -107,13 +134,23 @@ export const validateMatchResult = (
   const team1Won = team1Score === 1;
   const team1HasMoreGameWins = t1GameWins > t2GameWins;
   
+  console.log("🔍 DIAGNOSTIC: Checking score-game win consistency:", { 
+    team1Won, 
+    team1HasMoreGameWins,
+    team1Score,
+    team2Score,
+    t1GameWins,
+    t2GameWins
+  });
+  
   if (team1Won !== team1HasMoreGameWins) {
+    console.log("🔍 DIAGNOSTIC: Inconsistency detected: match winner must have more game wins");
     return { 
       isValid: false, 
       message: "Inconsistency: match winner must have more game wins" 
     };
   }
   
-  console.log("Match result validation passed");
+  console.log("🔍 DIAGNOSTIC: Match result validation passed");
   return { isValid: true };
 };

@@ -36,26 +36,22 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
 }) => {
   // Log component initialization
   React.useEffect(() => {
-    console.log(`%c ScoreSection for match ${matchId} initialized:`, "background: #fff3e0; color: #e65100; font-weight: bold", {
+    console.log(`🔍 DIAGNOSTIC: ScoreSection for match ${matchId} initialized:`, {
       matchId,
       matchDate,
+      dateType: typeof matchDate,
+      dateObj: matchDate ? new Date(matchDate).toISOString() : null,
       initialValue: value,
+      valueTypes: {
+        team1ScoreType: typeof value.team1Score,
+        team2ScoreType: typeof value.team2Score
+      },
       isCompleted,
       hasError,
       errorMessage,
       disabled
     });
-  }, []);
-
-  // Log on render
-  console.log(`%c ScoreSection rendering:`, "color: #e65100", {
-    matchId,
-    matchDate,
-    currentValue: value,
-    hasError,
-    isCompleted,
-    disabled
-  });
+  }, [matchId]);
 
   // Extract date part only if available
   const dateOnly = matchDate ? matchDate.split('T')[0] : "unknown";
@@ -78,26 +74,38 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
       <ScoreInput
         value={value}
         onChange={(newScores) => {
-          console.log(`%c ScoreSection onScoreChange called:`, "background: #ffe0b2; color: #e65100", {
+          console.log(`🔍 DIAGNOSTIC: ScoreSection onScoreChange called:`, {
             matchId,
             matchDate: dateOnly,
+            dateType: typeof matchDate,
             previousValue: value,
-            newScores
+            newScores,
+            scoreTypes: {
+              team1ScoreType: typeof newScores.team1Score,
+              team2ScoreType: typeof newScores.team2Score
+            }
           });
           onScoreChange(newScores);
         }}
         onChangeGameWins={(gameWins) => {
-          console.log(`%c ScoreSection onGameWinsChange called:`, "background: #ffcc80; color: #e65100", {
+          console.log(`🔍 DIAGNOSTIC: ScoreSection onGameWinsChange called:`, {
             matchId,
             matchDate: dateOnly,
-            gameWins
+            dateType: typeof matchDate,
+            gameWins,
+            gameWinsTypes: {
+              team1GameWinsType: typeof gameWins.team1GameWins,
+              team2GameWinsType: typeof gameWins.team2GameWins
+            }
           });
           onGameWinsChange(gameWins);
         }}
         onComplete={() => {
-          console.log(`%c ScoreSection onComplete called:`, "background: #ffb74d; color: #e65100", {
+          console.log(`🔍 DIAGNOSTIC: ScoreSection onComplete called:`, {
             matchId,
-            matchDate: dateOnly
+            matchDate: dateOnly,
+            dateType: typeof matchDate,
+            value
           });
           onComplete();
         }}
@@ -113,9 +121,10 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
           {onClearError && (
             <button
               onClick={() => {
-                console.log(`%c Clearing error for match:`, "background: #ff9800; color: white", {
+                console.log(`🔍 DIAGNOSTIC: Clearing error for match:`, {
                   matchId,
                   matchDate: dateOnly,
+                  dateType: typeof matchDate,
                   errorMessage
                 });
                 onClearError(matchId);
@@ -130,7 +139,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
 
       {/* Add debug indicator for date */}
       <div className="text-[10px] text-gray-400">
-        Match ID: {matchId.substring(0, 8)}... | Date: {dateOnly || "unknown"}
+        Match ID: {matchId.substring(0, 8)}... | Date: {dateOnly || "unknown"} | Type: {typeof matchDate}
       </div>
     </motion.div>
   );
