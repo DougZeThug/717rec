@@ -13,6 +13,8 @@ interface ScoreButtonProps {
   onClick: () => void;
   disabled?: boolean;
   isCompleted?: boolean;
+  matchId?: string; // Added for debugging
+  matchDate?: string; // Added for debugging
 }
 
 const ScoreButton = ({
@@ -20,25 +22,43 @@ const ScoreButton = ({
   isSelected,
   onClick,
   disabled = false,
-  isCompleted = false
+  isCompleted = false,
+  matchId = "unknown", // Default value for debugging
+  matchDate = "unknown" // Default value for debugging
 }: ScoreButtonProps) => {
   // Handle click event with detailed logging
   const handleClick = () => {
     if (!disabled) {
-      console.log("ScoreButton clicked:", {
+      console.log("%c ScoreButton clicked:", "background: #e0f7fa; color: #006064; font-weight: bold", {
+        matchId,
+        matchDate,
         scores: `${option.team1Score}-${option.team2Score}`,
         isSelected: Boolean(isSelected),
         wasSelected: isSelected,
         isCompleted,
-        label: option.label
+        label: option.label,
+        timeOfClick: new Date().toISOString()
       });
       onClick();
+      
+      // Log state after a small delay to see if it updated correctly
+      setTimeout(() => {
+        console.log("%c ScoreButton after click:", "background: #b2ebf2; color: #006064", {
+          matchId,
+          matchDate,
+          scores: `${option.team1Score}-${option.team2Score}`,
+          isSelected: Boolean(isSelected), // This won't reflect changes yet due to React re-render cycle
+          label: option.label
+        });
+      }, 100);
     }
   };
 
   // Force boolean type for isSelected to prevent truthy/falsey issues
   // This is critical for correctly rendering selected state with 0 values
   const selected = Boolean(isSelected);
+  
+  console.log(`ScoreButton render [${matchId?.substring(0, 8) || 'unknown'}] [${matchDate || 'unknown'}] - option: ${option.label} isSelected:`, selected);
 
   return (
     <motion.button
@@ -60,6 +80,8 @@ const ScoreButton = ({
       data-selected={selected}
       data-score1={option.team1Score}
       data-score2={option.team2Score}
+      data-match-id={matchId} // Added for debugging
+      data-match-date={matchDate} // Added for debugging
       aria-pressed={selected}
     >
       {option.label}

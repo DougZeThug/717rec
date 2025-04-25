@@ -10,6 +10,7 @@ interface ScoreButtonGroupProps {
   onComplete?: () => void;
   isCompleted?: boolean;
   matchId?: string; // Optional match ID for debugging
+  matchDate?: string; // Optional match date for debugging
 }
 
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
@@ -18,39 +19,89 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   disabled = false,
   onComplete,
   isCompleted = false,
-  matchId
+  matchId = "unknown",
+  matchDate
 }) => {
   // Log the initial value when component mounts or value changes
   useEffect(() => {
-    console.log(`ScoreButtonGroup for match ${matchId || 'unknown'} initialized with value:`, value);
-  }, [matchId, value]);
+    console.log(`%c ScoreButtonGroup initialized`, "background: #004d40; color: white", {
+      matchId,
+      matchDate,
+      initialValue: value,
+      valueType: typeof value,
+      team1Score: value?.team1Score,
+      team1ScoreType: typeof value?.team1Score,
+      team2Score: value?.team2Score,
+      team2ScoreType: typeof value?.team2Score
+    });
+  }, [matchId, matchDate]);
+
+  // Log on every render
+  console.log(`%c ScoreButtonGroup rendering`, "background: #e0f2f1; color: #004d40", {
+    matchId,
+    matchDate,
+    currentValue: value,
+    isCompleted
+  });
 
   // Strict equality check for scores to handle 0 values correctly
   const isSelected = (option: typeof SCORE_OPTIONS[number]) => {
-    if (!value) return false;
-    const team1Score = value.team1Score === null ? null : Number(value.team1Score);
-    const team2Score = value.team2Score === null ? null : Number(value.team2Score);
+    if (!value) {
+      console.log(`Selection check failed: value is null/undefined for match ${matchId}`);
+      return false;
+    }
     
-    console.log("Checking selection:", {
-      matchId,
+    // Convert scores to numbers and handle null/undefined
+    const team1Score = value.team1Score === null || value.team1Score === undefined 
+      ? null 
+      : Number(value.team1Score);
+    const team2Score = value.team2Score === null || value.team2Score === undefined 
+      ? null 
+      : Number(value.team2Score);
+    
+    // Detailed logging for selection checking
+    const isMatch = team1Score === Number(option.team1Score) && team2Score === Number(option.team2Score);
+    
+    console.log(`%c Selection check for ${matchId?.substring(0, 8) || 'unknown'}`, "color: #004d40", {
       buttonScores: `${option.team1Score}-${option.team2Score}`,
       currentValue: `${team1Score}-${team2Score}`,
-      isMatch: team1Score === option.team1Score && team2Score === option.team2Score
+      isMatch,
+      matchDate,
+      option
     });
     
-    return team1Score === option.team1Score && team2Score === option.team2Score;
+    return isMatch;
   };
 
   const handleSelect = (option: typeof SCORE_OPTIONS[number]) => {
-    console.log(`ScoreButtonGroup: selected option ${option.label} (${option.team1Score}-${option.team2Score}) for match ${matchId || 'unknown'}`);
+    console.log(`%c ScoreButtonGroup: selected option`, "background: #b2dfdb; color: #004d40; font-weight: bold", {
+      matchId,
+      matchDate,
+      label: option.label,
+      scores: `${option.team1Score}-${option.team2Score}`,
+      previousValue: value
+    });
     
     // Always pass numbers to prevent type issues
-    onChange({
+    const newScores = {
       team1Score: Number(option.team1Score),
       team2Score: Number(option.team2Score)
+    };
+    
+    onChange(newScores);
+    
+    // Log after state update (won't show updated state due to async nature)
+    console.log(`%c After onChange call:`, "background: #80cbc4; color: #004d40", {
+      matchId,
+      matchDate,
+      newScores
     });
     
     if (onComplete) {
+      console.log(`%c Calling onComplete for match`, "background: #4db6ac; color: white", {
+        matchId,
+        matchDate
+      });
       onComplete();
     }
   };
@@ -64,12 +115,14 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
       <div className="flex gap-2 flex-wrap justify-center">
         {SCORE_OPTIONS.map((option) => (
           <ScoreButton
-            key={`${option.team1Score}-${option.team2Score}`}
+            key={`${matchId}-${option.team1Score}-${option.team2Score}`}
             option={option}
             isSelected={isSelected(option)}
             onClick={() => handleSelect(option)}
             disabled={disabled}
             isCompleted={isCompleted}
+            matchId={matchId}
+            matchDate={matchDate}
           />
         ))}
       </div>

@@ -34,6 +34,32 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
   isCompleted = false,
   matchDate
 }) => {
+  // Log component initialization
+  React.useEffect(() => {
+    console.log(`%c ScoreSection for match ${matchId} initialized:`, "background: #fff3e0; color: #e65100; font-weight: bold", {
+      matchId,
+      matchDate,
+      initialValue: value,
+      isCompleted,
+      hasError,
+      errorMessage,
+      disabled
+    });
+  }, []);
+
+  // Log on render
+  console.log(`%c ScoreSection rendering:`, "color: #e65100", {
+    matchId,
+    matchDate,
+    currentValue: value,
+    hasError,
+    isCompleted,
+    disabled
+  });
+
+  // Extract date part only if available
+  const dateOnly = matchDate ? matchDate.split('T')[0] : "unknown";
+
   return (
     <motion.div 
       className={cn(
@@ -46,16 +72,39 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         scale: disabled ? 0.98 : 1
       }}
       transition={{ duration: 0.2 }}
+      data-match-id={matchId}
+      data-match-date={dateOnly}
     >
       <ScoreInput
         value={value}
-        onChange={onScoreChange}
-        onChangeGameWins={onGameWinsChange}
-        onComplete={onComplete}
+        onChange={(newScores) => {
+          console.log(`%c ScoreSection onScoreChange called:`, "background: #ffe0b2; color: #e65100", {
+            matchId,
+            matchDate: dateOnly,
+            previousValue: value,
+            newScores
+          });
+          onScoreChange(newScores);
+        }}
+        onChangeGameWins={(gameWins) => {
+          console.log(`%c ScoreSection onGameWinsChange called:`, "background: #ffcc80; color: #e65100", {
+            matchId,
+            matchDate: dateOnly,
+            gameWins
+          });
+          onGameWinsChange(gameWins);
+        }}
+        onComplete={() => {
+          console.log(`%c ScoreSection onComplete called:`, "background: #ffb74d; color: #e65100", {
+            matchId,
+            matchDate: dateOnly
+          });
+          onComplete();
+        }}
         disabled={disabled}
         isCompleted={isCompleted}
         matchId={matchId}
-        matchDate={matchDate}
+        matchDate={dateOnly}
       />
       
       {hasError && (
@@ -63,7 +112,14 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
           <span>{errorMessage || "Invalid score"}</span>
           {onClearError && (
             <button
-              onClick={() => onClearError(matchId)}
+              onClick={() => {
+                console.log(`%c Clearing error for match:`, "background: #ff9800; color: white", {
+                  matchId,
+                  matchDate: dateOnly,
+                  errorMessage
+                });
+                onClearError(matchId);
+              }}
               className="underline"
             >
               Clear
@@ -71,6 +127,11 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
           )}
         </div>
       )}
+
+      {/* Add debug indicator for date */}
+      <div className="text-[10px] text-gray-400">
+        Match ID: {matchId.substring(0, 8)}... | Date: {dateOnly || "unknown"}
+      </div>
     </motion.div>
   );
 };

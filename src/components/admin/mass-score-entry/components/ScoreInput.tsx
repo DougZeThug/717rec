@@ -30,8 +30,24 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
 }) => {
   // Log data at initialization
   React.useEffect(() => {
-    console.log(`ScoreInput for match ${matchId} (date: ${matchDate}) initialized with:`, value);
+    console.log(`%c ScoreInput for match ${matchId} initialized with:`, "background: #e8f5e9; color: #2e7d32; font-weight: bold", {
+      matchId,
+      matchDate,
+      initialValue: value,
+      isCompleted,
+      disabled
+    });
   }, [matchId, matchDate]);
+
+  // Log on each render to track state changes
+  console.log(`%c ScoreInput rendering`, "background: #c8e6c9; color: #2e7d32", {
+    matchId,
+    matchDate,
+    currentValue: value,
+    isCompleted,
+    disabled,
+    isValid
+  });
 
   return (
     <motion.div 
@@ -40,11 +56,18 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
         opacity: disabled ? 0.8 : 1
       }}
       transition={{ duration: 0.2 }}
+      data-match-id={matchId}
+      data-match-date={matchDate}
     >
       <ScoreButtonGroup
         value={value}
         onChange={(gameWins) => {
-          console.log("🎮 ScoreInput onChange called for match", matchId, "with game wins:", gameWins);
+          console.log("%c 🎮 ScoreInput onChange called for match", "background: #81c784; color: #1b5e20; font-weight: bold", {
+            matchId,
+            matchDate,
+            gameWins,
+            previousValue: value
+          });
           
           // Calculate binary match scores based on game wins
           const team1Won = gameWins.team1Score > gameWins.team2Score;
@@ -53,21 +76,32 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
             team2Score: team1Won ? 0 : 1
           };
           
+          // Log detailed state transformation
+          console.log("%c Converting game wins to match result:", "color: #1b5e20", {
+            gameWins,
+            resultingMatchScores: matchScores,
+            team1Won
+          });
+          
           // Update match scores (binary win/loss)
           onChange(matchScores);
           
           // If we have a game wins handler, pass the actual game wins
           if (onChangeGameWins) {
-            onChangeGameWins({
+            const gameWinsData = {
               team1GameWins: gameWins.team1Score,
               team2GameWins: gameWins.team2Score
-            });
+            };
+            
+            console.log("%c Passing game wins to handler:", "color: #1b5e20", gameWinsData);
+            onChangeGameWins(gameWinsData);
           }
         }}
         onComplete={onComplete}
         disabled={disabled}
         isCompleted={isCompleted}
         matchId={matchId}
+        matchDate={matchDate}
       />
     </motion.div>
   );
