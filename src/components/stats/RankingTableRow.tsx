@@ -36,6 +36,11 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     return isLight ? '#e53e3e' : '';  // red-600 equivalent
   };
 
+  // Handle team link click without triggering row expansion
+  const handleTeamLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <TableRow 
       className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${isExpanded ? 'bg-gray-50 dark:bg-gray-800/40' : ''}`}
@@ -60,7 +65,6 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           <TransitionLink 
             to={`/teams/${ranking.teamId}`}
             className="flex items-center space-x-2 font-bebas tracking-wide uppercase hover:text-blue-600 group"
-            onClick={(e) => e.stopPropagation()}
           >
             {/* Logo section */}
             {(ranking.logoUrl || ranking.imageUrl) && (

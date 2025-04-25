@@ -7,18 +7,26 @@ export interface TransitionLinkProps extends Omit<LinkProps, 'onClick'> {
   color?: string;
   duration?: number;
   noFeedback?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export const TransitionLink: React.FC<TransitionLinkProps> = ({
   to,
   children,
   className,
+  onClick,
   noFeedback = false,
   ...rest
 }) => {
   const navigate = useNavigate();
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Call custom onClick handler if provided
+    if (onClick) {
+      onClick(e);
+      if (e.defaultPrevented) return;
+    }
+    
     e.preventDefault();
     
     // Debug log to verify that click handler is triggered
