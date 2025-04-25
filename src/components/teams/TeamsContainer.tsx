@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
@@ -12,7 +11,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TeamsSortToggle, { SortMode } from './TeamsSortToggle';
 import { DisplayMode } from "./TeamsPageContainer";
 
-// State for sort mode
 const SORT_MODES = [
   { key: 'rank', label: 'Rank' },
   { key: 'alpha', label: 'A–Z' }
@@ -30,19 +28,16 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     teamToEdit, 
     setTeamToEdit,
     deleteTeamId, 
-    setDeleteTeamId, 
-    isRefreshing,
+    setDeleteTeamId,
     isDeleting,
     handleUpdateTeam,
-    handleDeleteTeam,
-    handleRefresh
+    handleDeleteTeam
   } = useTeamManagement();
   
   const { divisions } = useDivisions();
   const [scrolled, setScrolled] = useState(false);
   const isMobile = useIsMobile();
 
-  // Sort mode state, persisted to localStorage
   const [sortMode, setSortMode] = useState<SortMode>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("teamsSortMode") as SortMode) || "rank";
@@ -54,7 +49,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     localStorage.setItem("teamsSortMode", sortMode);
   }, [sortMode]);
   
-  // Handle scroll effect for sticky header
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -63,7 +57,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
-  // Deduplicate teams array first
   const uniqueTeams = useMemo(() => {
     const uniqueTeamMap = new Map<string, Team>();
     teams.forEach(team => {
@@ -74,7 +67,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     return Array.from(uniqueTeamMap.values());
   }, [teams]);
   
-  // Group teams by division
   const teamsByDivision = useMemo(() => {
     const grouped: Record<string, Team[]> = {
       unassigned: []
@@ -95,18 +87,15 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     return grouped;
   }, [uniqueTeams, divisions]);
 
-  // Sorting utils - fix to use power_score for rank sorting
   const sortTeams = (arr: Team[]) => {
     if (sortMode === "alpha") {
       return [...arr].sort((a, b) => 
         a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       );
     } 
-    // Fix: Sort by power_score (descending)
     return [...arr].sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0));
   };
 
-  // For grouped mode, apply sorting to each division group
   const sortedTeamsByDivision = useMemo(() => {
     const sorted: Record<string, Team[]> = {};
     for (const divId of Object.keys(teamsByDivision)) {
@@ -115,10 +104,8 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     return sorted;
   }, [teamsByDivision, sortMode]);
 
-  // For all teams mode, apply sort to all
   const sortedAllTeams = useMemo(() => sortTeams(uniqueTeams), [uniqueTeams, sortMode]);
   
-  // Get division name by ID
   const getDivisionName = (divisionId: string | undefined): string => {
     if (!divisionId || divisionId === "unassigned") return "Unassigned Division";
     const division = divisions.find(d => d.id === divisionId);
@@ -129,7 +116,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     <div>
       <div className={`${scrolled ? 'shadow-md' : ''} transition-shadow sticky top-0 z-30 bg-background/95 backdrop-blur-sm pb-2`}>
         <div className="flex flex-wrap gap-2 mb-6">
-          {/* Display mode toggle moved to parent container */}
         </div>
         <TeamsSortToggle sortMode={sortMode} setSortMode={setSortMode} />
       </div>

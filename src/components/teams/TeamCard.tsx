@@ -12,11 +12,15 @@ interface TeamCardProps {
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit, viewMode }) => {
-  if (viewMode === 'list') {
-    return <TeamCardList team={team} onDelete={onDelete} onEdit={onEdit} />;
+  switch (viewMode) {
+    case 'list':
+      return <TeamCardList team={team} onDelete={onDelete} onEdit={onEdit} />;
+    case 'grid':
+      return <TeamCardGrid team={team} onDelete={onDelete} onEdit={onEdit} />;
+    default:
+      console.warn(`Unknown viewMode: ${viewMode}, falling back to grid view`);
+      return <TeamCardGrid team={team} onDelete={onDelete} onEdit={onEdit} />;
   }
-  
-  return <TeamCardGrid team={team} onDelete={onDelete} onEdit={onEdit} />;
 };
 
 export default TeamCard;

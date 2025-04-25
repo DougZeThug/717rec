@@ -1,26 +1,21 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, X } from "lucide-react";
+import { TeamLogo } from "@/components/shared/TeamLogo";
 
 interface TeamHeaderProps {
   team: Team;
-  winPercentage: string;
 }
 
-const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
+const TeamHeader = ({ team }: TeamHeaderProps) => {
   return (
     <div className="flex flex-col items-center">
       <div className="flex justify-center mb-4 w-full">
-        <img
-          src={team?.imageUrl || team?.logoUrl || '/placeholder-logo.png'}
-          alt={`${team?.name} logo`}
-          onError={(e) => {
-            console.error(`Image load error for ${team?.name}:`, team?.imageUrl);
-            (e.target as HTMLImageElement).src = '/placeholder-logo.png';
-          }}
-          className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl object-contain shadow-md mx-auto"
+        <TeamLogo
+          imageUrl={team?.imageUrl || team?.logoUrl}
+          teamName={team?.name}
+          size="lg"
+          rounded={false}
         />
       </div>
       <div className="text-center">
