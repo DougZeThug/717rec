@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Ranking } from "@/types";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
@@ -28,7 +27,6 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
-  // Debug log for ranking change data
   React.useEffect(() => {
     if (ranking.rankChange !== 0) {
       console.log(`Mobile view - Team ${ranking.teamName}: previousRank=${ranking.previousRank}, currentRank=${index + 1}, rankChange=${ranking.rankChange}`);
@@ -36,11 +34,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
   }, [ranking, index]);
 
   return (
-    <div
-      className={`border rounded-lg overflow-hidden transition-shadow ${
-        isExpanded ? "shadow-md" : "hover:shadow-sm"
-      }`}
-    >
+    <div className="border rounded-lg overflow-hidden transition-shadow">
       <div
         className="p-4 cursor-pointer"
         onClick={() => onToggleExpand(ranking.teamId)}
@@ -106,20 +100,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <div>
               <span className="text-gray-500 dark:text-gray-400">SOS:</span>{" "}
               <span
-                className={`font-mono ${
-                  isLight ? "" : getSosColor(ranking.sos)
-                }`}
+                className={`font-mono ${isLight ? "" : getSosColor(ranking.sos)}`}
                 style={{
-                  color:
-                    isLight && ranking.sos
-                      ? ranking.sos >= 75
-                        ? "#2f855a"
-                        : ranking.sos >= 50
-                        ? "#3182ce"
-                        : ranking.sos >= 30
-                        ? "#dd6b20"
-                        : "#e53e3e"
-                      : undefined,
+                  color: isLight ? (
+                    ranking.sos >= 0.800 ? "#e53e3e" :
+                    ranking.sos >= 0.560 ? "#dd6b20" :
+                    "#2f855a"
+                  ) : undefined
                 }}
               >
                 {ranking.sos.toFixed(3)}

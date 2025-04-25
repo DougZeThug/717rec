@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Laptop, Trophy, X, Target, Users, Zap, Scale, GitBranch, Medal } from "lucide-react";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/powerScore";
 import RankTrendIndicator from "@/components/stats/RankTrendIndicator";
 
 interface StatBreakdownProps {
@@ -34,7 +33,6 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   totalTeams,
   rankChange
 }) => {
-  // Added debug logs to ensure the rankChange is being passed correctly
   React.useEffect(() => {
     if (rankChange !== undefined && rankChange !== 0) {
       console.log(`Team details - Rank: ${rank}, RankChange: ${rankChange}`);
@@ -77,7 +75,9 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
               <Scale size={16} className="mr-1" /> Strength of Schedule
             </div>
             <div className="text-2xl font-bold font-mono">
-              {strengthOfSchedule}
+              <span className={getSosColor(parseFloat(strengthOfSchedule))}>
+                {strengthOfSchedule}
+              </span>
             </div>
           </div>
         </div>

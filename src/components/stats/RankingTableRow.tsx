@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -36,11 +35,10 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   };
   
   // Enhanced SOS inline color for better visibility in light mode
-  const getSosInlineColor = (score: number) => {
-    if (score >= 75) return isLight ? '#2f855a' : '';  // green-600 equivalent
-    if (score >= 50) return isLight ? '#3182ce' : '';  // blue-600 equivalent
-    if (score >= 30) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
-    return isLight ? '#e53e3e' : '';  // red-600 equivalent
+  const getSosInlineColor = (sos: number): string => {
+    if (sos >= 0.800) return '#e53e3e';  // red-600 equivalent
+    if (sos >= 0.560) return '#dd6b20';  // orange-500 equivalent
+    return '#2f855a';  // green-600 equivalent
   };
 
   return (
@@ -119,6 +117,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       </TableCell>
     </TableRow>
   );
+};
+
+// Helper function for light mode inline colors
+const getSosInlineColor = (sos: number): string => {
+  if (sos >= 0.800) return '#e53e3e';  // red-600 equivalent
+  if (sos >= 0.560) return '#dd6b20';  // orange-500 equivalent
+  return '#2f855a';  // green-600 equivalent
 };
 
 export default RankingTableRow;
