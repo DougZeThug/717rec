@@ -1,6 +1,5 @@
 
 import { MatchWithTeams } from "../types";
-import { validateMatchScores } from "./matchValidation";
 import { normalizeDate } from "@/utils/dateNormalization";
 
 export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTeams => {
@@ -92,6 +91,6 @@ export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTea
       game_win_percentage: 0
     } : undefined,
     isEdited: false,
-    isValid: validateMatchScores(match.team1_score, match.team2_score)
+    isValid: true
   };
 };
