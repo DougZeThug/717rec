@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useMatchesState } from "./state/useMatchesState";
 import { useFiltersState } from "./state/useFiltersState";
@@ -14,7 +13,7 @@ export const useScoreEntryData = () => {
     setLoading,
     submitting,
     setSubmitting,
-    handleScoreChange,
+    handleScoreChange: handleIndividualTeamScoreChange,
     handleMarkCompleted
   } = useMatchesState();
 
@@ -49,15 +48,10 @@ export const useScoreEntryData = () => {
     }
   };
 
-  // Handle direct score changes (team1Score, team2Score)
-  const handleDirectScoreChange = (index: number, team1Score: number, team2Score: number) => {
+  // Direct score change handler (new)
+  const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
     const newMatches = [...matches];
     const match = newMatches[index];
-    
-    console.log(`useScoreEntryData handleDirectScoreChange for match ${match.id}:`, {
-      team1Score, 
-      team2Score
-    });
     
     match.team1Score = Number(team1Score);
     match.team2Score = Number(team2Score);
@@ -153,6 +147,7 @@ export const useScoreEntryData = () => {
     failedMatches,
     errorMessages,
     handleScoreChange,
+    handleIndividualTeamScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
     handleSubmitAll: submitScores,

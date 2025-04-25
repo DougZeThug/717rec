@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useScoreEntryData } from "./mass-score-entry/hooks/useScoreEntryData";
@@ -7,12 +6,9 @@ import ScoreEntryToolbar from "./mass-score-entry/components/ScoreEntryToolbar";
 import ErrorAlert from "./mass-score-entry/components/ErrorAlert";
 import SubmitButton from "./mass-score-entry/components/SubmitButton";
 import AdminSectionWrapper from "./AdminSectionWrapper";
-import { ClipboardCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
-interface MassScoreEntryToolProps {}
-
-const MassScoreEntryTool: React.FC<MassScoreEntryToolProps> = () => {
+const MassScoreEntryTool: React.FC = () => {
   const {
     matches,
     loading,
