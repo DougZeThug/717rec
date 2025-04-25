@@ -2,24 +2,22 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { MatchWithTeams } from "../types";
 import { useSubmissionState } from "./useSubmissionState";
-import { useMatchUpdates } from "./useMatchUpdates";
-import { useTeamRecords } from "@/hooks/useTeamRecords";
-import { validateMatchSubmission } from "../utils/matchSubmissionUtils";
+import { useMatchValidation } from "./submission/useMatchValidation";
+import { useMatchUpdateService } from "../services/matchUpdateService";
 
 export const useScoreSubmission = (
   matches: MatchWithTeams[],
-  fetchMatches: () => Promise<MatchWithTeams[]> // Updated to match the actual return type
+  fetchMatches: () => Promise<MatchWithTeams[]>
 ) => {
   const queryClient = useQueryClient();
-  const { updateTeamRecords } = useTeamRecords();
-  const { updateMatchInDatabase } = useMatchUpdates(); 
+  const { validateMatch } = useMatchValidation();
+  const { updateMatch } = useMatchUpdateService();
   const {
     submitting,
     setSubmitting,
     failedMatches,
     errorMessages,
     clearErrors,
-    addError,
     toast
   } = useSubmissionState();
 
@@ -50,116 +48,13 @@ export const useScoreSubmission = (
 
     try {
       for (const match of editedMatches) {
-        try {
-          // Ensure game wins are properly parsed as integers
-          const team1GameWins = parseInt(String(match.team1_game_wins)) || 0;
-          const team2GameWins = parseInt(String(match.team2_game_wins)) || 0;
-          
-          console.log(`[useScoreSubmission] Processing match ${match.id}: Team1(${match.team1Id}): ${match.team1Score} - Team2(${match.team2Id}): ${match.team2Score}`);
-          console.log(`[useScoreSubmission] Game wins: Team1: ${team1GameWins}, Team2: ${team2GameWins}`);
-          
-          // Warning for completed matches with zero game wins
-          if (match.iscompleted && team1GameWins === 0 && team2GameWins === 0) {
-            console.warn("⚠️ Completed match has zero game wins:", match.id);
-          }
-          
-          // Update match object with parsed game wins to ensure integer values
-          match.team1_game_wins = team1GameWins;
-          match.team2_game_wins = team2GameWins;
-          
-          // Recalculate binary match scores based on game wins to ensure consistency
-          if (team1GameWins > team2GameWins) {
-            match.team1Score = 1;
-            match.team2Score = 0;
-          } else if (team1GameWins < team2GameWins) {
-            match.team1Score = 0;
-            match.team2Score = 1;
-          } else {
-            // Tied game wins should be caught by validation
-            addError(match.id, "Game wins cannot be tied");
-            continue;
-          }
-          
-          const validation = validateMatchSubmission(match);
-          if (!validation.isValid) {
-            addError(match.id, validation.errorMessage || "Invalid match data");
-            continue;
-          }
+        if (!validateMatch(match)) {
+          continue;
+        }
 
-          // Debug log: what's being sent to updateMatchInDatabase
-          console.log("🚀 Submitting match to updateMatchInDatabase:", {
-            matchId: match.id,
-            team1Score: match.team1Score,
-            team2Score: match.team2Score,
-            team1GameWins,
-            team2GameWins,
-            winner_id: match.team1Score === 1 ? match.team1Id : match.team2Id,
-            loser_id: match.team1Score === 1 ? match.team2Id : match.team1Id
-          });
-
-          // Ensure the full match object is passed with all properties
-          const success = await updateMatchInDatabase(match);
-          if (!success) {
-            addError(match.id, "Failed to update match");
-            continue;
-          }
-
-          // Determine winner and loser IDs from binary match scores
-          let winnerId = null;
-          let loserId = null;
-          
-          if (match.team1Score === 1) {
-            winnerId = match.team1Id;
-            loserId = match.team2Id;
-          } else if (match.team2Score === 1) {
-            winnerId = match.team2Id;
-            loserId = match.team1Id;
-          }
-
-          console.log(`[useScoreSubmission] Match ${match.id} winner: ${winnerId}, loser: ${loserId}`);
-
-          if (match.iscompleted && winnerId && loserId && match.team1 && match.team2) {
-            console.log(`[useScoreSubmission] Updating team records for winner ${winnerId} (${match.team1.name}) and loser ${loserId} (${match.team2.name})`);
-            
-            const teams = [match.team1, match.team2];
-            console.log(`[useScoreSubmission] Team data:`, 
-              teams.map(team => ({ 
-                id: team.id, 
-                name: team.name, 
-                wins: team.wins, 
-                type: typeof team.wins,
-                losses: team.losses 
-              })));
-              
-            // Use the parsed game wins for winner and loser
-            const winnerGameWins = parseInt(String(winnerId === match.team1Id ? team1GameWins : team2GameWins)) || 0;
-            const loserGameWins = parseInt(String(loserId === match.team1Id ? team1GameWins : team2GameWins)) || 0;
-              
-            console.log(`[useScoreSubmission] Game wins - Winner: ${winnerGameWins}, Loser: ${loserGameWins}`);
-              
-            const updateSuccess = await updateTeamRecords(
-              winnerId, 
-              loserId, 
-              teams,
-              winnerGameWins,
-              loserGameWins
-            );
-            
-            if (!updateSuccess) {
-              toast({
-                title: "Partial Success",
-                description: `Match updated, but team records may not have been updated properly.`,
-                variant: "default"
-              });
-            } else {
-              console.log(`[useScoreSubmission] Team records updated successfully for match ${match.id}`);
-            }
-          }
-
+        const success = await updateMatch(match);
+        if (success) {
           successCount++;
-        } catch (error: any) {
-          console.error(`[useScoreSubmission] Error updating match ${match.id}:`, error);
-          addError(match.id, error.message || "Failed to update match");
         }
       }
 
@@ -188,8 +83,7 @@ export const useScoreSubmission = (
 
       if (successCount > 0) {
         try {
-          // Use returned matches array and ignore it
-          const updatedMatches = await fetchMatches();
+          await fetchMatches();
         } catch (error) {
           console.error("Error refreshing matches:", error);
         }
