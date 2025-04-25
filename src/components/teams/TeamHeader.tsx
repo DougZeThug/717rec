@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -5,9 +6,10 @@ import { TeamLogo } from "@/components/shared/TeamLogo";
 
 interface TeamHeaderProps {
   team: Team;
+  winPercentage?: string;
 }
 
-const TeamHeader = ({ team }: TeamHeaderProps) => {
+const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
   return (
     <div className="flex flex-col items-center">
       <div className="flex justify-center mb-4 w-full">

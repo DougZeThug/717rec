@@ -8,7 +8,7 @@ import { NavigationProvider } from "@/contexts/NavigationContext";
 import { useSwipeNavigation } from "@/hooks/use-swipe-navigation";
 import PageTransition from "./components/transitions/PageTransition";
 import Index from "./pages/Index";
-import Teams from "./pages/Teams";
+import TeamsPage from "./pages/TeamsPage";
 import Schedule from "./pages/Schedule";
 import Stats from "./pages/Stats";
 import Playoffs from "./pages/Playoffs";
@@ -44,7 +44,7 @@ const AppContent = () => {
           <main className="flex-grow pb-16 md:pb-0">
             <Routes location={location}>
               <Route path="/" element={<Index />} />
-              <Route path="/teams" element={<Teams />} />
+              <Route path="/teams" element={<TeamsPage />} />
               <Route path="/teams/:teamId" element={<TeamDetails />} />
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/stats" element={<Stats />} />
