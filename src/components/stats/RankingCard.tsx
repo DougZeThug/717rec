@@ -1,21 +1,18 @@
+
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Ranking } from "@/types";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
 import RankTrendIndicator from "./RankTrendIndicator";
-import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { getSosColor } from "@/utils/powerScore/getSosColor";
+import { Link } from "react-router-dom";
 import { useTheme } from "next-themes";
-import { TeamStatsGrid } from "./rank/TeamStatsGrid";
-import { TeamLogo } from "./rank/TeamLogo";
 
 interface RankingCardProps {
   ranking: Ranking;
   index: number;
   expandedTeam: string | null;
   onToggleExpand: (teamId: string) => void;
-  compactView?: boolean;
+  compactView: boolean;
   showDivision?: boolean;
 }
 
@@ -24,130 +21,162 @@ const RankingCard: React.FC<RankingCardProps> = ({
   index,
   expandedTeam,
   onToggleExpand,
-  compactView = false,
+  compactView,
   showDivision = false
 }) => {
-  const navigate = useNavigate();
+  const isExpanded = expandedTeam === ranking.teamId;
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
-  const isExpanded = expandedTeam === ranking.teamId;
-  const powerScoreColorClass = getPowerScoreColor(ranking.powerScore);
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('[data-team-name="true"]')) {
-      e.stopPropagation();
-      navigate(`/teams/${ranking.teamId}`);
-    } else {
-      onToggleExpand(ranking.teamId);
+  // Debug log for ranking change data
+  React.useEffect(() => {
+    if (ranking.rankChange !== 0) {
+      console.log(`Mobile view - Team ${ranking.teamName}: previousRank=${ranking.previousRank}, currentRank=${index + 1}, rankChange=${ranking.rankChange}`);
     }
-  };
+  }, [ranking, index]);
 
   return (
-    <Card 
-      className={cn(
-        "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
-        "border border-[#e0e0e0] dark:border-none rounded-xl shadow-sm",
-        "font-inter transition-colors duration-150 cursor-pointer",
-        "hover:bg-gray-50 dark:hover:bg-gray-900",
-        "[&_[data-team-name]]:hover:text-blue-600 dark:[&_[data-team-name]]:hover:text-blue-400",
-        "[&_[data-team-name]]:hover:underline",
-        isExpanded ? (isLight ? "ring-2 ring-purple-200" : "ring-2 ring-purple-400") : "",
-        compactView ? "p-2" : "p-4"
-      )}
-      onClick={handleCardClick}
+    <div
+      className={`border rounded-lg overflow-hidden transition-shadow ${
+        isExpanded ? "shadow-md" : "hover:shadow-sm"
+      }`}
     >
-      <CardContent className={cn(
-        "flex gap-3 p-0",
-        compactView ? "items-center min-h-[48px]" : "flex-col"
-      )}>
-        <div className="flex items-center gap-3 w-full">
-          <div className={cn(
-            "flex items-center justify-center",
-            compactView ? "w-8" : "w-10"
-          )}>
-            <span 
-              style={isLight ? { color: "#222222" } : {}} 
-              className={cn(
-                "font-medium rounded-full flex items-center justify-center",
-                compactView ? "text-sm h-6 w-6" : "text-base h-8 w-8",
-                index < 3 ? "bg-amber-100/50 dark:bg-amber-900/30" : ""
-              )}
-            >
+      <div
+        className="p-4 cursor-pointer"
+        onClick={() => onToggleExpand(ranking.teamId)}
+      >
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
+            <span className="font-mono text-lg font-bold mr-2">
               {index + 1}
-              
-              {!showDivision && ranking.divisionRank && (
-                <span className="ml-0.5 text-[10px] text-muted-foreground opacity-80" style={{ marginTop: "-1px" }}>
-                  ({ranking.divisionRank})
-                </span>
-              )}
             </span>
-          </div>
-
-          <div className={cn(
-            "flex-shrink-0",
-            compactView ? "w-8 h-8" : "w-12 h-12"
-          )}>
-            <TeamLogo 
-              imageUrl={ranking.logoUrl || ranking.imageUrl} 
-              teamName={ranking.teamName}
-              teamId={ranking.teamId}
-              clickable
-            />
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <span
-              data-team-name="true"
-              className={cn(
-                "block truncate font-bebas tracking-wide uppercase",
-                compactView ? "text-base" : "text-base mb-1"
-              )}
-              style={isLight ? { color: "#111111" } : {}}
+            {ranking.divisionRank && !showDivision && (
+              <span className="text-xs text-gray-500 mr-2">
+                ({ranking.divisionRank})
+              </span>
+            )}
+            <Link
+              to={`/teams/${ranking.teamId}`}
+              className="font-semibold hover:text-blue-600 hover:underline"
+              onClick={(e) => e.stopPropagation()}
             >
               {ranking.teamName}
-            </span>
-            
-            {showDivision && !compactView && (
-              <Badge
-                variant={ranking.divisionName?.toLowerCase() as any || "default"}
-                className="text-xs font-medium px-2 mt-1"
-              >
-                {ranking.divisionName || "Unassigned"}
-              </Badge>
-            )}
+            </Link>
           </div>
-
-          {compactView && (
-            <div className="flex items-center gap-3 ml-auto">
-              <span className="text-gray-600 dark:text-gray-300">
-                {ranking.wins}-{ranking.losses}
-              </span>
-              <span className={getPowerScoreColor(ranking.powerScore)}>
+          <div className="flex items-center space-x-2">
+            <div className="text-right">
+              <span
+                className={`font-mono font-medium text-lg ${
+                  isLight ? "" : getPowerScoreColor(ranking.powerScore)
+                }`}
+                style={{
+                  color:
+                    isLight && ranking.powerScore
+                      ? ranking.powerScore >= 75
+                        ? "#2f855a"
+                        : ranking.powerScore >= 50
+                        ? "#3182ce"
+                        : ranking.powerScore >= 30
+                        ? "#dd6b20"
+                        : "#e53e3e"
+                      : undefined,
+                }}
+              >
                 {formatPowerScore(ranking.powerScore)}
               </span>
             </div>
-          )}
+            <div className="w-6">
+              <RankTrendIndicator rankChange={ranking.rankChange} />
+            </div>
+          </div>
         </div>
 
         {!compactView && (
-          <div className="mt-3 w-full">
-            <TeamStatsGrid
-              wins={ranking.wins}
-              losses={ranking.losses}
-              winPercentage={ranking.winPercentage}
-              gamesWon={ranking.gamesWon}
-              gamesLost={ranking.gamesLost}
-              gameWinPercentage={ranking.gameWinPercentage}
-              sos={ranking.sos}
-              streak={ranking.streak || ''}
-              powerScore={ranking.powerScore}
-              rankChange={ranking.rankChange}
-              compactView={compactView}
-            />
+          <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Record:</span>{" "}
+              <span className="font-mono">{`${ranking.wins}-${ranking.losses}`}</span>
+            </div>
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Win %:</span>{" "}
+              <span className="font-mono">
+                {(ranking.winPercentage * 100).toFixed(1)}%
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">SOS:</span>{" "}
+              <span
+                className={`font-mono ${
+                  isLight ? "" : getSosColor(ranking.sos)
+                }`}
+                style={{
+                  color:
+                    isLight && ranking.sos
+                      ? ranking.sos >= 75
+                        ? "#2f855a"
+                        : ranking.sos >= 50
+                        ? "#3182ce"
+                        : ranking.sos >= 30
+                        ? "#dd6b20"
+                        : "#e53e3e"
+                      : undefined,
+                }}
+              >
+                {ranking.sos.toFixed(3)}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500 dark:text-gray-400">Streak:</span>{" "}
+              <span className="font-mono">{ranking.streak || "-"}</span>
+            </div>
+            {showDivision && (
+              <div className="col-span-2">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Division:
+                </span>{" "}
+                <span className="italic">
+                  {ranking.divisionName || "Unassigned"}
+                </span>
+              </div>
+            )}
           </div>
         )}
-      </CardContent>
-    </Card>
+
+        {compactView && (
+          <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+            <div>
+              <span className="font-mono">{`${ranking.wins}-${ranking.losses}`}</span>
+            </div>
+            <div>
+              <span className="font-mono">
+                {(ranking.winPercentage * 100).toFixed(1)}%
+              </span>
+            </div>
+            <div>
+              <span className="font-mono">{ranking.streak || "-"}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {isExpanded && (
+        <div className="bg-gray-50 dark:bg-gray-800/40 p-4 border-t">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <h4 className="font-medium mb-1">Games</h4>
+              <p className="font-mono">
+                {ranking.gamesWon}-{ranking.gamesLost} (
+                {(ranking.gameWinPercentage * 100).toFixed(1)}%)
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-1">Close Losses</h4>
+              <p className="font-mono">{ranking.closeMatchLosses}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

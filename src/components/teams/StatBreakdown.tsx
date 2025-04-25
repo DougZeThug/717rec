@@ -1,16 +1,9 @@
 
-import {
-  Trophy,
-  Percent,
-  BarChart2,
-  ShieldAlert,
-  Star,
-  Award,
-  Activity
-} from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import React from "react";
+import { Card } from "@/components/ui/card";
+import { Laptop, Trophy, X, Target, Users, Zap, Scale, GitBranch, Medal } from "lucide-react";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import RankTrendIndicator from "@/components/stats/RankTrendIndicator";
 
 interface StatBreakdownProps {
   wins: number;
@@ -27,7 +20,7 @@ interface StatBreakdownProps {
   rankChange?: number;
 }
 
-const StatBreakdown = ({
+const StatBreakdown: React.FC<StatBreakdownProps> = ({
   wins,
   losses,
   winPercentage,
@@ -40,158 +33,119 @@ const StatBreakdown = ({
   rank,
   totalTeams,
   rankChange
-}: StatBreakdownProps) => {
-  const isMobile = useIsMobile();
-
-  const getPowerScoreColor = (score: number) =>
-    score >= 75 ? "text-green-600"
-    : score >= 60 ? "text-blue-500"
-    : score >= 40 ? "text-orange-500"
-    : "text-red-500";
-
-  const getWinPercentageColor = (percentage: string) => {
-    const value = parseFloat(percentage);
-    if (value >= 75) return "text-emerald-600";
-    if (value >= 50) return "text-blue-600";
-    if (value >= 35) return "text-amber-600";
-    return "text-red-600";
-  };
-
-  const renderRankChange = () => {
-    if (!rankChange) return null;
-    if (rankChange > 0) {
-      return (
-        <span className="text-green-500 text-sm font-medium inline-flex items-center ml-2">
-          ▲ Up {rankChange} {rankChange === 1 ? 'spot' : 'spots'}
-        </span>
-      );
-    } else if (rankChange < 0) {
-      return (
-        <span className="text-red-500 text-sm font-medium inline-flex items-center ml-2">
-          ▼ Down {Math.abs(rankChange)} {Math.abs(rankChange) === 1 ? 'spot' : 'spots'}
-        </span>
-      );
+}) => {
+  // Added debug logs to ensure the rankChange is being passed correctly
+  React.useEffect(() => {
+    if (rankChange !== undefined && rankChange !== 0) {
+      console.log(`Team details - Rank: ${rank}, RankChange: ${rankChange}`);
     }
-    return null;
-  };
-
-  const labelClass = "font-inter uppercase text-xs sm:text-sm tracking-widest text-muted-foreground";
-  const statClass = "font-mono text-base text-gray-800 dark:text-white";
-  const statHighlight = "text-xl sm:text-2xl";
-
-  const StatItem = ({
-    icon,
-    title,
-    value,
-    color,
-    isHighlighted = false,
-    ariaLabel
-  }: {
-    icon: React.ReactNode;
-    title: string;
-    value: string | number;
-    color?: string;
-    isHighlighted?: boolean;
-    ariaLabel?: string;
-  }) => (
-    <div 
-      className={cn(
-        "flex rounded-lg transition-all",
-        isMobile ? 'py-3 px-2' : 'p-4',
-        isHighlighted && "bg-slate-50 dark:bg-slate-800/30 shadow-sm"
-      )}
-      aria-label={ariaLabel}
-    >
-      <div className={cn("flex items-center justify-center mr-3", color || "text-slate-600")}>
-        {icon}
-      </div>
-      <dl>
-        <dt className={labelClass}>{title}</dt>
-        <dd className={cn(
-          statClass,
-          isHighlighted && statHighlight,
-          !isMobile && "text-center",
-          // If this is the Power Score, apply the color directly to override any parent styles
-          title === "Power Score" ? getPowerScoreColor(powerScore as number) : ""
-        )}>{value}</dd>
-      </dl>
-    </div>
-  );
-
+  }, [rank, rankChange]);
+  
   return (
-    <div className="mt-8">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold inline-flex items-center">
-          <Activity size={24} className="mr-2" /> Stat Breakdown
-        </h2>
-        {rank && totalTeams && (
-          <div className="mt-1 flex items-center">
-            <span className="text-sm font-medium">
-              Ranked #{rank} of {totalTeams}
-            </span>
-            {renderRankChange()}
+    <Card className="p-5 mb-6">
+      <h2 className="text-xl font-semibold mb-4 font-oswald uppercase tracking-wider">Team Stats</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-4">
+          <div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+              <Zap size={16} className="mr-1" /> Power Score
+            </div>
+            <div className="text-2xl font-bold font-mono">
+              <span className={getPowerScoreColor(powerScore)}>
+                {formatPowerScore(powerScore)}
+              </span>
+            </div>
           </div>
-        )}
+          
+          {rank && (
+            <div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+                <Medal size={16} className="mr-1" /> Ranking
+              </div>
+              <div className="flex items-center">
+                <span className="text-2xl font-bold font-mono mr-3">
+                  {rank}{totalTeams ? `/${totalTeams}` : ''}
+                </span>
+                {rankChange !== undefined && <RankTrendIndicator rankChange={rankChange} />}
+              </div>
+            </div>
+          )}
+          
+          <div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+              <Scale size={16} className="mr-1" /> Strength of Schedule
+            </div>
+            <div className="text-2xl font-bold font-mono">
+              {strengthOfSchedule}
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+              <Laptop size={16} className="mr-1" /> Match Record
+            </div>
+            <div className="flex items-center">
+              <div className="flex items-center text-green-500 mr-4">
+                <Trophy size={16} className="mr-1" />
+                <span className="text-2xl font-bold font-mono">{wins}</span>
+              </div>
+              <div className="flex items-center text-red-500">
+                <X size={16} className="mr-1" />
+                <span className="text-2xl font-bold font-mono">{losses}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+              <Target size={16} className="mr-1" /> Win Percentage
+            </div>
+            <div className="text-2xl font-bold font-mono">
+              {winPercentage}%
+            </div>
+          </div>
+          
+          <div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+              <GitBranch size={16} className="mr-1" /> Close Match Losses
+            </div>
+            <div className="text-2xl font-bold font-mono">
+              {closeMatchLosses}
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+              <Users size={16} className="mr-1" /> Game Record
+            </div>
+            <div className="flex items-center">
+              <div className="flex items-center text-green-500 mr-4">
+                <Trophy size={16} className="mr-1" />
+                <span className="text-2xl font-bold font-mono">{gamesWon}</span>
+              </div>
+              <div className="flex items-center text-red-500">
+                <X size={16} className="mr-1" />
+                <span className="text-2xl font-bold font-mono">{gamesLost}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center mb-1">
+              <Target size={16} className="mr-1" /> Game Win Percentage
+            </div>
+            <div className="text-2xl font-bold font-mono">
+              {gameWinPercentage}%
+            </div>
+          </div>
+        </div>
       </div>
-      <Card>
-        <CardContent className="pt-6">
-          <div className={`grid ${isMobile ? 'grid-cols-1 gap-1' : 'grid-cols-2 md:grid-cols-3 gap-4'}`}>
-            <StatItem 
-              icon={<Trophy size={20} />} 
-              title="Match Record" 
-              value={`${wins}–${losses}`}
-              color="text-amber-500"
-              isHighlighted
-              ariaLabel={`Match Record: ${wins} wins and ${losses} losses`}
-            />
-            <StatItem 
-              icon={<Percent size={20} />} 
-              title="Match Win %" 
-              value={`${winPercentage}%`}
-              color={getWinPercentageColor(winPercentage)}
-              ariaLabel={`Match Win Percentage: ${winPercentage}%`}
-            />
-            <StatItem 
-              icon={<BarChart2 size={20} />} 
-              title="Game Record" 
-              value={`${gamesWon}–${gamesLost}`}
-              color="text-blue-500"
-              isHighlighted
-              ariaLabel={`Game Record: ${gamesWon} games won and ${gamesLost} games lost`}
-            />
-            <StatItem 
-              icon={<Percent size={20} />} 
-              title="Game Win %" 
-              value={`${gameWinPercentage}%`}
-              color={getWinPercentageColor(gameWinPercentage)}
-              ariaLabel={`Game Win Percentage: ${gameWinPercentage}%`}
-            />
-            <StatItem 
-              icon={<Award size={20} />} 
-              title="Strength of Schedule" 
-              value={strengthOfSchedule}
-              color="text-indigo-500"
-              ariaLabel={`Strength of Schedule: ${strengthOfSchedule}`}
-            />
-            <StatItem 
-              icon={<ShieldAlert size={20} />} 
-              title="Close Match Losses" 
-              value={closeMatchLosses}
-              color="text-orange-500"
-              ariaLabel={`Close Match Losses: ${closeMatchLosses}`}
-            />
-            <StatItem 
-              icon={<Star size={20} className={getPowerScoreColor(powerScore)} />} 
-              title="Power Score" 
-              value={Number(powerScore).toFixed(1)}
-              color={getPowerScoreColor(powerScore)}
-              isHighlighted
-              ariaLabel={`Power Score: ${Number(powerScore).toFixed(1)}`}
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </Card>
   );
 };
 

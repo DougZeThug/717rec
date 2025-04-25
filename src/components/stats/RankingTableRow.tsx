@@ -30,17 +30,17 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   // Enhanced power score inline color for better visibility in light mode
   const getPowerScoreInlineColor = (score: number) => {
     if (score >= 75) return isLight ? '#2f855a' : '';  // green-600 equivalent
-    if (score >= 60) return isLight ? '#3182ce' : '';  // blue-500 equivalent
-    if (score >= 40) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
-    return isLight ? '#e53e3e' : '';  // red-500 equivalent
+    if (score >= 50) return isLight ? '#3182ce' : '';  // blue-600 equivalent
+    if (score >= 30) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
+    return isLight ? '#e53e3e' : '';  // red-600 equivalent
   };
   
   // Enhanced SOS inline color for better visibility in light mode
   const getSosInlineColor = (score: number) => {
     if (score >= 75) return isLight ? '#2f855a' : '';  // green-600 equivalent
-    if (score >= 60) return isLight ? '#3182ce' : '';  // blue-500 equivalent
-    if (score >= 40) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
-    return isLight ? '#e53e3e' : '';  // red-500 equivalent
+    if (score >= 50) return isLight ? '#3182ce' : '';  // blue-600 equivalent
+    if (score >= 30) return isLight ? '#dd6b20' : '';  // orange-500 equivalent
+    return isLight ? '#e53e3e' : '';  // red-600 equivalent
   };
 
   return (
