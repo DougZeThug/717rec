@@ -4,6 +4,7 @@ import { useMatchesState } from "./state/useMatchesState";
 import { useFiltersState } from "./state/useFiltersState";
 import { useMatchSubmission } from "./submission/useMatchSubmission";
 import { useMatchesFetching } from "./fetching/useMatchesFetching";
+import { useMatchScores } from "./useMatchScores";
 import { MatchWithTeams } from "../types";
 
 export const useScoreEntryData = () => {
@@ -14,8 +15,6 @@ export const useScoreEntryData = () => {
     setLoading,
     submitting,
     setSubmitting,
-    handleScoreChange: handleIndividualTeamScoreChange,
-    handleMarkCompleted
   } = useMatchesState();
 
   const {
@@ -33,6 +32,12 @@ export const useScoreEntryData = () => {
 
   const { fetchMatches } = useMatchesFetching();
   const { handleSubmitAll } = useMatchSubmission();
+  const { 
+    handleScoreChange,
+    handleGameWinsChange,
+    handleMarkCompleted,
+    validationErrors 
+  } = useMatchScores();
 
   // Clear error messages
   const clearErrors = (matchId?: string) => {
@@ -47,41 +52,6 @@ export const useScoreEntryData = () => {
       setErrorMessages({});
       setFailedMatches([]);
     }
-  };
-
-  // Direct score change handler (new)
-  const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
-    const newMatches = [...matches];
-    const match = newMatches[index];
-    
-    match.team1Score = Number(team1Score);
-    match.team2Score = Number(team2Score);
-    match.isEdited = true;
-    match.isValid = true;
-    
-    setMatches(newMatches);
-  };
-
-  // Handle game wins changes and derive binary match scores
-  const handleGameWinsChange = (index: number, team1GameWins: number, team2GameWins: number) => {
-    const newMatches = [...matches];
-    const match = newMatches[index];
-    
-    match.team1_game_wins = Number(team1GameWins);
-    match.team2_game_wins = Number(team2GameWins);
-    
-    if (team1GameWins > team2GameWins) {
-      match.team1Score = 1;
-      match.team2Score = 0;
-    } else if (team2GameWins > team1GameWins) {
-      match.team1Score = 0;
-      match.team2Score = 1;
-    }
-    
-    match.isEdited = true;
-    match.isValid = true;
-    
-    setMatches(newMatches);
   };
 
   useEffect(() => {
@@ -104,7 +74,6 @@ export const useScoreEntryData = () => {
     failedMatches,
     errorMessages,
     handleScoreChange,
-    handleIndividualTeamScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
     handleSubmitAll,
