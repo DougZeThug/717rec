@@ -17,19 +17,25 @@ export const useMatchFetching = () => {
 
       if (error) throw error;
 
-      console.log("🔍 DIAGNOSTIC: Raw match data from database:", {
-        matchCount: data?.length || 0,
+      // Log raw data type information
+      console.log("🔍 Raw matches fetched:", {
+        count: data?.length || 0,
         sampleDate: data?.[0]?.date,
         sampleDateType: data?.[0]?.date ? typeof data[0].date : 'undefined'
       });
 
       const formattedMatches: MatchWithTeams[] = (data || []).map(match => {
         const transformed = transformDatabaseMatchToMatchWithTeams(match);
-        console.log("🔍 DIAGNOSTIC: Transformed match:", {
-          id: transformed.id,
-          date: transformed.date,
-          dateType: typeof transformed.date
+        
+        // Verify date normalization
+        console.log(`🔍 Match date verification [${match.id}]:`, {
+          originalDate: match.date,
+          originalType: typeof match.date,
+          transformedDate: transformed.date,
+          transformedType: typeof transformed.date,
+          isISOString: typeof transformed.date === 'string' && !isNaN(Date.parse(transformed.date))
         });
+        
         return transformed;
       });
 

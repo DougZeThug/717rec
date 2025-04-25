@@ -1,35 +1,10 @@
 import { MatchWithTeams } from "../types";
 import { validateMatchScores } from "./matchValidation";
-
-const normalizeDate = (date: Date | string | null): string => {
-  if (!date) return new Date().toISOString();
-  
-  if (typeof date === 'object' && date instanceof Date) {
-    return date.toISOString();
-  }
-  
-  // If it's already a string, ensure it's in ISO format
-  if (typeof date === 'string') {
-    // Try to parse and reformat to ensure consistency
-    const parsedDate = new Date(date);
-    if (!isNaN(parsedDate.getTime())) {
-      return parsedDate.toISOString();
-    }
-  }
-  
-  // Fallback to current date if invalid
-  return new Date().toISOString();
-};
+import { normalizeDate } from "@/utils/dateNormalization";
 
 export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTeams => {
-  const normalizedDate = normalizeDate(match.date);
-  console.log("🔍 DIAGNOSTIC: Normalizing match date:", {
-    originalDate: match.date,
-    originalType: typeof match.date,
-    normalizedDate,
-    matchId: match.id
-  });
-
+  const normalizedDate = normalizeDate(match.date, `transformDatabaseMatchToMatchWithTeams(${match.id})`);
+  
   return {
     id: match.id,
     team1Id: match.team1_id,

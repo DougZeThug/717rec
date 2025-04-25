@@ -1,4 +1,3 @@
-
 import React from "react";
 import { MatchWithTeams } from "./types";
 import TeamDisplay from "./components/TeamDisplay";
@@ -31,6 +30,15 @@ const MatchRow: React.FC<MatchRowProps> = ({
   errorMessage,
   onClearError
 }) => {
+  // Add date type verification on mount
+  React.useEffect(() => {
+    console.log(`🔍 MatchRow date verification [${match.id}]:`, {
+      date: match.date,
+      type: typeof match.date,
+      isISOString: typeof match.date === 'string' && !isNaN(Date.parse(match.date))
+    });
+  }, [match.id, match.date]);
+
   // Log match data at component initialization
   React.useEffect(() => {
     console.log(`🔍 DIAGNOSTIC: MatchRow initialized for match:`, {

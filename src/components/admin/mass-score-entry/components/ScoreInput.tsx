@@ -1,4 +1,3 @@
-
 import React from "react";
 import ScoreButtonGroup from "./ScoreButtonGroup";
 import { motion } from "framer-motion";
@@ -28,19 +27,12 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   matchId,
   matchDate
 }) => {
-  // Log data at initialization
+  // Add date type verification on mount
   React.useEffect(() => {
-    console.log(`🔍 DIAGNOSTIC: ScoreInput for match ${matchId} initialized with:`, {
-      matchId,
-      matchDate,
-      dateType: typeof matchDate,
-      initialValue: value,
-      valueTypes: {
-        team1ScoreType: typeof value.team1Score,
-        team2ScoreType: typeof value.team2Score
-      },
-      isCompleted,
-      disabled
+    console.log(`🔍 ScoreInput date verification [${matchId}]:`, {
+      date: matchDate,
+      type: typeof matchDate,
+      isISOString: typeof matchDate === 'string' && !isNaN(Date.parse(matchDate))
     });
   }, [matchId, matchDate]);
 

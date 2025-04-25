@@ -1,35 +1,9 @@
-
 import { Match } from "@/types";
-
-const normalizeDate = (date: Date | string | null): string => {
-  if (!date) return new Date().toISOString();
-  
-  if (typeof date === 'object' && date instanceof Date) {
-    return date.toISOString();
-  }
-  
-  // If it's already a string, ensure it's in ISO format
-  if (typeof date === 'string') {
-    const parsedDate = new Date(date);
-    if (!isNaN(parsedDate.getTime())) {
-      return parsedDate.toISOString();
-    }
-  }
-  
-  // Fallback to current date if invalid
-  return new Date().toISOString();
-};
+import { normalizeDate } from "./dateNormalization";
 
 export const transformMatchData = (match: any): Match => {
-  const normalizedDate = normalizeDate(match.date);
+  const normalizedDate = normalizeDate(match.date, `transformMatchData(${match.id})`);
   
-  console.log("🔍 DIAGNOSTIC: Normalizing match date in transformer:", {
-    originalDate: match.date,
-    originalType: typeof match.date,
-    normalizedDate,
-    matchId: match.id
-  });
-
   return {
     id: match.id,
     team1Id: match.team1_id || '',
