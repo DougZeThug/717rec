@@ -22,12 +22,21 @@ const ScoreButton = ({
   disabled = false,
   isCompleted = false
 }: ScoreButtonProps) => {
-  // Handle click event with a small debounce to prevent double-clicks
+  // Handle click event with logging
   const handleClick = () => {
     if (!disabled) {
+      console.log("ScoreButton clicked:", {
+        scores: `${option.team1Score}-${option.team2Score}`,
+        isSelected,
+        isCompleted,
+        label: option.label
+      });
       onClick();
     }
   };
+
+  // Force boolean type for isSelected to prevent truthy/falsey issues
+  const selected = Boolean(isSelected);
 
   return (
     <motion.button
@@ -36,17 +45,18 @@ const ScoreButton = ({
       disabled={disabled}
       whileTap={{ scale: 0.95 }}
       className={cn(
-        "rounded-md min-w-[3.5rem] h-10 px-3 border transition-all duration-200",
-        isSelected
+        "rounded-md min-w-[3.5rem] h-10 px-3 border transition-colors duration-200",
+        selected
           ? "bg-primary text-primary-foreground border-primary"
           : isCompleted
             ? "bg-muted hover:bg-muted/80 border-muted-foreground/20"
             : "bg-background hover:bg-muted border-input",
-        isCompleted && !isSelected && "opacity-60",
+        isCompleted && !selected && "opacity-60",
         disabled && "opacity-50 cursor-not-allowed"
       )}
       data-testid={`score-button-${option.label}`}
-      aria-pressed={isSelected}
+      data-selected={selected}
+      aria-pressed={selected}
     >
       {option.label}
     </motion.button>

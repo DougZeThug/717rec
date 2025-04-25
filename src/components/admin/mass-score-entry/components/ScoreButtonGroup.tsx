@@ -18,12 +18,17 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   onComplete,
   isCompleted = false
 }) => {
-  // More robust check for selected button - handles null, undefined and number values
+  // Strict equality check for scores to handle 0 values correctly
   const isSelected = (option: typeof SCORE_OPTIONS[number]) => {
     if (!value) return false;
+    const team1Score = value.team1Score === null ? null : Number(value.team1Score);
+    const team2Score = value.team2Score === null ? null : Number(value.team2Score);
     
-    const team1Score = typeof value.team1Score === 'number' ? value.team1Score : null;
-    const team2Score = typeof value.team2Score === 'number' ? value.team2Score : null;
+    console.log("Checking selection:", {
+      buttonScores: `${option.team1Score}-${option.team2Score}`,
+      currentValue: `${team1Score}-${team2Score}`,
+      isMatch: team1Score === option.team1Score && team2Score === option.team2Score
+    });
     
     return team1Score === option.team1Score && team2Score === option.team2Score;
   };
@@ -31,7 +36,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   const handleSelect = (option: typeof SCORE_OPTIONS[number]) => {
     console.log(`ScoreButtonGroup: selected option ${option.label} (${option.team1Score}-${option.team2Score})`);
     
-    // Always ensure we pass actual numbers
+    // Always pass numbers to prevent type issues
     onChange({
       team1Score: Number(option.team1Score),
       team2Score: Number(option.team2Score)
@@ -51,7 +56,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
       <div className="flex gap-2 flex-wrap justify-center">
         {SCORE_OPTIONS.map((option) => (
           <ScoreButton
-            key={option.label}
+            key={`${option.team1Score}-${option.team2Score}`}
             option={option}
             isSelected={isSelected(option)}
             onClick={() => handleSelect(option)}
