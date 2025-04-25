@@ -8,6 +8,7 @@ export const useMatchesState = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
+  // This is for the original style (team1/team2 toggle)
   const handleScoreChange = (index: number, team: 'team1' | 'team2', value: string) => {
     const newMatches = [...matches];
     const scoreValue = value === "" ? null : parseInt(value, 10);
