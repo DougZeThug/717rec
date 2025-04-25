@@ -18,6 +18,7 @@ interface ScoreSectionProps {
   onClearError?: (matchId: string) => void;
   matchId: string;
   isCompleted?: boolean;
+  matchDate?: string; // Optional match date for debugging
 }
 
 const ScoreSection: React.FC<ScoreSectionProps> = ({
@@ -30,7 +31,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
   errorMessage,
   onClearError,
   matchId,
-  isCompleted = false
+  isCompleted = false,
+  matchDate
 }) => {
   return (
     <motion.div 
@@ -52,6 +54,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         onComplete={onComplete}
         disabled={disabled}
         isCompleted={isCompleted}
+        matchId={matchId}
+        matchDate={matchDate}
       />
       
       {hasError && (

@@ -32,7 +32,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   onClearError
 }) => {
   const handleScoreChange = (scores: { team1Score: number; team2Score: number }) => {
-    console.log(`🏆 MatchRow handleScoreChange for match ${match.id} with scores:`, scores);
+    console.log(`🏆 MatchRow handleScoreChange for match ${match.id} (date: ${match.date}) with scores:`, scores);
     onScoreChange(index, scores.team1Score, scores.team2Score);
   };
 
@@ -41,7 +41,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
     const team1GameWins = parseInt(String(gameWins.team1GameWins)) || 0;
     const team2GameWins = parseInt(String(gameWins.team2GameWins)) || 0;
     
-    console.log(`🎲 MatchRow handleGameWinsChange for match ${match.id}:`, {
+    console.log(`🎲 MatchRow handleGameWinsChange for match ${match.id} (date: ${match.date}):`, {
       team1GameWins,
       team2GameWins
     });
@@ -96,6 +96,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
         onClearError={onClearError}
         matchId={match.id}
         isCompleted={isCompleted}
+        matchDate={match.date}
       />
 
       <MatchStatusSection

@@ -15,6 +15,13 @@ export function validateGameScore(
   gameWins2: number,
   bestOf: number
 ): MatchValidationResult {
+  console.log(`Validating game score: ${gameWins1}-${gameWins2} for best of ${bestOf}`);
+  
+  // Convert to numbers to ensure correct comparison
+  gameWins1 = Number(gameWins1);
+  gameWins2 = Number(gameWins2);
+  bestOf = Number(bestOf);
+  
   const totalGames = gameWins1 + gameWins2;
   const maxGames = bestOf;
   const minGamesForWin = Math.ceil(bestOf / 2);
@@ -22,6 +29,14 @@ export function validateGameScore(
   // Check if either team has reached the minimum wins needed
   const team1HasEnoughWins = gameWins1 >= minGamesForWin;
   const team2HasEnoughWins = gameWins2 >= minGamesForWin;
+  
+  console.log({
+    totalGames,
+    maxGames,
+    minGamesForWin,
+    team1HasEnoughWins,
+    team2HasEnoughWins
+  });
   
   // Both teams can't have enough wins
   if (team1HasEnoughWins && team2HasEnoughWins) {

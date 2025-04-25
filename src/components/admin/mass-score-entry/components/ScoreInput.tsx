@@ -12,6 +12,8 @@ interface ScoreInputProps {
   disabled?: boolean;
   className?: string;
   isCompleted?: boolean;
+  matchId?: string; // Match ID for debugging
+  matchDate?: string; // Match date for debugging
 }
 
 const ScoreInput: React.FC<ScoreInputProps> = ({
@@ -22,8 +24,15 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
   isValid = true,
   disabled = false,
   className = "",
-  isCompleted = false
+  isCompleted = false,
+  matchId,
+  matchDate
 }) => {
+  // Log data at initialization
+  React.useEffect(() => {
+    console.log(`ScoreInput for match ${matchId} (date: ${matchDate}) initialized with:`, value);
+  }, [matchId, matchDate]);
+
   return (
     <motion.div 
       className={`w-full flex justify-center ${className}`}
@@ -35,7 +44,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
       <ScoreButtonGroup
         value={value}
         onChange={(gameWins) => {
-          console.log("🎮 ScoreInput onChange called with game wins:", gameWins);
+          console.log("🎮 ScoreInput onChange called for match", matchId, "with game wins:", gameWins);
           
           // Calculate binary match scores based on game wins
           const team1Won = gameWins.team1Score > gameWins.team2Score;
@@ -58,6 +67,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
         onComplete={onComplete}
         disabled={disabled}
         isCompleted={isCompleted}
+        matchId={matchId}
       />
     </motion.div>
   );

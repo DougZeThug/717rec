@@ -8,15 +8,28 @@
  * @returns boolean indicating if scores are valid
  */
 export const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
-  // Ensure both scores are numbers
-  if (typeof score1 !== 'number' || typeof score2 !== 'number') {
+  console.log("validateMatchScores called with:", { score1, score2 });
+  
+  // Ensure both scores are numbers and not NaN
+  if (score1 === null || score1 === undefined || score2 === null || score2 === undefined) {
+    console.log("Score validation failed: null or undefined values");
+    return false;
+  }
+  
+  // Convert to numbers to guarantee correct comparison
+  const parsedScore1 = Number(score1);
+  const parsedScore2 = Number(score2);
+  
+  if (isNaN(parsedScore1) || isNaN(parsedScore2)) {
+    console.log("Score validation failed: NaN values");
     return false;
   }
   
   // Binary match scores must be 1 for one team and 0 for the other
-  if (score1 === 1 && score2 === 0) return true;
-  if (score1 === 0 && score2 === 1) return true;
+  if (parsedScore1 === 1 && parsedScore2 === 0) return true;
+  if (parsedScore1 === 0 && parsedScore2 === 1) return true;
   
+  console.log("Score validation failed: invalid score combination", { parsedScore1, parsedScore2 });
   return false;
 };
 
@@ -27,25 +40,36 @@ export const validateMatchScores = (score1?: number | null, score2?: number | nu
  * @returns boolean indicating if game wins are valid
  */
 export const validateGameWins = (gameWins1?: number | null, gameWins2?: number | null): boolean => {
+  console.log("validateGameWins called with:", { gameWins1, gameWins2 });
+  
   // Game wins must be integers
-  if (typeof gameWins1 !== 'number' || typeof gameWins2 !== 'number') {
+  if (gameWins1 === null || gameWins1 === undefined || gameWins2 === null || gameWins2 === undefined) {
+    console.log("Game wins validation failed: null or undefined values");
     return false;
   }
   
-  if (isNaN(gameWins1) || isNaN(gameWins2)) {
+  // Convert to numbers to ensure correct comparison
+  const parsedGameWins1 = Number(gameWins1);
+  const parsedGameWins2 = Number(gameWins2);
+  
+  if (isNaN(parsedGameWins1) || isNaN(parsedGameWins2)) {
+    console.log("Game wins validation failed: NaN values");
     return false;
   }
   
   // Game wins cannot be tied (one team must have more wins than the other)
-  if (gameWins1 === gameWins2) {
+  if (parsedGameWins1 === parsedGameWins2) {
+    console.log("Game wins validation failed: tied scores", { parsedGameWins1, parsedGameWins2 });
     return false;
   }
   
   // Game wins must be non-negative
-  if (gameWins1 < 0 || gameWins2 < 0) {
+  if (parsedGameWins1 < 0 || parsedGameWins2 < 0) {
+    console.log("Game wins validation failed: negative values", { parsedGameWins1, parsedGameWins2 });
     return false;
   }
   
+  console.log("Game wins validation passed:", { parsedGameWins1, parsedGameWins2 });
   return true;
 };
 
@@ -63,6 +87,10 @@ export const validateMatchResult = (
   team1GameWins?: number | null,
   team2GameWins?: number | null
 ): { isValid: boolean; message?: string } => {
+  console.log("validateMatchResult called with:", { 
+    team1Score, team2Score, team1GameWins, team2GameWins 
+  });
+  
   // First ensure the binary scores are valid
   if (!validateMatchScores(team1Score, team2Score)) {
     return { isValid: false, message: "Invalid match scores: one team must win" };
@@ -89,5 +117,6 @@ export const validateMatchResult = (
     };
   }
   
+  console.log("Match result validation passed");
   return { isValid: true };
 };

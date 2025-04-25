@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import ScoreButton from "./ScoreButton";
 import { SCORE_OPTIONS } from "./types";
 
@@ -9,6 +9,7 @@ interface ScoreButtonGroupProps {
   disabled?: boolean;
   onComplete?: () => void;
   isCompleted?: boolean;
+  matchId?: string; // Optional match ID for debugging
 }
 
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
@@ -16,8 +17,14 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   onChange,
   disabled = false,
   onComplete,
-  isCompleted = false
+  isCompleted = false,
+  matchId
 }) => {
+  // Log the initial value when component mounts or value changes
+  useEffect(() => {
+    console.log(`ScoreButtonGroup for match ${matchId || 'unknown'} initialized with value:`, value);
+  }, [matchId, value]);
+
   // Strict equality check for scores to handle 0 values correctly
   const isSelected = (option: typeof SCORE_OPTIONS[number]) => {
     if (!value) return false;
@@ -25,6 +32,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     const team2Score = value.team2Score === null ? null : Number(value.team2Score);
     
     console.log("Checking selection:", {
+      matchId,
       buttonScores: `${option.team1Score}-${option.team2Score}`,
       currentValue: `${team1Score}-${team2Score}`,
       isMatch: team1Score === option.team1Score && team2Score === option.team2Score
@@ -34,7 +42,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   };
 
   const handleSelect = (option: typeof SCORE_OPTIONS[number]) => {
-    console.log(`ScoreButtonGroup: selected option ${option.label} (${option.team1Score}-${option.team2Score})`);
+    console.log(`ScoreButtonGroup: selected option ${option.label} (${option.team1Score}-${option.team2Score}) for match ${matchId || 'unknown'}`);
     
     // Always pass numbers to prevent type issues
     onChange({

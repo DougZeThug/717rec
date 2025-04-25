@@ -22,12 +22,13 @@ const ScoreButton = ({
   disabled = false,
   isCompleted = false
 }: ScoreButtonProps) => {
-  // Handle click event with logging
+  // Handle click event with detailed logging
   const handleClick = () => {
     if (!disabled) {
       console.log("ScoreButton clicked:", {
         scores: `${option.team1Score}-${option.team2Score}`,
-        isSelected,
+        isSelected: Boolean(isSelected),
+        wasSelected: isSelected,
         isCompleted,
         label: option.label
       });
@@ -36,6 +37,7 @@ const ScoreButton = ({
   };
 
   // Force boolean type for isSelected to prevent truthy/falsey issues
+  // This is critical for correctly rendering selected state with 0 values
   const selected = Boolean(isSelected);
 
   return (
@@ -56,6 +58,8 @@ const ScoreButton = ({
       )}
       data-testid={`score-button-${option.label}`}
       data-selected={selected}
+      data-score1={option.team1Score}
+      data-score2={option.team2Score}
       aria-pressed={selected}
     >
       {option.label}
