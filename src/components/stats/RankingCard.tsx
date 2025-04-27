@@ -40,64 +40,66 @@ const RankingCard: React.FC<RankingCardProps> = ({
         className="p-4 cursor-pointer"
         onClick={() => onToggleExpand(ranking.teamId)}
       >
-        <div className="flex justify-between items-center gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="font-mono text-lg font-bold shrink-0">
-              {index + 1}
-            </span>
-            {ranking.divisionRank && !showDivision && (
-              <span className="text-xs text-gray-500 shrink-0">
-                ({ranking.divisionRank})
+        <div className="flex flex-col gap-2">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-mono text-lg font-bold shrink-0">
+                {index + 1}
               </span>
-            )}
-            <div className="flex items-center gap-2 min-w-0 flex-grow">
-              {!compactView && (
-                <div className="w-8 h-8 shrink-0">
-                  <TeamLogo
-                    imageUrl={ranking.logoUrl || ranking.imageUrl}
-                    teamName={ranking.teamName}
-                    size="sm"
-                    className="w-8 h-8"
-                  />
-                </div>
+              {ranking.divisionRank && !showDivision && (
+                <span className="text-xs text-gray-500 shrink-0">
+                  ({ranking.divisionRank})
+                </span>
               )}
-              <Link
-                to={`/teams/${ranking.teamId}`}
-                className="font-bebas tracking-wide text-lg hover:text-blue-600 hover:underline truncate block"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {ranking.teamName}
-              </Link>
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                {!compactView && (
+                  <div className="w-8 h-8 shrink-0">
+                    <TeamLogo
+                      imageUrl={ranking.logoUrl || ranking.imageUrl}
+                      teamName={ranking.teamName}
+                      size="sm"
+                      className="w-8 h-8"
+                    />
+                  </div>
+                )}
+                <Link
+                  to={`/teams/${ranking.teamId}`}
+                  className="font-bebas tracking-wide text-lg hover:text-blue-600 hover:underline block"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {ranking.teamName}
+                </Link>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          
+          <div className="flex items-center justify-between gap-2">
             <span
               className={`font-mono font-medium text-base ${
                 isLight ? "" : getPowerScoreColor(ranking.powerScore)
               }`}
               style={{
-                color:
-                  isLight && ranking.powerScore
-                    ? ranking.powerScore >= 75
-                      ? "#2f855a"
-                      : ranking.powerScore >= 50
-                      ? "#3182ce"
-                      : ranking.powerScore >= 30
-                      ? "#dd6b20"
-                      : "#e53e3e"
-                    : undefined,
+                color: isLight && ranking.powerScore
+                  ? ranking.powerScore >= 75
+                    ? "#2f855a"
+                    : ranking.powerScore >= 50
+                    ? "#3182ce"
+                    : ranking.powerScore >= 30
+                    ? "#dd6b20"
+                    : "#e53e3e"
+                  : undefined,
               }}
             >
               {formatPowerScore(ranking.powerScore)}
             </span>
-            <div className="w-14 flex justify-end shrink-0">
+            <div className="shrink-0">
               <RankTrendIndicator rankChange={ranking.rankChange} />
             </div>
           </div>
         </div>
 
         {!compactView ? (
-          <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+          <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
             <div>
               <span className="text-gray-500 dark:text-gray-400">Record:</span>{" "}
               <span className="font-mono">{`${ranking.wins}-${ranking.losses}`}</span>
@@ -130,12 +132,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </div>
             {showDivision && (
               <div className="col-span-2">
-                <span className="text-gray-500 dark:text-gray-400">
-                  Division:
-                </span>{" "}
-                <span className="italic">
-                  {ranking.divisionName || "Unassigned"}
-                </span>
+                <span className="text-gray-500 dark:text-gray-400">Division:</span>{" "}
+                <span className="italic">{ranking.divisionName || "Unassigned"}</span>
               </div>
             )}
           </div>
