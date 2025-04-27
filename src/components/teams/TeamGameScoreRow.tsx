@@ -1,19 +1,16 @@
+
 import React from "react";
 import { Match } from "@/types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TransitionLink } from "@/components/transitions/TransitionLink";
 import { cn } from "@/lib/utils";
 
-/**
- * Props for showing a single row of a match game score between two teams.
- */
 interface TeamGameScoreRowProps {
   match: Match;
   teamId: string;
-  highlightWinnerLoser?: boolean; // Added prop to selectively apply color
+  highlightWinnerLoser?: boolean;
 }
 
-// Define a type for team details to avoid type errors
 interface TeamDetails {
   team_id?: string;
   name?: string;
@@ -34,7 +31,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
   const homeLogo = homeTeam.image_url || homeTeam.logo_url || "";
   const awayLogo = awayTeam.image_url || awayTeam.logo_url || "";
 
-  // Get game wins from match fields - directly use team1_game_wins and team2_game_wins
+  // Get game wins from match fields
   const homeGameWins = match.team1_game_wins ?? 0;
   const awayGameWins = match.team2_game_wins ?? 0;
 
@@ -51,7 +48,6 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
     }
   }
 
-  // Compose row
   return (
     <div className={cn(
       "flex items-center w-full justify-between gap-x-3 py-2",
@@ -69,7 +65,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
           <span
             className={cn(
               "truncate",
-              "font-bebas uppercase tracking-wide", // 🟢 Apply font update for completed match team names
+              "font-bebas uppercase tracking-wide",
               highlightWinnerLoser && winnerTeamId === homeTeamId && "text-green-600 font-medium",
               highlightWinnerLoser && loserTeamId === homeTeamId && "text-red-500"
             )}
@@ -82,7 +78,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
       {/* Game score - center */}
       <div className={cn(
         "flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center",
-        "font-mono" // Apply IBM Plex Mono to game scores
+        "font-mono"
       )}>
         {homeGameWins} <span className="mx-1">–</span> {awayGameWins}
       </div>
@@ -92,7 +88,7 @@ export const TeamGameScoreRow: React.FC<TeamGameScoreRowProps> = ({ match, teamI
           <span
             className={cn(
               "truncate text-right",
-              "font-bebas uppercase tracking-wide", // 🟢 Apply font update for completed match team names
+              "font-bebas uppercase tracking-wide",
               highlightWinnerLoser && winnerTeamId === awayTeamId && "text-green-600 font-medium",
               highlightWinnerLoser && loserTeamId === awayTeamId && "text-red-500"
             )}
