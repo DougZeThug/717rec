@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MatchWithTeams } from "../types";
 import { useScoreValidation } from "./validation/useScoreValidation";
@@ -30,8 +29,7 @@ export const useMatchScores = () => {
     match.team2Score = Number(team2Score);
     match.isEdited = true;
     match.isValid = validateScores(match.team1Score, match.team2Score);
-    // Automatically mark match as completed when score is set
-    match.iscompleted = true;
+    match.iscompleted = true; // Automatically mark match as completed when score is set
     
     console.log(`useMatchScores handleScoreChange AFTER update for match ${match.id}:`, {
       updatedScores: {
