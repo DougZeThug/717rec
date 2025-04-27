@@ -5,6 +5,7 @@ import RankTrendIndicator from "./RankTrendIndicator";
 import { getSosColor } from "@/utils/powerScore/getSosColor";
 import { Link } from "react-router-dom";
 import { useTheme } from "next-themes";
+import { TeamLogo } from "@/components/ui/team/TeamLogo";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -40,22 +41,30 @@ const RankingCard: React.FC<RankingCardProps> = ({
         onClick={() => onToggleExpand(ranking.teamId)}
       >
         <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <span className="font-mono text-lg font-bold mr-2">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-lg font-bold">
               {index + 1}
             </span>
             {ranking.divisionRank && !showDivision && (
-              <span className="text-xs text-gray-500 mr-2">
+              <span className="text-xs text-gray-500">
                 ({ranking.divisionRank})
               </span>
             )}
-            <Link
-              to={`/teams/${ranking.teamId}`}
-              className="font-semibold hover:text-blue-600 hover:underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {ranking.teamName}
-            </Link>
+            <div className="flex items-center gap-2">
+              <TeamLogo
+                imageUrl={ranking.logoUrl || ranking.imageUrl}
+                teamName={ranking.teamName}
+                size="sm"
+                rounded
+              />
+              <Link
+                to={`/teams/${ranking.teamId}`}
+                className="font-semibold hover:text-blue-600 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {ranking.teamName}
+              </Link>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <div className="text-right">
