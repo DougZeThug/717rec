@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { MatchWithTeams } from "../types";
 import { useScoreValidation } from "./validation/useScoreValidation";
 import { useGameWinsHandler } from "./game-wins/useGameWinsHandler";
@@ -8,7 +9,7 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
   const { handleGameWinsChange: processGameWinsChange } = useGameWinsHandler();
 
   const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
-    const newMatches = [...matches]; // Create a new array reference
+    const newMatches = [...matches];
     const match = newMatches[index];
     
     console.log(`useMatchScores handleScoreChange BEFORE update for match ${match.id}:`, {
@@ -31,7 +32,12 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
     match.iscompleted = true; // Always mark as completed when score is changed
     
     // Validate the match after updating scores
-    match.isValid = validateMatch(match);
+    match.isValid = validateMatch({
+      team1Score: match.team1Score ?? 0,
+      team2Score: match.team2Score ?? 0,
+      team1_game_wins: match.team1_game_wins ?? 0,
+      team2_game_wins: match.team2_game_wins ?? 0,
+    });
     
     console.log(`useMatchScores handleScoreChange AFTER update for match ${match.id}:`, {
       updatedScores: {
@@ -47,7 +53,7 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
   };
 
   const handleGameWinsChange = (index: number, team1GameWins: number, team2GameWins: number) => {
-    const newMatches = [...matches]; // Create a new array reference
+    const newMatches = [...matches];
     const match = newMatches[index];
     
     // Convert inputs to numbers to ensure consistency
@@ -75,7 +81,12 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
     Object.assign(match, updates);
     
     // Always validate the match after game wins are updated
-    match.isValid = validateMatch(match);
+    match.isValid = validateMatch({
+      team1Score: match.team1Score ?? 0,
+      team2Score: match.team2Score ?? 0,
+      team1_game_wins: match.team1_game_wins ?? 0,
+      team2_game_wins: match.team2_game_wins ?? 0,
+    });
     
     console.log(`useMatchScores handleGameWinsChange AFTER update for match ${match.id}:`, {
       updatedMatch: {
@@ -92,7 +103,7 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
   };
 
   const handleMarkCompleted = (index: number, checked: boolean) => {
-    const newMatches = [...matches]; // Create a new array reference
+    const newMatches = [...matches];
     const match = newMatches[index];
     
     console.log(`🏁 useMatchScores handleMarkCompleted for match ${match.id}:`, {
@@ -105,7 +116,12 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
     match.isEdited = true;
     
     // Re-validate when completion status changes
-    match.isValid = validateMatch(match);
+    match.isValid = validateMatch({
+      team1Score: match.team1Score ?? 0,
+      team2Score: match.team2Score ?? 0,
+      team1_game_wins: match.team1_game_wins ?? 0,
+      team2_game_wins: match.team2_game_wins ?? 0,
+    });
     
     // Use setMatches with the new array to trigger re-render
     setMatches(newMatches);
