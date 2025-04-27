@@ -104,21 +104,32 @@ export const useScoreValidation = () => {
       return false;
     }
     
-    // Ensure team1_game_wins + team2_game_wins === 2
+    // Best-of-3 validation: total game wins must be 2 or 3
     const totalGameWins = (match.team1_game_wins || 0) + (match.team2_game_wins || 0);
-    if (totalGameWins !== 2) {
+    if (totalGameWins !== 2 && totalGameWins !== 3) {
       toast({
         title: "Invalid Game Wins",
-        description: `Total game wins must be 2, but got ${totalGameWins}`,
+        description: `Total game wins must be 2 or 3 in best-of-3 format, but got ${totalGameWins}`,
         variant: "destructive"
       });
       return false;
     }
     
-    // Ensure consistency between match score and game wins
+    // Ensure winning team has at least 2 game wins
     const team1Won = match.team1Score === 1;
-    const team1HasMoreGameWins = (match.team1_game_wins || 0) > (match.team2_game_wins || 0);
+    const winningTeamGameWins = team1Won ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
     
+    if (winningTeamGameWins < 2) {
+      toast({
+        title: "Invalid Game Wins",
+        description: "Winning team must have at least 2 game wins",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Ensure winning team has more game wins
+    const team1HasMoreGameWins = (match.team1_game_wins || 0) > (match.team2_game_wins || 0);
     if (team1Won !== team1HasMoreGameWins) {
       toast({
         title: "Inconsistent Match Data",
