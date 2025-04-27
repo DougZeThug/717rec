@@ -1,8 +1,8 @@
+
 import React from "react";
 import { MatchWithTeams } from "../types";
 import ScoreInput from "./ScoreInput";
 import ScoreButtonGroup from "./ScoreButtonGroup";
-import { X } from "lucide-react";
 import { motion } from "framer-motion";
 import ErrorAlert from "./ErrorAlert";
 
@@ -26,11 +26,17 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
   onClearError
 }) => {
   const handleTeam1ScoreChange = (value: number | null) => {
-    onScoreChange({ team1Score: value === null ? 0 : value, team2Score: match.team2Score || 0 });
+    onScoreChange({ 
+      team1Score: value === null ? 0 : value, 
+      team2Score: match.team2Score || 0 
+    });
   };
 
   const handleTeam2ScoreChange = (value: number | null) => {
-    onScoreChange({ team1Score: match.team1Score || 0, team2Score: value === null ? 0 : value });
+    onScoreChange({ 
+      team1Score: match.team1Score || 0, 
+      team2Score: value === null ? 0 : value 
+    });
   };
 
   return (
@@ -66,8 +72,14 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
       <div className="space-y-2">
         <div className="text-sm font-medium">Team 1 Game Wins</div>
         <ScoreButtonGroup
-          value={match.team1_game_wins}
-          onChange={(value) => onGameWinsChange({ team1GameWins: value, team2GameWins: match.team2_game_wins || 0 })}
+          value={{ 
+            team1Score: match.team1_game_wins || 0, 
+            team2Score: match.team2_game_wins || 0 
+          }}
+          onChange={(scores) => onGameWinsChange({ 
+            team1GameWins: scores.team1Score, 
+            team2GameWins: match.team2_game_wins || 0 
+          })}
           disabled={isSubmitting}
           hasError={hasError}
         />
@@ -75,8 +87,14 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
       <div className="space-y-2">
         <div className="text-sm font-medium">Team 2 Game Wins</div>
         <ScoreButtonGroup
-          value={match.team2_game_wins}
-          onChange={(value) => onGameWinsChange({ team1GameWins: match.team1_game_wins || 0, team2GameWins: value })}
+          value={{ 
+            team1Score: match.team1_game_wins || 0, 
+            team2Score: match.team2_game_wins || 0 
+          }}
+          onChange={(scores) => onGameWinsChange({ 
+            team1GameWins: match.team1_game_wins || 0, 
+            team2GameWins: scores.team2Score 
+          })}
           disabled={isSubmitting}
           hasError={hasError}
         />
