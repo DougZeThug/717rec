@@ -1,7 +1,6 @@
 
 import React from "react";
 import { MatchWithTeams } from "../types";
-import ScoreInput from "./ScoreInput";
 import ScoreButtonGroup from "./ScoreButtonGroup";
 import { motion } from "framer-motion";
 import ErrorAlert from "./ErrorAlert";
@@ -25,65 +24,35 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
   onGameWinsChange,
   onClearError
 }) => {
+  const handleScoreSelection = (scores: { team1Score: number; team2Score: number }) => {
+    // Update both scores and game wins
+    onScoreChange(scores);
+    onGameWinsChange({
+      team1GameWins: scores.team1Score === 1 ? 2 : scores.team1Score === 0 ? 0 : 1,
+      team2GameWins: scores.team2Score === 1 ? 2 : scores.team2Score === 0 ? 0 : 1
+    });
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4">
       {hasError && errorMessage && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="col-span-2"
         >
           <ErrorAlert message={errorMessage} onClear={onClearError} />
         </motion.div>
       )}
+      
       <div className="space-y-2">
-        <div className="text-sm font-medium">Team 1 Score</div>
-        <ScoreInput
-          value={{ team1Score: match.team1Score || 0, team2Score: match.team2Score || 0 }}
-          onChange={(scores) => onScoreChange(scores)}
-          disabled={isSubmitting}
-          matchId={match.id}
-          onComplete={() => {}}
-        />
-      </div>
-      <div className="space-y-2">
-        <div className="text-sm font-medium">Team 2 Score</div>
-        <ScoreInput
-          value={{ team1Score: match.team1Score || 0, team2Score: match.team2Score || 0 }}
-          onChange={(scores) => onScoreChange(scores)}
-          disabled={isSubmitting}
-          matchId={match.id}
-          onComplete={() => {}}
-        />
-      </div>
-      <div className="space-y-2">
-        <div className="text-sm font-medium">Team 1 Game Wins</div>
+        <div className="text-sm font-medium">Match Result</div>
         <ScoreButtonGroup
           value={{ 
-            team1Score: match.team1_game_wins || 0, 
-            team2Score: match.team2_game_wins || 0 
+            team1Score: match.team1Score || 0, 
+            team2Score: match.team2Score || 0 
           }}
-          onChange={(scores) => onGameWinsChange({ 
-            team1GameWins: scores.team1Score, 
-            team2GameWins: scores.team2Score 
-          })}
-          disabled={isSubmitting}
-          matchId={match.id}
-          onComplete={() => {}}
-        />
-      </div>
-      <div className="space-y-2">
-        <div className="text-sm font-medium">Team 2 Game Wins</div>
-        <ScoreButtonGroup
-          value={{ 
-            team1Score: match.team1_game_wins || 0, 
-            team2Score: match.team2_game_wins || 0 
-          }}
-          onChange={(scores) => onGameWinsChange({ 
-            team1GameWins: scores.team1Score, 
-            team2GameWins: scores.team2Score 
-          })}
+          onChange={handleScoreSelection}
           disabled={isSubmitting}
           matchId={match.id}
           onComplete={() => {}}
