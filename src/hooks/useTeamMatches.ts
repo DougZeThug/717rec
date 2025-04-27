@@ -33,8 +33,6 @@ export const useTeamMatches = (teamId: string | undefined) => {
 
       if (error) throw error;
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Floor the date to midnight to compare only the date portion
       const matchData = data || [];
       
       // Map database rows to Match interface with camelCase properties
@@ -64,8 +62,8 @@ export const useTeamMatches = (teamId: string | undefined) => {
       })) as Match[];
       
       return {
-        upcomingMatches: mappedMatches.filter(m => m.date && new Date(m.date) > today),
-        pastMatches: mappedMatches.filter(m => m.date && new Date(m.date) <= today),
+        upcomingMatches: mappedMatches.filter(m => !m.iscompleted),
+        pastMatches: mappedMatches.filter(m => m.iscompleted),
       };
     },
     enabled: !!teamId,
