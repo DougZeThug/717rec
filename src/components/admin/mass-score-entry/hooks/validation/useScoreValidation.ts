@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { MatchWithTeams } from "../../types";
@@ -102,6 +101,17 @@ export const useScoreValidation = () => {
     
     // Validate game wins format
     if (!validateGameWins(match.team1_game_wins || 0, match.team2_game_wins || 0)) {
+      return false;
+    }
+    
+    // Ensure team1_game_wins + team2_game_wins === 2
+    const totalGameWins = (match.team1_game_wins || 0) + (match.team2_game_wins || 0);
+    if (totalGameWins !== 2) {
+      toast({
+        title: "Invalid Game Wins",
+        description: `Total game wins must be 2, but got ${totalGameWins}`,
+        variant: "destructive"
+      });
       return false;
     }
     
