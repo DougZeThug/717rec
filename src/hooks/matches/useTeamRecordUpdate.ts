@@ -1,10 +1,12 @@
 
 import { useTeamRecords } from "@/hooks/useTeamRecords";
 import { useToast } from "@/hooks/use-toast";
+import { useTeamStatsValidation } from "./validation/useTeamStatsValidation";
 
 export const useTeamRecordUpdate = () => {
   const { updateTeamRecords } = useTeamRecords();
   const { toast } = useToast();
+  const { validateTeamStats } = useTeamStatsValidation();
 
   const updateTeamStats = async (
     winnerId: string, 
@@ -13,8 +15,15 @@ export const useTeamRecordUpdate = () => {
     winnerGameWins: number,
     loserGameWins: number
   ) => {
-    if (!winnerId || !loserId) {
-      console.warn('Missing winner or loser ID for team stats update');
+    // Validate team stats
+    const validation = validateTeamStats(winnerId, loserId, winnerGameWins, loserGameWins);
+    if (!validation.isValid) {
+      console.warn(validation.errorMessage);
+      toast({
+        title: 'Validation Error',
+        description: validation.errorMessage,
+        variant: 'destructive'
+      });
       return false;
     }
 
