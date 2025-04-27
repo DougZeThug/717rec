@@ -21,16 +21,27 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   isValid,
   disabled
 }) => {
+  // Handle click on the switch
+  const handleSwitchChange = (checked: boolean) => {
+    console.log(`MatchStatusSection: Switch toggled to ${checked}`);
+    if (!disabled) {
+      onCompletedChange(checked);
+    }
+  };
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-2">
         <Switch
           checked={isCompleted}
-          onCheckedChange={onCompletedChange}
+          onCheckedChange={handleSwitchChange}
           disabled={disabled}
           className="transition-opacity duration-200"
         />
-        <Label className="text-sm flex items-center gap-1 cursor-pointer" onClick={() => !disabled && onCompletedChange(!isCompleted)}>
+        <Label 
+          className="text-sm flex items-center gap-1 cursor-pointer" 
+          onClick={() => !disabled && handleSwitchChange(!isCompleted)}
+        >
           {isCompleted ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}

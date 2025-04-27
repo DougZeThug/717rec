@@ -31,12 +31,17 @@ export const useScoreSubmission = (
       return;
     }
 
-    const editedMatches = matches.filter(match => match && match.isEdited);
+    // Filter matches that are edited, valid, and marked as completed
+    const editedMatches = matches.filter(match => 
+      match && match.isEdited && match.isValid && match.iscompleted
+    );
+    
+    console.log(`[useScoreSubmission] Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`);
     
     if (editedMatches.length === 0) {
       toast({
         title: "No Changes",
-        description: "There are no changes to submit.",
+        description: "There are no valid, completed changes to submit.",
       });
       return;
     }
@@ -48,7 +53,13 @@ export const useScoreSubmission = (
 
     try {
       for (const match of editedMatches) {
-        if (!validateMatch(match)) {
+        if (!validateMatch({
+          team1Score: match.team1Score ?? 0,
+          team2Score: match.team2Score ?? 0,
+          team1_game_wins: match.team1_game_wins ?? 0,
+          team2_game_wins: match.team2_game_wins ?? 0,
+        })) {
+          console.log(`[useScoreSubmission] Match ${match.id} failed validation`);
           continue;
         }
 

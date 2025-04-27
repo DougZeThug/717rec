@@ -25,11 +25,17 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
       }
     });
     
-    // Update scores and mark as edited and completed
+    // Update scores and mark as edited
     match.team1Score = Number(team1Score);
     match.team2Score = Number(team2Score);
     match.isEdited = true;
-    match.iscompleted = true; // Always mark as completed when score is changed
+    
+    // Always mark as completed when a valid score is set
+    const isValidScore = validateScores(match.team1Score, match.team2Score);
+    if (isValidScore) {
+      match.iscompleted = true;
+      console.log(`Auto-marking match ${match.id} as completed due to valid score`);
+    }
     
     // Validate the match after updating scores
     match.isValid = validateMatch({
