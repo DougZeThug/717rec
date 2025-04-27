@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Ranking } from "@/types";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
@@ -40,55 +41,55 @@ const RankingCard: React.FC<RankingCardProps> = ({
         className="p-4 cursor-pointer"
         onClick={() => onToggleExpand(ranking.teamId)}
       >
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-lg font-bold">
+        <div className="flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-mono text-lg font-bold shrink-0">
               {index + 1}
             </span>
             {ranking.divisionRank && !showDivision && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 shrink-0">
                 ({ranking.divisionRank})
               </span>
             )}
-            <div className="flex items-center gap-2">
-              <TeamLogo
-                imageUrl={ranking.logoUrl || ranking.imageUrl}
-                teamName={ranking.teamName}
-                size="sm"
-                rounded
-              />
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 shrink-0">
+                <TeamLogo
+                  imageUrl={ranking.logoUrl || ranking.imageUrl}
+                  teamName={ranking.teamName}
+                  size="sm"
+                  className="w-8 h-8"
+                />
+              </div>
               <Link
                 to={`/teams/${ranking.teamId}`}
-                className="font-semibold hover:text-blue-600 hover:underline"
+                className="font-bebas tracking-wide text-lg leading-tight hover:text-blue-600 hover:underline truncate"
                 onClick={(e) => e.stopPropagation()}
               >
                 {ranking.teamName}
               </Link>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="text-right">
-              <span
-                className={`font-mono font-medium text-lg ${
-                  isLight ? "" : getPowerScoreColor(ranking.powerScore)
-                }`}
-                style={{
-                  color:
-                    isLight && ranking.powerScore
-                      ? ranking.powerScore >= 75
-                        ? "#2f855a"
-                        : ranking.powerScore >= 50
-                        ? "#3182ce"
-                        : ranking.powerScore >= 30
-                        ? "#dd6b20"
-                        : "#e53e3e"
-                      : undefined,
-                }}
-              >
-                {formatPowerScore(ranking.powerScore)}
-              </span>
-            </div>
-            <div className="w-6">
+          <div className="flex items-center gap-2 shrink-0">
+            <span
+              className={`font-mono font-medium text-base ${
+                isLight ? "" : getPowerScoreColor(ranking.powerScore)
+              }`}
+              style={{
+                color:
+                  isLight && ranking.powerScore
+                    ? ranking.powerScore >= 75
+                      ? "#2f855a"
+                      : ranking.powerScore >= 50
+                      ? "#3182ce"
+                      : ranking.powerScore >= 30
+                      ? "#dd6b20"
+                      : "#e53e3e"
+                    : undefined,
+              }}
+            >
+              {formatPowerScore(ranking.powerScore)}
+            </span>
+            <div className="w-[4.5rem] flex justify-end">
               <RankTrendIndicator rankChange={ranking.rankChange} />
             </div>
           </div>
