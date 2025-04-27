@@ -24,12 +24,22 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
   onGameWinsChange,
   onClearError
 }) => {
-  const handleScoreSelection = (scores: { team1Score: number; team2Score: number }) => {
-    // Update both scores and game wins
-    onScoreChange(scores);
+  const handleScoreSelection = (scores: { 
+    team1Score: number; 
+    team2Score: number; 
+    team1GameWins: number; 
+    team2GameWins: number 
+  }) => {
+    // Update scores
+    onScoreChange({
+      team1Score: scores.team1Score,
+      team2Score: scores.team2Score
+    });
+    
+    // Update game wins
     onGameWinsChange({
-      team1GameWins: scores.team1Score === 1 ? 2 : scores.team1Score === 0 ? 0 : 1,
-      team2GameWins: scores.team2Score === 1 ? 2 : scores.team2Score === 0 ? 0 : 1
+      team1GameWins: scores.team1GameWins,
+      team2GameWins: scores.team2GameWins
     });
   };
 
@@ -50,7 +60,9 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         <ScoreButtonGroup
           value={{ 
             team1Score: match.team1Score || 0, 
-            team2Score: match.team2Score || 0 
+            team2Score: match.team2Score || 0,
+            team1GameWins: match.team1_game_wins || 0,
+            team2GameWins: match.team2_game_wins || 0
           }}
           onChange={handleScoreSelection}
           disabled={isSubmitting}

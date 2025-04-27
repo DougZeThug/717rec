@@ -2,13 +2,10 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { ScoreOption } from "./types";
 
 interface ScoreButtonProps {
-  option: {
-    team1Score: number;
-    team2Score: number;
-    label: string;
-  };
+  option: ScoreOption;
   isSelected: boolean;
   onClick: () => void;
   disabled?: boolean;
@@ -34,15 +31,12 @@ const ScoreButton = ({
         matchDate,
         dateType: typeof matchDate,
         scores: `${option.team1Score}-${option.team2Score}`,
+        gameWins: `${option.team1GameWins}-${option.team2GameWins}`,
         isSelected: Boolean(isSelected),
         wasSelected: isSelected,
         isCompleted,
         label: option.label,
         timeOfClick: new Date().toISOString(),
-        optionType: {
-          team1ScoreType: typeof option.team1Score,
-          team2ScoreType: typeof option.team2Score
-        }
       });
       onClick();
       
@@ -53,6 +47,7 @@ const ScoreButton = ({
           matchDate,
           dateType: typeof matchDate,
           scores: `${option.team1Score}-${option.team2Score}`,
+          gameWins: `${option.team1GameWins}-${option.team2GameWins}`,
           isSelected: Boolean(isSelected), // This won't reflect changes yet due to React re-render cycle
           label: option.label
         });
@@ -86,9 +81,11 @@ const ScoreButton = ({
       data-selected={selected}
       data-score1={option.team1Score}
       data-score2={option.team2Score}
-      data-match-id={matchId} // Added for debugging
-      data-match-date={matchDate} // Added for debugging
-      data-date-type={typeof matchDate} // Added for debugging type verification
+      data-game-wins1={option.team1GameWins}
+      data-game-wins2={option.team2GameWins}
+      data-match-id={matchId} 
+      data-match-date={matchDate}
+      data-date-type={typeof matchDate}
       aria-pressed={selected}
     >
       {option.label}

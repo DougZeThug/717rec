@@ -4,12 +4,12 @@ import ScoreButton from "./ScoreButton";
 import { SCORE_OPTIONS } from "./types";
 
 interface ScoreButtonGroupProps {
-  value: { team1Score: number; team2Score: number } | null;
-  onChange: (scores: { team1Score: number; team2Score: number }) => void;
+  value: { team1Score: number; team2Score: number; team1GameWins?: number; team2GameWins?: number } | null;
+  onChange: (scores: { team1Score: number; team2Score: number; team1GameWins: number; team2GameWins: number }) => void;
   disabled?: boolean;
   onComplete?: () => void;
   matchId?: string;
-  isCompleted?: boolean;  // Added this line to resolve the TypeScript error
+  isCompleted?: boolean;
   matchDate?: string;
 }
 
@@ -19,12 +19,14 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   disabled = false,
   onComplete,
   matchId = "unknown",
-  isCompleted = false,  // Added default value
+  isCompleted = false,
   matchDate
 }) => {
   const [selectedOption, setSelectedOption] = useState<{
     team1Score: number;
     team2Score: number;
+    team1GameWins: number;
+    team2GameWins: number;
   } | null>(null);
   
   // Initialize selection from props
@@ -32,26 +34,34 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
     if (value && value.team1Score !== null && value.team2Score !== null) {
       setSelectedOption({
         team1Score: Number(value.team1Score),
-        team2Score: Number(value.team2Score)
+        team2Score: Number(value.team2Score),
+        team1GameWins: Number(value.team1GameWins || 0),
+        team2GameWins: Number(value.team2GameWins || 0)
       });
     } else {
       setSelectedOption(null);
     }
-  }, [value?.team1Score, value?.team2Score]);
+  }, [value?.team1Score, value?.team2Score, value?.team1GameWins, value?.team2GameWins]);
 
   // Strict numeric comparison for selection state
   const isSelected = (option: typeof SCORE_OPTIONS[number]) => {
     if (!selectedOption) return false;
+    
+    // Check both scores and game wins to determine if this option is selected
     return (
       Number(selectedOption.team1Score) === Number(option.team1Score) && 
-      Number(selectedOption.team2Score) === Number(option.team2Score)
+      Number(selectedOption.team2Score) === Number(option.team2Score) &&
+      Number(selectedOption.team1GameWins) === Number(option.team1GameWins) &&
+      Number(selectedOption.team2GameWins) === Number(option.team2GameWins)
     );
   };
 
   const handleSelect = (option: typeof SCORE_OPTIONS[number]) => {
     const newSelection = {
       team1Score: Number(option.team1Score),
-      team2Score: Number(option.team2Score)
+      team2Score: Number(option.team2Score),
+      team1GameWins: Number(option.team1GameWins),
+      team2GameWins: Number(option.team2GameWins)
     };
     
     setSelectedOption(newSelection);
@@ -73,6 +83,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
             onClick={() => handleSelect(option)}
             disabled={disabled}
             matchId={matchId}
+            matchDate={matchDate}
           />
         ))}
       </div>

@@ -8,6 +8,8 @@ interface ScoreInputProps {
   value: {
     team1Score: number | null;
     team2Score: number | null;
+    team1GameWins?: number | null;
+    team2GameWins?: number | null;
   };
   onChange: (scores: { team1Score: number; team2Score: number }) => void;
   onChangeGameWins?: (gameWins: { team1GameWins: number; team2GameWins: number }) => void;
@@ -58,8 +60,8 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
           // If we have a game wins handler, pass numeric values
           if (onChangeGameWins) {
             const numericGameWins = {
-              team1GameWins: Number(scores.team1Score),
-              team2GameWins: Number(scores.team2Score)
+              team1GameWins: Number(scores.team1GameWins),
+              team2GameWins: Number(scores.team2GameWins)
             };
             
             console.log(`ScoreInput onChangeGameWins called for match ${matchId}:`, {
