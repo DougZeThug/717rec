@@ -10,7 +10,7 @@ export const useMatchScores = () => {
   const { handleGameWinsChange: processGameWinsChange } = useGameWinsHandler();
 
   const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
-    const newMatches = [...matches];
+    const newMatches = [...matches]; // Create a new array reference
     const match = newMatches[index];
     
     console.log(`useMatchScores handleScoreChange BEFORE update for match ${match.id}:`, {
@@ -44,11 +44,12 @@ export const useMatchScores = () => {
       isValid: match.isValid
     });
     
+    // Use setMatches with the new array to trigger re-render
     setMatches(newMatches);
   };
 
   const handleGameWinsChange = (index: number, team1GameWins: number, team2GameWins: number) => {
-    const newMatches = [...matches];
+    const newMatches = [...matches]; // Create a new array reference
     const match = newMatches[index];
     
     // Convert inputs to numbers to ensure consistency
@@ -88,11 +89,12 @@ export const useMatchScores = () => {
       }
     });
     
+    // Use setMatches with the new array to trigger re-render
     setMatches(newMatches);
   };
 
   const handleMarkCompleted = (index: number, checked: boolean) => {
-    const newMatches = [...matches];
+    const newMatches = [...matches]; // Create a new array reference
     const match = newMatches[index];
     
     console.log(`🏁 useMatchScores handleMarkCompleted for match ${match.id}:`, {
@@ -107,6 +109,7 @@ export const useMatchScores = () => {
     // Re-validate when completion status changes
     match.isValid = validateMatch(match);
     
+    // Use setMatches with the new array to trigger re-render
     setMatches(newMatches);
   };
 
@@ -119,3 +122,4 @@ export const useMatchScores = () => {
     handleMarkCompleted
   };
 };
+
