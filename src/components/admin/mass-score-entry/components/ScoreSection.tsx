@@ -1,147 +1,87 @@
-
 import React from "react";
+import { MatchWithTeams } from "../types";
 import ScoreInput from "./ScoreInput";
-import { cn } from "@/lib/utils";
+import ScoreButtonGroup from "./ScoreButtonGroup";
+import { X } from "lucide-react";
 import { motion } from "framer-motion";
+import ErrorAlert from "./ErrorAlert";
 
 interface ScoreSectionProps {
-  value: {
-    team1Score: number | null;
-    team2Score: number | null;
-  };
+  match: MatchWithTeams;
+  isSubmitting?: boolean;
+  hasError?: boolean;
+  errorMessage?: string;
   onScoreChange: (scores: { team1Score: number; team2Score: number }) => void;
   onGameWinsChange: (gameWins: { team1GameWins: number; team2GameWins: number }) => void;
-  onComplete: () => void;
-  disabled: boolean;
-  hasError: boolean;
-  errorMessage?: string;
-  onClearError?: (matchId: string) => void;
-  matchId: string;
-  isCompleted?: boolean;
-  matchDate?: string; // Optional match date for debugging
+  onClearError?: () => void;
 }
 
 const ScoreSection: React.FC<ScoreSectionProps> = ({
-  value,
+  match,
+  isSubmitting = false,
+  hasError = false,
+  errorMessage,
   onScoreChange,
   onGameWinsChange,
-  onComplete,
-  disabled,
-  hasError,
-  errorMessage,
-  onClearError,
-  matchId,
-  isCompleted = false,
-  matchDate
+  onClearError
 }) => {
-  // Log component initialization
-  React.useEffect(() => {
-    console.log(`🔍 DIAGNOSTIC: ScoreSection for match ${matchId} initialized:`, {
-      matchId,
-      matchDate,
-      dateType: typeof matchDate,
-      dateObj: matchDate ? new Date(matchDate).toISOString() : null,
-      initialValue: value,
-      valueTypes: {
-        team1ScoreType: typeof value.team1Score,
-        team2ScoreType: typeof value.team2Score
-      },
-      isCompleted,
-      hasError,
-      errorMessage,
-      disabled
-    });
-  }, [matchId]);
+  const handleTeam1ScoreChange = (value: number | null) => {
+    onScoreChange({ team1Score: value === null ? 0 : value, team2Score: match.team2Score || 0 });
+  };
 
-  // Extract date part only if available
-  const dateOnly = matchDate ? matchDate.split('T')[0] : "unknown";
+  const handleTeam2ScoreChange = (value: number | null) => {
+    onScoreChange({ team1Score: match.team1Score || 0, team2Score: value === null ? 0 : value });
+  };
 
   return (
-    <motion.div 
-      className={cn(
-        "flex flex-col items-center space-y-4 p-3 rounded-md transition-all duration-200",
-        isCompleted ? "bg-muted/30" : "",
-        disabled ? "opacity-90" : ""
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {hasError && errorMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="col-span-2"
+        >
+          <ErrorAlert message={errorMessage} onClear={onClearError} />
+        </motion.div>
       )}
-      animate={{ 
-        opacity: disabled ? 0.9 : 1,
-        scale: disabled ? 0.98 : 1
-      }}
-      transition={{ duration: 0.2 }}
-      data-match-id={matchId}
-      data-match-date={dateOnly}
-    >
-      <ScoreInput
-        value={value}
-        onChange={(newScores) => {
-          console.log(`🔍 DIAGNOSTIC: ScoreSection onScoreChange called:`, {
-            matchId,
-            matchDate: dateOnly,
-            dateType: typeof matchDate,
-            previousValue: value,
-            newScores,
-            scoreTypes: {
-              team1ScoreType: typeof newScores.team1Score,
-              team2ScoreType: typeof newScores.team2Score
-            }
-          });
-          onScoreChange(newScores);
-        }}
-        onChangeGameWins={(gameWins) => {
-          console.log(`🔍 DIAGNOSTIC: ScoreSection onGameWinsChange called:`, {
-            matchId,
-            matchDate: dateOnly,
-            dateType: typeof matchDate,
-            gameWins,
-            gameWinsTypes: {
-              team1GameWinsType: typeof gameWins.team1GameWins,
-              team2GameWinsType: typeof gameWins.team2GameWins
-            }
-          });
-          onGameWinsChange(gameWins);
-        }}
-        onComplete={() => {
-          console.log(`🔍 DIAGNOSTIC: ScoreSection onComplete called:`, {
-            matchId,
-            matchDate: dateOnly,
-            dateType: typeof matchDate,
-            value
-          });
-          onComplete();
-        }}
-        disabled={disabled}
-        isCompleted={isCompleted}
-        matchId={matchId}
-        matchDate={dateOnly}
-      />
-      
-      {hasError && (
-        <div className="text-xs text-destructive flex items-center gap-2">
-          <span>{errorMessage || "Invalid score"}</span>
-          {onClearError && (
-            <button
-              onClick={() => {
-                console.log(`🔍 DIAGNOSTIC: Clearing error for match:`, {
-                  matchId,
-                  matchDate: dateOnly,
-                  dateType: typeof matchDate,
-                  errorMessage
-                });
-                onClearError(matchId);
-              }}
-              className="underline"
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Add debug indicator for date */}
-      <div className="text-[10px] text-gray-400">
-        Match ID: {matchId.substring(0, 8)}... | Date: {dateOnly || "unknown"} | Type: {typeof matchDate}
+      <div className="space-y-2">
+        <div className="text-sm font-medium">Team 1 Score</div>
+        <ScoreInput
+          value={match.team1Score}
+          onChange={handleTeam1ScoreChange}
+          disabled={isSubmitting}
+          hasError={hasError}
+        />
       </div>
-    </motion.div>
+      <div className="space-y-2">
+        <div className="text-sm font-medium">Team 2 Score</div>
+        <ScoreInput
+          value={match.team2Score}
+          onChange={handleTeam2ScoreChange}
+          disabled={isSubmitting}
+          hasError={hasError}
+        />
+      </div>
+      <div className="space-y-2">
+        <div className="text-sm font-medium">Team 1 Game Wins</div>
+        <ScoreButtonGroup
+          value={match.team1_game_wins}
+          onChange={(value) => onGameWinsChange({ team1GameWins: value, team2GameWins: match.team2_game_wins || 0 })}
+          disabled={isSubmitting}
+          hasError={hasError}
+        />
+      </div>
+      <div className="space-y-2">
+        <div className="text-sm font-medium">Team 2 Game Wins</div>
+        <ScoreButtonGroup
+          value={match.team2_game_wins}
+          onChange={(value) => onGameWinsChange({ team1GameWins: match.team1_game_wins || 0, team2GameWins: value })}
+          disabled={isSubmitting}
+          hasError={hasError}
+        />
+      </div>
+    </div>
   );
 };
 

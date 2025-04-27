@@ -6,11 +6,16 @@ interface TeamDisplayProps {
     name?: string;
     logoUrl?: string;
   };
+  align?: "left" | "right" | "center";
 }
 
-const TeamDisplay: React.FC<TeamDisplayProps> = ({ team }) => {
+const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = "left" }) => {
+  const containerClassName = `flex items-center gap-2 ${
+    align === "right" ? "flex-row-reverse" : "flex-row"
+  }`;
+
   return (
-    <div className="flex items-center gap-2">
+    <div className={containerClassName}>
       {team.logoUrl && (
         <img
           src={team.logoUrl}

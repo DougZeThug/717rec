@@ -48,8 +48,8 @@ const MatchRow: React.FC<MatchRowProps> = ({
         {/* Score Section */}
         <ScoreSection
           match={match}
-          onScoreChange={(team1Score, team2Score) => onScoreChange(index, team1Score, team2Score)}
-          onGameWinsChange={(team1GameWins, team2GameWins) => onGameWinsChange(index, team1GameWins, team2GameWins)}
+          onScoreChange={(scores) => onScoreChange(index, scores.team1Score, scores.team2Score)}
+          onGameWinsChange={(gameWins) => onGameWinsChange(index, gameWins.team1GameWins, gameWins.team2GameWins)}
           isSubmitting={isSubmitting}
           hasError={hasError}
           errorMessage={errorMessage}
