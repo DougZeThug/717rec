@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useMatchesState } from "./state/useMatchesState";
 import { useFiltersState } from "./state/useFiltersState";
-import { useMatchSubmission } from "@/hooks/matches/useMatchSubmission";
+import { useMatchSubmission } from "./submission/useMatchSubmission";
 import { useMatchesFetching } from "./fetching/useMatchesFetching";
 import { useMatchScores } from "./useMatchScores";
 import { useErrorHandling } from "./error/useErrorHandling";
@@ -12,6 +12,9 @@ import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheU
 import { MatchWithTeams } from "../types";
 
 export const useScoreEntryData = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
   const {
     matches,
     setMatches,
@@ -21,8 +24,6 @@ export const useScoreEntryData = () => {
     setSubmitting,
   } = useMatchesState();
 
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
   const { handleSubmitScore } = useMatchSubmission();
 
   const {
@@ -114,7 +115,7 @@ export const useScoreEntryData = () => {
         });
 
         await invalidateMatchRelatedQueries(queryClient);
-        await fetchMatches();
+        await fetchMatches(filters);
       } else {
         toast({
           title: "Error",
