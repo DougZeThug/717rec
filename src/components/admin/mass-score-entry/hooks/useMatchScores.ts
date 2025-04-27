@@ -26,12 +26,13 @@ export const useMatchScores = () => {
       }
     });
     
+    // Update scores and mark as edited and completed
     match.team1Score = Number(team1Score);
     match.team2Score = Number(team2Score);
     match.isEdited = true;
-    match.iscompleted = true; // Automatically mark match as completed when score is set
+    match.iscompleted = true; // Always mark as completed when score is changed
     
-    // Use the comprehensive validation function instead
+    // Validate the match after updating scores
     match.isValid = validateMatch(match);
     
     console.log(`useMatchScores handleScoreChange AFTER update for match ${match.id}:`, {
@@ -74,7 +75,7 @@ export const useMatchScores = () => {
     const updates = processGameWinsChange(match, numericTeam1GameWins, numericTeam2GameWins);
     Object.assign(match, updates);
     
-    // Validate the match after game wins are updated
+    // Always validate the match after game wins are updated
     match.isValid = validateMatch(match);
     
     console.log(`useMatchScores handleGameWinsChange AFTER update for match ${match.id}:`, {
@@ -102,6 +103,10 @@ export const useMatchScores = () => {
     
     match.iscompleted = checked;
     match.isEdited = true;
+    
+    // Re-validate when completion status changes
+    match.isValid = validateMatch(match);
+    
     setMatches(newMatches);
   };
 

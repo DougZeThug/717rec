@@ -86,14 +86,15 @@ export const useScoreValidation = () => {
     return true;
   };
 
-  // New function that validates the entire match for consistency
+  // Comprehensive match validation function
   const validateMatch = (match: MatchWithTeams): boolean => {
-    // First validate basic scores
+    // First validate basic scores - include null/undefined check
     if (!validateScores(match.team1Score || 0, match.team2Score || 0)) {
       return false;
     }
     
-    // Skip game wins validation if they're not set yet
+    // If we have scores but no game wins yet, still consider the match valid
+    // This allows submission of matches that only have the basic W/L set
     if ((match.team1_game_wins === 0 && match.team2_game_wins === 0) ||
         (match.team1_game_wins === null && match.team2_game_wins === null)) {
       return true;
