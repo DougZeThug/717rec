@@ -9,6 +9,8 @@ interface ScoreButtonGroupProps {
   disabled?: boolean;
   onComplete?: () => void;
   matchId?: string;
+  isCompleted?: boolean;  // Added this line to resolve the TypeScript error
+  matchDate?: string;
 }
 
 const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
@@ -16,7 +18,9 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
   onChange,
   disabled = false,
   onComplete,
-  matchId = "unknown"
+  matchId = "unknown",
+  isCompleted = false,  // Added default value
+  matchDate
 }) => {
   const [selectedOption, setSelectedOption] = useState<{
     team1Score: number;
