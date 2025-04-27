@@ -4,6 +4,7 @@ import { MatchWithTeams } from "./types";
 import TeamDisplay from "./components/TeamDisplay";
 import ScoreSection from "./components/ScoreSection";
 import MatchStatusSection from "./components/MatchStatusSection";
+import { Switch } from "@/components/ui/switch";
 
 interface MatchRowProps {
   match: MatchWithTeams;
@@ -67,6 +68,18 @@ const MatchRow: React.FC<MatchRowProps> = ({
           isValid={match.isValid}
           disabled={isSubmitting}
         />
+
+        {/* Explicit Mark as Complete toggle */}
+        <div className="flex items-center gap-2 pt-2">
+          <label className="text-sm font-medium">Mark as Complete</label>
+          <Switch
+            checked={match.iscompleted}
+            onCheckedChange={(value) => {
+              console.log(`MatchRow: Direct switch toggled to ${value} for match ${match.id}`);
+              onMarkCompleted(index, value);
+            }}
+          />
+        </div>
       </div>
     </div>
   );
