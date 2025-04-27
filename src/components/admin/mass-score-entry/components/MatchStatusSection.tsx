@@ -24,9 +24,7 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   // Handle click on the switch
   const handleSwitchChange = (checked: boolean) => {
     console.log(`MatchStatusSection: Switch toggled to ${checked}`);
-    if (!disabled) {
-      onCompletedChange(checked);
-    }
+    onCompletedChange(checked);
   };
 
   return (

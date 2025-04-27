@@ -59,7 +59,10 @@ const MatchRow: React.FC<MatchRowProps> = ({
         {/* Match Status Section */}
         <MatchStatusSection
           isCompleted={match.iscompleted}
-          onCompletedChange={(checked) => onMarkCompleted(index, checked)}
+          onCompletedChange={(checked) => {
+            console.log(`MatchRow: onCompletedChange called with ${checked} for match ${match.id}`);
+            onMarkCompleted(index, checked);
+          }}
           isEdited={match.isEdited}
           isValid={match.isValid}
           disabled={isSubmitting}

@@ -31,12 +31,16 @@ export const useScoreSubmission = (
       return;
     }
 
-    const editedMatches = matches.filter(match => match && match.isEdited);
+    const editedMatches = matches.filter(match => 
+      match && match.isEdited && match.isValid && match.iscompleted
+    );
+    
+    console.log(`[useScoreSubmission] Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`);
     
     if (editedMatches.length === 0) {
       toast({
         title: "No Changes",
-        description: "There are no changes to submit.",
+        description: "There are no valid, completed changes to submit.",
       });
       return;
     }
@@ -48,7 +52,14 @@ export const useScoreSubmission = (
 
     try {
       for (const match of editedMatches) {
-        if (!validateMatch(match)) {
+        if (!validateMatch({
+          ...match,
+          team1Score: match.team1Score ?? 0,
+          team2Score: match.team2Score ?? 0,
+          team1_game_wins: match.team1_game_wins ?? 0,
+          team2_game_wins: match.team2_game_wins ?? 0,
+        })) {
+          console.log(`[useScoreSubmission] Match ${match.id} failed validation`);
           continue;
         }
 
@@ -58,7 +69,6 @@ export const useScoreSubmission = (
         }
       }
 
-      // Show appropriate toast message based on results
       if (failedMatches.length === 0) {
         toast({
           title: "Success",
@@ -78,7 +88,6 @@ export const useScoreSubmission = (
         });
       }
 
-      // Invalidate ALL queries to ensure global consistency
       invalidateAllDataQueries();
 
       if (successCount > 0) {
@@ -100,7 +109,6 @@ export const useScoreSubmission = (
     }
   };
 
-  // Helper function to invalidate all related queries
   const invalidateAllDataQueries = () => {
     console.log("[useScoreSubmission] Invalidating all data queries for fresh data");
     queryClient.invalidateQueries({ queryKey: ['matches'] });
