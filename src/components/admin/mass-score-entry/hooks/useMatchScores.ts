@@ -17,7 +17,8 @@ export const useMatchScores = () => {
       matchId: match.id, 
       previousScores: {
         team1Score: match.team1Score,
-        team2Score: match.team2Score
+        team2Score: match.team2Score,
+        iscompleted: match.iscompleted
       },
       newScores: {
         team1Score: Number(team1Score),
@@ -29,11 +30,14 @@ export const useMatchScores = () => {
     match.team2Score = Number(team2Score);
     match.isEdited = true;
     match.isValid = validateScores(match.team1Score, match.team2Score);
+    // Automatically mark match as completed when score is set
+    match.iscompleted = true;
     
     console.log(`useMatchScores handleScoreChange AFTER update for match ${match.id}:`, {
       updatedScores: {
         team1Score: match.team1Score,
-        team2Score: match.team2Score
+        team2Score: match.team2Score,
+        iscompleted: match.iscompleted
       },
       isValid: match.isValid
     });

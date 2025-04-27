@@ -41,7 +41,7 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
               <span>Match Completed</span>
             </motion.div>
           ) : (
-            "Mark as Completed"
+            "Mark as Complete"
           )}
         </Label>
       </div>
