@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTeamData } from "@/hooks/useTeamData";
@@ -22,8 +21,6 @@ interface StatsContainerProps {
 
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
   const [selectedDivision, setSelectedDivision] = React.useState<string | null>(null);
-  // The division dropdown/header will be removed per new design (see below)
-  // const { divisions, isLoading: isLoadingDivisions } = useDivisions();
   const { 
     data: teams, 
     isLoading: isLoadingTeams, 
@@ -38,8 +35,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 
   const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
-
-  // No division dropdown anymore on /stats
 
   const scrollToFullRankings = () => {
     if (fullRankingsRef.current) {
@@ -58,24 +53,29 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   const chartLimit = isMobile ? 5 : 8;
   const compactLimit = isMobile ? 5 : 5;
 
-  const topTeamsData = rankings.slice(0, chartLimit).map(team => ({
-    id: team.teamId,
-    name: team.teamName,
-    wins: team.wins,
-    losses: team.losses,
-    winPercentage: Number((team.winPercentage * 100).toFixed(1)),
-    powerScore: team.powerScore || 0,
-    sos: Number((team.sos || 0).toFixed(3)),
-    logoUrl: team.logoUrl,
-    imageUrl: team.imageUrl
-  }));
+  const topTeamsData = [...rankings]
+    .sort((a, b) => {
+      const aPct = a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
+      const bPct = b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
+      return bPct - aPct;
+    })
+    .slice(0, chartLimit)
+    .map(team => ({
+      id: team.teamId,
+      name: team.teamName,
+      wins: team.wins,
+      losses: team.losses,
+      winPercentage: Number((team.winPercentage * 100).toFixed(1)),
+      powerScore: team.powerScore || 0,
+      sos: Number((team.sos || 0).toFixed(3)),
+      logoUrl: team.logoUrl,
+      imageUrl: team.imageUrl
+    }));
 
-  // Update: tighter, consistent background for stats sections
   const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
 
   return (
     <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent px-2 sm:px-4">
-      {/* Main header as requested (Oswald, uppercase, tight spacing) */}
       <div className="mt-2 mb-1">
         <h1 className="font-oswald text-3xl sm:text-4xl uppercase font-semibold tracking-wide text-cornhole-navy mb-1 sm:mb-2" style={{ letterSpacing: ".05em" }}>
           Team Statistics
@@ -84,7 +84,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       <div className="font-inter">
         {rankings.length > 0 ? (
           <>
-            {/* Current Standings */}
             <Card className={`mb-4 ${cardBg} p-0`}>
               <CardHeader className="pb-1.5 rounded-t-xl"
                 style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
@@ -110,7 +109,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
               </CardContent>
             </Card>
             
-            {/* Tight spacing between "Current Standings", League Highlights, and Charts */}
             <div className="mb-5">
               <h2 className="font-inter text-lg sm:text-xl font-semibold tracking-wide text-[#1a1a1a] dark:text-white mb-1 uppercase" style={{ letterSpacing: ".03em" }}>
                 League Highlights
@@ -159,4 +157,3 @@ import { useTeamRankings } from "@/hooks/useTeamRankings";
 import CompactStandings from "@/components/stats/CompactStandings";
 
 export default StatsContainer;
-
