@@ -1,11 +1,9 @@
 
-import { useState } from "react";
 import { MatchWithTeams } from "../types";
 import { useScoreValidation } from "./validation/useScoreValidation";
 import { useGameWinsHandler } from "./game-wins/useGameWinsHandler";
 
-export const useMatchScores = () => {
-  const [matches, setMatches] = useState<MatchWithTeams[]>([]);
+export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Dispatch<React.SetStateAction<MatchWithTeams[]>>) => {
   const { validationErrors, validateScores, validateGameWins, validateMatch, setValidationError } = useScoreValidation();
   const { handleGameWinsChange: processGameWinsChange } = useGameWinsHandler();
 
@@ -114,12 +112,9 @@ export const useMatchScores = () => {
   };
 
   return {
-    matches,
-    setMatches,
     validationErrors,
     handleScoreChange,
     handleGameWinsChange,
     handleMarkCompleted
   };
 };
-

@@ -35,12 +35,14 @@ export const useScoreEntryData = () => {
 
   const { fetchMatches } = useMatchesFetching();
   const { handleSubmitAll } = useMatchSubmission();
+  
+  // Pass matches and setMatches to useMatchScores to ensure single source of truth
   const { 
     handleScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
     validationErrors 
-  } = useMatchScores();
+  } = useMatchScores(matches, setMatches);
 
   useEffect(() => {
     const loadData = async () => {
