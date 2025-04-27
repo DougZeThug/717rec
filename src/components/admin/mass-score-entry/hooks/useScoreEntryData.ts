@@ -24,7 +24,7 @@ export const useScoreEntryData = () => {
     setSubmitting,
   } = useMatchesState();
 
-  const { handleSubmitScore, handleSubmitAll } = useMatchSubmission();
+  const { handleSubmitScore } = useMatchSubmission();
 
   const {
     filters,
