@@ -5,14 +5,14 @@ import { Loader2, Save } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface SubmitButtonProps {
-  onClick: () => void;  // New prop for handling click
+  onClick: () => void;  // Changed from onSubmit to onClick
   disabled: boolean;
   submitting: boolean;
-  editedMatchCount?: number;  // Renamed from `count` for clarity
+  editedMatchCount?: number;
 }
 
 const SubmitButton: React.FC<SubmitButtonProps> = ({ 
-  onClick,  // New prop
+  onClick,  // Use onClick instead of onSubmit
   disabled, 
   submitting,
   editedMatchCount = 0
@@ -20,7 +20,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   return (
     <motion.div whileTap={{ scale: 0.97 }}>
       <Button
-        onClick={onClick}  // Wire up the new onClick prop
+        onClick={onClick}  // Wired to onClick prop
         disabled={disabled}
         className="flex items-center gap-2 transition-all duration-200 hover:bg-opacity-90 shadow-sm"
       >
