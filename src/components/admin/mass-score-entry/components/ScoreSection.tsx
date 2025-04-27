@@ -43,6 +43,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
           value={{ team1Score: match.team1Score || 0, team2Score: match.team2Score || 0 }}
           onChange={(scores) => onScoreChange(scores)}
           disabled={isSubmitting}
+          matchId={match.id}
+          onComplete={() => {}}
         />
       </div>
       <div className="space-y-2">
@@ -51,6 +53,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
           value={{ team1Score: match.team1Score || 0, team2Score: match.team2Score || 0 }}
           onChange={(scores) => onScoreChange(scores)}
           disabled={isSubmitting}
+          matchId={match.id}
+          onComplete={() => {}}
         />
       </div>
       <div className="space-y-2">
@@ -65,6 +69,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
             team2GameWins: scores.team2Score 
           })}
           disabled={isSubmitting}
+          matchId={match.id}
+          onComplete={() => {}}
         />
       </div>
       <div className="space-y-2">
@@ -79,6 +85,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
             team2GameWins: scores.team2Score 
           })}
           disabled={isSubmitting}
+          matchId={match.id}
+          onComplete={() => {}}
         />
       </div>
     </div>
