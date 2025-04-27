@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Link, useLocation } from "react-router-dom";
@@ -32,11 +31,12 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   return (
     <div className={`${cardBg} overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.98]`}>
       <Link to={`/teams/${team.id}`} className="block">
-        <div className="h-24 bg-[#f0f0f0] dark:bg-black/30 flex items-center justify-center p-3">
+        <div className="min-h-[4.5rem] sm:h-24 bg-[#f0f0f0] dark:bg-black/30 flex items-center justify-center p-2 sm:p-3">
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
             size="sm"
+            className="max-h-16 sm:max-h-20"
           />
         </div>
       </Link>
