@@ -34,6 +34,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
       if (error) throw error;
 
       const today = new Date();
+      today.setHours(0, 0, 0, 0); // Floor the date to midnight to compare only the date portion
       const matchData = data || [];
       
       // Map database rows to Match interface with camelCase properties
