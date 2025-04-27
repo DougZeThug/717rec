@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MatchWithTeams } from "../types";
 import { useScoreValidation } from "./validation/useScoreValidation";
@@ -5,7 +6,7 @@ import { useGameWinsHandler } from "./game-wins/useGameWinsHandler";
 
 export const useMatchScores = () => {
   const [matches, setMatches] = useState<MatchWithTeams[]>([]);
-  const { validationErrors, validateScores, validateGameWins, setValidationError } = useScoreValidation();
+  const { validationErrors, validateScores, validateGameWins, validateMatch, setValidationError } = useScoreValidation();
   const { handleGameWinsChange: processGameWinsChange } = useGameWinsHandler();
 
   const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
@@ -28,8 +29,10 @@ export const useMatchScores = () => {
     match.team1Score = Number(team1Score);
     match.team2Score = Number(team2Score);
     match.isEdited = true;
-    match.isValid = validateScores(match.team1Score, match.team2Score);
     match.iscompleted = true; // Automatically mark match as completed when score is set
+    
+    // Use the comprehensive validation function instead
+    match.isValid = validateMatch(match);
     
     console.log(`useMatchScores handleScoreChange AFTER update for match ${match.id}:`, {
       updatedScores: {
@@ -70,6 +73,9 @@ export const useMatchScores = () => {
     
     const updates = processGameWinsChange(match, numericTeam1GameWins, numericTeam2GameWins);
     Object.assign(match, updates);
+    
+    // Validate the match after game wins are updated
+    match.isValid = validateMatch(match);
     
     console.log(`useMatchScores handleGameWinsChange AFTER update for match ${match.id}:`, {
       updatedMatch: {

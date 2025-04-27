@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { MatchWithTeams } from "../../types";
 
 export const useScoreValidation = () => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -85,6 +86,40 @@ export const useScoreValidation = () => {
     return true;
   };
 
+  // New function that validates the entire match for consistency
+  const validateMatch = (match: MatchWithTeams): boolean => {
+    // First validate basic scores
+    if (!validateScores(match.team1Score || 0, match.team2Score || 0)) {
+      return false;
+    }
+    
+    // Skip game wins validation if they're not set yet
+    if ((match.team1_game_wins === 0 && match.team2_game_wins === 0) ||
+        (match.team1_game_wins === null && match.team2_game_wins === null)) {
+      return true;
+    }
+    
+    // Validate game wins format
+    if (!validateGameWins(match.team1_game_wins || 0, match.team2_game_wins || 0)) {
+      return false;
+    }
+    
+    // Ensure consistency between match score and game wins
+    const team1Won = match.team1Score === 1;
+    const team1HasMoreGameWins = (match.team1_game_wins || 0) > (match.team2_game_wins || 0);
+    
+    if (team1Won !== team1HasMoreGameWins) {
+      toast({
+        title: "Inconsistent Match Data",
+        description: "Match winner must have more game wins",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const clearValidationError = (matchId: string) => {
     setValidationErrors(prev => {
       const next = { ...prev };
@@ -111,6 +146,7 @@ export const useScoreValidation = () => {
     validationErrors,
     validateScores,
     validateGameWins,
+    validateMatch,
     clearValidationError,
     setValidationError
   };
