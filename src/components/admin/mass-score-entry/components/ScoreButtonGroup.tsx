@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from "react";
 import ScoreButton from "./ScoreButton";
 import { SCORE_OPTIONS } from "./types";
 
 interface ScoreButtonGroupProps {
-  value: { team1Score: number | null; team2Score: number | null } | null;
+  value: { team1Score: number; team2Score: number } | null;
   onChange: (scores: { team1Score: number; team2Score: number }) => void;
   disabled?: boolean;
   onComplete?: () => void;
