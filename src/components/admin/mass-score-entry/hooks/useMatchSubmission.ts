@@ -1,4 +1,3 @@
-
 import { useQueryClient } from "@tanstack/react-query";
 import { MatchWithTeams } from "../types";
 import { useSubmissionState } from "./useSubmissionState";
@@ -31,7 +30,6 @@ export const useScoreSubmission = (
       return;
     }
 
-    // Filter matches that are edited, valid, and marked as completed
     const editedMatches = matches.filter(match => 
       match && match.isEdited && match.isValid && match.iscompleted
     );
@@ -54,6 +52,7 @@ export const useScoreSubmission = (
     try {
       for (const match of editedMatches) {
         if (!validateMatch({
+          ...match,
           team1Score: match.team1Score ?? 0,
           team2Score: match.team2Score ?? 0,
           team1_game_wins: match.team1_game_wins ?? 0,
@@ -69,7 +68,6 @@ export const useScoreSubmission = (
         }
       }
 
-      // Show appropriate toast message based on results
       if (failedMatches.length === 0) {
         toast({
           title: "Success",
@@ -89,7 +87,6 @@ export const useScoreSubmission = (
         });
       }
 
-      // Invalidate ALL queries to ensure global consistency
       invalidateAllDataQueries();
 
       if (successCount > 0) {
@@ -111,7 +108,6 @@ export const useScoreSubmission = (
     }
   };
 
-  // Helper function to invalidate all related queries
   const invalidateAllDataQueries = () => {
     console.log("[useScoreSubmission] Invalidating all data queries for fresh data");
     queryClient.invalidateQueries({ queryKey: ['matches'] });
