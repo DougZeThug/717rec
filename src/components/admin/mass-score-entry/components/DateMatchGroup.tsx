@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { ChevronDown } from "lucide-react";
@@ -38,7 +39,6 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const formattedDate = format(date, "EEEE, MMMM d, yyyy");
-  const isLight = false; // We'll handle this with CSS variables instead
   
   return (
     <Collapsible
