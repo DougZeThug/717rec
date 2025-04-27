@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Ranking } from "@/types";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
@@ -51,7 +50,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 ({ranking.divisionRank})
               </span>
             )}
-            <div className="flex items-center gap-3 min-w-0 flex-grow">
+            <div className="flex items-center gap-2 min-w-0 flex-grow">
               {!compactView && (
                 <div className="w-8 h-8 shrink-0">
                   <TeamLogo
@@ -64,14 +63,14 @@ const RankingCard: React.FC<RankingCardProps> = ({
               )}
               <Link
                 to={`/teams/${ranking.teamId}`}
-                className="font-bebas tracking-wide text-lg leading-none hover:text-blue-600 hover:underline truncate"
+                className="font-bebas tracking-wide text-lg hover:text-blue-600 hover:underline truncate block"
                 onClick={(e) => e.stopPropagation()}
               >
                 {ranking.teamName}
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <span
               className={`font-mono font-medium text-base ${
                 isLight ? "" : getPowerScoreColor(ranking.powerScore)
@@ -91,13 +90,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
             >
               {formatPowerScore(ranking.powerScore)}
             </span>
-            <div className="w-16 flex justify-end">
+            <div className="w-14 flex justify-end shrink-0">
               <RankTrendIndicator rankChange={ranking.rankChange} />
             </div>
           </div>
         </div>
 
-        {!compactView && (
+        {!compactView ? (
           <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
             <div>
               <span className="text-gray-500 dark:text-gray-400">Record:</span>{" "}
@@ -115,10 +114,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 className={`font-mono ${isLight ? "" : getSosColor(ranking.sos)}`}
                 style={{
                   color: isLight ? (
-                    ranking.sos >= 0.875 ? '#b91c1c' :  // red-700
-                    ranking.sos >= 0.750 ? '#ef4444' :  // red-500
-                    ranking.sos >= 0.550 ? '#f97316' :  // orange-500
-                    '#16a34a'  // green-600
+                    ranking.sos >= 0.875 ? '#b91c1c' :
+                    ranking.sos >= 0.750 ? '#ef4444' :
+                    ranking.sos >= 0.550 ? '#f97316' :
+                    '#16a34a'
                   ) : undefined
                 }}
               >
@@ -140,9 +139,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               </div>
             )}
           </div>
-        )}
-
-        {compactView && (
+        ) : (
           <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
             <div>
               <span className="font-mono">{`${ranking.wins}-${ranking.losses}`}</span>
