@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { MatchWithTeams } from "../../types";
@@ -88,59 +87,21 @@ export const useScoreValidation = () => {
 
   // Comprehensive match validation function
   const validateMatch = (match: MatchWithTeams): boolean => {
-    // First validate basic scores - include null/undefined check
-    if (!validateScores(match.team1Score || 0, match.team2Score || 0)) {
-      return false;
-    }
-    
-    // If we have scores but no game wins yet, still consider the match valid
-    // This allows submission of matches that only have the basic W/L set
-    if ((match.team1_game_wins === 0 && match.team2_game_wins === 0) ||
-        (match.team1_game_wins === null && match.team2_game_wins === null)) {
-      return true;
-    }
-    
-    // Validate game wins format
-    if (!validateGameWins(match.team1_game_wins || 0, match.team2_game_wins || 0)) {
-      return false;
-    }
-    
-    // Best-of-3 validation: total game wins must be 2 or 3
-    const totalGameWins = (match.team1_game_wins || 0) + (match.team2_game_wins || 0);
-    if (totalGameWins !== 2 && totalGameWins !== 3) {
-      toast({
-        title: "Invalid Game Wins",
-        description: `Total game wins must be 2 or 3 in best-of-3 format, but got ${totalGameWins}`,
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    // Ensure winning team has at least 2 game wins
-    const team1Won = match.team1Score === 1;
-    const winningTeamGameWins = team1Won ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
-    
-    if (winningTeamGameWins < 2) {
-      toast({
-        title: "Invalid Game Wins",
-        description: "Winning team must have at least 2 game wins",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    // Ensure winning team has more game wins
-    const team1HasMoreGameWins = (match.team1_game_wins || 0) > (match.team2_game_wins || 0);
-    if (team1Won !== team1HasMoreGameWins) {
-      toast({
-        title: "Inconsistent Match Data",
-        description: "Match winner must have more game wins",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    return true;
+    const { team1Score, team2Score, team1_game_wins, team2_game_wins } = match;
+
+    const validMatchScore =
+      [0, 1].includes(team1Score) &&
+      [0, 1].includes(team2Score) &&
+      team1Score !== team2Score;
+
+    const totalGameWins = (team1_game_wins || 0) + (team2_game_wins || 0);
+    const validGameWinSum = totalGameWins === 2 || totalGameWins === 3;
+
+    const correctWinner =
+      (team1Score === 1 && (team1_game_wins || 0) >= 2 && (team1_game_wins || 0) > (team2_game_wins || 0)) ||
+      (team2Score === 1 && (team2_game_wins || 0) >= 2 && (team2_game_wins || 0) > (team1_game_wins || 0));
+
+    return validMatchScore && validGameWinSum && correctWinner;
   };
 
   const clearValidationError = (matchId: string) => {
