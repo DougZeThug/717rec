@@ -43,10 +43,8 @@ export const useScoreEntryData = () => {
 
   const { fetchMatches } = useMatchesFetching();
   
-  // Set up event listeners for match creation events
   useMatchEventListeners({ updateFiltersForMatchDate });
   
-  // Pass matches and setMatches to useMatchScores to ensure single source of truth
   const { 
     handleScoreChange,
     handleGameWinsChange,
@@ -54,14 +52,12 @@ export const useScoreEntryData = () => {
     validationErrors 
   } = useMatchScores(matches, setMatches);
 
-  // Modified to handle match date detection and filter updating
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       await fetchBrackets();
       const fetchedMatches = await fetchMatches(filters);
       
-      // If we have matches but no filter date set, auto-set it to the first match date
       if (fetchedMatches.length > 0 && !filters.date) {
         const latestMatch = [...fetchedMatches].sort((a, b) => {
           return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -81,7 +77,6 @@ export const useScoreEntryData = () => {
   const handleSubmitAll = async () => {
     console.log("Starting match submission process");
 
-    // Filter for valid matches
     const validMatches = matches.filter(match => 
       match.isEdited && match.isValid && match.iscompleted
     );
@@ -112,17 +107,13 @@ export const useScoreEntryData = () => {
         if (success) successCount++;
       }
 
-      // Show submission results
       if (successCount > 0) {
         toast({
           title: "✅ Matches Submitted",
           description: `${successCount} match(es) successfully submitted.`
         });
 
-        // Invalidate queries to refresh data
         await invalidateMatchRelatedQueries(queryClient);
-
-        // Refresh matches list
         await fetchMatches();
       } else {
         toast({
