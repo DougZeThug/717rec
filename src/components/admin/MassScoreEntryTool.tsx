@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useScoreEntryData } from "./mass-score-entry/hooks/useScoreEntryData";
@@ -106,10 +105,10 @@ const MassScoreEntryTool: React.FC = () => {
 
           <div className="flex justify-end mt-6">
             <SubmitButton
-              onSubmit={handleSubmitAll} 
+              onClick={handleSubmitAll}
               disabled={disableSubmit}
               submitting={submitting}
-              count={validEditedMatchesCount}
+              editedMatchCount={validEditedMatchesCount}
             />
           </div>
         </CardContent>
