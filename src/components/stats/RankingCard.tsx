@@ -51,25 +51,27 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 ({ranking.divisionRank})
               </span>
             )}
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 shrink-0">
-                <TeamLogo
-                  imageUrl={ranking.logoUrl || ranking.imageUrl}
-                  teamName={ranking.teamName}
-                  size="sm"
-                  className="w-8 h-8"
-                />
-              </div>
+            <div className="flex items-center gap-3 min-w-0 flex-grow">
+              {!compactView && (
+                <div className="w-8 h-8 shrink-0">
+                  <TeamLogo
+                    imageUrl={ranking.logoUrl || ranking.imageUrl}
+                    teamName={ranking.teamName}
+                    size="sm"
+                    className="w-8 h-8"
+                  />
+                </div>
+              )}
               <Link
                 to={`/teams/${ranking.teamId}`}
-                className="font-bebas tracking-wide text-lg leading-tight hover:text-blue-600 hover:underline truncate"
+                className="font-bebas tracking-wide text-lg leading-none hover:text-blue-600 hover:underline truncate"
                 onClick={(e) => e.stopPropagation()}
               >
                 {ranking.teamName}
               </Link>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <span
               className={`font-mono font-medium text-base ${
                 isLight ? "" : getPowerScoreColor(ranking.powerScore)
@@ -89,7 +91,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             >
               {formatPowerScore(ranking.powerScore)}
             </span>
-            <div className="w-[4.5rem] flex justify-end">
+            <div className="w-16 flex justify-end">
               <RankTrendIndicator rankChange={ranking.rankChange} />
             </div>
           </div>
