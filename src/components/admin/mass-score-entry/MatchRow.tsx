@@ -37,6 +37,11 @@ const MatchRow: React.FC<MatchRowProps> = ({
     isEdited: match.isEdited
   });
 
+  const handleCompletedChange = (checked: boolean) => {
+    console.log(`MatchRow: handleCompletedChange called with ${checked} for match ${match.id}`);
+    onMarkCompleted(index, checked);
+  };
+
   return (
     <div className={`p-4 rounded-lg bg-background border ${hasError ? 'border-destructive' : 'border-border'}`}>
       <div className="space-y-4">
@@ -60,10 +65,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
         {/* Match Status Section */}
         <MatchStatusSection
           isCompleted={match.iscompleted}
-          onCompletedChange={(checked) => {
-            console.log(`MatchRow: onCompletedChange called with ${checked} for match ${match.id}`);
-            onMarkCompleted(index, checked);
-          }}
+          onCompletedChange={handleCompletedChange}
           isEdited={match.isEdited}
           isValid={match.isValid}
           disabled={isSubmitting}
@@ -74,10 +76,8 @@ const MatchRow: React.FC<MatchRowProps> = ({
           <label className="text-sm font-medium">Mark as Complete</label>
           <Switch
             checked={match.iscompleted}
-            onCheckedChange={(value) => {
-              console.log(`MatchRow: Direct switch toggled to ${value} for match ${match.id}`);
-              onMarkCompleted(index, value);
-            }}
+            onCheckedChange={handleCompletedChange}
+            disabled={isSubmitting}
           />
         </div>
       </div>

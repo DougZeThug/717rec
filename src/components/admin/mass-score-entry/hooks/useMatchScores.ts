@@ -86,6 +86,7 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
     
     const updates = processGameWinsChange(match, numericTeam1GameWins, numericTeam2GameWins);
     Object.assign(match, updates);
+    match.isEdited = true;
     
     // Always validate the match after game wins are updated
     match.isValid = validateMatch({
@@ -130,6 +131,12 @@ export const useMatchScores = (matches: MatchWithTeams[], setMatches: React.Disp
       team2Score: match.team2Score ?? 0,
       team1_game_wins: match.team1_game_wins ?? 0,
       team2_game_wins: match.team2_game_wins ?? 0,
+    });
+    
+    console.log(`🏁 useMatchScores handleMarkCompleted AFTER update for match ${match.id}:`, {
+      isCompleted: match.iscompleted,
+      isValid: match.isValid,
+      isEdited: match.isEdited
     });
     
     // Use setMatches with the new array to trigger re-render

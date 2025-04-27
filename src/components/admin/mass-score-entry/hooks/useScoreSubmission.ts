@@ -31,11 +31,20 @@ export const useScoreSubmission = (
       return;
     }
 
+    // Only submit matches that are edited, valid, and marked as completed
     const editedMatches = matches.filter(match => 
       match && match.isEdited && match.isValid && match.iscompleted
     );
     
-    console.log(`[useScoreSubmission] Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`);
+    console.log(`[useScoreSubmission] Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`, {
+      editedMatchIds: editedMatches.map(m => m.id),
+      allMatches: matches.map(m => ({
+        id: m.id,
+        isEdited: m.isEdited,
+        isValid: m.isValid,
+        iscompleted: m.iscompleted
+      }))
+    });
     
     if (editedMatches.length === 0) {
       toast({
@@ -52,6 +61,7 @@ export const useScoreSubmission = (
 
     try {
       for (const match of editedMatches) {
+        // Double-check validation before submitting
         if (!validateMatch({
           ...match,
           team1Score: match.team1Score ?? 0,
