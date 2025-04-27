@@ -130,6 +130,13 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
       console.log("Successfully created matches:", data);
 
+      // Attempt to automatically update the filters to show the new matches
+      // This is intended to interact with the updateFiltersForMatchDate in useFiltersState
+      const matchDateEvent = new CustomEvent('matchesCreated', {
+        detail: { date: selectedDate }
+      });
+      window.dispatchEvent(matchDateEvent);
+      
       toast({
         title: "Success",
         description: `Created ${matchPairs.length} matches for ${selectedDate?.toLocaleDateString()}`,

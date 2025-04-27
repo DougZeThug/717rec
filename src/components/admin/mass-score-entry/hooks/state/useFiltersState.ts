@@ -22,6 +22,7 @@ export const useFiltersState = () => {
   };
 
   const setFilterDate = (date?: Date) => {
+    console.log("Setting filter date:", date);
     setFilters(prev => ({ ...prev, date }));
   };
 
@@ -30,7 +31,16 @@ export const useFiltersState = () => {
   };
 
   const clearFilters = () => {
+    console.log("Clearing all filters");
     setFilters({});
+  };
+
+  // New function to update filters for specific match dates
+  const updateFiltersForMatchDate = (matchDate: Date) => {
+    if (!filters.date || filters.date.getTime() !== matchDate.getTime()) {
+      console.log("Auto-updating filter date to match newly created match:", matchDate);
+      setFilterDate(matchDate);
+    }
   };
 
   return {
@@ -39,6 +49,7 @@ export const useFiltersState = () => {
     fetchBrackets,
     setFilterDate,
     setBracketFilter,
-    clearFilters
+    clearFilters,
+    updateFiltersForMatchDate
   };
 };

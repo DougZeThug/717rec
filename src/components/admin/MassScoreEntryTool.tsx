@@ -21,7 +21,7 @@ const MassScoreEntryTool: React.FC = () => {
     handleScoreChange,
     handleGameWinsChange,
     handleMarkCompleted,
-    handleSubmitAll, // This should now be a function with no arguments
+    handleSubmitAll,
     clearErrors,
     setFilterDate,
     setBracketFilter,

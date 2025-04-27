@@ -6,6 +6,7 @@ import { useMatchSubmission } from "./submission/useMatchSubmission";
 import { useMatchesFetching } from "./fetching/useMatchesFetching";
 import { useMatchScores } from "./useMatchScores";
 import { useErrorHandling } from "./error/useErrorHandling";
+import { useMatchEventListeners } from "./useMatchEventListeners";
 import { MatchWithTeams } from "../types";
 
 export const useScoreEntryData = () => {
@@ -24,7 +25,8 @@ export const useScoreEntryData = () => {
     fetchBrackets,
     setFilterDate,
     setBracketFilter,
-    clearFilters
+    clearFilters,
+    updateFiltersForMatchDate
   } = useFiltersState();
 
   const {
@@ -36,6 +38,9 @@ export const useScoreEntryData = () => {
   const { fetchMatches } = useMatchesFetching();
   const { handleSubmitAll } = useMatchSubmission();
   
+  // Set up event listeners for match creation events
+  useMatchEventListeners({ updateFiltersForMatchDate });
+  
   // Pass matches and setMatches to useMatchScores to ensure single source of truth
   const { 
     handleScoreChange,
@@ -44,11 +49,24 @@ export const useScoreEntryData = () => {
     validationErrors 
   } = useMatchScores(matches, setMatches);
 
+  // Modified to handle match date detection and filter updating
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       await fetchBrackets();
       const fetchedMatches = await fetchMatches(filters);
+      
+      // If we have matches but no filter date set, auto-set it to the first match date
+      if (fetchedMatches.length > 0 && !filters.date) {
+        const latestMatch = [...fetchedMatches].sort((a, b) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        })[0];
+        if (latestMatch && latestMatch.date) {
+          console.log("Auto-setting filter date to latest match date:", latestMatch.date);
+          updateFiltersForMatchDate(new Date(latestMatch.date));
+        }
+      }
+      
       setMatches(fetchedMatches);
       setLoading(false);
     };
@@ -70,6 +88,7 @@ export const useScoreEntryData = () => {
     setFilterDate,
     setBracketFilter,
     clearFilters,
-    clearErrors
+    clearErrors,
+    updateFiltersForMatchDate
   };
 };
