@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import MatchStatusIndicator from "./MatchStatusIndicator";
 import { Check } from "lucide-react";
@@ -21,24 +20,20 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   isValid,
   disabled
 }) => {
-  // Handle click on the switch
-  const handleSwitchChange = (checked: boolean) => {
-    console.log(`MatchStatusSection: Switch toggled to ${checked}`);
-    onCompletedChange(checked);
+  // Handle click on the label
+  const handleStatusClick = () => {
+    if (!disabled) {
+      console.log(`MatchStatusSection: Label clicked, toggling from ${isCompleted} to ${!isCompleted}`);
+      onCompletedChange(!isCompleted);
+    }
   };
 
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-2">
-        <Switch
-          checked={isCompleted}
-          onCheckedChange={handleSwitchChange}
-          disabled={disabled}
-          className="transition-opacity duration-200"
-        />
         <Label 
           className="text-sm flex items-center gap-1 cursor-pointer" 
-          onClick={() => !disabled && handleSwitchChange(!isCompleted)}
+          onClick={handleStatusClick}
         >
           {isCompleted ? (
             <motion.div
@@ -50,7 +45,7 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
               <span>Match Completed</span>
             </motion.div>
           ) : (
-            "Mark as Complete"
+            "Match Status"
           )}
         </Label>
       </div>
