@@ -3,10 +3,15 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useErrorHandling } from "../error/useErrorHandling";
 import { MatchWithTeams } from "../../types";
+import { useMatchSubmission as useGlobalMatchSubmission } from "@/hooks/matches/useMatchSubmission";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
   const { clearErrors, addError } = useErrorHandling();
+  const globalSubmission = useGlobalMatchSubmission();
+
+  // Re-export the handleSubmitScore from the global hook
+  const { handleSubmitScore } = globalSubmission;
 
   const handleSubmitAll = async () => {
     try {
@@ -33,5 +38,8 @@ export const useMatchSubmission = () => {
     }
   };
 
-  return { handleSubmitAll };
+  return { 
+    handleSubmitScore,
+    handleSubmitAll 
+  };
 };
