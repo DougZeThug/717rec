@@ -9,7 +9,7 @@ import MassScoresTab from "@/components/admin/scores/MassScoresTab";
 const AdminTabs = () => {
   return (
     <Tabs defaultValue="teams" className="space-y-4">
-      <TabsList>
+      <TabsList className="flex flex-wrap md:flex-nowrap gap-2 h-auto md:h-10">
         <TabsTrigger value="teams">Teams</TabsTrigger>
         <TabsTrigger value="scores">Mass Scores</TabsTrigger>
         <TabsTrigger value="batch-matches">Batch Matches</TabsTrigger>
