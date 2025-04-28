@@ -34,7 +34,7 @@ const Navbar = () => {
   };
   return <nav className="bg-cornhole-navy text-white shadow-md">
       <div className="container mx-auto px-4 py-[16px]">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center py-[3px]">
           <div className="flex items-center space-x-2">
             <Link to="/" className="flex items-center space-x-2">
               <img src="/lovable-uploads/faa54084-d274-43b9-9862-5544b188b4ca.png" alt="717Rec League Logo" className="h-8 w-8 object-contain" />
