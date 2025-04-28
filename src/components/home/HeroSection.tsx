@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,8 +6,8 @@ import { Users, Calendar } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <section className="bg-cornhole-navy text-white py-10 md:py-16 px-3 md:px-4 transition-all duration-200">
-      <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans pt-[env(safe-area-inset-top,32px)] md:pt-0">
+    <section className="bg-cornhole-navy text-white py-10 md:py-16 px-3 md:px-4 transition-all duration-200 pt-[env(safe-area-inset-top,32px)] md:pt-10">
+      <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans">
         <div className="flex justify-center mb-4 md:mb-6">
           <img 
             src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
