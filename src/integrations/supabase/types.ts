@@ -637,13 +637,16 @@ export type Database = {
         Returns: number
       }
       update_team_stats: {
-        Args: {
-          p_winner_id: string
-          p_loser_id: string
-          p_winner_game_wins?: number
-          p_loser_game_wins?: number
-        }
-        Returns: Json
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              p_winner_id: string
+              p_loser_id: string
+              p_winner_game_wins?: number
+              p_loser_game_wins?: number
+            }
+          | { team_id: string }
+        Returns: undefined
       }
     }
     Enums: {

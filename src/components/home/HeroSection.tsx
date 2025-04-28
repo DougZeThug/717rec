@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,13 +6,13 @@ import { Users, Calendar } from "lucide-react";
 const HeroSection = () => {
   return (
     <section className="bg-cornhole-navy text-white py-10 md:py-16 px-3 md:px-4 transition-all duration-200">
-      <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans">
+      <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans pt-[env(safe-area-inset-top,32px)] md:pt-0">
         <div className="flex justify-center mb-4 md:mb-6">
           <img 
             src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
             alt="717 Rec Logo" 
             className="h-20 md:h-28 w-auto transition-all duration-200 drop-shadow-md"
-            style={{ maxHeight: 90, minHeight: 60 }} // Shrinked about 30%
+            style={{ maxHeight: 90, minHeight: 60 }}
           />
         </div>
         <h1 className="text-[2.75rem] md:text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-1 leading-[1.05] drop-shadow-sm">
