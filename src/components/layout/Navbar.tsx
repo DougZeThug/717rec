@@ -10,7 +10,7 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
   
   const navItems = [
     { label: "Home", href: "/" },
