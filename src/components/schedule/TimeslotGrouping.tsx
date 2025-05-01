@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TeamTimeslot } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, Users } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { gradients, interactive, animations, getDivisionStyles } from "@/styles/designSystem";
 import { cn } from "@/lib/utils";
@@ -102,7 +102,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                     >
                       <div className="flex items-center">
                         <TeamLogo 
-                          imageUrl={teamTimeslot.teams?.image_url || teamTimeslot.teams?.logo_url}
+                          imageUrl={teamTimeslot.teams?.logo_url}
                           teamName={teamTimeslot.teams?.name || "Unknown Team"}
                           teamId={teamTimeslot.team_id}
                           size="sm"

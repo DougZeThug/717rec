@@ -43,6 +43,7 @@ export interface Match {
   team1_game_wins?: number;
   team2_game_wins?: number;
   created_at?: string;
+  status?: "postponed" | "canceled" | null; // Added status property
   team1Details?: {
     team_id: string;
     name: string;
@@ -142,7 +143,7 @@ export interface TeamTimeslot {
   teams?: {
     id: string;
     name: string;
-    logo_url?: string;
+    logo_url?: string | null;
     divisionName: string | null;
   };
 }
