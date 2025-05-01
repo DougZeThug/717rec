@@ -1,0 +1,40 @@
+
+import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, CheckCircle } from "lucide-react";
+import DateMatchGroupSkeleton from "./DateMatchGroupSkeleton";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+
+interface ScheduleContentSkeletonProps {
+  activeTab: string;
+}
+
+const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activeTab }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
+  return (
+    <Tabs value={activeTab} className="mb-6">
+      <TabsList className="w-full md:w-auto font-inter bg-gray-200 dark:bg-gray-700">
+        <TabsTrigger value="upcoming" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+          <Calendar className="h-4 w-4 mr-2" />
+          Upcoming Matches
+        </TabsTrigger>
+        <TabsTrigger value="completed" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
+          <CheckCircle className="h-4 w-4 mr-2" />
+          Completed Matches
+        </TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value={activeTab} className="mt-6 dark:bg-gray-900">
+        <div className="space-y-4">
+          <DateMatchGroupSkeleton matchCount={3} />
+          <DateMatchGroupSkeleton matchCount={2} />
+        </div>
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+export default ScheduleContentSkeleton;

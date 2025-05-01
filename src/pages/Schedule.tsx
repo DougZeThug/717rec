@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import { Loader2, Clock } from "lucide-react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
@@ -12,6 +11,9 @@ import MatchFormDialog from "@/components/schedule/MatchFormDialog";
 import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTheme } from "next-themes";
+import { Clock } from "lucide-react";
+import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,16 +63,7 @@ const Schedule = () => {
   const handleUpdateMatchAdapter = (matchData: any) => handleUpdateMatch(matchData, teams || []);
   const handleDeleteMatchAdapter = () => handleDeleteMatch(teams || []);
 
-  if (teamsLoading || matchesLoading) {
-    return (
-      <div className="min-h-screen cornhole-bg dark:bg-gray-900 py-8 px-4 md:px-8 flex items-center justify-center font-inter">
-        <div className="flex flex-col items-center">
-          <Loader2 className="h-10 w-10 text-cornhole-navy dark:text-white animate-spin mb-4" />
-          <p className="text-lg dark:text-white">Loading data...</p>
-        </div>
-      </div>
-    );
-  }
+  const isLoading = teamsLoading || matchesLoading;
 
   return (
     <div className="min-h-screen cornhole-bg dark:bg-gray-900 py-8 px-4 md:px-8 font-inter">
@@ -94,25 +87,36 @@ const Schedule = () => {
                 })}
               </span>
             </div>
-            <TimeslotGrouping 
-              groupedTimeslots={groupedTimeslots} 
-              isLoading={timeslotsLoading} 
-            />
+            {timeslotsLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-3/4" />
+              </div>
+            ) : (
+              <TimeslotGrouping 
+                groupedTimeslots={groupedTimeslots} 
+                isLoading={timeslotsLoading} 
+              />
+            )}
           </div>
         </div>
 
-        <ScheduleContent 
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          filteredMatches={filteredMatches}
-          teams={teams || []}
-          selectedDate={selectedDate}
-          onEditMatch={(match) => {
-            setEditingMatch(match);
-            setIsFormOpen(true);
-          }}
-          onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
-        />
+        {isLoading ? (
+          <ScheduleContentSkeleton activeTab={activeTab} />
+        ) : (
+          <ScheduleContent 
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            filteredMatches={filteredMatches}
+            teams={teams || []}
+            selectedDate={selectedDate}
+            onEditMatch={(match) => {
+              setEditingMatch(match);
+              setIsFormOpen(true);
+            }}
+            onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
+          />
+        )}
       </div>
       
       <MatchFormDialog
