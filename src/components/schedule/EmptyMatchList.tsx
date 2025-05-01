@@ -14,11 +14,11 @@ const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted
   
   return (
     <div className="text-center py-12 font-inter">
-      <CalendarX className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-      <h3 className="text-xl font-medium mb-2" style={{ color: isLight ? "#6b7280" : "#d1d5db" }}>
+      <CalendarX className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+      <h3 className="text-xl font-medium mb-2 text-gray-700 dark:text-gray-300">
         {isCompleted ? "No completed matches found" : "No upcoming matches found"}
       </h3>
-      <p style={{ color: isLight ? "#9ca3af" : "#9ca3af" }}>
+      <p className="text-gray-500 dark:text-gray-400">
         {searchTerm 
           ? "Try a different search term" 
           : isCompleted 

@@ -69,21 +69,21 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-      <TabsList className="w-full md:w-auto font-inter">
-        <TabsTrigger value="upcoming" className="flex-1 md:flex-grow-0">
+      <TabsList className="w-full md:w-auto font-inter bg-gray-200 dark:bg-gray-700">
+        <TabsTrigger value="upcoming" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
           <Calendar className="h-4 w-4 mr-2" />
           Upcoming Matches
         </TabsTrigger>
-        <TabsTrigger value="completed" className="flex-1 md:flex-grow-0">
+        <TabsTrigger value="completed" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
           <CheckCircle className="h-4 w-4 mr-2" />
           Completed Matches
         </TabsTrigger>
       </TabsList>
       
-      <TabsContent value="upcoming" className="mt-6">
+      <TabsContent value="upcoming" className="mt-6 dark:bg-gray-900">
         {isEmptyState ? (
-          <div className="text-center py-12 font-inter">
-            <h3 className="text-xl font-medium text-gray-500">
+          <div className="text-center py-12 font-inter dark:text-gray-300">
+            <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">
               {emptyStateMessage}
             </h3>
           </div>
@@ -103,10 +103,10 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         )}
       </TabsContent>
       
-      <TabsContent value="completed" className="mt-6">
+      <TabsContent value="completed" className="mt-6 dark:bg-gray-900">
         {isEmptyState ? (
-          <div className="text-center py-12 font-inter">
-            <h3 className="text-xl font-medium text-gray-500">
+          <div className="text-center py-12 font-inter dark:text-gray-300">
+            <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">
               {emptyStateMessage}
             </h3>
           </div>

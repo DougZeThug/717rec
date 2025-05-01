@@ -11,11 +11,13 @@ import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
 import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useTheme } from "next-themes";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("upcoming");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const { resolvedTheme } = useTheme();
   
   const { data: teams, isLoading: teamsLoading } = useTeamData();
   const { 
@@ -61,17 +63,17 @@ const Schedule = () => {
 
   if (teamsLoading || matchesLoading) {
     return (
-      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 flex items-center justify-center font-inter">
+      <div className="min-h-screen cornhole-bg dark:bg-gray-900 py-8 px-4 md:px-8 flex items-center justify-center font-inter">
         <div className="flex flex-col items-center">
-          <Loader2 className="h-10 w-10 text-cornhole-navy animate-spin mb-4" />
-          <p className="text-lg">Loading data...</p>
+          <Loader2 className="h-10 w-10 text-cornhole-navy dark:text-white animate-spin mb-4" />
+          <p className="text-lg dark:text-white">Loading data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8 font-inter">
+    <div className="min-h-screen cornhole-bg dark:bg-gray-900 py-8 px-4 md:px-8 font-inter">
       <div className="max-w-7xl mx-auto">
         <ScheduleHeader 
           searchTerm={searchTerm}
@@ -81,10 +83,10 @@ const Schedule = () => {
         />
 
         <div className="mb-8 mt-2">
-          <div className="bg-muted border rounded-md p-4 shadow-sm transition-all">
+          <div className="bg-muted dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4 shadow-sm transition-all">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-              <span className="text-base font-inter tracking-wide font-semibold">
+              <span className="text-base font-inter tracking-wide font-semibold dark:text-white">
                 Timeslots for {selectedDate.toLocaleDateString('en-US', { 
                   weekday: 'long',
                   month: 'long', 
@@ -131,4 +133,3 @@ const Schedule = () => {
 };
 
 export default Schedule;
-

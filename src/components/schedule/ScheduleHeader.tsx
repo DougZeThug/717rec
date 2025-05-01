@@ -37,7 +37,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4 w-full">
           {/* Main Title */}
           <h1
-            className="font-oswald text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-cornhole-navy"
+            className="font-oswald text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-cornhole-navy dark:text-white"
             style={{ letterSpacing: "0.07em" }}
           >
             Schedule
@@ -48,17 +48,20 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`gap-2 px-3 py-1.5 h-9 rounded-md text-base font-inter tracking-wide shadow-none border
-                    ${isLight ? "border-gray-300 hover:bg-gray-50" : "border-gray-700 hover:bg-gray-800"}
+                  className={`gap-2 px-3 py-1.5 h-9 rounded-md text-base font-inter tracking-wide shadow-none
+                    ${isLight 
+                      ? "border-gray-300 hover:bg-gray-50" 
+                      : "border-gray-700 hover:bg-gray-800 text-white"
+                    }
                   `}
                 >
                   <Calendar className={`h-4 w-4 ${isLight ? "text-gray-500" : "text-gray-400"}`} />
-                  <span className="text-base font-inter tracking-wide">
+                  <span className={`text-base font-inter tracking-wide ${!isLight ? "text-white" : ""}`}>
                     {format(selectedDate, 'MMMM d, yyyy')}
                   </span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 shadow-md border" align="end">
+              <PopoverContent className="w-auto p-0 shadow-md border dark:bg-gray-800 dark:border-gray-700" align="end">
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}
@@ -80,4 +83,3 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
 };
 
 export default ScheduleHeader;
-

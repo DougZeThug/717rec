@@ -37,8 +37,8 @@ export const NavItem = ({
       className={cn(
         "flex items-center justify-center transition-colors",
         active 
-          ? "text-cornhole-navy font-medium" 
-          : "text-gray-500 hover:text-cornhole-navy",
+          ? "text-cornhole-navy dark:text-white font-medium" 
+          : "text-gray-500 dark:text-gray-400 hover:text-cornhole-navy dark:hover:text-white",
         className
       )}
     >
