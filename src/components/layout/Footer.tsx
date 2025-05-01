@@ -1,9 +1,11 @@
 
 import React from "react";
 import { Mail } from "lucide-react";
+import { useTheme } from "next-themes";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { resolvedTheme } = useTheme();
 
   return (
     <footer className="bg-slate-50 dark:bg-slate-900 border-t border-gray-200 dark:border-gray-700 py-4">
