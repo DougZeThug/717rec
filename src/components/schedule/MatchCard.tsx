@@ -3,10 +3,11 @@ import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Check } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MatchCardProps {
   match: Match;
@@ -17,16 +18,22 @@ interface MatchCardProps {
 
 const MatchCard: React.FC<MatchCardProps> = ({ 
   match, 
-  isCompleted
+  isCompleted,
+  onEdit,
+  onDelete
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
-  const team1Name = match.team1Details?.name || "Unknown Team";
-  const team2Name = match.team2Details?.name || "Unknown Team";
+  // Check if team details are loading
+  const isTeam1Loading = !match.team1Details;
+  const isTeam2Loading = !match.team2Details;
 
-  const team1Logo = match.team1Details?.image_url || '';
-  const team2Logo = match.team2Details?.image_url || '';
+  const team1Name = isTeam1Loading ? "" : match.team1Details?.name || "Unknown Team";
+  const team2Name = isTeam2Loading ? "" : match.team2Details?.name || "Unknown Team";
+
+  const team1Logo = isTeam1Loading ? '' : match.team1Details?.image_url || '';
+  const team2Logo = isTeam2Loading ? '' : match.team2Details?.image_url || '';
 
   const team1IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team1Score > match.team2Score;
   const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team1Score;
@@ -45,9 +52,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
       : isLight ? "text-gray-600" : "text-gray-400"
   );
 
-  const SquareLogo = ({ src, alt, fallback }: { src: string, alt: string, fallback: string }) => (
+  const SquareLogo = ({ src, alt, fallback, isLoading }: { src: string, alt: string, fallback: string, isLoading: boolean }) => (
     <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
-      {src ? (
+      {isLoading ? (
+        <Skeleton className="w-10 h-10" />
+      ) : src ? (
         <img
           src={src}
           alt={alt}
@@ -73,19 +82,29 @@ const MatchCard: React.FC<MatchCardProps> = ({
         ? "from-gray-50 to-gray-100 border-gray-200 hover:shadow-md" 
         : "from-gray-800/50 to-gray-900/50 border-gray-700 hover:shadow-[0_0_15px_rgba(0,0,0,0.3)]"
     )}>
-      <div className={cn(
-        "absolute -top-3 left-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase",
-        "bg-indigo-600 text-white rounded-md transform -translate-y-1/2 shadow-sm"
-      )}>
-        Final
-      </div>
+      {isCompleted && (
+        <div className={cn(
+          "absolute -top-3 left-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase",
+          "bg-indigo-600 text-white rounded-md transform -translate-y-1/2 shadow-sm"
+        )}>
+          Final
+        </div>
+      )}
 
       <CardContent className="p-6 pt-8">
         <div className="flex flex-col space-y-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
+            {/* Team 1 Logo */}
             <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
-              <SquareLogo src={team1Logo} alt={team1Name} fallback={team1Name.charAt(0)} />
+              <SquareLogo 
+                src={team1Logo} 
+                alt={team1Name} 
+                fallback={team1Name.charAt(0)} 
+                isLoading={isTeam1Loading}
+              />
             </TransitionLink>
+            
+            {/* Score */}
             <div className="flex items-center justify-center">
               <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800/50">
                 <span className={getScoreStyle(team1IsWinner)}>
@@ -97,12 +116,20 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 </span>
               </div>
             </div>
+            
+            {/* Team 2 Logo */}
             <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
-              <SquareLogo src={team2Logo} alt={team2Name} fallback={team2Name.charAt(0)} />
+              <SquareLogo 
+                src={team2Logo} 
+                alt={team2Name} 
+                fallback={team2Name.charAt(0)} 
+                isLoading={isTeam2Loading}
+              />
             </TransitionLink>
           </div>
 
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+            {/* Team 1 Name */}
             <TransitionLink 
               to={`/teams/${match.team1Id}`}
               className={cn(
@@ -110,19 +137,24 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 team1IsWinner && "font-semibold"
               )}
             >
-              {team1IsWinner && (
+              {team1IsWinner && !isTeam1Loading && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              <span className={cn(
-                getTeamStyle(team1IsWinner),
-                "font-bebas uppercase tracking-wide"
-              )}>
-                ({match.team1_game_wins || 0}) {team1Name}
-              </span>
+              {isTeam1Loading ? (
+                <Skeleton className="h-6 w-full" />
+              ) : (
+                <span className={cn(
+                  getTeamStyle(team1IsWinner),
+                  "font-bebas uppercase tracking-wide"
+                )}>
+                  ({match.team1_game_wins || 0}) {team1Name}
+                </span>
+              )}
             </TransitionLink>
 
             <div className="w-4"></div>
 
+            {/* Team 2 Name */}
             <TransitionLink 
               to={`/teams/${match.team2Id}`}
               className={cn(
@@ -130,17 +162,43 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 team2IsWinner && "font-semibold"
               )}
             >
-              {team2IsWinner && (
+              {team2IsWinner && !isTeam2Loading && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              <span className={cn(
-                getTeamStyle(team2IsWinner),
-                "font-bebas uppercase tracking-wide"
-              )}>
-                ({match.team2_game_wins || 0}) {team2Name}
-              </span>
+              {isTeam2Loading ? (
+                <Skeleton className="h-6 w-full" />
+              ) : (
+                <span className={cn(
+                  getTeamStyle(team2IsWinner),
+                  "font-bebas uppercase tracking-wide"
+                )}>
+                  ({match.team2_game_wins || 0}) {team2Name}
+                </span>
+              )}
             </TransitionLink>
           </div>
+
+          {/* Action buttons for non-completed matches */}
+          {!isCompleted && (onEdit || onDelete) && (
+            <div className="flex justify-end gap-2 pt-2">
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(match)}
+                  className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(match.id)}
+                  className="p-1.5 rounded-full bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30 transition-colors"
+                >
+                  <Trash2 className="h-4 w-4 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

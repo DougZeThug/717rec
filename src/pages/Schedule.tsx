@@ -9,7 +9,7 @@ import ScheduleContent from "@/components/schedule/ScheduleContent";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
 import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import { Clock } from "lucide-react";
 import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
@@ -63,7 +63,8 @@ const Schedule = () => {
   const handleUpdateMatchAdapter = (matchData: any) => handleUpdateMatch(matchData, teams || []);
   const handleDeleteMatchAdapter = () => handleDeleteMatch(teams || []);
 
-  const isLoading = teamsLoading || matchesLoading;
+  // Consider both matches and teams loading states
+  const isLoading = matchesLoading || teamsLoading;
 
   return (
     <div className="min-h-screen cornhole-bg dark:bg-gray-900 py-8 px-4 md:px-8 font-inter">
