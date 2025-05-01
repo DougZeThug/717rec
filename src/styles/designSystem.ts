@@ -192,14 +192,14 @@ export function getDivisionStyles(divisionName: string | null | undefined, type:
  */
 export function getCardStyle({
   gradient = 'default',
-  elevation = 'default',
-  interactive = true,
+  elevationType = 'default',
+  isInteractive = true,
   division = null,
   className = ""
 }: {
   gradient?: 'default' | 'subtle' | 'highlight',
-  elevation?: 'default' | 'active' | 'highlighted',
-  interactive?: boolean,
+  elevationType?: 'default' | 'active' | 'highlighted',
+  isInteractive?: boolean,
   division?: string | null,
   className?: string
 } = {}) {
@@ -211,8 +211,8 @@ export function getCardStyle({
   return cn(
     "rounded-lg border border-gray-200 dark:border-gray-700", 
     cardGradient,
-    elevation ? elevation.card[elevation] : "",
-    interactive ? interactive.card.hover : "",
+    elevation.card[elevationType],
+    isInteractive ? interactive.card.hover : "",
     className
   );
 }
