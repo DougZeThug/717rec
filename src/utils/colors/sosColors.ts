@@ -8,8 +8,8 @@ import { SOS_THRESHOLDS } from './thresholds';
 export const getSosColor = (sos: number | undefined): string => {
   if (sos === undefined) return 'text-gray-500 dark:text-gray-400';
   
-  if (sos >= SOS_THRESHOLDS.HIGH) return 'text-red-800 dark:text-red-700';
-  if (sos >= SOS_THRESHOLDS.MEDIUM) return 'text-red-500 dark:text-red-400';
+  if (sos >= SOS_THRESHOLDS.HIGH) return 'text-red-700 dark:text-red-400';
+  if (sos >= SOS_THRESHOLDS.MEDIUM) return 'text-red-600 dark:text-red-400';
   if (sos >= SOS_THRESHOLDS.LOW) return 'text-orange-500 dark:text-orange-400';
-  return 'text-green-600 dark:text-green-500';
+  return 'text-green-600 dark:text-green-400';
 };

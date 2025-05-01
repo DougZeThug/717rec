@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
@@ -73,8 +74,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     "rounded-lg py-2 px-4 font-medium transition-all whitespace-nowrap",
                     isLight
                       ? (sortOptions.field === field.id
-                          ? "bg-blue-600 text-white hover:bg-blue-700 border-[#e0e0e0]"
-                          : "bg-white border border-[#e0e0e0] hover:bg-[#f0f0f0]")
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-white hover:bg-gray-50")
                       : ""
                   )}
                 >
@@ -96,8 +97,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             />
             <Label
               htmlFor="detailed-view"
-              style={isLight ? { color: "#444444", fontWeight: 500 } : {}}
-              className="text-sm"
+              className="text-sm text-gray-700 dark:text-gray-300"
             >
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
@@ -108,15 +108,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
           <div key={divisionName} className="space-y-4">
             {!showUnified && (
-              <h3
-                style={isLight ? { color: "#111111", fontWeight: 600 } : {}}
-                className="text-lg font-medium flex items-center font-inter"
-              >
+              <h3 className="text-lg font-medium flex items-center font-inter text-gray-900 dark:text-white">
                 {divisionName}{" "}
-                <span
-                  style={isLight ? { color: "#222222" } : {}}
-                  className="ml-2 text-xs font-inter"
-                >
+                <span className="ml-2 text-xs text-gray-600 dark:text-gray-400 font-inter">
                   ({divisionRankings.length})
                 </span>
               </h3>

@@ -32,7 +32,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 ${isExpanded ? 'bg-gray-50 dark:bg-gray-800/40' : ''}`}
       onClick={onToggleExpand}
     >
-      <TableCell className="font-medium text-gray-900 dark:text-gray-100">
+      <TableCell className="font-medium text-gray-900 dark:text-white">
         <div className="flex items-center">
           <span className="font-mono">{index + 1}</span>
           {!showDivision && ranking.divisionRank && (
@@ -58,7 +58,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
               />
             </div>
           )}
-          <span className="group-hover:text-blue-600 transition-colors">
+          <span className="group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400 transition-colors">
             {ranking.teamName}
           </span>
         </RouterLink>
@@ -67,7 +67,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         <TableCell>
           <Badge
             variant={ranking.divisionName?.toLowerCase() as any || "default"}
-            className="font-normal text-gray-900 dark:text-gray-100"
+            className="font-normal text-white"
           >
             {ranking.divisionName || "Unassigned"}
           </Badge>
@@ -78,16 +78,16 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           {formatPowerScore(ranking.powerScore)}
         </span>
       </TableCell>
-      <TableCell className="text-center font-mono text-gray-900 dark:text-gray-100">
+      <TableCell className="text-center font-mono text-gray-900 dark:text-white">
         {`${ranking.wins}-${ranking.losses}`}
       </TableCell>
-      <TableCell className="text-center font-mono text-gray-900 dark:text-gray-100">
+      <TableCell className="text-center font-mono text-gray-900 dark:text-white">
         {(ranking.winPercentage * 100).toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center hidden md:table-cell font-mono text-gray-900 dark:text-gray-100">
+      <TableCell className="text-center hidden md:table-cell font-mono text-gray-900 dark:text-white">
         {`${ranking.gamesWon}-${ranking.gamesLost}`}
       </TableCell>
-      <TableCell className="text-center hidden lg:table-cell font-mono text-gray-900 dark:text-gray-100">
+      <TableCell className="text-center hidden lg:table-cell font-mono text-gray-900 dark:text-white">
         {(ranking.gameWinPercentage * 100).toFixed(1)}%
       </TableCell>
       <TableCell className="text-center font-mono">
@@ -95,7 +95,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           {ranking.sos.toFixed(3)}
         </span>
       </TableCell>
-      <TableCell className="text-center font-mono text-gray-900 dark:text-gray-100">
+      <TableCell className="text-center font-mono text-gray-900 dark:text-white">
         {ranking.streak || '-'}
       </TableCell>
       <TableCell className="text-center">
