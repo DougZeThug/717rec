@@ -3,13 +3,22 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Users, Calendar } from "lucide-react";
+import ThemeToggle from "@/components/ui/theme/ThemeToggle";
 
 const HeroSection = () => {
   return (
     <section 
-      className="bg-cornhole-navy text-white py-10 md:py-16 px-3 md:px-4 transition-all duration-200 md:pt-10"
+      className="bg-cornhole-navy text-white py-10 md:py-16 px-3 md:px-4 transition-all duration-200 md:pt-10 relative"
       style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}
     >
+      {/* Theme toggle positioned in the top-right corner */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle 
+          variant="outline" 
+          className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border-white/20"
+        />
+      </div>
+      
       <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans">
         <div className="flex justify-center mb-4 md:mb-6">
           <img 

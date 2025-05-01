@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
+import ThemeToggle from "@/components/ui/theme/ThemeToggle";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -40,7 +41,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex space-x-1">
+          <div className="hidden md:flex items-center space-x-1">
             {navItems.map(item => (
               <Link key={item.href} to={item.href}>
                 <Button 
@@ -53,9 +54,13 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
+            {/* Add theme toggle */}
+            <ThemeToggle className="ml-2" />
           </div>
 
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            {/* Theme toggle for mobile */}
+            <ThemeToggle size="sm" />
             <Button variant="ghost" size="icon" className="text-white" onClick={toggleMobileMenu}>
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
