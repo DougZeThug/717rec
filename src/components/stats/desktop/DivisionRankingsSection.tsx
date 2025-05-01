@@ -50,7 +50,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
       <h2 className="mb-4 text-xl font-bold font-bebas tracking-widest text-gray-900 dark:text-white">
         {divisionName}
       </h2>
-      <div className="overflow-auto rounded-lg border dark:border-gray-700">
+      <div className="overflow-auto rounded-lg border dark:border-gray-700 dark:bg-gray-800/50 shadow-sm">
         <Table>
           <TableHeader className="bg-gray-50 dark:bg-gray-800/60">
             <TableRow>
@@ -115,16 +115,21 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rankedDivisionTeams.map((ranking, index) => (
-              <RankingTableRow
-                key={ranking.teamId}
-                ranking={ranking}
-                index={showUnified ? allRankings.findIndex(r => r.teamId === ranking.teamId) : index}
-                isExpanded={expandedTeam === ranking.teamId}
-                onToggleExpand={() => toggleExpand(ranking.teamId)}
-                showDivision={showUnified}
-              />
-            ))}
+            {rankedDivisionTeams.map((ranking) => {
+              // Always use the global ranking index from allRankings, regardless of view mode
+              const globalIndex = allRankings.findIndex(r => r.teamId === ranking.teamId);
+              
+              return (
+                <RankingTableRow
+                  key={ranking.teamId}
+                  ranking={ranking}
+                  index={globalIndex}
+                  isExpanded={expandedTeam === ranking.teamId}
+                  onToggleExpand={() => toggleExpand(ranking.teamId)}
+                  showDivision={showUnified}
+                />
+              );
+            })}
           </TableBody>
         </Table>
       </div>
