@@ -50,68 +50,68 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
       <h2 className="mb-4 text-xl font-bold font-bebas tracking-widest text-gray-900 dark:text-white">
         {divisionName}
       </h2>
-      <div className="overflow-auto rounded-lg border">
+      <div className="overflow-auto rounded-lg border dark:border-gray-700">
         <Table>
           <TableHeader className="bg-gray-50 dark:bg-gray-800/60">
             <TableRow>
               <TableHead 
-                className="text-gray-700 dark:text-gray-300 w-12 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer" 
+                className="text-gray-700 dark:text-gray-200 w-12 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer font-medium" 
                 onClick={() => onSortChange("rank")}
               >
                 # {getSortIndicator("rank")}
               </TableHead>
               <TableHead 
-                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer" 
+                className="text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer font-medium" 
                 onClick={() => onSortChange("teamName")}
               >
                 Team {getSortIndicator("teamName")}
               </TableHead>
               {showUnified && (
-                <TableHead className="text-gray-700 dark:text-gray-300">Division</TableHead>
+                <TableHead className="text-gray-700 dark:text-gray-200 font-medium">Division</TableHead>
               )}
               <TableHead 
-                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white dark:text-gray-300" 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white text-gray-700 dark:text-gray-200 font-medium" 
                 onClick={() => onSortChange("powerScore")}
               >
                 Power {getSortIndicator("powerScore")}
               </TableHead>
               <TableHead 
-                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white dark:text-gray-300" 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white text-gray-700 dark:text-gray-200 font-medium" 
                 onClick={() => onSortChange("wins")}
               >
                 W-L {getSortIndicator("wins")}
               </TableHead>
               <TableHead 
-                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white dark:text-gray-300" 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white text-gray-700 dark:text-gray-200 font-medium" 
                 onClick={() => onSortChange("winPercentage")}
               >
                 Win % {getSortIndicator("winPercentage")}
               </TableHead>
               <TableHead 
-                className="text-center hidden md:table-cell cursor-pointer hover:text-gray-700 dark:hover:text-white dark:text-gray-300" 
+                className="text-center hidden md:table-cell cursor-pointer hover:text-gray-700 dark:hover:text-white text-gray-700 dark:text-gray-200 font-medium" 
                 onClick={() => onSortChange("gamesWon")}
               >
                 Games {getSortIndicator("gamesWon")}
               </TableHead>
               <TableHead 
-                className="text-center hidden lg:table-cell cursor-pointer hover:text-gray-700 dark:hover:text-white dark:text-gray-300" 
+                className="text-center hidden lg:table-cell cursor-pointer hover:text-gray-700 dark:hover:text-white text-gray-700 dark:text-gray-200 font-medium" 
                 onClick={() => onSortChange("gameWinPercentage")}
               >
                 Game % {getSortIndicator("gameWinPercentage")}
               </TableHead>
               <TableHead 
-                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white dark:text-gray-300" 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white text-gray-700 dark:text-gray-200 font-medium" 
                 onClick={() => onSortChange("sos")}
               >
                 SOS {getSortIndicator("sos")}
               </TableHead>
               <TableHead 
-                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white dark:text-gray-300" 
+                className="text-center cursor-pointer hover:text-gray-700 dark:hover:text-white text-gray-700 dark:text-gray-200 font-medium" 
                 onClick={() => onSortChange("streak")}
               >
                 Streak {getSortIndicator("streak")}
               </TableHead>
-              <TableHead className="text-center dark:text-gray-300">Trend</TableHead>
+              <TableHead className="text-center text-gray-700 dark:text-gray-200 font-medium">Trend</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

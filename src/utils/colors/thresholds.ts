@@ -1,16 +1,15 @@
 
 /**
- * Threshold constants for color-coding values
+ * Thresholds for Power Score and SOS calculations
  */
-
 export const POWER_SCORE_THRESHOLDS = {
   HIGH: 75,
-  MEDIUM: 50,
-  LOW: 30
+  MEDIUM: 60,
+  LOW: 40,
 };
 
 export const SOS_THRESHOLDS = {
-  HIGH: 0.875,
-  MEDIUM: 0.75,
-  LOW: 0.55
+  HIGH: 0.850,
+  MEDIUM: 0.750,
+  LOW: 0.600,
 };

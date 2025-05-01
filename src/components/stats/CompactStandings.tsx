@@ -85,27 +85,27 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
         <TableHeader>
           <TableRow className={isLight ? "bg-gray-50" : "bg-gray-800/60"}>
             <TableHead
-              className="w-10 font-mono tracking-wide text-gray-700 dark:text-gray-300"
+              className="w-10 font-mono tracking-wide text-gray-700 dark:text-gray-200"
             >
               Rank
             </TableHead>
             <TableHead
-              className="font-semibold uppercase tracking-wide font-oswald text-gray-700 dark:text-gray-300"
+              className="font-semibold uppercase tracking-wide font-oswald text-gray-700 dark:text-gray-200"
             >
               Team
             </TableHead>
             <TableHead
-              className="text-center font-mono text-gray-700 dark:text-gray-300"
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
             >
               Record
             </TableHead>
             <TableHead
-              className="text-center font-mono text-gray-700 dark:text-gray-300"
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
             >
               Win %
             </TableHead>
             <TableHead
-              className="text-center font-mono text-gray-700 dark:text-gray-300"
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
             >
               Power Score
             </TableHead>

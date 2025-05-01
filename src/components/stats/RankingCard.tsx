@@ -30,7 +30,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const isLight = resolvedTheme === "light";
 
   return (
-    <div className="border rounded-lg overflow-hidden transition-shadow bg-white dark:bg-gray-800">
+    <div className="border rounded-lg overflow-hidden transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700">
       <div
         className="p-4 cursor-pointer"
         onClick={() => onToggleExpand(ranking.teamId)}
@@ -110,15 +110,15 @@ const RankingCard: React.FC<RankingCardProps> = ({
         ) : (
           <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
             <div>
-              <span className="font-mono text-gray-900 dark:text-gray-200">{`${ranking.wins}-${ranking.losses}`}</span>
+              <span className="font-mono text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
             </div>
             <div>
-              <span className="font-mono text-gray-900 dark:text-gray-200">
+              <span className="font-mono text-gray-900 dark:text-white">
                 {(ranking.winPercentage * 100).toFixed(1)}%
               </span>
             </div>
             <div>
-              <span className="font-mono text-gray-900 dark:text-gray-200">{ranking.streak || "-"}</span>
+              <span className="font-mono text-gray-900 dark:text-white">{ranking.streak || "-"}</span>
             </div>
           </div>
         )}

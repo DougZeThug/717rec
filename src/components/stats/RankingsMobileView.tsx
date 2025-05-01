@@ -76,7 +76,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                       ? (sortOptions.field === field.id
                           ? "bg-blue-600 text-white hover:bg-blue-700"
                           : "bg-white hover:bg-gray-50")
-                      : ""
+                      : (sortOptions.field === field.id
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-gray-800 text-gray-100 hover:bg-gray-700 border-gray-700")
                   )}
                 >
                   {field.label}
