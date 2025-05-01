@@ -52,7 +52,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                 return (
                   <div 
                     key={teamTimeslot.id} 
-                    className="flex items-center p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    className="flex items-center p-2 rounded-md hover:bg-gray-50 transition-colors"
                   >
                     {/* Logo placeholder - commented out to prevent flickering */}
                     {/* 
@@ -73,12 +73,12 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                       {teamTimeslot.teams?.name ? (
                         <Link 
                           to={`/teams/${teamTimeslot.team_id}`}
-                          className="text-cornhole-navy hover:underline dark:text-white"
+                          className="text-cornhole-navy hover:underline"
                         >
                           {teamTimeslot.teams.name}
                         </Link>
                       ) : (
-                        <span className="text-gray-500 dark:text-gray-400">Unknown Team</span>
+                        <span className="text-gray-500">Unknown Team</span>
                       )}
                     </div>
                     
