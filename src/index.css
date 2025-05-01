@@ -1,4 +1,6 @@
 
+@import './styles/animations.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -58,6 +60,38 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Typography improvements */
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight leading-tight;
+  }
+
+  h1 {
+    @apply text-3xl font-bold md:text-4xl;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold md:text-3xl;
+  }
+
+  h3 {
+    @apply text-xl font-semibold md:text-2xl;
+  }
+
+  p {
+    @apply leading-relaxed;
   }
 }
 
@@ -192,5 +226,31 @@
   .team-card:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Elevation system */
+  .elevation-low {
+    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .elevation-medium {
+    @apply shadow-md hover:shadow-lg transition-shadow duration-200;
+  }
+  
+  .elevation-high {
+    @apply shadow-lg hover:shadow-xl transition-shadow duration-200;
+  }
+
+  /* Card gradients */
+  .card-gradient-default {
+    @apply bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900;
+  }
+  
+  .card-gradient-subtle {
+    @apply bg-gradient-to-br from-white to-gray-100 dark:from-gray-800/80 dark:to-gray-900/80;
+  }
+  
+  .card-gradient-highlight {
+    @apply bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900/90;
   }
 }

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -117,12 +118,85 @@ export default {
 						opacity: '1',
 						transform: 'translateY(0)'
 					}
+				},
+				'scale-in': {
+					from: { 
+						opacity: '0',
+						transform: 'scale(0.95)'
+					},
+					to: { 
+						opacity: '1',
+						transform: 'scale(1)'
+					}
+				},
+				'fade-in-slide-up': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'fade-in-slide-down': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(-10px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'entrance-left': {
+					from: {
+						opacity: '0',
+						transform: 'translateX(-20px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateX(0)'
+					}
+				},
+				'entrance-right': {
+					from: {
+						opacity: '0',
+						transform: 'translateX(20px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateX(0)'
+					}
+				},
+				'soft-pulse': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.7'
+					}
+				},
+				'subtle-bounce': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-2px)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.3s ease-out'
+				'fade-in': 'fade-in 0.3s ease-out',
+				'scale-in': 'scale-in 0.2s ease-out',
+				'fade-in-slide-up': 'fade-in-slide-up 0.4s ease-out forwards',
+				'fade-in-slide-down': 'fade-in-slide-down 0.4s ease-out forwards',
+				'entrance-left': 'entrance-left 0.4s ease-out forwards',
+				'entrance-right': 'entrance-right 0.4s ease-out forwards',
+				'soft-pulse': 'soft-pulse 2s infinite ease-in-out',
+				'subtle-bounce': 'subtle-bounce 2s infinite ease-in-out'
 			}
 		}
 	},

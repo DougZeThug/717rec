@@ -3,6 +3,7 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
+import { gradients } from "@/styles/designSystem"
 
 const Card = React.forwardRef<
   HTMLDivElement,
@@ -15,7 +16,8 @@ const Card = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border bg-card text-card-foreground shadow-sm",
+        "rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300",
+        isLight ? gradients.card.default : "",
         isLight ? "!text-[#222222]" : "",
         className
       )}
@@ -69,7 +71,7 @@ const CardDescription = React.forwardRef<
     <p
       ref={ref}
       className={cn(
-        "text-sm text-muted-foreground",
+        "text-sm text-muted-foreground leading-relaxed",
         isLight ? "!text-[#444444] !font-medium" : "",
         className
       )}

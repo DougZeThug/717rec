@@ -2,12 +2,12 @@
 import React from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Check, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Skeleton } from "@/components/ui/skeleton";
+import { animations, gradients, typography, elevation } from "@/styles/designSystem";
 
 interface MatchCardProps {
   match: Match;
@@ -53,20 +53,21 @@ const MatchCard: React.FC<MatchCardProps> = ({
   );
 
   const SquareLogo = ({ src, alt, fallback, isLoading }: { src: string, alt: string, fallback: string, isLoading: boolean }) => (
-    <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800">
+    <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 transition-all duration-300">
       {isLoading ? (
         <Skeleton className="w-10 h-10" />
       ) : src ? (
         <img
           src={src}
           alt={alt}
-          className="w-10 h-10 object-contain rounded-none"
+          className="w-10 h-10 object-contain rounded-none transition-opacity duration-300 hover:opacity-90"
           draggable={false}
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
       ) : (
         <div className={cn(
-          "w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 font-semibold text-md rounded-none"
+          "w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 font-semibold text-md rounded-none",
+          "transition-colors duration-300"
         )}>
           {fallback}
         </div>
@@ -76,16 +77,17 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   return (
     <Card className={cn(
-      "group relative overflow-hidden transition-all duration-200",
-      "bg-gradient-to-br border",
+      "group relative overflow-hidden transition-all duration-300",
       isLight 
-        ? "from-gray-50 to-gray-100 border-gray-200 hover:shadow-md" 
-        : "from-gray-800/50 to-gray-900/50 border-gray-700 hover:shadow-[0_0_15px_rgba(0,0,0,0.3)]"
+        ? gradients.card.subtle
+        : "from-gray-800/50 to-gray-900/50 border-gray-700",
+      elevation.card.default,
+      animations.scaleIn
     )}>
       {isCompleted && (
         <div className={cn(
           "absolute -top-3 left-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase",
-          "bg-indigo-600 text-white rounded-md transform -translate-y-1/2 shadow-sm"
+          "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-md transform -translate-y-1/2 shadow-sm"
         )}>
           Final
         </div>
@@ -106,7 +108,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
             
             {/* Score */}
             <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800/50">
+              <div className={cn(
+                "flex items-center gap-3 px-4 py-2 rounded-full",
+                "bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/50 dark:to-gray-900/50",
+                "transition-all duration-300 shadow-sm"
+              )}>
                 <span className={getScoreStyle(team1IsWinner)}>
                   {match.team1Score || 0}
                 </span>
@@ -133,7 +139,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <TransitionLink 
               to={`/teams/${match.team1Id}`}
               className={cn(
-                "flex items-center gap-2 justify-center min-w-0",
+                "flex items-center gap-2 justify-center min-w-0 transition-transform duration-200 hover:translate-x-1",
                 team1IsWinner && "font-semibold"
               )}
             >
@@ -145,7 +151,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               ) : (
                 <span className={cn(
                   getTeamStyle(team1IsWinner),
-                  "font-bebas uppercase tracking-wide"
+                  typography.special.stat
                 )}>
                   ({match.team1_game_wins || 0}) {team1Name}
                 </span>
@@ -158,7 +164,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <TransitionLink 
               to={`/teams/${match.team2Id}`}
               className={cn(
-                "flex items-center gap-2 justify-center min-w-0",
+                "flex items-center gap-2 justify-center min-w-0 transition-transform duration-200 hover:-translate-x-1",
                 team2IsWinner && "font-semibold"
               )}
             >
@@ -170,7 +176,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               ) : (
                 <span className={cn(
                   getTeamStyle(team2IsWinner),
-                  "font-bebas uppercase tracking-wide"
+                  typography.special.stat
                 )}>
                   ({match.team2_game_wins || 0}) {team2Name}
                 </span>
@@ -184,7 +190,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {onEdit && (
                 <button
                   onClick={() => onEdit(match)}
-                  className="p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                  className={cn(
+                    "p-1.5 rounded-full transition-all duration-200",
+                    "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700",
+                    "hover:shadow-sm active:scale-95"
+                  )}
                 >
                   <Pencil className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 </button>
@@ -192,7 +202,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
               {onDelete && (
                 <button
                   onClick={() => onDelete(match.id)}
-                  className="p-1.5 rounded-full bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30 transition-colors"
+                  className={cn(
+                    "p-1.5 rounded-full transition-all duration-200",
+                    "bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30",
+                    "hover:shadow-sm active:scale-95"
+                  )}
                 >
                   <Trash2 className="h-4 w-4 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400" />
                 </button>
