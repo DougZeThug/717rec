@@ -1,13 +1,16 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Pencil, Trash2 } from "lucide-react";
+import { Check, Pencil, Timer, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Skeleton } from "@/components/ui/skeleton";
 import { animations, gradients, typography, elevation } from "@/styles/designSystem";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { TeamLogo } from "@/components/ui/team";
 
 interface MatchCardProps {
   match: Match;
@@ -24,6 +27,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  const [scoreAnimation, setScoreAnimation] = useState(false);
+  const [countdownText, setCountdownText] = useState("");
+  const [countdownPercent, setCountdownPercent] = useState(100);
 
   // Check if team details are loading
   const isTeam1Loading = !match.team1Details;
@@ -38,8 +44,67 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team1IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team1Score > match.team2Score;
   const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team1Score;
 
+  // Determine if match has a special status
+  const isPostponed = match.status === "postponed";
+  const isCanceled = match.status === "canceled";
+  const hasSpecialStatus = isPostponed || isCanceled;
+
+  // Set animation when scores change
+  useEffect(() => {
+    if (match.team1Score !== undefined || match.team2Score !== undefined) {
+      setScoreAnimation(true);
+      const timer = setTimeout(() => setScoreAnimation(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [match.team1Score, match.team2Score]);
+
+  // Countdown timer for upcoming matches
+  useEffect(() => {
+    if (isCompleted || !match.date) return;
+
+    const matchDate = new Date(match.date);
+    const now = new Date();
+    
+    // Only show countdown if match is in the future
+    if (matchDate <= now) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = matchDate.getTime() - now.getTime();
+      
+      if (diff <= 0) {
+        setCountdownText("Starting now!");
+        setCountdownPercent(0);
+        return;
+      }
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      // Calculate percentage for progress bar (assuming 7 days max)
+      const maxDiff = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+      const percentage = Math.max(0, Math.min(100, (diff / maxDiff) * 100));
+      setCountdownPercent(100 - percentage); // Invert so it fills up as time gets closer
+      
+      if (days > 0) {
+        setCountdownText(`${days}d ${hours}h until match`);
+      } else if (hours > 0) {
+        setCountdownText(`${hours}h ${minutes}m until match`);
+      } else {
+        setCountdownText(`${minutes}m until match`);
+      }
+    };
+    
+    updateCountdown();
+    const intervalId = setInterval(updateCountdown, 60000); // Update every minute
+    
+    return () => clearInterval(intervalId);
+  }, [match.date, isCompleted]);
+
   const getScoreStyle = (isWinner: boolean) => cn(
-    "text-2xl font-black tracking-wide tabular-nums transition-colors",
+    "text-2xl font-black tracking-wide tabular-nums transition-all duration-500",
+    scoreAnimation && "animate-scale-in",
     isWinner 
       ? isLight ? "text-green-600" : "text-green-500"
       : isLight ? "text-gray-600" : "text-gray-400"
@@ -52,29 +117,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
       : isLight ? "text-gray-600" : "text-gray-400"
   );
 
-  const SquareLogo = ({ src, alt, fallback, isLoading }: { src: string, alt: string, fallback: string, isLoading: boolean }) => (
-    <div className="w-10 h-10 flex items-center justify-center bg-white dark:bg-gray-800 transition-all duration-300">
-      {isLoading ? (
-        <Skeleton className="w-10 h-10" />
-      ) : src ? (
-        <img
-          src={src}
-          alt={alt}
-          className="w-10 h-10 object-contain rounded-none transition-opacity duration-300 hover:opacity-90"
-          draggable={false}
-          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-        />
-      ) : (
-        <div className={cn(
-          "w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 font-semibold text-md rounded-none",
-          "transition-colors duration-300"
-        )}>
-          {fallback}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <Card className={cn(
       "group relative overflow-hidden transition-all duration-300",
@@ -84,6 +126,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
       elevation.card.default,
       animations.scaleIn
     )}>
+      {/* Status indicators */}
       {isCompleted && (
         <div className={cn(
           "absolute -top-3 left-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase",
@@ -92,17 +135,29 @@ const MatchCard: React.FC<MatchCardProps> = ({
           Final
         </div>
       )}
+      
+      {hasSpecialStatus && (
+        <div className={cn(
+          "absolute -top-3 right-4 z-10 px-3 py-1 text-[10px] font-bold tracking-wider uppercase",
+          isPostponed 
+            ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+            : "bg-gradient-to-r from-red-600 to-red-700 text-white",
+          "rounded-md transform -translate-y-1/2 shadow-sm"
+        )}>
+          {isPostponed ? "Postponed" : "Canceled"}
+        </div>
+      )}
 
       <CardContent className="p-6 pt-8">
         <div className="flex flex-col space-y-4">
           <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4">
             {/* Team 1 Logo */}
             <TransitionLink to={`/teams/${match.team1Id}`} className="hover:opacity-80 transition-opacity">
-              <SquareLogo 
-                src={team1Logo} 
-                alt={team1Name} 
-                fallback={team1Name.charAt(0)} 
-                isLoading={isTeam1Loading}
+              <TeamLogo 
+                imageUrl={team1Logo} 
+                teamName={team1Name} 
+                teamId={match.team1Id}
+                size="md"
               />
             </TransitionLink>
             
@@ -125,11 +180,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
             
             {/* Team 2 Logo */}
             <TransitionLink to={`/teams/${match.team2Id}`} className="hover:opacity-80 transition-opacity">
-              <SquareLogo 
-                src={team2Logo} 
-                alt={team2Name} 
-                fallback={team2Name.charAt(0)} 
-                isLoading={isTeam2Loading}
+              <TeamLogo 
+                imageUrl={team2Logo} 
+                teamName={team2Name}
+                teamId={match.team2Id} 
+                size="md"
               />
             </TransitionLink>
           </div>
@@ -183,6 +238,17 @@ const MatchCard: React.FC<MatchCardProps> = ({
               )}
             </TransitionLink>
           </div>
+          
+          {/* Countdown for upcoming matches */}
+          {!isCompleted && countdownText && (
+            <div className="mt-1 space-y-1">
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <Timer className="h-3 w-3" />
+                <span>{countdownText}</span>
+              </div>
+              <Progress value={countdownPercent} className="h-1" />
+            </div>
+          )}
 
           {/* Action buttons for non-completed matches */}
           {!isCompleted && (onEdit || onDelete) && (
