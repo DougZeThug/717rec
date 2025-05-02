@@ -1,15 +1,17 @@
 
 /**
- * Thresholds for Power Score and SOS calculations
+ * Shared threshold values for rankings and power scores
  */
-export const POWER_SCORE_THRESHOLDS = {
-  HIGH: 75,
-  MEDIUM: 60,
-  LOW: 40,
+export const powerScoreThresholds = {
+  excellent: 75,
+  good: 60,
+  average: 40,
+  // below average is anything under average
 };
 
-export const SOS_THRESHOLDS = {
-  HIGH: 0.850,
-  MEDIUM: 0.750,
-  LOW: 0.600,
+export const sosThresholds = {
+  veryHard: 0.875,
+  hard: 0.750,
+  moderate: 0.550,
+  // easy is anything under moderate
 };

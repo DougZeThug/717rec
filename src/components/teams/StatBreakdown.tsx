@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Laptop, Trophy, X, Target, Users, Zap, Scale, GitBranch, Medal } from "lucide-react";
