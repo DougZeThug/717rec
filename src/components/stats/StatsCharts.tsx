@@ -5,36 +5,45 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import WinLossChart from "./WinLossChart";
 import PowerScoreChart from "./PowerScoreChart";
-
-interface ChartDataItem {
-  name: string;
-  wins: number;
-  losses: number;
-  winPercentage: number;
-  powerScore: number;
-  imageUrl?: string | null;
-  logoUrl?: string | null;
-  id: string;
-}
+import { ChartDataItem } from "@/types/chart";
+import { Ranking } from "@/types";
 
 interface StatsChartsProps {
-  chartData: ChartDataItem[];
+  rankings: Ranking[];
   chartLimit: number;
 }
 
-const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
+const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
 
-  const topByPowerScore = useMemo(() => (
-    [...chartData]
-      .sort((a, b) => b.powerScore - a.powerScore)
-      .slice(0, 10)
+  // Process data for win-loss chart - sort by win percentage
+  const winLossData = useMemo(() => {
+    return [...rankings]
+      .sort((a, b) => b.winPercentage - a.winPercentage) // Sort by win percentage
+      .slice(0, chartLimit)
       .map(team => ({
-        name: team.name,
-        powerScore: team.powerScore
-      }))
-  ), [chartData]);
+        id: team.teamId,
+        name: team.teamName,
+        wins: team.wins,
+        losses: team.losses,
+        winPercentage: Number((team.winPercentage * 100).toFixed(1)),
+        imageUrl: team.imageUrl,
+        logoUrl: team.logoUrl
+      }));
+  }, [rankings, chartLimit]);
+  
+  // Process data for power score chart - sort by power score
+  const powerScoreData = useMemo(() => {
+    return [...rankings]
+      .sort((a, b) => b.powerScore - a.powerScore) // Sort by power score
+      .slice(0, 8) // Show top 8 by power score
+      .map(team => ({
+        name: team.teamName,
+        powerScore: team.powerScore,
+        id: team.teamId
+      }));
+  }, [rankings]);
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4 font-inter">
@@ -54,7 +63,7 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-2">
-          <WinLossChart data={chartData} chartLimit={chartLimit} isMobile={isMobile} />
+          <WinLossChart data={winLossData} chartLimit={chartLimit} isMobile={isMobile} />
         </CardContent>
       </Card>
       {!isMobile && (
@@ -74,7 +83,7 @@ const StatsCharts = ({ chartData, chartLimit }: StatsChartsProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 pt-2">
-            <PowerScoreChart data={topByPowerScore} />
+            <PowerScoreChart data={powerScoreData} />
           </CardContent>
         </Card>
       )}

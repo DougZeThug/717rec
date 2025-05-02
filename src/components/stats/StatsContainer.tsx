@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTeamData } from "@/hooks/useTeamData";
@@ -139,25 +138,6 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     );
   }
 
-  const topTeamsData = [...rankings]
-    .sort((a, b) => {
-      const aPct = a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
-      const bPct = b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
-      return bPct - aPct;
-    })
-    .slice(0, chartLimit)
-    .map(team => ({
-      id: team.teamId,
-      name: team.teamName,
-      wins: team.wins,
-      losses: team.losses,
-      winPercentage: Number((team.winPercentage * 100).toFixed(1)),
-      powerScore: team.powerScore || 0,
-      sos: Number((team.sos || 0).toFixed(3)),
-      logoUrl: team.logoUrl,
-      imageUrl: team.imageUrl
-    }));
-
   const cardBg = "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)]";
 
   return (
@@ -203,7 +183,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             </div>
 
             <div className="mb-4">
-              <StatsCharts chartData={topTeamsData} chartLimit={chartLimit} />
+              {/* Pass the full rankings array - each chart will handle its own sorting */}
+              <StatsCharts rankings={rankings} chartLimit={chartLimit} />
             </div>
 
             <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">

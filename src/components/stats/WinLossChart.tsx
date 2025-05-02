@@ -2,18 +2,7 @@
 import React from "react";
 import WinLossBarChart from "./WinLossBarChart";
 import { useSortedWinLossData } from "./hooks/useSortedWinLossData";
-
-interface ChartDataItem {
-  name: string;
-  wins: number;
-  losses: number;
-  winPercentage?: number;
-  win_percentage?: number;
-  powerScore?: number;
-  imageUrl?: string | null;
-  logoUrl?: string | null;
-  id: string;
-}
+import { ChartDataItem } from "@/types/chart";
 
 interface WinLossChartProps {
   data: ChartDataItem[];

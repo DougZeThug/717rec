@@ -4,13 +4,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell, Legend,
 } from "recharts";
 import { useTheme } from "next-themes";
-import { formatPowerScore } from "@/utils/colors";
+import { formatPowerScore } from "@/utils/colors/powerScoreColors";
 import { useChartColors } from "@/utils/charts/chartStyleUtils";
-
-interface PowerScoreDataItem {
-  name: string;
-  powerScore: number;
-}
+import { PowerScoreDataItem } from "@/types/chart";
 
 interface PowerScoreChartProps {
   data: PowerScoreDataItem[];
