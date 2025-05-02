@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
-import StatsContainer from "@/components/stats/StatsContainer";
+import StatsContainer from "@/components/stats/containers/StatsContainer";
 import PageLayout from "@/components/layout/PageLayout";
 
 const Stats = () => {
