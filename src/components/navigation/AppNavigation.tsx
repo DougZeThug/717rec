@@ -2,7 +2,6 @@
 import React from "react";
 import BottomNav from "./BottomNav";
 import DesktopNav from "./DesktopNav";
-import SwipeIndicator from "./SwipeIndicator";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export const AppNavigation: React.FC = () => {
@@ -12,7 +11,6 @@ export const AppNavigation: React.FC = () => {
     <>
       {isMobile && <BottomNav />}
       {!isMobile && <DesktopNav />}
-      {isMobile && <SwipeIndicator />}
     </>
   );
 };

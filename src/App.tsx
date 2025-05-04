@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { NavigationProvider } from "@/contexts/NavigationContext";
-import { useSwipeNavigation } from "@/hooks/use-swipe-navigation";
 import PageTransition from "./components/transitions/PageTransition";
 import Index from "./pages/Index";
 import TeamsPage from "./pages/TeamsPage";
@@ -30,8 +29,6 @@ const queryClient = new QueryClient({
 });
 
 const AppContent = () => {
-  // Add swipe navigation
-  useSwipeNavigation();
   const location = useLocation();
   
   return (
