@@ -85,13 +85,20 @@ export const AppCard: React.FC<AppCardProps> = ({
   // Render different elements based on props
   if (linkTo) {
     return (
-      <Card className={cardStyles} asChild>
-        <Link to={linkTo}>{cardContent}</Link>
-      </Card>
+      <Link to={linkTo} className={cn("block", cardStyles)}>
+        <Card className="h-full">
+          {cardContent}
+        </Card>
+      </Link>
     );
   } else if (isClickable) {
     return (
-      <Card className={cardStyles} onClick={onClick} role="button" tabIndex={0}>
+      <Card 
+        className={cardStyles} 
+        onClick={onClick} 
+        role="button" 
+        tabIndex={0}
+      >
         {cardContent}
       </Card>
     );
