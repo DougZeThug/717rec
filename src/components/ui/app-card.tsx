@@ -45,9 +45,6 @@ export const AppCard: React.FC<AppCardProps> = ({
   elevation = "default",
   gradient = "default"
 }) => {
-  const CardComponent = linkTo ? Link : isClickable ? "button" : "div";
-  const cardProps = linkTo ? { to: linkTo } : isClickable ? { onClick } : {};
-  
   const cardContent = (
     <>
       {(title || description || badge) && (
@@ -72,26 +69,39 @@ export const AppCard: React.FC<AppCardProps> = ({
     </>
   );
 
-  return (
-    <Card 
-      className={cn(
-        getCardStyle({
-          gradient,
-          elevationType: elevation,
-          isInteractive,
-          division,
-          className: cn(
-            isClickable && "cursor-pointer w-full text-left",
-            className
-          )
-        })
-      )}
-      {...cardProps}
-      as={CardComponent}
-    >
-      {cardContent}
-    </Card>
+  const cardStyles = cn(
+    getCardStyle({
+      gradient,
+      elevationType: elevation,
+      isInteractive,
+      division,
+      className: cn(
+        isClickable && "cursor-pointer w-full text-left",
+        className
+      )
+    })
   );
+
+  // Render different elements based on props
+  if (linkTo) {
+    return (
+      <Card className={cardStyles} asChild>
+        <Link to={linkTo}>{cardContent}</Link>
+      </Card>
+    );
+  } else if (isClickable) {
+    return (
+      <Card className={cardStyles} onClick={onClick} role="button" tabIndex={0}>
+        {cardContent}
+      </Card>
+    );
+  } else {
+    return (
+      <Card className={cardStyles}>
+        {cardContent}
+      </Card>
+    );
+  }
 };
 
 export default AppCard;
