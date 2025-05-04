@@ -102,7 +102,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                     >
                       <div className="flex items-center">
                         <TeamLogo 
-                          imageUrl={teamTimeslot.teams?.logo_url}
+                          imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
                           teamName={teamTimeslot.teams?.name || "Unknown Team"}
                           teamId={teamTimeslot.team_id}
                           size="sm"

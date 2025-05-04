@@ -1,4 +1,3 @@
-
 // Team related types
 export interface Team {
   id: string;
@@ -144,6 +143,7 @@ export interface TeamTimeslot {
     id: string;
     name: string;
     logo_url?: string | null;
+    image_url?: string | null;
     divisionName: string | null;
   };
 }
