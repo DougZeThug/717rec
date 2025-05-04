@@ -93,6 +93,16 @@
   p {
     @apply leading-relaxed;
   }
+
+  /* Improve touch targets on mobile */
+  button, a {
+    @apply touch-manipulation;
+  }
+
+  /* Improve form elements */
+  input, select, textarea {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
 }
 
 @layer utilities {
@@ -252,5 +262,10 @@
   
   .card-gradient-highlight {
     @apply bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900/90;
+  }
+  
+  /* Touch improvement */
+  .touch-manipulation {
+    touch-action: manipulation;
   }
 }

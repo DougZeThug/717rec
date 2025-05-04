@@ -35,18 +35,20 @@ export const NavItem = ({
     <button
       onClick={handleClick}
       className={cn(
-        "flex items-center justify-center transition-colors",
+        "flex flex-col items-center justify-center transition-colors",
+        "touch-manipulation relative",
         active 
           ? "text-cornhole-navy dark:text-white font-medium" 
           : "text-gray-500 dark:text-gray-400 hover:text-cornhole-navy dark:hover:text-white",
         className
       )}
+      aria-current={active ? "page" : undefined}
     >
-      <div className="flex flex-col items-center">
-        {icon}
-        <span className="mt-1">{label}</span>
-        {active && <span className="text-xs bg-green-500 text-white px-1 rounded-sm">Active</span>}
-      </div>
+      {icon}
+      <span className="mt-1 text-xs">{label}</span>
+      {active && (
+        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/3 h-0.5 bg-cornhole-navy dark:bg-white rounded-full" />
+      )}
     </button>
   );
 };

@@ -18,7 +18,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import GlobalNav from "./components/navigation/GlobalNav";
+import AppNavigation from "./components/navigation/AppNavigation";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,14 +34,12 @@ const AppContent = () => {
   useSwipeNavigation();
   const location = useLocation();
   
-  console.log('AppContent rendering with path:', location.pathname);
-  
   return (
     <NavigationProvider>
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <PageTransition>
-          <main className="flex-grow pb-16 md:pb-0">
+          <main className="flex-grow">
             <Routes location={location}>
               <Route path="/" element={<Index />} />
               <Route path="/teams" element={<TeamsPage />} />
@@ -55,7 +53,7 @@ const AppContent = () => {
             </Routes>
           </main>
         </PageTransition>
-        <GlobalNav />
+        <AppNavigation />
         <Footer />
       </div>
     </NavigationProvider>
@@ -63,8 +61,6 @@ const AppContent = () => {
 };
 
 const App = () => {
-  console.log('App component rendering');
-  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

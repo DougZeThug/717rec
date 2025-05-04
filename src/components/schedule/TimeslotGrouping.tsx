@@ -1,14 +1,15 @@
 
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { TeamTimeslot } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { gradients, interactive, animations, getDivisionStyles } from "@/styles/designSystem";
+import { animations, getDivisionStyles } from "@/styles/designSystem";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TeamLogo } from "@/components/ui/team";
+import { AppCard } from "@/components/ui/app-card";
+import LoadingState from "@/components/ui/loading-state";
 
 interface TimeslotGroupingProps {
   groupedTimeslots: Record<string, TeamTimeslot[]>;
@@ -37,17 +38,13 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <div className="text-center py-4">
-        <p className="animate-soft-pulse">Loading timeslots...</p>
-      </div>
-    );
+    return <LoadingState message="Loading timeslots..." />;
   }
   
   if (Object.keys(groupedTimeslots).length === 0) {
     return (
       <div className="text-center py-6">
-        <p className="text-gray-500">No timeslots scheduled for this date.</p>
+        <p className="text-gray-500 dark:text-gray-400">No timeslots scheduled for this date.</p>
       </div>
     );
   }
@@ -55,24 +52,26 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
   return (
     <div className="space-y-4">
       {Object.entries(groupedTimeslots).map(([timeslot, teams], index) => (
-        <Card 
+        <AppCard 
           key={timeslot} 
           className={cn(
-            "overflow-hidden border-gray-200 dark:border-gray-700 transition-all duration-300",
-            "hover:shadow-md",
+            "overflow-hidden border-gray-200 dark:border-gray-700 transition-all duration-300 p-0",
             animations.entranceLeft,
             `animation-delay-${index * 100}`
           )}
+          elevation="default"
+          isInteractive={false}
         >
           <Collapsible 
             open={expandedTimeslots[timeslot]} 
             onOpenChange={() => toggleTimeslot(timeslot)}
+            className="w-full"
           >
             <CollapsibleTrigger className="w-full">
               <div className={cn(
                 "bg-cornhole-navy text-white px-4 py-3 font-medium",
                 "bg-gradient-to-r from-cornhole-navy to-cornhole-navy/90",
-                "flex justify-between items-center cursor-pointer"
+                "flex justify-between items-center cursor-pointer min-h-[48px]"
               )}>
                 <div className="flex items-center gap-2">
                   {timeslot}
@@ -88,41 +87,42 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
             </CollapsibleTrigger>
             
             <CollapsibleContent>
-              <CardContent className="py-4">
+              <div className="p-4">
                 <div className="space-y-1">
                   {teams.map((teamTimeslot, teamIndex) => (
                     <div 
                       key={teamTimeslot.id} 
                       className={cn(
-                        "flex items-center justify-between p-2.5 rounded-md",
-                        interactive.row.hover,
+                        "flex items-center justify-between p-3 rounded-md",
+                        "hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150",
                         animations.fadeInSlideUp,
-                        `animation-delay-${teamIndex * 100 + 100}`
+                        `animation-delay-${teamIndex * 100 + 100}`,
+                        "touch-manipulation" // Improves touch experience on mobile
                       )}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center min-w-0 flex-1">
                         <TeamLogo 
                           imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
                           teamName={teamTimeslot.teams?.name || "Unknown Team"}
                           teamId={teamTimeslot.team_id}
                           size="sm"
                           clickable={true}
-                          className="mr-3"
+                          className="mr-3 shrink-0"
                         />
                         
-                        <div className="flex flex-col">
+                        <div className="flex flex-col min-w-0">
                           {teamTimeslot.teams?.name ? (
                             <Link 
                               to={`/teams/${teamTimeslot.team_id}`}
                               className={cn(
-                                "font-medium text-cornhole-navy dark:text-white",
+                                "font-medium text-cornhole-navy dark:text-white truncate",
                                 "hover:underline transition-all duration-200"
                               )}
                             >
                               {teamTimeslot.teams.name}
                             </Link>
                           ) : (
-                            <span className="text-gray-500 dark:text-gray-400">Unknown Team</span>
+                            <span className="text-gray-500 dark:text-gray-400 truncate">Unknown Team</span>
                           )}
                         </div>
                       </div>
@@ -130,7 +130,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                       {teamTimeslot.teams?.divisionName && (
                         <Badge 
                           className={cn(
-                            "ml-2 text-xs font-medium px-2.5 py-0.5",
+                            "ml-2 text-xs font-medium px-2.5 py-0.5 shrink-0",
                             getDivisionStyles(teamTimeslot.teams.divisionName, 'bg'),
                             getDivisionStyles(teamTimeslot.teams.divisionName, 'text')
                           )}
@@ -141,10 +141,10 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                     </div>
                   ))}
                 </div>
-              </CardContent>
+              </div>
             </CollapsibleContent>
           </Collapsible>
-        </Card>
+        </AppCard>
       ))}
     </div>
   );
