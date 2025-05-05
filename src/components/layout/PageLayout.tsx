@@ -2,6 +2,8 @@
 import React, { ReactNode } from "react";
 import { useTheme } from "next-themes";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { animations } from "@/styles/designSystem";
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -24,9 +26,14 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   
   return (
     <div 
-      className={`min-h-screen ${withBackground ? 'cornhole-bg' : ''} 
-        ${isMobile ? (compact ? 'py-3 pb-20' : 'py-4 pb-24') : 'py-8 pb-8'} 
-        px-4 md:px-8 ${className}`}
+      className={cn(
+        "min-h-screen",
+        withBackground ? "cornhole-bg" : "",
+        isMobile ? (compact ? "py-3 pb-20" : "py-4 pb-24") : "py-8 pb-8", 
+        "px-4 md:px-8",
+        animations.fadeIn,
+        className
+      )}
       style={withBackground && resolvedTheme === 'light' ? { background: "#f8f8f8" } : {}}
     >
       {children}

@@ -2,6 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { interactive } from "@/styles/designSystem";
 
 export interface NavItemProps {
   to: string;
@@ -30,10 +31,10 @@ export const NavItem: React.FC<NavItemProps> = ({
       className={cn(
         "flex items-center justify-center transition-colors duration-200 touch-manipulation",
         "relative text-center",
-        "min-h-[44px] min-w-[44px] md:min-h-[48px] md:min-w-[48px]", // Ensure good touch targets
+        "min-h-[48px] min-w-[48px] px-3 py-2", // Improved touch target
         isActive
           ? "text-cornhole-navy dark:text-white font-medium"
-          : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white",
+          : interactive.link.subtle,
         className
       )}
       aria-current={isActive ? "page" : undefined}

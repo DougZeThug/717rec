@@ -2,21 +2,31 @@
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
-import { getCardInteractionStyles } from "@/styles/interactionUtils";
 import { useTheme } from "next-themes";
 import { TeamLogo } from "./TeamLogo";
 import { TeamStats } from "./TeamStats";
+import { cn } from "@/lib/utils";
+import { animations } from "@/styles/designSystem";
 
 interface TeamCardProps {
   team: Team;
+  delay?: number;
 }
 
-const TeamCard: React.FC<TeamCardProps> = ({ team }) => {
+const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
   const { theme } = useTheme();
   const isLight = theme === "light";
+  
+  // Calculate animation delay class based on prop
+  const delayClass = delay ? `animation-delay-${delay * 100}` : '';
 
   return (
-    <div className="overflow-hidden mb-4 sm:mb-0 transition duration-200 hover:shadow-md">
+    <div className={cn(
+      "overflow-hidden mb-4 sm:mb-0 transition duration-200 hover:shadow-md",
+      "rounded-lg border border-gray-200 dark:border-gray-700",
+      animations.fadeInSlideUp,
+      delayClass
+    )}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-40 bg-gray-100 dark:bg-gray-800/50 relative flex items-center justify-center p-3">
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />

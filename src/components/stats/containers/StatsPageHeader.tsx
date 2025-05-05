@@ -1,13 +1,15 @@
 
 import React from "react";
 import PageHeader from "@/components/layout/PageHeader";
+import { animations } from "@/styles/designSystem";
+import { cn } from "@/lib/utils";
 
 const StatsPageHeader = () => {
   return (
     <PageHeader 
       title="Team Statistics" 
       description="Current season rankings and performance metrics"
-      className="mt-1" 
+      className={cn("mt-1", animations.fadeInSlideDown)} 
     />
   );
 };

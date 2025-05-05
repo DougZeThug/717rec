@@ -3,6 +3,8 @@ import React from "react";
 import WinLossBarChart from "./WinLossBarChart";
 import { useSortedWinLossData } from "./hooks/useSortedWinLossData";
 import { ChartDataItem } from "@/types/chart";
+import { animations } from "@/styles/designSystem";
+import { cn } from "@/lib/utils";
 
 interface WinLossChartProps {
   data: ChartDataItem[];
@@ -37,7 +39,13 @@ const WinLossChart: React.FC<WinLossChartProps> = ({
   );
 
   return (
-    <WinLossBarChart data={sortedData} isMobile={isMobile} />
+    <div className={cn(
+      "w-full h-full",
+      animations.fadeIn,
+      "animation-delay-200"
+    )}>
+      <WinLossBarChart data={sortedData} isMobile={isMobile} />
+    </div>
   );
 };
 

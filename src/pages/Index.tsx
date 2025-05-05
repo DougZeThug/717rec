@@ -8,6 +8,7 @@ import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import LoadingState from "@/components/ui/loading-state";
 import { useIsMobile } from "@/hooks/use-mobile";
+import PageTransition from "@/components/transitions/PageTransition";
 
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
@@ -32,11 +33,18 @@ const Index: React.FC = () => {
       className="flex flex-col gap-4 md:gap-8" 
       compact={isMobile}
     >
-      <HeroSection />
+      <PageTransition animation="fadeInSlideDown">
+        <HeroSection />
+      </PageTransition>
       
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
-        <TopTeams teams={topTeams} />
-        <CallToAction />
+        <PageTransition animation="fadeInSlideUp" delay="short">
+          <TopTeams teams={topTeams} />
+        </PageTransition>
+
+        <PageTransition animation="fadeIn" delay="medium">
+          <CallToAction />
+        </PageTransition>
       </div>
     </PageLayout>
   );
