@@ -1,8 +1,9 @@
 
 import React, { useState } from "react";
-import { TeamsHeader } from "@/components/teams/TeamsHeader";
 import TeamsContainer from "@/components/teams/TeamsContainer";
 import TeamsDisplayModeToggle from "./TeamsDisplayModeToggle";
+import PageHeader from "@/components/layout/PageHeader";
+import TeamsHeader from "./TeamsHeader";
 
 export type DisplayMode = "all" | "grouped";
 
@@ -17,14 +18,10 @@ const TeamsPageContainer: React.FC = () => {
   };
 
   return (
-    <div>
-      {/* Condensed Header Section */}
-      <div className="mt-2 mb-2 space-y-2">
-        <h1 className="font-oswald text-3xl font-semibold uppercase tracking-wide text-gray-900 dark:text-white">
-          Teams
-        </h1>
+    <div className="space-y-4">
+      <PageHeader title="Teams">
         {/* Compact controls layout */}
-        <div className="flex flex-wrap items-center gap-2 justify-between">
+        <div className="flex flex-wrap items-center gap-2 justify-between mt-3">
           {/* Display Mode Toggle with compact View label */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">View:</span>
@@ -41,8 +38,9 @@ const TeamsPageContainer: React.FC = () => {
           </div>
         </div>
         {/* Divider */}
-        <div className="border-b border-muted mb-2" />
-      </div>
+        <div className="border-b border-muted mt-2" />
+      </PageHeader>
+      
       {/* Teams Content */}
       <TeamsContainer displayMode={displayMode} viewMode={viewMode} />
     </div>
@@ -50,4 +48,3 @@ const TeamsPageContainer: React.FC = () => {
 };
 
 export default TeamsPageContainer;
-

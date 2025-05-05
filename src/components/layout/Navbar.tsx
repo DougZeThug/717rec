@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import ThemeToggle from "@/components/ui/theme/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,7 +33,7 @@ const Navbar = () => {
   
   return (
     <nav className="bg-cornhole-navy dark:bg-gray-900 text-white shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-[17px]">
+      <div className="container mx-auto px-4 py-[14px] md:py-[17px]">
         <div className="flex justify-between items-center py-[4px]">
           <div className="flex items-center space-x-2">
             <Link to="/" className="flex items-center space-x-2">
@@ -46,9 +47,12 @@ const Navbar = () => {
               <Link key={item.href} to={item.href}>
                 <Button 
                   variant={isActive(item.href) ? "secondary" : "ghost"} 
-                  className={isActive(item.href) 
-                    ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
-                    : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800"}
+                  className={cn(
+                    isActive(item.href) 
+                      ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
+                      : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
+                    "min-h-11 px-4"
+                  )}
                 >
                   {item.label}
                 </Button>
@@ -61,26 +65,34 @@ const Navbar = () => {
           <div className="md:hidden flex items-center gap-2">
             {/* Theme toggle for mobile */}
             <ThemeToggle size="sm" />
-            <Button variant="ghost" size="icon" className="text-white" onClick={toggleMobileMenu}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-white min-h-11 min-w-11" 
+              onClick={toggleMobileMenu}
+            >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden pt-2 pb-4 space-y-1">
+          <div className="md:hidden pt-2 pb-3 space-y-1">
             {navItems.map(item => (
               <Link 
                 key={item.href} 
                 to={item.href} 
                 onClick={() => setMobileMenuOpen(false)} 
-                className="block"
+                className="block touch-manipulation"
               >
                 <Button 
                   variant={isActive(item.href) ? "secondary" : "ghost"} 
-                  className={isActive(item.href) 
-                    ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 w-full justify-start" 
-                    : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800 w-full justify-start"}
+                  className={cn(
+                    isActive(item.href) 
+                      ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 w-full justify-start" 
+                      : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800 w-full justify-start",
+                    "min-h-11 py-3"
+                  )}
                 >
                   {item.label}
                 </Button>

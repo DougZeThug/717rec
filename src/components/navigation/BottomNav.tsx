@@ -5,6 +5,7 @@ import { Award, Calendar, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NavItem } from "@/components/navigation/NavItem";
 import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
 
 export const BottomNav = () => {
   const location = useLocation();
@@ -43,7 +44,10 @@ export const BottomNav = () => {
             to={item.path}
             label={item.label}
             icon={item.icon}
-            className="flex-1 min-h-[54px] px-3 py-2 text-xs touch-manipulation"
+            className={cn(
+              "flex-1 min-h-[58px] px-3 py-2 text-xs touch-manipulation",
+              "flex flex-col items-center justify-center"
+            )}
           />
         ))}
       </div>

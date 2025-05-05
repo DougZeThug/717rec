@@ -7,6 +7,7 @@ interface PageLayoutProps {
   children: ReactNode;
   withBackground?: boolean;
   className?: string;
+  compact?: boolean;
 }
 
 /**
@@ -15,14 +16,17 @@ interface PageLayoutProps {
 const PageLayout: React.FC<PageLayoutProps> = ({ 
   children, 
   withBackground = true, 
-  className = "" 
+  className = "",
+  compact = false
 }) => {
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
   
   return (
     <div 
-      className={`min-h-screen ${withBackground ? 'cornhole-bg' : ''} py-8 px-4 md:px-8 ${className} ${isMobile ? 'pb-24' : 'pb-8'}`}
+      className={`min-h-screen ${withBackground ? 'cornhole-bg' : ''} 
+        ${isMobile ? (compact ? 'py-3 pb-20' : 'py-4 pb-24') : 'py-8 pb-8'} 
+        px-4 md:px-8 ${className}`}
       style={withBackground && resolvedTheme === 'light' ? { background: "#f8f8f8" } : {}}
     >
       {children}

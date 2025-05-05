@@ -1,54 +1,50 @@
 
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-interface NavItemProps {
+export interface NavItemProps {
   to: string;
   label: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   isActive?: boolean;
   className?: string;
+  onClick?: () => void;
 }
 
-export const NavItem = ({ 
-  to, 
-  label, 
-  icon, 
-  isActive,
-  className 
-}: NavItemProps) => {
+export const NavItem: React.FC<NavItemProps> = ({
+  to,
+  label,
+  icon,
+  isActive: isActiveProp,
+  className,
+  onClick,
+}) => {
   const location = useLocation();
-  const navigate = useNavigate();
-  
-  // Check if this is the current active route
-  const active = isActive !== undefined 
-    ? isActive 
-    : location.pathname === to;
-  
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate(to);
-  };
-  
+  const isActive = isActiveProp !== undefined ? isActiveProp : location.pathname === to;
+
   return (
-    <button
-      onClick={handleClick}
+    <Link
+      to={to}
+      onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center transition-colors",
-        "touch-manipulation relative",
-        active 
-          ? "text-cornhole-navy dark:text-white font-medium" 
-          : "text-gray-500 dark:text-gray-400 hover:text-cornhole-navy dark:hover:text-white",
+        "flex items-center justify-center transition-colors duration-200 touch-manipulation",
+        "relative text-center",
+        "min-h-[44px] min-w-[44px] md:min-h-[48px] md:min-w-[48px]", // Ensure good touch targets
+        isActive
+          ? "text-cornhole-navy dark:text-white font-medium"
+          : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white",
         className
       )}
-      aria-current={active ? "page" : undefined}
+      aria-current={isActive ? "page" : undefined}
     >
       {icon}
-      <span className="mt-1 text-xs">{label}</span>
-      {active && (
-        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/3 h-0.5 bg-cornhole-navy dark:bg-white rounded-full" />
+      {label && <span className="ml-2 md:ml-1.5">{label}</span>}
+      {isActive && (
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-cornhole-navy dark:bg-white rounded-full" />
       )}
-    </button>
+    </Link>
   );
 };
+
+export default NavItem;

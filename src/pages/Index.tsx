@@ -1,15 +1,17 @@
 
 import React from "react";
 import { useTeams } from "@/hooks/useTeams";
-import { format, parseISO } from "date-fns";
 import TopTeams from "@/components/home/TopTeams";
 import CallToAction from "@/components/home/CallToAction";
 import HeroSection from "@/components/home/HeroSection";
 import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
 import LoadingState from "@/components/ui/loading-state";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
+  const isMobile = useIsMobile();
   
   const isLoading = teamsLoading;
   
@@ -26,10 +28,13 @@ const Index: React.FC = () => {
   }
   
   return (
-    <PageLayout className="flex flex-col gap-8">
+    <PageLayout 
+      className="flex flex-col gap-4 md:gap-8" 
+      compact={isMobile}
+    >
       <HeroSection />
       
-      <div className="container mx-auto px-4 flex flex-col gap-8">
+      <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
         <TopTeams teams={topTeams} />
         <CallToAction />
       </div>

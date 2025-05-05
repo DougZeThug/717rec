@@ -1,13 +1,14 @@
 
 import React from "react";
+import PageHeader from "@/components/layout/PageHeader";
 
 const StatsPageHeader = () => {
   return (
-    <div className="mt-2 mb-1">
-      <h1 className="font-oswald text-3xl sm:text-4xl uppercase font-semibold tracking-wide text-cornhole-navy mb-1 sm:mb-2" style={{ letterSpacing: ".05em" }}>
-        Team Statistics
-      </h1>
-    </div>
+    <PageHeader 
+      title="Team Statistics" 
+      description="Current season rankings and performance metrics"
+      className="mt-1" 
+    />
   );
 };
 
