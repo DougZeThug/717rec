@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import TeamsContainer from "@/components/teams/TeamsContainer";
 import TeamsDisplayModeToggle from "./TeamsDisplayModeToggle";
 import PageHeader from "@/components/layout/PageHeader";
-import TeamsHeader from "./TeamsHeader";
+import { TeamsHeader } from "./TeamsHeader";
 
 export type DisplayMode = "all" | "grouped";
 
