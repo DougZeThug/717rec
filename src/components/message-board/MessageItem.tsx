@@ -1,38 +1,145 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Message } from "@/hooks/useMessageBoard";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLongPress } from "@/hooks/useLongPress";
+import { useMobile } from "@/hooks/use-mobile";
+import { Trash2 } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+import { getCardInteractionStyles } from "@/styles/interactionUtils";
 
 interface MessageItemProps {
   message: Message;
+  onDelete?: (messageId: string) => Promise<void>;
 }
 
-const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
+  const { user } = useAuth();
+  const isMobile = useMobile();
+  const [showOptions, setShowOptions] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  // Check if the current user is the author of the message
+  const isAuthor = user?.id === message.user_id;
+  
   const formattedTime = formatDistanceToNow(new Date(message.created_at), { 
     addSuffix: true,
     includeSeconds: true
   });
+
+  // Handle the delete action
+  const handleDelete = async () => {
+    if (onDelete) {
+      setIsDeleting(true);
+      try {
+        await onDelete(message.id);
+      } finally {
+        setIsDeleting(false);
+        setShowOptions(false);
+      }
+    }
+  };
+
+  // Configure the long press handler
+  const longPressHandlers = useLongPress({
+    onLongPress: () => {
+      if (isAuthor && isMobile) {
+        setShowOptions(true);
+      }
+    }
+  });
+
+  // For desktop, we use click/hover
+  const handleDesktopClick = () => {
+    if (isAuthor && !isMobile) {
+      setShowOptions(!showOptions);
+    }
+  };
+
+  // Close options when clicking outside
+  React.useEffect(() => {
+    if (showOptions) {
+      const handleClickOutside = () => setShowOptions(false);
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showOptions]);
   
   return (
-    <Card className="mb-3 overflow-hidden">
-      <CardContent className="p-3">
-        <div className="flex justify-between items-start">
-          <div className="font-bold">
-            {message.username}
-            {message.team_name && (
-              <span className="font-normal text-muted-foreground"> ({message.team_name})</span>
-            )}
+    <>
+      <Card 
+        className={getCardInteractionStyles("mb-3 overflow-hidden relative")}
+        {...(isAuthor ? (isMobile ? longPressHandlers : { onClick: handleDesktopClick }) : {})}
+      >
+        <CardContent className="p-3">
+          <div className="flex justify-between items-start">
+            <div className="font-bold">
+              {message.username}
+              {message.team_name && (
+                <span className="font-normal text-muted-foreground"> ({message.team_name})</span>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {formattedTime}
+            </div>
           </div>
-          <div className="text-xs text-muted-foreground">
-            {formattedTime}
+          <div className="mt-1 break-words whitespace-pre-wrap">
+            {message.content}
           </div>
-        </div>
-        <div className="mt-1 break-words whitespace-pre-wrap">
-          {message.content}
-        </div>
-      </CardContent>
-    </Card>
+          
+          {/* Delete Option - Only visible when showOptions is true and user is author */}
+          {isAuthor && showOptions && (
+            <div 
+              className="absolute right-2 bottom-2 p-1 bg-background/90 rounded-md border shadow-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteConfirm(true);
+                setShowOptions(false);
+              }}
+            >
+              <Trash2 className="h-5 w-5 text-destructive hover:text-destructive/80 cursor-pointer" />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Message</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this message? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              disabled={isDeleting} 
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

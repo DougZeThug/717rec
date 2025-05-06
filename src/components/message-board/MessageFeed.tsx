@@ -9,9 +9,10 @@ interface MessageFeedProps {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
+  onDeleteMessage: (messageId: string) => Promise<void>;
 }
 
-const MessageFeed: React.FC<MessageFeedProps> = ({ messages, isLoading, error }) => {
+const MessageFeed: React.FC<MessageFeedProps> = ({ messages, isLoading, error, onDeleteMessage }) => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-10">
@@ -40,7 +41,11 @@ const MessageFeed: React.FC<MessageFeedProps> = ({ messages, isLoading, error })
     <ScrollArea className="h-[calc(100vh-250px)] pr-4">
       <div className="space-y-3 pb-16">
         {messages.map((message) => (
-          <MessageItem key={message.id} message={message} />
+          <MessageItem 
+            key={message.id} 
+            message={message} 
+            onDelete={onDeleteMessage}
+          />
         ))}
       </div>
     </ScrollArea>

@@ -65,6 +65,17 @@ export const useMessageBoard = () => {
           setMessages(curr => [newMessage, ...curr]);
         }
       )
+      .on('postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload) => {
+          const deletedMessage = payload.old as Message;
+          setMessages(curr => curr.filter(msg => msg.id !== deletedMessage.id));
+        }
+      )
       .subscribe();
       
     return () => {
@@ -109,11 +120,52 @@ export const useMessageBoard = () => {
       });
     }
   };
+
+  // Delete message function
+  const deleteMessage = async (messageId: string) => {
+    if (!user) {
+      toast({
+        title: "Not authenticated",
+        description: "You must be logged in to delete messages",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('user_id', user.id); // RLS will ensure this is the user's message
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Optimistic UI update
+      setMessages(curr => curr.filter(msg => msg.id !== messageId));
+      
+      toast({
+        title: "Message deleted",
+        description: "Your message has been deleted",
+      });
+      
+    } catch (err) {
+      console.error('Error deleting message:', err);
+      toast({
+        title: "Error deleting message",
+        description: "Your message could not be deleted. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
   
   return {
     messages,
     isLoading,
     error,
-    postMessage
+    postMessage,
+    deleteMessage
   };
 };

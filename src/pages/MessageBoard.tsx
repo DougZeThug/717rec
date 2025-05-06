@@ -9,7 +9,7 @@ import MessageInput from "@/components/message-board/MessageInput";
 import LoginPrompt from "@/components/message-board/LoginPrompt";
 
 const MessageBoard: React.FC = () => {
-  const { messages, isLoading, error, postMessage } = useMessageBoard();
+  const { messages, isLoading, error, postMessage, deleteMessage } = useMessageBoard();
   const { user } = useAuth();
   
   return (
@@ -22,6 +22,7 @@ const MessageBoard: React.FC = () => {
             messages={messages} 
             isLoading={isLoading} 
             error={error}
+            onDeleteMessage={deleteMessage}
           />
           
           {user ? (
