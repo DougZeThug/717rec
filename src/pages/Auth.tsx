@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageLayout from "@/components/layout/PageLayout";
-import { FcGoogle } from "react-icons/fc";
+import { LucideChrome } from "lucide-react"; // Replaced FcGoogle with LucideChrome
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import PageTransition from "@/components/transitions/PageTransition";
@@ -215,7 +215,7 @@ const Auth = () => {
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
               >
-                <FcGoogle className="mr-2 h-5 w-5" />
+                <LucideChrome className="mr-2 h-5 w-5" /> {/* Replaced FcGoogle with LucideChrome */}
                 Google
               </Button>
             </CardContent>
