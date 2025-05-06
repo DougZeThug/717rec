@@ -26,11 +26,8 @@ const Navbar = () => {
     { label: "Admin", href: "/admin" }
   ];
   
-  // Add user-restricted nav items
-  const authNavItems = [
-    { label: "My Team", href: "/my-team" },
-    { label: "Message Board", href: "/message-board" },
-  ];
+  // Empty auth nav items as we've moved them to the UserMenu and FAB
+  const authNavItems = [];
   
   // Only show auth nav items if user is logged in
   const allNavItems = [
