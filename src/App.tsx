@@ -17,6 +17,7 @@ import TeamDetails from "./pages/TeamDetails";
 import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import ProfileSetup from "./pages/ProfileSetup";
+import MessageBoard from "./pages/MessageBoard";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -51,6 +52,7 @@ const AppContent = () => {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/setup-profile" element={<ProfileSetup />} />
+              <Route path="/message-board" element={<MessageBoard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
