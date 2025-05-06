@@ -1,12 +1,12 @@
 
-import { Session, User, WeakPasswordReason } from "@supabase/supabase-js";
+import { Session, User, WeakPasswordReasons } from "@supabase/supabase-js";
 import { UserProfile } from "./user";
 
 // Define the response type for authentication functions
 export interface AuthResponse {
   user: User | null;
   session: Session | null;
-  weakPassword?: WeakPasswordReason | null;
+  weakPassword?: WeakPasswordReasons | null;
 }
 
 export interface AuthContextType {
