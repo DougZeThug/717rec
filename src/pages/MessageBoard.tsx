@@ -7,6 +7,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import MessageFeed from "@/components/message-board/MessageFeed";
 import MessageInput from "@/components/message-board/MessageInput";
 import LoginPrompt from "@/components/message-board/LoginPrompt";
+import PageHeader from "@/components/layout/PageHeader";
+import { cn } from "@/lib/utils";
+import { animations } from "@/styles/designSystem";
+import { MessageSquare } from "lucide-react";
 
 const MessageBoard: React.FC = () => {
   const { messages, isLoading, error, postMessage, deleteMessage } = useMessageBoard();
@@ -15,8 +19,20 @@ const MessageBoard: React.FC = () => {
   return (
     <PageLayout>
       <PageTransition>
-        <div className="container max-w-3xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold mb-6">Message Board</h1>
+        <div className="container max-w-3xl mx-auto px-4 py-4">
+          <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-3">
+            <PageHeader 
+              title={
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="h-6 w-6 text-primary" />
+                  <span>Message Board</span>
+                </div>
+              }
+              description="Chat with other teams and participants"
+              className={cn(animations.fadeInSlideDown, "mb-3")} 
+              compact
+            />
+          </div>
           
           <MessageFeed 
             messages={messages} 

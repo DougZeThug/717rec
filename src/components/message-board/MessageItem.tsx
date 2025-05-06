@@ -6,7 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLongPress } from "@/hooks/useLongPress";
 import { useMobile } from "@/hooks/use-mobile";
-import { Trash2 } from "lucide-react";
+import { Trash2, Clock } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +18,9 @@ import {
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
+import { Badge } from "@/components/ui/badge";
+import TeamNameDisplay from "./TeamNameDisplay";
+import { useTeamPowerScores } from "@/hooks/useTeamPowerScores";
 
 interface MessageItemProps {
   message: Message;
@@ -30,9 +33,13 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { getTeamPowerScore } = useTeamPowerScores();
   
   // Check if the current user is the author of the message
   const isAuthor = user?.id === message.user_id;
+  
+  // Get power score for the team
+  const powerScore = getTeamPowerScore(message.team_id);
   
   const formattedTime = formatDistanceToNow(new Date(message.created_at), { 
     addSuffix: true,
@@ -80,22 +87,22 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   return (
     <>
       <Card 
-        className={getCardInteractionStyles("mb-3 overflow-hidden relative")}
+        className={getCardInteractionStyles("mb-3 overflow-hidden relative border shadow-sm")}
         {...(isAuthor ? (isMobile ? longPressHandlers : { onClick: handleDesktopClick }) : {})}
       >
         <CardContent className="p-3">
           <div className="flex justify-between items-start">
-            <div className="font-bold">
-              {message.username}
-              {message.team_name && (
-                <span className="font-normal text-muted-foreground"> ({message.team_name})</span>
-              )}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {formattedTime}
-            </div>
+            <TeamNameDisplay 
+              username={message.username}
+              teamName={message.team_name}
+              powerScore={powerScore}
+            />
+            <Badge variant="outline" className="flex items-center gap-1 text-xs text-muted-foreground py-0 h-5">
+              <Clock className="h-3 w-3" />
+              <span>{formattedTime}</span>
+            </Badge>
           </div>
-          <div className="mt-1 break-words whitespace-pre-wrap">
+          <div className="mt-2 break-words whitespace-pre-wrap text-foreground">
             {message.content}
           </div>
           
