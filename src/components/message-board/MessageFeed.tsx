@@ -55,7 +55,7 @@ const MessageFeed: React.FC<MessageFeedProps> = ({ messages, isLoading, error, o
           "h-[calc(100vh-250px)]",
           "lg:h-[calc(100vh-280px)]"
         )}>
-          <div className="space-y-4 p-4">
+          <div className="space-y-2 p-3">
             {messages.map((message) => (
               <MessageItem 
                 key={message.id} 

@@ -9,24 +9,34 @@ interface TeamNameDisplayProps {
   teamName: string | null;
   powerScore?: number;
   className?: string;
+  compact?: boolean;
 }
 
 const TeamNameDisplay: React.FC<TeamNameDisplayProps> = ({ 
   username, 
   teamName, 
   powerScore,
-  className 
+  className,
+  compact = false
 }) => {
   // Get the appropriate color class based on the team's power score
   const scoreColorClass = getPowerScoreColor(powerScore);
   
   return (
-    <div className={cn("font-medium flex flex-wrap items-center gap-1.5", className)}>
-      <span className="font-semibold">{username}</span>
+    <div className={cn(
+      "font-medium flex items-center gap-1", 
+      compact ? "text-sm" : "", 
+      className
+    )}>
+      <span className={cn("font-semibold", compact ? "truncate max-w-[100px]" : "")}>{username}</span>
       {teamName && (
         <Badge 
           variant="outline" 
-          className={cn("py-0 text-xs font-medium", scoreColorClass)}
+          className={cn(
+            "py-0 h-5 text-xs font-normal", 
+            compact ? "px-1.5" : "px-2", 
+            scoreColorClass
+          )}
         >
           {teamName}
         </Badge>
