@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useThemeConsistency } from "./use-theme-consistency";
 import { AuthResponse } from "@/types/auth";
+import { WeakPasswordReasons } from "@supabase/supabase-js";
 
 export const useAuthFunctions = () => {
   const navigate = useNavigate();
@@ -50,7 +50,11 @@ export const useAuthFunctions = () => {
         description: "You've successfully logged in",
       });
 
-      return data;
+      return {
+        user: data.user,
+        session: data.session,
+        weakPassword: null
+      };
     } catch (error) {
       // Handle specific error codes with user-friendly messages
       if (error instanceof Error) {
@@ -66,7 +70,7 @@ export const useAuthFunctions = () => {
       }
       
       // Return null values on error
-      return { user: null, session: null };
+      return { user: null, session: null, weakPassword: null };
     }
   };
 
@@ -88,7 +92,12 @@ export const useAuthFunctions = () => {
         description: "Please check your email to confirm your account",
       });
       
-      return data;
+      // Include weakPassword from the response if available
+      return {
+        user: data.user,
+        session: data.session,
+        weakPassword: data.weakPassword as WeakPasswordReasons | null
+      };
     } catch (error) {
       // Handle specific error cases
       if (error instanceof Error) {
@@ -102,7 +111,7 @@ export const useAuthFunctions = () => {
       }
       
       // Return null values on error
-      return { user: null, session: null };
+      return { user: null, session: null, weakPassword: null };
     }
   };
 
