@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -137,7 +138,7 @@ const ProfileSetup = () => {
     }
     
     try {
-      setIsLoading(true);
+      setIsFormLoading(true);
       
       const { error } = await supabase
         .from("profiles")
@@ -169,7 +170,7 @@ const ProfileSetup = () => {
     } catch (error) {
       console.error("Error updating profile:", error);
     } finally {
-      setIsLoading(false);
+      setIsFormLoading(false);
     }
   };
 
@@ -223,7 +224,7 @@ const ProfileSetup = () => {
                       onChange={(e) => setUsername(e.target.value)}
                       className="pr-10"
                       placeholder="Choose a unique username"
-                      disabled={isLoading}
+                      disabled={isFormLoading}
                     />
                     {username.length >= 3 && !isCheckingUsername && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -245,7 +246,7 @@ const ProfileSetup = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Your full name"
-                    disabled={isLoading}
+                    disabled={isFormLoading}
                   />
                   <p className="text-sm text-muted-foreground">Use your real name so teammates know who you are.</p>
                 </div>
@@ -253,9 +254,9 @@ const ProfileSetup = () => {
                 <Button
                   type="submit"
                   className="w-full mt-6"
-                  disabled={isLoading || !!usernameError || username.length < 3}
+                  disabled={isFormLoading || !!usernameError || username.length < 3}
                 >
-                  {isLoading ? "Saving..." : "Save Profile"}
+                  {isFormLoading ? "Saving..." : "Save Profile"}
                 </Button>
               </form>
             </CardContent>
