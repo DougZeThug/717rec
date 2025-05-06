@@ -20,6 +20,7 @@ import {
 import TeamNameDisplay from "./TeamNameDisplay";
 import { useTeamPowerScores } from "@/hooks/useTeamPowerScores";
 import { cn } from "@/lib/utils";
+import { formatTime } from "@/components/home/utils";
 
 interface MessageItemProps {
   message: Message;
@@ -40,10 +41,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   // Get power score for the team
   const powerScore = getTeamPowerScore(message.team_id);
   
-  const formattedTime = formatDistanceToNow(new Date(message.created_at), { 
-    addSuffix: true,
-    includeSeconds: true
-  });
+  // Format the time in a more compact way using our formatTime utility
+  const timeString = formatTime(message.created_at);
 
   // Handle the delete action
   const handleDelete = async () => {
@@ -94,16 +93,16 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
       >
         <CardContent className="p-3">
           <div className="flex items-center justify-between gap-1 mb-1">
-            <div className="flex items-center gap-1 max-w-[85%]">
+            <div className="flex items-center gap-2 max-w-full">
               <TeamNameDisplay 
                 username={message.username}
                 teamName={message.team_name}
                 powerScore={powerScore}
                 compact={true}
               />
-              <span className="text-xs text-muted-foreground flex items-center whitespace-nowrap ml-1">
+              <span className="text-xs text-muted-foreground flex items-center whitespace-nowrap">
                 <Clock className="h-3 w-3 opacity-70 inline mr-0.5" />
-                {formattedTime}
+                {timeString}
               </span>
             </div>
             

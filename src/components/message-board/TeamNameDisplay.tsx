@@ -28,7 +28,7 @@ const TeamNameDisplay: React.FC<TeamNameDisplayProps> = ({
       compact ? "text-sm" : "", 
       className
     )}>
-      <span className={cn("font-semibold", compact ? "truncate max-w-[100px]" : "")}>{username}</span>
+      <span className="font-semibold">{username}</span>
       {teamName && (
         <Badge 
           variant="outline" 

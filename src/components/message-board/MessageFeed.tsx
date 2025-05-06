@@ -48,6 +48,9 @@ const MessageFeed: React.FC<MessageFeedProps> = ({ messages, isLoading, error, o
     );
   }
   
+  // Create a copy of the messages array to avoid mutating props
+  const sortedMessages = [...messages];
+  
   return (
     <Card className="mb-4 border shadow">
       <CardContent className="p-0">
@@ -56,7 +59,7 @@ const MessageFeed: React.FC<MessageFeedProps> = ({ messages, isLoading, error, o
           "lg:h-[calc(100vh-280px)]"
         )}>
           <div className="space-y-2 p-3">
-            {messages.map((message) => (
+            {sortedMessages.map((message) => (
               <MessageItem 
                 key={message.id} 
                 message={message} 
