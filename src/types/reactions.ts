@@ -22,4 +22,16 @@ export interface Message {
   team_name: string | null;
   user_id: string | null;
   team_id: string | null;
+  category?: string;
+  tags?: string[];
 }
+
+export type MessageCategory = 'General' | 'Question' | 'Announcement' | 'Event' | 'Other';
+
+export const MESSAGE_CATEGORIES: MessageCategory[] = [
+  'General', 
+  'Question', 
+  'Announcement', 
+  'Event', 
+  'Other'
+];

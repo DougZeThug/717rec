@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Message } from "@/types/reactions";
+import { Message, MessageCategory } from "@/types/reactions";
 import { toast } from "@/hooks/use-toast";
 import { MessageQueryOptions } from "./types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +11,7 @@ export const useMessageApi = () => {
   const { membership } = useTeamMembership();
 
   const fetchMessages = async (options: MessageQueryOptions = {}) => {
-    const { limit = 10, olderThan = null } = options;
+    const { limit = 10, olderThan = null, category = null, teamId = null, searchQuery = null } = options;
     
     let query = supabase
       .from('messages')
@@ -19,8 +19,21 @@ export const useMessageApi = () => {
       .order('created_at', { ascending: false })
       .limit(limit);
       
+    // Apply filters conditionally
     if (olderThan) {
       query = query.lt('created_at', olderThan);
+    }
+    
+    if (category) {
+      query = query.eq('category', category);
+    }
+    
+    if (teamId) {
+      query = query.eq('team_id', teamId);
+    }
+    
+    if (searchQuery) {
+      query = query.ilike('content', `%${searchQuery}%`);
     }
     
     const { data, error } = await query;
@@ -32,7 +45,7 @@ export const useMessageApi = () => {
     return data as Message[];
   };
 
-  const createMessage = async (content: string) => {
+  const createMessage = async (content: string, category: MessageCategory = 'General') => {
     if (!user || !profile?.username) {
       toast({
         title: "Not authenticated",
@@ -44,6 +57,7 @@ export const useMessageApi = () => {
     
     const newMessage = {
       content,
+      category,
       user_id: user.id,
       username: profile.username || 'Anonymous',
       team_id: membership?.team_id || null,

@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import MessageFeed from "@/components/message-board/MessageFeed";
 import MessageInput from "@/components/message-board/MessageInput";
 import LoginPrompt from "@/components/message-board/LoginPrompt";
+import MessageFilterBar from "@/components/message-board/MessageFilterBar";
 import PageHeader from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
 import { animations, gradients } from "@/styles/designSystem";
@@ -24,7 +25,9 @@ const MessageBoard: React.FC = () => {
     hasMore, 
     loadingMore,
     loadMoreMessages,
-    refreshMessages 
+    refreshMessages,
+    filterOptions,
+    setFilter
   } = useMessageBoard();
   const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -69,6 +72,14 @@ const MessageBoard: React.FC = () => {
               className={cn(animations.fadeInSlideDown, "mb-3")} 
               compact
             />
+            
+            {/* Filter Bar */}
+            <div className={cn("mb-3", animations.fadeInSlideDown)}>
+              <MessageFilterBar
+                filterOptions={filterOptions}
+                onFilterChange={setFilter}
+              />
+            </div>
             
             {/* Refresh Button */}
             <div className="flex justify-end mb-2">

@@ -1,5 +1,13 @@
 
-import { Message } from "@/types/reactions";
+import { Message, MessageCategory } from "@/types/reactions";
+
+export interface MessageQueryOptions {
+  limit?: number;
+  olderThan?: string | null;
+  category?: MessageCategory | null;
+  teamId?: string | null;
+  searchQuery?: string | null;
+}
 
 export interface UseMessageBoardResult {
   messages: Message[];
@@ -7,13 +15,16 @@ export interface UseMessageBoardResult {
   loadingMore: boolean;
   error: string | null;
   hasMore: boolean;
-  postMessage: (content: string) => Promise<void>;
+  filterOptions: FilterOptions;
+  postMessage: (content: string, category?: MessageCategory) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   refreshMessages: () => Promise<void>;
+  setFilter: (filter: Partial<FilterOptions>) => void;
 }
 
-export interface MessageQueryOptions {
-  limit?: number;
-  olderThan?: string | null;
+export interface FilterOptions {
+  category: MessageCategory | null;
+  teamId: string | null;
+  searchQuery: string | null;
 }

@@ -1,10 +1,10 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
-import { Message } from "@/types/reactions";
+import { Message, MessageCategory } from "@/types/reactions";
 import { useMessageApi } from "./useMessageApi";
 import { useMessageRealtime } from "./useMessageRealtime";
-import { UseMessageBoardResult } from "./types";
+import { UseMessageBoardResult, FilterOptions, MessageQueryOptions } from "./types";
 
 const PAGE_SIZE = 10;
 
@@ -14,9 +14,28 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
   
+  // Filter state
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    category: null,
+    teamId: null,
+    searchQuery: null
+  });
+
   const { fetchMessages, createMessage, deleteMessage: apiDeleteMessage } = useMessageApi();
+  
+  // Set filter function
+  const setFilter = useCallback((filter: Partial<FilterOptions>) => {
+    setFilterOptions(prev => ({
+      ...prev,
+      ...filter
+    }));
+  }, []);
+
+  // Effect to refetch messages when filters change
+  useEffect(() => {
+    fetchInitialMessages();
+  }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
   
   // Fetch initial messages
   const fetchInitialMessages = useCallback(async () => {
@@ -24,18 +43,22 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       setIsLoading(true);
       setError(null);
       
-      const data = await fetchMessages({ limit: PAGE_SIZE });
+      const data = await fetchMessages({
+        limit: PAGE_SIZE,
+        category: filterOptions.category,
+        teamId: filterOptions.teamId,
+        searchQuery: filterOptions.searchQuery
+      });
       
       setMessages(data || []);
       setHasMore(data.length === PAGE_SIZE);
-      setPage(1);
     } catch (err) {
       console.error('Error fetching messages:', err);
       setError('Failed to load messages');
     } finally {
       setIsLoading(false);
     }
-  }, [fetchMessages]);
+  }, [fetchMessages, filterOptions]);
   
   // Load more messages
   const loadMoreMessages = useCallback(async () => {
@@ -52,15 +75,19 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         return;
       }
       
-      const data = await fetchMessages({
+      const options: MessageQueryOptions = {
         limit: PAGE_SIZE,
-        olderThan: oldestMessage.created_at
-      });
+        olderThan: oldestMessage.created_at,
+        category: filterOptions.category,
+        teamId: filterOptions.teamId,
+        searchQuery: filterOptions.searchQuery
+      };
+      
+      const data = await fetchMessages(options);
       
       if (data && data.length > 0) {
         setMessages(prev => [...prev, ...data]);
         setHasMore(data.length === PAGE_SIZE);
-        setPage(prev => prev + 1);
       } else {
         setHasMore(false);
       }
@@ -75,12 +102,12 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     } finally {
       setLoadingMore(false);
     }
-  }, [messages, hasMore, loadingMore, fetchMessages]);
+  }, [messages, hasMore, loadingMore, fetchMessages, filterOptions]);
   
   // Post message function
-  const postMessage = async (content: string) => {
+  const postMessage = async (content: string, category: MessageCategory = 'General') => {
     try {
-      await createMessage(content);
+      await createMessage(content, category);
     } catch (err) {
       console.error('Error posting message:', err);
       // Error is already handled in the API function
@@ -103,7 +130,14 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   useMessageRealtime(
     // On message inserted
     (newMessage) => {
-      setMessages(curr => [newMessage, ...curr]);
+      // Only add the message if it matches current filters
+      if (
+        (!filterOptions.category || newMessage.category === filterOptions.category) &&
+        (!filterOptions.teamId || newMessage.team_id === filterOptions.teamId) &&
+        (!filterOptions.searchQuery || newMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
+      ) {
+        setMessages(curr => [newMessage, ...curr]);
+      }
     },
     // On message deleted
     (deletedMessage) => {
@@ -117,9 +151,9 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   }, [fetchInitialMessages]);
   
   // Initialize on mount
-  useState(() => {
+  useEffect(() => {
     fetchInitialMessages();
-  });
+  }, []);
   
   return {
     messages,
@@ -127,9 +161,11 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     loadingMore,
     error,
     hasMore,
+    filterOptions,
     postMessage,
     deleteMessage,
     loadMoreMessages,
-    refreshMessages
+    refreshMessages,
+    setFilter
   };
 };

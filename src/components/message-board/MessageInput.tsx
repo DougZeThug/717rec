@@ -1,109 +1,130 @@
 
-import React, { useState } from "react";
+import React, { useState, useRef, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, MessageSquare, Send } from "lucide-react";
+import { SendIcon, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { MESSAGE_CATEGORIES, MessageCategory } from "@/types/reactions";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { animations, gradients } from "@/styles/designSystem";
 
 interface MessageInputProps {
-  onSend: (message: string) => Promise<void>;
+  onSend: (content: string, category: MessageCategory) => Promise<void>;
 }
+
+const MAX_MESSAGE_LENGTH = 500;
 
 const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
   const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [rows, setRows] = useState(1);
-  const maxLength = 500;
-  
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setMessage(value);
+  const [category, setCategory] = useState<MessageCategory>("General");
+  const [isSending, setIsSending] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto resize textarea as content grows
+  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target;
+    setMessage(textarea.value);
     
-    // Adjust rows based on content
-    const lines = value.split('\n').length;
-    const newRows = Math.min(Math.max(lines, 1), 5);
-    setRows(newRows);
+    // Auto resize logic
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!message.trim()) return;
+    if (!message.trim() || isSending) return;
     
     try {
-      setIsSubmitting(true);
-      await onSend(message.trim());
+      setIsSending(true);
+      await onSend(message.trim(), category);
       setMessage("");
-      setRows(1);
+      
+      // Reset height
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
+    } catch (err) {
+      console.error("Failed to send message:", err);
     } finally {
-      setIsSubmitting(false);
+      setIsSending(false);
     }
   };
-  
-  const charCount = message.length;
-  const isAtLimit = charCount >= maxLength;
-  
+
+  const charactersRemaining = MAX_MESSAGE_LENGTH - message.length;
+  const isOverLimit = charactersRemaining < 0;
+
   return (
-    <form 
-      onSubmit={handleSubmit}
-      className={cn(
-        "flex flex-col gap-2 bg-background/90 backdrop-blur-md border-t p-4 fixed bottom-0 left-0 right-0",
-        "md:rounded-lg md:border md:shadow-md md:mx-4 lg:mx-auto lg:max-w-3xl",
-        animations.fadeIn
-      )}
-      style={{ bottom: "var(--bottombar-height, 0)" }}
-    >
-      <div className="flex items-start gap-2">
-        <div className="mt-2 hidden sm:flex">
-          <MessageSquare className="h-5 w-5 text-muted-foreground" />
-        </div>
-        
-        <div className="flex-1 relative">
+    <Card className={cn("sticky bottom-0 border shadow-sm", gradients.card.subtle, animations.fadeInSlideUp)}>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="p-3 pt-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Tag className="h-4 w-4 text-muted-foreground" />
+            <Select value={category} onValueChange={(value) => setCategory(value as MessageCategory)}>
+              <SelectTrigger className="h-8 w-[180px] text-xs">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {MESSAGE_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat} className="text-xs">
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
           <Textarea
+            ref={textareaRef}
             value={message}
-            onChange={handleChange}
-            placeholder="Type a message..."
-            disabled={isSubmitting}
-            maxLength={maxLength}
-            rows={rows}
+            onChange={handleTextareaChange}
+            placeholder="Type your message here..."
             className={cn(
-              "resize-none min-h-[40px] max-h-[120px] py-2 pr-12",
-              "bg-background border-gray-200 focus-visible:ring-primary/50",
-              isAtLimit && "border-yellow-500 focus-visible:ring-yellow-500/50"
+              "min-h-[60px] resize-none transition-all duration-200 focus-visible:ring-1",
+              isOverLimit ? "border-red-500 focus-visible:ring-red-500" : ""
             )}
           />
           
-          {/* Character counter */}
-          <div 
+          <div className="flex justify-between items-center mt-1">
+            <span 
+              className={cn(
+                "text-xs", 
+                charactersRemaining < 50 ? "text-yellow-500" : "text-muted-foreground",
+                isOverLimit ? "text-red-500" : ""
+              )}
+            >
+              {charactersRemaining} characters remaining
+            </span>
+          </div>
+        </CardContent>
+        
+        <CardFooter className="px-3 py-2 flex justify-end border-t">
+          <Button 
+            type="submit"
+            size="sm" 
+            disabled={message.trim() === "" || isOverLimit || isSending}
             className={cn(
-              "absolute right-3 bottom-2 text-xs",
-              isAtLimit ? "text-yellow-600 dark:text-yellow-400" : "text-muted-foreground"
+              "gap-1",
+              isSending ? "opacity-80" : ""
             )}
           >
-            {charCount}/{maxLength}
-          </div>
-        </div>
-        
-        <Button 
-          type="submit" 
-          size="icon"
-          disabled={!message.trim() || isSubmitting || isAtLimit}
-          className={cn(
-            "mt-1 h-8 w-8 rounded-full",
-            "bg-primary hover:bg-primary/90",
-            !message.trim() && "opacity-50"
-          )}
-          aria-label="Send message"
-        >
-          {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Send className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-    </form>
+            <SendIcon className="h-4 w-4" />
+            <span>{isSending ? "Sending..." : "Send"}</span>
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 };
 

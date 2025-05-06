@@ -1,12 +1,12 @@
 
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Message } from "@/hooks/useMessageBoard";
+import { Message } from "@/types/reactions";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLongPress } from "@/hooks/useLongPress";
 import { useMobile } from "@/hooks/use-mobile";
-import { Trash2, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, Clock, ChevronDown, ChevronUp, Tag } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,7 @@ import { formatTime } from "@/components/home/utils";
 import MessageReactions from "./MessageReactions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { animations, gradients } from "@/styles/designSystem";
+import { Badge } from "@/components/ui/badge";
 
 interface MessageItemProps {
   message: Message;
@@ -94,6 +95,24 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
     }
   }, [showOptions]);
   
+  // Determine category styling
+  const getCategoryStyle = () => {
+    if (!message.category) return "bg-gray-100 text-gray-700";
+    
+    switch(message.category) {
+      case 'Announcement':
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case 'Question': 
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case 'Event':
+        return "bg-green-100 text-green-700 border-green-200";
+      case 'Other':
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+  
   return (
     <>
       <Card 
@@ -150,6 +169,20 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
               </div>
             )}
           </div>
+          
+          {/* Message Category */}
+          {message.category && (
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "mb-2 text-xs font-medium px-2 py-0.5 flex items-center gap-0.5",
+                getCategoryStyle()
+              )}
+            >
+              <Tag className="h-3 w-3 mr-0.5" />
+              {message.category}
+            </Badge>
+          )}
           
           <div className="break-words whitespace-pre-wrap text-foreground text-sm leading-relaxed">
             {displayedContent}
