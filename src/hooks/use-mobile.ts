@@ -31,3 +31,6 @@ export function useMobile(): boolean {
   
   return isMobile;
 }
+
+// Add alias for useIsMobile to maintain compatibility with existing code
+export const useIsMobile = useMobile;
