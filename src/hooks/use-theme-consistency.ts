@@ -1,8 +1,21 @@
 
 import { useTheme } from "next-themes";
+import { useEffect } from "react";
 
 export const useThemeConsistency = () => {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+  
+  // Run on mount to prevent flicker
+  useEffect(() => {
+    // Check for theme preference at component mount
+    const storedTheme = localStorage.getItem("theme");
+    
+    if (!storedTheme) {
+      // If no theme preference stored, default to light mode and prevent flicker
+      document.documentElement.classList.remove("dark");
+      setTheme("light");
+    }
+  }, [setTheme]);
   
   // Ensure theme consistency after login
   const ensureThemeConsistency = () => {
