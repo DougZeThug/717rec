@@ -11,13 +11,15 @@ import { formatTime } from "@/components/home/utils";
 import { MessageReactions } from "./reactions";
 import { animations, gradients } from "@/styles/designSystem";
 import { MessageHeader, MessageContent, MessageControls } from "./message-item";
+import MessageEditForm from "./message-item/MessageEditForm";
 
 interface MessageItemProps {
   message: Message;
   onDelete?: (messageId: string) => Promise<void>;
+  onEdit?: (messageId: string, content: string) => Promise<void>;
 }
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) => {
   const { user } = useAuth();
   const isMobile = useMobile();
   const [showOptions, setShowOptions] = useState(false);
@@ -25,6 +27,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { getTeamPowerScore } = useTeamPowerScores();
   const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   
   // Get power score for the team
   const powerScore = getTeamPowerScore(message.team_id);
@@ -51,10 +54,28 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
     }
   };
 
-  // Configure the long press handler
+  // Handle edit action
+  const handleEdit = () => {
+    setIsEditing(true);
+    setShowOptions(false);
+  };
+
+  // Handle saving edited message
+  const handleSaveEdit = async (content: string) => {
+    if (onEdit) {
+      await onEdit(message.id, content);
+      setIsEditing(false);
+    }
+  };
+
+  // Configure the long press handler for mobile
   const longPressHandlers = useLongPress({
     onLongPress: () => {
-      setShowReactionPicker(true);
+      if (isAuthor && isMobile) {
+        setShowOptions(true);
+      } else {
+        setShowReactionPicker(true);
+      }
     }
   });
 
@@ -96,26 +117,43 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
             isAnnouncement={isAnnouncement}
           />
           
-          <MessageContent content={message.content} />
+          {isEditing ? (
+            <MessageEditForm 
+              content={message.content}
+              onSave={handleSaveEdit}
+              onCancel={() => setIsEditing(false)}
+            />
+          ) : (
+            <MessageContent 
+              content={message.content} 
+              isEdited={message.is_edited}
+              updatedAt={message.updated_at}
+            />
+          )}
           
           {/* Message Reactions */}
-          <MessageReactions 
-            messageId={message.id} 
-            showPicker={showReactionPicker} 
-            onPickerClose={() => setShowReactionPicker(false)} 
-          />
+          {!isEditing && (
+            <MessageReactions 
+              messageId={message.id} 
+              showPicker={showReactionPicker} 
+              onPickerClose={() => setShowReactionPicker(false)} 
+            />
+          )}
         </CardContent>
         
-        {/* Message Controls for deleting messages */}
-        <MessageControls 
-          isAuthor={isAuthor}
-          showOptions={showOptions}
-          isDeleting={isDeleting}
-          showDeleteConfirm={showDeleteConfirm}
-          setShowDeleteConfirm={setShowDeleteConfirm}
-          setShowOptions={setShowOptions}
-          onDelete={handleDelete}
-        />
+        {/* Message Controls for editing/deleting messages */}
+        {!isEditing && (
+          <MessageControls 
+            isAuthor={isAuthor}
+            showOptions={showOptions}
+            isDeleting={isDeleting}
+            showDeleteConfirm={showDeleteConfirm}
+            setShowDeleteConfirm={setShowDeleteConfirm}
+            setShowOptions={setShowOptions}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+          />
+        )}
       </Card>
     </>
   );

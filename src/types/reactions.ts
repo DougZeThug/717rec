@@ -24,6 +24,8 @@ export interface Message {
   team_id: string | null;
   category?: string;
   tags?: string[];
+  updated_at?: string;
+  is_edited?: boolean;
 }
 
 export type MessageCategory = 'General' | 'Question' | 'Announcement' | 'Event' | 'Other';

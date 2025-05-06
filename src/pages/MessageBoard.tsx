@@ -20,6 +20,7 @@ const MessageBoard: React.FC = () => {
     isLoading, 
     error, 
     postMessage, 
+    editMessage,
     deleteMessage, 
     hasMore, 
     loadingMore,
@@ -93,6 +94,7 @@ const MessageBoard: React.FC = () => {
               isLoading={isLoading} 
               error={error}
               onDeleteMessage={deleteMessage}
+              onEditMessage={editMessage}
               hasMore={hasMore}
               onLoadMore={loadMoreMessages}
               loadingMore={loadingMore}

@@ -347,8 +347,10 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_edited: boolean | null
           team_id: string | null
           team_name: string | null
+          updated_at: string | null
           user_id: string | null
           username: string
         }
@@ -357,8 +359,10 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_edited?: boolean | null
           team_id?: string | null
           team_name?: string | null
+          updated_at?: string | null
           user_id?: string | null
           username: string
         }
@@ -367,8 +371,10 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_edited?: boolean | null
           team_id?: string | null
           team_name?: string | null
+          updated_at?: string | null
           user_id?: string | null
           username?: string
         }

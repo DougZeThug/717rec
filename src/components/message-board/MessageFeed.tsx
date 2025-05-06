@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageItem from "./MessageItem";
@@ -13,6 +14,7 @@ interface MessageFeedProps {
   isLoading: boolean;
   error: string | null;
   onDeleteMessage: (messageId: string) => Promise<void>;
+  onEditMessage: (messageId: string, content: string) => Promise<void>;
   hasMore: boolean;
   onLoadMore: () => void;
   loadingMore: boolean;
@@ -23,6 +25,7 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
   isLoading, 
   error, 
   onDeleteMessage,
+  onEditMessage,
   hasMore,
   onLoadMore,
   loadingMore
@@ -90,6 +93,7 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
                 key={message.id} 
                 message={message} 
                 onDelete={onDeleteMessage}
+                onEdit={onEditMessage}
               />
             ))}
             

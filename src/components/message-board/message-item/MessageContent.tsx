@@ -1,53 +1,49 @@
 
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import React from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 interface MessageContentProps {
   content: string;
-  maxLength?: number;
+  isEdited?: boolean;
+  updatedAt?: string;
 }
 
 const MessageContent: React.FC<MessageContentProps> = ({ 
-  content,
-  maxLength = 280
+  content, 
+  isEdited,
+  updatedAt
 }) => {
-  const [expanded, setExpanded] = useState(false);
-  
-  // Check if message is long and needs expansion/collapsing
-  const isLongMessage = content.length > maxLength;
-  const displayedContent = isLongMessage && !expanded 
-    ? content.slice(0, maxLength) + '...'
-    : content;
-    
+  const formattedText = content.split('\n').map((line, i) => (
+    <React.Fragment key={i}>
+      {line}
+      {i < content.split('\n').length - 1 && <br />}
+    </React.Fragment>
+  ));
+
   return (
-    <>
-      <div className="break-words whitespace-pre-wrap text-foreground text-sm leading-relaxed">
-        {displayedContent}
-      </div>
+    <div className="text-sm mt-1">
+      <p className="whitespace-pre-wrap break-words">{formattedText}</p>
       
-      {/* Expand/Collapse Button for long messages */}
-      {isLongMessage && (
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded(!expanded);
-          }}
-          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors mt-1"
-        >
-          {expanded ? (
-            <>
-              <ChevronUp className="h-3 w-3" />
-              <span>Show less</span>
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-3 w-3" />
-              <span>Read more</span>
-            </>
-          )}
-        </button>
+      {isEdited && updatedAt && (
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <span className={cn(
+                "text-xs text-muted-foreground inline-block mt-1",
+                "cursor-default"
+              )}>
+                (edited)
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              Edited {formatDistanceToNow(new Date(updatedAt), { addSuffix: true })}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
-    </>
+    </div>
   );
 };
 

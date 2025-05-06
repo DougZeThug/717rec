@@ -22,7 +22,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     searchQuery: null
   });
 
-  const { fetchMessages, createMessage, deleteMessage: apiDeleteMessage } = useMessageApi();
+  const { fetchMessages, createMessage, updateMessage: apiUpdateMessage, deleteMessage: apiDeleteMessage } = useMessageApi();
   
   // Set filter function
   const setFilter = useCallback((filter: Partial<FilterOptions>) => {
@@ -114,6 +114,27 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     }
   };
 
+  // Edit message function
+  const editMessage = async (messageId: string, content: string) => {
+    try {
+      await apiUpdateMessage(messageId, content);
+      // Optimistic UI update
+      setMessages(curr => curr.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              content, 
+              updated_at: new Date().toISOString(),
+              is_edited: true 
+            } 
+          : msg
+      ));
+    } catch (err) {
+      console.error('Error updating message:', err);
+      // Error is already handled in the API function
+    }
+  };
+
   // Delete message function
   const deleteMessage = async (messageId: string) => {
     try {
@@ -137,6 +158,19 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         (!filterOptions.searchQuery || newMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
       ) {
         setMessages(curr => [newMessage, ...curr]);
+      }
+    },
+    // On message updated
+    (updatedMessage) => {
+      // Only update the message if it matches current filters
+      if (
+        (!filterOptions.category || updatedMessage.category === filterOptions.category) &&
+        (!filterOptions.teamId || updatedMessage.team_id === filterOptions.teamId) &&
+        (!filterOptions.searchQuery || updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
+      ) {
+        setMessages(curr => curr.map(msg => 
+          msg.id === updatedMessage.id ? updatedMessage : msg
+        ));
       }
     },
     // On message deleted
@@ -163,6 +197,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     hasMore,
     filterOptions,
     postMessage,
+    editMessage,
     deleteMessage,
     loadMoreMessages,
     refreshMessages,

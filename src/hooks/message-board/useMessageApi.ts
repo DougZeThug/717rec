@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Message, MessageCategory } from "@/types/reactions";
 import { toast } from "@/hooks/use-toast";
@@ -84,6 +83,49 @@ export const useMessageApi = () => {
     }
   };
 
+  const updateMessage = async (messageId: string, content: string) => {
+    if (!user) {
+      toast({
+        title: "Not authenticated",
+        description: "You must be logged in to edit messages",
+        variant: "destructive"
+      });
+      throw new Error("User not authenticated");
+    }
+
+    // Check if content is empty
+    if (!content.trim()) {
+      toast({
+        title: "Invalid content",
+        description: "Message content cannot be empty",
+        variant: "destructive"
+      });
+      throw new Error("Message content cannot be empty");
+    }
+
+    const { error } = await supabase
+      .from('messages')
+      .update({ content })
+      .eq('id', messageId)
+      .eq('user_id', user.id);
+    
+    if (error) {
+      toast({
+        title: "Error updating message",
+        description: "Your message could not be updated. Please try again.",
+        variant: "destructive"
+      });
+      throw new Error(`Failed to update message: ${error.message}`);
+    }
+
+    toast({
+      title: "Message updated",
+      description: "Your message has been updated",
+    });
+
+    return true;
+  };
+
   const deleteMessage = async (messageId: string) => {
     if (!user) {
       toast({
@@ -118,6 +160,7 @@ export const useMessageApi = () => {
   return {
     fetchMessages,
     createMessage,
+    updateMessage,
     deleteMessage
   };
 };

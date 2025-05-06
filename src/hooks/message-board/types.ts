@@ -17,6 +17,7 @@ export interface UseMessageBoardResult {
   hasMore: boolean;
   filterOptions: FilterOptions;
   postMessage: (content: string, category?: MessageCategory) => Promise<void>;
+  editMessage: (messageId: string, content: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   refreshMessages: () => Promise<void>;

@@ -5,6 +5,7 @@ import { Message } from "@/types/reactions";
 
 export const useMessageRealtime = (
   onMessageInserted: (message: Message) => void,
+  onMessageUpdated: (message: Message) => void,
   onMessageDeleted: (message: Message) => void
 ) => {
   useEffect(() => {
@@ -23,6 +24,17 @@ export const useMessageRealtime = (
       )
       .on('postgres_changes',
         {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload) => {
+          const updatedMessage = payload.new as Message;
+          onMessageUpdated(updatedMessage);
+        }
+      )
+      .on('postgres_changes',
+        {
           event: 'DELETE',
           schema: 'public',
           table: 'messages'
@@ -37,5 +49,5 @@ export const useMessageRealtime = (
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [onMessageInserted, onMessageDeleted]);
+  }, [onMessageInserted, onMessageUpdated, onMessageDeleted]);
 };
