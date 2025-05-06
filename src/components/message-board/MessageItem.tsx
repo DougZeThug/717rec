@@ -21,6 +21,7 @@ import TeamNameDisplay from "./TeamNameDisplay";
 import { useTeamPowerScores } from "@/hooks/useTeamPowerScores";
 import { cn } from "@/lib/utils";
 import { formatTime } from "@/components/home/utils";
+import MessageReactions from "./MessageReactions";
 
 interface MessageItemProps {
   message: Message;
@@ -123,6 +124,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
           <div className="break-words whitespace-pre-wrap text-foreground text-sm leading-relaxed">
             {message.content}
           </div>
+          
+          {/* Message Reactions */}
+          <MessageReactions messageId={message.id} />
         </CardContent>
       </Card>
       
