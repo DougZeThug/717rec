@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/designSystem';
+import { useTheme } from 'next-themes';
 
 const MessageBoardFAB: React.FC = () => {
   const navigate = useNavigate();
   const { navigateWithTransition } = useNavigation();
+  const { resolvedTheme } = useTheme();
 
   const handleClick = () => {
     navigateWithTransition('/message-board');
@@ -21,8 +23,11 @@ const MessageBoardFAB: React.FC = () => {
         onClick={handleClick}
         size="icon"
         className={cn(
-          "rounded-full w-12 h-12 bg-cornhole-navy text-white shadow-lg hover:bg-cornhole-navy-light",
+          "rounded-full w-12 h-12 shadow-lg",
           "transition-all duration-200 hover:scale-110 active:scale-95",
+          resolvedTheme === 'dark'
+            ? "bg-blue-600 hover:bg-blue-700 text-white"
+            : "bg-cornhole-navy hover:bg-cornhole-navy-light text-white",
           animations.fadeIn
         )}
         aria-label="Message Board"

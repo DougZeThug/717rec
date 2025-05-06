@@ -13,7 +13,7 @@ interface ThemeToggleProps {
 
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className,
-  variant = "ghost",
+  variant = "outline",
   size = "icon",
 }) => {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -52,10 +52,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       size={size}
       onClick={toggleTheme}
       className={cn(
-        "rounded-full transition-colors duration-300", 
+        "rounded-full transition-colors duration-300 border", 
         resolvedTheme === "dark" 
-          ? "text-white hover:bg-gray-700" 
-          : "text-gray-700 hover:bg-gray-200",
+          ? "text-white hover:bg-gray-700 border-gray-600" 
+          : "text-gray-700 hover:bg-gray-200 border-gray-300",
         className
       )}
       aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}

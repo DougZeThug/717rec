@@ -1,6 +1,8 @@
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Grid2x2, List } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface ViewToggleProps {
   view: "division" | "all";
@@ -8,13 +10,37 @@ interface ViewToggleProps {
 }
 
 const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  
   return (
-    <ToggleGroup type="single" value={view} onValueChange={(value) => value && onViewChange(value as "division" | "all")}>
-      <ToggleGroupItem value="division" aria-label="View by Division">
+    <ToggleGroup 
+      type="single" 
+      value={view} 
+      onValueChange={(value) => value && onViewChange(value as "division" | "all")}
+      className="bg-muted dark:bg-gray-800/60 dark:border dark:border-gray-700 p-0.5 rounded-md shadow-sm"
+    >
+      <ToggleGroupItem 
+        value="division" 
+        aria-label="View by Division"
+        className={cn(
+          view === "division" ? 
+            (isDark ? "bg-gray-700 text-white" : "bg-primary text-primary-foreground") : 
+            (isDark ? "text-gray-300" : "")
+        )}
+      >
         <Grid2x2 className="h-4 w-4 mr-2" />
         By Division
       </ToggleGroupItem>
-      <ToggleGroupItem value="all" aria-label="View All Teams">
+      <ToggleGroupItem 
+        value="all" 
+        aria-label="View All Teams"
+        className={cn(
+          view === "all" ? 
+            (isDark ? "bg-gray-700 text-white" : "bg-primary text-primary-foreground") : 
+            (isDark ? "text-gray-300" : "")
+        )}
+      >
         <List className="h-4 w-4 mr-2" />
         All Teams
       </ToggleGroupItem>

@@ -3,6 +3,7 @@ import React from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Users, List } from "lucide-react";
 import { DisplayMode } from "./TeamsPageContainer";
+import { cn } from "@/lib/utils";
 
 interface TeamsDisplayModeToggleProps {
   displayMode: DisplayMode;
@@ -14,13 +15,18 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
     type="single"
     value={displayMode}
     onValueChange={val => setDisplayMode((val as DisplayMode) || "all")}
-    className="bg-muted rounded-md p-0.5"
+    className="bg-muted dark:bg-gray-800 dark:border dark:border-gray-700 rounded-md p-0.5 shadow-sm"
     aria-label="Display Mode"
   >
     <ToggleGroupItem
       value="all"
       aria-label="Show All Teams"
-      className={`px-2 py-1 text-sm rounded-md ${displayMode === "all" ? "bg-primary text-primary-foreground" : ""}`}
+      className={cn(
+        "px-2 py-1 text-sm rounded-md",
+        displayMode === "all" 
+          ? "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white" 
+          : "dark:text-gray-300 dark:data-[state=on]:bg-gray-700"
+      )}
     >
       <List size={16} className="mr-1" />
       All
@@ -28,7 +34,12 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
     <ToggleGroupItem
       value="grouped"
       aria-label="Group By Division"
-      className={`px-2 py-1 text-sm rounded-md ${displayMode === "grouped" ? "bg-primary text-primary-foreground" : ""}`}
+      className={cn(
+        "px-2 py-1 text-sm rounded-md",
+        displayMode === "grouped" 
+          ? "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white"
+          : "dark:text-gray-300 dark:data-[state=on]:bg-gray-700"
+      )}
     >
       <Users size={16} className="mr-1" />
       Grouped
@@ -37,4 +48,3 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
 );
 
 export default TeamsDisplayModeToggle;
-

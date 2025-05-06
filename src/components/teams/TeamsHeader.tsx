@@ -5,6 +5,7 @@ import { RefreshCw, Grid2X2, List } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Toggle } from "@/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface TeamsHeaderProps {
   onRefresh?: () => void;
@@ -24,7 +25,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
   return (
     <div className="flex items-center gap-2">
       <TooltipProvider>
-        <div className="flex bg-muted rounded-md p-0.5 gap-1">
+        <div className="flex bg-muted dark:bg-gray-800 dark:border dark:border-gray-700 rounded-md p-0.5 gap-1 shadow-sm">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
@@ -32,7 +33,12 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 size="sm"
                 pressed={viewMode === 'list'}
                 onPressedChange={() => onViewModeChange('list')}
-                className="px-2 py-1 text-sm rounded-md data-[state=on]:bg-white data-[state=off]:bg-transparent dark:data-[state=on]:bg-gray-800"
+                className={cn(
+                  "px-2 py-1 text-sm rounded-md",
+                  viewMode === 'list'
+                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-gray-700 data-[state=on]:dark:text-white"
+                    : "data-[state=off]:bg-transparent dark:text-gray-300"
+                )}
                 aria-label="List view"
               >
                 <List size={16} />
@@ -49,7 +55,12 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 size="sm"
                 pressed={viewMode === 'grid'}
                 onPressedChange={() => onViewModeChange('grid')}
-                className="px-2 py-1 text-sm rounded-md data-[state=on]:bg-white data-[state=off]:bg-transparent dark:data-[state=on]:bg-gray-800"
+                className={cn(
+                  "px-2 py-1 text-sm rounded-md",
+                  viewMode === 'grid'
+                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-gray-700 data-[state=on]:dark:text-white"
+                    : "data-[state=off]:bg-transparent dark:text-gray-300"
+                )}
                 aria-label="Grid view"
               >
                 <Grid2X2 size={16} />
@@ -66,7 +77,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
               onClick={onRefresh} 
               variant="outline"
               disabled={isRefreshing}
-              className="h-8 px-2 py-1 text-sm rounded-md"
+              className="h-8 px-2 py-1 text-sm rounded-md dark:border-gray-600"
               size="sm"
             >
               <RefreshCw size={15} className={isRefreshing ? "animate-spin" : ""} />
@@ -81,4 +92,3 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
     </div>
   );
 };
-
