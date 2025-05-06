@@ -6,7 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLongPress } from "@/hooks/useLongPress";
 import { useMobile } from "@/hooks/use-mobile";
-import { Trash2, Clock } from "lucide-react";
+import { Trash2, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -22,11 +22,15 @@ import { useTeamPowerScores } from "@/hooks/useTeamPowerScores";
 import { cn } from "@/lib/utils";
 import { formatTime } from "@/components/home/utils";
 import MessageReactions from "./MessageReactions";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { animations, gradients } from "@/styles/designSystem";
 
 interface MessageItemProps {
   message: Message;
   onDelete?: (messageId: string) => Promise<void>;
 }
+
+const MAX_MESSAGE_LENGTH = 280; // Length before collapsing a message
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   const { user } = useAuth();
@@ -35,6 +39,13 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { getTeamPowerScore } = useTeamPowerScores();
+  const [expanded, setExpanded] = useState(false);
+  
+  // Check if message is long and needs expansion/collapsing
+  const isLongMessage = message.content.length > MAX_MESSAGE_LENGTH;
+  const displayedContent = isLongMessage && !expanded 
+    ? message.content.slice(0, MAX_MESSAGE_LENGTH) + '...'
+    : message.content;
   
   // Check if the current user is the author of the message
   const isAuthor = user?.id === message.user_id;
@@ -87,20 +98,38 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
     <>
       <Card 
         className={cn(
-          "mb-2 overflow-hidden relative border shadow-sm transition-shadow hover:shadow-md",
-          isAuthor ? "bg-gradient-to-br from-slate-50 to-white dark:from-gray-800/70 dark:to-gray-900/70" : ""
+          "mb-2 overflow-hidden relative border shadow-sm transition-all duration-200",
+          isAuthor ? gradients.card.highlight : gradients.card.default,
+          isAuthor ? "hover:shadow-md" : "",
+          animations.fadeIn
         )}
         {...(isAuthor ? (isMobile ? longPressHandlers : { onClick: handleDesktopClick }) : {})}
       >
         <CardContent className="p-3">
           <div className="flex items-center justify-between gap-1 mb-1">
             <div className="flex items-center gap-2 max-w-full">
-              <TeamNameDisplay 
-                username={message.username}
-                teamName={message.team_name}
-                powerScore={powerScore}
-                compact={true}
-              />
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <TeamNameDisplay 
+                        username={message.username}
+                        teamName={message.team_name}
+                        powerScore={powerScore}
+                        compact={true}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  {powerScore && (
+                    <TooltipContent side="top" className="px-3 py-1.5">
+                      <p className="text-xs font-medium">
+                        Team Power Score: {powerScore.toFixed(1)}
+                      </p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+              
               <span className="text-xs text-muted-foreground flex items-center whitespace-nowrap">
                 <Clock className="h-3 w-3 opacity-70 inline mr-0.5" />
                 {timeString}
@@ -121,9 +150,30 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
               </div>
             )}
           </div>
+          
           <div className="break-words whitespace-pre-wrap text-foreground text-sm leading-relaxed">
-            {message.content}
+            {displayedContent}
           </div>
+          
+          {/* Expand/Collapse Button for long messages */}
+          {isLongMessage && (
+            <button 
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors mt-1"
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="h-3 w-3" />
+                  <span>Show less</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3 w-3" />
+                  <span>Read more</span>
+                </>
+              )}
+            </button>
+          )}
           
           {/* Message Reactions */}
           <MessageReactions messageId={message.id} />

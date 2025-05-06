@@ -7,6 +7,7 @@ import { Loader2, MessageSquare } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
+import { animations, gradients } from "@/styles/designSystem";
 
 interface MessageFeedProps {
   messages: Message[];
@@ -41,9 +42,12 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
 
   if (isLoading && messages.length === 0) {
     return (
-      <Card className="mb-4 bg-card/50">
+      <Card className={cn("mb-4 border shadow", gradients.card.subtle)}>
         <CardContent className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className={cn("flex flex-col items-center", animations.pulse)}>
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+            <p className="text-sm text-muted-foreground">Loading messages...</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -51,10 +55,12 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
   
   if (error) {
     return (
-      <Card className="mb-4 bg-card/50 border-destructive/50">
+      <Card className={cn("mb-4 border-destructive/50", animations.fadeIn)}>
         <CardContent className="text-center py-12 text-destructive">
-          <p className="font-medium">{error}</p>
-          <p className="text-sm mt-2 text-muted-foreground">Please try refreshing the page</p>
+          <div className="space-y-2">
+            <p className="font-medium">{error}</p>
+            <p className="text-sm mt-2 text-muted-foreground">Please try refreshing the page</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -62,7 +68,7 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
   
   if (messages.length === 0) {
     return (
-      <Card className="mb-4 bg-card/50">
+      <Card className={cn("mb-4 bg-card/50", animations.fadeIn)}>
         <CardContent className="flex flex-col justify-center items-center py-12 text-muted-foreground">
           <MessageSquare className="h-12 w-12 mb-4 opacity-50" />
           <p className="font-medium">No messages yet</p>
@@ -73,7 +79,7 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
   }
   
   return (
-    <Card className="mb-4 border shadow">
+    <Card className={cn("mb-4 border shadow", gradients.card.subtle)}>
       <CardContent className="p-0">
         <ScrollArea className={cn(
           "h-[calc(100vh-250px)]",
@@ -93,11 +99,16 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
               <div 
                 ref={loadMoreRef} 
                 className="py-4 flex justify-center"
+                aria-live="polite"
+                aria-busy={loadingMore}
               >
                 {loadingMore ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Loading more messages...</span>
+                  </div>
                 ) : (
-                  <span className="text-sm text-muted-foreground">Loading more messages...</span>
+                  <span className="text-sm text-muted-foreground">Scroll for more messages</span>
                 )}
               </div>
             )}

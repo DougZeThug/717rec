@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React from "react";
 import PageLayout from "@/components/layout/PageLayout";
 import PageTransition from "@/components/transitions/PageTransition";
 import { useMessageBoard } from "@/hooks/useMessageBoard";
@@ -9,9 +9,10 @@ import MessageInput from "@/components/message-board/MessageInput";
 import LoginPrompt from "@/components/message-board/LoginPrompt";
 import PageHeader from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations, gradients } from "@/styles/designSystem";
 import { MessageSquare, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 const MessageBoard: React.FC = () => {
   const { 
@@ -30,15 +31,33 @@ const MessageBoard: React.FC = () => {
   
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await refreshMessages();
-    setIsRefreshing(false);
+    try {
+      await refreshMessages();
+      toast({
+        title: "Messages refreshed",
+        description: "Latest messages have been loaded",
+      });
+    } catch (err) {
+      toast({
+        title: "Refresh failed",
+        description: "Could not refresh messages. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
   
   return (
     <PageLayout>
-      <PageTransition>
+      <PageTransition animation="fadeInSlideDown">
         <div className="container max-w-3xl mx-auto px-4 pb-20 md:pb-24">
-          <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 pt-1">
+          <div 
+            className={cn(
+              "sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 pt-1",
+              gradients.section.subtle
+            )}
+          >
             <PageHeader 
               title={
                 <div className="flex items-center space-x-2">
@@ -58,29 +77,43 @@ const MessageBoard: React.FC = () => {
                 size="sm"
                 onClick={handleRefresh}
                 disabled={isLoading || isRefreshing}
-                className="text-xs flex items-center gap-1"
+                className="text-xs flex items-center gap-1 group"
+                aria-label="Refresh messages"
               >
-                <RefreshCw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
-                <span>Refresh</span>
+                <RefreshCw 
+                  className={cn(
+                    "h-3 w-3 transition-transform group-hover:rotate-180 duration-300", 
+                    isRefreshing && "animate-spin"
+                  )} 
+                />
+                <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
               </Button>
             </div>
           </div>
           
-          <MessageFeed 
-            messages={messages} 
-            isLoading={isLoading} 
-            error={error}
-            onDeleteMessage={deleteMessage}
-            hasMore={hasMore}
-            onLoadMore={loadMoreMessages}
-            loadingMore={loadingMore}
-          />
+          <div 
+            className={animations.fadeInSlideUp}
+            aria-live="polite"
+            aria-busy={isLoading}
+          >
+            <MessageFeed 
+              messages={messages} 
+              isLoading={isLoading} 
+              error={error}
+              onDeleteMessage={deleteMessage}
+              hasMore={hasMore}
+              onLoadMore={loadMoreMessages}
+              loadingMore={loadingMore}
+            />
+          </div>
           
-          {user ? (
-            <MessageInput onSend={postMessage} />
-          ) : (
-            <LoginPrompt />
-          )}
+          <div className={cn(animations.fadeIn, "animation-delay-300")}>
+            {user ? (
+              <MessageInput onSend={postMessage} />
+            ) : (
+              <LoginPrompt />
+            )}
+          </div>
         </div>
       </PageTransition>
     </PageLayout>
