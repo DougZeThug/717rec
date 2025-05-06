@@ -47,7 +47,7 @@ const TeamMembershipSection: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <TeamLogo
-                  imageUrl={membership.team?.logoUrl || membership.team?.imageUrl}
+                  imageUrl={membership.team?.imageUrl || membership.team?.logoUrl}
                   teamName={membership.team?.name || "Team"}
                   size="md"
                   rounded

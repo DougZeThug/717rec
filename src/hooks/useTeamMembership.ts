@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,7 +46,25 @@ export function useTeamMembership() {
         .maybeSingle();
       
       if (error) throw error;
-      setMembership(data);
+      
+      if (data) {
+        // Transform the data to match the Team interface
+        const transformedData: TeamMembershipData = {
+          ...data,
+          team: data.team ? {
+            ...data.team,
+            logoUrl: data.team.logo_url,
+            imageUrl: data.team.image_url,
+            power_score: 0, // Default values for required properties
+            sos: 0,
+            win_percentage: 0,
+            game_win_percentage: 0
+          } : undefined
+        };
+        setMembership(transformedData);
+      } else {
+        setMembership(null);
+      }
     } catch (error) {
       console.error("Error fetching team membership:", error);
     } finally {
@@ -61,7 +80,23 @@ export function useTeamMembership() {
         .order("name");
       
       if (error) throw error;
-      setAvailableTeams(data || []);
+      
+      // Transform data to match the Team interface
+      const transformedTeams: Team[] = (data || []).map(team => ({
+        id: team.id,
+        name: team.name,
+        logoUrl: team.logo_url,
+        imageUrl: team.image_url,
+        division: team.division_id,
+        wins: team.wins,
+        losses: team.losses,
+        power_score: 0, // Default values for required properties
+        sos: 0,
+        win_percentage: 0,
+        game_win_percentage: 0
+      }));
+      
+      setAvailableTeams(transformedTeams);
     } catch (error) {
       console.error("Error fetching teams:", error);
     }
