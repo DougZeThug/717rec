@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "react-router-dom";
-import { User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, Settings, LogIn } from "lucide-react";
 
 interface UserMenuProps {
   className?: string;
@@ -22,13 +22,28 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
 
   if (!user) {
     return (
-      <Button
-        variant="outline"
-        className="whitespace-nowrap"
-        onClick={() => navigate("/auth")}
-      >
-        Login / Sign Up
-      </Button>
+      <div className="flex items-center">
+        {/* On very small screens, show just the icon */}
+        <Button
+          variant="secondary"
+          size="sm"
+          className="bg-cornhole-navy text-white dark:bg-gray-700 hover:bg-cornhole-navy-light dark:hover:bg-gray-600 whitespace-nowrap hidden xs:flex"
+          onClick={() => navigate("/auth")}
+        >
+          <LogIn className="h-4 w-4 mr-2 xs:mr-2" />
+          <span className="hidden sm:inline">Login / Sign Up</span>
+        </Button>
+
+        {/* On larger screens, show text and icon */}
+        <Button
+          variant="secondary"
+          size="sm"
+          className="bg-cornhole-navy text-white dark:bg-gray-700 hover:bg-cornhole-navy-light dark:hover:bg-gray-600 whitespace-nowrap flex xs:hidden"
+          onClick={() => navigate("/auth")}
+        >
+          <LogIn className="h-4 w-4" />
+        </Button>
+      </div>
     );
   }
 
