@@ -6,6 +6,8 @@ import { Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import ThemeToggle from "@/components/ui/theme/ThemeToggle";
+import UserMenu from "@/components/auth/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {
@@ -13,6 +15,7 @@ const Navbar = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { theme, resolvedTheme } = useTheme();
+  const { user } = useAuth();
   
   const navItems = [
     { label: "Home", href: "/" },
@@ -21,6 +24,18 @@ const Navbar = () => {
     { label: "Standings", href: "/stats" },
     { label: "Playoffs", href: "/playoffs" },
     { label: "Admin", href: "/admin" }
+  ];
+  
+  // Add user-restricted nav items
+  const authNavItems = [
+    { label: "My Team", href: "/my-team" },
+    { label: "Message Board", href: "/message-board" },
+  ];
+  
+  // Only show auth nav items if user is logged in
+  const allNavItems = [
+    ...navItems,
+    ...(user ? authNavItems : [])
   ];
   
   const isActive = (path: string) => {
@@ -58,13 +73,38 @@ const Navbar = () => {
                 </Button>
               </Link>
             ))}
-            {/* Add theme toggle */}
-            <ThemeToggle className="ml-2" />
+            
+            {/* Auth-protected nav items for desktop */}
+            {user && authNavItems.map(item => (
+              <Link key={item.href} to={item.href}>
+                <Button 
+                  variant={isActive(item.href) ? "secondary" : "ghost"} 
+                  className={cn(
+                    isActive(item.href) 
+                      ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
+                      : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
+                    "min-h-11 px-4"
+                  )}
+                >
+                  {item.label}
+                </Button>
+              </Link>
+            ))}
+            
+            {/* Add user menu and theme toggle */}
+            <div className="ml-2 flex items-center gap-2">
+              <UserMenu />
+              <ThemeToggle className="ml-2" />
+            </div>
           </div>
 
           <div className="md:hidden flex items-center gap-2">
+            {/* User menu for mobile */}
+            <UserMenu />
+            
             {/* Theme toggle for mobile */}
             <ThemeToggle size="sm" />
+            
             <Button 
               variant="ghost" 
               size="icon" 
@@ -78,7 +118,7 @@ const Navbar = () => {
 
         {mobileMenuOpen && (
           <div className="md:hidden pt-2 pb-3 space-y-1">
-            {navItems.map(item => (
+            {allNavItems.map(item => (
               <Link 
                 key={item.href} 
                 to={item.href} 

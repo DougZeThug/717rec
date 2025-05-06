@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { NavigationProvider } from "@/contexts/NavigationContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import PageTransition from "./components/transitions/PageTransition";
 import Index from "./pages/Index";
 import TeamsPage from "./pages/TeamsPage";
@@ -14,6 +15,8 @@ import Playoffs from "./pages/Playoffs";
 import Timeslots from "./pages/Timeslots";
 import TeamDetails from "./pages/TeamDetails";
 import AdminDashboard from "./pages/AdminDashboard";
+import Auth from "./pages/Auth";
+import ProfileSetup from "./pages/ProfileSetup";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -46,6 +49,8 @@ const AppContent = () => {
               <Route path="/playoffs" element={<Playoffs />} />
               <Route path="/timeslots" element={<Timeslots />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/setup-profile" element={<ProfileSetup />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
@@ -64,7 +69,9 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppContent />
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
