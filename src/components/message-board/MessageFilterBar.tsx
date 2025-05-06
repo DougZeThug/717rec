@@ -42,7 +42,7 @@ const MessageFilterBar: React.FC<MessageFilterBarProps> = ({
   };
 
   const handleCategoryChange = (value: string) => {
-    onFilterChange({ category: value as MessageCategory });
+    onFilterChange({ category: value === "all" ? null : value as MessageCategory });
   };
 
   const handleTeamChange = (value: string) => {

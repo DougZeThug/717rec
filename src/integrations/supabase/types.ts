@@ -343,6 +343,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          category: string | null
           content: string
           created_at: string | null
           id: string
@@ -352,6 +353,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          category?: string | null
           content: string
           created_at?: string | null
           id?: string
@@ -361,6 +363,7 @@ export type Database = {
           username: string
         }
         Update: {
+          category?: string | null
           content?: string
           created_at?: string | null
           id?: string
