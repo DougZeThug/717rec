@@ -13,3 +13,13 @@ export interface ReactionCount {
   users: string[];
   hasReacted: boolean;
 }
+
+export interface Message {
+  id: string;
+  content: string;
+  created_at: string;
+  username: string;
+  team_name: string | null;
+  user_id: string | null;
+  team_id: string | null;
+}

@@ -1,8 +1,7 @@
-
 import React, { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageItem from "./MessageItem";
-import { Message } from "@/hooks/useMessageBoard";
+import { Message } from "@/types/reactions";
 import { Loader2, MessageSquare } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
