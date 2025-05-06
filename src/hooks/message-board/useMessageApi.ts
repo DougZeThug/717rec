@@ -13,11 +13,16 @@ export const useMessageApi = () => {
   const fetchMessages = async (options: MessageQueryOptions = {}) => {
     const { limit = 10, olderThan = null, category = null, teamId = null, searchQuery = null } = options;
     
+    // Create a query builder without method chaining initially
     let query = supabase
       .from('messages')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(limit);
+      .select('*');
+      
+    // Apply sorting
+    query = query.order('created_at', { ascending: false });
+    
+    // Apply limit
+    query = query.limit(limit);
       
     // Apply filters conditionally
     if (olderThan) {
@@ -36,6 +41,7 @@ export const useMessageApi = () => {
       query = query.ilike('content', `%${searchQuery}%`);
     }
     
+    // Execute the query
     const { data, error } = await query;
     
     if (error) {
