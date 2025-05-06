@@ -69,20 +69,32 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
     <Card className={cn("sticky bottom-0 border shadow-sm", gradients.card.subtle, animations.fadeInSlideUp)}>
       <form onSubmit={handleSubmit}>
         <CardContent className="p-3 pt-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            <Select value={category} onValueChange={(value) => setCategory(value as MessageCategory)}>
-              <SelectTrigger className="h-8 w-[180px] text-xs">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {MESSAGE_CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat} className="text-xs">
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              <Select value={category} onValueChange={(value) => setCategory(value as MessageCategory)}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MESSAGE_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="text-xs">
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <span 
+              className={cn(
+                "text-xs", 
+                charactersRemaining < 50 ? "text-yellow-500" : "text-muted-foreground",
+                isOverLimit ? "text-red-500" : ""
+              )}
+            >
+              {charactersRemaining} left
+            </span>
           </div>
           
           <Textarea
@@ -95,18 +107,6 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
               isOverLimit ? "border-red-500 focus-visible:ring-red-500" : ""
             )}
           />
-          
-          <div className="flex justify-between items-center mt-1">
-            <span 
-              className={cn(
-                "text-xs", 
-                charactersRemaining < 50 ? "text-yellow-500" : "text-muted-foreground",
-                isOverLimit ? "text-red-500" : ""
-              )}
-            >
-              {charactersRemaining} characters remaining
-            </span>
-          </div>
         </CardContent>
         
         <CardFooter className="px-3 py-2 flex justify-end border-t">
