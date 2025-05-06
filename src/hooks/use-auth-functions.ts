@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -92,11 +93,18 @@ export const useAuthFunctions = () => {
         description: "Please check your email to confirm your account",
       });
       
-      // Include weakPassword from the response if available
+      // Use type assertion to access any potential weakPassword info
+      // Since the Supabase types don't include this property directly
+      const signUpData = data as unknown as { 
+        user: typeof data.user; 
+        session: typeof data.session; 
+        weakPassword?: WeakPasswordReasons 
+      };
+      
       return {
         user: data.user,
         session: data.session,
-        weakPassword: data.weakPassword as WeakPasswordReasons | null
+        weakPassword: signUpData.weakPassword || null
       };
     } catch (error) {
       // Handle specific error cases
