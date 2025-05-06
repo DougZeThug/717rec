@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   isLoading: boolean;
+  authInitialized: boolean; // New flag to track if auth check is complete
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -33,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [authInitialized, setAuthInitialized] = useState<boolean>(false);
 
   // Fetch user profile data
   const fetchProfile = async (userId: string) => {
@@ -71,47 +73,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize auth state
   useEffect(() => {
+    console.log("Initializing auth state...");
+    let retryCount = 0;
+    const maxRetries = 2;
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        console.log("Auth state changed:", event);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (!currentSession) {
+          setProfile(null);
+        } else if (event === 'SIGNED_IN') {
+          // We use setTimeout to prevent Supabase auth deadlocks
+          setTimeout(async () => {
+            console.log("Fetching profile after sign in");
+            const profileData = await fetchProfile(currentSession.user.id);
+            setProfile(profileData);
+            checkProfileSetup(profileData);
+          }, 0);
+        }
+      }
+    );
+
     const initializeAuth = async () => {
       setIsLoading(true);
       
-      // Set up auth state listener
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, currentSession) => {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          
-          if (!currentSession) {
-            setProfile(null);
-          } else if (event === 'SIGNED_IN') {
-            // We use setTimeout to prevent Supabase auth deadlocks
-            setTimeout(async () => {
-              const profileData = await fetchProfile(currentSession.user.id);
-              setProfile(profileData);
-              checkProfileSetup(profileData);
-            }, 0);
-          }
+      try {
+        console.log(`Checking for session (attempt ${retryCount + 1}/${maxRetries + 1})`);
+        // Check for existing session
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log("Session check result:", currentSession ? "Session found" : "No session");
+        
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          const profileData = await fetchProfile(currentSession.user.id);
+          setProfile(profileData);
+          checkProfileSetup(profileData);
         }
-      );
-
-      // Check for existing session
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-
-      if (currentSession?.user) {
-        const profileData = await fetchProfile(currentSession.user.id);
-        setProfile(profileData);
-        checkProfileSetup(profileData);
+        
+        setAuthInitialized(true);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error checking session:", error);
+        
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Retrying session check in 1s (attempt ${retryCount + 1}/${maxRetries + 1})`);
+          setTimeout(initializeAuth, 1000); // Retry after 1 second
+        } else {
+          console.log("Max retries reached, marking auth as initialized");
+          setAuthInitialized(true);
+          setIsLoading(false);
+        }
       }
-      
-      setIsLoading(false);
-      
-      return () => {
-        subscription.unsubscribe();
-      };
     };
 
     initializeAuth();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   // Sign in with email and password
@@ -216,6 +242,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     profile,
     isLoading,
+    authInitialized, // Expose this new flag
     signIn,
     signUp,
     signInWithGoogle,
@@ -237,14 +264,15 @@ export const useAuth = () => {
 };
 
 export const useRequireAuth = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (!isLoading && !user) {
+    // Only redirect if auth is initialized (session check completed) and no user
+    if (authInitialized && !isLoading && !user) {
       navigate("/auth", { state: { returnTo: window.location.pathname } });
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, authInitialized, navigate]);
   
-  return { user, isLoading };
+  return { user, isLoading, authInitialized };
 };

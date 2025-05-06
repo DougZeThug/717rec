@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,25 +8,46 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import PageLayout from "@/components/layout/PageLayout";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import PageTransition from "@/components/transitions/PageTransition";
 
 const ProfileSetup = () => {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isFormLoading, setIsFormLoading] = useState<boolean>(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
+  const [retries, setRetries] = useState(0);
+  const maxRetries = 3;
   
-  // Redirect if user is not logged in
+  // Handle auth state and redirects
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
+    // If authentication is still initializing, wait
+    if (!authInitialized) {
+      console.log("Auth not initialized yet, waiting...");
+      return;
     }
-  }, [user, navigate]);
+
+    // If authentication is no longer loading but we have no user
+    if (!isLoading && !user) {
+      if (retries < maxRetries) {
+        // Try a few more times with a delay
+        console.log(`No user found, retrying in 1s (${retries + 1}/${maxRetries})`);
+        const timer = setTimeout(() => {
+          setRetries(prev => prev + 1);
+        }, 1000);
+        
+        return () => clearTimeout(timer);
+      } else {
+        // After max retries, redirect to auth
+        console.log("Max retries reached, redirecting to auth");
+        navigate("/auth", { state: { returnTo: "/setup-profile" } });
+      }
+    }
+  }, [user, isLoading, authInitialized, navigate, retries]);
   
   // Pre-fill form if profile exists
   useEffect(() => {
@@ -152,6 +172,32 @@ const ProfileSetup = () => {
       setIsLoading(false);
     }
   };
+
+  // Show loading state while waiting for auth to initialize
+  if (isLoading || (!authInitialized && retries < maxRetries)) {
+    return (
+      <PageLayout compact={true}>
+        <PageTransition>
+          <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+            <Card className="w-full max-w-md">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <p className="text-lg font-medium">Checking authentication...</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Please wait while we retrieve your account information
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </PageTransition>
+      </PageLayout>
+    );
+  }
+
+  // No user after retries
+  if (!user && retries >= maxRetries) {
+    return null; // Will redirect in useEffect
+  }
 
   return (
     <PageLayout compact={true}>

@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageLayout from "@/components/layout/PageLayout";
-import { LucideChrome } from "lucide-react"; // Replaced FcGoogle with LucideChrome
+import { LucideChrome } from "lucide-react"; // Using LucideChrome as Google icon
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import PageTransition from "@/components/transitions/PageTransition";
@@ -21,7 +20,7 @@ const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
 const Auth = () => {
-  const { signIn, signUp, signInWithGoogle, user } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | undefined;
@@ -30,16 +29,18 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("login");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   
   // If user is already logged in, redirect to return path
-  React.useEffect(() => {
-    if (user) {
+  useEffect(() => {
+    // Only redirect if authentication check has completed
+    if (authInitialized && user) {
+      console.log("User already logged in, redirecting to:", returnTo);
       navigate(returnTo);
     }
-  }, [user, navigate, returnTo]);
+  }, [user, navigate, returnTo, authInitialized]);
 
   const validateForm = () => {
     let isValid = true;
@@ -75,13 +76,13 @@ const Auth = () => {
     if (!validateForm()) return;
     
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       await signIn(email, password);
       navigate(returnTo);
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -91,7 +92,7 @@ const Auth = () => {
     if (!validateForm()) return;
     
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       await signUp(email, password);
       toast({
         title: "Verification email sent",
@@ -101,20 +102,25 @@ const Auth = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     try {
-      setIsLoading(true);
+      setIsSubmitting(true);
       await signInWithGoogle();
       // Redirect happens at the OAuth provider level
     } catch (error) {
       console.error(error);
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  // If auth is still initializing, don't show anything yet
+  if (!authInitialized && isLoading) {
+    return null; // Or a loading spinner if preferred
+  }
 
   return (
     <PageLayout compact={true}>
@@ -215,7 +221,7 @@ const Auth = () => {
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
               >
-                <LucideChrome className="mr-2 h-5 w-5" /> {/* Replaced FcGoogle with LucideChrome */}
+                <LucideChrome className="mr-2 h-5 w-5" /> {/* Using LucideChrome as Google icon */}
                 Google
               </Button>
             </CardContent>
