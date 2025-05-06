@@ -1,16 +1,14 @@
 
-import React, { useState, useRef, ChangeEvent } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { SendIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { MessageCategory } from "@/types/reactions";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { animations, gradients } from "@/styles/designSystem";
+import { Card } from "@/components/ui/card";
+import { MessageCategory } from "@/types/reactions";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import { Send } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { animations } from "@/styles/designSystem";
 import CategorySelector from "./CategorySelector";
 import CharacterCounter from "./CharacterCounter";
 
@@ -25,76 +23,96 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const [category, setCategory] = useState<MessageCategory>("General");
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Auto resize textarea as content grows
-  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const textarea = e.target;
-    setMessage(textarea.value);
-    
-    // Auto resize logic
-    textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-  };
-
+  const { user } = useAuth();
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!message.trim() || isSending) return;
+    if (!message.trim()) {
+      toast({
+        title: "Empty message",
+        description: "Please enter a message before sending",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      toast({
+        title: "Message too long",
+        description: `Please keep your message under ${MAX_MESSAGE_LENGTH} characters`,
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       setIsSending(true);
+      // Trim the message to remove extra whitespace
       await onSend(message.trim(), category);
       setMessage("");
-      
-      // Reset height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
-    } catch (err) {
-      console.error("Failed to send message:", err);
+    } catch (error) {
+      console.error("Error sending message:", error);
     } finally {
       setIsSending(false);
     }
   };
-
-  const charactersRemaining = MAX_MESSAGE_LENGTH - message.length;
-  const isOverLimit = charactersRemaining < 0;
-
+  
+  // Handle textarea auto-resize
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    
+    // Auto resize the textarea
+    const textarea = e.target;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+  
+  // Check if user is admin (for announcement capability)
+  const isAdmin = user?.app_metadata?.role === 'admin' || 
+                 user?.user_metadata?.isAdmin === true;
+  
   return (
-    <Card className={cn("sticky bottom-0 border shadow-sm", gradients.card.subtle, animations.fadeInSlideUp)}>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="p-3 pt-3">
-          <div className="flex items-center justify-between mb-2">
-            <CategorySelector value={category} onChange={setCategory} />
-            <CharacterCounter current={message.length} max={MAX_MESSAGE_LENGTH} />
-          </div>
-          
+    <Card className={cn("border p-3 shadow-sm mt-3", animations.fadeInSlideUp)}>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="relative">
           <Textarea
             ref={textareaRef}
             value={message}
             onChange={handleTextareaChange}
-            placeholder="Type your message here..."
-            className={cn(
-              "min-h-[60px] resize-none transition-all duration-200 focus-visible:ring-1",
-              isOverLimit ? "border-red-500 focus-visible:ring-red-500" : ""
-            )}
+            placeholder="Type a message..."
+            className="resize-none min-h-[80px] pr-16"
+            disabled={isSending}
           />
-        </CardContent>
+          <div className="absolute bottom-2 right-2">
+            <Button 
+              size="sm"
+              type="submit"
+              disabled={isSending || message.length > MAX_MESSAGE_LENGTH}
+              className="rounded-full h-8 w-8 p-0"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
         
-        <CardFooter className="px-3 py-2 flex justify-end border-t">
-          <Button 
-            type="submit"
-            size="sm" 
-            disabled={message.trim() === "" || isOverLimit || isSending}
-            className={cn(
-              "gap-1",
-              isSending ? "opacity-80" : ""
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            {/* Only show category selector for admins with Announcement option */}
+            {isAdmin && (
+              <CategorySelector 
+                value={category} 
+                onChange={setCategory} 
+                adminOnly={true}
+              />
             )}
-          >
-            <SendIcon className="h-4 w-4" />
-            <span>{isSending ? "Sending..." : "Send"}</span>
-          </Button>
-        </CardFooter>
+          </div>
+          
+          <CharacterCounter 
+            current={message.length} 
+            max={MAX_MESSAGE_LENGTH} 
+          />
+        </div>
       </form>
     </Card>
   );

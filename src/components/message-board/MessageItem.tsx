@@ -41,6 +41,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { getTeamPowerScore } = useTeamPowerScores();
   const [expanded, setExpanded] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
   
   // Check if message is long and needs expansion/collapsing
   const isLongMessage = message.content.length > MAX_MESSAGE_LENGTH;
@@ -73,9 +74,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   // Configure the long press handler
   const longPressHandlers = useLongPress({
     onLongPress: () => {
-      if (isAuthor && isMobile) {
-        setShowOptions(true);
-      }
+      setShowReactionPicker(true);
     }
   });
 
@@ -85,7 +84,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
       setShowOptions(!showOptions);
     }
   };
-
+  
   // Close options when clicking outside
   React.useEffect(() => {
     if (showOptions) {
@@ -95,23 +94,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
     }
   }, [showOptions]);
   
-  // Determine category styling
-  const getCategoryStyle = () => {
-    if (!message.category) return "bg-gray-100 text-gray-700";
-    
-    switch(message.category) {
-      case 'Announcement':
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case 'Question': 
-        return "bg-amber-100 text-amber-700 border-amber-200";
-      case 'Event':
-        return "bg-green-100 text-green-700 border-green-200";
-      case 'Other':
-        return "bg-purple-100 text-purple-700 border-purple-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
+  // Only show Announcement badge
+  const isAnnouncement = message.category === 'Announcement';
   
   return (
     <>
@@ -120,9 +104,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
           "mb-2 overflow-hidden relative border shadow-sm transition-all duration-200",
           isAuthor ? gradients.card.highlight : gradients.card.default,
           isAuthor ? "hover:shadow-md" : "",
+          isAnnouncement ? "border-blue-300 dark:border-blue-800" : "",
           animations.fadeIn
         )}
-        {...(isAuthor ? (isMobile ? longPressHandlers : { onClick: handleDesktopClick }) : {})}
+        {...longPressHandlers}
+        onClick={isAuthor ? handleDesktopClick : undefined}
       >
         <CardContent className="p-3">
           <div className="flex items-center justify-between gap-1 mb-1">
@@ -170,17 +156,14 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
             )}
           </div>
           
-          {/* Message Category */}
-          {message.category && (
+          {/* Message Category - Only show for Announcements */}
+          {isAnnouncement && (
             <Badge 
               variant="outline" 
-              className={cn(
-                "mb-2 text-xs font-medium px-2 py-0.5 flex items-center gap-0.5",
-                getCategoryStyle()
-              )}
+              className="mb-2 text-xs font-medium px-2 py-0.5 flex items-center gap-0.5 bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
             >
               <Tag className="h-3 w-3 mr-0.5" />
-              {message.category}
+              Announcement
             </Badge>
           )}
           
@@ -191,7 +174,10 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
           {/* Expand/Collapse Button for long messages */}
           {isLongMessage && (
             <button 
-              onClick={() => setExpanded(!expanded)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(!expanded);
+              }}
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors mt-1"
             >
               {expanded ? (
@@ -209,7 +195,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
           )}
           
           {/* Message Reactions */}
-          <MessageReactions messageId={message.id} />
+          <MessageReactions messageId={message.id} showPicker={showReactionPicker} onPickerClose={() => setShowReactionPicker(false)} />
         </CardContent>
       </Card>
       

@@ -10,9 +10,15 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface MessageReactionsProps {
   messageId: string;
+  showPicker?: boolean;
+  onPickerClose?: () => void;
 }
 
-const MessageReactions: React.FC<MessageReactionsProps> = ({ messageId }) => {
+const MessageReactions: React.FC<MessageReactionsProps> = ({ 
+  messageId,
+  showPicker = false,
+  onPickerClose 
+}) => {
   const { reactionCounts, addReaction, isLoading } = useMessageReactions(messageId);
   const { user } = useAuth();
   
@@ -27,6 +33,9 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({ messageId }) => {
     }
     
     addReaction(emoji);
+    if (onPickerClose) {
+      onPickerClose();
+    }
   };
   
   if (isLoading) {
@@ -35,6 +44,10 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({ messageId }) => {
         <div className="w-6 h-6 bg-muted/20 rounded-full animate-pulse"></div>
       </div>
     );
+  }
+  
+  if (reactionCounts.length === 0 && !showPicker) {
+    return null; // Don't show anything if there are no reactions and picker is hidden
   }
   
   return (
@@ -56,7 +69,14 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({ messageId }) => {
           onClick={() => handleAddReaction(reaction.emoji)}
         />
       ))}
-      <ReactionPicker onSelect={handleAddReaction} />
+      
+      {/* Only show picker when explicitly requested via long press */}
+      {showPicker && (
+        <ReactionPicker 
+          onSelect={handleAddReaction} 
+          onClose={onPickerClose}
+        />
+      )}
     </div>
   );
 };
