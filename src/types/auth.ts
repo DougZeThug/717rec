@@ -13,4 +13,6 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  authError: string | null;
+  clearAuthError: () => void;
 }

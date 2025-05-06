@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, Loader2, LucideChrome } from "lucide-react";
 import PageLayout from "@/components/layout/PageLayout";
-import { LucideChrome } from "lucide-react"; // Using LucideChrome as Google icon
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import PageTransition from "@/components/transitions/PageTransition";
@@ -20,7 +22,7 @@ const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
 const Auth = () => {
-  const { signIn, signUp, signInWithGoogle, user, isLoading, authInitialized } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user, isLoading, authInitialized, authError, clearAuthError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | undefined;
@@ -41,6 +43,13 @@ const Auth = () => {
       navigate(returnTo);
     }
   }, [user, navigate, returnTo, authInitialized]);
+
+  // Clear form errors when switching tabs
+  useEffect(() => {
+    setEmailError(null);
+    setPasswordError(null);
+    clearAuthError();
+  }, [activeTab, clearAuthError]);
 
   const validateForm = () => {
     let isValid = true;
@@ -81,6 +90,7 @@ const Auth = () => {
       navigate(returnTo);
     } catch (error) {
       console.error(error);
+      // Error is already handled in the signIn function
     } finally {
       setIsSubmitting(false);
     }
@@ -101,6 +111,7 @@ const Auth = () => {
       // Navigate will happen automatically on auth state change
     } catch (error) {
       console.error(error);
+      // Error is already handled in the signUp function
     } finally {
       setIsSubmitting(false);
     }
@@ -113,6 +124,8 @@ const Auth = () => {
       // Redirect happens at the OAuth provider level
     } catch (error) {
       console.error(error);
+      // Error is already handled in the signInWithGoogle function
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -134,6 +147,13 @@ const Auth = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {authError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{authError}</AlertDescription>
+                </Alert>
+              )}
+              
               <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Login</TabsTrigger>
@@ -150,7 +170,8 @@ const Auth = () => {
                         placeholder="your.email@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        disabled={isLoading}
+                        disabled={isSubmitting}
+                        className={emailError ? "border-red-500" : ""}
                       />
                       {emailError && <p className="text-sm text-destructive">{emailError}</p>}
                     </div>
@@ -162,12 +183,20 @@ const Auth = () => {
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        disabled={isLoading}
+                        disabled={isSubmitting}
+                        className={passwordError ? "border-red-500" : ""}
                       />
                       {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Logging in..." : "Login"}
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Logging in...
+                        </>
+                      ) : (
+                        "Login"
+                      )}
                     </Button>
                   </form>
                 </TabsContent>
@@ -182,7 +211,8 @@ const Auth = () => {
                         placeholder="your.email@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        disabled={isLoading}
+                        disabled={isSubmitting}
+                        className={emailError ? "border-red-500" : ""}
                       />
                       {emailError && <p className="text-sm text-destructive">{emailError}</p>}
                     </div>
@@ -194,12 +224,20 @@ const Auth = () => {
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        disabled={isLoading}
+                        disabled={isSubmitting}
+                        className={passwordError ? "border-red-500" : ""}
                       />
                       {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
                     </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Creating account..." : "Create account"}
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating account...
+                        </>
+                      ) : (
+                        "Create account"
+                      )}
                     </Button>
                   </form>
                 </TabsContent>
@@ -219,9 +257,13 @@ const Auth = () => {
                 type="button"
                 className="w-full"
                 onClick={handleGoogleSignIn}
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                <LucideChrome className="mr-2 h-5 w-5" /> {/* Using LucideChrome as Google icon */}
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <LucideChrome className="mr-2 h-5 w-5" />
+                )}
                 Google
               </Button>
             </CardContent>

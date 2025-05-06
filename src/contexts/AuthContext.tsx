@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import { AuthContextType } from "@/types/auth";
 import { useAuthProfile } from "@/hooks/use-auth-profile";
 import { useAuthFunctions } from "@/hooks/use-auth-functions";
 import { useThemeConsistency } from "@/hooks/use-theme-consistency";
+import { toast } from "@/hooks/use-toast";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -18,7 +18,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authInitialized, setAuthInitialized] = useState<boolean>(false);
   
   const { profile, setProfile, fetchProfile, refreshProfile: refreshUserProfile, checkProfileSetup } = useAuthProfile();
-  const { signIn, signUp, signInWithGoogle, signOut } = useAuthFunctions();
+  const { signIn, signUp, signInWithGoogle, signOut, authError, clearAuthError } = useAuthFunctions();
   const { ensureThemeConsistency } = useThemeConsistency();
 
   // Wrapper for refreshProfile to match the interface
@@ -48,9 +48,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // We use setTimeout to prevent Supabase auth deadlocks
           setTimeout(async () => {
             console.log("Fetching profile after sign in");
-            const profileData = await fetchProfile(currentSession.user.id);
-            setProfile(profileData);
-            checkProfileSetup(profileData);
+            try {
+              const profileData = await fetchProfile(currentSession.user.id);
+              setProfile(profileData);
+              checkProfileSetup(profileData);
+            } catch (error) {
+              console.error("Error fetching user profile:", error);
+              toast({
+                title: "Profile error",
+                description: "Failed to load your profile data",
+                variant: "destructive",
+              });
+            }
           }, 0);
         }
       }
@@ -62,7 +71,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         console.log(`Checking for session (attempt ${retryCount + 1}/${maxRetries + 1})`);
         // Check for existing session
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          throw sessionError;
+        }
+        
         console.log("Session check result:", currentSession ? "Session found" : "No session");
         
         setSession(currentSession);
@@ -72,9 +86,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Ensure theme consistency for existing session
           ensureThemeConsistency();
           
-          const profileData = await fetchProfile(currentSession.user.id);
-          setProfile(profileData);
-          checkProfileSetup(profileData);
+          try {
+            const profileData = await fetchProfile(currentSession.user.id);
+            setProfile(profileData);
+            checkProfileSetup(profileData);
+          } catch (profileError) {
+            console.error("Error fetching initial profile:", profileError);
+          }
         }
         
         setAuthInitialized(true);
@@ -112,6 +130,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithGoogle,
     signOut,
     refreshProfile,
+    authError,
+    clearAuthError,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
