@@ -50,8 +50,8 @@ const Navbar = () => {
     <nav className="bg-cornhole-navy dark:bg-gray-900 text-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-[14px] md:py-[17px]">
         <div className="flex justify-between items-center py-[4px]">
-          <div className="flex items-center space-x-2">
-            <Link to="/" className="flex items-center space-x-2">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-2 mr-6">
               <img src="/lovable-uploads/faa54084-d274-43b9-9862-5544b188b4ca.png" alt="717Rec League Logo" className="h-8 w-8 object-contain" />
               <span className="text-xl font-bebas tracking-wider">717Rec</span>
             </Link>
@@ -91,14 +91,14 @@ const Navbar = () => {
               </Link>
             ))}
             
-            {/* Add user menu and theme toggle */}
-            <div className="ml-2 flex items-center gap-2">
+            {/* Add user menu and theme toggle with proper spacing */}
+            <div className="ml-4 flex items-center gap-3">
               <UserMenu />
-              <ThemeToggle className="ml-2" />
+              <ThemeToggle className="ml-1" />
             </div>
           </div>
 
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-3">
             {/* User menu for mobile */}
             <UserMenu />
             

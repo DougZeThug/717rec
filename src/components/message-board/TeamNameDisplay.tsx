@@ -2,6 +2,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { getPowerScoreColor } from "@/utils/colors/powerScoreColors";
+import { Badge } from "@/components/ui/badge";
 
 interface TeamNameDisplayProps {
   username: string;
@@ -20,16 +21,15 @@ const TeamNameDisplay: React.FC<TeamNameDisplayProps> = ({
   const scoreColorClass = getPowerScoreColor(powerScore);
   
   return (
-    <div className={cn("font-bold flex items-center gap-1.5", className)}>
-      <span>{username}</span>
+    <div className={cn("font-medium flex flex-wrap items-center gap-1.5", className)}>
+      <span className="font-semibold">{username}</span>
       {teamName && (
-        <>
-          <span className="text-muted-foreground font-normal">(</span>
-          <span className={cn("font-medium", scoreColorClass)}>
-            {teamName}
-          </span>
-          <span className="text-muted-foreground font-normal">)</span>
-        </>
+        <Badge 
+          variant="outline" 
+          className={cn("py-0 text-xs font-medium", scoreColorClass)}
+        >
+          {teamName}
+        </Badge>
       )}
     </div>
   );

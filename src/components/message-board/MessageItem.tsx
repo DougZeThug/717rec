@@ -17,10 +17,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { getCardInteractionStyles } from "@/styles/interactionUtils";
 import { Badge } from "@/components/ui/badge";
 import TeamNameDisplay from "./TeamNameDisplay";
 import { useTeamPowerScores } from "@/hooks/useTeamPowerScores";
+import { cn } from "@/lib/utils";
 
 interface MessageItemProps {
   message: Message;
@@ -87,29 +87,35 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete }) => {
   return (
     <>
       <Card 
-        className={getCardInteractionStyles("mb-3 overflow-hidden relative border shadow-sm")}
+        className={cn(
+          "mb-3 overflow-hidden relative border shadow-sm transition-shadow hover:shadow-md",
+          isAuthor ? "bg-gradient-to-br from-slate-50 to-white dark:from-gray-800/70 dark:to-gray-900/70" : ""
+        )}
         {...(isAuthor ? (isMobile ? longPressHandlers : { onClick: handleDesktopClick }) : {})}
       >
-        <CardContent className="p-3">
-          <div className="flex justify-between items-start">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-start mb-2">
             <TeamNameDisplay 
               username={message.username}
               teamName={message.team_name}
               powerScore={powerScore}
             />
-            <Badge variant="outline" className="flex items-center gap-1 text-xs text-muted-foreground py-0 h-5">
-              <Clock className="h-3 w-3" />
+            <Badge 
+              variant="outline" 
+              className="flex items-center gap-1 text-xs text-muted-foreground px-2 py-0.5 h-6 bg-slate-50 dark:bg-gray-800"
+            >
+              <Clock className="h-3 w-3 opacity-70" />
               <span>{formattedTime}</span>
             </Badge>
           </div>
-          <div className="mt-2 break-words whitespace-pre-wrap text-foreground">
+          <div className="mt-2 break-words whitespace-pre-wrap text-foreground text-sm leading-relaxed">
             {message.content}
           </div>
           
           {/* Delete Option - Only visible when showOptions is true and user is author */}
           {isAuthor && showOptions && (
             <div 
-              className="absolute right-2 bottom-2 p-1 bg-background/90 rounded-md border shadow-sm"
+              className="absolute right-3 bottom-3 p-1.5 bg-background/90 rounded-md border shadow-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowDeleteConfirm(true);

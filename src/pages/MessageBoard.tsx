@@ -19,8 +19,8 @@ const MessageBoard: React.FC = () => {
   return (
     <PageLayout>
       <PageTransition>
-        <div className="container max-w-3xl mx-auto px-4 py-4">
-          <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-3">
+        <div className="container max-w-3xl mx-auto px-4 pb-20 md:pb-24">
+          <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-4 pt-1">
             <PageHeader 
               title={
                 <div className="flex items-center space-x-2">
