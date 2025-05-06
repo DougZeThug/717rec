@@ -11,6 +11,8 @@ import PageLayout from "@/components/layout/PageLayout";
 import { toast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import PageTransition from "@/components/transitions/PageTransition";
+import TeamMembershipSection from "@/components/teams/TeamMembershipSection";
+import { Separator } from "@/components/ui/separator";
 
 const ProfileSetup = () => {
   const { user, profile, refreshProfile, isLoading, authInitialized } = useAuth();
@@ -259,6 +261,14 @@ const ProfileSetup = () => {
                   {isFormLoading ? "Saving..." : "Save Profile"}
                 </Button>
               </form>
+
+              {/* Team Membership Section */}
+              {user && (
+                <>
+                  <Separator className="my-6" />
+                  <TeamMembershipSection />
+                </>
+              )}
             </CardContent>
             <CardFooter className="flex justify-center">
               <p className="text-sm text-muted-foreground">
