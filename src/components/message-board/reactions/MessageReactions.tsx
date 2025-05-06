@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useMessageReactions } from "@/hooks/useMessageReactions";
+import { useMessageReactions } from "@/hooks/message-board/useMessageReactions";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/designSystem";
 import { toast } from "@/hooks/use-toast";
