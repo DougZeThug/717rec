@@ -86,8 +86,11 @@ const Auth = () => {
     
     try {
       setIsSubmitting(true);
-      await signIn(email, password);
-      navigate(returnTo);
+      const response = await signIn(email, password);
+      
+      if (response.session) {
+        navigate(returnTo);
+      }
     } catch (error) {
       console.error(error);
       // Error is already handled in the signIn function
@@ -103,11 +106,14 @@ const Auth = () => {
     
     try {
       setIsSubmitting(true);
-      await signUp(email, password);
-      toast({
-        title: "Verification email sent",
-        description: "Please check your email to verify your account.",
-      });
+      const response = await signUp(email, password);
+      
+      if (response.session) {
+        toast({
+          title: "Account created",
+          description: "Please check your email to verify your account.",
+        });
+      }
       // Navigate will happen automatically on auth state change
     } catch (error) {
       console.error(error);

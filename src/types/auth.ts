@@ -1,6 +1,13 @@
 
-import { Session, User } from "@supabase/supabase-js";
+import { Session, User, WeakPasswordReason } from "@supabase/supabase-js";
 import { UserProfile } from "./user";
+
+// Define the response type for authentication functions
+export interface AuthResponse {
+  user: User | null;
+  session: Session | null;
+  weakPassword?: WeakPasswordReason | null;
+}
 
 export interface AuthContextType {
   session: Session | null;
@@ -8,8 +15,8 @@ export interface AuthContextType {
   profile: UserProfile | null;
   isLoading: boolean;
   authInitialized: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
+  signUp: (email: string, password: string) => Promise<AuthResponse>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;

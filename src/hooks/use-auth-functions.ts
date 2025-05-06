@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useThemeConsistency } from "./use-theme-consistency";
+import { AuthResponse } from "@/types/auth";
 
 export const useAuthFunctions = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export const useAuthFunctions = () => {
   };
 
   // Sign in with email and password
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       clearAuthError();
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
@@ -63,12 +64,14 @@ export const useAuthFunctions = () => {
       } else {
         handleAuthError(new Error("An unexpected error occurred"), "Login");
       }
-      throw error;
+      
+      // Return null values on error
+      return { user: null, session: null };
     }
   };
 
   // Sign up with email and password
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       clearAuthError();
       const { error, data } = await supabase.auth.signUp({ email, password });
@@ -97,7 +100,9 @@ export const useAuthFunctions = () => {
       } else {
         handleAuthError(new Error("An unexpected error occurred"), "Sign up");
       }
-      throw error;
+      
+      // Return null values on error
+      return { user: null, session: null };
     }
   };
 
