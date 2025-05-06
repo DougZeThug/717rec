@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { typography } from "@/styles/designSystem";
 
 interface PageHeaderProps {
-  title: string;
+  title: ReactNode;
   description?: string;
   children?: ReactNode;
   className?: string;
@@ -52,3 +52,4 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 };
 
 export default PageHeader;
+
