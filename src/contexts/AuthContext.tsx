@@ -4,6 +4,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { useTheme } from "next-themes";
 
 interface AuthContextType {
   session: Session | null;
@@ -35,6 +36,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [authInitialized, setAuthInitialized] = useState<boolean>(false);
+  const { resolvedTheme, setTheme } = useTheme();
+  
+  // Ensure theme consistency after login
+  const ensureThemeConsistency = () => {
+    // Check if user has explicitly set a theme preference
+    const storedTheme = localStorage.getItem("theme");
+    
+    // If no explicit theme preference is stored, ensure we default to light mode
+    if (!storedTheme) {
+      // Remove dark class if it was applied automatically
+      document.documentElement.classList.remove("dark");
+      // Set theme to light explicitly
+      setTheme("light");
+      console.log("No theme preference found, defaulting to light mode");
+    } else {
+      console.log(`Using stored theme preference: ${storedTheme}`);
+      // Apply the stored theme preference
+      setTheme(storedTheme);
+    }
+  };
 
   // Fetch user profile data
   const fetchProfile = async (userId: string) => {
@@ -87,6 +108,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!currentSession) {
           setProfile(null);
         } else if (event === 'SIGNED_IN') {
+          // Ensure theme consistency after login
+          ensureThemeConsistency();
+          
           // We use setTimeout to prevent Supabase auth deadlocks
           setTimeout(async () => {
             console.log("Fetching profile after sign in");
@@ -111,6 +135,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
+          // Ensure theme consistency for existing session
+          ensureThemeConsistency();
+          
           const profileData = await fetchProfile(currentSession.user.id);
           setProfile(profileData);
           checkProfileSetup(profileData);

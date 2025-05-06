@@ -22,11 +22,23 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   // Once mounted, we can safely show the toggle
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    // On component mount, check if we need to ensure light mode is the default
+    if (typeof window !== 'undefined') {
+      // If no theme is set explicitly in localStorage, use light mode
+      if (!localStorage.getItem('theme')) {
+        document.documentElement.classList.remove('dark');
+        setTheme('light');
+      }
+    }
+  }, [setTheme]);
 
   // Handle toggle
   const toggleTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    const newTheme = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    // Store the explicit user preference
+    localStorage.setItem('theme', newTheme);
   };
 
   // Don't render anything until mounted to prevent hydration mismatch
