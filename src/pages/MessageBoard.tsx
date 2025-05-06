@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef } from "react";
 import PageLayout from "@/components/layout/PageLayout";
 import PageTransition from "@/components/transitions/PageTransition";
 import { useMessageBoard } from "@/hooks/useMessageBoard";
@@ -10,11 +10,29 @@ import LoginPrompt from "@/components/message-board/LoginPrompt";
 import PageHeader from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/designSystem";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const MessageBoard: React.FC = () => {
-  const { messages, isLoading, error, postMessage, deleteMessage } = useMessageBoard();
+  const { 
+    messages, 
+    isLoading, 
+    error, 
+    postMessage, 
+    deleteMessage, 
+    hasMore, 
+    loadingMore,
+    loadMoreMessages,
+    refreshMessages 
+  } = useMessageBoard();
   const { user } = useAuth();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshMessages();
+    setIsRefreshing(false);
+  };
   
   return (
     <PageLayout>
@@ -32,6 +50,20 @@ const MessageBoard: React.FC = () => {
               className={cn(animations.fadeInSlideDown, "mb-3")} 
               compact
             />
+            
+            {/* Refresh Button */}
+            <div className="flex justify-end mb-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isLoading || isRefreshing}
+                className="text-xs flex items-center gap-1"
+              >
+                <RefreshCw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+                <span>Refresh</span>
+              </Button>
+            </div>
           </div>
           
           <MessageFeed 
@@ -39,6 +71,9 @@ const MessageBoard: React.FC = () => {
             isLoading={isLoading} 
             error={error}
             onDeleteMessage={deleteMessage}
+            hasMore={hasMore}
+            onLoadMore={loadMoreMessages}
+            loadingMore={loadingMore}
           />
           
           {user ? (

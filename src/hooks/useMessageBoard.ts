@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,40 +15,94 @@ export interface Message {
   team_id: string | null;
 }
 
+const PAGE_SIZE = 10;
+
 export const useMessageBoard = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const { user, profile } = useAuth();
   const { membership } = useTeamMembership();
   
   // Fetch initial messages
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        setIsLoading(true);
-        
-        const { data, error } = await supabase
-          .from('messages')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50);
-        
-        if (error) {
-          throw error;
-        }
-        
-        setMessages(data || []);
-      } catch (err) {
-        console.error('Error fetching messages:', err);
-        setError('Failed to load messages');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchMessages();
+    fetchInitialMessages();
   }, []);
+  
+  const fetchInitialMessages = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setMessages(data || []);
+      setHasMore(data?.length === PAGE_SIZE);
+      setPage(1);
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      setError('Failed to load messages');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Function to load more messages
+  const loadMoreMessages = useCallback(async () => {
+    if (!hasMore || loadingMore) return;
+    
+    try {
+      setLoadingMore(true);
+      
+      // Get the oldest message date in the current list
+      const oldestMessage = messages[messages.length - 1];
+      
+      if (!oldestMessage) {
+        setHasMore(false);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .lt('created_at', oldestMessage.created_at) // Get messages older than the oldest one we have
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE);
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        setMessages(prev => [...prev, ...data]);
+        setHasMore(data.length === PAGE_SIZE);
+        setPage(prev => prev + 1);
+      } else {
+        setHasMore(false);
+      }
+      
+    } catch (err) {
+      console.error('Error loading more messages:', err);
+      toast({
+        title: "Error loading messages",
+        description: "Could not load additional messages. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [messages, hasMore, loadingMore]);
   
   // Set up realtime subscription
   useEffect(() => {
@@ -161,11 +215,20 @@ export const useMessageBoard = () => {
     }
   };
   
+  // Function to refresh messages
+  const refreshMessages = async () => {
+    await fetchInitialMessages();
+  };
+  
   return {
     messages,
     isLoading,
+    loadingMore,
     error,
+    hasMore,
     postMessage,
-    deleteMessage
+    deleteMessage,
+    loadMoreMessages,
+    refreshMessages
   };
 };
