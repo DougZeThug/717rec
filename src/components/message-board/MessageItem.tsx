@@ -8,7 +8,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { useTeamPowerScores } from "@/hooks/useTeamPowerScores";
 import { cn } from "@/lib/utils";
 import { formatTime } from "@/components/home/utils";
-import MessageReactions from "./MessageReactions";
+import { MessageReactions } from "./reactions";
 import { animations, gradients } from "@/styles/designSystem";
 import { MessageHeader, MessageContent, MessageControls } from "./message-item";
 
