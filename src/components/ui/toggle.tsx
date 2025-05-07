@@ -10,9 +10,9 @@ const toggleVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-transparent dark:hover:bg-gray-800",
+        default: "bg-transparent dark:hover:bg-gray-800 dark:text-gray-200",
         outline:
-          "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground dark:border-gray-600 dark:hover:bg-gray-800 dark:data-[state=on]:bg-gray-700",
+          "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground dark:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-white dark:data-[state=on]:bg-blue-600 dark:data-[state=on]:text-white dark:data-[state=on]:border-blue-500",
       },
       size: {
         default: "h-10 px-3",
@@ -36,7 +36,7 @@ const Toggle = React.forwardRef<
     ref={ref}
     className={cn(
       toggleVariants({ variant, size, className }),
-      "active:scale-[0.98] hover:shadow-md active:shadow-sm transition-all duration-150"
+      "active:scale-[0.98] hover:shadow-md active:shadow-sm transition-all duration-150 dark:text-gray-200"
     )}
     {...props}
   />

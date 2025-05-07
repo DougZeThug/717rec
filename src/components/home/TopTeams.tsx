@@ -20,7 +20,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
         <Button 
           asChild 
           variant="default"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 font-semibold dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:border dark:border-indigo-400/50"
         >
           <Link to="/teams">View All</Link>
         </Button>

@@ -28,8 +28,8 @@ const TeamsSortToggle: React.FC<TeamsSortToggleProps> = ({ sortMode, setSortMode
           onClick={() => setSortMode(key as SortMode)}
           className={`flex items-center px-2 py-1 rounded-md transition-colors gap-1 ${
             sortMode === key 
-              ? "bg-primary text-primary-foreground" 
-              : "hover:bg-muted-foreground/10 dark:text-gray-300 dark:hover:text-white"
+              ? "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500" 
+              : "hover:bg-muted-foreground/10 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
           }`}
           style={{ minWidth: 74 }}
         >

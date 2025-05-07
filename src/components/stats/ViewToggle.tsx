@@ -25,8 +25,8 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         aria-label="View by Division"
         className={cn(
           view === "division" ? 
-            (isDark ? "bg-gray-700 text-white" : "bg-primary text-primary-foreground") : 
-            (isDark ? "text-gray-300" : "")
+            (isDark ? "bg-blue-600 text-white border border-blue-500" : "bg-primary text-primary-foreground") : 
+            (isDark ? "text-gray-300 hover:text-white hover:bg-gray-700/70" : "")
         )}
       >
         <Grid2x2 className="h-4 w-4 mr-2" />
@@ -37,8 +37,8 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         aria-label="View All Teams"
         className={cn(
           view === "all" ? 
-            (isDark ? "bg-gray-700 text-white" : "bg-primary text-primary-foreground") : 
-            (isDark ? "text-gray-300" : "")
+            (isDark ? "bg-blue-600 text-white border border-blue-500" : "bg-primary text-primary-foreground") : 
+            (isDark ? "text-gray-300 hover:text-white hover:bg-gray-700/70" : "")
         )}
       >
         <List className="h-4 w-4 mr-2" />

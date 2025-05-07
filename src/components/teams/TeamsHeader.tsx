@@ -36,8 +36,8 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 className={cn(
                   "px-2 py-1 text-sm rounded-md",
                   viewMode === 'list'
-                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-gray-700 data-[state=on]:dark:text-white"
-                    : "data-[state=off]:bg-transparent dark:text-gray-300"
+                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-blue-600 data-[state=on]:dark:text-white data-[state=on]:dark:border-blue-500"
+                    : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="List view"
               >
@@ -58,8 +58,8 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 className={cn(
                   "px-2 py-1 text-sm rounded-md",
                   viewMode === 'grid'
-                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-gray-700 data-[state=on]:dark:text-white"
-                    : "data-[state=off]:bg-transparent dark:text-gray-300"
+                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-blue-600 data-[state=on]:dark:text-white data-[state=on]:dark:border-blue-500"
+                    : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="Grid view"
               >
@@ -77,7 +77,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
               onClick={onRefresh} 
               variant="outline"
               disabled={isRefreshing}
-              className="h-8 px-2 py-1 text-sm rounded-md dark:border-gray-600"
+              className="h-8 px-2 py-1 text-sm rounded-md dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               size="sm"
             >
               <RefreshCw size={15} className={isRefreshing ? "animate-spin" : ""} />
