@@ -2,7 +2,7 @@
 import React, { ReactNode } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { typography } from "@/styles/designSystem";
+import { typography } from "@/styles/design-system";
 
 interface PageHeaderProps {
   title: ReactNode;
@@ -52,4 +52,3 @@ const PageHeader: React.FC<PageHeaderProps> = ({
 };
 
 export default PageHeader;
-

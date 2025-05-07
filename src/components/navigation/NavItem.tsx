@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { interactive } from "@/styles/designSystem";
+import { interactive } from "@/styles/design-system";
 
 export interface NavItemProps {
   to: string;

@@ -3,7 +3,7 @@ import React, { ReactNode } from "react";
 import { useTheme } from "next-themes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 
 interface PageLayoutProps {
   children: ReactNode;

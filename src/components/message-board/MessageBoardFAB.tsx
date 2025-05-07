@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { cn } from '@/lib/utils';
-import { animations } from '@/styles/designSystem';
+import { animations } from '@/styles/design-system';
 import { useTheme } from 'next-themes';
 
 const MessageBoardFAB: React.FC = () => {
