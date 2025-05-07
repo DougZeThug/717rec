@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import ThemeToggle from "@/components/ui/theme/ThemeToggle";
 import UserMenu from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {
@@ -16,23 +17,21 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const { theme, resolvedTheme } = useTheme();
   const { user } = useAuth();
+  const { isAdminAccessGranted } = useAdminAccess();
   
+  // Base nav items that everyone can see
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Teams", href: "/teams" },
     { label: "Schedule", href: "/schedule" },
     { label: "Standings", href: "/stats" },
     { label: "Playoffs", href: "/playoffs" },
-    { label: "Admin", href: "/admin" }
   ];
   
-  // Empty auth nav items as we've moved them to the UserMenu and FAB
-  const authNavItems = [];
-  
-  // Only show auth nav items if user is logged in
+  // Add Admin link only for users with admin access
   const allNavItems = [
     ...navItems,
-    ...(user ? authNavItems : [])
+    ...(isAdminAccessGranted ? [{ label: "Admin", href: "/admin" }] : [])
   ];
   
   const isActive = (path: string) => {
@@ -55,24 +54,7 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-1">
-            {navItems.map(item => (
-              <Link key={item.href} to={item.href}>
-                <Button 
-                  variant={isActive(item.href) ? "secondary" : "ghost"} 
-                  className={cn(
-                    isActive(item.href) 
-                      ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
-                      : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
-                    "min-h-11 px-4"
-                  )}
-                >
-                  {item.label}
-                </Button>
-              </Link>
-            ))}
-            
-            {/* Auth-protected nav items for desktop */}
-            {user && authNavItems.map(item => (
+            {allNavItems.map(item => (
               <Link key={item.href} to={item.href}>
                 <Button 
                   variant={isActive(item.href) ? "secondary" : "ghost"} 

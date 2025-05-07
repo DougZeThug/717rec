@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import AppNavigation from "./components/navigation/AppNavigation";
+import ProtectedAdminRoute from "./components/auth/ProtectedAdminRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,7 +51,11 @@ const AppContent = () => {
               <Route path="/stats" element={<Stats />} />
               <Route path="/playoffs" element={<Playoffs />} />
               <Route path="/timeslots" element={<Timeslots />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin" element={
+                <ProtectedAdminRoute>
+                  <AdminDashboard />
+                </ProtectedAdminRoute>
+              } />
               <Route path="/auth" element={<Auth />} />
               <Route path="/setup-profile" element={<ProfileSetup />} />
               <Route path="/message-board" element={<MessageBoard />} />

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -7,33 +7,32 @@ import {
   DialogTitle, 
   DialogDescription 
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { LockIcon } from "lucide-react";
 
 interface AdminAccessModalProps {
   isOpen: boolean;
-  onAccessGranted: (code: string) => boolean;
+  onAccessGranted?: () => void;
+  onRequestAccess?: () => void;
 }
 
 export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({ 
   isOpen, 
-  onAccessGranted 
+  onAccessGranted,
+  onRequestAccess
 }) => {
-  const [accessCode, setAccessCode] = useState('');
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const isGranted = onAccessGranted(accessCode);
-    
-    if (!isGranted) {
-      toast({
-        title: "Access Denied",
-        description: "Incorrect admin access code",
-        variant: "destructive"
-      });
-      setAccessCode('');
+  const handleBackToHome = () => {
+    navigate('/');
+  };
+
+  const handleRequestAccess = () => {
+    if (onRequestAccess) {
+      onRequestAccess();
     }
   };
 
@@ -41,23 +40,49 @@ export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Admin Access</DialogTitle>
+          <DialogTitle className="flex items-center">
+            <LockIcon className="h-5 w-5 mr-2" />
+            Access Restricted
+          </DialogTitle>
           <DialogDescription>
-            Please enter the admin access code to continue
+            {!user ? (
+              "You must be logged in to access this area."
+            ) : (
+              "You don't have permission to access the admin panel."
+            )}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input 
-            type="password"
-            value={accessCode}
-            onChange={(e) => setAccessCode(e.target.value)}
-            placeholder="Enter access code"
-            required
-          />
-          <Button type="submit" className="w-full">
-            Access Admin Panel
-          </Button>
-        </form>
+        
+        <div className="space-y-4">
+          {!user ? (
+            <Button 
+              type="button" 
+              className="w-full"
+              onClick={() => navigate('/auth', { state: { returnTo: '/admin' } })}
+            >
+              Login to Continue
+            </Button>
+          ) : (
+            <>
+              <Button 
+                type="button" 
+                variant="secondary"
+                className="w-full"
+                onClick={handleRequestAccess}
+              >
+                Request Access
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline"
+                className="w-full"
+                onClick={handleBackToHome}
+              >
+                Back to Home
+              </Button>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
