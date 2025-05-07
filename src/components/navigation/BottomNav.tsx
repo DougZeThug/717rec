@@ -36,8 +36,8 @@ export const BottomNav = () => {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 py-1 shadow-[0_-2px_16px_rgba(30,58,95,0.04)] dark:shadow-[0_-2px_16px_rgba(0,0,0,0.2)]">
-      <div className="flex justify-around items-center max-w-md mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 shadow-[0_-4px_16px_rgba(30,58,95,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)] safe-area-bottom">
+      <div className="flex justify-around items-center max-w-md mx-auto py-2 pb-safe">
         {navItems.map((item) => (
           <NavItem
             key={item.path}
@@ -45,7 +45,7 @@ export const BottomNav = () => {
             label={item.label}
             icon={item.icon}
             className={cn(
-              "flex-1 min-h-[58px] px-3 py-2 text-xs touch-manipulation",
+              "flex-1 min-h-[60px] px-3 py-2 text-xs touch-manipulation",
               "flex flex-col items-center justify-center"
             )}
           />

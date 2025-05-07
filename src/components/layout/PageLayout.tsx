@@ -29,7 +29,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       className={cn(
         "min-h-screen",
         withBackground ? "cornhole-bg" : "",
-        isMobile ? (compact ? "py-3 pb-20" : "py-4 pb-24") : "py-8 pb-8", 
+        isMobile ? (compact ? "py-3 pb-24 safe-area-bottom" : "py-4 pb-28 safe-area-bottom") : "py-8 pb-8", 
         "px-4 md:px-8",
         animations.fadeIn,
         className
