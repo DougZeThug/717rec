@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageSquare } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import ThemeToggle from "@/components/ui/theme/ThemeToggle";
@@ -66,6 +66,11 @@ const Navbar = () => {
     
     if (mobileMenuOpen) setMobileMenuOpen(false);
   };
+
+  // Message board navigation handler
+  const handleMessageBoardClick = () => {
+    navigateWithTransition('/message-board');
+  };
   
   return (
     <nav className="bg-cornhole-navy dark:bg-gray-900 text-white shadow-md sticky top-0 z-50">
@@ -112,9 +117,21 @@ const Navbar = () => {
               </div>
             ))}
             
-            {/* Add user menu and theme toggle with proper spacing */}
+            {/* Add user menu, message board icon and theme toggle with proper spacing */}
             <div className="ml-4 flex items-center gap-3">
               <UserMenu />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleMessageBoardClick}
+                className={cn(
+                  "rounded-full text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-700/80",
+                  isActive("/message-board") && "bg-cornhole-navy-light dark:bg-gray-700"
+                )}
+                aria-label="Message Board"
+              >
+                <MessageSquare className="h-5 w-5" />
+              </Button>
               <ThemeToggle className="ml-1" />
             </div>
           </div>
@@ -122,6 +139,20 @@ const Navbar = () => {
           <div className="md:hidden flex items-center gap-3">
             {/* User menu for mobile */}
             <UserMenu />
+            
+            {/* Message Board button for mobile */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleMessageBoardClick}
+              className={cn(
+                "rounded-full text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-700/80",
+                isActive("/message-board") && "bg-cornhole-navy-light dark:bg-gray-700"
+              )}
+              aria-label="Message Board"
+            >
+              <MessageSquare className="h-5 w-5" />
+            </Button>
             
             {/* Theme toggle for mobile */}
             <ThemeToggle size="sm" />
