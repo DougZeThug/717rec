@@ -38,7 +38,7 @@ const HeroSection = () => {
           <Button
             asChild
             size="lg"
-            className="bg-green-700 hover:bg-green-800 text-white flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow-md w-full xs:w-auto dark:bg-green-600 dark:hover:bg-green-700 dark:text-white dark:border dark:border-green-500/50"
+            className="bg-green-700 hover:bg-green-800 text-white flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow-md w-full xs:w-auto dark:bg-green-700 dark:hover:bg-green-800 dark:text-white dark:border dark:border-green-600/70 dark:shadow-lg"
             style={{ minWidth: 160 }}
           >
             <Link to="/teams" className="flex items-center gap-2">
@@ -50,7 +50,7 @@ const HeroSection = () => {
             asChild
             size="lg"
             variant="outline"
-            className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow-md w-full xs:w-auto dark:bg-gray-700 dark:text-white dark:border-gray-500 dark:hover:bg-gray-600"
+            className="bg-white text-gray-800 border border-gray-300 hover:bg-gray-100 flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow-md w-full xs:w-auto dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700"
             style={{ minWidth: 170 }}
           >
             <Link to="/schedule" className="flex items-center gap-2">

@@ -37,7 +37,10 @@ const FilterBar: React.FC<FilterBarProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-start min-h-[44px] transition-all duration-200">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start min-h-[44px] transition-all duration-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-gray-200"
+            >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {filters.date ? format(filters.date, "MMM d, yyyy") : "Filter by Date"}
             </Button>
@@ -57,7 +60,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           value={filters.bracketId || undefined} 
           onValueChange={(value) => onBracketChange(value || undefined)}
         >
-          <SelectTrigger className="w-full min-h-[44px]">
+          <SelectTrigger className="w-full min-h-[44px] dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-gray-200">
             <SelectValue placeholder="Filter by Bracket" />
           </SelectTrigger>
           <SelectContent>
@@ -81,7 +84,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             variant="ghost" 
             onClick={onClearFilters}
             size="sm"
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200 dark:text-gray-400 dark:hover:text-gray-200"
           >
             <X className="h-3 w-3" />
             Clear All Filters

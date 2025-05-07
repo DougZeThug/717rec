@@ -25,8 +25,8 @@ export const TeamsFilters: React.FC<TeamsFiltersProps> = ({
         <Select value={selectedDivision} onValueChange={onDivisionChange}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 
-                hover:border-gray-400 dark:hover:border-gray-600 transition-colors h-9 shadow-sm">
+              <SelectTrigger className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600
+                hover:border-gray-400 dark:hover:border-gray-500 dark:text-gray-200 transition-colors h-9 shadow-sm">
                 <div className="flex items-center gap-2">
                   <Filter size={16} className="shrink-0" />
                   {!isMobile && <SelectValue placeholder="Filter by Division" />}

@@ -18,7 +18,7 @@ interface TeamsSortToggleProps {
 const TeamsSortToggle: React.FC<TeamsSortToggleProps> = ({ sortMode, setSortMode }) => (
   <div className="flex items-center gap-2 mb-3">
     <span className="text-sm font-semibold text-muted-foreground mr-1">Sort by:</span>
-    <div className="inline-flex rounded-lg bg-muted p-0.5 shadow-sm dark:bg-gray-800 dark:border dark:border-gray-700">
+    <div className="inline-flex rounded-lg bg-muted p-0.5 shadow-sm dark:bg-gray-800/80 dark:border dark:border-gray-700">
       {SORT_MODES.map(({ key, label, icon: Icon }) => (
         <Button
           variant={sortMode === key ? "default" : "ghost"}
@@ -26,10 +26,10 @@ const TeamsSortToggle: React.FC<TeamsSortToggleProps> = ({ sortMode, setSortMode
           aria-pressed={sortMode === key}
           key={key}
           onClick={() => setSortMode(key as SortMode)}
-          className={`flex items-center px-2 py-1 rounded-md transition-colors gap-1 ${
+          className={`flex items-center px-2 py-1 rounded-md transition-all duration-200 gap-1 ${
             sortMode === key 
-              ? "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500" 
-              : "hover:bg-muted-foreground/10 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
+              ? "bg-primary text-primary-foreground dark:bg-blue-700 dark:text-white dark:border dark:border-blue-600" 
+              : "hover:bg-muted-foreground/10 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
           }`}
           style={{ minWidth: 74 }}
         >

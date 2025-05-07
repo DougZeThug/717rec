@@ -77,7 +77,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                           ? "bg-blue-600 text-white hover:bg-blue-700"
                           : "bg-white hover:bg-gray-50")
                       : (sortOptions.field === field.id
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          ? "bg-blue-700 text-white hover:bg-blue-800 border border-blue-600"
                           : "bg-gray-800 text-gray-100 hover:bg-gray-700 border-gray-700")
                   )}
                 >
@@ -96,6 +96,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               id="detailed-view"
               checked={detailedView}
               onCheckedChange={toggleViewMode}
+              className="dark:data-[state=checked]:bg-blue-600"
             />
             <Label
               htmlFor="detailed-view"

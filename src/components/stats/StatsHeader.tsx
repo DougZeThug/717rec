@@ -18,13 +18,13 @@ interface StatsHeaderProps {
 const StatsHeader = ({ onDivisionChange, divisions }: StatsHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-      <h1 className="text-3xl font-bold text-cornhole-navy">Team Statistics</h1>
+      <h1 className="text-3xl font-bold text-cornhole-navy dark:text-white">Team Statistics</h1>
       
       <div className="flex items-center gap-2">
         <Filter size={18} />
         <div className="w-[180px]">
           <Select onValueChange={onDivisionChange} defaultValue="all">
-            <SelectTrigger>
+            <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:border-gray-600">
               <SelectValue placeholder="All Divisions" />
             </SelectTrigger>
             <SelectContent>
