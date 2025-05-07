@@ -31,7 +31,7 @@ export const NavItem: React.FC<NavItemProps> = ({
       className={cn(
         "flex items-center justify-center transition-colors duration-200 touch-manipulation",
         "relative text-center",
-        "min-h-[48px] min-w-[48px] px-3 py-2", // Improved touch target
+        "min-h-[44px] min-w-[44px] px-3 py-1.5", // Reduced height
         isActive
           ? "text-cornhole-navy dark:text-white font-medium"
           : interactive.link.subtle,
@@ -40,7 +40,7 @@ export const NavItem: React.FC<NavItemProps> = ({
       aria-current={isActive ? "page" : undefined}
     >
       <div className="flex flex-col items-center">
-        {icon && <div className="mb-1">{icon}</div>}
+        {icon && <div className="mb-0.5">{icon}</div>}
         {label && <span className="text-xs">{label}</span>}
       </div>
       {isActive && (
