@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
@@ -6,7 +5,7 @@ import { useTheme } from "next-themes";
 import { TeamLogo } from "./TeamLogo";
 import { TeamStats } from "./TeamStats";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 
 interface TeamCardProps {
   team: Team;

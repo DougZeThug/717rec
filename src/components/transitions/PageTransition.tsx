@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 import { useLocation } from 'react-router-dom';
 import { useNavigation } from '@/contexts/NavigationContext';
 

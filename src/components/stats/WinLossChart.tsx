@@ -3,7 +3,7 @@ import React from "react";
 import WinLossBarChart from "./WinLossBarChart";
 import { useSortedWinLossData } from "./hooks/useSortedWinLossData";
 import { ChartDataItem } from "@/types/chart";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 import { cn } from "@/lib/utils";
 
 interface WinLossChartProps {

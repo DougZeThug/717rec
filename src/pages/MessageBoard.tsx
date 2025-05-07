@@ -10,7 +10,7 @@ import LoginPrompt from "@/components/message-board/LoginPrompt";
 import MessageFilterBar from "@/components/message-board/MessageFilterBar";
 import PageHeader from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
-import { animations, gradients } from "@/styles/designSystem";
+import { animations, gradients } from "@/styles/design-system";
 import { MessageSquare } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 

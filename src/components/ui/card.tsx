@@ -1,9 +1,8 @@
-
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
-import { gradients } from "@/styles/designSystem"
+import { gradients } from "@/styles/design-system"
 
 const Card = React.forwardRef<
   HTMLDivElement,

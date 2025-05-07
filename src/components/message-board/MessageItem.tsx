@@ -9,7 +9,7 @@ import { useTeamPowerScores } from "@/hooks/useTeamPowerScores";
 import { cn } from "@/lib/utils";
 import { formatTime } from "@/components/home/utils";
 import { MessageReactions } from "./reactions";
-import { animations, gradients } from "@/styles/designSystem";
+import { animations, gradients } from "@/styles/design-system";
 import { MessageHeader, MessageContent, MessageControls } from "./message-item";
 import MessageEditForm from "./message-item/MessageEditForm";
 

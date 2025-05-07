@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 import { FilterOptions } from "@/hooks/message-board/types";
 import { MessageCategory } from "@/types/reactions";
 import { useTeams } from "@/hooks/useTeams";

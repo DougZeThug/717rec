@@ -1,10 +1,9 @@
-
 import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "./card";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { getCardStyle } from "@/styles/designSystem";
+import { getCardStyle } from "@/styles/design-system";
 
 interface AppCardProps {
   title?: React.ReactNode;

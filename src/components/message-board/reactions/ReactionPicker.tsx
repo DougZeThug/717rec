@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 import ReactionPickerSection from "./ReactionPickerSection";
 
 // Common emoji sets

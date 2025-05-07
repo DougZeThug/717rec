@@ -2,7 +2,7 @@
 import React from "react";
 import { useMessageReactions } from "@/hooks/message-board/useMessageReactions";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import ReactionButton from "./ReactionButton";

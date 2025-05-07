@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Link, LinkProps, useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
-import { interactive } from "@/styles/designSystem";
+import { interactive } from "@/styles/design-system";
 
 export interface TransitionLinkProps extends Omit<LinkProps, 'onClick'> {
   color?: string;

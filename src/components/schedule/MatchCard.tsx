@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Skeleton } from "@/components/ui/skeleton";
-import { animations, gradients, typography, elevation } from "@/styles/designSystem";
+import { animations, gradients, typography, elevation } from "@/styles/design-system";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TeamLogo } from "@/components/ui/team";

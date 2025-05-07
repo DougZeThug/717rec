@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import PowerScoreChart from "./PowerScoreChart";
 import { PowerScoreDataItem } from "@/types/chart";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 
 interface PowerScoreChartCardProps {
   data: PowerScoreDataItem[];

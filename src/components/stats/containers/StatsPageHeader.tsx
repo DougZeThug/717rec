@@ -1,7 +1,7 @@
 
 import React from "react";
 import PageHeader from "@/components/layout/PageHeader";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 import { cn } from "@/lib/utils";
 
 const StatsPageHeader = () => {

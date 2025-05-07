@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Smile, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 
 // Common emoji sets
 const EMOJI_GROUPS = {

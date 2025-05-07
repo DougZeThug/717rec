@@ -4,7 +4,7 @@ import { TeamTimeslot } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { animations, getDivisionStyles } from "@/styles/designSystem";
+import { animations, getDivisionStyles } from "@/styles/design-system";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TeamLogo } from "@/components/ui/team";

@@ -3,7 +3,7 @@ import React from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/designSystem";
+import { animations } from "@/styles/design-system";
 import { FilterOptions } from "@/hooks/message-board/types";
 import { MESSAGE_CATEGORIES, MessageCategory } from "@/types/reactions";
 import { useTeams } from "@/hooks/useTeams";
