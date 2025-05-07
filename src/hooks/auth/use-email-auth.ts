@@ -1,10 +1,10 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useThemeConsistency } from "@/hooks/use-theme-consistency";
 import { AuthResponse } from "@/types/auth";
 import { toast } from "@/hooks/use-toast";
 import { useAuthError } from "./use-auth-error";
+import { WeakPasswordReasons } from "@supabase/supabase-js";
 
 export const useEmailAuth = () => {
   const navigate = useNavigate();
