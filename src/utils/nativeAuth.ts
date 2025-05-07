@@ -14,7 +14,8 @@ export const loginWithGoogleNative = async () => {
 
   try {
     // Use the Capgo SocialLogin plugin to sign in with Google
-    const res = await SocialLogin.signIn({ provider: 'google' });
+    // The correct method according to the Capgo plugin documentation is 'login' not 'signIn'
+    const res = await SocialLogin.login({ provider: 'google' });
 
     // Use the ID token to sign in with Supabase
     const { data, error } = await supabase.auth.signInWithIdToken({
