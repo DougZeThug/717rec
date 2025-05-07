@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -24,15 +25,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
   if (!user) {
     return (
       <div className="flex items-center">
-        {/* Show text on all screen sizes */}
         <Button
           variant="secondary"
           size="sm"
-          className="bg-cornhole-navy text-white dark:bg-gray-700 hover:bg-cornhole-navy-light dark:hover:bg-gray-600 whitespace-nowrap"
+          className="bg-cornhole-navy text-white dark:bg-gray-700 hover:bg-cornhole-navy-light dark:hover:bg-gray-600 whitespace-nowrap !flex !items-center"
           onClick={() => navigate("/auth")}
         >
           <LogIn className="h-4 w-4 mr-2" />
-          <span>Login</span>
+          <span className="!block">Login</span>
         </Button>
       </div>
     );
