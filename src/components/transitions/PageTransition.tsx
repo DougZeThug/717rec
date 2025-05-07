@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/designSystem";
 import { useLocation } from 'react-router-dom';
+import { useNavigation } from '@/contexts/NavigationContext';
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   animation = 'fadeIn'
 }) => {
   const location = useLocation();
+  const { isNavigating } = useNavigation();
   
   useEffect(() => {
     console.log(`PageTransition: Route changed to ${location.pathname}`);
@@ -23,6 +25,14 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
     // Special handling for admin route
     if (location.pathname === '/admin') {
       console.log('PageTransition: Admin route detected');
+      console.log('PageTransition state:', location.state);
+      
+      // Check if this is an app navigation (not a direct URL entry)
+      if (location.state && (location.state as any).isAppNavigating) {
+        console.log('PageTransition: App navigation to admin route');
+      } else {
+        console.log('PageTransition: Direct URL navigation to admin route');
+      }
     }
   }, [location]);
   
@@ -37,7 +47,10 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   
   // Check if this is an admin route to potentially apply different behavior
   const isAdminRoute = location.pathname === '/admin';
-  const finalAnimationClass = isAdminRoute ? '' : animationClass;
+  
+  // Always apply animation for transitions, except when navigating to admin from within the app
+  const shouldAnimate = !isAdminRoute || (isAdminRoute && !isNavigating);
+  const finalAnimationClass = shouldAnimate ? animationClass : '';
 
   return (
     <div className={cn(

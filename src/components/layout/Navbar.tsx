@@ -18,9 +18,15 @@ const Navbar = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { theme, resolvedTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { isAdminAccessGranted } = useAdminAccess();
   const { navigateWithTransition } = useNavigation();
+  
+  // Log admin status on render
+  useEffect(() => {
+    console.log("Navbar: Rendering with admin status:", isAdminAccessGranted);
+    console.log("Navbar: User profile:", profile);
+  }, [isAdminAccessGranted, profile]);
   
   // Base nav items that everyone can see
   const navItems = [
@@ -48,8 +54,16 @@ const Navbar = () => {
   // Special handler for admin navigation to ensure it works correctly
   const handleNavigation = (href: string, e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    console.log(`Navigating to: ${href} using navigateWithTransition`);
+    
+    // Special handling for admin route
+    if (href === "/admin") {
+      console.log("Navbar: Admin link clicked");
+      console.log("Navbar: Current admin status:", isAdminAccessGranted);
+    }
+    
+    console.log(`Navbar: Navigating to: ${href} using navigateWithTransition`);
     navigateWithTransition(href);
+    
     if (mobileMenuOpen) setMobileMenuOpen(false);
   };
   
