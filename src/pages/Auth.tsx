@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -157,19 +158,24 @@ const Auth = () => {
       setIsSubmitting(true);
       const { success, error } = await signInWithGoogleNative();
       
-      if (!success) {
+      if (success) {
+        // Success message is already shown in the auth context
+        // Navigation will happen automatically on auth state change
+        console.log("Native Google login successful, redirecting...");
+        // The auth state change will trigger navigation
+      } else {
+        console.error("Native Google login error:", error);
         toast({
           title: "Login Failed",
-          description: error?.message || "Google login failed",
+          description: error?.message || "Google login failed. Please try again.",
           variant: "destructive"
         });
       }
-      // Navigation will happen automatically on auth state change
     } catch (error) {
-      console.error(error);
+      console.error("Exception during native Google login:", error);
       toast({
         title: "Login Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred during login",
         variant: "destructive"
       });
     } finally {
@@ -324,6 +330,7 @@ const Auth = () => {
                     className="w-full"
                     onClick={handleNativeGoogleSignIn}
                     disabled={isSubmitting}
+                    aria-label="Google Login"
                   >
                     {isSubmitting ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
