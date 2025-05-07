@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,6 +10,7 @@ import UserMenu from "@/components/auth/UserMenu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { cn } from "@/lib/utils";
+import { RouterLink } from "@/components/navigation";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,15 +48,15 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-[14px] md:py-[17px]">
         <div className="flex justify-between items-center py-[4px]">
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2 mr-6">
+            <RouterLink to="/" className="flex items-center space-x-2 mr-6">
               <img src="/lovable-uploads/faa54084-d274-43b9-9862-5544b188b4ca.png" alt="717Rec League Logo" className="h-8 w-8 object-contain" />
               <span className="text-xl font-bebas tracking-wider">717Rec</span>
-            </Link>
+            </RouterLink>
           </div>
 
           <div className="hidden md:flex items-center space-x-1">
             {allNavItems.map(item => (
-              <Link key={item.href} to={item.href}>
+              <RouterLink key={item.href} to={item.href}>
                 <Button 
                   variant={isActive(item.href) ? "secondary" : "ghost"} 
                   className={cn(
@@ -67,7 +68,7 @@ const Navbar = () => {
                 >
                   {item.label}
                 </Button>
-              </Link>
+              </RouterLink>
             ))}
             
             {/* Add user menu and theme toggle with proper spacing */}
@@ -98,7 +99,7 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden pt-2 pb-3 space-y-1">
             {allNavItems.map(item => (
-              <Link 
+              <RouterLink 
                 key={item.href} 
                 to={item.href} 
                 onClick={() => setMobileMenuOpen(false)} 
@@ -115,7 +116,7 @@ const Navbar = () => {
                 >
                   {item.label}
                 </Button>
-              </Link>
+              </RouterLink>
             ))}
           </div>
         )}
