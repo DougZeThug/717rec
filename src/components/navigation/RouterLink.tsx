@@ -9,7 +9,7 @@ export interface RouterLinkProps extends Omit<LinkProps, 'onClick'> {
 
 /**
  * A Link component that handles navigation through React Router
- * Handles click events and navigation programmatically
+ * Allows default navigation behavior to work properly
  */
 export const RouterLink: React.FC<RouterLinkProps> = ({
   to,
@@ -18,16 +18,11 @@ export const RouterLink: React.FC<RouterLinkProps> = ({
   onClick,
   ...rest
 }) => {
-  const navigate = useNavigate();
-  
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onClick) {
       onClick(e);
-      if (e.defaultPrevented) return;
+      // Allow event propagation to continue for React Router's default navigation
     }
-    
-    e.preventDefault();
-    navigate(to.toString());
   };
 
   return (

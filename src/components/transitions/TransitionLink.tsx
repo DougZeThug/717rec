@@ -21,8 +21,6 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
   noFeedback = false,
   ...rest
 }) => {
-  const navigate = useNavigate();
-  
   const getLinkStyle = () => {
     switch (variant) {
       case 'subtle':
@@ -41,13 +39,8 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
       if (e.defaultPrevented) return;
     }
     
-    e.preventDefault();
-    
-    // Debug log to verify that click handler is triggered
-    console.log(`TransitionLink clicked: direct navigation to ${to.toString()}`);
-    
-    // Use direct navigation with no transitions or blocking
-    navigate(to.toString());
+    // Don't prevent default behavior - allow React Router to handle navigation
+    console.log(`TransitionLink clicked: allowing default navigation to ${to.toString()}`);
   };
 
   return (
