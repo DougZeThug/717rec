@@ -5,6 +5,7 @@ export interface UserProfile {
   full_name: string | null;
   avatar_url: string | null;
   created_at: string;
+  is_admin: boolean | null;
 }
 
 export interface TeamMembership {
