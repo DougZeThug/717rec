@@ -14,13 +14,19 @@ export const loginWithGoogleNative = async () => {
 
   try {
     // Use the Capgo SocialLogin plugin to sign in with Google
-    // The correct method according to the Capgo plugin documentation is 'login' not 'signIn'
-    const res = await SocialLogin.login({ provider: 'google' });
+    // Need to provide an empty options object to satisfy TypeScript
+    const response = await SocialLogin.login({
+      provider: 'google',
+      options: {} // Empty options object to satisfy the type requirement
+    });
 
+    // Access the idToken from the result property
+    const idToken = response.result.idToken;
+    
     // Use the ID token to sign in with Supabase
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: 'google',
-      token: res.idToken
+      token: idToken
     });
 
     if (error) {
