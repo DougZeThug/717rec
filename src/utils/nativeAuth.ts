@@ -20,9 +20,26 @@ export const loginWithGoogleNative = async () => {
       options: {} // Empty options object to satisfy the type requirement
     });
 
-    // Access the id token from the correct location in the response object
-    // The structure appears to be different than we expected
-    const idToken = response.result.token?.idToken;
+    // Log the response structure to understand what we're getting
+    console.log("Google login response structure:", JSON.stringify(response));
+
+    // Based on the GoogleLoginResponseOnline type, we need to access the id token differently
+    // The structure is different between platforms, so we need to handle multiple possible locations
+    let idToken: string | undefined;
+    
+    // Try to access idToken from different possible locations in the response
+    if (response.result) {
+      if ('idToken' in response.result) {
+        idToken = (response.result as any).idToken;
+      } else if ('serverAuthCode' in response.result) {
+        // This is a typical structure for Android
+        idToken = (response.result as any).serverAuthCode;
+      } else if (typeof response.result === 'object' && response.result !== null) {
+        // Navigate deeper if needed
+        const resultObj = response.result as any;
+        idToken = resultObj.idToken || resultObj.accessToken || resultObj.token;
+      }
+    }
     
     if (!idToken) {
       throw new Error("Failed to retrieve ID token from Google login response");
