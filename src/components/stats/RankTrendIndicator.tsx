@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 
 interface RankTrendIndicatorProps {
@@ -7,6 +7,11 @@ interface RankTrendIndicatorProps {
 }
 
 const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) => {
+  // Log the rank change value for debugging
+  useEffect(() => {
+    console.log("Rank change value:", rankChange);
+  }, [rankChange]);
+
   // Handle undefined, null, or 0 cases
   if (rankChange === undefined || rankChange === null || rankChange === 0) {
     return <div className="flex items-center"><Minus size={16} className="text-gray-400" /><span className="text-gray-400 ml-1 text-xs">0</span></div>;

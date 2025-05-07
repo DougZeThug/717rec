@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
 import { SortOptions } from "./RankingsTable";
@@ -30,6 +30,17 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     const savedView = localStorage.getItem("rankingsDetailedView");
     return savedView ? savedView === "true" : false;
   });
+
+  // Add logging to debug ranking data
+  useEffect(() => {
+    console.log("Mobile rankings data:", 
+      rankings.map(r => ({
+        team: r.teamName,
+        rankChange: r.rankChange,
+        previousRank: r.previousRank
+      }))
+    );
+  }, [rankings]);
 
   const sortableFields = [
     { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) },

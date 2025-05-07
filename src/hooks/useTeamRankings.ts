@@ -15,6 +15,8 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
   const { teams: latestTeams, isLoading: teamsLoading } = useTeams();
 
   useEffect(() => {
+    console.log("Previous rankings loaded:", previousRankings);
+
     const updateRankings = async () => {
       const teamsToUse = teams || latestTeams;
       const matchesToUse = matches || latestMatches;
@@ -59,8 +61,23 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         // Sort by power score from v_team_details (descending)
         const sortedRankings = calculatedRankings.sort((a, b) => b.powerScore - a.powerScore);
         
+        console.log("Before updating rank changes:", 
+          sortedRankings.map(r => ({
+            team: r.teamName,
+            previousRank: r.previousRank,
+            currentRank: sortedRankings.findIndex(sr => sr.teamId === r.teamId) + 1
+          }))
+        );
+
         // Update rank changes based on previous rankings
         const finalRankings = updateRankChanges(sortedRankings);
+        
+        console.log("After updating rank changes:", 
+          finalRankings.map(r => ({
+            team: r.teamName, 
+            rankChange: r.rankChange
+          }))
+        );
         
         // Save current rankings for future rank change calculations
         saveRankingsToStorage(finalRankings);

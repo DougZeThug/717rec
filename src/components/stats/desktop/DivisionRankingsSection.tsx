@@ -45,6 +45,17 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
     }));
   }, [rankings, showUnified]);
 
+  // Add logging to debug rankings in desktop view
+  React.useEffect(() => {
+    console.log(`Desktop ${divisionName} rankings:`, 
+      rankings.map(r => ({
+        team: r.teamName,
+        rankChange: r.rankChange,
+        previousRank: r.previousRank
+      }))
+    );
+  }, [divisionName, rankings]);
+
   return (
     <div className="mb-8">
       <h2 className="mb-4 text-xl font-bold font-bebas tracking-widest text-gray-900 dark:text-white">

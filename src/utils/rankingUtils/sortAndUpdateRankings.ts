@@ -73,12 +73,12 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
       // If previousRank is less than currentRank, team moved down in rankings (negative change)
       ranking.rankChange = ranking.previousRank - currentRank;
       
-      // Log for debugging
+      // Enhanced logging for debugging
       console.log(`Team ${ranking.teamName}: previousRank=${ranking.previousRank}, currentRank=${currentRank}, rankChange=${ranking.rankChange}`);
     } else {
       // No previous rank data, so set to 0 (no change)
       ranking.rankChange = 0;
-      console.log(`Team ${ranking.teamName}: No previous rank data available`);
+      console.log(`Team ${ranking.teamName}: No previous rank data available (setting rankChange=0)`);
     }
     
     return ranking;
@@ -94,6 +94,10 @@ export const saveRankingsToStorage = (rankings: Ranking[]) => {
     rankings.forEach((ranking, index) => {
       rankingsToSave[ranking.teamId] = index + 1;
     });
+    
+    // Log the rankings being saved
+    console.log("Saving rankings to localStorage:", rankingsToSave);
+    
     localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
     console.log('Rankings saved to localStorage for future trend calculation');
   } catch (error) {

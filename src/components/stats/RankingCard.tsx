@@ -29,6 +29,11 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
+  // Console log to debug rank change values
+  React.useEffect(() => {
+    console.log(`Team ${ranking.teamName} rank change:`, ranking.rankChange);
+  }, [ranking.teamName, ranking.rankChange]);
+
   return (
     <div className="border rounded-lg overflow-hidden transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700">
       <div
