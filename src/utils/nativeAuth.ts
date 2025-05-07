@@ -20,8 +20,13 @@ export const loginWithGoogleNative = async () => {
       options: {} // Empty options object to satisfy the type requirement
     });
 
-    // Access the idToken from the result property
-    const idToken = response.result.idToken;
+    // Access the id token from the correct location in the response object
+    // The structure appears to be different than we expected
+    const idToken = response.result.token?.idToken;
+    
+    if (!idToken) {
+      throw new Error("Failed to retrieve ID token from Google login response");
+    }
     
     // Use the ID token to sign in with Supabase
     const { data, error } = await supabase.auth.signInWithIdToken({
