@@ -1,0 +1,45 @@
+
+/* Page Transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--page-transition-duration), transform var(--page-transition-duration);
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity var(--page-transition-duration), transform var(--page-transition-duration);
+}
+
+.page-transition-reverse-enter {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.page-transition-reverse-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity var(--page-transition-duration), transform var(--page-transition-duration);
+}
+
+.page-transition-reverse-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.page-transition-reverse-exit-active {
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity var(--page-transition-duration), transform var(--page-transition-duration);
+}

@@ -1,0 +1,123 @@
+
+@layer utilities {
+  /* Safe area utilities with improved fallback values */
+  .safe-area-top {
+    padding-top: max(0.5rem, var(--sat));
+  }
+  
+  .safe-area-right {
+    padding-right: max(0.25rem, var(--sar));
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(0.75rem, var(--sab));
+  }
+  
+  .safe-area-left {
+    padding-left: max(0.25rem, var(--sal));
+  }
+  
+  .pt-safe {
+    padding-top: max(0.5rem, var(--sat));
+  }
+  
+  .pr-safe {
+    padding-right: max(0.5rem, var(--sar));
+  }
+  
+  .pb-safe {
+    padding-bottom: max(0.75rem, var(--sab));
+  }
+  
+  .pl-safe {
+    padding-left: max(0.5rem, var(--sal));
+  }
+  
+  .cornhole-bg {
+    position: relative;
+  }
+  
+  .cornhole-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 240px;
+    background-color: theme('colors.cornhole.cream');
+    z-index: -1;
+  }
+  
+  .dark .cornhole-bg::before {
+    background-color: theme('colors.gray.900');
+  }
+  
+  /* Ripple Animation */
+  .ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ripple::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  
+  .ripple:active::after {
+    animation: ripple 0.6s;
+  }
+  
+  /* Team card hover interactions */
+  .team-card {
+    transition: all 0.2s ease-out;
+  }
+  
+  .team-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .team-card:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Elevation system */
+  .elevation-low {
+    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .elevation-medium {
+    @apply shadow-md hover:shadow-lg transition-shadow duration-200;
+  }
+  
+  .elevation-high {
+    @apply shadow-lg hover:shadow-xl transition-shadow duration-200;
+  }
+
+  /* Card gradients */
+  .card-gradient-default {
+    @apply bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900;
+  }
+  
+  .card-gradient-subtle {
+    @apply bg-gradient-to-br from-white to-gray-100 dark:from-gray-800/80 dark:to-gray-900/80;
+  }
+  
+  .card-gradient-highlight {
+    @apply bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900/90;
+  }
+  
+  /* Touch improvement */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+}
