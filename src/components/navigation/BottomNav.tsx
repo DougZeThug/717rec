@@ -17,17 +17,17 @@ export const BottomNav = () => {
     {
       path: "/stats",
       label: "Standings",
-      icon: <Award size={20} />
+      icon: <Award size={24} />
     },
     {
       path: "/schedule",
       label: "Schedule",
-      icon: <Calendar size={20} />
+      icon: <Calendar size={24} />
     },
     {
       path: "/teams",
       label: "Teams",
-      icon: <Users size={20} />
+      icon: <Users size={24} />
     }
   ];
 
@@ -36,8 +36,8 @@ export const BottomNav = () => {
   }
 
   return (
-    <nav className="fixed bottom-[var(--sab)] left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 shadow-[0_-4px_16px_rgba(30,58,95,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
-      <div className="flex justify-around items-center max-w-md mx-auto h-14">
+    <nav className="fixed bottom-[var(--sab)] left-0 right-0 z-40 mt-[-0.75rem] bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 shadow-[0_-4px_16px_rgba(30,58,95,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
+      <div className="flex justify-around items-center max-w-md mx-auto h-16">
         {navItems.map((item) => (
           <NavItem
             key={item.path}
@@ -45,7 +45,7 @@ export const BottomNav = () => {
             label={item.label}
             icon={item.icon}
             className={cn(
-              "flex-1 px-3 py-1 text-xs touch-manipulation",
+              "flex-1 px-3 py-1.5 text-sm touch-manipulation",
               "flex flex-col items-center justify-center"
             )}
           />
