@@ -73,7 +73,7 @@ const Navbar = () => {
   
   return (
     <nav className="bg-cornhole-navy dark:bg-gray-900 text-white shadow-lg sticky top-0 z-50 safe-area-top">
-      <div className="container mx-auto px-4 pt-safe pb-safe">
+      <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-[8px] md:py-[4px]">
           <div className="flex items-center">
             <RouterLink to="/" className="flex items-center space-x-2 mr-6">

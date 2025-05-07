@@ -39,7 +39,7 @@
     --page-transition-duration: 300ms;
     --theme-transition-duration: 300ms;
     
-    /* Safe area insets */
+    /* Safe area insets with better fallbacks */
     --sat: env(safe-area-inset-top, 0px);
     --sar: env(safe-area-inset-right, 0px);
     --sab: env(safe-area-inset-bottom, 0px);
@@ -124,21 +124,21 @@
 }
 
 @layer utilities {
-  /* Safe area utilities */
+  /* Safe area utilities with improved fallback values */
   .safe-area-top {
-    padding-top: var(--sat);
+    padding-top: max(0.5rem, var(--sat));
   }
   
   .safe-area-right {
-    padding-right: var(--sar);
+    padding-right: max(0.25rem, var(--sar));
   }
   
   .safe-area-bottom {
-    padding-bottom: var(--sab);
+    padding-bottom: max(0.75rem, var(--sab));
   }
   
   .safe-area-left {
-    padding-left: var(--sal);
+    padding-left: max(0.25rem, var(--sal));
   }
   
   .pt-safe {
@@ -150,7 +150,7 @@
   }
   
   .pb-safe {
-    padding-bottom: max(0.5rem, var(--sab));
+    padding-bottom: max(0.75rem, var(--sab));
   }
   
   .pl-safe {
