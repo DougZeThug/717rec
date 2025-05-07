@@ -36,7 +36,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 className={cn(
                   "px-2 py-1 text-sm rounded-md",
                   viewMode === 'list'
-                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-blue-600 data-[state=on]:dark:text-white data-[state=on]:dark:border-blue-500"
+                    ? "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:dark:border-blue-500"
                     : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="List view"
@@ -58,7 +58,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 className={cn(
                   "px-2 py-1 text-sm rounded-md",
                   viewMode === 'grid'
-                    ? "data-[state=on]:bg-white data-[state=on]:dark:bg-blue-600 data-[state=on]:dark:text-white data-[state=on]:dark:border-blue-500"
+                    ? "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:dark:border-blue-500"
                     : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="Grid view"

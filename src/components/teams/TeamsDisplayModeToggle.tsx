@@ -24,7 +24,7 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
       className={cn(
         "px-2 py-1 text-sm rounded-md transition-all duration-200",
         displayMode === "all" 
-          ? "bg-primary text-primary-foreground dark:bg-blue-700 dark:text-white dark:border dark:border-blue-600" 
+          ? "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500" 
           : "dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
       )}
     >
@@ -37,7 +37,7 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
       className={cn(
         "px-2 py-1 text-sm rounded-md transition-all duration-200",
         displayMode === "grouped" 
-          ? "bg-primary text-primary-foreground dark:bg-blue-700 dark:text-white dark:border dark:border-blue-600"
+          ? "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500"
           : "dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
       )}
     >

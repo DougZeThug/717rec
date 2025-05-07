@@ -54,7 +54,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       className={cn(
         "rounded-full transition-colors duration-300 border", 
         resolvedTheme === "dark" 
-          ? "text-white hover:bg-gray-700 border-gray-600" 
+          ? "text-white hover:bg-gray-700 border-gray-600 dark:hover:bg-gray-700/80" 
           : "text-gray-700 hover:bg-gray-200 border-gray-300",
         className
       )}

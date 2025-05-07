@@ -21,13 +21,13 @@ const StatsHeader = ({ onDivisionChange, divisions }: StatsHeaderProps) => {
       <h1 className="text-3xl font-bold text-cornhole-navy dark:text-white">Team Statistics</h1>
       
       <div className="flex items-center gap-2">
-        <Filter size={18} />
+        <Filter size={18} className="text-gray-500 dark:text-gray-400" />
         <div className="w-[180px]">
           <Select onValueChange={onDivisionChange} defaultValue="all">
-            <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:border-gray-600">
+            <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:border-gray-600 shadow-sm">
               <SelectValue placeholder="All Divisions" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
               <SelectItem value="all">All Divisions</SelectItem>
               {divisions && divisions.map((division) => (
                 <SelectItem key={division.id} value={division.id}>

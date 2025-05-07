@@ -38,7 +38,7 @@ const HeroSection = () => {
           <Button
             asChild
             size="lg"
-            className="bg-green-700 hover:bg-green-800 text-white flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow-md w-full xs:w-auto dark:bg-green-700 dark:hover:bg-green-800 dark:text-white dark:border dark:border-green-600/70 dark:shadow-lg"
+            className="bg-green-700 hover:bg-green-800 text-white flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow-md w-full xs:w-auto dark:bg-green-700 dark:hover:bg-green-800 dark:text-white dark:border-green-600/70 dark:shadow-lg"
             style={{ minWidth: 160 }}
           >
             <Link to="/teams" className="flex items-center gap-2">

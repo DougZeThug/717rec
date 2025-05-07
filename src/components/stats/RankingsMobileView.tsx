@@ -8,7 +8,6 @@ import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -31,9 +30,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     const savedView = localStorage.getItem("rankingsDetailedView");
     return savedView ? savedView === "true" : false;
   });
-
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
 
   const sortableFields = [
     { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) },
@@ -72,13 +68,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   onClick={() => onSortChange(field.id)}
                   className={cn(
                     "rounded-lg py-2 px-4 font-medium transition-all whitespace-nowrap",
-                    isLight
-                      ? (sortOptions.field === field.id
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
-                          : "bg-white hover:bg-gray-50")
-                      : (sortOptions.field === field.id
-                          ? "bg-blue-700 text-white hover:bg-blue-800 border border-blue-600"
-                          : "bg-gray-800 text-gray-100 hover:bg-gray-700 border-gray-700")
+                    sortOptions.field === field.id
+                      ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500/50"
+                      : "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
                   )}
                 >
                   {field.label}
@@ -96,7 +88,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               id="detailed-view"
               checked={detailedView}
               onCheckedChange={toggleViewMode}
-              className="dark:data-[state=checked]:bg-blue-600"
             />
             <Label
               htmlFor="detailed-view"

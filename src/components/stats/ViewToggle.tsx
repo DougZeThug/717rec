@@ -2,7 +2,6 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Grid2x2, List } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
 
 interface ViewToggleProps {
   view: "division" | "all";
@@ -10,9 +9,6 @@ interface ViewToggleProps {
 }
 
 const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-  
   return (
     <ToggleGroup 
       type="single" 
@@ -26,8 +22,8 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         className={cn(
           "transition-all duration-200",
           view === "division" ? 
-            (isDark ? "bg-blue-700 text-white border border-blue-600" : "bg-primary text-primary-foreground") : 
-            (isDark ? "text-gray-300 hover:text-white hover:bg-gray-700" : "")
+            "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500" : 
+            "hover:bg-muted-foreground/10 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
         )}
       >
         <Grid2x2 className="h-4 w-4 mr-2" />
@@ -39,8 +35,8 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         className={cn(
           "transition-all duration-200",
           view === "all" ? 
-            (isDark ? "bg-blue-700 text-white border border-blue-600" : "bg-primary text-primary-foreground") : 
-            (isDark ? "text-gray-300 hover:text-white hover:bg-gray-700" : "")
+            "bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500" : 
+            "hover:bg-muted-foreground/10 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
         )}
       >
         <List className="h-4 w-4 mr-2" />
