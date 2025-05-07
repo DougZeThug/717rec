@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Loader2, LucideChrome } from "lucide-react";
+import { AlertCircle, Loader2, LucideChrome, Smartphone } from "lucide-react";
 import PageLayout from "@/components/layout/PageLayout";
 import { z } from "zod";
 import { toast } from "@/hooks/use-toast";
 import PageTransition from "@/components/transitions/PageTransition";
+import { isNativePlatform } from "@/utils/nativeAuth";
 
 interface LocationState {
   returnTo?: string;
@@ -22,7 +22,17 @@ const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
 const Auth = () => {
-  const { signIn, signUp, signInWithGoogle, user, isLoading, authInitialized, authError, clearAuthError } = useAuth();
+  const { 
+    signIn, 
+    signUp, 
+    signInWithGoogle, 
+    signInWithGoogleNative,
+    user, 
+    isLoading, 
+    authInitialized, 
+    authError, 
+    clearAuthError 
+  } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | undefined;
@@ -34,7 +44,13 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isNative, setIsNative] = useState<boolean>(false);
   
+  // Check if we're on a native platform
+  useEffect(() => {
+    setIsNative(isNativePlatform());
+  }, []);
+
   // If user is already logged in, redirect to return path
   useEffect(() => {
     // Only redirect if authentication check has completed
@@ -131,6 +147,31 @@ const Auth = () => {
     } catch (error) {
       console.error(error);
       // Error is already handled in the signInWithGoogle function
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNativeGoogleSignIn = async () => {
+    try {
+      setIsSubmitting(true);
+      const { success, error } = await signInWithGoogleNative();
+      
+      if (!success) {
+        toast({
+          title: "Login Failed",
+          description: error?.message || "Google login failed",
+          variant: "destructive"
+        });
+      }
+      // Navigation will happen automatically on auth state change
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Login Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -258,20 +299,41 @@ const Auth = () => {
                 </div>
               </div>
               
-              <Button
-                variant="outline"
-                type="button"
-                className="w-full"
-                onClick={handleGoogleSignIn}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <LucideChrome className="mr-2 h-5 w-5" />
+              <div className="flex flex-col gap-2">
+                {/* Web Google Sign In */}
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <LucideChrome className="mr-2 h-5 w-5" />
+                  )}
+                  Google
+                </Button>
+                
+                {/* Native Google Sign In - only shown on mobile devices */}
+                {isNative && (
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="w-full"
+                    onClick={handleNativeGoogleSignIn}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Smartphone className="mr-2 h-5 w-5" />
+                    )}
+                    Google (Native)
+                  </Button>
                 )}
-                Google
-              </Button>
+              </div>
             </CardContent>
             <CardFooter className="flex justify-center text-sm text-muted-foreground">
               {activeTab === "login" ? (

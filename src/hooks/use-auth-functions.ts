@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -6,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useThemeConsistency } from "./use-theme-consistency";
 import { AuthResponse } from "@/types/auth";
 import { WeakPasswordReasons } from "@supabase/supabase-js";
+import { loginWithGoogleNative as nativeGoogleLogin } from "@/utils/nativeAuth";
 
 export const useAuthFunctions = () => {
   const navigate = useNavigate();
@@ -150,6 +150,39 @@ export const useAuthFunctions = () => {
     }
   };
 
+  // Sign in with Google Native (for mobile apps)
+  const signInWithGoogleNative = async () => {
+    try {
+      clearAuthError();
+      
+      const result = await nativeGoogleLogin();
+      
+      if (result.success && result.user) {
+        // Apply theme consistency after successful login
+        ensureThemeConsistency();
+        
+        toast({
+          title: "Welcome!",
+          description: "You've successfully logged in with Google",
+        });
+        
+        return result;
+      } else {
+        const errorMessage = result.error?.message || "Failed to login with Google";
+        handleAuthError(new Error(errorMessage), "Native Google login");
+        return { success: false, error: errorMessage };
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        handleAuthError(error, "Native Google login");
+      } else {
+        handleAuthError(new Error("An unexpected error occurred"), "Native Google login");
+      }
+      
+      return { success: false, error };
+    }
+  };
+
   // Sign out
   const signOut = async () => {
     try {
@@ -180,6 +213,7 @@ export const useAuthFunctions = () => {
     signIn,
     signUp,
     signInWithGoogle,
+    signInWithGoogleNative,
     signOut,
     authError,
     clearAuthError

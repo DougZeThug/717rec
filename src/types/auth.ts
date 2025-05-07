@@ -18,6 +18,7 @@ export interface AuthContextType {
   signIn: (email: string, password: string) => Promise<AuthResponse>;
   signUp: (email: string, password: string) => Promise<AuthResponse>;
   signInWithGoogle: () => Promise<void>;
+  signInWithGoogleNative: () => Promise<{ success: boolean, user?: User | null, error?: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   authError: string | null;

@@ -19,7 +19,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authInitialized, setAuthInitialized] = useState<boolean>(false);
   
   const { profile, setProfile, fetchProfile, refreshProfile: refreshUserProfile, checkProfileSetup } = useAuthProfile();
-  const { signIn: authSignIn, signUp: authSignUp, signInWithGoogle: authSignInWithGoogle, signOut: authSignOut, authError, clearAuthError } = useAuthFunctions();
+  const { 
+    signIn: authSignIn, 
+    signUp: authSignUp, 
+    signInWithGoogle: authSignInWithGoogle,
+    signInWithGoogleNative: authSignInWithGoogleNative,
+    signOut: authSignOut, 
+    authError, 
+    clearAuthError 
+  } = useAuthFunctions();
   const { ensureThemeConsistency } = useThemeConsistency();
 
   // Wrapper for refreshProfile to match the interface
@@ -38,6 +46,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const signInWithGoogle = async (): Promise<void> => {
     await authSignInWithGoogle();
+  };
+  
+  const signInWithGoogleNative = async () => {
+    return authSignInWithGoogleNative();
   };
   
   const signOut = async (): Promise<void> => {
@@ -146,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     signInWithGoogle,
+    signInWithGoogleNative,
     signOut,
     refreshProfile,
     authError,
