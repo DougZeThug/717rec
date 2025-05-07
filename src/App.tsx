@@ -37,6 +37,9 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const location = useLocation();
   
+  // Log every route change to help debug navigation issues
+  console.log(`App routing to: ${location.pathname}`);
+  
   return (
     <NavigationProvider>
       <div className="flex flex-col min-h-screen">

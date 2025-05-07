@@ -7,6 +7,7 @@ interface NavigationContextType {
     to: string, 
     options?: { 
       state?: any;
+      replace?: boolean;
     }
   ) => void;
 }
@@ -32,11 +33,23 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     to: string, 
     options?: { 
       state?: any;
+      replace?: boolean;
     }
   ) => {
-    // Use direct navigation with no animations or transitions
-    console.log(`NavigationContext: Direct navigation to ${to}`);
-    navigate(to, { state: options?.state });
+    console.log(`NavigationContext: Navigating to ${to}`);
+    
+    // Handle protected routes (like admin) specially
+    const isProtectedRoute = to === '/admin';
+    
+    if (isProtectedRoute) {
+      console.log('NavigationContext: Handling protected route navigation');
+    }
+    
+    // Use direct navigation
+    navigate(to, { 
+      state: options?.state,
+      replace: options?.replace || isProtectedRoute // Use replace for protected routes to avoid back button issues
+    });
   }, [navigate]);
 
   return (

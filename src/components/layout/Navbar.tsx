@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { cn } from "@/lib/utils";
 import { RouterLink } from "@/components/navigation";
+import { useNavigation } from "@/contexts/NavigationContext";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,6 +20,7 @@ const Navbar = () => {
   const { theme, resolvedTheme } = useTheme();
   const { user } = useAuth();
   const { isAdminAccessGranted } = useAdminAccess();
+  const { navigateWithTransition } = useNavigation();
   
   // Base nav items that everyone can see
   const navItems = [
@@ -43,6 +45,14 @@ const Navbar = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
   
+  // Special handler for admin navigation to ensure it works correctly
+  const handleNavigation = (href: string, e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    console.log(`Navigating to: ${href} using navigateWithTransition`);
+    navigateWithTransition(href);
+    if (mobileMenuOpen) setMobileMenuOpen(false);
+  };
+  
   return (
     <nav className="bg-cornhole-navy dark:bg-gray-900 text-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-[14px] md:py-[17px]">
@@ -56,19 +66,36 @@ const Navbar = () => {
 
           <div className="hidden md:flex items-center space-x-1">
             {allNavItems.map(item => (
-              <RouterLink key={item.href} to={item.href}>
-                <Button 
-                  variant={isActive(item.href) ? "secondary" : "ghost"} 
-                  className={cn(
-                    isActive(item.href) 
-                      ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
-                      : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
-                    "min-h-11 px-4"
-                  )}
-                >
-                  {item.label}
-                </Button>
-              </RouterLink>
+              <div key={item.href}>
+                {item.label === "Admin" ? (
+                  <Button 
+                    variant={isActive(item.href) ? "secondary" : "ghost"} 
+                    className={cn(
+                      isActive(item.href) 
+                        ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
+                        : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
+                      "min-h-11 px-4"
+                    )}
+                    onClick={(e) => handleNavigation(item.href, e)}
+                  >
+                    {item.label}
+                  </Button>
+                ) : (
+                  <RouterLink to={item.href}>
+                    <Button 
+                      variant={isActive(item.href) ? "secondary" : "ghost"} 
+                      className={cn(
+                        isActive(item.href) 
+                          ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
+                          : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
+                        "min-h-11 px-4"
+                      )}
+                    >
+                      {item.label}
+                    </Button>
+                  </RouterLink>
+                )}
+              </div>
             ))}
             
             {/* Add user menu and theme toggle with proper spacing */}
@@ -99,24 +126,40 @@ const Navbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden pt-2 pb-3 space-y-1">
             {allNavItems.map(item => (
-              <RouterLink 
-                key={item.href} 
-                to={item.href} 
-                onClick={() => setMobileMenuOpen(false)} 
-                className="block touch-manipulation"
-              >
-                <Button 
-                  variant={isActive(item.href) ? "secondary" : "ghost"} 
-                  className={cn(
-                    isActive(item.href) 
-                      ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 w-full justify-start" 
-                      : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800 w-full justify-start",
-                    "min-h-11 py-3"
-                  )}
-                >
-                  {item.label}
-                </Button>
-              </RouterLink>
+              <div key={item.href} className="block touch-manipulation">
+                {item.label === "Admin" ? (
+                  <Button 
+                    variant={isActive(item.href) ? "secondary" : "ghost"} 
+                    className={cn(
+                      isActive(item.href) 
+                        ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 w-full justify-start" 
+                        : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800 w-full justify-start",
+                      "min-h-11 py-3"
+                    )}
+                    onClick={() => handleNavigation(item.href)}
+                  >
+                    {item.label}
+                  </Button>
+                ) : (
+                  <RouterLink 
+                    to={item.href} 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="block"
+                  >
+                    <Button 
+                      variant={isActive(item.href) ? "secondary" : "ghost"} 
+                      className={cn(
+                        isActive(item.href) 
+                          ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 w-full justify-start" 
+                          : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800 w-full justify-start",
+                        "min-h-11 py-3"
+                      )}
+                    >
+                      {item.label}
+                    </Button>
+                  </RouterLink>
+                )}
+              </div>
             ))}
           </div>
         )}
