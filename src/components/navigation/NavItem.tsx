@@ -39,8 +39,10 @@ export const NavItem: React.FC<NavItemProps> = ({
       )}
       aria-current={isActive ? "page" : undefined}
     >
-      {icon}
-      {label && <span className="ml-2 md:ml-1.5">{label}</span>}
+      <div className="flex flex-col items-center">
+        {icon && <div className="mb-1">{icon}</div>}
+        {label && <span className="text-xs">{label}</span>}
+      </div>
       {isActive && (
         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1/2 h-0.5 bg-cornhole-navy dark:bg-white rounded-full" />
       )}
