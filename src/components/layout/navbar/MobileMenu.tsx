@@ -26,12 +26,12 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
 
   return (
     <div className="md:hidden">
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-center justify-end gap-2">
         <NavActions size="sm" />
         <Button 
           variant="ghost" 
           size="icon" 
-          className="text-white min-h-11 min-w-11 ml-1" 
+          className="text-white min-h-11 min-w-11" 
           onClick={toggleMenu}
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

@@ -28,10 +28,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
         <Button
           variant="secondary"
           size="sm"
-          className="bg-cornhole-navy text-white dark:bg-gray-700 hover:bg-cornhole-navy-light dark:hover:bg-gray-600 whitespace-nowrap !flex !items-center"
+          className="bg-cornhole-navy text-white dark:bg-gray-700 hover:bg-cornhole-navy-light dark:hover:bg-gray-600 whitespace-nowrap !flex !items-center px-2"
           onClick={() => navigate("/auth")}
         >
-          <LogIn className="h-4 w-4 mr-2" />
+          <LogIn className="h-4 w-4 mr-1" />
           <span className="!block">Login</span>
         </Button>
       </div>
@@ -41,8 +41,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative text-base font-normal" size="sm">
-          <User className="h-4 w-4 mr-2" />
+        <Button variant="ghost" className="relative text-base font-normal p-1" size="sm">
+          <User className="h-4 w-4 mr-1" />
           {profile?.username || "User"}
         </Button>
       </DropdownMenuTrigger>
