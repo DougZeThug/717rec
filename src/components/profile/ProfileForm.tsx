@@ -160,18 +160,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           )}
         </div>
         {usernameError && <p className="text-sm text-destructive">{usernameError}</p>}
+        <p className="text-sm text-muted-foreground">This is how you will be identified in the league.</p>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="fullName">Last Name (Optional)</Label>
+        <Label htmlFor="fullName">Full Name (Optional)</Label>
         <Input
           id="fullName"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          placeholder="Your last name"
+          placeholder="Your full name"
           disabled={isFormLoading}
         />
-        <p className="text-sm text-muted-foreground">This is how you will be identified in the league.</p>
+        <p className="text-sm text-muted-foreground">Add your full name for better identification</p>
       </div>
       
       <Button
