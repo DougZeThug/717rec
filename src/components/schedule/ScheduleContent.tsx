@@ -70,13 +70,23 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
       <TabsList className="w-full md:w-auto font-inter bg-gray-200 dark:bg-gray-700">
-        <TabsTrigger value="upcoming" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
-          <Calendar className="h-4 w-4 mr-2" />
-          Upcoming Matches
+        <TabsTrigger 
+          value="upcoming" 
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 truncate px-2 md:px-4"
+        >
+          <div className="flex items-center justify-center">
+            <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
+            <span className="truncate text-sm md:text-base">Upcoming Matches</span>
+          </div>
         </TabsTrigger>
-        <TabsTrigger value="completed" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Completed Matches
+        <TabsTrigger 
+          value="completed" 
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 truncate px-2 md:px-4"
+        >
+          <div className="flex items-center justify-center">
+            <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" />
+            <span className="truncate text-sm md:text-base">Completed Matches</span>
+          </div>
         </TabsTrigger>
       </TabsList>
       
