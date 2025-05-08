@@ -76,7 +76,26 @@ const Schedule = () => {
           onDateSelect={setSelectedDate}
         />
 
-        <div className="mb-8 mt-2">
+        {/* REORDERED: Matches section appears first now */}
+        {isLoading ? (
+          <ScheduleContentSkeleton activeTab={activeTab} />
+        ) : (
+          <ScheduleContent 
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            filteredMatches={filteredMatches}
+            teams={teams || []}
+            selectedDate={selectedDate}
+            onEditMatch={(match) => {
+              setEditingMatch(match);
+              setIsFormOpen(true);
+            }}
+            onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
+          />
+        )}
+
+        {/* Timeslots section now appears second */}
+        <div className="mb-8 mt-8">
           <div className="bg-muted dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4 shadow-sm transition-all">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
@@ -101,23 +120,6 @@ const Schedule = () => {
             )}
           </div>
         </div>
-
-        {isLoading ? (
-          <ScheduleContentSkeleton activeTab={activeTab} />
-        ) : (
-          <ScheduleContent 
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            filteredMatches={filteredMatches}
-            teams={teams || []}
-            selectedDate={selectedDate}
-            onEditMatch={(match) => {
-              setEditingMatch(match);
-              setIsFormOpen(true);
-            }}
-            onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
-          />
-        )}
       </div>
       
       <MatchFormDialog
