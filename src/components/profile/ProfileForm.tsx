@@ -30,13 +30,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   // Check username availability
   const checkUsernameAvailability = async (value: string) => {
     if (value.length < 3) {
-      setUsernameError("Username must be at least 3 characters");
+      setUsernameError("First name must be at least 3 characters");
       setUsernameAvailable(null);
       return;
     }
     
     if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      setUsernameError("Username can only contain letters, numbers, and underscores");
+      setUsernameError("First name can only contain letters, numbers, and underscores");
       setUsernameAvailable(null);
       return;
     }
@@ -59,17 +59,17 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       
       if (error) {
         console.error("Error checking username:", error);
-        setUsernameError("Error checking username availability");
+        setUsernameError("Error checking first name availability");
         setUsernameAvailable(null);
         return;
       }
       
       const isAvailable = !data;
       setUsernameAvailable(isAvailable);
-      setUsernameError(isAvailable ? null : "Username is already taken");
+      setUsernameError(isAvailable ? null : "This name is already taken");
     } catch (error) {
       console.error("Unexpected error checking username:", error);
-      setUsernameError("Error checking username availability");
+      setUsernameError("Error checking first name availability");
       setUsernameAvailable(null);
     } finally {
       setIsCheckingUsername(false);
@@ -94,8 +94,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     
     if (usernameError || !usernameAvailable) {
       toast({
-        title: "Invalid username",
-        description: usernameError || "Please choose another username",
+        title: "Invalid first name",
+        description: usernameError || "Please choose another name",
         variant: "destructive",
       });
       return;
@@ -138,7 +138,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="username">
-          Username <span className="text-destructive">*</span>
+          First Name <span className="text-destructive">*</span>
         </Label>
         <div className="relative">
           <Input
@@ -146,7 +146,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="pr-10"
-            placeholder="Choose a unique username"
+            placeholder="Enter your first name"
             disabled={isFormLoading}
           />
           {username.length >= 3 && !isCheckingUsername && (
@@ -163,15 +163,15 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="fullName">Full Name (Optional)</Label>
+        <Label htmlFor="fullName">Last Name (Optional)</Label>
         <Input
           id="fullName"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          placeholder="Your full name"
+          placeholder="Your last name"
           disabled={isFormLoading}
         />
-        <p className="text-sm text-muted-foreground">Use your real name so teammates know who you are.</p>
+        <p className="text-sm text-muted-foreground">This is how you will be identified in the league.</p>
       </div>
       
       <Button

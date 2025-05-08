@@ -73,7 +73,7 @@ const ProfileSetup = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Set Up Your Profile</CardTitle>
               <CardDescription>
-                Choose a username and add your details
+                Enter your name and details
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -93,7 +93,7 @@ const ProfileSetup = () => {
             </CardContent>
             <CardFooter className="flex justify-center">
               <p className="text-sm text-muted-foreground">
-                This information will be visible to other users
+                This information will be visible to other players
               </p>
             </CardFooter>
           </Card>
