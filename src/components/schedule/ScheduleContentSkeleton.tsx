@@ -16,14 +16,18 @@ const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activ
   
   return (
     <Tabs value={activeTab} className="mb-6">
-      <TabsList className="w-full md:w-auto font-inter bg-gray-200 dark:bg-gray-700">
-        <TabsTrigger value="upcoming" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
-          <Calendar className="h-4 w-4 mr-2" />
-          Upcoming Matches
+      <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">
+        <TabsTrigger value="upcoming" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6">
+          <div className="flex items-center justify-center">
+            <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming Matches</span>
+          </div>
         </TabsTrigger>
-        <TabsTrigger value="completed" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800">
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Completed Matches
+        <TabsTrigger value="completed" className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6">
+          <div className="flex items-center justify-center">
+            <CheckCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="text-sm md:text-base md:whitespace-nowrap">Completed Matches</span>
+          </div>
         </TabsTrigger>
       </TabsList>
       
