@@ -30,7 +30,8 @@ export const useTimeslots = (date: Date) => {
             teams:team_id (
               id, 
               name, 
-              logo_url
+              logo_url,
+              image_url
             )
           `)
           .eq('match_date', formattedDate);
@@ -46,6 +47,7 @@ export const useTimeslots = (date: Date) => {
             id: item.teams.id,
             name: item.teams.name,
             logo_url: item.teams.logo_url,
+            image_url: item.teams.image_url,
             divisionName: null
           } : undefined
         })) || [];
