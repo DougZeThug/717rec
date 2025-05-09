@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,22 +7,24 @@ import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Skeleton } from "@/components/ui/skeleton";
 import { animations, gradients, typography, elevation } from "@/styles/design-system";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TeamLogo } from "@/components/ui/team";
+import { MatchInteractions } from "@/components/matches";
 
 interface MatchCardProps {
   match: Match;
   isCompleted: boolean;
   onEdit?: (match: Match) => void;
   onDelete?: (matchId: string) => void;
+  showInteractions?: boolean;
 }
 
 const MatchCard: React.FC<MatchCardProps> = ({ 
   match, 
   isCompleted,
   onEdit,
-  onDelete
+  onDelete,
+  showInteractions = true
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
@@ -116,6 +117,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
       ? isLight ? "text-green-600 font-medium" : "text-green-500 font-medium"
       : isLight ? "text-gray-600" : "text-gray-400"
   );
+
+  // Determine whether to show interactions (only for completed matches)
+  const shouldShowInteractions = showInteractions && isCompleted;
 
   return (
     <Card className={cn(
@@ -278,6 +282,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 </button>
               )}
             </div>
+          )}
+
+          {/* Match Interactions Section - Only for completed matches */}
+          {shouldShowInteractions && (
+            <MatchInteractions matchId={match.id} />
           )}
         </div>
       </CardContent>

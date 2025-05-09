@@ -1,0 +1,86 @@
+
+import React, { useState } from "react";
+import { MoreHorizontal, Trash } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MatchComment } from "@/hooks/matches/useMatchComments";
+import { animations } from "@/styles/design-system";
+
+interface MatchCommentItemProps {
+  comment: MatchComment;
+  onDelete: (id: string) => Promise<boolean>;
+}
+
+const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }) => {
+  const { user } = useAuth();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const isAuthor = user?.id === comment.user_id;
+  
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await onDelete(comment.id);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  
+  const timeAgo = formatDistanceToNow(new Date(comment.created_at), { addSuffix: true });
+  
+  return (
+    <div className={cn(
+      "py-2 flex group",
+      animations.fadeIn
+    )}>
+      {/* Comment content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-sm">{comment.username}</span>
+          <span className="text-xs text-muted-foreground">{timeAgo}</span>
+        </div>
+        <div className="mt-1 text-sm whitespace-pre-wrap break-words">
+          {comment.content}
+        </div>
+      </div>
+      
+      {/* Comment actions */}
+      {isAuthor && (
+        <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 rounded-full"
+                disabled={isDeleting}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MatchCommentItem;
