@@ -17,6 +17,7 @@ interface DateMatchGroupProps {
   date: Date;
   matches: Match[];
   isCurrentDay: boolean;
+  isFirstGroup?: boolean;
   onEditMatch?: (match: Match) => void;
   onDeleteMatch?: (matchId: string) => void;
 }
@@ -25,10 +26,11 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   date, 
   matches, 
   isCurrentDay,
+  isFirstGroup = false,
   onEditMatch,
   onDeleteMatch
 }) => {
-  const [isOpen, setIsOpen] = React.useState(isCurrentDay);
+  const [isOpen, setIsOpen] = React.useState(isCurrentDay || isFirstGroup);
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   

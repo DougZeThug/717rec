@@ -99,12 +99,13 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            {groupedMatches.map(group => (
+            {groupedMatches.map((group, index) => (
               <DateMatchGroup
                 key={format(group.date, "yyyy-MM-dd")}
                 date={group.date}
                 matches={group.matches}
                 isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
+                isFirstGroup={index === 0}
                 onEditMatch={onEditMatch}
                 onDeleteMatch={onDeleteMatch}
               />
@@ -122,12 +123,13 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            {groupedMatches.map(group => (
+            {groupedMatches.map((group, index) => (
               <DateMatchGroup
                 key={format(group.date, "yyyy-MM-dd")}
                 date={group.date}
                 matches={group.matches}
                 isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
+                isFirstGroup={index === 0}
                 // No edit/delete functionality for completed matches
               />
             ))}
