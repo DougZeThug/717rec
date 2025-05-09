@@ -6,8 +6,9 @@ import { useBatchMatchForm } from "./useBatchMatchForm";
 import { DateSelectionSection } from "./DateSelectionSection";
 import { MatchPairsSection } from "./MatchPairsSection";
 import { AutoScheduleSection } from "./AutoScheduleSection";
-import { BatchMatchFormActions } from "./BatchMatchFormActions";
+import BatchMatchFormActions from "./BatchMatchFormActions";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingState } from "@/components/ui/loading-state";
 
 const BatchMatchFormContainer = () => {
   const { data: teams, isLoading } = useTeamData();
@@ -54,15 +55,7 @@ const BatchMatchFormContainer = () => {
   };
 
   if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex justify-center">
-            <p>Loading teams data...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <LoadingState message="Loading teams data..." size="md" />;
   }
 
   return (
