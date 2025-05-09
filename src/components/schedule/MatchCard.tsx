@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Match } from "@/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { Check, Pencil, Timer, Trash2 } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Check, Pencil, Timer, Trash2, MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
@@ -11,6 +10,9 @@ import { animations, gradients, typography, elevation } from "@/styles/design-sy
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TeamLogo } from "@/components/ui/team";
+import { MatchCommentSection } from "@/components/matches/MatchCommentSection";
+import { MatchReactionBar } from "@/components/matches/MatchReactionBar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface MatchCardProps {
   match: Match;
@@ -30,6 +32,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const [scoreAnimation, setScoreAnimation] = useState(false);
   const [countdownText, setCountdownText] = useState("");
   const [countdownPercent, setCountdownPercent] = useState(100);
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   // Check if team details are loading
   const isTeam1Loading = !match.team1Details;
@@ -281,6 +284,42 @@ const MatchCard: React.FC<MatchCardProps> = ({
           )}
         </div>
       </CardContent>
+      
+      {/* Only show reactions and comments for completed matches */}
+      {isCompleted && (
+        <CardFooter className="flex flex-col gap-2 p-4 pt-0">
+          {/* Reactions */}
+          <MatchReactionBar matchId={match.id} />
+          
+          {/* Comments section - collapsible */}
+          <Collapsible
+            open={commentsOpen}
+            onOpenChange={setCommentsOpen}
+            className="w-full"
+          >
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full flex justify-between items-center py-1 h-8" 
+              >
+                <div className="flex items-center gap-1 text-xs">
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  <span>Comments</span>
+                </div>
+                {commentsOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="overflow-hidden">
+              <MatchCommentSection matchId={match.id} />
+            </CollapsibleContent>
+          </Collapsible>
+        </CardFooter>
+      )}
     </Card>
   );
 };
