@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { ThursdayDatePicker } from "./ThursdayDatePicker";
@@ -6,15 +5,19 @@ import MatchPairsList from "./MatchPairsList";
 import BatchMatchFormActions from "./BatchMatchFormActions";
 import { useBatchMatchForm } from "./useBatchMatchForm";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, Users } from "lucide-react";
+import { Calendar, Clock, Users, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useAutoSchedule } from "@/hooks/useAutoSchedule";
+import SchedulePreview from "./SchedulePreview";
 
 const BatchMatchForm = () => {
   const { data: teams, isLoading } = useTeamData();
   const { toast } = useToast();
   const [isAutoAssigning, setIsAutoAssigning] = useState(false);
   const [isSubmitting, setIsSubmittingLocal] = useState(false);
+  const [showAutoSchedule, setShowAutoSchedule] = useState(false);
 
   const {
     selectedDate,
@@ -27,6 +30,13 @@ const BatchMatchForm = () => {
     autoAssignTimeslots,
     handleSubmit
   } = useBatchMatchForm(teams || []);
+
+  const {
+    isGenerating,
+    loadTeamsForDate,
+    previewSchedule,
+    timeBlockTeams
+  } = useAutoSchedule();
 
   // Update local state to reflect form state for animation purposes
   React.useEffect(() => {
@@ -59,6 +69,26 @@ const BatchMatchForm = () => {
     }
   };
 
+  const handlePreviewSchedule = async () => {
+    if (!selectedDate) {
+      toast({
+        title: "Select Date",
+        description: "Please select a date first.",
+        variant: "warning"
+      });
+      return;
+    }
+    
+    const preview = await previewSchedule(selectedDate);
+    if (preview) {
+      toast({
+        title: "Teams Loaded",
+        description: "Teams for each time block have been loaded. Check developer console for details.",
+      });
+      console.log("Preview schedule data:", preview);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -87,28 +117,74 @@ const BatchMatchForm = () => {
         </p>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">Match Pairings</span>
         </div>
-        <p className="text-sm text-muted-foreground mb-3">
-          Create team vs team pairings and assign timeslots
-        </p>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-4"
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setShowAutoSchedule(!showAutoSchedule)}
+          className="flex items-center gap-1"
         >
-          <MatchPairsList
-            pairs={matchPairs}
-            teams={teams || []}
-            onUpdate={updateMatchPair}
-            onRemove={removeMatchPair}
-          />
-        </motion.div>
+          <Wand2 className="h-4 w-4" />
+          <span>Auto Schedule</span>
+        </Button>
       </div>
+
+      {showAutoSchedule && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          className="bg-slate-50 dark:bg-slate-900 p-4 rounded-md border"
+        >
+          <h3 className="text-sm font-medium mb-2">Schedule Generator</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Generate matches using teams assigned to time blocks for this date
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handlePreviewSchedule}
+            disabled={isGenerating || !selectedDate}
+            className="w-full mb-4"
+          >
+            {isGenerating ? "Loading Teams..." : "Preview Available Teams"}
+          </Button>
+          
+          {/* Only show preview if teams are loaded */}
+          {Object.keys(timeBlockTeams).length > 0 && (
+            <SchedulePreview 
+              timeBlockTeams={timeBlockTeams}
+              date={selectedDate}
+            />
+          )}
+          
+          <div className="text-xs text-muted-foreground mt-2">
+            Note: This feature is currently in development (Phase 1)
+          </div>
+        </motion.div>
+      )}
+
+      <p className="text-sm text-muted-foreground mb-3">
+        Create team vs team pairings and assign timeslots
+      </p>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-4"
+      >
+        <MatchPairsList
+          pairs={matchPairs}
+          teams={teams || []}
+          onUpdate={updateMatchPair}
+          onRemove={removeMatchPair}
+        />
+      </motion.div>
 
       <BatchMatchFormActions
         onAutoAssign={handleAutoAssign}

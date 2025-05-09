@@ -1,32 +1,15 @@
+import { Match } from "@/types";
 
 /**
- * Extracts the formatted time string from a date string
+ * Groups an array of matches by time slot.
+ *
+ * @param matches An array of Match objects to group.
+ * @returns An object where the keys are time slots and the values are arrays of Match objects.
  */
-export const extractTimeSlot = (dateString: string | undefined): string => {
-  if (!dateString) return "No Time";
-  
-  const date = new Date(dateString);
-  
-  // Check if date is valid
-  if (isNaN(date.getTime())) {
-    console.warn("Invalid date string provided to extractTimeSlot:", dateString);
-    return "No Time";
-  }
-  
-  // Format hours and minutes to get time slots like "6:30 PM"
-  return date.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true
-  });
-};
-
-/**
- * Groups matches by their time slot
- */
-export const groupMatchesByTimeSlot = (matches: any[]): Record<string, any[]> => {
-  return matches.reduce((acc, match) => {
-    const timeSlot = extractTimeSlot(match.date);
+export const groupMatchesByTimeSlot = (matches: Match[]): { [timeSlot: string]: Match[] } => {
+  return matches.reduce((acc: { [timeSlot: string]: Match[] }, match: Match) => {
+    // Use a default value if match.date is undefined
+    const timeSlot = new Date(match.date || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
     if (!acc[timeSlot]) {
       acc[timeSlot] = [];
@@ -34,47 +17,62 @@ export const groupMatchesByTimeSlot = (matches: any[]): Record<string, any[]> =>
     
     acc[timeSlot].push(match);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {});
 };
 
 /**
- * Converts a time string (either "6:30 PM" or "18:30") to 24-hour format
+ * Normalize time format to standardized 12-hour format (e.g., "7:00 PM")
  */
 export const normalizeTimeFormat = (timeString: string): string => {
-  // If already in 24-hour format like "18:30", return as is
-  if (/^\d{1,2}:\d{2}$/.test(timeString)) {
+  if (!timeString) return '';
+  
+  // Remove any extra spaces
+  const cleanedTime = timeString.trim();
+  
+  // Check if time already has AM/PM indicator
+  if (cleanedTime.toLowerCase().includes('am') || cleanedTime.toLowerCase().includes('pm')) {
+    // Ensure consistent formatting (e.g., "7:00 PM" instead of "7:00PM")
+    const [timePart, meridiem] = cleanedTime.split(/(?=[AP]M)/i);
+    return `${timePart.trim()} ${meridiem.toUpperCase()}`;
+  }
+  
+  // Assume 24-hour format and convert to 12-hour
+  try {
+    const [hours, minutes] = cleanedTime.split(':').map(Number);
+    const meridiem = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${meridiem}`;
+  } catch (error) {
+    console.error('Error normalizing time format:', error);
     return timeString;
   }
-  
-  // Convert 12-hour format like "6:30 PM" to 24-hour format
-  const [time, period] = timeString.split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
-  
-  if (period === 'PM' && hours < 12) {
-    hours += 12;
-  } else if (period === 'AM' && hours === 12) {
-    hours = 0;
-  }
-  
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 
 /**
- * Ensures consistent time slot format across the application
+ * Group match times into standard time blocks
  */
-export const formatTimeSlot = (timeString: string): string => {
-  // Convert to 24-hour first
-  const normalized = normalizeTimeFormat(timeString);
+export const getTimeBlock = (time: string): string | null => {
+  const normalizedTime = normalizeTimeFormat(time);
   
-  // Convert to Date object to use toLocaleTimeString
-  const [hours, minutes] = normalized.split(':').map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
+  if (normalizedTime.includes('6:30') || normalizedTime.includes('7:00')) {
+    return '6:30';
+  } else if (normalizedTime.includes('7:30') || normalizedTime.includes('8:00')) {
+    return '7:30';
+  } else if (normalizedTime.includes('8:30') || normalizedTime.includes('9:00')) {
+    return '8:30';
+  }
   
-  // Return in standard 12-hour format
-  return date.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
+  return null;
+};
+
+/**
+ * Get corresponding time pair for a time block
+ */
+export const getTimePairForBlock = (block: string): [string, string] | null => {
+  switch (block) {
+    case '6:30': return ['6:30 PM', '7:00 PM'];
+    case '7:30': return ['7:30 PM', '8:00 PM'];
+    case '8:30': return ['8:30 PM', '9:00 PM'];
+    default: return null;
+  }
 };
