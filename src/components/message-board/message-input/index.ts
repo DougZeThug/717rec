@@ -1,3 +1,2 @@
 
-import MessageInputForm from "./MessageInputForm";
-export default MessageInputForm;
+export { default } from "./MessageInputForm";

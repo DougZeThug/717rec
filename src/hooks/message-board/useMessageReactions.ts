@@ -1,170 +1,182 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageReaction, ReactionCount } from "@/types/reactions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { MessageReaction, ReactionCount } from "@/types/reactions";
 
-export function useMessageReactions(messageId: string) {
+export const useMessageReactions = (messageId: string) => {
   const [reactions, setReactions] = useState<MessageReaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   
-  // Memoized reaction counts with user's reaction status
+  // Group and count reactions
   const reactionCounts = useMemo(() => {
-    const counts: Record<string, { count: number; users: string[] }> = {};
+    const counts: ReactionCount[] = [];
     
-    // Count reactions by emoji
-    reactions.forEach(reaction => {
-      if (!counts[reaction.emoji]) {
-        counts[reaction.emoji] = { count: 0, users: [] };
+    // Group by emoji
+    reactions.forEach((reaction) => {
+      const existing = counts.find(item => item.emoji === reaction.emoji);
+      
+      if (existing) {
+        existing.count += 1;
+        existing.users.push(reaction.user_id);
+        if (reaction.user_id === user?.id) {
+          existing.hasReacted = true;
+        }
+      } else {
+        counts.push({
+          emoji: reaction.emoji,
+          count: 1,
+          users: [reaction.user_id],
+          hasReacted: reaction.user_id === user?.id
+        });
       }
-      counts[reaction.emoji].count += 1;
-      counts[reaction.emoji].users.push(reaction.user_id);
     });
     
-    // Convert to array and add hasReacted flag
-    return Object.entries(counts).map(([emoji, data]) => ({
-      emoji,
-      count: data.count,
-      users: data.users,
-      hasReacted: user ? data.users.includes(user.id) : false
-    })).sort((a, b) => b.count - a.count);
-  }, [reactions, user]);
+    return counts.sort((a, b) => b.count - a.count);
+  }, [reactions, user?.id]);
   
-  // Fetch all reactions for a message
-  const fetchReactions = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('message_reactions')
-        .select('*')
-        .eq('message_id', messageId);
+  // Fetch initial reactions
+  useEffect(() => {
+    const fetchReactions = async () => {
+      try {
+        setIsLoading(true);
         
-      if (error) throw error;
-      
-      setReactions(data || []);
-      return data;
-    } catch (error: any) {
-      console.error("Error fetching reactions:", error);
-      setError(error.message);
-      return [];
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  // Toggle reaction (add/remove)
-  const toggleReaction = async (emoji: string): Promise<boolean> => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "You must be logged in to react to messages.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
-    const hasReacted = reactions.some(r => 
-      r.user_id === user.id && r.emoji === emoji
-    );
-    
-    try {
-      if (hasReacted) {
-        // Remove the reaction
-        const { error } = await supabase
-          .from('message_reactions')
-          .delete()
-          .eq('message_id', messageId)
-          .eq('user_id', user.id)
-          .eq('emoji', emoji);
-          
-        if (error) throw error;
-        
-        // Update local state
-        setReactions(prev => 
-          prev.filter(r => !(r.user_id === user.id && r.emoji === emoji))
-        );
-      } else {
-        // Add the reaction
         const { data, error } = await supabase
           .from('message_reactions')
-          .insert({
-            message_id: messageId,
-            user_id: user.id,
-            emoji
-          })
-          .select()
-          .single();
-          
+          .select('*')
+          .eq('message_id', messageId);
+        
         if (error) {
-          // Handle unique constraint violation
-          if (error.code === '23505') {
-            return true; // Already exists, treat as success
-          }
           throw error;
         }
         
-        // Update local state
-        setReactions(prev => [...prev, data]);
+        setReactions(data || []);
+      } catch (err) {
+        console.error('Error fetching reactions:', err);
+      } finally {
+        setIsLoading(false);
       }
-      
-      return true;
-    } catch (error: any) {
-      console.error("Error toggling reaction:", error);
-      toast({
-        title: "Reaction failed",
-        description: "Failed to update your reaction. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-  
-  // Initialize reactions and set up realtime subscription
-  useEffect(() => {
-    fetchReactions();
+    };
     
-    // Subscribe to realtime updates
+    if (messageId) {
+      fetchReactions();
+    }
+  }, [messageId]);
+  
+  // Set up realtime subscription
+  useEffect(() => {
+    if (!messageId) return;
+
     const channel = supabase
-      .channel(`message_reactions:${messageId}`)
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'message_reactions',
-        filter: `message_id=eq.${messageId}` 
-      }, payload => {
-        
-        if (payload.eventType === 'INSERT' && payload.new) {
-          // Add new reaction
+      .channel('message-reactions')
+      .on('postgres_changes', 
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'message_reactions',
+          filter: `message_id=eq.${messageId}`
+        }, 
+        (payload) => {
           const newReaction = payload.new as MessageReaction;
-          // Avoid duplicates from user's own actions
-          if (user?.id !== newReaction.user_id) {
-            setReactions(prev => 
-              prev.some(r => r.id === newReaction.id) ? prev : [...prev, newReaction]
-            );
-          }
-        } else if (payload.eventType === 'DELETE' && payload.old) {
-          // Remove deleted reaction
-          const oldReaction = payload.old as MessageReaction;
-          setReactions(prev => 
-            prev.filter(r => r.id !== oldReaction.id)
-          );
+          setReactions(curr => [...curr, newReaction]);
         }
-      })
+      )
+      .on('postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'message_reactions',
+          filter: `message_id=eq.${messageId}`
+        },
+        (payload) => {
+          const deletedReaction = payload.old as MessageReaction;
+          setReactions(curr => curr.filter(r => r.id !== deletedReaction.id));
+        }
+      )
       .subscribe();
       
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [messageId, user?.id]);
+  }, [messageId]);
+  
+  // Add reaction
+  const addReaction = async (emoji: string) => {
+    if (!user) {
+      toast({
+        title: "Not signed in",
+        description: "You must be signed in to react to messages",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!emoji) return;
+    
+    try {
+      // Check if the user already added this emoji reaction
+      const existingReaction = reactions.find(r => 
+        r.user_id === user.id && r.emoji === emoji);
+      
+      if (existingReaction) {
+        // If the reaction exists, remove it (toggle behavior)
+        return removeReaction(existingReaction.id);
+      }
+      
+      const { error } = await supabase
+        .from('message_reactions')
+        .insert({
+          message_id: messageId,
+          user_id: user.id,
+          emoji
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+    } catch (err) {
+      console.error('Error adding reaction:', err);
+      toast({
+        title: "Error",
+        description: "Failed to add reaction",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // Remove reaction
+  const removeReaction = async (reactionId: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('message_reactions')
+        .delete()
+        .eq('id', reactionId)
+        .eq('user_id', user.id); // RLS ensures this is the user's reaction
+      
+      if (error) {
+        throw error;
+      }
+      
+    } catch (err) {
+      console.error('Error removing reaction:', err);
+      toast({
+        title: "Error",
+        description: "Failed to remove reaction",
+        variant: "destructive"
+      });
+    }
+  };
   
   return {
     reactions,
     reactionCounts,
     isLoading,
-    error,
-    toggleReaction
+    addReaction,
+    removeReaction
   };
-}
+};

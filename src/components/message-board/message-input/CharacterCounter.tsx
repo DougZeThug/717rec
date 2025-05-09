@@ -8,21 +8,19 @@ interface CharacterCounterProps {
 }
 
 const CharacterCounter: React.FC<CharacterCounterProps> = ({ current, max }) => {
-  const isNearLimit = current > max * 0.8;
-  const isOverLimit = current > max;
-
+  const remaining = max - current;
+  const isNearLimit = remaining < 50 && remaining >= 0;
+  const isOverLimit = remaining < 0;
+  
   return (
     <span 
       className={cn(
-        "text-xs transition-colors",
-        isOverLimit 
-          ? "text-destructive font-medium" 
-          : isNearLimit 
-            ? "text-amber-500 dark:text-amber-400" 
-            : "text-muted-foreground"
+        "text-xs", 
+        isNearLimit ? "text-yellow-500" : "text-muted-foreground",
+        isOverLimit ? "text-red-500" : ""
       )}
     >
-      {current}/{max}
+      {remaining} left
     </span>
   );
 };
