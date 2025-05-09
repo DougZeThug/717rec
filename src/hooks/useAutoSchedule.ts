@@ -203,6 +203,7 @@ export const useAutoSchedule = () => {
    */
   const convertPairingsToMatches = (pairings: Record<string, TeamPairing[]>, date: Date) => {
     const matches: {
+      id: string; // Add the id field for each match pair
       team1Id: string;
       team2Id: string;
       timeslot: string;
@@ -216,6 +217,7 @@ export const useAutoSchedule = () => {
           : TIME_BLOCKS[block].secondary;
         
         matches.push({
+          id: Date.now().toString() + '-' + block + '-' + index, // Generate a unique ID
           team1Id: pairing.team1.id,
           team2Id: pairing.team2.id,
           timeslot,
