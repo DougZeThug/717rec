@@ -3,7 +3,6 @@ import React from "react";
 import { format } from "date-fns";
 import { CalendarX, ChevronDown } from "lucide-react";
 import { Match } from "@/types";
-import MatchCard from "./MatchCard";
 import { 
   Collapsible, 
   CollapsibleContent, 
@@ -11,6 +10,8 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import TimeSlotMatchGroup from "./TimeSlotMatchGroup";
+import { groupMatchesByTimeSlot } from "@/utils/timeUtils";
 
 interface DateMatchGroupProps {
   date: Date;
@@ -33,6 +34,15 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   
   const formattedDate = format(date, "EEEE, MMMM d");
   const isCompleted = matches.every(match => match.iscompleted);
+  
+  // Group matches by time slot
+  const matchesByTimeSlot = groupMatchesByTimeSlot(matches);
+  // Sort time slots chronologically
+  const sortedTimeSlots = Object.keys(matchesByTimeSlot).sort((a, b) => {
+    const timeA = new Date(`1970/01/01 ${a}`).getTime();
+    const timeB = new Date(`1970/01/01 ${b}`).getTime();
+    return timeA - timeB;
+  });
   
   return (
     <Collapsible
@@ -64,15 +74,15 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
         />
       </CollapsibleTrigger>
       <CollapsibleContent id={`content-${formattedDate}`}>
-        <div className="p-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {matches.length > 0 ? (
-            matches.map(match => (
-              <MatchCard 
-                key={match.id} 
-                match={match}
-                isCompleted={match.iscompleted}
-                onEdit={!match.iscompleted ? onEditMatch : undefined}
-                onDelete={!match.iscompleted ? onDeleteMatch : undefined}
+        <div className="p-4 space-y-3">
+          {sortedTimeSlots.length > 0 ? (
+            sortedTimeSlots.map(timeSlot => (
+              <TimeSlotMatchGroup
+                key={timeSlot}
+                timeSlot={timeSlot}
+                matches={matchesByTimeSlot[timeSlot]}
+                onEditMatch={onEditMatch}
+                onDeleteMatch={onDeleteMatch}
               />
             ))
           ) : (
