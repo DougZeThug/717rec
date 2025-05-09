@@ -22,11 +22,14 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
 }) => {
   // Track which timeslots are expanded
   const [expandedTimeslots, setExpandedTimeslots] = useState<Record<string, boolean>>(() => {
-    // Initialize all timeslots as expanded
+    // Initialize only the first timeslot as expanded
     const initialState: Record<string, boolean> = {};
-    Object.keys(groupedTimeslots).forEach(timeslot => {
-      initialState[timeslot] = true;
+    const timeslotKeys = Object.keys(groupedTimeslots);
+    
+    timeslotKeys.forEach((timeslot, index) => {
+      initialState[timeslot] = index === 0; // Only the first one starts expanded
     });
+    
     return initialState;
   });
 

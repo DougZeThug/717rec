@@ -15,15 +15,17 @@ interface TimeSlotMatchGroupProps {
   matches: Match[];
   onEditMatch?: (match: Match) => void;
   onDeleteMatch?: (matchId: string) => void;
+  isFirstTimeSlot?: boolean;
 }
 
 const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   timeSlot,
   matches,
   onEditMatch,
-  onDeleteMatch
+  onDeleteMatch,
+  isFirstTimeSlot = false
 }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(isFirstTimeSlot);
   
   return (
     <Collapsible

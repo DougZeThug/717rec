@@ -76,13 +76,14 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
       <CollapsibleContent id={`content-${formattedDate}`}>
         <div className="p-4 space-y-3">
           {sortedTimeSlots.length > 0 ? (
-            sortedTimeSlots.map(timeSlot => (
+            sortedTimeSlots.map((timeSlot, index) => (
               <TimeSlotMatchGroup
                 key={timeSlot}
                 timeSlot={timeSlot}
                 matches={matchesByTimeSlot[timeSlot]}
                 onEditMatch={onEditMatch}
                 onDeleteMatch={onDeleteMatch}
+                isFirstTimeSlot={index === 0 && isOpen}
               />
             ))
           ) : (
