@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { MoreHorizontal, Trash } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -34,8 +33,6 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
     }
   };
   
-  const timeAgo = formatDistanceToNow(new Date(comment.created_at), { addSuffix: true });
-  
   return (
     <div className={cn(
       "py-2 flex group",
@@ -49,7 +46,6 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
             teamName={comment.team_name}
             compact={true}
           />
-          <span className="text-xs text-muted-foreground">{timeAgo}</span>
         </div>
         <div className="mt-1 text-sm whitespace-pre-wrap break-words">
           {comment.content}
