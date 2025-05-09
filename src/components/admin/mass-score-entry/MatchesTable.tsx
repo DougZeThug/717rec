@@ -4,8 +4,7 @@ import { format, parseISO } from "date-fns";
 import { MatchWithTeams } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import DateMatchGroup from "./components/DateMatchGroup";
-import { Loader2, AlertCircle, Calendar } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 interface MatchesTableProps {
   matches: MatchWithTeams[];
@@ -30,8 +29,16 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   errorMessages = {},
   onClearError
 }) => {
+  // Add index reference to each match for stable references
+  const indexedMatches = useMemo(() => {
+    return matches.map((match, index) => ({
+      ...match,
+      id: `${match.id}-index-${index}` // Store original index in ID for reference
+    }));
+  }, [matches]);
+
   const matchesByDate = useMemo(() => {
-    const groups = matches.reduce((acc, match) => {
+    const groups = indexedMatches.reduce((acc, match) => {
       if (!match.date) return acc;
       const dateKey = format(new Date(match.date), "yyyy-MM-dd");
       if (!acc[dateKey]) {
@@ -47,7 +54,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
     return Object.values(groups).sort((a, b) => 
       a.date.getTime() - b.date.getTime()
     );
-  }, [matches]);
+  }, [indexedMatches]);
 
   if (loading) {
     return (
@@ -71,7 +78,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   }
 
   const totalDates = matchesByDate.length;
-  const defaultExpanded = totalDates <= 5;
+  const defaultExpanded = totalDates <= 3;
 
   return (
     <div className="space-y-4">

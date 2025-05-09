@@ -10,7 +10,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger
 } from "@/components/ui/collapsible";
-import MatchRow from "../MatchRow";
+import { groupMatchesByTimeSlot, sortTimeSlots } from "../utils/timeGrouping";
+import TimeSlotMatchGroup from "./TimeSlotMatchGroup";
 
 interface DateMatchGroupProps {
   date: Date;
@@ -40,6 +41,10 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   const [isOpen, setIsOpen] = useState(defaultExpanded);
   const formattedDate = format(date, "EEEE, MMMM d, yyyy");
   
+  // Group matches by time slot for this date
+  const matchesByTimeSlot = groupMatchesByTimeSlot(matches);
+  const sortedTimeSlots = sortTimeSlots(Object.keys(matchesByTimeSlot));
+  
   return (
     <Collapsible
       open={isOpen}
@@ -66,23 +71,29 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="p-4 space-y-4"
         >
-          {matches.map((match, idx) => (
-            <div key={match.id} className="relative">
-              <MatchRow
-                match={match}
-                index={idx}
-                isSubmitting={submitting}
-                hasError={failedMatches?.includes(match.id)}
-                errorMessage={errorMessages?.[match.id]}
+          {sortedTimeSlots.length > 0 ? (
+            sortedTimeSlots.map(timeSlot => (
+              <TimeSlotMatchGroup
+                key={timeSlot}
+                timeSlot={timeSlot}
+                matches={matchesByTimeSlot[timeSlot]} 
                 onScoreChange={onScoreChange}
                 onGameWinsChange={onGameWinsChange}
                 onMarkCompleted={onMarkCompleted}
+                submitting={submitting}
+                failedMatches={failedMatches}
+                errorMessages={errorMessages}
                 onClearError={onClearError}
+                defaultOpen={matches.length <= 5}
               />
+            ))
+          ) : (
+            <div className="text-center p-4 text-muted-foreground">
+              No matches found for this date.
             </div>
-          ))}
+          )}
         </motion.div>
       </CollapsibleContent>
     </Collapsible>

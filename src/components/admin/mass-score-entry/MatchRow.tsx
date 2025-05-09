@@ -12,9 +12,9 @@ interface MatchRowProps {
   isSubmitting?: boolean;
   hasError?: boolean;
   errorMessage?: string;
-  onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
-  onGameWinsChange: (index: number, team1GameWins: number, team2GameWins: number) => void;
-  onMarkCompleted: (index: number, checked: boolean) => void;
+  onScoreChange: (team1Score: number, team2Score: number) => void;
+  onGameWinsChange: (team1GameWins: number, team2GameWins: number) => void;
+  onMarkCompleted: (checked: boolean) => void;
   onClearError?: (matchId: string) => void;
 }
 
@@ -39,7 +39,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
   const handleCompletedChange = (checked: boolean) => {
     console.log(`MatchRow: handleCompletedChange called with ${checked} for match ${match.id}`);
-    onMarkCompleted(index, checked);
+    onMarkCompleted(checked);
   };
 
   return (
@@ -54,8 +54,8 @@ const MatchRow: React.FC<MatchRowProps> = ({
         {/* Score Section */}
         <ScoreSection
           match={match}
-          onScoreChange={(scores) => onScoreChange(index, scores.team1Score, scores.team2Score)}
-          onGameWinsChange={(gameWins) => onGameWinsChange(index, gameWins.team1GameWins, gameWins.team2GameWins)}
+          onScoreChange={(scores) => onScoreChange(scores.team1Score, scores.team2Score)}
+          onGameWinsChange={(gameWins) => onGameWinsChange(gameWins.team1GameWins, gameWins.team2GameWins)}
           isSubmitting={isSubmitting}
           hasError={hasError}
           errorMessage={errorMessage}

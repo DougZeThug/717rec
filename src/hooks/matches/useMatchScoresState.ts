@@ -1,34 +1,37 @@
 
 import { useState } from 'react';
-import { Match } from "@/types";
+import { Match } from '@/types';
 
-export const useMatchScoresState = (matches: Match[]) => {
+export function useMatchScoresState(matches: Match[] = []) {
   const [scores, setScores] = useState<Record<string, { team1Score: string, team2Score: string }>>({});
 
-  const initializeScores = (matches: Match[]) => {
+  const initializeScores = (newMatches: Match[]) => {
     const initialScores: Record<string, { team1Score: string, team2Score: string }> = {};
-    matches.forEach(match => {
-      initialScores[match.id] = { 
-        team1Score: match.team1Score?.toString() || '', 
-        team2Score: match.team2Score?.toString() || '' 
+    
+    newMatches.forEach(match => {
+      initialScores[match.id] = {
+        team1Score: match.team1Score?.toString() || '',
+        team2Score: match.team2Score?.toString() || ''
       };
     });
+    
     setScores(initialScores);
   };
 
-  const handleScoreChange = (matchId: string, team: 'team1Score' | 'team2Score', value: string) => {
+  const handleScoreChange = (matchId: string, scoreField: 'team1Score' | 'team2Score', value: string) => {
     setScores(prev => ({
       ...prev,
       [matchId]: {
         ...prev[matchId],
-        [team]: value
+        [scoreField]: value
       }
     }));
   };
 
-  return {
-    scores,
-    initializeScores,
-    handleScoreChange
-  };
-};
+  // Initialize on first load
+  if (matches.length > 0 && Object.keys(scores).length === 0) {
+    initializeScores(matches);
+  }
+
+  return { scores, initializeScores, handleScoreChange };
+}
