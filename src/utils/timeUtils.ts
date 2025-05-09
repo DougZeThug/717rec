@@ -1,3 +1,4 @@
+
 import { Match } from "@/types";
 
 /**
@@ -74,5 +75,19 @@ export const getTimePairForBlock = (block: string): [string, string] | null => {
     case '7:30': return ['7:30 PM', '8:00 PM'];
     case '8:30': return ['8:30 PM', '9:00 PM'];
     default: return null;
+  }
+};
+
+/**
+ * Extract time slot from a date string
+ * Used specifically for grouping matches by time in the admin panel
+ */
+export const extractTimeSlot = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (error) {
+    console.error('Error extracting time slot:', error);
+    return 'No Time';
   }
 };

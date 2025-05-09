@@ -79,7 +79,7 @@ export const useAutoSchedule = () => {
         toast({
           title: "Warning",
           description: `Blocks with odd number of teams: ${unmatchableBlocks.join(', ')}. Some teams may not get matched.`,
-          variant: "warning"
+          variant: "destructive"  // Changed from "warning" to "destructive"
         });
       }
       

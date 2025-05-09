@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { ThursdayDatePicker } from "./ThursdayDatePicker";
@@ -74,7 +75,7 @@ const BatchMatchForm = () => {
       toast({
         title: "Select Date",
         description: "Please select a date first.",
-        variant: "warning"
+        variant: "destructive" // Changed from "warning" to "destructive"
       });
       return;
     }
