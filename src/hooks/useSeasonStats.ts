@@ -25,15 +25,18 @@ export function useSeasonStats() {
   const fetchSeasons = async () => {
     setIsLoading(true);
     try {
+      // Fix: Remove .distinct() and use array methods instead to get unique values
       const { data, error } = await supabase
         .from('season_stats')
         .select('season_id')
-        .order('season_id')
-        .distinct();
+        .order('season_id');
 
       if (error) throw error;
       
-      const uniqueSeasons = data.map(item => item.season_id);
+      // Process the data to get unique season_ids
+      const seasonIds = data.map(item => item.season_id);
+      const uniqueSeasons = [...new Set(seasonIds)];
+      
       setSeasons(uniqueSeasons);
       return uniqueSeasons;
     } catch (error: any) {

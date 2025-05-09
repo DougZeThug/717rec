@@ -74,45 +74,68 @@ const SeasonStatsTab = () => {
         toast({
           title: "Warning",
           description: `Entries for ${existingEntries.length} teams already exist for season "${values.seasonId}". Only new teams will be added.`,
-          variant: "warning",
+          // Fix: Use 'default' instead of 'warning' as variant
+          variant: "default",
         });
 
-        // Filter out teams that already have entries
-        teams = teams.filter(team => !existingTeams.includes(team.id));
-      }
+        // Fix: Create a filtered copy instead of modifying the original teams array
+        const teamsToProcess = teams.filter(team => !existingTeams.includes(team.id));
+        
+        if (teamsToProcess.length === 0) {
+          toast({
+            title: "No Action Needed",
+            description: "All teams already have stats recorded for this season.",
+          });
+          setIsSaving(false);
+          return;
+        }
 
-      if (teams.length === 0) {
+        // Create entries for teams that don't have records yet
+        const entries = teamsToProcess.map(team => ({
+          season_id: values.seasonId,
+          team_id: team.id,
+          match_wins: team.wins || 0,
+          match_losses: team.losses || 0,
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0,
+          power_score: team.power_score || 0,
+          sos: team.sos || 0,
+        }));
+
+        const { error } = await supabase
+          .from('season_stats')
+          .insert(entries);
+
+        if (error) throw error;
+
         toast({
-          title: "No Action Needed",
-          description: "All teams already have stats recorded for this season.",
+          title: "Success",
+          description: `Stats for ${entries.length} teams have been saved to season "${values.seasonId}".`,
         });
-        setIsSaving(false);
-        return;
+      } else {
+        // No existing entries for this season, create for all teams
+        const entries = teams.map(team => ({
+          season_id: values.seasonId,
+          team_id: team.id,
+          match_wins: team.wins || 0,
+          match_losses: team.losses || 0,
+          game_wins: team.game_wins || 0,
+          game_losses: team.game_losses || 0,
+          power_score: team.power_score || 0,
+          sos: team.sos || 0,
+        }));
+
+        const { error } = await supabase
+          .from('season_stats')
+          .insert(entries);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: `Stats for ${entries.length} teams have been saved to season "${values.seasonId}".`,
+        });
       }
-
-      // Create entries for teams that don't have records yet
-      const entries = teams.map(team => ({
-        season_id: values.seasonId,
-        team_id: team.id,
-        match_wins: team.wins || 0,
-        match_losses: team.losses || 0,
-        game_wins: team.game_wins || 0,
-        game_losses: team.game_losses || 0,
-        power_score: team.power_score || 0,
-        sos: team.sos || 0,
-      }));
-
-      const { error } = await supabase
-        .from('season_stats')
-        .insert(entries);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `Stats for ${entries.length} teams have been saved to season "${values.seasonId}".`,
-      });
-
     } catch (error: any) {
       console.error("Error saving season stats:", error);
       toast({
