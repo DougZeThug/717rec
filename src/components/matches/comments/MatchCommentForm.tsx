@@ -36,13 +36,16 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
   if (!user) {
     return (
       <LoginRequired 
-        message="Sign in to comment on matches" 
+        message="Sign in to comment on matches"
         fallback={
           <div className="bg-muted/30 rounded-md px-4 py-3 text-sm text-muted-foreground">
             Sign in to comment on this match
           </div>
         }
-      />
+      >
+        {/* This empty fragment satisfies the children prop requirement */}
+        <></>
+      </LoginRequired>
     );
   }
   
