@@ -6,7 +6,7 @@ import { format, parseISO } from "date-fns";
 /**
  * Structure to represent a team pairing with compatibility score
  */
-interface TeamPair {
+export interface TeamPair {
   team1: Team;
   team2: Team;
   compatibilityScore: number;
@@ -15,7 +15,7 @@ interface TeamPair {
 /**
  * Time block structure with exact timeslots
  */
-interface TimeBlock {
+export interface TimeBlock {
   main: string;     // First match timeslot (e.g., "6:30 PM")
   secondary: string; // Second match timeslot (e.g., "7:00 PM")
 }
@@ -92,19 +92,25 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
  * Check if two teams have played each other before
  */
 export async function haveTeamsPlayed(team1Id: string, team2Id: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('matches')
-    .select('id')
-    .or(`team1_id.eq.${team1Id},team2_id.eq.${team1Id}`)
-    .or(`team1_id.eq.${team2Id},team2_id.eq.${team2Id}`)
-    .limit(1);
+  try {
+    // Build a query to find matches between these teams
+    const { data, error } = await supabase
+      .from('matches')
+      .select('id')
+      .or(`and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`)
+      .limit(1);
 
-  if (error) {
-    console.error('Error checking if teams have played:', error);
-    throw error;
+    if (error) {
+      console.error('Error checking if teams have played:', error);
+      throw error;
+    }
+
+    return data && data.length > 0;
+  } catch (error) {
+    console.error('Error in haveTeamsPlayed:', error);
+    // Return false as a fallback to avoid blocking match generation
+    return false;
   }
-
-  return data && data.length > 0;
 }
 
 /**
@@ -123,12 +129,29 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
   const team2WinPct = team2.wins / (team2.wins + team2.losses || 1);
   const recordDiff = Math.abs(team1WinPct - team2WinPct);
   
-  // Calculate compatibility score (lower differences = higher compatibility)
-  // Weighted factors - can be adjusted to prioritize different aspects
-  const compatibilityScore = 10 - (powerScoreDiff * 3 + sosDiff * 2 + recordDiff * 5);
+  // Calculate game record similarity
+  const team1GameWinPct = team1.game_wins / (team1.game_wins + team1.game_losses || 1);
+  const team2GameWinPct = team2.game_wins / (team2.game_wins + team2.game_losses || 1);
+  const gameRecordDiff = Math.abs(team1GameWinPct - team2GameWinPct);
   
-  // Ensure the score is within a reasonable range
-  return Math.max(0, Math.min(10, compatibilityScore));
+  // Calculate weighted compatibility score (lower differences = higher compatibility)
+  // Adjust weights based on importance of each factor
+  // Normalize each factor to a 0-1 scale before weighting
+  const normalizedPowerScoreDiff = Math.min(1, powerScoreDiff / 100);
+  const normalizedSosDiff = Math.min(1, sosDiff);
+  const normalizedRecordDiff = Math.min(1, recordDiff);
+  const normalizedGameRecordDiff = Math.min(1, gameRecordDiff);
+  
+  // Apply weights to each factor (total should be 10)
+  const weightedScore = 10 - (
+    normalizedPowerScoreDiff * 4 + 
+    normalizedSosDiff * 2 + 
+    normalizedRecordDiff * 2.5 + 
+    normalizedGameRecordDiff * 1.5
+  );
+  
+  // Ensure the score is within a reasonable range (0-10)
+  return Math.max(0, Math.min(10, weightedScore));
 }
 
 /**
@@ -160,6 +183,7 @@ export function generateTeamPairings(teams: Team[]): TeamPair[] {
 export async function filterPairsWithPreviousMatches(pairs: TeamPair[]): Promise<TeamPair[]> {
   const filteredPairs: TeamPair[] = [];
   
+  // Process each pair sequentially to check match history
   for (const pair of pairs) {
     const havePlayed = await haveTeamsPlayed(pair.team1.id, pair.team2.id);
     if (!havePlayed) {
@@ -169,3 +193,57 @@ export async function filterPairsWithPreviousMatches(pairs: TeamPair[]): Promise
   
   return filteredPairs;
 }
+
+/**
+ * Algorithm to find optimal pairings for a set of teams
+ */
+export async function findOptimalPairings(teams: Team[]): Promise<TeamPair[]> {
+  // Generate all possible pairs with compatibility scores
+  const allPairs = generateTeamPairings(teams);
+  
+  // Filter pairs that have played before
+  // In a real implementation, we might not want to strictly enforce this
+  // to allow rematches when necessary
+  const availablePairs = await filterPairsWithPreviousMatches(allPairs);
+  
+  // Initialize pairings and used teams
+  const pairings: TeamPair[] = [];
+  const usedTeamIds = new Set<string>();
+  
+  // Find best pairings greedily
+  for (const pair of availablePairs) {
+    // Skip if either team is already used
+    if (usedTeamIds.has(pair.team1.id) || usedTeamIds.has(pair.team2.id)) {
+      continue;
+    }
+    
+    // Add this pairing
+    pairings.push(pair);
+    usedTeamIds.add(pair.team1.id);
+    usedTeamIds.add(pair.team2.id);
+    
+    // Stop if all teams are paired
+    if (usedTeamIds.size === teams.length) {
+      break;
+    }
+  }
+  
+  return pairings;
+}
+
+/**
+ * Find remaining unpaired teams
+ */
+export function findUnpairedTeams(teams: Team[], pairings: TeamPair[]): Team[] {
+  // Create a set of paired team IDs
+  const pairedTeamIds = new Set<string>();
+  
+  pairings.forEach(pair => {
+    pairedTeamIds.add(pair.team1.id);
+    pairedTeamIds.add(pair.team2.id);
+  });
+  
+  // Find teams that aren't in any pairing
+  return teams.filter(team => !pairedTeamIds.has(team.id));
+}
+

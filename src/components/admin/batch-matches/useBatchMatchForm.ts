@@ -160,6 +160,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
     selectedDate,
     setSelectedDate,
     matchPairs,
+    setMatchPairs,
     isSubmitting,
     addMatchPair,
     updateMatchPair,
