@@ -107,6 +107,16 @@ export function useMessageBoard(): UseMessageBoardResult {
     }
     
     try {
+      // Get the user's team membership if available
+      const { data: teamMembership } = await supabase
+        .from('team_memberships')
+        .select('team_id, team:teams(name)')
+        .eq('user_id', user.id)
+        .single();
+      
+      const teamId = teamMembership?.team_id || null;
+      const teamName = teamMembership?.team?.name || null;
+      
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -114,7 +124,8 @@ export function useMessageBoard(): UseMessageBoardResult {
           user_id: user.id,
           username: profile.username || user.email || 'Anonymous',
           category,
-          team_id: profile.team_id || null
+          team_id: teamId,
+          team_name: teamName
         })
         .select()
         .single();
