@@ -16,4 +16,11 @@ export const animations = {
   
   // Pulse once
   pulseOnce: "animate-pulse-once",
+  
+  // Additional animations needed by components
+  fadeInSlideUp: "animate-fade-in-slide-up",
+  fadeInSlideDown: "animate-fade-in-slide-down",
+  entranceLeft: "animate-entrance-left",
+  entranceRight: "animate-entrance-right",
+  pulse: "animate-pulse",
 };

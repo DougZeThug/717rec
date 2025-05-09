@@ -1,22 +1,14 @@
 
-import React, { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RefreshCw, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
-import { FilterOptions } from "@/hooks/message-board/types";
-import { MessageCategory } from "@/types/reactions";
-import { useTeams } from "@/hooks/useTeams";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { MESSAGE_CATEGORIES } from "@/types/reactions";
 
-// Import our newly created components
-import SearchBar from "./filter/SearchBar";
-import FilterToggleButton from "./filter/FilterToggleButton";
-import FilterSection from "./filter/FilterSection";
-import ActiveFilters from "./filter/ActiveFilters";
+interface FilterOptions {
+  category: string;
+}
 
 interface MessageFilterBarProps {
   filterOptions: FilterOptions;
@@ -29,62 +21,45 @@ const MessageFilterBar: React.FC<MessageFilterBarProps> = ({
   filterOptions,
   onFilterChange,
   onRefresh,
-  isRefreshing,
+  isRefreshing
 }) => {
-  const { teams } = useTeams();
-  const [searchInput, setSearchInput] = useState(filterOptions.searchQuery || "");
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onFilterChange({ searchQuery: searchInput || null });
-  };
-
-  const clearFilters = () => {
-    setSearchInput("");
-    onFilterChange({
-      category: null,
-      teamId: null,
-      searchQuery: null,
-    });
-    setShowAdvancedFilters(false);
-  };
-
   return (
-    <div className={cn("space-y-2", animations.fadeIn)}>
-      {/* Search Bar with Inline Refresh Button */}
-      <div className="flex gap-2">
-        <SearchBar
-          searchInput={searchInput}
-          setSearchInput={setSearchInput}
-          onSearchSubmit={handleSearchSubmit}
-          onRefresh={onRefresh}
-          isRefreshing={isRefreshing}
-        />
-        
-        <FilterToggleButton
-          filterOptions={filterOptions}
-          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          isActive={showAdvancedFilters}
-        />
+    <div className="flex items-center justify-between gap-2 mb-4">
+      <div className="flex items-center gap-2">
+        <Filter className="h-4 w-4 text-muted-foreground" />
+        <Select
+          value={filterOptions.category}
+          onValueChange={(value) => onFilterChange({ category: value })}
+        >
+          <SelectTrigger className="w-[140px] h-8 text-xs">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All Categories</SelectItem>
+            {MESSAGE_CATEGORIES.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-
-      {/* Advanced Filters (Collapsible) */}
-      <Collapsible open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
-        <CollapsibleContent className={cn("space-y-2", animations.fadeIn)}>
-          <FilterSection
-            filterOptions={filterOptions}
-            onFilterChange={onFilterChange}
-            onClearFilters={clearFilters}
-          />
-          
-          <ActiveFilters
-            filterOptions={filterOptions}
-            onFilterChange={onFilterChange}
-            teams={teams}
-          />
-        </CollapsibleContent>
-      </Collapsible>
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onRefresh}
+        disabled={isRefreshing}
+        className={cn("h-8 px-2")}
+      >
+        <RefreshCw 
+          className={cn(
+            "h-4 w-4", 
+            isRefreshing && "animate-spin"
+          )} 
+        />
+        <span className="ml-1 text-xs">Refresh</span>
+      </Button>
     </div>
   );
 };

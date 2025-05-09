@@ -1,30 +1,25 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
+import { animations } from "@/styles/design-system";
+import { cn } from "@/lib/utils";
 
 const LoginPrompt: React.FC = () => {
-  const navigate = useNavigate();
-  
   return (
-    <div 
-      className="flex items-center justify-center gap-3 bg-background/80 backdrop-blur-md border-t p-4 fixed bottom-0 left-0 right-0 md:rounded-lg md:border md:shadow-md md:mx-4 lg:mx-auto lg:max-w-3xl"
-      style={{ bottom: "var(--bottombar-height, 0)" }}
-    >
-      <MessageSquare className="h-5 w-5 text-muted-foreground hidden sm:block" />
-      <p className="text-muted-foreground">
-        Sign in to post messages
-      </p>
-      <Button 
-        onClick={() => navigate("/auth", { state: { returnTo: "/message-board" } })}
-        variant="default"
-        size="sm"
-        className="whitespace-nowrap"
-      >
-        Sign In
-      </Button>
-    </div>
+    <Card className={cn("p-4 text-center", animations.fadeIn)}>
+      <div className="flex flex-col items-center gap-2">
+        <LogIn className="h-5 w-5 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          Sign in to join the conversation
+        </p>
+        <Button asChild size="sm" className="mt-2">
+          <Link to="/login">Sign in</Link>
+        </Button>
+      </div>
+    </Card>
   );
 };
 
