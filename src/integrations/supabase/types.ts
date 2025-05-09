@@ -443,6 +443,81 @@ export type Database = {
         }
         Relationships: []
       }
+      season_stats: {
+        Row: {
+          game_losses: number
+          game_wins: number
+          id: string
+          match_losses: number
+          match_wins: number
+          power_score: number
+          recorded_at: string
+          season_id: string
+          sos: number
+          team_id: string
+        }
+        Insert: {
+          game_losses: number
+          game_wins: number
+          id?: string
+          match_losses: number
+          match_wins: number
+          power_score: number
+          recorded_at?: string
+          season_id: string
+          sos: number
+          team_id: string
+        }
+        Update: {
+          game_losses?: number
+          game_wins?: number
+          id?: string
+          match_losses?: number
+          match_wins?: number
+          power_score?: number
+          recorded_at?: string
+          season_id?: string
+          sos?: number
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "season_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "season_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "season_stats_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+        ]
+      }
       team_memberships: {
         Row: {
           id: string
