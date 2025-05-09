@@ -3,6 +3,16 @@ import { Message, MessageCategory } from "@/types/reactions";
 
 export interface FilterOptions {
   category: MessageCategory | 'All';
+  teamId?: string | null;
+  searchQuery?: string | null;
+}
+
+export interface MessageQueryOptions {
+  limit?: number;
+  olderThan?: string;
+  category?: MessageCategory | null;
+  teamId?: string | null;
+  searchQuery?: string | null;
 }
 
 export interface UseMessageBoardResult {

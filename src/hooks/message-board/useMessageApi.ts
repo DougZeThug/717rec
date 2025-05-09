@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Message, MessageCategory } from "@/types/reactions";
 import { toast } from "@/hooks/use-toast";

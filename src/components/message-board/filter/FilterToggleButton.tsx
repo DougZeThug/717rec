@@ -20,7 +20,7 @@ const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
   const { resolvedTheme } = useTheme();
   // Check if any filters are active
   const hasActiveFilters =
-    filterOptions.category !== null ||
+    filterOptions.category !== 'All' ||
     filterOptions.teamId !== null ||
     filterOptions.searchQuery !== null;
     

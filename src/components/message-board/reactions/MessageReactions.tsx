@@ -19,7 +19,7 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
   showPicker = false,
   onPickerClose 
 }) => {
-  const { reactionCounts, addReaction, isLoading } = useMessageReactions(messageId);
+  const { reactionCounts, toggleReaction, isLoading } = useMessageReactions(messageId);
   const { user } = useAuth();
   
   const handleAddReaction = (emoji: string) => {
@@ -32,7 +32,7 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
       return;
     }
     
-    addReaction(emoji);
+    toggleReaction(emoji);
     if (onPickerClose) {
       onPickerClose();
     }
