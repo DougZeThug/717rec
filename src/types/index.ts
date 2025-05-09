@@ -1,3 +1,4 @@
+
 // Team related types
 export interface Team {
   id: string;
@@ -43,6 +44,7 @@ export interface Match {
   team2_game_wins?: number;
   created_at?: string;
   status?: "postponed" | "canceled" | null; // Added status property
+  timeSlot?: string | null; // Added timeSlot property
   team1Details?: {
     team_id: string;
     name: string;

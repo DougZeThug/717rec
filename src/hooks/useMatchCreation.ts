@@ -58,7 +58,8 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         loserId: data.loser_id,
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
-        round_number: data.round_number
+        round_number: data.round_number,
+        timeSlot: matchData.timeSlot // Preserve the timeSlot for UI purposes
       };
       
       setMatches([...matches, newMatch]);

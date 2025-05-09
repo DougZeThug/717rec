@@ -34,7 +34,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
           team1Id: match.team1Id,
           team2Id: match.team2Id,
           date: new Date(match.date),
-          timeSlot: match.date ? getTimeSlotFromDate(new Date(match.date)) : null,
+          timeSlot: match.timeSlot || (match.date ? getTimeSlotFromDate(new Date(match.date)) : null),
           isCompleted: match.iscompleted,
           team1Score: match.team1Score,
           team2Score: match.team2Score,
@@ -71,7 +71,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
       team2Score: values.isCompleted ? values.team2Score : undefined,
       winnerId,
       loserId,
-      timeSlot: values.timeSlot // Add this for proper time tracking
+      timeSlot: values.timeSlot // This is now valid with our updated Match type
     });
   };
 
