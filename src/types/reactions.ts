@@ -1,3 +1,4 @@
+
 export interface MessageReaction {
   id: string;
   message_id: string;
@@ -36,19 +37,3 @@ export const MESSAGE_CATEGORIES: MessageCategory[] = [
   'Event', 
   'Other'
 ];
-
-// Add match reaction types to existing reactions.ts file
-export interface MatchReaction {
-  id: string;
-  match_id: string;
-  user_id: string;
-  emoji: string;
-  created_at: string;
-}
-
-export interface MatchReactionCount {
-  emoji: string;
-  count: number;
-  users: string[];
-  hasReacted: boolean;
-}

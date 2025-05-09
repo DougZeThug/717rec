@@ -1,19 +1,13 @@
 
-import { cn } from "@/lib/utils";
-
+/**
+ * Animation presets for consistent motion design
+ */
 export const animations = {
-  // Fade in animation
   fadeIn: "animate-fade-in",
-  
-  // Scale in animation
   scaleIn: "animate-scale-in",
-  
-  // Slide up animation
-  slideUp: "animate-slide-up",
-  
-  // Soft pulse animation
-  softPulse: "animate-soft-pulse",
-  
-  // Pulse once
-  pulseOnce: "animate-pulse-once",
+  pulse: "animate-pulse",
+  fadeInSlideUp: "animate-fade-in-slide-up",
+  fadeInSlideDown: "animate-fade-in-slide-down",
+  entranceLeft: "transition-all duration-300 animate-entrance-left",
+  entranceRight: "transition-all duration-300 animate-entrance-right",
 };
