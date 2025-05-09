@@ -1,5 +1,6 @@
 
-import { Team, Match } from "@/types";
+import { Team } from "@/types";
+import { Match } from "@/types";
 import { UseFormReturn } from "react-hook-form";
 
 export interface MatchFormProps {

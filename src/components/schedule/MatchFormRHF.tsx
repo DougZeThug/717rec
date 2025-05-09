@@ -1,10 +1,9 @@
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Match } from "@/types";
 import { MatchFormProps, MatchFormValues } from "./types";
-import { createDateWithTime, determineMatchOutcome } from "./form-utils";
+import { createDateWithTime, determineMatchOutcome, getTimeSlotFromDate } from "./form-utils";
 import { 
   Form, 
   FormField, 
@@ -35,16 +34,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
           team1Id: match.team1Id,
           team2Id: match.team2Id,
           date: new Date(match.date),
-          timeSlot: timeSlots.find(slot => {
-            const matchDate = new Date(match.date);
-            const hours = matchDate.getHours();
-            const minutes = matchDate.getMinutes();
-            
-            if (hours === 18 && minutes === 30) return slot === "6:30 PM";
-            if (hours === 19 && minutes === 30) return slot === "7:30 PM";
-            if (hours === 20 && minutes === 30) return slot === "8:30 PM";
-            return false;
-          }) || null,
+          timeSlot: match.date ? getTimeSlotFromDate(new Date(match.date)) : null,
           isCompleted: match.iscompleted,
           team1Score: match.team1Score,
           team2Score: match.team2Score,
@@ -80,7 +70,8 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
       team1Score: values.isCompleted ? values.team1Score : undefined,
       team2Score: values.isCompleted ? values.team2Score : undefined,
       winnerId,
-      loserId
+      loserId,
+      timeSlot: values.timeSlot // Add this for proper time tracking
     });
   };
 

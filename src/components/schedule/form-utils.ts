@@ -12,18 +12,40 @@ export const formatDateForInput = (date: Date): string => {
 export const createDateWithTime = (date: Date, timeSlot: string | null): Date => {
   const dateWithTime = new Date(date);
   
-  if (timeSlot === "6:30 PM") {
-    dateWithTime.setHours(18, 30, 0, 0);
-  } else if (timeSlot === "7:00 PM") {
-    dateWithTime.setHours(19, 0, 0, 0);
-  } else if (timeSlot === "7:30 PM") {
-    dateWithTime.setHours(19, 30, 0, 0);
-  } else if (timeSlot === "8:00 PM") {
-    dateWithTime.setHours(20, 0, 0, 0);
-  } else if (timeSlot === "8:30 PM") {
-    dateWithTime.setHours(20, 30, 0, 0);
-  } else if (timeSlot === "9:00 PM") {
-    dateWithTime.setHours(21, 0, 0, 0);
+  if (!timeSlot) {
+    return dateWithTime;
+  }
+  
+  // Handle both formats: "6:30 PM" and "18:30"
+  if (timeSlot.includes(':')) {
+    // Extract hours and minutes regardless of format
+    let hours = 0;
+    let minutes = 0;
+    
+    if (timeSlot.includes('PM') || timeSlot.includes('AM')) {
+      // 12-hour format like "6:30 PM"
+      const [time, period] = timeSlot.split(' ');
+      const [hourStr, minuteStr] = time.split(':');
+      
+      hours = parseInt(hourStr);
+      minutes = parseInt(minuteStr);
+      
+      // Convert to 24-hour format
+      if (period === 'PM' && hours < 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+    } else {
+      // 24-hour format like "18:30"
+      const [hourStr, minuteStr] = timeSlot.split(':');
+      hours = parseInt(hourStr);
+      minutes = parseInt(minuteStr);
+    }
+    
+    dateWithTime.setHours(hours, minutes, 0, 0);
+  } else {
+    console.warn("Invalid time slot format:", timeSlot);
   }
   
   return dateWithTime;
@@ -36,21 +58,12 @@ export const getTimeSlotFromDate = (date: Date): string | null => {
   const hours = date.getHours();
   const minutes = date.getMinutes();
   
-  if (hours === 18 && minutes === 30) {
-    return "6:30 PM";
-  } else if (hours === 19 && minutes === 0) {
-    return "7:00 PM";
-  } else if (hours === 19 && minutes === 30) {
-    return "7:30 PM";
-  } else if (hours === 20 && minutes === 0) {
-    return "8:00 PM";
-  } else if (hours === 20 && minutes === 30) {
-    return "8:30 PM";
-  } else if (hours === 21 && minutes === 0) {
-    return "9:00 PM";
-  }
-  
-  return null;
+  // Format as "H:MM AM/PM"
+  return date.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true
+  });
 };
 
 /**

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MatchPair } from "./MatchPairsList";
 import { createDateWithTime } from "@/components/schedule/form-utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { normalizeTimeFormat } from "@/utils/timeUtils";
 
 export const useBatchMatchForm = (teams: Team[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -39,7 +40,8 @@ export const useBatchMatchForm = (teams: Team[]) => {
   };
 
   const autoAssignTimeslots = () => {
-    const timeslots = ['18:30', '19:00', '19:30', '20:00', '20:30', '21:00'];
+    // Use standard 12-hour format for consistency
+    const timeslots = ['6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM'];
     const updatedPairs = matchPairs.map((pair, index) => ({
       ...pair,
       timeslot: timeslots[index % timeslots.length]
@@ -91,19 +93,17 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
     try {
       const matchesToCreate = matchPairs.map(pair => {
-        // Fix time format for proper parsing
-        const timeString = pair.timeslot || "18:00";
-        const hours = timeString.substring(0, 2);
-        const minutes = timeString.substring(3, 5) || "00";
-        const formattedTime = `${hours}:${minutes}:00`;
+        // Create a date with the selected timeslot
+        // Ensure the timeslot is properly formatted
+        const timeslot = pair.timeslot || "6:30 PM"; // Default to 6:30 PM if missing
         
         // Create a date with the selected timeslot
         const dateWithTime = createDateWithTime(
           selectedDate as Date,
-          formattedTime
+          timeslot
         );
         
-        console.log("Creating match at date:", dateWithTime.toISOString());
+        console.log("Creating match at date:", dateWithTime.toISOString(), "with timeslot:", timeslot);
         
         return {
           team1_id: pair.team1Id,
@@ -129,13 +129,6 @@ export const useBatchMatchForm = (teams: Team[]) => {
       if (error) throw error;
 
       console.log("Successfully created matches:", data);
-
-      // Attempt to automatically update the filters to show the new matches
-      // This is intended to interact with the updateFiltersForMatchDate in useFiltersState
-      const matchDateEvent = new CustomEvent('matchesCreated', {
-        detail: { date: selectedDate }
-      });
-      window.dispatchEvent(matchDateEvent);
       
       toast({
         title: "Success",
@@ -144,10 +137,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
       // Invalidate queries to refresh data across the app
       queryClient.invalidateQueries({ queryKey: ['matches'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['rankings'] });
-      queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-
+      
       // Reset form
       setMatchPairs([{ id: '1', team1Id: null, team2Id: null, timeslot: null }]);
       setSelectedDate(null);

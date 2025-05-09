@@ -3,22 +3,32 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
-import { useTeamRecords } from "./useTeamRecords";
+import { createDateWithTime } from "@/components/schedule/form-utils";
+import { normalizeTimeFormat } from "@/utils/timeUtils";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
-  const { updateTeamRecords } = useTeamRecords();
+  const queryClient = useQueryClient();
 
   const handleCreateMatch = async (matchData: Omit<Match, "id">, teams: Team[]) => {
     try {
+      // Ensure we have a valid date with proper time
+      let dateWithTime = new Date(matchData.date);
+      
+      // If timeSlot is provided in the data, use it to set the time properly
+      if (matchData.timeSlot) {
+        dateWithTime = createDateWithTime(new Date(matchData.date), matchData.timeSlot);
+      }
+      
       // Create the match in Supabase
       const { data, error } = await supabase
         .from('matches')
         .insert({
           team1_id: matchData.team1Id,
           team2_id: matchData.team2Id,
-          date: matchData.date,
+          date: dateWithTime.toISOString(),
           location: matchData.location || "",
           iscompleted: matchData.iscompleted,
           team1_score: matchData.team1Score,
@@ -59,19 +69,8 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         description: `Match has been successfully scheduled.`,
       });
 
-      // If match is completed with a winner/loser, update team records
-      if (newMatch.iscompleted && newMatch.winnerId && newMatch.loserId) {
-        const winnerGameWins = newMatch.winnerId === newMatch.team1Id ? (newMatch.team1_game_wins || 0) : (newMatch.team2_game_wins || 0);
-        const loserGameWins = newMatch.loserId === newMatch.team1Id ? (newMatch.team1_game_wins || 0) : (newMatch.team2_game_wins || 0);
-        
-        await updateTeamRecords(
-          newMatch.winnerId, 
-          newMatch.loserId, 
-          teams,
-          winnerGameWins,
-          loserGameWins
-        );
-      }
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
       
       return true;
     } catch (error: any) {
