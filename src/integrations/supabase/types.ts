@@ -133,6 +133,7 @@ export type Database = {
           created_at: string
           id: string
           match_id: string
+          team_name: string | null
           user_id: string
           username: string
         }
@@ -141,6 +142,7 @@ export type Database = {
           created_at?: string
           id?: string
           match_id: string
+          team_name?: string | null
           user_id: string
           username: string
         }
@@ -149,6 +151,7 @@ export type Database = {
           created_at?: string
           id?: string
           match_id?: string
+          team_name?: string | null
           user_id?: string
           username?: string
         }

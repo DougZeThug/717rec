@@ -9,6 +9,7 @@ export interface MatchComment {
   match_id: string;
   user_id: string;
   username: string;
+  team_name: string | null;
   content: string;
   created_at: string;
 }
@@ -88,12 +89,43 @@ export const useMatchComments = (matchId: string) => {
     if (!content.trim()) return null;
     
     try {
+      // First get the user's profile for username
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+      }
+      
+      // Get the user's team membership
+      const { data: membership, error: membershipError } = await supabase
+        .from('team_memberships')
+        .select('team:teams(name)')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        
+      if (membershipError) {
+        console.error('Error fetching team membership:', membershipError);
+      }
+      
+      // Prepare data for insertion
+      const username = profile?.username || 
+        user.user_metadata?.name || 
+        user.email?.split('@')[0] || 
+        'Anonymous';
+        
+      const teamName = membership?.team?.name || null;
+      
       const { data, error } = await supabase
         .from('match_comments')
         .insert({
           match_id: matchId,
           user_id: user.id,
-          username: user.user_metadata?.name || user.email?.split('@')[0] || 'Anonymous',
+          username,
+          team_name: teamName,
           content: content.trim()
         })
         .select('*')

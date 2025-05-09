@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import TeamNameDisplay from "@/components/message-board/TeamNameDisplay";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +44,11 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
       {/* Comment content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-sm">{comment.username}</span>
+          <TeamNameDisplay 
+            username={comment.username}
+            teamName={comment.team_name}
+            compact={true}
+          />
           <span className="text-xs text-muted-foreground">{timeAgo}</span>
         </div>
         <div className="mt-1 text-sm whitespace-pre-wrap break-words">
