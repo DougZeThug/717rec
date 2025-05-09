@@ -18,7 +18,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
 }) => {
   // Only show when there are active filters
   const hasActiveFilters =
-    filterOptions.category !== 'All' ||
+    filterOptions.category !== null ||
     filterOptions.teamId !== null ||
     filterOptions.searchQuery !== null;
     
@@ -26,7 +26,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
   
   return (
     <div className="flex flex-wrap gap-1 mt-1">
-      {filterOptions.category && filterOptions.category !== 'All' && (
+      {filterOptions.category && (
         <Badge
           variant="outline"
           className="flex items-center gap-1 text-xs"
@@ -35,7 +35,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({
           {filterOptions.category}
           <X
             className="h-3 w-3 ml-0.5 cursor-pointer"
-            onClick={() => onFilterChange({ category: 'All' })}
+            onClick={() => onFilterChange({ category: null })}
           />
         </Badge>
       )}

@@ -17,7 +17,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   
   // Filter state
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    category: 'All',
+    category: null,
     teamId: null,
     searchQuery: null
   });
@@ -45,7 +45,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       
       const data = await fetchMessages({
         limit: PAGE_SIZE,
-        category: filterOptions.category !== 'All' ? filterOptions.category : null,
+        category: filterOptions.category,
         teamId: filterOptions.teamId,
         searchQuery: filterOptions.searchQuery
       });
@@ -78,7 +78,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       const options: MessageQueryOptions = {
         limit: PAGE_SIZE,
         olderThan: oldestMessage.created_at,
-        category: filterOptions.category !== 'All' ? filterOptions.category : null,
+        category: filterOptions.category,
         teamId: filterOptions.teamId,
         searchQuery: filterOptions.searchQuery
       };
@@ -153,7 +153,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     (newMessage) => {
       // Only add the message if it matches current filters
       if (
-        (filterOptions.category === 'All' || newMessage.category === filterOptions.category) &&
+        (!filterOptions.category || newMessage.category === filterOptions.category) &&
         (!filterOptions.teamId || newMessage.team_id === filterOptions.teamId) &&
         (!filterOptions.searchQuery || newMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
       ) {
@@ -164,7 +164,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     (updatedMessage) => {
       // Only update the message if it matches current filters
       if (
-        (filterOptions.category === 'All' || updatedMessage.category === filterOptions.category) &&
+        (!filterOptions.category || updatedMessage.category === filterOptions.category) &&
         (!filterOptions.teamId || updatedMessage.team_id === filterOptions.teamId) &&
         (!filterOptions.searchQuery || updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
       ) {

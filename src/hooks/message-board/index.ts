@@ -13,11 +13,7 @@ export function useMessageBoard(): UseMessageBoardResult {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
-  const [filter, setFilter] = useState<FilterOptions>({ 
-    category: 'All',
-    teamId: null,
-    searchQuery: null
-  });
+  const [filter, setFilter] = useState<FilterOptions>({ category: 'All' });
   const { user, profile } = useAuth();
   
   const MESSAGES_PER_PAGE = 20;
@@ -42,16 +38,6 @@ export function useMessageBoard(): UseMessageBoardResult {
       // Apply category filter if selected
       if (filter.category !== 'All') {
         query = query.eq('category', filter.category);
-      }
-      
-      // Apply teamId filter if provided
-      if (filter.teamId) {
-        query = query.eq('team_id', filter.teamId);
-      }
-      
-      // Apply search filter if provided
-      if (filter.searchQuery) {
-        query = query.ilike('content', `%${filter.searchQuery}%`);
       }
       
       const { data, error } = await query;
@@ -92,7 +78,7 @@ export function useMessageBoard(): UseMessageBoardResult {
   // Function to refresh messages
   const refreshMessages = async () => {
     setPage(0);
-    await fetchMessages(0);
+    return fetchMessages(0);
   };
   
   // Function to post a new message
@@ -107,16 +93,6 @@ export function useMessageBoard(): UseMessageBoardResult {
     }
     
     try {
-      // Get the user's team membership if available
-      const { data: teamMembership } = await supabase
-        .from('team_memberships')
-        .select('team_id, team:teams(name)')
-        .eq('user_id', user.id)
-        .single();
-      
-      const teamId = teamMembership?.team_id || null;
-      const teamName = teamMembership?.team?.name || null;
-      
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -124,8 +100,7 @@ export function useMessageBoard(): UseMessageBoardResult {
           user_id: user.id,
           username: profile.username || user.email || 'Anonymous',
           category,
-          team_id: teamId,
-          team_name: teamName
+          team_id: profile.team_id
         })
         .select()
         .single();
@@ -229,9 +204,7 @@ export function useMessageBoard(): UseMessageBoardResult {
           const newMessage = payload.new as Message;
           
           // Only add messages that match the current filter
-          if ((filter.category === 'All' || newMessage.category === filter.category) &&
-              (!filter.teamId || newMessage.team_id === filter.teamId) &&
-              (!filter.searchQuery || newMessage.content.toLowerCase().includes(filter.searchQuery.toLowerCase()))) {
+          if (filter.category === 'All' || newMessage.category === filter.category) {
             // Avoid adding duplicates (e.g. if the user added this message themselves)
             if (!messages.some(m => m.id === newMessage.id)) {
               setMessages(prev => [newMessage, ...prev]);
@@ -239,17 +212,9 @@ export function useMessageBoard(): UseMessageBoardResult {
           }
         } else if (payload.eventType === 'UPDATE') {
           const updatedMessage = payload.new as Message;
-          // Only update messages that match the current filter
-          if ((filter.category === 'All' || updatedMessage.category === filter.category) &&
-              (!filter.teamId || updatedMessage.team_id === filter.teamId) &&
-              (!filter.searchQuery || updatedMessage.content.toLowerCase().includes(filter.searchQuery.toLowerCase()))) {
-            setMessages(prev => 
-              prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
-            );
-          } else {
-            // If the updated message no longer matches the filter, remove it
-            setMessages(prev => prev.filter(msg => msg.id !== updatedMessage.id));
-          }
+          setMessages(prev => 
+            prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
+          );
         } else if (payload.eventType === 'DELETE' && payload.old) {
           const deletedMessage = payload.old as Message;
           setMessages(prev => 
@@ -262,7 +227,7 @@ export function useMessageBoard(): UseMessageBoardResult {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [messages, filter]);
+  }, [messages, filter.category]);
   
   return {
     messages,
