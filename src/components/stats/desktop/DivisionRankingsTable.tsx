@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Table,
@@ -12,8 +11,8 @@ import { Ranking } from "@/types";
 import HeadToHeadRecords from "../HeadToHeadRecords";
 import { SortOptions } from "../RankingsTable";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { getPowerScoreColor } from "@/utils/powerScore";
-import { getSosColor } from "@/utils/powerScore/getSosColor";
+import { getPowerScoreColor } from "@/utils/colors";
+import { getSosColor } from "@/utils/colors";
 
 interface DivisionRankingsTableProps {
   rankings: Ranking[];
