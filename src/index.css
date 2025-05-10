@@ -1,3 +1,4 @@
+
 @import './styles/base.css';
 @import './styles/animations.css';
 @import './styles/theme.css';
@@ -26,4 +27,15 @@
 
 .compatibility-score-low {
   color: var(--red-500);
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 640px) {
+  /* Fix for tab labels in auto-schedule tab */
+  [data-state="active"].truncate-tab {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

@@ -15,10 +15,10 @@ export const TimeBlockHeader: React.FC<TimeBlockHeaderProps> = ({
   timeslots = []
 }) => {
   return (
-    <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div className="bg-slate-100 dark:bg-slate-800 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <Clock className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium">{blockName} Block</span>
+        <span className="font-medium text-sm sm:text-base">{blockName} Block</span>
       </div>
       
       <div className="flex flex-wrap items-center gap-2 mt-1 sm:mt-0">
@@ -27,8 +27,13 @@ export const TimeBlockHeader: React.FC<TimeBlockHeaderProps> = ({
         </Badge>
         
         {timeslots && timeslots.length > 0 && (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground hidden sm:block">
             {timeslots.join(' / ')}
+          </div>
+        )}
+        {timeslots && timeslots.length > 0 && (
+          <div className="text-xs text-muted-foreground block sm:hidden">
+            {timeslots.length > 1 ? `${timeslots.length} Timeslots` : timeslots[0]}
           </div>
         )}
       </div>

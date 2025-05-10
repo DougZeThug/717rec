@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from 'react';
 
+const MOBILE_BREAKPOINT = 768;
+
 export function useMobile(): boolean {
   const [isMobile, setIsMobile] = useState(false);
   
@@ -10,13 +12,9 @@ export function useMobile(): boolean {
     
     // Function to check if device is mobile
     const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-      const mobileRegex = /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i;
-      
-      // Alternative check for viewport width
-      const isMobileViewport = window.innerWidth < 768;
-      
-      setIsMobile(mobileRegex.test(userAgent) || isMobileViewport);
+      // Check for viewport width (primary method)
+      const isMobileViewport = window.innerWidth < MOBILE_BREAKPOINT;
+      setIsMobile(isMobileViewport);
     };
     
     // Initial check
@@ -32,5 +30,5 @@ export function useMobile(): boolean {
   return isMobile;
 }
 
-// Add alias for useIsMobile to maintain compatibility with existing code
+// Use this hook for consistency across the app
 export const useIsMobile = useMobile;

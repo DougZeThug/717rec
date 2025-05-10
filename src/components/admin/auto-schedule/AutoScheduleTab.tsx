@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Calendar, Settings2, Wand2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -17,6 +16,7 @@ import { TimeBlockTeamsList } from "@/components/admin/batch-matches/auto-schedu
 import SchedulePreview from "@/components/admin/batch-matches/auto-schedule/SchedulePreview";
 import ScheduleMatchesPreview from "@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview";
 import { TeamPairingMap } from "@/types/autoSchedule";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const AutoScheduleTab = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
@@ -24,6 +24,7 @@ const AutoScheduleTab = () => {
   const [avoidRematches, setAvoidRematches] = useState(true);
   const [prioritizeQuality, setPrioritizeQuality] = useState(false);
   const [generatedMatches, setGeneratedMatches] = useState<any[]>([]);
+  const isMobile = useIsMobile();
   
   const {
     autoScheduleStep,
@@ -70,6 +71,24 @@ const AutoScheduleTab = () => {
   };
 
   const { total: totalTeams, odd: oddBlocks } = getTeamCountStatus();
+  
+  // Short tab labels for mobile
+  const getTabLabel = (tab: string) => {
+    if (isMobile) {
+      switch(tab) {
+        case "teams": return "Teams";
+        case "matches": return "Matches";
+        case "export": return "Export";
+        default: return tab;
+      }
+    }
+    
+    return {
+      "teams": "Available Teams",
+      "matches": "Generated Matches",
+      "export": "Export Schedule"
+    }[tab] || tab;
+  };
   
   return (
     <div className="space-y-6">
@@ -178,10 +197,17 @@ const AutoScheduleTab = () => {
         <Card className="lg:col-span-2">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              {/* Updated TabsList with better mobile styling */}
               <TabsList className="w-full grid grid-cols-3">
-                <TabsTrigger value="teams">Available Teams</TabsTrigger>
-                <TabsTrigger value="matches">Generated Matches</TabsTrigger>
-                <TabsTrigger value="export">Export Schedule</TabsTrigger>
+                <TabsTrigger value="teams" className="px-1 sm:px-3 text-xs sm:text-sm">
+                  <span className="truncate">{getTabLabel("teams")}</span>
+                </TabsTrigger>
+                <TabsTrigger value="matches" className="px-1 sm:px-3 text-xs sm:text-sm">
+                  <span className="truncate">{getTabLabel("matches")}</span>
+                </TabsTrigger>
+                <TabsTrigger value="export" className="px-1 sm:px-3 text-xs sm:text-sm">
+                  <span className="truncate">{getTabLabel("export")}</span>
+                </TabsTrigger>
               </TabsList>
               
               <div className="p-4">
