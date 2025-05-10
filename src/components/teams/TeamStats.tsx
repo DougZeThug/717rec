@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { getPowerScoreColor, getSosColor } from "@/utils/colors";
 
 interface TeamStatsProps {
   wins: number;
@@ -30,6 +31,9 @@ const TeamStats: React.FC<TeamStatsProps> = ({
   closeMatchLosses,
   powerScore,
 }) => {
+  const powerScoreColor = powerScore !== undefined ? getPowerScoreColor(powerScore) : "";
+  const sosColor = sos !== undefined ? getSosColor(sos) : "";
+
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
@@ -61,7 +65,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
           {sos !== undefined && (
             <div className="space-y-1">
               <h3 className={labelClass}>Strength of Schedule</h3>
-              <p className={`${valueClass} text-indigo-600 dark:text-indigo-400`}>
+              <p className={`${valueClass} ${sosColor}`}>
                 {sos.toFixed(3)}
               </p>
             </div>
@@ -69,7 +73,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
           {powerScore !== undefined && (
             <div className="space-y-1">
               <h3 className={labelClass}>Power Score</h3>
-              <p className={`${valueClass} text-purple-600 dark:text-purple-400`}>
+              <p className={`${valueClass} ${powerScoreColor}`}>
                 {powerScore.toFixed(1)}
               </p>
             </div>

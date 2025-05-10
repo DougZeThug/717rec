@@ -4,6 +4,9 @@ import { sosThresholds } from './thresholds';
 /**
  * Get appropriate Tailwind color class for a Strength of Schedule (SOS) value
  * Higher SOS means tougher schedule (red), lower means easier (green)
+ * 
+ * @param sos The strength of schedule value to evaluate
+ * @returns A Tailwind CSS color class based on the SOS threshold
  */
 export const getSosColor = (sos: number | undefined): string => {
   if (sos === undefined) return 'text-gray-500 dark:text-gray-400';

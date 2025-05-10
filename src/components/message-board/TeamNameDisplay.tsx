@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { getPowerScoreColor } from "@/utils/colors/powerScoreColors";
+import { getPowerScoreColor } from "@/utils/colors";
 import { Badge } from "@/components/ui/badge";
 
 interface TeamNameDisplayProps {

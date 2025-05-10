@@ -6,6 +6,11 @@ export const divisionColors: Record<string, string> = {
   Default: "#6b7280",         // gray-500
 };
 
+/**
+ * Get the appropriate color for a division
+ * @param divisionName The name of the division
+ * @returns A color hex code from the divisionColors object
+ */
 export const getDivisionColor = (divisionName: string | null | undefined): string => {
   if (!divisionName) return divisionColors.Default;
   
@@ -17,6 +22,11 @@ export const getDivisionColor = (divisionName: string | null | undefined): strin
   return divisionColors.Default;
 };
 
+/**
+ * Get a badge variant name based on division name
+ * @param divisionName The name of the division
+ * @returns A badge variant name
+ */
 export const getDivisionBadgeVariant = (divisionName: string | null | undefined): string => {
   if (!divisionName) return 'outline';
   

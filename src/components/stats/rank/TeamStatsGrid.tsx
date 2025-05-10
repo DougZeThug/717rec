@@ -1,6 +1,7 @@
 
 import React from "react";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
+import { getSosColor } from "@/utils/colors";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import RankTrendIndicator from "../RankTrendIndicator";
@@ -32,6 +33,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const powerScoreColorClass = getPowerScoreColor(powerScore);
+  const sosColorClass = getSosColor(sos);
 
   if (compactView || !isMobile) {
     return (
@@ -61,7 +63,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
         
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">SOS</span>
-          <span className="font-medium text-gray-900 dark:text-white">{sos.toFixed(3)}</span>
+          <span className={cn("font-medium", sosColorClass)}>{sos.toFixed(3)}</span>
         </div>
         
         <div className="flex flex-col items-center">
