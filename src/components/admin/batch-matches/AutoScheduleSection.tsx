@@ -2,15 +2,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { useAutoSchedule } from "@/hooks/useAutoSchedule";
 import { MatchPair } from "./MatchPairsList";
-import SchedulePreview from "./SchedulePreview";
-import ScheduleMatchesPreview from "./ScheduleMatchesPreview";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Wand2, AlertTriangle, ChevronRight } from "lucide-react";
-import { TIME_BLOCKS } from "@/utils/autoScheduleUtils";
+import { Wand2 } from "lucide-react";
+import { useSchedulePreview } from "@/hooks/useSchedulePreview";
+import { TeamLoadingStep } from "./auto-schedule/TeamLoadingStep";
+import { ScheduleGenerationStep } from "./auto-schedule/ScheduleGenerationStep";
+import { WarningDisplay } from "./auto-schedule/WarningDisplay";
 
 interface AutoScheduleSectionProps {
   selectedDate: Date | null;
@@ -24,33 +23,18 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
   setMatchPairs
 }) => {
   const { toast } = useToast();
-  const [autoScheduleStep, setAutoScheduleStep] = React.useState<'teams' | 'pairings'>('teams');
-
   const {
+    autoScheduleStep,
+    setAutoScheduleStep,
+    isLoading,
     isGenerating,
-    loadTeamsForDate,
-    previewSchedule,
-    generateMatchPairings,
-    convertPairingsToMatches,
     timeBlockTeams,
-    generatedPairings
-  } = useAutoSchedule();
-
-  const getTeamCountStatus = () => {
-    if (!timeBlockTeams || Object.keys(timeBlockTeams).length === 0) {
-      return { total: 0, odd: 0 };
-    }
-    
-    let totalTeams = 0;
-    let oddBlocks = 0;
-    
-    Object.entries(timeBlockTeams).forEach(([block, teams]) => {
-      totalTeams += teams.length;
-      if (teams.length % 2 !== 0) oddBlocks++;
-    });
-    
-    return { total: totalTeams, odd: oddBlocks };
-  };
+    generatedPairings,
+    previewSchedule,
+    handleGenerateSchedule,
+    convertPairingsToMatches,
+    getTeamCountStatus
+  } = useSchedulePreview();
 
   const handlePreviewTeams = async () => {
     if (!selectedDate) {
@@ -68,11 +52,10 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
         title: "Teams Loaded",
         description: "Teams for each time block have been loaded.",
       });
-      setAutoScheduleStep('teams');
     }
   };
 
-  const handleGenerateSchedule = async () => {
+  const handleGenerateScheduleClick = async () => {
     if (!selectedDate) {
       toast({
         title: "Select Date",
@@ -82,14 +65,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
       return;
     }
     
-    const pairings = await generateMatchPairings(selectedDate);
-    if (pairings) {
-      toast({
-        title: "Schedule Generated",
-        description: "Match pairings have been generated based on team compatibility.",
-      });
-      setAutoScheduleStep('pairings');
-    }
+    await handleGenerateSchedule(selectedDate);
   };
 
   const handleApplySchedule = () => {
@@ -154,100 +130,30 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
         </p>
         
         <div className="flex flex-col space-y-4">
-          <div className="flex flex-col">
-            <div className="flex items-center mb-2">
-              <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">1</div>
-              <h4 className="font-medium">Load Available Teams</h4>
-            </div>
-            <div className="pl-8">
-              <p className="text-sm text-muted-foreground mb-2">
-                Load teams that have been assigned to time blocks for this date
-              </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handlePreviewTeams}
-                disabled={isGenerating || !selectedDate}
-                className="w-full mb-4"
-              >
-                {isGenerating ? "Loading Teams..." : "Preview Available Teams"}
-              </Button>
-            </div>
-          </div>
-          
-          {/* Only show preview if teams are loaded */}
-          {Object.keys(timeBlockTeams).length > 0 && autoScheduleStep === 'teams' && (
-            <div className="pl-8 mb-4">
-              <SchedulePreview 
-                timeBlockTeams={timeBlockTeams}
-                date={selectedDate}
-              />
-              
-              <div className="mt-4 flex justify-end">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleGenerateSchedule}
-                  disabled={isGenerating || totalTeams === 0}
-                  className="flex items-center"
-                >
-                  Generate Match Pairings <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+          {autoScheduleStep === 'teams' && (
+            <TeamLoadingStep 
+              isLoading={isLoading} 
+              selectedDate={selectedDate}
+              timeBlockTeams={timeBlockTeams}
+              totalTeams={totalTeams}
+              onLoadTeams={handlePreviewTeams}
+              onGenerateSchedule={handleGenerateScheduleClick}
+            />
           )}
           
-          {Object.keys(generatedPairings).length > 0 && autoScheduleStep === 'pairings' && (
-            <div>
-              <div className="flex items-center mb-2">
-                <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">2</div>
-                <h4 className="font-medium">Review Generated Matches</h4>
-              </div>
-              
-              <div className="pl-8 mb-4">
-                <p className="text-sm text-muted-foreground mb-3">
-                  Review the generated match pairings and apply them to the form
-                </p>
-                
-                <ScheduleMatchesPreview 
-                  pairings={generatedPairings}
-                  date={selectedDate}
-                  isGenerating={isGenerating}
-                />
-                
-                <div className="mt-4 flex justify-between">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAutoScheduleStep('teams')}
-                  >
-                    Back to Teams
-                  </Button>
-                  
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handleApplySchedule}
-                    disabled={isGenerating}
-                  >
-                    Apply Schedule to Form
-                  </Button>
-                </div>
-              </div>
-            </div>
+          {autoScheduleStep === 'pairings' && Object.keys(generatedPairings).length > 0 && (
+            <ScheduleGenerationStep 
+              isGenerating={isGenerating}
+              selectedDate={selectedDate}
+              generatedPairings={generatedPairings}
+              onApplySchedule={handleApplySchedule}
+              onBack={() => setAutoScheduleStep('teams')}
+            />
           )}
         </div>
       </div>
       
-      {oddBlocks > 0 && (
-        <div className="flex items-start gap-2 mt-4 p-3 rounded-md bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900">
-          <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5" />
-          <div className="text-xs text-amber-800 dark:text-amber-300">
-            <p className="font-medium">Odd number of teams detected</p>
-            <p className="mt-1">Some time blocks have an odd number of teams, which means not all teams can be paired. Consider adding or removing teams to ensure an even number.</p>
-          </div>
-        </div>
-      )}
+      <WarningDisplay oddBlocks={oddBlocks} />
       
       <Separator className="my-4" />
       

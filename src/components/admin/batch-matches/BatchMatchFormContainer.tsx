@@ -1,7 +1,6 @@
 
 import React from "react";
 import { useTeamData } from "@/hooks/useTeamData";
-import { Card, CardContent } from "@/components/ui/card";
 import { useBatchMatchForm } from "./useBatchMatchForm";
 import { DateSelectionSection } from "./DateSelectionSection";
 import { MatchPairsSection } from "./MatchPairsSection";
