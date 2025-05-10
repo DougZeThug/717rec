@@ -1,6 +1,6 @@
 
 import { cn } from "@/lib/utils";
-import { getDivisionGradient } from "./divisions";
+import { getDivisionGradientClass } from "./divisions";
 
 /**
  * Card style utility function that combines various design system elements
@@ -20,7 +20,7 @@ export function getCardStyle({
 } = {}) {
   // Get division-specific gradient if division is provided
   const cardGradient = division 
-    ? getDivisionGradient(division) 
+    ? getDivisionGradientClass(division) 
     : getCardGradient(gradient);
   
   return cn(

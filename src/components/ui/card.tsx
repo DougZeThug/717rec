@@ -1,9 +1,9 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
-import { gradients, getDivisionGradient } from "@/styles/design-system"
-import { getDivisionGradientClass } from "@/styles/design-system"
+import { gradients, getDivisionGradientClass } from "@/styles/design-system"
 
 interface CardVariantProps {
   variant?: "default" | "subtle" | "highlight" | "elevated" | "interactive";
@@ -90,11 +90,6 @@ const CardDescription = React.forwardRef<
   )
 })
 CardDescription.displayName = "CardDescription"
-
-// Helper function to get division-specific gradient - this function should be removed since we're now using getDivisionGradientClass
-function getDivisionGradient(division: string): string {
-  return getDivisionGradientClass(division);
-}
 
 const CardContent = React.forwardRef<
   HTMLDivElement,
