@@ -10,7 +10,6 @@ const BatchMatchCreationTab = () => {
     <AdminSectionWrapper 
       title="Batch Match Creation" 
       icon={Calendar}
-      emoji="🧪"
     >
       <Card className="rounded-xl shadow-md">
         <CardHeader>

@@ -8,6 +8,7 @@ import ErrorAlert from "./mass-score-entry/components/ErrorAlert";
 import SubmitButton from "./mass-score-entry/components/SubmitButton";
 import AdminSectionWrapper from "./AdminSectionWrapper";
 import { motion } from "framer-motion";
+import { ClipboardCheck } from "lucide-react";
 
 const MassScoreEntryTool: React.FC = () => {
   const {
@@ -58,7 +59,7 @@ const MassScoreEntryTool: React.FC = () => {
   return (
     <AdminSectionWrapper
       title="Mass Score Entry"
-      emoji="🧠"
+      icon={ClipboardCheck}
     >
       <Card className="rounded-xl shadow-md overflow-hidden">
         <CardHeader className="p-3 sm:p-4 bg-muted/20">
