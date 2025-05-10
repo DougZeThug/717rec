@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
+import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
@@ -17,7 +16,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
+  const isLight = resolvedTheme === 'light';
 
   const handleTeamClick = (teamId: string) => {
     navigate(`/teams/${teamId}`);
@@ -72,6 +71,9 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   <span className="text-gray-900 dark:text-white">{(team.winPercentage * 100).toFixed(1)}%</span>
                   <span className={getPowerScoreColor(team.powerScore)}>
                     {formatPowerScore(team.powerScore)}
+                  </span>
+                  <span className={getSosColor(team.sos)}>
+                    {team.sos.toFixed(3)}
                   </span>
                 </div>
               </div>

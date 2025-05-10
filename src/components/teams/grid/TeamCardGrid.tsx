@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Link, useLocation } from "react-router-dom";
@@ -12,7 +13,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
 import { PlayerChip } from "../shared/PlayerChip";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
@@ -27,6 +28,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   const isAdminPage = location.pathname.includes('/admin');
   const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl";
   const powerScoreColor = getPowerScoreColor(team.power_score);
+  const sosColor = getSosColor(team.sos);
 
   return (
     <div className={`${cardBg} overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.98]`}>

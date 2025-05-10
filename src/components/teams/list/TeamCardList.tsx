@@ -13,7 +13,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
+import { getSosColor } from "@/utils/colors";
 import { PlayerChip } from "../shared/PlayerChip";
 
 interface TeamCardListProps {
@@ -27,6 +28,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
   const isAdminPage = location.pathname.includes('/admin');
   const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl";
   const powerScoreColor = getPowerScoreColor(team.power_score);
+  const sosColor = getSosColor(team.sos);
 
   return (
     <div className={`${cardBg} overflow-hidden h-full mb-4 font-inter shadow-sm hover:shadow-md transition-all duration-200 
@@ -117,7 +119,9 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             
             <StatBlock 
               label="SOS" 
-              value={<span className="font-mono text-base justify-end flex">{team.sos?.toFixed(3) || '0.000'}</span>}
+              value={<span className={`font-mono text-base justify-end flex ${sosColor}`}>
+                {team.sos?.toFixed(3) || '0.000'}
+              </span>}
             />
           </div>
           

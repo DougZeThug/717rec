@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Team } from "@/types";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/powerScore";
+import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
 import { Trophy, X } from "lucide-react";
 
 interface TeamStatsProps {
@@ -26,6 +26,15 @@ export const TeamStats: React.FC<TeamStatsProps> = ({ team }) => {
           {formatPowerScore(team.power_score)}
         </span>
       </div>
+
+      {team.sos !== undefined && (
+        <div className="flex flex-col">
+          <span className="font-inter uppercase text-xs tracking-widest text-gray-500 dark:text-gray-400">SOS</span>
+          <span className={`font-mono text-base font-medium ${getSosColor(team.sos)}`}>
+            {team.sos.toFixed(3)}
+          </span>
+        </div>
+      )}
     </div>
   );
 };
