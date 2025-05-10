@@ -79,13 +79,13 @@ export const AppCard: React.FC<AppCardProps> = ({
 
   // Get the correct gradient based on the prop
   let cardGradient = gradient;
-  if (gradient === "blueOrange") {
+  if (gradient === "blueOrange" || gradient === "orangeAccent") {
     cardGradient = "default"; // Will be overridden by the className below
   }
 
   const cardStyles = cn(
     getCardStyle({
-      gradient: cardGradient,
+      gradient: cardGradient as "default" | "subtle" | "highlight",
       elevationType: elevation,
       isInteractive,
       division,
