@@ -1,9 +1,20 @@
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 import { usePairingGenerator } from '../usePairingGenerator';
 import { useSchedulePreview } from '../useSchedulePreview';
-import { AlgorithmConfig, TimeBlockTeamsMap, TeamPairingMap } from '@/types/autoSchedule';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  AlgorithmConfig, 
+  TimeBlockTeamsMap, 
+  TeamPairingMap,
+  AutoScheduleMatch
+} from '@/types/autoSchedule';
+import { 
+  getTimeBlocksStatistics,
+  formatScheduleDate,
+  analyzeMatchQuality
+} from '@/utils/autoSchedule/scheduleUtils';
 
 export function useAutoSchedule() {
   // Tab state
@@ -14,55 +25,181 @@ export function useAutoSchedule() {
   const [avoidRematches, setAvoidRematches] = useState(true);
   const [prioritizeQuality, setPrioritizeQuality] = useState(false);
   
+  // Processing state
+  const [isProcessing, setIsProcessing] = useState(false);
+  
   // Generated data
-  const [generatedMatches, setGeneratedMatches] = useState<any[]>([]);
+  const [generatedMatches, setGeneratedMatches] = useState<AutoScheduleMatch[]>([]);
+  const [matchQualityMetrics, setMatchQualityMetrics] = useState<{
+    totalMatches: number;
+    rematchCount: number;
+    averageCompatibilityScore: number;
+    qualityRating: string;
+  } | null>(null);
   
   // Use existing hooks
   const {
-    autoScheduleStep,
-    setAutoScheduleStep,
     isLoading,
-    isGenerating,
     timeBlockTeams,
+    loadTeamsForDate,
+    getTeamCountStatus
+  } = useTeamScheduleLoader();
+
+  const {
+    isGenerating,
     generatedPairings,
     unmatchedTeamIds,
-    previewSchedule,
-    handleGenerateSchedule,
-    convertPairingsToMatches,
-    getTeamCountStatus
+    generateMatchPairings,
+  } = usePairingGenerator();
+
+  const {
+    convertPairingsToMatches
   } = useSchedulePreview();
 
-  const handleLoadTeams = async () => {
-    if (!selectedDate) return;
-    await previewSchedule(selectedDate);
-  };
+  const { toast } = useToast();
 
-  const handleGenerateClick = async () => {
-    if (!selectedDate) return;
-    
-    await handleGenerateSchedule(selectedDate, {
-      avoidRematches,
-      prioritizeQuality,
-      weights: prioritizeQuality ? {
-        powerScoreWeight: 5,
-        recordWeight: 3.5
-      } : undefined
-    });
-    
-    setActiveTab("matches");
-  };
+  // Combined loading state
+  const isLoadingState = isLoading || isGenerating || isProcessing;
 
-  const handleApplySchedule = () => {
-    if (!generatedPairings || !selectedDate) return;
+  // Handle loading teams for a date
+  const handleLoadTeams = useCallback(async () => {
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date first",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const matches = convertPairingsToMatches(generatedPairings, selectedDate);
-    setGeneratedMatches(matches);
-    
-    // Show the export tab with the created matches
-    setActiveTab("export");
-  };
+    setIsProcessing(true);
+    try {
+      await loadTeamsForDate(selectedDate);
+      
+      const { total, odd } = getTeamCountStatus();
+      
+      if (total === 0) {
+        toast({
+          title: "No teams found",
+          description: "No teams are scheduled for this date",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      toast({
+        title: "Teams loaded",
+        description: `Loaded ${total} teams${odd > 0 ? ` (${odd} blocks have odd team counts)` : ''}`,
+      });
+      
+    } catch (error) {
+      console.error("Error loading teams:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load teams. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [selectedDate, loadTeamsForDate, toast, getTeamCountStatus]);
 
-  const { total: totalTeams, odd: oddBlocks } = getTeamCountStatus();
+  // Handle generating schedule
+  const handleGenerateClick = useCallback(async () => {
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      // Performance tracking
+      const startTime = performance.now();
+      
+      // Configure algorithm based on settings
+      const algorithmConfig: AlgorithmConfig = {
+        avoidRematches,
+        prioritizeQuality,
+        weights: prioritizeQuality ? {
+          powerScoreWeight: 5,
+          recordWeight: 3.5
+        } : undefined
+      };
+      
+      // Generate pairings
+      await generateMatchPairings(selectedDate, timeBlockTeams, algorithmConfig);
+      
+      // Performance metrics
+      const endTime = performance.now();
+      console.log(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
+      
+      // Switch to matches tab to show results
+      setActiveTab("matches");
+      
+    } catch (error) {
+      console.error("Error generating schedule:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate schedule. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [
+    selectedDate, 
+    avoidRematches, 
+    prioritizeQuality, 
+    generateMatchPairings, 
+    timeBlockTeams, 
+    toast
+  ]);
+
+  // Handle applying schedule
+  const handleApplySchedule = useCallback(() => {
+    if (!generatedPairings || !selectedDate) {
+      toast({
+        title: "Error",
+        description: "No schedule generated",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Convert pairings to matches
+      const matches = convertPairingsToMatches(generatedPairings, selectedDate);
+      setGeneratedMatches(matches);
+      
+      // Analyze match quality
+      const qualityMetrics = analyzeMatchQuality(generatedPairings);
+      setMatchQualityMetrics(qualityMetrics);
+      
+      // Show the export tab with the created matches
+      setActiveTab("export");
+      
+      toast({
+        title: "Schedule created",
+        description: `${matches.length} matches ready for export`,
+      });
+    } catch (error) {
+      console.error("Error applying schedule:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create match schedule. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [generatedPairings, selectedDate, convertPairingsToMatches, toast]);
+
+  // Get team statistics
+  const { totalTeams, oddBlocks } = useMemo(() => {
+    return getTeamCountStatus();
+  }, [timeBlockTeams, getTeamCountStatus]);
 
   return {
     // State
@@ -75,9 +212,10 @@ export function useAutoSchedule() {
     prioritizeQuality,
     setPrioritizeQuality,
     generatedMatches,
+    matchQualityMetrics,
     
     // Data
-    isLoading,
+    isLoading: isLoadingState,
     isGenerating,
     timeBlockTeams,
     generatedPairings,
@@ -88,6 +226,9 @@ export function useAutoSchedule() {
     // Actions
     handleLoadTeams,
     handleGenerateClick,
-    handleApplySchedule
+    handleApplySchedule,
+    
+    // Formatted utilities
+    formattedDate: formatScheduleDate(selectedDate)
   };
 }

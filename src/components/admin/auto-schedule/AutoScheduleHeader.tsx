@@ -3,6 +3,9 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Wand2 } from "lucide-react";
 
+/**
+ * Header component for the auto-schedule section
+ */
 const AutoScheduleHeader: React.FC = () => {
   return (
     <div className="space-y-4">
@@ -16,6 +19,7 @@ const AutoScheduleHeader: React.FC = () => {
       
       <p className="text-muted-foreground">
         Generate optimal match schedules automatically based on team compatibility and skill levels.
+        The algorithm prioritizes competitive matches and avoids rematches when possible.
       </p>
     </div>
   );

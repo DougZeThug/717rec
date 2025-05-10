@@ -53,10 +53,18 @@ export interface AlgorithmConfig {
   };
 }
 
+export interface MatchQualityMetrics {
+  totalMatches: number;
+  rematchCount: number;
+  averageCompatibilityScore: number;
+  qualityRating: string;
+}
+
 export interface TabProps {
   selectedDate: Date | null;
   timeBlockTeams?: TimeBlockTeamsMap;
   generatedPairings?: TeamPairingMap;
   isGenerating: boolean;
   unmatchedTeamIds?: string[];
+  matchQualityMetrics?: MatchQualityMetrics | null;
 }

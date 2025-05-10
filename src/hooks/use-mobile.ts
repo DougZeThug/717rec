@@ -32,5 +32,4 @@ export function useIsMobile(): boolean {
   return isMobile;
 }
 
-// Both exports point to the same function for backward compatibility
 export { useIsMobile as useMobile };

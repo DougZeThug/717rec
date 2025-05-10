@@ -20,6 +20,7 @@ interface DateSettingsPanelProps {
   isGenerating: boolean;
   totalTeams: number;
   oddBlocks: number;
+  formattedDate?: string;
   onLoadTeams: () => Promise<void>;
   onGenerateSchedule: () => Promise<void>;
 }
@@ -35,6 +36,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   isGenerating,
   totalTeams,
   oddBlocks,
+  formattedDate,
   onLoadTeams,
   onGenerateSchedule
 }) => {
@@ -44,6 +46,11 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
         <CardTitle className="text-base flex items-center gap-2">
           <Calendar className="h-4 w-4" /> Select Date
         </CardTitle>
+        {formattedDate && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {formattedDate}
+          </p>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -68,6 +75,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
               onClick={onLoadTeams}
               className="w-full"
               disabled={isLoading || !selectedDate}
+              variant="secondary"
             >
               {isLoading ? "Loading..." : "Load Teams"}
             </Button>

@@ -19,6 +19,12 @@ interface ScheduleWorkflowTabsProps {
   isGenerating: boolean;
   oddBlocks: number;
   totalTeams: number;
+  matchQualityMetrics: {
+    totalMatches: number;
+    rematchCount: number;
+    averageCompatibilityScore: number;
+    qualityRating: string;
+  } | null;
   onApplySchedule: () => void;
 }
 
@@ -33,6 +39,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   isGenerating,
   oddBlocks,
   totalTeams,
+  matchQualityMetrics,
   onApplySchedule
 }) => {
   const isMobile = useIsMobile();
@@ -88,12 +95,14 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
                 generatedPairings={generatedPairings}
                 isGenerating={isGenerating}
                 onApplySchedule={onApplySchedule}
+                matchQualityMetrics={matchQualityMetrics}
               />
             </TabsContent>
             
             <TabsContent value="export" className="mt-0">
               <ExportTab 
                 generatedMatches={generatedMatches}
+                matchQualityMetrics={matchQualityMetrics}
               />
             </TabsContent>
           </div>

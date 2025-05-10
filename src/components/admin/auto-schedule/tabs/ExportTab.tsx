@@ -1,12 +1,19 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface ExportTabProps {
   generatedMatches: any[];
+  matchQualityMetrics: {
+    totalMatches: number;
+    rematchCount: number;
+    averageCompatibilityScore: number;
+    qualityRating: string;
+  } | null;
 }
 
-const ExportTab: React.FC<ExportTabProps> = ({ generatedMatches }) => {
+const ExportTab: React.FC<ExportTabProps> = ({ generatedMatches, matchQualityMetrics }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Export Schedule</h3>
@@ -24,6 +31,35 @@ const ExportTab: React.FC<ExportTabProps> = ({ generatedMatches }) => {
               Go to the Batch Matches tab to view and edit them
             </p>
           </div>
+          
+          {matchQualityMetrics && (
+            <div className="border rounded-md p-4">
+              <h4 className="text-sm font-medium mb-2">Schedule Quality Report</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Quality Rating:</span>
+                  <Badge variant={
+                    matchQualityMetrics.qualityRating === "Excellent" ? "recreational" :
+                    matchQualityMetrics.qualityRating === "Good" ? "intermediate" : "outline"
+                  }>
+                    {matchQualityMetrics.qualityRating}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Avg Compatibility:</span>
+                  <span className="font-medium">{matchQualityMetrics.averageCompatibilityScore.toFixed(1)}/10</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Total Matches:</span>
+                  <span className="font-medium">{matchQualityMetrics.totalMatches}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Rematches:</span>
+                  <span className="font-medium">{matchQualityMetrics.rematchCount}</span>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="flex justify-center mt-4">
             <Button 
