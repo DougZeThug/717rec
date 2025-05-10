@@ -33,3 +33,22 @@ export interface AutoScheduleStepProps {
   onNext: () => void;
   onPrevious?: () => void;
 }
+
+export interface AutoScheduleMatch {
+  id: string;
+  team1Id: string;
+  team2Id: string;
+  timeslot: string;
+  date?: Date;
+}
+
+export interface AlgorithmConfig {
+  avoidRematches?: boolean;
+  prioritizeQuality?: boolean;
+  weights?: {
+    powerScoreWeight?: number;
+    sosWeight?: number;
+    recordWeight?: number;
+    gameRecordWeight?: number;
+  };
+}

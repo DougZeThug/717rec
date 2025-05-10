@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface AutoScheduleSectionProps {
   selectedDate: Date | null;
@@ -136,6 +136,13 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
         </h3>
         
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => window.location.href = "#auto-schedule"}
+          >
+            Open Full Version
+          </Button>
           {totalTeams > 0 && (
             <Badge variant={oddBlocks > 0 ? "destructive" : "outline"} className="text-xs">
               {totalTeams} Teams {oddBlocks > 0 && `(${oddBlocks} Odd Blocks)`}
@@ -147,7 +154,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground mb-3">
           Generate matches automatically using teams assigned to time blocks for this date.
-          The algorithm will pair teams based on their skill level and match history.
+          For advanced features, use the dedicated Auto Schedule tab.
         </p>
         
         {/* Settings Accordion */}

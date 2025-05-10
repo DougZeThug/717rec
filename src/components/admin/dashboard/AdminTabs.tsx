@@ -6,6 +6,7 @@ import TimeslotsTab from "@/components/admin/timeslots/TimeslotsTab";
 import BatchMatchCreationTab from "@/components/admin/batch-matches/BatchMatchCreationTab";
 import MassScoresTab from "@/components/admin/scores/MassScoresTab";
 import StatsTab from "@/components/admin/stats/StatsTab";
+import AutoScheduleTab from "@/components/admin/auto-schedule/AutoScheduleTab";
 
 const AdminTabs = () => {
   return (
@@ -14,6 +15,7 @@ const AdminTabs = () => {
         <TabsTrigger value="teams">Teams</TabsTrigger>
         <TabsTrigger value="scores">Mass Scores</TabsTrigger>
         <TabsTrigger value="batch-matches">Batch Matches</TabsTrigger>
+        <TabsTrigger value="auto-schedule">Auto Schedule</TabsTrigger>
         <TabsTrigger value="timeslots">Timeslots</TabsTrigger>
         <TabsTrigger value="stats">Stats</TabsTrigger>
       </TabsList>
@@ -28,6 +30,10 @@ const AdminTabs = () => {
 
       <TabsContent value="batch-matches" className="space-y-4">
         <BatchMatchCreationTab />
+      </TabsContent>
+      
+      <TabsContent value="auto-schedule" className="space-y-4">
+        <AutoScheduleTab />
       </TabsContent>
 
       <TabsContent value="timeslots" className="space-y-4">
