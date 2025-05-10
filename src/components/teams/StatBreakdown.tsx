@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -64,13 +63,13 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
       <Tabs defaultValue="core" className="w-full">
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="core" className="text-sm">
-            Core Stats
+            Core
           </TabsTrigger>
           <TabsTrigger value="games" className="text-sm">
-            Game Stats
+            Game
           </TabsTrigger>
           <TabsTrigger value="advanced" className="text-sm">
-            Advanced Stats
+            Advanced
           </TabsTrigger>
         </TabsList>
         
