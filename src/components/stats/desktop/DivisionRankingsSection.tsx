@@ -1,4 +1,3 @@
-
 import React, { useMemo } from "react";
 import { Ranking } from "@/types";
 import { SortOptions } from "../RankingsTable";

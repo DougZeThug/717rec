@@ -99,6 +99,7 @@ export const saveRankingsToStorage = (rankings: Ranking[]) => {
     console.log("Saving rankings to localStorage:", rankingsToSave);
     
     localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
+    localStorage.setItem('rankingsLastUpdated', new Date().toISOString());
     console.log('Rankings saved to localStorage for future trend calculation');
   } catch (error) {
     console.error('Error saving rankings:', error);

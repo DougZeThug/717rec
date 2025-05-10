@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
