@@ -32,8 +32,8 @@ const MessageBoardFAB: React.FC = () => {
         size="icon"
         className={cn(
           "rounded-full w-12 h-12 shadow-lg",
-          "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white",
-          "dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600",
+          "bg-gradient-to-br from-blue-500 via-blue-600 to-amber-600/70 hover:from-blue-400 hover:via-blue-500 hover:to-amber-500/80 text-white",
+          "dark:from-blue-600 dark:via-blue-700 dark:to-amber-700/60 dark:hover:from-blue-500 dark:hover:via-blue-600 dark:hover:to-amber-600/70",
           "transition-all duration-300",
           animations.fadeIn
         )}

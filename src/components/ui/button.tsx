@@ -22,6 +22,10 @@ const buttonVariants = cva(
         cornhole: gradients.button.primary,
         blue: gradients.button.blue,
         green: gradients.button.green,
+        // New button variants with orange accents
+        orange: gradients.button.orange,
+        orangeSubtle: gradients.button.orangeSubtle,
+        blueOrange: gradients.button.blueOrange,
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2",

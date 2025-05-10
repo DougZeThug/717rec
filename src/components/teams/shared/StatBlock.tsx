@@ -18,7 +18,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   className = "",
   orientation = 'vertical',
   icon,
-  gradient = "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/80 dark:to-gray-900/80"
+  gradient = "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/80 dark:to-gray-900/80"
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";

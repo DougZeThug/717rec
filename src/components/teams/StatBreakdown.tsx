@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -59,10 +58,10 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   const powerScoreColorClass = getPowerScoreColor(powerScore);
   const sosColorClass = getSosColor(sos);
   
-  // Card gradient based on active tab
+  // Card gradient based on active tab with orange accent
   const getTabGradient = (tabName: string) => {
     return tabName === activeTab 
-      ? (isLight ? "bg-white" : "bg-black/30") 
+      ? (isLight ? "bg-white border-b-2 border-orange-400/80" : "bg-black/30 border-b-2 border-orange-400/50") 
       : (isLight ? "bg-gray-50/80" : "bg-black/10");
   };
   
@@ -116,7 +115,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                   {formatPowerScore(powerScore)}
                 </span>
               }
-              gradient="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/90 dark:to-gray-900/70"
+              gradient="bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
               icon={<Zap size={18} className="text-amber-500" />}
             />
             
@@ -158,7 +157,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
             <StatBlock 
               label="Win Percentage" 
               value={`${winPercentage}%`}
-              gradient="bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
+              gradient="bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
               icon={<Target size={18} className="text-purple-500" />}
             />
           </div>

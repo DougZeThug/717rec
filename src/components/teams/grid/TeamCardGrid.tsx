@@ -16,6 +16,7 @@ import {
 import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
 import { PlayerChip } from "../shared/PlayerChip";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface TeamCardGridProps {
   team: Team;
@@ -30,10 +31,17 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   const powerScoreColor = getPowerScoreColor(team.power_score);
   const sosColor = getSosColor(team.sos);
 
+  // Modified hover class with orange accent
+  const hoverClass = "hover:bg-gradient-to-br hover:from-white hover:via-blue-50/10 hover:to-orange-50/30 dark:hover:bg-[#252525]";
+
   return (
-    <div className={`${cardBg} overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.98]`}>
+    <div className={cn(
+      cardBg, 
+      "overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 active:scale-[0.98]", 
+      hoverClass
+    )}>
       <Link to={`/teams/${team.id}`} className="block">
-        <div className="min-h-[4.5rem] sm:h-24 bg-[#f0f0f0] dark:bg-black/30 flex items-center justify-center p-2 sm:p-3">
+        <div className="min-h-[4.5rem] sm:h-24 bg-gradient-to-br from-[#f0f0f0] to-gray-100 dark:from-black/30 dark:to-gray-900/40 flex items-center justify-center p-2 sm:p-3">
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
@@ -92,6 +100,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           <StatBlock 
             label="Record" 
             value={<span className="font-mono text-base text-center">{`${team.wins}-${team.losses}`}</span>}
+            gradient="bg-gradient-to-br from-white via-white to-blue-50/20 dark:from-gray-800/90 dark:to-gray-900/80"
           />
           <StatBlock 
             label="Power Score" 
@@ -100,6 +109,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
                 {formatPowerScore(team.power_score)}
               </span>
             }
+            gradient="bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80"
           />
         </div>
         
