@@ -109,6 +109,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             <Switch
               id="detailed-view"
               checked={detailedView}
+              onCheckedChange={toggleViewMode}
             />
             <Label
               htmlFor="detailed-view"
