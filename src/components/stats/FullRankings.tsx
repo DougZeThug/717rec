@@ -24,8 +24,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
 
   return (
     <Card>
-      <CardHeader className={isMobile ? "pb-2 py-3" : "pb-2"}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <CardHeader className={isMobile ? "pb-2 py-2" : "pb-2"}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
           <div>
             <CardTitle
               className={`font-oswald uppercase tracking-wide ${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} !font-bold`}
@@ -45,7 +45,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
           <ViewToggle view={view} onViewChange={setView} />
         </div>
       </CardHeader>
-      <CardContent className={isMobile ? "p-2" : "p-2 sm:p-4"}>
+      <CardContent className={isMobile ? "p-1" : "p-2 sm:p-4"}>
         <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
       </CardContent>
     </Card>

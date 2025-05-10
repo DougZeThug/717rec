@@ -58,8 +58,8 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
   }, [divisionName, rankings]);
 
   return (
-    <div className="mb-8">
-      <h2 className="mb-4 text-xl font-bold font-bebas tracking-widest text-gray-900 dark:text-white">
+    <div className="mb-6 sm:mb-8">
+      <h2 className="mb-3 sm:mb-4 text-xl font-bold font-bebas tracking-widest text-gray-900 dark:text-white">
         {divisionName}
       </h2>
       <div className="overflow-auto rounded-lg border dark:border-gray-700 dark:bg-gray-800/50 shadow-sm">

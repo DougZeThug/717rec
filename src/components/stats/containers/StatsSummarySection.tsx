@@ -27,8 +27,8 @@ const StatsSummarySection = ({
 
   return (
     <>
-      <Card className={`mb-3 ${cardBg} p-0`}>
-        <CardHeader className={`pb-1.5 rounded-t-xl ${isMobile ? 'py-3' : 'py-6'}`}
+      <Card className={`mb-2 ${cardBg} p-0`}>
+        <CardHeader className={`pb-1.5 rounded-t-xl ${isMobile ? 'py-2.5' : 'py-6'}`}
           style={isLight ? { borderBottom: '1px solid #e0e0e0', borderTopLeftRadius: 12, borderTopRightRadius: 12, background: '#fff' } : {}}>
           <CardTitle className={`font-semibold ${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-inter tracking-wide text-[#1a1a1a] dark:text-white uppercase`} style={{ letterSpacing: ".03em" }}>
             Current Standings
@@ -52,7 +52,7 @@ const StatsSummarySection = ({
         </CardContent>
       </Card>
       
-      <div className={`${isMobile ? 'mb-3' : 'mb-5'}`}>
+      <div className={`mb-2 ${isMobile ? '' : 'mb-5'}`}>
         <h2 className={`font-inter ${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold tracking-wide text-[#1a1a1a] dark:text-white mb-1 uppercase`} style={{ letterSpacing: ".03em" }}>
           League Highlights
         </h2>
