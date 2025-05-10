@@ -59,7 +59,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 )}
                 <Link
                   to={`/teams/${ranking.teamId}`}
-                  className="font-bebas tracking-wide text-lg hover:text-blue-600 dark:text-white dark:hover:text-blue-400 block"
+                  className="font-bebas tracking-wide text-lg hover:text-blue-600 dark:text-white dark:hover:text-blue-400 block truncate"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {ranking.teamName}
@@ -108,18 +108,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-1 mt-1 text-xs">
-            <div>
-              <span className="font-mono text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
-            </div>
-            <div>
-              <span className="font-mono text-gray-900 dark:text-white">
-                {(ranking.winPercentage * 100).toFixed(1)}%
-              </span>
-            </div>
-            <div>
-              <span className="font-mono text-gray-900 dark:text-white">{ranking.streak || "-"}</span>
-            </div>
+          <div className="flex items-center justify-between mt-1 text-xs">
+            <span className="font-mono text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
+            <span className="font-mono text-gray-900 dark:text-white">
+              {(ranking.winPercentage * 100).toFixed(1)}%
+            </span>
+            <span className="font-mono text-gray-900 dark:text-white">{ranking.streak || "-"}</span>
           </div>
         )}
       </div>

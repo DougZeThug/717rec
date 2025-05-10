@@ -13,6 +13,7 @@ interface StatsSummaryCardsProps {
 }
 
 const iconSize = 18; // Slightly smaller for tighter grid
+const mobileIconSize = 14; // Even smaller for mobile
 
 const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const isMobile = useIsMobile();
@@ -64,11 +65,22 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const highestSOS = getHighestSOS();
   const highestPowerScore = getHighestPowerScore();
 
-  // Update: bg-muted card style, gap-2 or gap-3, even tighter padding
-  const cardBase = "flex flex-row items-center gap-2 sm:gap-3 py-3 px-2 sm:px-3 rounded-xl font-inter shadow-sm bg-muted border";
-  const titleLabel = "uppercase tracking-widest text-xs font-medium text-gray-700 dark:text-gray-300 font-inter";
-  const statVal = "font-mono text-lg sm:text-xl font-extrabold";
-  const descriptionColor = "text-gray-500 dark:text-gray-400 text-xs font-medium";
+  // Update: smaller card style, tighter padding on mobile
+  const cardBase = isMobile 
+    ? "flex flex-row items-center gap-1 py-1.5 px-1.5 rounded-lg font-inter shadow-sm bg-muted border"
+    : "flex flex-row items-center gap-2 sm:gap-3 py-3 px-2 sm:px-3 rounded-xl font-inter shadow-sm bg-muted border";
+  
+  const titleLabel = isMobile
+    ? "uppercase tracking-tight text-[10px] font-medium text-gray-700 dark:text-gray-300 font-inter"
+    : "uppercase tracking-widest text-xs font-medium text-gray-700 dark:text-gray-300 font-inter";
+  
+  const statVal = isMobile 
+    ? "font-mono text-sm font-bold"
+    : "font-mono text-lg sm:text-xl font-extrabold";
+  
+  const descriptionColor = isMobile
+    ? "text-gray-500 dark:text-gray-400 text-[9px] font-medium truncate max-w-[80px]"
+    : "text-gray-500 dark:text-gray-400 text-xs font-medium";
 
   // Color coding for highlight values
   const getColorFor = (type: string, value: number) => {
@@ -93,20 +105,26 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
     return "";
   };
 
+  const iconContainerClass = isMobile 
+    ? "flex items-center justify-center bg-cornhole-green/15 rounded-full w-6 h-6 mr-1.5"
+    : "flex items-center justify-center bg-cornhole-green/15 rounded-full w-9 h-9 mr-2";
+
   return (
-    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-1 sm:gap-3">
       <Card className={cardBase}>
-        <div className="flex items-center justify-center bg-cornhole-green/15 rounded-full w-9 h-9 mr-2">
-          <Trophy size={iconSize} className="text-amber-500" />
+        <div className={iconContainerClass}>
+          <Trophy size={isMobile ? mobileIconSize : iconSize} className="text-amber-500" />
         </div>
         <div>
           <CardTitle className={titleLabel}>Total Teams</CardTitle>
-          <div className="font-mono text-lg font-extrabold text-cornhole-green">{rankings ? rankings.length : 0}</div>
+          <div className={`font-mono ${isMobile ? "text-sm" : "text-lg"} font-extrabold text-cornhole-green`}>
+            {rankings ? rankings.length : 0}
+          </div>
         </div>
       </Card>
       <Card className={cardBase}>
-        <div className="flex items-center justify-center bg-green-900/15 rounded-full w-9 h-9 mr-2">
-          <Star size={iconSize} className="text-green-400" />
+        <div className={iconContainerClass}>
+          <Star size={isMobile ? mobileIconSize : iconSize} className="text-green-400" />
         </div>
         <div>
           <CardTitle className={titleLabel}>Highest Win %</CardTitle>
@@ -117,8 +135,8 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
         </div>
       </Card>
       <Card className={cardBase}>
-        <div className="flex items-center justify-center bg-blue-900/15 rounded-full w-9 h-9 mr-2">
-          <Scale size={iconSize} className="text-blue-400" />
+        <div className={iconContainerClass}>
+          <Scale size={isMobile ? mobileIconSize : iconSize} className="text-blue-400" />
         </div>
         <div>
           <CardTitle className={titleLabel}>Highest SOS</CardTitle>
@@ -129,8 +147,8 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
         </div>
       </Card>
       <Card className={cardBase}>
-        <div className="flex items-center justify-center bg-purple-900/20 rounded-full w-9 h-9 mr-2">
-          <Bolt size={iconSize} className="text-purple-300" />
+        <div className={iconContainerClass}>
+          <Bolt size={isMobile ? mobileIconSize : iconSize} className="text-purple-300" />
         </div>
         <div>
           <CardTitle className={titleLabel}>Highest Power Score</CardTitle>
