@@ -6,6 +6,7 @@ import PowerScoreChart from "./PowerScoreChart";
 import { PowerScoreDataItem } from "@/types/chart";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PowerScoreChartCardProps {
   data: PowerScoreDataItem[];
@@ -13,6 +14,7 @@ interface PowerScoreChartCardProps {
 
 const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
   const { resolvedTheme } = useTheme();
+  const isMobile = useIsMobile();
 
   return (
     <Card className={cn(
@@ -26,7 +28,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
           className="text-lg font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase"
           style={{ letterSpacing: ".03em" }}
         >
-          Top 8 Power Scores
+          Top {isMobile ? "5" : "8"} Power Scores
         </CardTitle>
         <CardDescription
           className="text-sm text-gray-600 dark:text-gray-300 font-inter"
