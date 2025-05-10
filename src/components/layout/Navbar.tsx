@@ -3,8 +3,9 @@ import React, { useEffect } from "react";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { gradients } from "@/styles/design-system";
 
-// Import new component files
+// Import component files
 import NavBrand from "./navbar/NavBrand";
 import NavLinks from "./navbar/NavLinks";
 import NavActions from "./navbar/NavActions";
@@ -36,7 +37,11 @@ const Navbar: React.FC = () => {
   ];
   
   return (
-    <nav className="bg-cornhole-navy dark:bg-gray-900 text-white shadow-lg sticky top-0 z-50 safe-area-top">
+    <nav className={cn(
+      "text-white shadow-lg sticky top-0 z-50 safe-area-top",
+      "bg-gradient-to-r from-cornhole-navy via-cornhole-navy to-[#1d3761]",
+      "dark:from-gray-900 dark:via-gray-900 dark:to-gray-800",
+    )}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-[8px] md:py-[4px]">
           <div className="flex items-center">

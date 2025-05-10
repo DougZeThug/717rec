@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Link } from "react-router-dom";
@@ -5,7 +6,7 @@ import { useTheme } from "next-themes";
 import { TeamLogo } from "./TeamLogo";
 import { TeamStats } from "./TeamStats";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
+import { animations, gradients } from "@/styles/design-system";
 
 interface TeamCardProps {
   team: Team;
@@ -21,17 +22,21 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
 
   return (
     <div className={cn(
-      "overflow-hidden mb-4 sm:mb-0 transition duration-200 hover:shadow-md",
+      "overflow-hidden mb-4 sm:mb-0 transition duration-300 hover:shadow-md",
       "rounded-lg border border-gray-200 dark:border-gray-700",
       animations.fadeInSlideUp,
       delayClass
     )}>
       <Link to={`/teams/${team.id}`} className="block">
-        <div className="h-40 bg-gray-100 dark:bg-gray-800/50 relative flex items-center justify-center p-3">
+        <div className="h-40 relative flex items-center justify-center p-3 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-800/80 dark:via-gray-800/50 dark:to-gray-900/60">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-amber-50/10 dark:from-blue-900/5 dark:to-amber-900/5"></div>
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
         </div>
-        <div className="p-4">
-          <h3 className="font-bebas font-normal uppercase tracking-wide text-xl text-gray-800 dark:text-white mb-2 truncate">
+        <div className="p-4 bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90">
+          <h3 className={cn(
+            "font-bebas font-normal uppercase tracking-wide text-xl mb-2 truncate",
+            "bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent"
+          )}>
             {team.name}
           </h3>
           <TeamStats team={team} />

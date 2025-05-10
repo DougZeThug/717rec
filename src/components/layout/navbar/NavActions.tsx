@@ -7,6 +7,7 @@ import UserMenu from "@/components/auth/UserMenu";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useNavigation } from "@/contexts/NavigationContext";
+import { gradients } from "@/styles/design-system";
 
 interface NavActionsProps {
   className?: string;
@@ -36,8 +37,13 @@ const NavActions: React.FC<NavActionsProps> = ({
         size="icon"
         onClick={handleMessageBoardClick}
         className={cn(
-          "rounded-full text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-700/80",
-          isActive("/message-board") && "bg-cornhole-navy-light dark:bg-gray-700"
+          "rounded-full text-white hover:bg-white/10 dark:hover:bg-gray-700/80",
+          isActive("/message-board") 
+            ? cn(
+                "bg-gradient-to-br from-white/10 to-amber-500/10",
+                "dark:from-gray-700 dark:to-amber-700/20"
+              ) 
+            : ""
         )}
         aria-label="Message Board"
       >

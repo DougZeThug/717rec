@@ -1,9 +1,11 @@
+
 import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "./card";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { getCardStyle } from "@/styles/design-system";
+import { gradients } from "@/styles/design-system";
 
 interface AppCardProps {
   title?: React.ReactNode;
@@ -22,7 +24,7 @@ interface AppCardProps {
   contentClassName?: string;
   footerClassName?: string;
   elevation?: "default" | "active" | "highlighted";
-  gradient?: "default" | "subtle" | "highlight";
+  gradient?: "default" | "subtle" | "highlight" | "blueOrange" | "orangeAccent";
 }
 
 export const AppCard: React.FC<AppCardProps> = ({
@@ -47,7 +49,11 @@ export const AppCard: React.FC<AppCardProps> = ({
   const cardContent = (
     <>
       {(title || description || badge) && (
-        <CardHeader className={cn("flex flex-row items-start justify-between gap-4", headerClassName)}>
+        <CardHeader className={cn(
+          "flex flex-row items-start justify-between gap-4",
+          badge && "bg-gradient-to-br from-white via-white to-gray-50 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-900/80",
+          headerClassName
+        )}>
           <div>
             {title && (typeof title === "string" ? <CardTitle>{title}</CardTitle> : title)}
             {description && (typeof description === "string" ? <CardDescription>{description}</CardDescription> : description)}
@@ -61,21 +67,32 @@ export const AppCard: React.FC<AppCardProps> = ({
         </CardContent>
       )}
       {footer && (
-        <CardFooter className={footerClassName}>
+        <CardFooter className={cn(
+          "bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/30 dark:to-transparent",
+          footerClassName
+        )}>
           {footer}
         </CardFooter>
       )}
     </>
   );
 
+  // Get the correct gradient based on the prop
+  let cardGradient = gradient;
+  if (gradient === "blueOrange") {
+    cardGradient = "default"; // Will be overridden by the className below
+  }
+
   const cardStyles = cn(
     getCardStyle({
-      gradient,
+      gradient: cardGradient,
       elevationType: elevation,
       isInteractive,
       division,
       className: cn(
         isClickable && "cursor-pointer w-full text-left",
+        gradient === "blueOrange" && gradients.card.blueOrange,
+        gradient === "orangeAccent" && gradients.card.orangeAccent,
         className
       )
     })
@@ -85,7 +102,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   if (linkTo) {
     return (
       <Link to={linkTo} className={cn("block", cardStyles)}>
-        <Card className="h-full">
+        <Card className="h-full border-0">
           {cardContent}
         </Card>
       </Link>

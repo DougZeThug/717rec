@@ -10,6 +10,8 @@ interface StatBlockProps {
   orientation?: 'vertical' | 'horizontal';
   icon?: React.ReactNode;
   gradient?: string;
+  highlight?: boolean;
+  variant?: 'default' | 'blue' | 'orange' | 'green' | 'amber';
 }
 
 export const StatBlock: React.FC<StatBlockProps> = ({ 
@@ -18,19 +20,45 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   className = "",
   orientation = 'vertical',
   icon,
-  gradient = "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/80 dark:to-gray-900/80"
+  gradient,
+  highlight = false,
+  variant = 'default'
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   
+  // Get gradient based on variant
+  const getGradient = () => {
+    if (gradient) return gradient;
+    
+    switch (variant) {
+      case 'blue':
+        return "bg-gradient-to-br from-white via-blue-50/30 to-blue-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-blue-900/10";
+      case 'orange':
+        return "bg-gradient-to-br from-white via-white to-orange-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-amber-900/10";
+      case 'green':
+        return "bg-gradient-to-br from-white via-white to-green-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-green-900/10";
+      case 'amber':
+        return "bg-gradient-to-br from-white via-white to-amber-50/50 dark:from-gray-800/80 dark:via-gray-800/60 dark:to-amber-900/10";
+      default:
+        return "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/80 dark:to-gray-900/80";
+    }
+  };
+  
   const baseClasses = cn(
-    gradient, 
+    getGradient(), 
     "p-3 rounded-lg text-left transition-all duration-200 hover:shadow-md border",
+    highlight ? "shadow-md border-blue-200 dark:border-blue-900/40" : "border-gray-200 dark:border-gray-700/50",
     isLight ? "border-gray-200" : "border-gray-700/50"
   );
   
   const labelClasses = "font-inter uppercase text-xs tracking-widest text-gray-600 dark:text-gray-400";
-  const valueClasses = "font-mono text-base font-medium text-[#2c2c2c] dark:text-white";
+  
+  // Apply gradient to the value text based on variant
+  const valueClasses = cn(
+    "font-mono text-base font-medium",
+    highlight ? "text-blue-700 dark:text-blue-300" : "text-[#2c2c2c] dark:text-white"
+  );
 
   if (orientation === 'horizontal') {
     return (

@@ -17,6 +17,7 @@ import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/color
 import { PlayerChip } from "../shared/PlayerChip";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { gradients } from "@/styles/design-system";
 
 interface TeamCardGridProps {
   team: Team;
@@ -27,21 +28,27 @@ interface TeamCardGridProps {
 export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEdit }) => {
   const location = useLocation();
   const isAdminPage = location.pathname.includes('/admin');
-  const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl";
   const powerScoreColor = getPowerScoreColor(team.power_score);
   const sosColor = getSosColor(team.sos);
 
-  // Modified hover class with orange accent
-  const hoverClass = "hover:bg-gradient-to-br hover:from-white hover:via-blue-50/10 hover:to-orange-50/30 dark:hover:bg-[#252525]";
+  // Gradients for headers and backgrounds
+  const headerGradient = "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-black/30 dark:via-gray-900/40 dark:to-gray-900/40";
+  const contentGradient = "bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90";
+  const hoverGradient = gradients.card.blueOrange;
 
   return (
     <div className={cn(
-      cardBg, 
-      "overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 active:scale-[0.98]", 
-      hoverClass
+      "overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md",
+      "transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 active:scale-[0.98]",
+      "rounded-lg border border-gray-200 dark:border-gray-800",
+      "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
+      hoverGradient
     )}>
       <Link to={`/teams/${team.id}`} className="block">
-        <div className="min-h-[4.5rem] sm:h-24 bg-gradient-to-br from-[#f0f0f0] to-gray-100 dark:from-black/30 dark:to-gray-900/40 flex items-center justify-center p-2 sm:p-3">
+        <div className={cn(
+          "min-h-[4.5rem] sm:h-24 flex items-center justify-center p-2 sm:p-3",
+          headerGradient
+        )}>
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
@@ -51,7 +58,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         </div>
       </Link>
       
-      <div className="flex flex-col flex-grow p-3 sm:p-4">
+      <div className={cn("flex flex-col flex-grow p-3 sm:p-4", contentGradient)}>
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline">
             <h3 className="font-bebas font-normal uppercase tracking-wide text-xl truncate pr-2 text-[#1a1a1a] dark:text-white" title={team.name}>
@@ -100,7 +107,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           <StatBlock 
             label="Record" 
             value={<span className="font-mono text-base text-center">{`${team.wins}-${team.losses}`}</span>}
-            gradient="bg-gradient-to-br from-white via-white to-blue-50/20 dark:from-gray-800/90 dark:to-gray-900/80"
+            gradient="bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80"
           />
           <StatBlock 
             label="Power Score" 
@@ -122,7 +129,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
                 <TooltipProvider key="more-players">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <div className="text-xs px-2 py-0.5 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 text-gray-600 dark:text-gray-400 rounded-full inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                         +{team.players.length - 3}
                       </div>
                     </TooltipTrigger>

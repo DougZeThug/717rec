@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { gradients } from "@/styles/design-system";
+import { gradients, animations } from "@/styles/design-system";
 import { motion } from "framer-motion";
 
 // Define the possible CTA messages
@@ -45,11 +45,25 @@ const CallToAction = () => {
     <section className={cn(
       "relative py-8 px-4 mt-6 overflow-hidden border-t border-b",
       "border-gray-200 dark:border-gray-700/50",
-      gradients.section.cta
+      "bg-gradient-to-br from-blue-50/40 via-white to-orange-50/50",
+      "dark:from-gray-800/90 dark:via-gray-800/70 dark:to-amber-900/10",
+      animations.fadeIn
     )}>
+      {/* Enhanced gradient background elements */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/20 via-transparent to-orange-100/30 dark:from-blue-900/10 dark:to-amber-900/5" />
+      
+      {/* Animated gradient orbs in the background */}
+      <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-blue-500/5 blur-3xl -z-10" />
+      <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full bg-orange-500/5 blur-3xl -z-10" />
+      
       <div className="max-w-5xl mx-auto text-center">
         <motion.h2 
-          className="text-xl md:text-3xl font-semibold mb-3"
+          className={cn(
+            "text-xl md:text-3xl font-semibold mb-3",
+            "bg-gradient-to-r from-blue-600 via-blue-700 to-amber-600",
+            "dark:from-blue-500 dark:via-blue-400 dark:to-amber-500",
+            "bg-clip-text text-transparent"
+          )}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -76,16 +90,16 @@ const CallToAction = () => {
           <Button 
             asChild 
             size="lg" 
-            className="bg-gradient-to-br from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+            className={cn(
+              "shadow-md hover:shadow-lg transition-all duration-200 font-semibold text-white",
+              "bg-gradient-to-br from-blue-600 via-blue-700 to-amber-600/90",
+              "hover:from-blue-500 hover:via-blue-600 hover:to-amber-500/90"
+            )}
           >
             <a href={currentMessage.buttonLink}>{currentMessage.buttonText}</a>
           </Button>
         </motion.div>
       </div>
-
-      {/* Animated gradient orbs in the background */}
-      <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-indigo-500/5 blur-3xl -z-10" />
-      <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full bg-blue-500/5 blur-3xl -z-10" />
     </section>
   );
 };

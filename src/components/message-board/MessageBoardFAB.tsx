@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { cn } from '@/lib/utils';
-import { animations } from '@/styles/design-system';
+import { animations, gradients } from '@/styles/design-system';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
 
@@ -32,8 +32,10 @@ const MessageBoardFAB: React.FC = () => {
         size="icon"
         className={cn(
           "rounded-full w-12 h-12 shadow-lg",
-          "bg-gradient-to-br from-blue-500 via-blue-600 to-amber-600/70 hover:from-blue-400 hover:via-blue-500 hover:to-amber-500/80 text-white",
-          "dark:from-blue-600 dark:via-blue-700 dark:to-amber-700/60 dark:hover:from-blue-500 dark:hover:via-blue-600 dark:hover:to-amber-600/70",
+          "bg-gradient-to-br from-blue-500 via-blue-600 to-amber-500",
+          "hover:from-blue-400 hover:via-blue-500 hover:to-amber-400 text-white",
+          "dark:from-blue-600 dark:via-blue-700 dark:to-amber-600",
+          "dark:hover:from-blue-500 dark:hover:via-blue-600 dark:hover:to-amber-500",
           "transition-all duration-300",
           animations.fadeIn
         )}
