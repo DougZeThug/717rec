@@ -83,7 +83,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </div>
           ) : (
             <div className="flex items-center justify-between gap-1">
-              <span className="font-mono text-base font-medium ${getPowerScoreColor(ranking.powerScore)}">
+              <span className={`font-mono text-base font-medium ${getPowerScoreColor(ranking.powerScore)}`}>
                 {formatPowerScore(ranking.powerScore)}
               </span>
               <div className="shrink-0 flex items-center justify-end min-w-[50px]">
