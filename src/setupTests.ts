@@ -4,7 +4,10 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { configure } from '@testing-library/react';
 
 // Configure testing library
-configure({ testIdAttribute: 'data-testid' });
+configure({ 
+  // Use a supported configuration property
+  testIdAttribute: 'data-testid' 
+});
 
 // Add any global test setup here
 

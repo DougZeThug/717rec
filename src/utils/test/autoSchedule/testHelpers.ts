@@ -25,6 +25,7 @@ export function createMockTimeslot(overrides: Partial<TeamTimeslot> = {}): TeamT
       id: 'team-1',
       name: 'Mock Team',
       logo_url: '/mock-logo.png',
+      divisionName: 'Division A',
     },
     ...overrides
   };
@@ -48,6 +49,7 @@ export function createMockTimeslotBlock(
       id: `team-${i + 1}`,
       name: `Team ${i + 1}`,
       logo_url: `/logo-${i + 1}.png`,
+      divisionName: 'Division A',
     }
   }));
 }
