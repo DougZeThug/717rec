@@ -8,6 +8,7 @@ import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { gradients } from "@/styles/design-system";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -92,8 +93,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   className={cn(
                     "rounded-lg py-1 px-2 text-xs font-medium transition-all whitespace-nowrap",
                     sortOptions.field === field.id
-                      ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500/50"
-                      : "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
+                      ? "bg-gradient-to-br from-blue-500 via-blue-600 to-amber-500 text-white hover:from-blue-400 hover:via-blue-500 hover:to-amber-400 dark:from-blue-600 dark:to-amber-600 dark:text-white dark:border dark:border-blue-500/50"
+                      : "bg-white hover:bg-gradient-to-br hover:from-blue-50/40 hover:to-orange-50/20 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
                   )}
                 >
                   {field.label}
@@ -110,11 +111,11 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             <Switch
               id="detailed-view"
               checked={detailedView}
-              onCheckedChange={toggleViewMode}
             />
             <Label
               htmlFor="detailed-view"
               className="text-sm text-gray-700 dark:text-gray-300"
+              onClick={() => toggleViewMode(!detailedView)}
             >
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
@@ -125,7 +126,11 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
           <div key={divisionName} className="space-y-1">
             {!showUnified && (
-              <h3 className="text-lg font-medium flex items-center font-inter text-gray-900 dark:text-white">
+              <h3 className={cn(
+                "text-lg font-medium flex items-center font-inter text-gray-900 dark:text-white",
+                "border-l-4 border-blue-500 dark:border-blue-700 pl-2",
+                "bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent"
+              )}>
                 {divisionName}{" "}
                 <span className="ml-2 text-xs text-gray-600 dark:text-gray-400 font-inter">
                   ({divisionRankings.length})
