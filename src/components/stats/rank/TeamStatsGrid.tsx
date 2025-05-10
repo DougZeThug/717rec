@@ -44,28 +44,28 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
 
   // New 2-row mobile view layout with stats on one row
   return (
-    <div className="space-y-2 text-sm">
-      {/* First row - key stats */}
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <span className="text-gray-500 dark:text-gray-400 text-xs block">Record</span>
+    <div className="space-y-1 text-sm">
+      {/* Stats row with evenly spaced items */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-xs">Record</span>
           <span className="font-medium text-gray-900 dark:text-white">{wins}-{losses}</span>
         </div>
         
-        <div>
-          <span className="text-gray-500 dark:text-gray-400 text-xs block">Power</span>
+        <div className="flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-xs">Power</span>
           <span className={cn("font-medium", powerScoreColorClass)}>
             {formatPowerScore(powerScore)}
           </span>
         </div>
         
-        <div>
-          <span className="text-gray-500 dark:text-gray-400 text-xs block">SOS</span>
+        <div className="flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-xs">SOS</span>
           <span className="font-medium text-gray-900 dark:text-white">{sos.toFixed(3)}</span>
         </div>
         
-        <div>
-          <span className="text-gray-500 dark:text-gray-400 text-xs block">Trend</span>
+        <div className="flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-xs">Trend</span>
           <RankTrendIndicator rankChange={rankChange} />
         </div>
       </div>

@@ -59,7 +59,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 )}
                 <Link
                   to={`/teams/${ranking.teamId}`}
-                  className="font-bebas tracking-wide text-lg hover:text-blue-600 dark:text-white dark:hover:text-blue-400 block"
+                  className="font-bebas tracking-wide text-lg hover:text-blue-600 dark:text-white dark:hover:text-blue-400 block truncate"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {ranking.teamName}
@@ -68,17 +68,32 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </div>
           </div>
           
-          <div className="flex items-center justify-between gap-1">
-            <span className={`font-mono ${compactView ? 'text-sm' : 'text-base'} font-medium ${getPowerScoreColor(ranking.powerScore)}`}>
-              {formatPowerScore(ranking.powerScore)}
-            </span>
-            <div className="shrink-0 flex items-center justify-end min-w-[50px]">
-              <RankTrendIndicator rankChange={ranking.rankChange} />
+          {compactView ? (
+            <div className="flex items-center justify-between mt-1">
+              <div className="flex items-center space-x-4">
+                <span className="font-mono text-sm text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
+                <span className={`font-mono text-sm ${getPowerScoreColor(ranking.powerScore)}`}>
+                  {formatPowerScore(ranking.powerScore)}
+                </span>
+                <span className="font-mono text-sm text-gray-900 dark:text-white">{ranking.streak || "-"}</span>
+              </div>
+              <div className="shrink-0">
+                <RankTrendIndicator rankChange={ranking.rankChange} />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between gap-1">
+              <span className="font-mono text-base font-medium ${getPowerScoreColor(ranking.powerScore)}">
+                {formatPowerScore(ranking.powerScore)}
+              </span>
+              <div className="shrink-0 flex items-center justify-end min-w-[50px]">
+                <RankTrendIndicator rankChange={ranking.rankChange} />
+              </div>
+            </div>
+          )}
         </div>
 
-        {!compactView ? (
+        {!compactView && (
           <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
             <div>
               <span className="text-gray-500 dark:text-gray-400">Record:</span>{" "}
@@ -106,14 +121,6 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 <span className="italic text-gray-900 dark:text-white">{ranking.divisionName || "Unassigned"}</span>
               </div>
             )}
-          </div>
-        ) : (
-          <div className="flex justify-between items-center mt-1 text-xs">
-            <span className="font-mono text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
-            <span className="font-mono text-gray-900 dark:text-white">
-              {(ranking.winPercentage * 100).toFixed(1)}%
-            </span>
-            <span className="font-mono text-gray-900 dark:text-white">{ranking.streak || "-"}</span>
           </div>
         )}
       </div>

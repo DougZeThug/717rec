@@ -6,6 +6,7 @@ import { Ranking } from "@/types";
 import ViewToggle from "./ViewToggle";
 import { useTheme } from "next-themes";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface FullRankingsProps {
   rankings: Ranking[];
@@ -24,7 +25,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
 
   return (
     <Card>
-      <CardHeader className={isMobile ? "pb-2 py-2" : "pb-2"}>
+      <CardHeader className={isMobile ? "pb-1 pt-3" : "pb-2"}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
           <div>
             <CardTitle
@@ -45,7 +46,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
           <ViewToggle view={view} onViewChange={setView} />
         </div>
       </CardHeader>
-      <CardContent className={isMobile ? "p-1" : "p-2 sm:p-4"}>
+      <CardContent className={isMobile ? "p-1 pt-0.5" : "p-2 sm:p-4"}>
         <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
       </CardContent>
     </Card>

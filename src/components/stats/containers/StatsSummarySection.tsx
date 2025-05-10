@@ -52,7 +52,7 @@ const StatsSummarySection = ({
         </CardContent>
       </Card>
       
-      <div className={`mb-2 ${isMobile ? '' : 'mb-5'}`}>
+      <div className={`mb-1 ${isMobile ? '' : 'mb-4'}`}>
         <h2 className={`font-inter ${isMobile ? 'text-base' : 'text-lg sm:text-xl'} font-semibold tracking-wide text-[#1a1a1a] dark:text-white mb-1 uppercase`} style={{ letterSpacing: ".03em" }}>
           League Highlights
         </h2>
