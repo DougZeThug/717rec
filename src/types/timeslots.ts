@@ -10,9 +10,9 @@ export interface TeamTimeslot {
   teams?: {
     id: string;
     name: string;
-    logo_url?: string;
-    image_url?: string;
-    divisionName?: string | null;
+    logo_url?: string | null;
+    image_url?: string | null;
+    divisionName: string | null;
   };
 }
 

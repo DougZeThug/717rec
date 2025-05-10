@@ -15,7 +15,9 @@ export const mockTeams: Team[] = [
     sos: 0.6,
     power_score: 75,
     division: "division1",
-    divisionName: "Division A"
+    divisionName: "Division A",
+    win_percentage: 0.714, // 5/(5+2)
+    game_win_percentage: 0.714 // 15/(15+6)
   },
   {
     id: "team2",
@@ -28,7 +30,9 @@ export const mockTeams: Team[] = [
     sos: 0.7,
     power_score: 85,
     division: "division1",
-    divisionName: "Division A"
+    divisionName: "Division A",
+    win_percentage: 0.857, // 6/(6+1)
+    game_win_percentage: 0.857 // 18/(18+3)
   },
   {
     id: "team3",
@@ -41,7 +45,9 @@ export const mockTeams: Team[] = [
     sos: 0.55,
     power_score: 65,
     division: "division1",
-    divisionName: "Division A"
+    divisionName: "Division A",
+    win_percentage: 0.571, // 4/(4+3)
+    game_win_percentage: 0.571 // 12/(12+9)
   },
   {
     id: "team4",
@@ -54,7 +60,9 @@ export const mockTeams: Team[] = [
     sos: 0.5,
     power_score: 45,
     division: "division2",
-    divisionName: "Division B"
+    divisionName: "Division B",
+    win_percentage: 0.286, // 2/(2+5)
+    game_win_percentage: 0.286 // 6/(6+15)
   }
 ];
 
