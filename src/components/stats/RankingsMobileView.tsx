@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
@@ -30,11 +31,12 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     return savedView ? savedView === "true" : false;
   });
 
-  // Add logging to debug ranking data
+  // Enhanced logging to debug ranking data
   useEffect(() => {
     console.log("Mobile rankings data:", 
       rankings.map(r => ({
         team: r.teamName,
+        rank: rankings.findIndex(sr => sr.teamId === r.teamId) + 1,
         rankChange: r.rankChange,
         previousRank: r.previousRank
       }))

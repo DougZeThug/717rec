@@ -64,16 +64,22 @@ export const sortRankings = (
  * Update rank changes based on previous and current rankings
  */
 export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
-  return rankings.map((ranking, index) => {
+  // Clear any existing rankChange values to avoid stale data
+  const cleanedRankings = rankings.map(ranking => ({
+    ...ranking,
+    rankChange: 0 // Reset to avoid stale data
+  }));
+
+  return cleanedRankings.map((ranking, index) => {
     const currentRank = index + 1;
     
     // Only calculate rankChange if we have a previous rank to compare with
-    if (ranking.previousRank !== undefined) {
+    if (ranking.previousRank !== undefined && ranking.previousRank !== null) {
       // If previousRank is greater than currentRank, team moved up in rankings (positive change)
       // If previousRank is less than currentRank, team moved down in rankings (negative change)
-      ranking.rankChange = ranking.previousRank - currentRank;
+      const change = ranking.previousRank - currentRank;
+      ranking.rankChange = change;
       
-      // Enhanced logging for debugging
       console.log(`Team ${ranking.teamName}: previousRank=${ranking.previousRank}, currentRank=${currentRank}, rankChange=${ranking.rankChange}`);
     } else {
       // No previous rank data, so set to 0 (no change)
@@ -86,7 +92,7 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
 };
 
 /**
- * Save current rankings to localStorage
+ * Save current rankings to localStorage with timestamp for persistence
  */
 export const saveRankingsToStorage = (rankings: Ranking[]) => {
   try {
@@ -98,6 +104,7 @@ export const saveRankingsToStorage = (rankings: Ranking[]) => {
     // Log the rankings being saved
     console.log("Saving rankings to localStorage:", rankingsToSave);
     
+    // Add timestamp to track when these rankings were saved
     localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
     localStorage.setItem('rankingsLastUpdated', new Date().toISOString());
     console.log('Rankings saved to localStorage for future trend calculation');

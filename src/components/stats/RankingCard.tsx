@@ -29,11 +29,6 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
-  // Console log to debug rank change values
-  React.useEffect(() => {
-    console.log(`Team ${ranking.teamName} rank change:`, ranking.rankChange);
-  }, [ranking.teamName, ranking.rankChange]);
-
   return (
     <div className="border rounded-lg overflow-hidden transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700">
       <div
@@ -77,7 +72,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <span className={`font-mono font-medium text-base ${getPowerScoreColor(ranking.powerScore)}`}>
               {formatPowerScore(ranking.powerScore)}
             </span>
-            <div className="shrink-0">
+            <div className="shrink-0 flex items-center justify-end min-w-[50px]">
               <RankTrendIndicator rankChange={ranking.rankChange} />
             </div>
           </div>

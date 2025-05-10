@@ -10,12 +10,12 @@ import { useTeams } from "./useTeams";
 export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const previousRankings = usePreviousRankings();
+  const { previousRankings, lastUpdated } = usePreviousRankings();
   const { latestMatches, matchesLoading } = useRankingsData();
   const { teams: latestTeams, isLoading: teamsLoading } = useTeams();
 
   useEffect(() => {
-    console.log("Previous rankings loaded:", previousRankings);
+    console.log("Previous rankings loaded:", previousRankings, "Last updated:", lastUpdated);
 
     const updateRankings = async () => {
       const teamsToUse = teams || latestTeams;
@@ -89,7 +89,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
     };
     
     updateRankings();
-  }, [teams, latestTeams, latestMatches, matches, previousRankings]);
+  }, [teams, latestTeams, latestMatches, matches, previousRankings, lastUpdated]);
 
   return {
     rankings,
