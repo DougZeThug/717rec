@@ -31,61 +31,60 @@ describe('teamLoaderUtils', () => {
   describe('getTeamsByTimeBlock', () => {
     it('should fetch teams for a given time block', async () => {
       // Mock successful Supabase response
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: () => ({
-          eq: () => ({
-            eq: () => Promise.resolve({
-              data: [
-                {
-                  team_id: 'team1',
-                  teams: {
-                    id: 'team1',
-                    name: 'Tigers',
-                    logo_url: '/logos/tigers.png',
-                    image_url: null,
-                    division_id: 'division1',
-                    divisionName: { name: 'Division A' },
-                    wins: 5,
-                    losses: 2,
-                    game_wins: 15,
-                    game_losses: 6,
-                    sos: 0.6,
-                    power_score: 75
-                  }
-                },
-                {
-                  team_id: 'team2',
-                  teams: {
-                    id: 'team2',
-                    name: 'Lions',
-                    logo_url: '/logos/lions.png',
-                    image_url: null,
-                    division_id: 'division1',
-                    divisionName: { name: 'Division A' },
-                    wins: 6,
-                    losses: 1,
-                    game_wins: 18,
-                    game_losses: 3,
-                    sos: 0.7,
-                    power_score: 85
-                  }
-                }
-              ],
-              error: null
-            })
-          })
-        })
-      }));
+      const mockTeamData = [
+        {
+          team_id: 'team1',
+          teams: {
+            id: 'team1',
+            name: 'Tigers',
+            logo_url: '/logos/tigers.png',
+            image_url: null,
+            division_id: 'division1',
+            divisionName: { name: 'Division A' },
+            wins: 5,
+            losses: 2,
+            game_wins: 15,
+            game_losses: 6,
+            sos: 0.6,
+            power_score: 75
+          }
+        },
+        {
+          team_id: 'team2',
+          teams: {
+            id: 'team2',
+            name: 'Lions',
+            logo_url: '/logos/lions.png',
+            image_url: null,
+            division_id: 'division1',
+            divisionName: { name: 'Division A' },
+            wins: 6,
+            losses: 1,
+            game_wins: 18,
+            game_losses: 3,
+            sos: 0.7,
+            power_score: 85
+          }
+        }
+      ];
+      
+      const mockResponse = { data: mockTeamData, error: null };
+      const mockEq = vi.fn().mockResolvedValue(mockResponse);
+      const mockEqFirst = vi.fn().mockReturnValue({ eq: mockEq });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqFirst });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      
+      vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const testDate = new Date('2023-06-15');
       const teams = await getTeamsByTimeBlock(testDate, '6:30');
 
       // Should call Supabase with correct parameters
       expect(supabase.from).toHaveBeenCalledWith('team_timeslots');
-      expect(supabase.select).toHaveBeenCalled();
+      expect(mockSelect).toHaveBeenCalled();
       
       const formattedDate = format(testDate, 'yyyy-MM-dd');
-      expect(supabase.eq).toHaveBeenCalledWith('match_date', formattedDate);
+      expect(mockEqFirst).toHaveBeenCalledWith('match_date', formattedDate);
       
       // Should return formatted team data
       expect(teams).toHaveLength(2);
@@ -95,13 +94,13 @@ describe('teamLoaderUtils', () => {
 
     it('should handle empty results', async () => {
       // Mock empty Supabase response
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: () => ({
-          eq: () => ({
-            eq: () => Promise.resolve({ data: [], error: null })
-          })
-        })
-      }));
+      const mockResponse = { data: [], error: null };
+      const mockEq = vi.fn().mockResolvedValue(mockResponse);
+      const mockEqFirst = vi.fn().mockReturnValue({ eq: mockEq });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqFirst });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      
+      vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const testDate = new Date('2023-06-15');
       const teams = await getTeamsByTimeBlock(testDate, '6:30');
@@ -112,13 +111,13 @@ describe('teamLoaderUtils', () => {
 
     it('should handle database errors', async () => {
       // Mock Supabase error response
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: () => ({
-          eq: () => ({
-            eq: () => Promise.resolve({ data: null, error: new Error('Database error') })
-          })
-        })
-      }));
+      const mockResponse = { data: null, error: new Error('Database error') };
+      const mockEq = vi.fn().mockResolvedValue(mockResponse);
+      const mockEqFirst = vi.fn().mockReturnValue({ eq: mockEq });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEqFirst });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      
+      vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const testDate = new Date('2023-06-15');
       

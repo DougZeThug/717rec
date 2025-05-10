@@ -57,13 +57,13 @@ describe('compatibilityUtils', () => {
 
     it('should return true if teams have played before', async () => {
       // Mock Supabase response for teams that have played
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: () => ({
-          or: () => ({
-            limit: () => Promise.resolve({ data: [{ id: 'match1' }], error: null })
-          })
-        })
-      }));
+      const mockResponse = { data: [{ id: 'match1' }], error: null };
+      const mockLimit = vi.fn().mockResolvedValue(mockResponse);
+      const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      
+      vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await haveTeamsPlayed('team1', 'team2');
       expect(result).toBe(true);
@@ -72,13 +72,13 @@ describe('compatibilityUtils', () => {
 
     it('should return false if teams have not played before', async () => {
       // Mock Supabase response for teams that have not played
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: () => ({
-          or: () => ({
-            limit: () => Promise.resolve({ data: [], error: null })
-          })
-        })
-      }));
+      const mockResponse = { data: [], error: null };
+      const mockLimit = vi.fn().mockResolvedValue(mockResponse);
+      const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      
+      vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await haveTeamsPlayed('team1', 'team3');
       expect(result).toBe(false);
@@ -86,13 +86,13 @@ describe('compatibilityUtils', () => {
 
     it('should handle database errors gracefully', async () => {
       // Mock Supabase error response
-      vi.mocked(supabase.from).mockImplementation(() => ({
-        select: () => ({
-          or: () => ({
-            limit: () => Promise.resolve({ data: null, error: new Error('Database error') })
-          })
-        })
-      }));
+      const mockResponse = { data: null, error: new Error('Database error') };
+      const mockLimit = vi.fn().mockResolvedValue(mockResponse);
+      const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
+      const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
+      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
+      
+      vi.mocked(supabase.from).mockImplementation(mockFrom);
 
       const result = await haveTeamsPlayed('team1', 'team4');
       // Should return false as a fallback on error
