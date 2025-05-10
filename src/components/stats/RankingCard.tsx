@@ -32,10 +32,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
   return (
     <div className="border rounded-lg overflow-hidden transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700">
       <div
-        className="p-4 cursor-pointer"
+        className={`${compactView ? 'p-2' : 'p-4'} cursor-pointer`}
         onClick={() => onToggleExpand(ranking.teamId)}
       >
-        <div className="flex flex-col gap-2">
+        <div className={`flex flex-col ${compactView ? 'gap-1' : 'gap-2'}`}>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <span className="font-mono text-lg font-bold shrink-0 text-gray-900 dark:text-white">
@@ -68,8 +68,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </div>
           </div>
           
-          <div className="flex items-center justify-between gap-2">
-            <span className={`font-mono font-medium text-base ${getPowerScoreColor(ranking.powerScore)}`}>
+          <div className="flex items-center justify-between gap-1">
+            <span className={`font-mono ${compactView ? 'text-sm' : 'text-base'} font-medium ${getPowerScoreColor(ranking.powerScore)}`}>
               {formatPowerScore(ranking.powerScore)}
             </span>
             <div className="shrink-0 flex items-center justify-end min-w-[50px]">
@@ -108,7 +108,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+          <div className="grid grid-cols-3 gap-1 mt-1 text-xs">
             <div>
               <span className="font-mono text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
             </div>

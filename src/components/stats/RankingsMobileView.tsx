@@ -79,10 +79,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
 
   return (
     <div className="font-inter">
-      <div className="mb-4 space-y-4">
-        <div className="flex flex-col gap-4">
-          <div className="overflow-x-auto pb-2">
-            <div className="flex space-x-2">
+      <div className="mb-3 space-y-2">
+        <div className="flex flex-col gap-2">
+          <div className="overflow-x-auto pb-1">
+            <div className="flex space-x-1">
               {sortableFields.map((field) => (
                 <Button
                   key={field.id}
@@ -90,7 +90,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   size="sm"
                   onClick={() => onSortChange(field.id)}
                   className={cn(
-                    "rounded-lg py-2 px-4 font-medium transition-all whitespace-nowrap",
+                    "rounded-lg py-1 px-3 text-sm font-medium transition-all whitespace-nowrap",
                     sortOptions.field === field.id
                       ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500/50"
                       : "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
@@ -99,8 +99,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   {field.label}
                   {sortOptions.field === field.id && (
                     sortOptions.direction === 'asc' 
-                      ? <ArrowUp className="ml-1 h-4 w-4" /> 
-                      : <ArrowDown className="ml-1 h-4 w-4" />
+                      ? <ArrowUp className="ml-1 h-3 w-3" /> 
+                      : <ArrowDown className="ml-1 h-3 w-3" />
                   )}
                 </Button>
               ))}
@@ -121,9 +121,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           </div>
         </div>
       </div>
-      <div className="space-y-8">
+      <div className="space-y-4">
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
-          <div key={divisionName} className="space-y-4">
+          <div key={divisionName} className="space-y-2">
             {!showUnified && (
               <h3 className="text-lg font-medium flex items-center font-inter text-gray-900 dark:text-white">
                 {divisionName}{" "}
@@ -132,7 +132,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                 </span>
               </h3>
             )}
-            <div className="space-y-4">
+            <div className="space-y-2">
               {divisionRankings.map((ranking) => {
                 const globalIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
                 return (

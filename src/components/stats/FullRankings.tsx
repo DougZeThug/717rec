@@ -22,8 +22,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <CardHeader className="pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <CardTitle
               className="font-oswald uppercase tracking-wide text-xl sm:text-2xl !font-bold"
@@ -40,7 +40,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
           <ViewToggle view={view} onViewChange={setView} />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2 sm:p-4">
         <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
       </CardContent>
     </Card>
