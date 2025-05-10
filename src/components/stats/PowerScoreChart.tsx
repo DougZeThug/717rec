@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { formatPowerScore } from "@/utils/colors/powerScoreColors";
 import { useChartColors } from "@/utils/charts/chartStyleUtils";
 import { PowerScoreDataItem } from "@/types/chart";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PowerScoreChartProps {
   data: PowerScoreDataItem[];
@@ -16,6 +17,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const colors = useChartColors();
+  const isMobile = useIsMobile();
 
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
@@ -46,13 +48,28 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     );
   };
 
+  // Determine chart margins and number of teams to show based on mobile/desktop
+  const chartMargins = isMobile 
+    ? { top: 5, right: 45, left: 35, bottom: 5 } 
+    : { top: 5, right: 45, left: 40, bottom: 5 };
+
+  // For mobile, show fewer teams to avoid overcrowding
+  const displayData = isMobile && data.length > 5 ? data.slice(0, 5) : data;
+
   return (
-    <div className="w-full max-h-[310px] h-[260px] rounded-xl overflow-hidden" style={{ backgroundColor: colors.background }}>
+    <div 
+      className="w-full rounded-xl overflow-hidden" 
+      style={{ 
+        backgroundColor: colors.background,
+        height: isMobile ? "240px" : "260px",
+        maxHeight: isMobile ? "240px" : "310px"
+      }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           layout="vertical"
-          data={data}
-          margin={{ top: 5, right: 45, left: 40, bottom: 5 }}
+          data={displayData}
+          margin={chartMargins}
           style={{
             fontFamily: "'Inter', sans-serif",
           }}
@@ -71,8 +88,8 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
           <YAxis
             type="category"
             dataKey="name"
-            width={68}
-            tickFormatter={(value: string) => value.length > 10 ? `${value.slice(0, 10)}...` : value}
+            width={isMobile ? 62 : 68}
+            tickFormatter={(value: string) => value.length > (isMobile ? 8 : 10) ? `${value.slice(0, isMobile ? 8 : 10)}...` : value}
             stroke={colors.mutedTextColor}
             tick={{
               fill: colors.textColor,
@@ -88,7 +105,7 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
             background={{ fill: colors.powerScore.background }}
             radius={[0, 5, 5, 0]}
           >
-            {data.map((entry, index) => (
+            {displayData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={index === 0 ? colors.powerScore.highlight : colors.powerScore.bar} />
             ))}
             <LabelList
