@@ -57,9 +57,9 @@ const HeroSection = () => {
           <Button
             asChild
             size="lg"
+            variant="blueOrange"
             className={cn(
               "flex items-center gap-2 py-3 px-8 text-base md:text-lg font-semibold rounded-lg shadow-md w-full xs:w-auto dark:shadow-lg",
-              "bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white"
             )}
             style={{ minWidth: 160 }}
           >

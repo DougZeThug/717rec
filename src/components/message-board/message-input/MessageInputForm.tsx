@@ -88,6 +88,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
             <Button 
               size="sm"
               type="submit"
+              variant="blueOrange"
               disabled={isSending || message.length > MAX_MESSAGE_LENGTH}
               className="rounded-full h-8 w-8 p-0"
             >

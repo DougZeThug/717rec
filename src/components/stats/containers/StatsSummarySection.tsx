@@ -90,15 +90,8 @@ const StatsSummarySection = ({
             <div className="mt-4 text-center">
               <Button
                 onClick={scrollToFullRankings}
-                variant="outline"
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-4 py-2 font-inter font-medium",
-                  "border border-blue-200 dark:border-blue-800/50",
-                  "bg-gradient-to-br from-white to-blue-50/50 text-blue-700",
-                  "hover:bg-gradient-to-br hover:from-blue-50/80 hover:to-orange-50/50 hover:text-blue-800",
-                  "dark:bg-gradient-to-br dark:from-gray-800 dark:to-gray-900/90 dark:text-white",
-                  "dark:hover:bg-gradient-to-br dark:hover:from-gray-800 dark:hover:to-blue-900/20"
-                )}
+                variant="blueOrange"
+                className="flex items-center gap-2 rounded-lg px-4 py-2 font-inter font-medium shadow-sm"
               >
                 View Full Standings
                 <ArrowDown className="h-4 w-4" />

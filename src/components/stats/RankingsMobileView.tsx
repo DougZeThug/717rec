@@ -87,14 +87,12 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               {sortableFields.map((field) => (
                 <Button
                   key={field.id}
-                  variant={sortOptions.field === field.id ? "default" : "outline"}
+                  variant={sortOptions.field === field.id ? "blueOrange" : "outline"}
                   size="sm"
                   onClick={() => onSortChange(field.id)}
                   className={cn(
                     "rounded-lg py-1 px-2 text-xs font-medium transition-all whitespace-nowrap",
-                    sortOptions.field === field.id
-                      ? "bg-gradient-to-br from-blue-500 via-blue-600 to-amber-500 text-white hover:from-blue-400 hover:via-blue-500 hover:to-amber-400 dark:from-blue-600 dark:to-amber-600 dark:text-white dark:border dark:border-blue-500/50"
-                      : "bg-white hover:bg-gradient-to-br hover:from-blue-50/40 hover:to-orange-50/20 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
+                    sortOptions.field !== field.id && "bg-white hover:bg-gradient-to-br hover:from-blue-50/40 hover:to-orange-50/20 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
                   )}
                 >
                   {field.label}
