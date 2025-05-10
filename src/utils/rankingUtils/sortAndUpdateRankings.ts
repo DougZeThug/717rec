@@ -92,7 +92,16 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
 };
 
 /**
- * Save current rankings to localStorage with timestamp for persistence
+ * Interface for storing rankings with metadata
+ */
+interface RankingsStorageData {
+  rankings: Record<string, number>;
+  timestamp: string;
+  version: number;
+}
+
+/**
+ * Save current rankings to localStorage with timestamp for future comparison
  */
 export const saveRankingsToStorage = (rankings: Ranking[]) => {
   try {
@@ -101,13 +110,26 @@ export const saveRankingsToStorage = (rankings: Ranking[]) => {
       rankingsToSave[ranking.teamId] = index + 1;
     });
     
-    // Log the rankings being saved
-    console.log("Saving rankings to localStorage:", rankingsToSave);
+    // Create storage object with metadata
+    const storageData: RankingsStorageData = {
+      rankings: rankingsToSave,
+      timestamp: new Date().toISOString(),
+      version: 1 // For future compatibility
+    };
     
-    // Add timestamp to track when these rankings were saved
-    localStorage.setItem('previousRankings', JSON.stringify(rankingsToSave));
-    localStorage.setItem('rankingsLastUpdated', new Date().toISOString());
-    console.log('Rankings saved to localStorage for future trend calculation');
+    // Log the rankings being saved
+    console.log("Saving CURRENT rankings to localStorage:", storageData);
+    
+    // Store as current rankings
+    localStorage.setItem('currentRankings', JSON.stringify(storageData));
+    console.log('Current rankings saved to localStorage for future comparison');
+
+    // Check if we need to initialize historical rankings (if not present)
+    const previousRankings = localStorage.getItem('previousRankings');
+    if (!previousRankings) {
+      console.log('No historical rankings found, initializing with current data');
+      localStorage.setItem('previousRankings', JSON.stringify(storageData));
+    }
   } catch (error) {
     console.error('Error saving rankings:', error);
   }

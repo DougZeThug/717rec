@@ -1,3 +1,4 @@
+
 import React, { useMemo } from "react";
 import { Ranking } from "@/types";
 import { SortOptions } from "../RankingsTable";
@@ -44,13 +45,14 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
     }));
   }, [rankings, showUnified]);
 
-  // Add logging to debug rankings in desktop view
+  // Add debug logging for each team's rank change
   React.useEffect(() => {
-    console.log(`Desktop ${divisionName} rankings:`, 
+    // Log all teams' rank changes to help debugging
+    console.log(`Desktop ${divisionName} rankings trends:`, 
       rankings.map(r => ({
         team: r.teamName,
-        rankChange: r.rankChange,
-        previousRank: r.previousRank
+        rankChange: r.rankChange !== undefined ? r.rankChange : 'undefined',
+        previousRank: r.previousRank !== undefined ? r.previousRank : 'undefined'
       }))
     );
   }, [divisionName, rankings]);

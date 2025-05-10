@@ -33,7 +33,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
 
   // Enhanced logging to debug ranking data
   useEffect(() => {
-    console.log("Mobile rankings data:", 
+    console.log("Mobile rankings data with trends:", 
       rankings.map(r => ({
         team: r.teamName,
         rank: rankings.findIndex(sr => sr.teamId === r.teamId) + 1,
@@ -41,6 +41,17 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         previousRank: r.previousRank
       }))
     );
+    
+    // Log any teams with actual rank changes
+    const teamsWithChanges = rankings.filter(r => r.rankChange !== 0 && r.rankChange !== undefined);
+    if (teamsWithChanges.length > 0) {
+      console.log("Teams with non-zero rank changes:", 
+        teamsWithChanges.map(r => ({
+          team: r.teamName,
+          rankChange: r.rankChange
+        }))
+      );
+    }
   }, [rankings]);
 
   const sortableFields = [

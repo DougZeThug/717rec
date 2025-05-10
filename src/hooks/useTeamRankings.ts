@@ -15,7 +15,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
   const { teams: latestTeams, isLoading: teamsLoading } = useTeams();
 
   useEffect(() => {
-    console.log("Previous rankings loaded:", previousRankings, "Last updated:", lastUpdated);
+    console.log("Previous rankings loaded for trend calculation:", previousRankings, "Last updated:", lastUpdated);
 
     const updateRankings = async () => {
       const teamsToUse = teams || latestTeams;
@@ -34,6 +34,9 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           // Calculate streak from matches
           const streak = calculateStreak(team.id, matchesToUse);
           const previousRank = previousRankings[team.id];
+          
+          // Debug log for previous rank data
+          console.log(`Team ${team.name} previous rank: ${previousRank !== undefined ? previousRank : 'none'}`);
           
           // Use the power_score directly from v_team_details
           return {
@@ -75,11 +78,13 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         console.log("After updating rank changes:", 
           finalRankings.map(r => ({
             team: r.teamName, 
-            rankChange: r.rankChange
+            rankChange: r.rankChange,
+            previousRank: r.previousRank
           }))
         );
         
         // Save current rankings for future rank change calculations
+        // This will be saved to 'currentRankings' in localStorage
         saveRankingsToStorage(finalRankings);
         
         setRankings(finalRankings);

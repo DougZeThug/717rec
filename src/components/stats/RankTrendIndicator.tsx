@@ -7,12 +7,19 @@ interface RankTrendIndicatorProps {
 }
 
 const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) => {
+  // Add debug info to component
+  React.useEffect(() => {
+    if (rankChange !== undefined && rankChange !== 0) {
+      console.log(`Rendering trend indicator with change: ${rankChange}`);
+    }
+  }, [rankChange]);
+
   // Handle undefined, null, or 0 cases
   if (rankChange === undefined || rankChange === null) {
     return (
       <div className="flex items-center">
         <Minus size={16} className="text-gray-400" />
-        <span className="text-gray-400 ml-1 text-xs">0</span>
+        <span className="text-gray-400 ml-1 text-xs">-</span>
       </div>
     );
   } else if (rankChange === 0) {
