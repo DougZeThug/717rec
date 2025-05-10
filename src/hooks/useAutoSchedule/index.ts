@@ -197,7 +197,7 @@ export function useAutoSchedule() {
   }, [generatedPairings, selectedDate, convertPairingsToMatches, toast]);
 
   // Get team statistics
-  const { totalTeams, oddBlocks } = useMemo(() => {
+  const { total, odd } = useMemo(() => {
     return getTeamCountStatus();
   }, [timeBlockTeams, getTeamCountStatus]);
 
@@ -220,8 +220,8 @@ export function useAutoSchedule() {
     timeBlockTeams,
     generatedPairings,
     unmatchedTeamIds,
-    totalTeams,
-    oddBlocks,
+    totalTeams: total,  // Updated to use 'total' property
+    oddBlocks: odd,     // Updated to use 'odd' property
     
     // Actions
     handleLoadTeams,
