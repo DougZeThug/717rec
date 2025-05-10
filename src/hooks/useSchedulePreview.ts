@@ -40,7 +40,7 @@ export const useSchedulePreview = () => {
         toast({
           title: "Warning",
           description: `Blocks with odd number of teams: ${unmatchableBlocks.join(', ')}. Some teams may not get matched.`,
-          variant: "warning" 
+          variant: "default" // Changed from "warning" to "default"
         });
       }
       
@@ -48,7 +48,7 @@ export const useSchedulePreview = () => {
         toast({
           title: "Warning",
           description: `Blocks with insufficient teams: ${insufficientBlocks.join(', ')}. These blocks cannot create matches.`,
-          variant: "warning"
+          variant: "default" // Changed from "warning" to "default"
         });
       }
       
