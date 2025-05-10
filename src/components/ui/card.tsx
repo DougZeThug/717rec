@@ -4,19 +4,29 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import { gradients } from "@/styles/design-system"
 
+interface CardVariantProps {
+  variant?: "default" | "subtle" | "highlight" | "elevated" | "interactive";
+  division?: string | null;
+}
+
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & CardVariantProps
+>(({ className, variant = "default", division, ...props }, ref) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  
+  // Get the appropriate gradient based on variant and division
+  const gradientClass = division 
+    ? gradients.card.division[division.toLowerCase()] || getDivisionGradient(division)
+    : gradients.card[variant];
   
   return (
     <div
       ref={ref}
       className={cn(
         "rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300",
-        isLight ? gradients.card.default : "",
+        isLight ? gradientClass : "",
         isLight ? "!text-[#222222]" : "",
         className
       )}
@@ -79,6 +89,23 @@ const CardDescription = React.forwardRef<
   )
 })
 CardDescription.displayName = "CardDescription"
+
+// Helper function to get division-specific gradient
+function getDivisionGradient(division: string): string {
+  const lowerDivName = division.toLowerCase();
+  
+  if (lowerDivName.includes('competitive')) {
+    return gradients.card.division.competitive;
+  }
+  if (lowerDivName.includes('intermediate')) {
+    return gradients.card.division.intermediate;
+  }
+  if (lowerDivName.includes('recreational')) {
+    return gradients.card.division.recreational;
+  }
+  
+  return gradients.card.default;
+}
 
 const CardContent = React.forwardRef<
   HTMLDivElement,

@@ -1,5 +1,7 @@
 
 import React from "react";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface StatBlockProps {
   label: string;
@@ -7,6 +9,7 @@ interface StatBlockProps {
   className?: string;
   orientation?: 'vertical' | 'horizontal';
   icon?: React.ReactNode;
+  gradient?: string;
 }
 
 export const StatBlock: React.FC<StatBlockProps> = ({ 
@@ -14,9 +17,18 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   value, 
   className = "",
   orientation = 'vertical',
-  icon
+  icon,
+  gradient = "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/80 dark:to-gray-900/80"
 }) => {
-  const baseClasses = "bg-[#f5f5f5] dark:bg-black/20 p-3 rounded-lg text-left transition-all duration-200 hover:shadow-md";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
+  const baseClasses = cn(
+    gradient, 
+    "p-3 rounded-lg text-left transition-all duration-200 hover:shadow-md border",
+    isLight ? "border-gray-200" : "border-gray-700/50"
+  );
+  
   const labelClasses = "font-inter uppercase text-xs tracking-widest text-gray-600 dark:text-gray-400";
   const valueClasses = "font-mono text-base font-medium text-[#2c2c2c] dark:text-white";
 

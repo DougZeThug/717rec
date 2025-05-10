@@ -4,22 +4,24 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { gradients } from "@/styles/design-system"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation",
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground hover:from-primary/90 hover:to-primary/80 dark:from-blue-600 dark:to-blue-700 dark:text-white dark:hover:from-blue-700 dark:hover:to-blue-800 dark:border dark:border-blue-500/30",
+        default: gradients.button.primary,
         destructive:
           "bg-gradient-to-br from-destructive to-destructive/90 text-destructive-foreground hover:from-destructive/90 hover:to-destructive/80",
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground dark:border-gray-600 dark:hover:bg-gray-800/50 dark:hover:border-gray-500",
-        secondary:
-          "bg-gradient-to-br from-gray-200 to-gray-300 text-secondary-foreground hover:from-gray-300 hover:to-gray-400 dark:from-gray-700 dark:to-gray-800 dark:hover:from-gray-600 dark:hover:to-gray-700",
+        secondary: gradients.button.secondary,
         ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-gray-800/70 dark:text-gray-200 dark:hover:text-white",
         link: "text-primary underline-offset-4 hover:underline",
-        cornhole: "bg-gradient-to-br from-cornhole-navy to-cornhole-navy/90 text-white hover:from-cornhole-navy/90 hover:to-cornhole-navy/80",
+        cornhole: gradients.button.primary,
+        blue: gradients.button.blue,
+        green: gradients.button.green,
       },
       size: {
         default: "h-10 min-h-10 px-4 py-2",

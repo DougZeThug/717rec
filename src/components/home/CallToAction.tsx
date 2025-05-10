@@ -1,6 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { gradients } from "@/styles/design-system";
+import { motion } from "framer-motion";
 
 // Define the possible CTA messages
 const ctaMessages = [
@@ -39,20 +42,50 @@ const CallToAction = () => {
   const currentMessage = ctaMessages[currentMessageIndex];
 
   return (
-    <section className="bg-gray-100 dark:bg-gray-800 py-6 px-4 mt-6">
+    <section className={cn(
+      "relative py-8 px-4 mt-6 overflow-hidden border-t border-b",
+      "border-gray-200 dark:border-gray-700/50",
+      gradients.section.cta
+    )}>
       <div className="max-w-5xl mx-auto text-center">
-        <h2 className="text-xl md:text-3xl font-semibold mb-3">{currentMessage.heading}</h2>
-        <p className="text-base md:text-lg mb-5 max-w-2xl mx-auto text-gray-700 dark:text-gray-300">
-          {currentMessage.subheading}
-        </p>
-        <Button 
-          asChild 
-          size="lg" 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+        <motion.h2 
+          className="text-xl md:text-3xl font-semibold mb-3"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          key={`heading-${currentMessageIndex}`}
         >
-          <a href={currentMessage.buttonLink}>{currentMessage.buttonText}</a>
-        </Button>
+          {currentMessage.heading}
+        </motion.h2>
+        <motion.p 
+          className="text-base md:text-lg mb-5 max-w-2xl mx-auto text-gray-700 dark:text-gray-300"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          key={`subheading-${currentMessageIndex}`}
+        >
+          {currentMessage.subheading}
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Button 
+            asChild 
+            size="lg" 
+            className="bg-gradient-to-br from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+          >
+            <a href={currentMessage.buttonLink}>{currentMessage.buttonText}</a>
+          </Button>
+        </motion.div>
       </div>
+
+      {/* Animated gradient orbs in the background */}
+      <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-indigo-500/5 blur-3xl -z-10" />
+      <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full bg-blue-500/5 blur-3xl -z-10" />
     </section>
   );
 };
