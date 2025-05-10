@@ -3,41 +3,95 @@ import { useState } from "react";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  calculateTeamCompatibility, 
+  getCompatibilityScore, 
   haveTeamsPlayed 
 } from "@/utils/autoSchedule/compatibilityUtils";
+import { 
+  clearCompatibilityCache, 
+  clearMatchHistoryCache 
+} from "@/utils/autoSchedule/cachingUtils";
+import { 
+  handleOddTeams, 
+  validateTeamCounts 
+} from "@/utils/autoSchedule/edgeCaseUtils";
 import { TimeBlockTeamsMap, TeamPairingMap } from "@/types/autoSchedule";
+import { generatePairingsWithConfig } from "@/utils/autoSchedule/pairingAlgorithm";
 
 export const usePairingGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
+  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
   const { toast } = useToast();
 
   const generateMatchPairings = async (
     date: Date,
-    timeBlockTeams: TimeBlockTeamsMap
+    timeBlockTeams: TimeBlockTeamsMap,
+    config: {
+      avoidRematches?: boolean;
+      maxCompatibilityScore?: number;
+      weights?: {
+        powerScoreWeight?: number;
+        sosWeight?: number;
+        recordWeight?: number;
+        gameRecordWeight?: number;
+      }
+    } = {}
   ): Promise<TeamPairingMap | null> => {
     try {
       setIsGenerating(true);
       
       // Reset previously generated pairings
       setGeneratedPairings({});
+      setUnmatchedTeamIds([]);
+      
+      // Clear caches for fresh calculation
+      clearCompatibilityCache();
+      clearMatchHistoryCache();
       
       if (!timeBlockTeams) return null;
+      
+      // Validate team counts
+      const { isValid, insufficientBlocks } = validateTeamCounts(timeBlockTeams);
+      if (!isValid && insufficientBlocks.length === Object.keys(timeBlockTeams).length) {
+        toast({
+          title: "Error",
+          description: "No time blocks have sufficient teams to create matches.",
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      // Handle odd numbers of teams
+      const { adjustedTeams, unmatchedTeamIds: newUnmatchedTeamIds } = handleOddTeams(timeBlockTeams);
+      
+      // Store unmatched team IDs
+      setUnmatchedTeamIds(newUnmatchedTeamIds);
       
       // Generate pairings for each block
       const pairings: TeamPairingMap = {};
       
-      for (const [block, teams] of Object.entries(timeBlockTeams)) {
-        // Skip blocks with odd number of teams for now
-        if (teams.length % 2 !== 0) {
-          console.log(`Block ${block} has odd number of teams (${teams.length}), skipping for now`);
+      // Process each time block sequentially to avoid UI freezing
+      for (const [block, teams] of Object.entries(adjustedTeams)) {
+        // Skip blocks with insufficient teams
+        if (teams.length < 2) {
           pairings[block] = [];
           continue;
         }
         
-        // Simple algorithm: sort by compatibility and match teams
-        const blockPairings = await generatePairingsForBlock(teams);
+        // Generate pairings for this block with provided config
+        const blockPairings = await generatePairingsWithConfig(teams, {
+          avoidRematches: config.avoidRematches ?? true,
+          haveTeamsPlayedFn: haveTeamsPlayed,
+          getCompatibilityScoreFn: getCompatibilityScore,
+          maxScore: config.maxCompatibilityScore ?? 10,
+          weights: config.weights || {
+            powerScoreWeight: 4,
+            sosWeight: 2,
+            recordWeight: 2.5,
+            gameRecordWeight: 1.5
+          }
+        });
+        
         pairings[block] = blockPairings;
         
         console.log(`Generated ${blockPairings.length} pairings for ${block} block`);
@@ -60,48 +114,10 @@ export const usePairingGenerator = () => {
     }
   };
 
-  // Helper function to generate pairings for a specific block
-  const generatePairingsForBlock = async (teams: Team[]) => {
-    const blockPairings = [];
-    const availableTeams = [...teams];
-    
-    while (availableTeams.length >= 2) {
-      // Get first team
-      const team1 = availableTeams.shift()!;
-      
-      // Find best match for team1
-      let bestMatch = { team: availableTeams[0], score: -1, index: 0 };
-      
-      for (let i = 0; i < availableTeams.length; i++) {
-        const team2 = availableTeams[i];
-        const score = calculateTeamCompatibility(team1, team2);
-        
-        if (score > bestMatch.score) {
-          bestMatch = { team: team2, score, index: i };
-        }
-      }
-      
-      // Remove the matched team from available teams
-      availableTeams.splice(bestMatch.index, 1);
-      
-      // Check if teams have played before
-      const hasPlayedBefore = await haveTeamsPlayed(team1.id, bestMatch.team.id);
-      
-      // Add pairing
-      blockPairings.push({
-        team1,
-        team2: bestMatch.team,
-        compatibilityScore: bestMatch.score,
-        hasPlayedBefore
-      });
-    }
-    
-    return blockPairings;
-  };
-
   return {
     isGenerating,
     generatedPairings,
+    unmatchedTeamIds,
     generateMatchPairings
   };
 };

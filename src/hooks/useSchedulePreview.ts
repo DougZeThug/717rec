@@ -1,18 +1,19 @@
 
 import { useState } from "react";
-import { Team, Match } from "@/types";
+import { Team } from "@/types";
 import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult } from "@/types/autoSchedule";
 import { useTeamScheduleLoader } from "./useTeamScheduleLoader";
 import { usePairingGenerator } from "./usePairingGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
+import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 
 export type AutoScheduleStep = 'teams' | 'pairings';
 
 export const useSchedulePreview = () => {
   const [autoScheduleStep, setAutoScheduleStep] = useState<AutoScheduleStep>('teams');
   const { isLoading, timeBlockTeams, loadTeamsForDate, getTeamCountStatus } = useTeamScheduleLoader();
-  const { isGenerating, generatedPairings, generateMatchPairings } = usePairingGenerator();
+  const { isGenerating, generatedPairings, unmatchedTeamIds, generateMatchPairings } = usePairingGenerator();
   const { toast } = useToast();
 
   const previewSchedule = async (date: Date): Promise<PreviewResult | null> => {
@@ -23,6 +24,9 @@ export const useSchedulePreview = () => {
         : await loadTeamsForDate(date);
         
       if (!teamsData) return null;
+      
+      // Validate team counts to identify insufficient and odd blocks
+      const { isValid, insufficientBlocks } = validateTeamCounts(teamsData);
       
       // Check if we have even number of teams in each block
       const unmatchableBlocks: string[] = [];
@@ -36,7 +40,15 @@ export const useSchedulePreview = () => {
         toast({
           title: "Warning",
           description: `Blocks with odd number of teams: ${unmatchableBlocks.join(', ')}. Some teams may not get matched.`,
-          variant: "destructive"
+          variant: "warning" 
+        });
+      }
+      
+      if (insufficientBlocks.length > 0) {
+        toast({
+          title: "Warning",
+          description: `Blocks with insufficient teams: ${insufficientBlocks.join(', ')}. These blocks cannot create matches.`,
+          variant: "warning"
         });
       }
       
@@ -57,7 +69,19 @@ export const useSchedulePreview = () => {
     }
   };
 
-  const handleGenerateSchedule = async (date: Date) => {
+  const handleGenerateSchedule = async (
+    date: Date,
+    options: {
+      avoidRematches?: boolean;
+      prioritizeQuality?: boolean;
+      weights?: {
+        powerScoreWeight?: number;
+        sosWeight?: number;
+        recordWeight?: number;
+        gameRecordWeight?: number;
+      }
+    } = {}
+  ) => {
     if (!date) {
       toast({
         title: "Select Date",
@@ -67,13 +91,42 @@ export const useSchedulePreview = () => {
       return null;
     }
     
-    const pairings = await generateMatchPairings(date, timeBlockTeams);
+    // Add performance tracking
+    const startTime = performance.now();
+    
+    const pairings = await generateMatchPairings(date, timeBlockTeams, {
+      avoidRematches: options.avoidRematches,
+      weights: options.weights
+    });
+    
+    // Log performance metrics
+    const endTime = performance.now();
+    console.log(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
     
     if (pairings) {
+      // Count total matches generated
+      const totalMatches = Object.values(pairings).reduce((sum, blockPairings) => 
+        sum + blockPairings.length, 0);
+        
+      // Count any pairings that have played before
+      const rematchCount = Object.values(pairings).reduce((sum, blockPairings) => 
+        sum + blockPairings.filter(p => p.hasPlayedBefore).length, 0);
+        
+      let toastMessage = `${totalMatches} match pairings generated based on team compatibility.`;
+      
+      if (unmatchedTeamIds.length > 0) {
+        toastMessage += ` ${unmatchedTeamIds.length} teams were left unmatched due to odd numbers.`;
+      }
+      
+      if (rematchCount > 0) {
+        toastMessage += ` ${rematchCount} pairings are rematches.`;
+      }
+      
       toast({
         title: "Schedule Generated",
-        description: "Match pairings have been generated based on team compatibility.",
+        description: toastMessage,
       });
+      
       setAutoScheduleStep('pairings');
       return pairings;
     }
@@ -118,6 +171,7 @@ export const useSchedulePreview = () => {
     isGenerating,
     timeBlockTeams,
     generatedPairings,
+    unmatchedTeamIds,
     previewSchedule,
     handleGenerateSchedule,
     convertPairingsToMatches,

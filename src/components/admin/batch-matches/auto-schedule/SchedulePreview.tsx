@@ -1,21 +1,28 @@
 
 import React from "react";
+import { Team } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { TimeBlockTeamsMap } from "@/types/autoSchedule";
-import { TimeBlockHeader } from "./TimeBlockHeader";
+import { Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { TimeBlockTeamsList } from "./TimeBlockTeamsList";
+import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 
 interface SchedulePreviewProps {
-  timeBlockTeams: TimeBlockTeamsMap;
+  timeBlockTeams: Record<string, Team[]>;
   date: Date | null;
+  unmatchedTeamIds?: string[];
 }
 
 const SchedulePreview: React.FC<SchedulePreviewProps> = ({ 
   timeBlockTeams, 
-  date 
+  date,
+  unmatchedTeamIds = []
 }) => {
   // Check if we have teams loaded
   const hasTeams = Object.values(timeBlockTeams).some(teams => teams?.length > 0);
+  
+  // Validate team counts
+  const { insufficientBlocks } = validateTeamCounts(timeBlockTeams);
   
   if (!date || !hasTeams) {
     return (
@@ -31,16 +38,34 @@ const SchedulePreview: React.FC<SchedulePreviewProps> = ({
       
       {Object.entries(timeBlockTeams).map(([block, teams]) => (
         <Card key={block} className="overflow-hidden">
-          <TimeBlockHeader blockName={block} teamCount={teams.length} />
+          <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{block} Block</span>
+            </div>
+            <Badge 
+              variant={teams.length % 2 === 0 ? "outline" : "destructive"} 
+              className="text-xs"
+            >
+              {teams.length} Teams {teams.length % 2 !== 0 && "(Odd Number)"}
+            </Badge>
+          </div>
           <CardContent className="p-3">
-            <TimeBlockTeamsList teams={teams} />
+            <TimeBlockTeamsList 
+              teams={teams} 
+              unmatchedTeamIds={unmatchedTeamIds.filter(id => 
+                teams.some(team => team.id === id)
+              )}
+            />
           </CardContent>
         </Card>
       ))}
       
-      <div className="text-xs text-muted-foreground mt-4">
-        Note: Teams will be paired based on compatibility scores
-      </div>
+      {insufficientBlocks.length > 0 && (
+        <div className="text-sm text-amber-500 mt-2">
+          <p>Note: Some time blocks have insufficient teams to create matches.</p>
+        </div>
+      )}
     </div>
   );
 };

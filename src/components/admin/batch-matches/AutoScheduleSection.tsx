@@ -1,15 +1,23 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { MatchPair } from "./MatchPairsList";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Wand2 } from "lucide-react";
+import { Settings2, Wand2 } from "lucide-react";
 import { useSchedulePreview } from "@/hooks/useSchedulePreview";
 import { TeamLoadingStep } from "./auto-schedule/TeamLoadingStep";
 import { ScheduleGenerationStep } from "./auto-schedule/ScheduleGenerationStep";
 import { WarningDisplay } from "./auto-schedule/WarningDisplay";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface AutoScheduleSectionProps {
   selectedDate: Date | null;
@@ -23,6 +31,9 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
   setMatchPairs
 }) => {
   const { toast } = useToast();
+  const [avoidRematches, setAvoidRematches] = useState(true);
+  const [prioritizeQuality, setPrioritizeQuality] = useState(false);
+  
   const {
     autoScheduleStep,
     setAutoScheduleStep,
@@ -30,6 +41,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
     isGenerating,
     timeBlockTeams,
     generatedPairings,
+    unmatchedTeamIds,
     previewSchedule,
     handleGenerateSchedule,
     convertPairingsToMatches,
@@ -65,7 +77,16 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
       return;
     }
     
-    await handleGenerateSchedule(selectedDate);
+    // Pass configuration options to the generation function
+    await handleGenerateSchedule(selectedDate, {
+      avoidRematches,
+      prioritizeQuality,
+      weights: prioritizeQuality ? {
+        // Increase power score and record weights for higher quality matches
+        powerScoreWeight: 5,
+        recordWeight: 3.5
+      } : undefined
+    });
   };
 
   const handleApplySchedule = () => {
@@ -129,6 +150,48 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
           The algorithm will pair teams based on their skill level and match history.
         </p>
         
+        {/* Settings Accordion */}
+        <Accordion type="single" collapsible className="mb-4">
+          <AccordionItem value="settings">
+            <AccordionTrigger className="text-sm py-2">
+              <span className="flex items-center">
+                <Settings2 className="h-4 w-4 mr-2" /> Algorithm Settings
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4 py-2">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="avoid-rematches">Avoid Rematches</Label>
+                    <p className="text-[0.8rem] text-muted-foreground">
+                      Prioritize pairing teams that haven't played each other before
+                    </p>
+                  </div>
+                  <Switch
+                    id="avoid-rematches"
+                    checked={avoidRematches}
+                    onCheckedChange={setAvoidRematches}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="prioritize-quality">Prioritize Match Quality</Label>
+                    <p className="text-[0.8rem] text-muted-foreground">
+                      Match teams with similar skill levels (higher priority)
+                    </p>
+                  </div>
+                  <Switch
+                    id="prioritize-quality"
+                    checked={prioritizeQuality}
+                    onCheckedChange={setPrioritizeQuality}
+                  />
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+        
         <div className="flex flex-col space-y-4">
           {autoScheduleStep === 'teams' && (
             <TeamLoadingStep 
@@ -136,6 +199,8 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
               selectedDate={selectedDate}
               timeBlockTeams={timeBlockTeams}
               totalTeams={totalTeams}
+              oddBlocks={oddBlocks}
+              unmatchedTeamIds={unmatchedTeamIds}
               onLoadTeams={handlePreviewTeams}
               onGenerateSchedule={handleGenerateScheduleClick}
             />
@@ -153,13 +218,16 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
         </div>
       </div>
       
-      <WarningDisplay oddBlocks={oddBlocks} />
+      <WarningDisplay 
+        oddBlocks={oddBlocks} 
+        unmatchedTeams={unmatchedTeamIds?.length || 0}
+      />
       
       <Separator className="my-4" />
       
       <div className="text-xs text-muted-foreground mt-2">
         <p>* Teams are matched based on skill levels using power scores and win records</p>
-        <p>* Teams will be warned if they're in a time block with an odd number of teams</p>
+        <p>* Teams with odd numbers will have some teams unmatched (shown with warning)</p>
         <p>* Generated schedule can be manually adjusted after applying to the form</p>
       </div>
     </motion.div>

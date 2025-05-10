@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
 import SchedulePreview from "./SchedulePreview";
+import { WarningDisplay } from "./WarningDisplay";
+import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 
 interface TeamLoadingStepProps {
   isLoading: boolean;
   selectedDate: Date | null;
   timeBlockTeams: TimeBlockTeamsMap;
   totalTeams: number;
+  unmatchedTeamIds?: string[];
+  oddBlocks: number;
   onLoadTeams: () => Promise<void>;
   onGenerateSchedule: () => Promise<void>;
 }
@@ -19,9 +23,15 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
   selectedDate,
   timeBlockTeams,
   totalTeams,
+  unmatchedTeamIds = [],
+  oddBlocks,
   onLoadTeams,
   onGenerateSchedule
 }) => {
+  // Check for blocks with insufficient teams
+  const { insufficientBlocks } = validateTeamCounts(timeBlockTeams);
+  const hasTeamsLoaded = Object.keys(timeBlockTeams).length > 0;
+
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex items-center mb-2">
@@ -44,19 +54,29 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
       </div>
       
       {/* Only show preview if teams are loaded */}
-      {Object.keys(timeBlockTeams).length > 0 && (
+      {hasTeamsLoaded && (
         <div className="pl-8 mb-4">
           <SchedulePreview 
             timeBlockTeams={timeBlockTeams}
             date={selectedDate}
+            unmatchedTeamIds={unmatchedTeamIds}
           />
+          
+          {/* Display warnings for odd blocks or insufficient teams */}
+          {(oddBlocks > 0 || insufficientBlocks.length > 0) && (
+            <WarningDisplay
+              oddBlocks={oddBlocks}
+              unmatchedTeams={unmatchedTeamIds?.length || 0}
+              insufficientBlocks={insufficientBlocks}
+            />
+          )}
           
           <div className="mt-4 flex justify-end">
             <Button
               variant="default"
               size="sm"
               onClick={onGenerateSchedule}
-              disabled={isLoading || totalTeams === 0}
+              disabled={isLoading || totalTeams === 0 || insufficientBlocks.length === Object.keys(timeBlockTeams).length}
               className="flex items-center"
             >
               Generate Match Pairings <ChevronRight className="ml-1 h-4 w-4" />
