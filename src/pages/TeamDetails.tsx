@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,8 +71,8 @@ const TeamDetails = () => {
         wins={team.wins}
         losses={team.losses}
         winPercentage={winPct.toFixed(1)}
-        gamesWon={team.game_wins}
-        gamesLost={team.game_losses}
+        gamesWon={team.game_wins || 0}
+        gamesLost={team.game_losses || 0}
         gameWinPercentage={gamePct.toFixed(1)}
         strengthOfSchedule={team.sos?.toFixed(3) || "0.000"}
         closeMatchLosses={team.close_match_losses || 0}

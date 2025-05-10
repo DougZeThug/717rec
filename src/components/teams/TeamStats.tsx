@@ -1,7 +1,9 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { getPowerScoreColor, getSosColor } from "@/utils/colors";
+import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
+import { StatBlock } from "@/components/teams/shared/StatBlock";
+import { Trophy, Target, Users, Scale, Zap } from "lucide-react";
 
 interface TeamStatsProps {
   wins: number;
@@ -14,11 +16,6 @@ interface TeamStatsProps {
   closeMatchLosses?: number;
   powerScore?: number;
 }
-
-const labelClass =
-  "font-inter uppercase text-xs sm:text-sm tracking-widest text-gray-500 dark:text-gray-400";
-const valueClass =
-  "font-mono text-base text-gray-800 dark:text-white text-center";
 
 const TeamStats: React.FC<TeamStatsProps> = ({
   wins,
@@ -37,46 +34,57 @@ const TeamStats: React.FC<TeamStatsProps> = ({
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="space-y-1">
-            <h3 className={labelClass}>Match Record</h3>
-            <p className={`${valueClass}`}>
-              {wins}-{losses}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <h3 className={labelClass}>Win Percentage</h3>
-            <p className={valueClass}>
-              {winPercentage}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <h3 className={labelClass}>Game Record</h3>
-            <p className={valueClass}>
-              {gameWins}-{gameLosses}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <h3 className={labelClass}>Game Win %</h3>
-            <p className={valueClass}>
-              {gameWinPercentage}
-            </p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Match Record */}
+          <StatBlock 
+            label="Match Record" 
+            value={`${wins}-${losses}`}
+            className="bg-[#f9f9f9] dark:bg-black/30"
+            icon={<Trophy size={18} className="text-emerald-500" />}
+          />
+          
+          {/* Win Percentage */}
+          <StatBlock 
+            label="Win Percentage" 
+            value={`${winPercentage}%`}
+            className="bg-[#f9f9f9] dark:bg-black/30"
+            icon={<Target size={18} className="text-purple-500" />}
+          />
+          
+          {/* Game Record */}
+          <StatBlock 
+            label="Game Record" 
+            value={`${gameWins}-${gameLosses}`}
+            className="bg-[#f9f9f9] dark:bg-black/30"
+            icon={<Users size={18} className="text-indigo-500" />}
+          />
+          
+          {/* Game Win Percentage */}
+          <StatBlock 
+            label="Game Win %" 
+            value={`${gameWinPercentage}%`}
+            className="bg-[#f9f9f9] dark:bg-black/30"
+            icon={<Target size={18} className="text-teal-500" />}
+          />
+          
+          {/* SOS if available */}
           {sos !== undefined && (
-            <div className="space-y-1">
-              <h3 className={labelClass}>Strength of Schedule</h3>
-              <p className={`${valueClass} ${sosColor}`}>
-                {sos.toFixed(3)}
-              </p>
-            </div>
+            <StatBlock 
+              label="Strength of Schedule" 
+              value={<span className={sosColor}>{sos.toFixed(3)}</span>}
+              className="bg-[#f9f9f9] dark:bg-black/30"
+              icon={<Scale size={18} className="text-blue-500" />}
+            />
           )}
+          
+          {/* Power Score if available */}
           {powerScore !== undefined && (
-            <div className="space-y-1">
-              <h3 className={labelClass}>Power Score</h3>
-              <p className={`${valueClass} ${powerScoreColor}`}>
-                {powerScore.toFixed(1)}
-              </p>
-            </div>
+            <StatBlock 
+              label="Power Score" 
+              value={<span className={powerScoreColor}>{formatPowerScore(powerScore)}</span>}
+              className="bg-[#f9f9f9] dark:bg-black/30"
+              icon={<Zap size={18} className="text-amber-500" />}
+            />
           )}
         </div>
       </CardContent>
