@@ -2,7 +2,8 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
-import { gradients } from "@/styles/design-system"
+import { gradients, getDivisionGradient } from "@/styles/design-system"
+import { getDivisionGradientClass } from "@/styles/design-system"
 
 interface CardVariantProps {
   variant?: "default" | "subtle" | "highlight" | "elevated" | "interactive";
@@ -18,7 +19,7 @@ const Card = React.forwardRef<
   
   // Get the appropriate gradient based on variant and division
   const gradientClass = division 
-    ? gradients.card.division[division.toLowerCase()] || getDivisionGradient(division)
+    ? gradients.card.division[division.toLowerCase()] || getDivisionGradientClass(division)
     : gradients.card[variant];
   
   return (
@@ -90,21 +91,9 @@ const CardDescription = React.forwardRef<
 })
 CardDescription.displayName = "CardDescription"
 
-// Helper function to get division-specific gradient
+// Helper function to get division-specific gradient - this function should be removed since we're now using getDivisionGradientClass
 function getDivisionGradient(division: string): string {
-  const lowerDivName = division.toLowerCase();
-  
-  if (lowerDivName.includes('competitive')) {
-    return gradients.card.division.competitive;
-  }
-  if (lowerDivName.includes('intermediate')) {
-    return gradients.card.division.intermediate;
-  }
-  if (lowerDivName.includes('recreational')) {
-    return gradients.card.division.recreational;
-  }
-  
-  return gradients.card.default;
+  return getDivisionGradientClass(division);
 }
 
 const CardContent = React.forwardRef<

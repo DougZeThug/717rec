@@ -60,8 +60,9 @@ export function getDivisionStyles(divisionName: string | null | undefined, type:
 
 /**
  * Helper to get division-specific gradient
+ * Renamed from getDivisionGradient to getDivisionGradientClass to avoid conflict
  */
-export function getDivisionGradient(division: string): string {
+export function getDivisionGradientClass(division: string): string {
   const lowerDivName = division.toLowerCase();
   
   if (lowerDivName.includes('competitive')) {
@@ -76,3 +77,4 @@ export function getDivisionGradient(division: string): string {
   
   return "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900";
 }
+
