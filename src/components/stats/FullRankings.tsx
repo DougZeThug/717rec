@@ -14,35 +14,30 @@ interface FullRankingsProps {
 const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
   const [view, setView] = useState<"division" | "all">("division");
   const { resolvedTheme } = useTheme();
-  const isMobile = useIsMobile();
   const isLight = resolvedTheme === "light";
+  const isMobile = useIsMobile();
 
   // Sort rankings by power score for the unified view
   const sortedRankings = view === "all" 
     ? [...rankings].sort((a, b) => b.powerScore - a.powerScore)
     : rankings;
 
-  const headerClasses = isMobile ? "pb-1 pt-2 px-3" : "pb-2";
-  const titleClasses = isMobile
-    ? "font-oswald uppercase tracking-wide text-lg !font-bold"
-    : "font-oswald uppercase tracking-wide text-xl sm:text-2xl !font-bold";
-
-  const flexClasses = isMobile ? "flex flex-col gap-2" : "flex flex-col sm:flex-row sm:items-center justify-between gap-3";
-  const contentClasses = isMobile ? "p-1 sm:p-4" : "p-2 sm:p-4";
-
   return (
     <Card>
-      <CardHeader className={headerClasses}>
-        <div className={flexClasses}>
+      <CardHeader className={isMobile ? "pb-2 py-3" : "pb-2"}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <CardTitle
-              className={titleClasses}
+              className={`font-oswald uppercase tracking-wide ${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} !font-bold`}
               style={{ letterSpacing: "0.5px" }}
             >
               Complete Team Rankings
             </CardTitle>
             <CardDescription
-              className={isLight ? "!text-[#444444] !font-medium font-source text-xs" : "text-gray-400 font-source text-xs"}
+              className={cn(
+                isLight ? "!text-[#444444] !font-medium font-source" : "text-gray-400 font-source",
+                isMobile ? "text-xs" : ""
+              )}
             >
               Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
             </CardDescription>
@@ -50,7 +45,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
           <ViewToggle view={view} onViewChange={setView} />
         </div>
       </CardHeader>
-      <CardContent className={contentClasses}>
+      <CardContent className={isMobile ? "p-2" : "p-2 sm:p-4"}>
         <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
       </CardContent>
     </Card>
@@ -58,3 +53,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
 };
 
 export default FullRankings;
+
+function cn(...classes: (string | undefined | boolean)[]): string {
+  return classes.filter(Boolean).join(" ");
+}

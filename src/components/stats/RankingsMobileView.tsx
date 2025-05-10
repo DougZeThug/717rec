@@ -55,9 +55,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   }, [rankings]);
 
   const sortableFields = [
-    { id: 'powerScore', label: (<><Bolt size={15} className="inline-block mr-1" />Power</>) },
+    { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) },
     { id: 'winPercentage', label: 'Win %' },
-    { id: 'sos', label: (<><Scale size={14} className="inline-block mr-1" />SOS</>) },
+    { id: 'sos', label: (<><Scale size={15} className="inline-block mr-1" />SOS</>) },
     { id: 'wins', label: 'Wins' },
   ];
 
@@ -79,8 +79,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
 
   return (
     <div className="font-inter">
-      <div className="mb-2 space-y-1.5">
-        <div className="flex flex-col gap-1.5">
+      <div className="mb-3 space-y-2">
+        <div className="flex flex-col gap-2">
           <div className="overflow-x-auto pb-1">
             <div className="flex space-x-1">
               {sortableFields.map((field) => (
@@ -90,7 +90,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   size="sm"
                   onClick={() => onSortChange(field.id)}
                   className={cn(
-                    "rounded-lg py-1 px-2 text-xs font-medium transition-all whitespace-nowrap h-7",
+                    "rounded-lg py-1 px-3 text-sm font-medium transition-all whitespace-nowrap",
                     sortOptions.field === field.id
                       ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white dark:border dark:border-blue-500/50"
                       : "bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
@@ -111,29 +111,28 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               id="detailed-view"
               checked={detailedView}
               onCheckedChange={toggleViewMode}
-              className="h-4 w-7 data-[state=checked]:bg-blue-600"
             />
             <Label
               htmlFor="detailed-view"
-              className="text-xs text-gray-700 dark:text-gray-300"
+              className="text-sm text-gray-700 dark:text-gray-300"
             >
               {detailedView ? "Detailed View" : "Compact View"}
             </Label>
           </div>
         </div>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
-          <div key={divisionName} className="space-y-1.5">
+          <div key={divisionName} className="space-y-2">
             {!showUnified && (
-              <h3 className="text-base font-medium flex items-center font-inter text-gray-900 dark:text-white">
+              <h3 className="text-lg font-medium flex items-center font-inter text-gray-900 dark:text-white">
                 {divisionName}{" "}
                 <span className="ml-2 text-xs text-gray-600 dark:text-gray-400 font-inter">
                   ({divisionRankings.length})
                 </span>
               </h3>
             )}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {divisionRankings.map((ranking) => {
                 const globalIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
                 return (

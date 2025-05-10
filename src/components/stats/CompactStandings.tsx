@@ -39,35 +39,35 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
 
   if (isMobile) {
     return (
-      <div className="space-y-1">
+      <div className="space-y-2">
         {rankings.map((team, index) => (
           <div
             key={team.teamId}
             onClick={() => handleTeamClick(team.teamId)}
-            className={getRowInteractionStyles("flex items-center justify-between p-1.5 rounded-lg border cursor-pointer bg-white dark:bg-gray-800 dark:border-gray-700")}
+            className={getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-white dark:bg-gray-800 dark:border-gray-700")}
           >
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <div
-                className={cn("w-6 h-6 flex items-center justify-center rounded-full font-mono text-xs", getRankStyles(index))}
+                className={cn("w-7 h-7 flex items-center justify-center rounded-full font-mono", getRankStyles(index))}
               >
                 {index + 1}
               </div>
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-2">
                 {team.imageUrl && (
-                  <div className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                  <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
                     <img
                       src={team.imageUrl}
                       alt={team.teamName}
-                      className="w-8 h-8 rounded-none object-contain"
+                      className="w-10 h-10 rounded-none object-contain"
                     />
                   </div>
                 )}
-                <span className="font-bebas tracking-wide uppercase text-sm text-gray-900 dark:text-white truncate max-w-[100px]">
+                <span className="font-bebas tracking-wide uppercase text-base text-gray-900 dark:text-white">
                   {team.teamName}
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-2 text-xs font-mono">
+            <div className="flex items-center space-x-3 text-sm font-mono">
               <span className="text-gray-900 dark:text-white">{team.wins}-{team.losses}</span>
               <span className={getPowerScoreColor(team.powerScore)}>
                 {formatPowerScore(team.powerScore)}
