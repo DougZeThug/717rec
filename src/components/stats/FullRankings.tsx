@@ -54,7 +54,3 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
 };
 
 export default FullRankings;
-
-function cn(...classes: (string | undefined | boolean)[]): string {
-  return classes.filter(Boolean).join(" ");
-}
