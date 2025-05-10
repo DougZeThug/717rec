@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   test: {
-    environment: 'happy-dom',
+    environment: 'jsdom',  // Switched to jsdom which has better compatibility
     setupFiles: ['./src/setupTests.ts'],
     include: ['**/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mjs,cts,tsx}'],
     globals: true,
