@@ -52,3 +52,11 @@ export interface AlgorithmConfig {
     gameRecordWeight?: number;
   };
 }
+
+export interface TabProps {
+  selectedDate: Date | null;
+  timeBlockTeams?: TimeBlockTeamsMap;
+  generatedPairings?: TeamPairingMap;
+  isGenerating: boolean;
+  unmatchedTeamIds?: string[];
+}

@@ -2,6 +2,7 @@
 import React from "react";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TimeBlockHeaderProps {
   blockName: string;
@@ -14,6 +15,8 @@ export const TimeBlockHeader: React.FC<TimeBlockHeaderProps> = ({
   teamCount,
   timeslots = []
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="bg-slate-100 dark:bg-slate-800 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">

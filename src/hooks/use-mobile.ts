@@ -3,18 +3,20 @@ import { useState, useEffect } from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 
-export function useMobile(): boolean {
+/**
+ * React hook to determine if the current viewport is mobile-sized
+ * @returns {boolean} True if the viewport is considered mobile-sized
+ */
+export function useIsMobile(): boolean {
   const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
     // Check if we're in a browser environment
     if (typeof window === 'undefined') return;
     
-    // Function to check if device is mobile
+    // Function to check if device is mobile based on viewport width
     const checkMobile = () => {
-      // Check for viewport width (primary method)
-      const isMobileViewport = window.innerWidth < MOBILE_BREAKPOINT;
-      setIsMobile(isMobileViewport);
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
     
     // Initial check
@@ -30,5 +32,5 @@ export function useMobile(): boolean {
   return isMobile;
 }
 
-// Use this hook for consistency across the app
-export const useIsMobile = useMobile;
+// Both exports point to the same function for backward compatibility
+export { useIsMobile as useMobile };
