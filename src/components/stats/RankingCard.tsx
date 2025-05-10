@@ -7,6 +7,7 @@ import { getSosColor } from "@/utils/colors";
 import { Link } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { TeamLogo } from "@/components/ui/team/TeamLogo";
+import { cn } from "@/lib/utils";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -29,10 +30,20 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
+  // Enhanced card styling
+  const cardStyle = cn(
+    "border rounded-lg overflow-hidden transition-all duration-200",
+    isLight ? "bg-white hover:shadow-md" : "bg-gray-800 dark:border-gray-700 hover:bg-gray-800/80",
+    isExpanded && "shadow-md"
+  );
+
   return (
-    <div className="border rounded-lg overflow-hidden transition-shadow bg-white dark:bg-gray-800 dark:border-gray-700">
+    <div className={cardStyle}>
       <div
-        className={`${compactView ? 'p-2' : 'p-4'} cursor-pointer`}
+        className={cn(
+          compactView ? 'p-2' : 'p-4', 
+          "cursor-pointer"
+        )}
         onClick={() => onToggleExpand(ranking.teamId)}
       >
         <div className={`flex flex-col ${compactView ? 'gap-1' : 'gap-2'}`}>
