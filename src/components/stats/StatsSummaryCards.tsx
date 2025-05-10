@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
@@ -10,6 +11,8 @@ interface StatsSummaryCardsProps {
   rankings: Ranking[];
   theme?: string;
 }
+
+const iconSize = 18; // Slightly smaller for tighter grid
 
 const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const isMobile = useIsMobile();
@@ -61,12 +64,11 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   const highestSOS = getHighestSOS();
   const highestPowerScore = getHighestPowerScore();
 
-  // Optimize card styling for mobile
-  const iconSize = isMobile ? 16 : 18; 
-  const cardBase = `flex flex-row items-center gap-${isMobile ? '1' : '2'} sm:gap-3 ${isMobile ? 'py-2 px-1.5' : 'py-3 px-2'} sm:px-3 rounded-xl font-inter shadow-sm bg-muted border`;
+  // Update: bg-muted card style, gap-2 or gap-3, even tighter padding
+  const cardBase = "flex flex-row items-center gap-2 sm:gap-3 py-3 px-2 sm:px-3 rounded-xl font-inter shadow-sm bg-muted border";
   const titleLabel = "uppercase tracking-widest text-xs font-medium text-gray-700 dark:text-gray-300 font-inter";
-  const statVal = `font-mono ${isMobile ? 'text-sm' : 'text-lg'} sm:text-xl font-extrabold`;
-  const descriptionColor = `text-gray-500 dark:text-gray-400 ${isMobile ? 'text-[10px] truncate max-w-[85px]' : 'text-xs'} font-medium`;
+  const statVal = "font-mono text-lg sm:text-xl font-extrabold";
+  const descriptionColor = "text-gray-500 dark:text-gray-400 text-xs font-medium";
 
   // Color coding for highlight values
   const getColorFor = (type: string, value: number) => {
@@ -92,22 +94,22 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   };
 
   return (
-    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-1 sm:gap-3">
+    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
       <Card className={cardBase}>
-        <div className={`flex items-center justify-center bg-cornhole-green/15 rounded-full ${isMobile ? 'w-7 h-7 mr-1.5' : 'w-9 h-9 mr-2'}`}>
+        <div className="flex items-center justify-center bg-cornhole-green/15 rounded-full w-9 h-9 mr-2">
           <Trophy size={iconSize} className="text-amber-500" />
         </div>
         <div>
-          <CardTitle className={`${titleLabel} ${isMobile ? 'text-[10px] tracking-tight' : ''}`}>Total Teams</CardTitle>
+          <CardTitle className={titleLabel}>Total Teams</CardTitle>
           <div className="font-mono text-lg font-extrabold text-cornhole-green">{rankings ? rankings.length : 0}</div>
         </div>
       </Card>
       <Card className={cardBase}>
-        <div className={`flex items-center justify-center bg-green-900/15 rounded-full ${isMobile ? 'w-7 h-7 mr-1.5' : 'w-9 h-9 mr-2'}`}>
+        <div className="flex items-center justify-center bg-green-900/15 rounded-full w-9 h-9 mr-2">
           <Star size={iconSize} className="text-green-400" />
         </div>
         <div>
-          <CardTitle className={`${titleLabel} ${isMobile ? 'text-[10px] tracking-tight' : ''}`}>Highest Win %</CardTitle>
+          <CardTitle className={titleLabel}>Highest Win %</CardTitle>
           <div className={`${statVal} ${getColorFor("percentage", Number(highestWinPercentage.percentage))}`}>
             {highestWinPercentage.percentage}%
           </div>
@@ -115,11 +117,11 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
         </div>
       </Card>
       <Card className={cardBase}>
-        <div className={`flex items-center justify-center bg-blue-900/15 rounded-full ${isMobile ? 'w-7 h-7 mr-1.5' : 'w-9 h-9 mr-2'}`}>
+        <div className="flex items-center justify-center bg-blue-900/15 rounded-full w-9 h-9 mr-2">
           <Scale size={iconSize} className="text-blue-400" />
         </div>
         <div>
-          <CardTitle className={`${titleLabel} ${isMobile ? 'text-[10px] tracking-tight' : ''}`}>Highest SOS</CardTitle>
+          <CardTitle className={titleLabel}>Highest SOS</CardTitle>
           <div className={`${statVal} ${getColorFor("sos", Number(highestSOS.sos))}`}>
             {highestSOS.sos}
           </div>
@@ -127,11 +129,11 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
         </div>
       </Card>
       <Card className={cardBase}>
-        <div className={`flex items-center justify-center bg-purple-900/20 rounded-full ${isMobile ? 'w-7 h-7 mr-1.5' : 'w-9 h-9 mr-2'}`}>
+        <div className="flex items-center justify-center bg-purple-900/20 rounded-full w-9 h-9 mr-2">
           <Bolt size={iconSize} className="text-purple-300" />
         </div>
         <div>
-          <CardTitle className={`${titleLabel} ${isMobile ? 'text-[10px] tracking-tight' : ''}`}>Highest Power Score</CardTitle>
+          <CardTitle className={titleLabel}>Highest Power Score</CardTitle>
           <div className={`${statVal} ${getColorFor("power", Number(highestPowerScore.score))}`}>
             {formatPowerScore(highestPowerScore.score)}
           </div>

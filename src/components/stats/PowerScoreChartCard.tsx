@@ -22,30 +22,21 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
       animations.fadeInSlideUp,
       "animation-delay-200"
     )}>
-      <CardHeader className={cn(
-        "rounded-t-xl",
-        isMobile ? "pb-1 py-3" : "pb-1.5"
-      )}
+      <CardHeader className="pb-1.5 rounded-t-xl" 
         style={resolvedTheme === "light" ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
         <CardTitle
-          className={cn(
-            "font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase",
-            isMobile ? "text-base" : "text-lg"
-          )}
+          className="text-lg font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase"
           style={{ letterSpacing: ".03em" }}
         >
           Top {isMobile ? "5" : "8"} Power Scores
         </CardTitle>
         <CardDescription
-          className={cn(
-            "text-gray-600 dark:text-gray-300 font-inter",
-            isMobile ? "text-xs" : "text-sm"
-          )}
+          className="text-sm text-gray-600 dark:text-gray-300 font-inter"
         >
           Elite team performance ranking
         </CardDescription>
       </CardHeader>
-      <CardContent className={isMobile ? "p-2 pt-2" : "p-4 pt-2"}>
+      <CardContent className="p-4 pt-2">
         <PowerScoreChart data={data} />
       </CardContent>
     </Card>
