@@ -6,7 +6,8 @@ import { useTheme } from "next-themes";
 import { TeamLogo } from "./TeamLogo";
 import { TeamStats } from "./TeamStats";
 import { cn } from "@/lib/utils";
-import { animations, gradients } from "@/styles/design-system";
+import { animations } from "@/styles/design-system";
+import { blueAmber, blueAmberHeading } from "@/styles/design-system/blueAmber";
 
 interface TeamCardProps {
   team: Team;
@@ -24,6 +25,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
     <div className={cn(
       "overflow-hidden mb-4 sm:mb-0 transition duration-300 hover:shadow-md",
       "rounded-lg border border-gray-200 dark:border-gray-700",
+      blueAmber.background.cardAccent,
       animations.fadeInSlideUp,
       delayClass
     )}>
@@ -35,7 +37,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
         <div className="p-4 bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90">
           <h3 className={cn(
             "font-bebas font-normal uppercase tracking-wide text-xl mb-2 truncate",
-            "bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent"
+            blueAmberHeading()
           )}>
             {team.name}
           </h3>

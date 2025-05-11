@@ -3,6 +3,8 @@ import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { TeamLogo } from "@/components/ui/team/TeamLogo";
+import { blueAmberHeading } from "@/styles/design-system/blueAmber";
+import { cn } from "@/lib/utils";
 
 interface TeamHeaderProps {
   team: Team;
@@ -21,8 +23,11 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
         />
       </div>
       <div className="text-center">
-        {/* Team Name with Bebas Neue, all caps, tracking-wide, no bold */}
-        <h1 className="font-bebas uppercase tracking-wide text-3xl sm:text-4xl font-normal text-gray-900 dark:text-white">
+        {/* Team Name with blue-amber gradient styling */}
+        <h1 className={cn(
+          "font-bebas uppercase tracking-wide text-3xl sm:text-4xl font-normal",
+          blueAmberHeading()
+        )}>
           {team.name}
         </h1>
         <div className="flex flex-wrap justify-center items-center gap-2 mt-2">

@@ -4,6 +4,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Users, List } from "lucide-react";
 import { DisplayMode } from "./TeamsPageContainer";
 import { cn } from "@/lib/utils";
+import { blueAmber } from "@/styles/design-system/blueAmber";
 
 interface TeamsDisplayModeToggleProps {
   displayMode: DisplayMode;
@@ -24,7 +25,7 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
       className={cn(
         "px-2 py-1 text-sm rounded-md transition-all duration-200",
         displayMode === "all" 
-          ? "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border-blue-500/50" 
+          ? blueAmber.interactive.active 
           : "dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
       )}
     >
@@ -37,7 +38,7 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
       className={cn(
         "px-2 py-1 text-sm rounded-md transition-all duration-200",
         displayMode === "grouped" 
-          ? "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border-blue-500/50"
+          ? blueAmber.interactive.active
           : "dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
       )}
     >

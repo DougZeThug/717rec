@@ -10,6 +10,7 @@ const StatsPageHeader = () => {
       title="Team Statistics" 
       description="Current season rankings and performance metrics"
       className={cn("mt-1", animations.fadeInSlideDown)} 
+      withGradient={true}
     />
   );
 };

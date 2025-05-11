@@ -3,6 +3,7 @@ import React, { ReactNode } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { typography } from "@/styles/design-system";
+import { blueAmber, blueAmberHeading } from "@/styles/design-system/blueAmber";
 
 interface PageHeaderProps {
   title: ReactNode;
@@ -10,6 +11,7 @@ interface PageHeaderProps {
   children?: ReactNode;
   className?: string;
   compact?: boolean;
+  withGradient?: boolean;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
@@ -17,7 +19,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   description,
   children,
   className,
-  compact = false
+  compact = false,
+  withGradient = true
 }) => {
   const isMobile = useIsMobile();
 
@@ -31,7 +34,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       <h1 className={cn(
         typography.heading.h1,
         isMobile ? "text-2xl font-medium" : "text-3xl",
-        "text-gray-900 dark:text-white"
+        withGradient 
+          ? blueAmberHeading() 
+          : "text-gray-900 dark:text-white"
       )}>
         {title}
       </h1>
