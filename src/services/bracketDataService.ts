@@ -41,6 +41,17 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
   // Transform matches to application format
   const matches = transformMatches(matchesData);
   
+  // Convert the bracket state to a valid value if it exists
+  let bracketState: "pending" | "underway" | "complete" | undefined = undefined;
+  if (bracketData.state) {
+    if (["pending", "underway", "complete"].includes(bracketData.state)) {
+      bracketState = bracketData.state as "pending" | "underway" | "complete";
+    } else {
+      // Default to pending if invalid value
+      bracketState = "pending";
+    }
+  }
+  
   // Transform to our application PlayoffBracket type
   const bracket: PlayoffBracket = {
     id: bracketData.id,
@@ -50,7 +61,8 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
     format: bracketData.format as "Single Elimination" | "Double Elimination" || "Single Elimination",
     champion: champion,
     challongeTournamentId: bracketData.challonge_tournament_id,
-    challongeTournamentUrl: bracketData.challonge_tournament_url
+    challongeTournamentUrl: bracketData.challonge_tournament_url,
+    state: bracketState
   };
   
   return bracket;

@@ -6,18 +6,45 @@ import { Team } from "@/types";
 interface TeamSelectionListProps {
   teams: Team[];
   selectedTeams: string[];
+  selectedTeamIds?: string[]; // Added this prop for compatibility
   onTeamToggle: (teamId: string) => void;
+  onChange?: (selectedIds: string[]) => void; // Added this prop for compatibility
   isLoading?: boolean;
+  maxTeams?: number; // Added maxTeams prop
 }
 
 const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
   teams,
   selectedTeams,
+  selectedTeamIds,
   onTeamToggle,
-  isLoading = false
+  onChange,
+  isLoading = false,
+  maxTeams
 }) => {
+  // Use either selectedTeamIds or selectedTeams
+  const selectedIds = selectedTeamIds || selectedTeams;
+  
   // Check if a team is selected
-  const isTeamSelected = (teamId: string) => selectedTeams.includes(teamId);
+  const isTeamSelected = (teamId: string) => selectedIds.includes(teamId);
+  
+  // Handle team toggle with either callback style
+  const handleToggle = (teamId: string) => {
+    if (onChange) {
+      const newSelection = isTeamSelected(teamId)
+        ? selectedIds.filter(id => id !== teamId)
+        : [...selectedIds, teamId];
+      
+      // If maxTeams is defined, enforce the limit
+      if (maxTeams && !isTeamSelected(teamId) && selectedIds.length >= maxTeams) {
+        return; // Don't add more teams if at max
+      }
+      
+      onChange(newSelection);
+    } else {
+      onTeamToggle(teamId);
+    }
+  };
 
   return (
     <>
@@ -34,7 +61,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
                     ? 'bg-cornhole-green/20 border border-cornhole-green' 
                     : 'hover:bg-gray-100'
                 }`}
-                onClick={() => onTeamToggle(team.id)}
+                onClick={() => handleToggle(team.id)}
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
                   {team.logoUrl && (
@@ -59,7 +86,8 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
         )}
       </div>
       <div className="text-xs text-gray-500">
-        Selected: {selectedTeams.length} teams
+        Selected: {selectedIds.length} teams
+        {maxTeams && ` (max: ${maxTeams})`}
       </div>
       <FormMessage />
     </>

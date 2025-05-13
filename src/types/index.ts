@@ -8,11 +8,18 @@ export interface Team {
   game_losses?: number;
   divisionName?: string;
   division_id?: string;
+  division?: string;
   imageUrl?: string;
   logoUrl?: string;
   players?: string[];
   seed?: number;
   challongeParticipantId?: number;
+  power_score?: number;
+  sos?: number;
+  win_percentage?: number;
+  game_win_percentage?: number;
+  created_at?: string;
+  close_match_losses?: number;
 }
 
 // Match related types
