@@ -52,11 +52,11 @@ export const useTeamData = (divisionId?: string | null) => {
       
       const uniqueTeamsArray = Array.from(uniqueTeamsMap.values());
       
-      // Log the data to verify values
-      console.log("useTeamData SOS and power_score values:", uniqueTeamsArray.map(team => ({
+      // Enhanced logging to debug division assignments
+      console.log("useTeamData - Teams with divisions:", uniqueTeamsArray.map(team => ({
+        id: team.team_id,
         name: team.name,
-        power_score: team.power_score,
-        sos: team.sos
+        division_id: team.division_id
       })));
       
       return uniqueTeamsArray.map((team): Team => ({
@@ -70,7 +70,8 @@ export const useTeamData = (divisionId?: string | null) => {
         game_wins: team.game_wins || 0,
         game_losses: team.game_losses || 0,
         created_at: team.created_at || new Date().toISOString(),
-        division: team.division_id || null,
+        division_id: team.division_id || null, // Keep division_id as is without renaming
+        division: team.division_id || null, // Keep division for backward compatibility
         divisionName: team.divisionname || null,
         sos: typeof team.sos === 'number' ? team.sos : 0.5,
         power_score: typeof team.power_score === 'number' ? team.power_score : 0,
