@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Edit, Loader2 } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
 import ChampionDisplay from "@/components/playoffs/ChampionDisplay";
+import ChallongeBracketView from "@/components/playoffs/ChallongeBracketView";
 import { PlayoffBracket, Team } from "@/types";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 interface BracketDetailProps {
   bracketId: string;
@@ -24,6 +26,10 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   onEditBracket,
   onEditMatch,
 }) => {
+  const { isAdminAccessGranted } = useAdminAccess();
+
+  const hasChallongeIntegration = bracket.challongeTournamentId && bracket.challongeTournamentUrl;
+
   return (
     <Card className="mb-8" id={`bracket-${bracketId}`}>
       <CardHeader>
@@ -32,11 +38,18 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             <CardTitle>{bracket.name}</CardTitle>
             <CardDescription>
               {bracket.division} Division • {bracket.format}
+              {bracket.state && (
+                <span className="ml-2">
+                  • Status: <span className="font-medium">{bracket.state}</span>
+                </span>
+              )}
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEditBracket}>
-            <Edit className="h-4 w-4 mr-2" /> Edit Bracket
-          </Button>
+          {isAdminAccessGranted && (
+            <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEditBracket}>
+              <Edit className="h-4 w-4 mr-2" /> Edit Bracket
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">
@@ -44,12 +57,17 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           <div className="flex justify-center py-8">
             <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
           </div>
+        ) : hasChallongeIntegration ? (
+          <ChallongeBracketView 
+            tournamentId={bracket.challongeTournamentId!}
+            tournamentUrl={bracket.challongeTournamentUrl!}
+          />
         ) : (
           <>
             <BracketView 
               bracket={bracket}
               teams={teams || []}
-              onEditMatch={onEditMatch}
+              onEditMatch={isAdminAccessGranted ? onEditMatch : undefined}
             />
             
             <ChampionDisplay 

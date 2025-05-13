@@ -1,44 +1,34 @@
 
-import React, { useMemo } from "react";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState, useEffect } from "react";
 import * as z from "zod";
-import { Loader2 } from "lucide-react";
-import { Team } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import TeamSelectionList from "./TeamSelectionList";
+import { Team } from "@/types";
 
-// Validation schema for the bracket creation form
-const bracketFormSchema = z.object({
-  title: z.string().min(3, { message: "Title must be at least 3 characters." }),
-  divisionId: z.string().min(1, { message: "Please select a division." }),
+// Define the form schema with zod
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  divisionId: z.string().min(1, "Division is required"),
   format: z.enum(["Single Elimination", "Double Elimination"]),
-  teams: z.array(z.string()).min(2, { message: "Select at least 2 teams." }),
+  teams: z.array(z.string()).min(2, "At least 2 teams are required"),
+  useChallonge: z.boolean().optional(),
 });
 
-export type BracketFormValues = z.infer<typeof bracketFormSchema>;
+export type BracketFormValues = z.infer<typeof formSchema>;
 
 interface BracketFormProps {
   divisions: { id: string; name: string }[];
   teams: Team[];
   isSubmitting: boolean;
-  onSubmit: (data: BracketFormValues) => void;
+  onSubmit: (data: BracketFormValues) => Promise<void> | void;
   onCancel: () => void;
 }
 
@@ -49,33 +39,46 @@ const BracketForm: React.FC<BracketFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const [teamsByDivision, setTeamsByDivision] = useState<Record<string, Team[]>>({});
+  const [selectedDivision, setSelectedDivision] = useState<string>("");
+  
+  // Initialize the form
   const form = useForm<BracketFormValues>({
-    resolver: zodResolver(bracketFormSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       divisionId: "",
-      format: "Single Elimination",
+      format: "Double Elimination",
       teams: [],
+      useChallonge: true,
     },
   });
   
-  // Filter teams based on selected division
-  const selectedDivisionId = form.watch("divisionId");
-  const filteredTeams = useMemo(() => {
-    if (!selectedDivisionId) return [];
-    return teams.filter(team => team.division === selectedDivisionId);
-  }, [selectedDivisionId, teams]);
-
-  // Toggle team selection
-  const toggleTeamSelection = (teamId: string) => {
-    const currentTeams = form.watch("teams");
-    if (currentTeams.includes(teamId)) {
-      form.setValue("teams", currentTeams.filter(id => id !== teamId));
-    } else {
-      form.setValue("teams", [...currentTeams, teamId]);
-    }
+  // Group teams by division
+  useEffect(() => {
+    const grouped = teams.reduce((acc, team) => {
+      if (team.division_id) {
+        if (!acc[team.division_id]) {
+          acc[team.division_id] = [];
+        }
+        acc[team.division_id].push(team);
+      }
+      return acc;
+    }, {} as Record<string, Team[]>);
+    
+    setTeamsByDivision(grouped);
+  }, [teams]);
+  
+  // Handle division change
+  const handleDivisionChange = (divisionId: string) => {
+    setSelectedDivision(divisionId);
+    form.setValue("divisionId", divisionId);
+    form.setValue("teams", []);
   };
-
+  
+  // Get filtered teams based on selected division
+  const filteredTeams = selectedDivision ? teamsByDivision[selectedDivision] || [] : [];
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -86,7 +89,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
             <FormItem>
               <FormLabel>Bracket Title</FormLabel>
               <FormControl>
-                <Input placeholder="Playoff Final 2025" {...field} />
+                <Input placeholder="Enter bracket title" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -99,13 +102,13 @@ const BracketForm: React.FC<BracketFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Division</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                value={field.value}
+              <Select
+                onValueChange={(value) => handleDivisionChange(value)}
+                defaultValue={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select division" />
+                    <SelectValue placeholder="Select a division" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -126,14 +129,14 @@ const BracketForm: React.FC<BracketFormProps> = ({
           name="format"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bracket Format</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                value={field.value}
+              <FormLabel>Tournament Format</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select a format" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -148,41 +151,52 @@ const BracketForm: React.FC<BracketFormProps> = ({
         
         <FormField
           control={form.control}
-          name="teams"
-          render={() => (
-            <FormItem>
-              <FormLabel>Select Teams</FormLabel>
-              {selectedDivisionId ? (
-                <TeamSelectionList 
-                  teams={filteredTeams}
-                  selectedTeams={form.watch("teams")}
-                  onTeamToggle={toggleTeamSelection}
+          name="useChallonge"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
-              ) : (
-                <div className="border rounded-md p-2 h-[200px] overflow-y-auto">
-                  <p className="text-center py-4 text-gray-500">
-                    Please select a division first
-                  </p>
-                </div>
-              )}
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Use Challonge Integration</FormLabel>
+                <p className="text-sm text-muted-foreground">
+                  Create tournament in Challonge for professional bracket visualization
+                </p>
+              </div>
             </FormItem>
           )}
         />
         
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+        <FormField
+          control={form.control}
+          name="teams"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Select Teams (Max 16)</FormLabel>
+              <FormControl>
+                <Card className="p-2 max-h-64 overflow-y-auto">
+                  <TeamSelectionList
+                    teams={filteredTeams}
+                    selectedTeamIds={field.value}
+                    onChange={field.onChange}
+                    maxTeams={16}
+                  />
+                </Card>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="flex justify-end space-x-2 mt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            Create Bracket
+            {isSubmitting ? "Creating..." : "Create Bracket"}
           </Button>
         </div>
       </form>

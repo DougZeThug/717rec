@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import type { PlayoffMatch, Team } from "@/types";
 import { validateGameScore } from "@/hooks/matches/utils/matchValidationUtils";
+import { ChallongeService } from "@/services/ChallongeService";
 import GameScoreRow from "./GameScoreRow";
 import GamesList from "./GamesList";
 import MatchScoreActions from "./MatchScoreActions";
@@ -20,13 +21,17 @@ interface MatchScoreEditorProps {
     team2GameWins: number
   ) => Promise<void>;
   onCancel: () => void;
+  challongeTournamentId?: string | null;
+  challongeMatchId?: string | null;
 }
 
 const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   match,
   teams,
   onSave,
-  onCancel
+  onCancel,
+  challongeTournamentId,
+  challongeMatchId
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -95,6 +100,41 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       
       const team1Score = team1Wins > team2Wins ? 1 : 0;
       const team2Score = team2Wins > team1Wins ? 1 : 0;
+      
+      // Update Challonge if we have the necessary IDs
+      if (challongeTournamentId && challongeMatchId) {
+        try {
+          // Create scores CSV string - format: "team1score-team2score,team1score-team2score"
+          const scoresCsv = games.map(game => `${game.team1Score}-${game.team2Score}`).join(',');
+          
+          // Calculate the winner ID for Challonge
+          const winnerId = team1Wins > team2Wins 
+            ? match.team1ChallongeId 
+            : team2Wins > team1Wins 
+              ? match.team2ChallongeId 
+              : undefined;
+              
+          const loserId = team1Wins > team2Wins 
+            ? match.team2ChallongeId 
+            : team2Wins > team1Wins 
+              ? match.team1ChallongeId 
+              : undefined;
+          
+          if (winnerId) {
+            await ChallongeService.updateMatch({
+              tournamentId: challongeTournamentId,
+              matchId: challongeMatchId,
+              scoresCsv: scoresCsv,
+              winnerId: winnerId.toString(),
+              loserId: loserId?.toString(),
+            });
+            console.log("Challonge match updated successfully");
+          }
+        } catch (error) {
+          console.error("Error updating Challonge match:", error);
+          // Continue with local update even if Challonge update fails
+        }
+      }
       
       // Pass the game win counts to onSave
       await onSave(match.id, team1Score, team2Score, games, team1Wins, team2Wins);

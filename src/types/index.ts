@@ -1,24 +1,18 @@
-
 // Team related types
 export interface Team {
   id: string;
   name: string;
-  logoUrl?: string | null;
-  imageUrl?: string | null;
-  division?: string | null; 
-  divisionName?: string | null;
-  players?: string[];
-  wins: number;
-  losses: number;
+  wins?: number;
+  losses?: number;
   game_wins?: number;
   game_losses?: number;
-  power_score: number;
-  sos: number;
-  win_percentage: number;
-  game_win_percentage: number;
-  close_match_losses?: number;
-  created_at?: string;
-  [key: string]: any;
+  divisionName?: string;
+  division_id?: string;
+  imageUrl?: string;
+  logoUrl?: string;
+  players?: string[];
+  seed?: number;
+  challongeParticipantId?: number;
 }
 
 // Match related types
@@ -26,13 +20,13 @@ export interface Match {
   id: string;
   team1Id: string;
   team2Id: string;
-  team1Score?: number | null;
-  team2Score?: number | null;
+  team1Score?: number;
+  team2Score?: number;
+  winnerId?: string;
+  loserId?: string;
   date?: string;
   location?: string;
   iscompleted?: boolean;
-  winnerId?: string | null;
-  loserId?: string | null;
   round_number?: number;
   position?: number;
   bracket_id?: string;
@@ -100,30 +94,39 @@ export interface PlayoffMatch {
   id: string;
   round: number;
   position: number;
-  team1Id: string | null;
-  team2Id: string | null;
-  winnerId: string | null;
-  team1Score: number;
-  team2Score: number;
+  team1Id?: string;
+  team2Id?: string;
+  winnerId?: string;
+  loserId?: string;
+  team1Score?: number;
+  team2Score?: number;
+  team1GameWins?: number;
+  team2GameWins?: number;
   matchType: "Winners" | "Losers" | "Finals";
   bestOf: number;
-  games: PlayoffGame[];
+  games?: PlayoffGame[];
+  team1ChallongeId?: number;
+  team2ChallongeId?: number;
+  challongeMatchId?: string;
 }
 
 export interface PlayoffGame {
   id: string;
   team1Score: number;
   team2Score: number;
-  winner: string; // 'team1Id' or 'team2Id'
+  winner: string;
 }
 
 export interface PlayoffBracket {
   id: string;
   name: string;
   division: string;
-  matches: PlayoffMatch[];
   format: "Single Elimination" | "Double Elimination";
-  champion?: string | null;
+  matches: PlayoffMatch[];
+  champion?: string;
+  challongeTournamentId?: string;
+  challongeTournamentUrl?: string;
+  state?: "pending" | "underway" | "complete";
 }
 
 // Division type

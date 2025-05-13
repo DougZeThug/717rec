@@ -10,7 +10,7 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
   // Get the bracket
   const { data: bracketData, error: bracketError } = await supabase
     .from('brackets')
-    .select('*, divisions(name)')
+    .select('*, divisions(name), challonge_tournament_id, challonge_tournament_url')
     .eq('id', bracketId)
     .single();
     
@@ -48,8 +48,31 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
     division: bracketData.divisions?.name || "Unknown",
     matches: matches,
     format: bracketData.format as "Single Elimination" | "Double Elimination" || "Single Elimination",
-    champion: champion
+    champion: champion,
+    challongeTournamentId: bracketData.challonge_tournament_id,
+    challongeTournamentUrl: bracketData.challonge_tournament_url
   };
   
   return bracket;
+};
+
+/**
+ * Fetches all brackets with basic information
+ */
+export const fetchAllBrackets = async (): Promise<Partial<PlayoffBracket>[]> => {
+  const { data, error } = await supabase
+    .from('brackets')
+    .select('*, divisions(name), challonge_tournament_id, challonge_tournament_url')
+    .order('created_at', { ascending: false });
+    
+  if (error) throw error;
+  
+  return data.map(bracket => ({
+    id: bracket.id,
+    name: bracket.title,
+    division: bracket.divisions?.name || "Unknown",
+    format: bracket.format as "Single Elimination" | "Double Elimination",
+    challongeTournamentId: bracket.challonge_tournament_id,
+    challongeTournamentUrl: bracket.challonge_tournament_url
+  }));
 };

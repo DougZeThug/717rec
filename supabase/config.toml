@@ -1,13 +1,18 @@
 
 project_id = "wcitdamvochthvxvtxyb"
 
+# This flag tells if you're running in local development or production
+# We suggest keeping `debug = true` for development
+debug = true
+
 [api]
-enabled = true
 port = 54321
-schemas = ["public", "storage"]
+schemas = ["public", "storage", "graphql_public"]
 
 [db]
 port = 54322
+shadow_port = 54320
+major_version = 15
 
 [studio]
 port = 54323
@@ -18,11 +23,17 @@ smtp_port = 54325
 pop3_port = 54326
 
 [storage]
-enabled = true
+port = 54327
 
 [auth]
-enabled = true
-site_url = "http://localhost:3000"
+port = 54328
 
-[functions.update_team_stats]
+[vector]
+port = 54329
+
+# For functions deployed locally through the CLI
+[functions]
+debug = true
+
+[functions.challonge]
 verify_jwt = true

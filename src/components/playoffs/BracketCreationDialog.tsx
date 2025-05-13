@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Dialog, 
@@ -10,6 +9,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types";
 import { BracketService } from "@/services/BracketService";
+import { ChallongeService } from "@/services/ChallongeService";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 import BracketForm, { BracketFormValues } from "./BracketForm";
 
 interface BracketCreationDialogProps {
@@ -29,10 +30,54 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { isAdminAccessGranted } = useAdminAccess();
   
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
+      
+      // Ensure user has admin access
+      if (!isAdminAccessGranted) {
+        toast({
+          title: "Access Denied",
+          description: "Only admins can create brackets.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let challongeTournamentId = null;
+      let challongeTournamentUrl = null;
+      
+      // If using Challonge, create tournament there first
+      if (data.useChallonge) {
+        try {
+          const challongeTournament = await ChallongeService.createTournament({
+            name: data.title,
+            tournamentType: data.format === "Double Elimination" ? "double elimination" : "single elimination",
+            description: `Division: ${divisions.find(d => d.id === data.divisionId)?.name}`,
+          });
+          
+          challongeTournamentId = challongeTournament.id.toString();
+          challongeTournamentUrl = challongeTournament.url;
+          
+          // Add teams to the Challonge tournament
+          const selectedTeams = teams.filter(team => data.teams.includes(team.id));
+          await ChallongeService.addTeamsToTournament(challongeTournamentId, selectedTeams);
+          
+          toast({
+            title: "Challonge Tournament Created",
+            description: `Tournament "${data.title}" created on Challonge.`,
+          });
+        } catch (error) {
+          console.error("Error creating Challonge tournament:", error);
+          toast({
+            title: "Challonge Error",
+            description: "Failed to create tournament on Challonge. Creating local bracket only.",
+            variant: "destructive",
+          });
+        }
+      }
       
       // Create bracket using the BracketService
       await BracketService.createBracket({
@@ -40,6 +85,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         divisionId: data.divisionId,
         format: data.format as "Single Elimination" | "Double Elimination",
         teamIds: data.teams,
+        challongeTournamentId,
+        challongeTournamentUrl,
       });
       
       toast({
