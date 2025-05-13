@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { PlayoffBracket, Team } from "@/types";
 import { useTeamData } from "./useTeamData";
@@ -37,7 +36,14 @@ export const useBracketData = (bracketId?: string) => {
         // Update our bracket with Challonge state
         if (bracketQuery.data && tournamentData) {
           const updatedBracket = { ...bracketQuery.data };
-          updatedBracket.state = tournamentData.state;
+          // Use proper type casting for the state
+          if (tournamentData.state && 
+              ["pending", "underway", "complete"].includes(tournamentData.state)) {
+            updatedBracket.state = tournamentData.state as "pending" | "underway" | "complete";
+          } else {
+            // Default to pending if state is invalid
+            updatedBracket.state = "pending";
+          }
           
           // Map participants to teams
           if (tournamentData.participants && teams) {

@@ -11,24 +11,33 @@ export type Database = {
     Tables: {
       brackets: {
         Row: {
+          challonge_tournament_id: string | null
+          challonge_tournament_url: string | null
           created_at: string | null
           division_id: string | null
           format: string | null
           id: string
+          state: string | null
           title: string
         }
         Insert: {
+          challonge_tournament_id?: string | null
+          challonge_tournament_url?: string | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null
           id?: string
+          state?: string | null
           title: string
         }
         Update: {
+          challonge_tournament_id?: string | null
+          challonge_tournament_url?: string | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null
           id?: string
+          state?: string | null
           title?: string
         }
         Relationships: [

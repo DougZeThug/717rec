@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -180,7 +179,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
                 <Card className="p-2 max-h-64 overflow-y-auto">
                   <TeamSelectionList
                     teams={filteredTeams}
+                    selectedTeams={[]} // Add empty array as fallback
                     selectedTeamIds={field.value}
+                    onTeamToggle={(teamId) => {}} // Add no-op function for compatibility
                     onChange={field.onChange}
                     maxTeams={16}
                   />
