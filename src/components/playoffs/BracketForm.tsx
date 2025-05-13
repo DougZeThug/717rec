@@ -51,5 +51,6 @@ const BracketForm: React.FC<BracketFormProps> = ({
   );
 };
 
-export { BracketFormValues };
+// Change from `export { BracketFormValues }` to `export type { BracketFormValues }`
+export type { BracketFormValues };
 export default BracketForm;
