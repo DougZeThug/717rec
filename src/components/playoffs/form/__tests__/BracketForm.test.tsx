@@ -2,11 +2,12 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import BracketForm from '../../BracketForm';
 import { Team } from '@/types';
 
 // Mock the useBracketForm hook
-jest.mock('../useBracketForm', () => ({
+vi.mock('../useBracketForm', () => ({
   useBracketForm: ({ teams, onSubmit }: any) => ({
     form: {
       control: {},
@@ -14,10 +15,10 @@ jest.mock('../useBracketForm', () => ({
         e.preventDefault();
         cb({ title: 'Test Tournament', divisionId: 'div1', format: 'Single Elimination', teams: ['team1', 'team2'] });
       },
-      setValue: jest.fn(),
+      setValue: vi.fn(),
     },
     filteredTeams: teams.slice(0, 2),
-    handleDivisionChange: jest.fn(),
+    handleDivisionChange: vi.fn(),
     handleSubmit: (e: any) => {
       e.preventDefault();
       onSubmit({ title: 'Test Tournament', divisionId: 'div1', format: 'Single Elimination', teams: ['team1', 'team2'] });
@@ -26,27 +27,27 @@ jest.mock('../useBracketForm', () => ({
 }));
 
 // Mock the form components
-jest.mock('../BracketFormTitle', () => ({
+vi.mock('../BracketFormTitle', () => ({
   BracketFormTitle: () => <div data-testid="bracket-form-title">Title Component</div>,
 }));
 
-jest.mock('../BracketFormDivision', () => ({
+vi.mock('../BracketFormDivision', () => ({
   BracketFormDivision: () => <div data-testid="bracket-form-division">Division Component</div>,
 }));
 
-jest.mock('../BracketFormFormat', () => ({
+vi.mock('../BracketFormFormat', () => ({
   BracketFormFormat: () => <div data-testid="bracket-form-format">Format Component</div>,
 }));
 
-jest.mock('../BracketFormChallonge', () => ({
+vi.mock('../BracketFormChallonge', () => ({
   BracketFormChallonge: () => <div data-testid="bracket-form-challonge">Challonge Component</div>,
 }));
 
-jest.mock('../BracketFormTeams', () => ({
+vi.mock('../BracketFormTeams', () => ({
   BracketFormTeams: () => <div data-testid="bracket-form-teams">Teams Component</div>,
 }));
 
-jest.mock('../BracketFormActions', () => ({
+vi.mock('../BracketFormActions', () => ({
   BracketFormActions: ({ onCancel }: any) => (
     <div data-testid="bracket-form-actions">
       <button onClick={onCancel}>Cancel</button>
@@ -67,11 +68,11 @@ const mockTeams: Team[] = [
 ];
 
 describe('BracketForm', () => {
-  const mockOnSubmit = jest.fn();
-  const mockOnCancel = jest.fn();
+  const mockOnSubmit = vi.fn();
+  const mockOnCancel = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders all form sections', () => {

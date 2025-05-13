@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,8 +10,7 @@ import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
 import { Team } from '@/types';
 
 // Mock the TeamSelectionList component since it has its own complex behavior
-jest.mock('@/components/playoffs/TeamSelectionList', () => ({
-  __esModule: true,
+vi.mock('@/components/playoffs/TeamSelectionList', () => ({
   default: ({ teams, selectedTeamIds, onChange }: any) => (
     <div data-testid="team-selection-list">
       <span>Teams: {teams.length}</span>

@@ -1,5 +1,6 @@
 
 import { renderHook, act } from '@testing-library/react-hooks';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useBracketForm } from '../useBracketForm';
 import { Team } from '@/types';
 
@@ -10,10 +11,10 @@ describe('useBracketForm', () => {
     { id: 'team3', name: 'Team 3', division_id: 'div2' },
   ];
   
-  const mockOnSubmit = jest.fn();
+  const mockOnSubmit = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('initializes with empty filtered teams', () => {
@@ -63,7 +64,7 @@ describe('useBracketForm', () => {
       onSubmit: mockOnSubmit 
     }));
     
-    const setValueSpy = jest.spyOn(result.current.form, 'setValue');
+    const setValueSpy = vi.spyOn(result.current.form, 'setValue');
     
     act(() => {
       result.current.handleDivisionChange('div2');

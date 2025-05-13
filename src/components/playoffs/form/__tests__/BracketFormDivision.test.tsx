@@ -2,6 +2,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +14,7 @@ const mockDivisions = [
   { id: 'div2', name: 'Division 2' }
 ];
 
-const mockOnDivisionChange = jest.fn();
+const mockOnDivisionChange = vi.fn();
 
 const TestWrapper = () => {
   const form = useForm<BracketFormValues>({
