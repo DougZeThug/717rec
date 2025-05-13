@@ -1,25 +1,18 @@
 
-import React, { useState } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Team } from "@/types";
-import { BracketService } from "@/services/BracketService";
-import { ChallongeService } from "@/services/ChallongeService";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
 import BracketForm, { BracketFormValues } from "./BracketForm";
+import { BracketService } from "@/services/BracketService";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface BracketCreationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  divisions: { id: string; name: string }[];
-  teams: Team[];
-  onBracketCreated: () => void;
+  divisions: { id: string; name: string }[] | undefined; // Make divisions possibly undefined
+  teams: Team[] | undefined; // Make teams possibly undefined
+  onBracketCreated?: (bracketId: string) => void;
 }
 
 const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
@@ -29,109 +22,66 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   teams,
   onBracketCreated
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
-  const { isAdminAccessGranted } = useAdminAccess();
+  const navigate = useNavigate();
   
+  // Handle form submission
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
+      console.log("Creating bracket with data:", data);
       
-      // Ensure user has admin access
-      if (!isAdminAccessGranted) {
-        toast({
-          title: "Access Denied",
-          description: "Only admins can create brackets.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      let challongeTournamentId = null;
-      let challongeTournamentUrl = null;
+      // Log validation data
+      if (!data.title) console.warn("Missing title in form submission");
+      if (!data.divisionId) console.warn("Missing divisionId in form submission");
+      if (!data.teams.length) console.warn("No teams selected in form submission");
       
-      // If using Challonge, create tournament there first
-      if (data.useChallonge) {
-        try {
-          const challongeTournament = await ChallongeService.createTournament({
-            name: data.title,
-            tournamentType: data.format === "Double Elimination" ? "double elimination" : "single elimination",
-            description: `Division: ${divisions.find(d => d.id === data.divisionId)?.name}`,
-          });
-          
-          challongeTournamentId = challongeTournament.id.toString();
-          challongeTournamentUrl = challongeTournament.url;
-          
-          // Add teams to the Challonge tournament
-          const selectedTeams = teams.filter(team => data.teams.includes(team.id));
-          await ChallongeService.addTeamsToTournament(challongeTournamentId, selectedTeams);
-          
-          toast({
-            title: "Challonge Tournament Created",
-            description: `Tournament "${data.title}" created on Challonge.`,
-          });
-        } catch (error) {
-          console.error("Error creating Challonge tournament:", error);
-          toast({
-            title: "Challonge Error",
-            description: "Failed to create tournament on Challonge. Creating local bracket only.",
-            variant: "destructive",
-          });
-        }
-      }
-      
-      // Create bracket using the BracketService
-      await BracketService.createBracket({
+      const bracketId = await BracketService.createBracket({
         title: data.title,
         divisionId: data.divisionId,
-        format: data.format as "Single Elimination" | "Double Elimination",
+        format: data.format,
         teamIds: data.teams,
-        challongeTournamentId,
-        challongeTournamentUrl,
+        challongeTournamentId: data.useChallonge ? 'pending' : null,
+        challongeTournamentUrl: data.useChallonge ? 'pending' : null
       });
       
       toast({
         title: "Bracket Created",
-        description: `${data.title} bracket has been successfully created.`,
+        description: `The ${data.format} bracket has been created successfully.`
       });
       
-      // Close dialog
-      onOpenChange(false);
+      if (onBracketCreated) {
+        onBracketCreated(bracketId);
+      }
       
-      // Trigger refresh of brackets
-      onBracketCreated();
+      // Close dialog and navigate to new bracket
+      onOpenChange(false);
+      navigate(`/playoffs?bracketId=${bracketId}`);
     } catch (error) {
       console.error("Error creating bracket:", error);
       toast({
-        title: "Creation Failed",
-        description: "There was an error creating the bracket. Please try again.",
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to create bracket. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const handleCancel = () => {
-    onOpenChange(false);
-  };
-
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Playoff Bracket</DialogTitle>
-          <DialogDescription>
-            Create a new playoff bracket and select the teams to participate.
-          </DialogDescription>
+          <DialogTitle>Create New Playoff Bracket</DialogTitle>
         </DialogHeader>
-        
         <BracketForm
           divisions={divisions}
           teams={teams}
           isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
-          onCancel={handleCancel}
+          onCancel={() => onOpenChange(false)}
         />
       </DialogContent>
     </Dialog>

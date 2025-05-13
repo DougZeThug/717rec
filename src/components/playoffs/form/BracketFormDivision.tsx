@@ -7,15 +7,14 @@ import { BracketFormValues } from "./BracketFormSchema";
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<BracketFormValues>;
-  divisions: { id: string; name: string }[];
+  divisions: { id: string; name: string }[] | undefined; // Make divisions possibly undefined
   onDivisionChange: (divisionId: string) => void;
 }
 
-export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ 
-  form, 
-  divisions,
-  onDivisionChange 
-}) => {
+export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ form, divisions, onDivisionChange }) => {
+  // Ensure divisions is an array
+  const validDivisions = Array.isArray(divisions) ? divisions : [];
+  
   return (
     <FormField
       control={form.control}
@@ -24,20 +23,29 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
         <FormItem>
           <FormLabel>Division</FormLabel>
           <Select
-            onValueChange={(value) => onDivisionChange(value)}
+            onValueChange={(value) => {
+              field.onChange(value);
+              onDivisionChange(value);
+            }}
             defaultValue={field.value}
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select a division" />
+                <SelectValue placeholder="Select Division" />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {divisions.map((division) => (
-                <SelectItem key={division.id} value={division.id}>
-                  {division.name}
+              {validDivisions.length > 0 ? (
+                validDivisions.map((division) => (
+                  <SelectItem key={division.id} value={division.id}>
+                    {division.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-divisions" disabled>
+                  No divisions available
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
           <FormMessage />

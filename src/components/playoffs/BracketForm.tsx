@@ -12,8 +12,8 @@ import { BracketFormTeams } from "./form/BracketFormTeams";
 import { BracketFormActions } from "./form/BracketFormActions";
 
 interface BracketFormProps {
-  divisions: { id: string; name: string }[];
-  teams: Team[];
+  divisions: { id: string; name: string }[] | undefined; // Make divisions possibly undefined
+  teams: Team[] | undefined; // Make teams possibly undefined
   isSubmitting: boolean;
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
   onCancel: () => void;
@@ -26,6 +26,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  // Add validation for divisions
+  const validDivisions = Array.isArray(divisions) ? divisions : [];
+  
   const {
     form,
     filteredTeams,
@@ -39,7 +42,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
         <BracketFormTitle form={form} />
         <BracketFormDivision 
           form={form} 
-          divisions={divisions} 
+          divisions={validDivisions} 
           onDivisionChange={handleDivisionChange} 
         />
         <BracketFormFormat form={form} />

@@ -4,7 +4,7 @@ import { FormMessage } from "@/components/ui/form";
 import { Team } from "@/types";
 
 interface TeamSelectionListProps {
-  teams: Team[];
+  teams: Team[] | undefined; // Make teams possibly undefined
   selectedTeams: string[];
   selectedTeamIds?: string[]; // Added this prop for compatibility
   onTeamToggle: (teamId: string) => void;
@@ -22,8 +22,11 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
   isLoading = false,
   maxTeams
 }) => {
+  // Handle potentially undefined teams
+  const validTeams = Array.isArray(teams) ? teams : [];
+  
   // Use either selectedTeamIds or selectedTeams
-  const selectedIds = selectedTeamIds || selectedTeams;
+  const selectedIds = selectedTeamIds || selectedTeams || [];
   
   // Check if a team is selected
   const isTeamSelected = (teamId: string) => selectedIds.includes(teamId);
@@ -41,7 +44,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
       }
       
       onChange(newSelection);
-    } else {
+    } else if (onTeamToggle) {
       onTeamToggle(teamId);
     }
   };
@@ -51,33 +54,42 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
       <div className="border rounded-md p-2 h-[200px] overflow-y-auto">
         {isLoading ? (
           <p className="text-center py-4 text-gray-500">Loading teams...</p>
-        ) : teams.length > 0 ? (
+        ) : validTeams.length > 0 ? (
           <div className="space-y-2">
-            {teams.map((team) => (
-              <div 
-                key={team.id} 
-                className={`flex items-center p-2 rounded cursor-pointer ${
-                  isTeamSelected(team.id) 
-                    ? 'bg-cornhole-green/20 border border-cornhole-green' 
-                    : 'hover:bg-gray-100'
-                }`}
-                onClick={() => handleToggle(team.id)}
-              >
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                  {team.logoUrl && (
-                    <img 
-                      src={team.logoUrl} 
-                      alt={team.name} 
-                      className="w-full h-full object-contain"
-                    />
-                  )}
+            {validTeams.map((team) => {
+              // Skip rendering invalid teams
+              if (!team || !team.id) return null;
+              
+              return (
+                <div 
+                  key={team.id} 
+                  className={`flex items-center p-2 rounded cursor-pointer ${
+                    isTeamSelected(team.id) 
+                      ? 'bg-cornhole-green/20 border border-cornhole-green' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                  onClick={() => handleToggle(team.id)}
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
+                    {team.logoUrl && (
+                      <img 
+                        src={team.logoUrl} 
+                        alt={team.name || 'Team'} 
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          // Fallback if image fails to load
+                          (e.target as HTMLImageElement).src = '/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png';
+                        }}
+                      />
+                    )}
+                  </div>
+                  <span>{team.name || 'Unnamed Team'}</span>
+                  <span className="ml-auto text-xs">
+                    {team.wins || 0}-{team.losses || 0}
+                  </span>
                 </div>
-                <span>{team.name}</span>
-                <span className="ml-auto text-xs">
-                  {team.wins}-{team.losses}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="text-center py-4 text-gray-500">

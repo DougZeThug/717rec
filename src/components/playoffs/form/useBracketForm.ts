@@ -9,7 +9,7 @@ export function useBracketForm({
   teams, 
   onSubmit 
 }: { 
-  teams: Team[]; 
+  teams: Team[] | undefined; // Make teams possibly undefined for better type safety
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
 }) {
   const [teamsByDivision, setTeamsByDivision] = useState<Record<string, Team[]>>({});
@@ -27,17 +27,21 @@ export function useBracketForm({
     },
   });
   
-  // Group teams by division
+  // Group teams by division with validation
   useEffect(() => {
-    // Debug teams data
-    console.log("BracketForm - All teams:", teams.map(t => ({
-      id: t.id,
-      name: t.name,
-      division_id: t.division_id,
-      division: t.division
-    })));
+    // Ensure teams is an array before processing
+    const safeTeams = Array.isArray(teams) ? teams : [];
     
-    const grouped = teams.reduce((acc, team) => {
+    // Debug teams data
+    console.log("BracketForm - All teams:", safeTeams.length);
+    
+    const grouped = safeTeams.reduce((acc, team) => {
+      // Validate team object and required properties
+      if (!team || !team.id || !team.name) {
+        console.warn("Skipping invalid team:", team);
+        return acc;
+      }
+      
       // Use division_id consistently
       const divisionId = team.division_id || team.division || null;
       
@@ -46,6 +50,13 @@ export function useBracketForm({
           acc[divisionId] = [];
         }
         acc[divisionId].push(team);
+      } else {
+        // Handle teams without division
+        if (!acc['unassigned']) {
+          acc['unassigned'] = [];
+        }
+        acc['unassigned'].push(team);
+        console.log(`Team without division: ${team.name} (${team.id})`);
       }
       return acc;
     }, {} as Record<string, Team[]>);
@@ -68,7 +79,9 @@ export function useBracketForm({
   };
   
   // Get filtered teams based on selected division
-  const filteredTeams = selectedDivision ? teamsByDivision[selectedDivision] || [] : [];
+  const filteredTeams = selectedDivision && teamsByDivision[selectedDivision] 
+    ? teamsByDivision[selectedDivision] 
+    : [];
   
   // Debug filtered teams
   console.log("BracketForm - Filtered teams for division", selectedDivision, ":", filteredTeams.map(t => t.name));

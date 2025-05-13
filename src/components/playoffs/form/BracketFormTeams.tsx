@@ -9,10 +9,13 @@ import { Team } from "@/types";
 
 interface BracketFormTeamsProps {
   form: UseFormReturn<BracketFormValues>;
-  teams: Team[];
+  teams: Team[] | undefined; // Make teams possibly undefined
 }
 
 export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams }) => {
+  // Verify teams is properly defined
+  const validTeams = Array.isArray(teams) ? teams : [];
+
   return (
     <FormField
       control={form.control}
@@ -23,7 +26,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
           <FormControl>
             <Card className="p-2 max-h-64 overflow-y-auto">
               <TeamSelectionList
-                teams={teams}
+                teams={validTeams}
                 selectedTeams={[]}
                 selectedTeamIds={field.value}
                 onTeamToggle={() => {}}

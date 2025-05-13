@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -13,8 +14,8 @@ import { Team } from '@/types';
 vi.mock('@/components/playoffs/TeamSelectionList', () => ({
   default: ({ teams, selectedTeamIds, onChange }: any) => (
     <div data-testid="team-selection-list">
-      <span>Teams: {teams.length}</span>
-      <span>Selected: {selectedTeamIds.length}</span>
+      <span>Teams: {teams ? teams.length : 0}</span>
+      <span>Selected: {selectedTeamIds ? selectedTeamIds.length : 0}</span>
       <button onClick={() => onChange(['team1', 'team2'])}>Select Teams</button>
     </div>
   ),
@@ -26,7 +27,8 @@ const mockTeams: Team[] = [
   { id: 'team3', name: 'Team 3', division_id: 'div2' },
 ];
 
-const TestWrapper = () => {
+// Test with valid teams
+const TestWrapper = ({ teams }: { teams?: Team[] }) => {
   const form = useForm<BracketFormValues>({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
@@ -37,7 +39,7 @@ const TestWrapper = () => {
   return (
     <Form {...form}>
       <form>
-        <BracketFormTeams form={form} teams={mockTeams} />
+        <BracketFormTeams form={form} teams={teams} />
       </form>
     </Form>
   );
@@ -45,22 +47,30 @@ const TestWrapper = () => {
 
 describe('BracketFormTeams', () => {
   it('renders the teams selection section', () => {
-    render(<TestWrapper />);
+    render(<TestWrapper teams={mockTeams} />);
     
     const teamLabel = screen.getByLabelText(/select teams/i);
     expect(teamLabel).toBeInTheDocument();
   });
 
   it('passes teams to the TeamSelectionList component', () => {
-    render(<TestWrapper />);
+    render(<TestWrapper teams={mockTeams} />);
     
     const teamSelection = screen.getByTestId('team-selection-list');
     expect(teamSelection).toBeInTheDocument();
     expect(screen.getByText('Teams: 3')).toBeInTheDocument();
   });
 
+  it('handles undefined teams gracefully', () => {
+    render(<TestWrapper teams={undefined} />);
+    
+    const teamSelection = screen.getByTestId('team-selection-list');
+    expect(teamSelection).toBeInTheDocument();
+    expect(screen.getByText('Teams: 0')).toBeInTheDocument();
+  });
+
   it('displays the maximum teams limit text', () => {
-    render(<TestWrapper />);
+    render(<TestWrapper teams={mockTeams} />);
     
     expect(screen.getByText(/max 16/i)).toBeInTheDocument();
   });
