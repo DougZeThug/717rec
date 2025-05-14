@@ -5,6 +5,7 @@ import TeamsDisplayModeToggle from "./TeamsDisplayModeToggle";
 import PageHeader from "@/components/layout/PageHeader";
 import { TeamsHeader } from "./TeamsHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export type DisplayMode = "all" | "grouped";
 
@@ -20,13 +21,17 @@ const TeamsPageContainer: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader title="Teams">
         {/* Improved layout with better spacing */}
-        <div className="mt-6 space-y-4">
+        <div className={cn(
+          "mt-5 space-y-4",
+          "bg-white/5 dark:bg-gray-800/20 backdrop-blur-sm rounded-lg",
+          "p-3 sm:p-4 border border-gray-200 dark:border-gray-700/30 shadow-sm"
+        )}>
           {/* Display Mode Toggle in its own row */}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-muted-foreground">View:</span>
+            <span className="text-sm font-medium text-muted-foreground dark:text-gray-300">View:</span>
             <TeamsDisplayModeToggle displayMode={displayMode} setDisplayMode={setDisplayMode} />
           </div>
           
@@ -44,7 +49,7 @@ const TeamsPageContainer: React.FC = () => {
           </div>
           
           {/* Divider with improved spacing */}
-          <div className="border-b border-muted my-2" />
+          <div className="border-b border-gray-200/30 dark:border-gray-700/30 my-1" />
         </div>
       </PageHeader>
       

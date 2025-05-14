@@ -21,7 +21,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   withBackground = true, 
   className = "",
   compact = false,
-  gradientVariant = 'default'
+  gradientVariant = 'blueOrange'
 }) => {
   const { isDark } = useThemeConsistency();
   const isMobile = useIsMobile();
@@ -49,8 +49,8 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       className={cn(
         "min-h-screen transition-colors duration-300",
         getGradientClass(),
-        isMobile ? (compact ? "py-3 pb-[calc(5rem+var(--sab))]" : "py-4 pb-[calc(6rem+var(--sab))]") : "py-8 pb-8", 
-        "px-4 md:px-8",
+        isMobile ? (compact ? "py-3 pb-[calc(5rem+var(--sab))]" : "py-4 pb-[calc(6rem+var(--sab))]") : "py-6 pb-8", 
+        "px-3 sm:px-4 md:px-6 lg:px-8",
         animations.fadeIn,
         className
       )}

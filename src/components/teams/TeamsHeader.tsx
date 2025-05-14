@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Toggle } from "@/components/ui/toggle";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { blueAmber } from "@/styles/design-system/blueAmber";
 
 interface TeamsHeaderProps {
   onRefresh?: () => void;
@@ -25,7 +26,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
   return (
     <div className="flex items-center gap-3">
       <TooltipProvider>
-        <div className="flex bg-muted dark:bg-gray-800 dark:border dark:border-gray-700 rounded-md p-1 gap-1 shadow-sm">
+        <div className="flex bg-muted dark:bg-gray-800/60 dark:border dark:border-gray-700/50 rounded-md p-1 gap-1 shadow-sm backdrop-blur-sm">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
@@ -34,9 +35,9 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 pressed={viewMode === 'list'}
                 onPressedChange={() => onViewModeChange('list')}
                 className={cn(
-                  "px-3 py-1.5 text-sm rounded-md",
+                  "px-3 py-1.5 text-sm rounded-md transition-all duration-200",
                   viewMode === 'list'
-                    ? "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:dark:border-blue-500"
+                    ? blueAmber.interactive.active
                     : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="List view"
@@ -56,9 +57,9 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 pressed={viewMode === 'grid'}
                 onPressedChange={() => onViewModeChange('grid')}
                 className={cn(
-                  "px-3 py-1.5 text-sm rounded-md",
+                  "px-3 py-1.5 text-sm rounded-md transition-all duration-200",
                   viewMode === 'grid'
-                    ? "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:dark:border-blue-500"
+                    ? blueAmber.interactive.active
                     : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="Grid view"
@@ -77,7 +78,7 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
               onClick={onRefresh} 
               variant="outline"
               disabled={isRefreshing}
-              className="h-9 px-3 py-1.5 text-sm rounded-md dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="h-9 px-3 py-1.5 text-sm rounded-md dark:bg-gray-800/60 dark:border-gray-700/50 dark:text-gray-200 dark:hover:bg-gray-700 backdrop-blur-sm"
               size="sm"
             >
               <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />

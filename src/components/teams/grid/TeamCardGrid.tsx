@@ -32,28 +32,29 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   const sosColor = getSosColor(team.sos);
 
   // Gradients for headers and backgrounds
-  const headerGradient = "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-black/30 dark:via-gray-900/40 dark:to-gray-900/40";
+  const headerGradient = "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-gray-800/40 dark:via-gray-800/50 dark:to-gray-800/40";
   const contentGradient = "bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90";
   const hoverGradient = gradients.card.blueOrange;
 
   return (
     <div className={cn(
-      "overflow-hidden h-full flex flex-col mb-4 sm:mb-0 font-inter shadow-sm hover:shadow-md",
-      "transition-all duration-200 hover:scale-[1.02] hover:border-opacity-80 active:scale-[0.98]",
-      "rounded-lg border border-gray-200 dark:border-gray-800",
+      "overflow-hidden h-full flex flex-col mb-4 font-inter shadow-sm hover:shadow-md",
+      "transition-all duration-200 hover:scale-[1.01] hover:border-opacity-80 active:scale-[0.98]",
+      "rounded-lg border border-gray-200 dark:border-gray-800/60",
       "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
+      "m-0.5", // Add margin to prevent touching on mobile
       hoverGradient
     )}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className={cn(
-          "min-h-[4.5rem] sm:h-24 flex items-center justify-center p-2 sm:p-3",
+          "min-h-[4.5rem] sm:h-24 flex items-center justify-center p-3",
           headerGradient
         )}>
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
             size="sm"
-            className="max-h-16 sm:max-h-20"
+            className="max-h-16 sm:max-h-20 object-contain"
           />
         </div>
       </Link>
