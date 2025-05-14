@@ -23,7 +23,6 @@ export function useBracketForm({
       divisionId: "",
       format: "Double Elimination",
       teams: [],
-      useChallonge: true,
     },
   });
   

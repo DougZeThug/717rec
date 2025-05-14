@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
@@ -6,8 +7,6 @@ interface BracketCreationParams {
   divisionId: string;
   format: 'Single Elimination' | 'Double Elimination';
   teamIds: string[];
-  challongeTournamentId?: string | null;
-  challongeTournamentUrl?: string | null;
 }
 
 /**
@@ -18,7 +17,7 @@ export class BracketService {
    * Creates a new bracket with initial matches
    */
   static async createBracket(params: BracketCreationParams): Promise<string> {
-    const { title, divisionId, format, teamIds, challongeTournamentId, challongeTournamentUrl } = params;
+    const { title, divisionId, format, teamIds } = params;
     
     // Create the bracket
     const { data: bracketData, error: bracketError } = await supabase
@@ -26,9 +25,7 @@ export class BracketService {
       .insert({
         title,
         division_id: divisionId,
-        format,
-        challonge_tournament_id: challongeTournamentId,
-        challonge_tournament_url: challongeTournamentUrl
+        format
       })
       .select()
       .single();
@@ -197,8 +194,7 @@ export class BracketService {
     matchId: string, 
     team1Score: number, 
     team2Score: number,
-    games: { team1Score: number, team2Score: number }[],
-    challongeMatchId?: string
+    games: { team1Score: number, team2Score: number }[]
   ): Promise<void> {
     // Get the match first
     const { data: match, error: fetchError } = await supabase

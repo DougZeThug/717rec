@@ -7,7 +7,6 @@ import { BracketFormValues } from "./form/BracketFormSchema";
 import { BracketFormTitle } from "./form/BracketFormTitle";
 import { BracketFormDivision } from "./form/BracketFormDivision";
 import { BracketFormFormat } from "./form/BracketFormFormat";
-import { BracketFormChallonge } from "./form/BracketFormChallonge";
 import { BracketFormTeams } from "./form/BracketFormTeams";
 import { BracketFormActions } from "./form/BracketFormActions";
 
@@ -46,7 +45,6 @@ const BracketForm: React.FC<BracketFormProps> = ({
           onDivisionChange={handleDivisionChange} 
         />
         <BracketFormFormat form={form} />
-        <BracketFormChallonge form={form} />
         <BracketFormTeams form={form} teams={filteredTeams} />
         <BracketFormActions isSubmitting={isSubmitting} onCancel={onCancel} />
       </form>

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Edit, Loader2 } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
 import ChampionDisplay from "@/components/playoffs/ChampionDisplay";
-import ChallongeBracketView from "@/components/playoffs/ChallongeBracketView";
 import { PlayoffBracket, Team } from "@/types";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 
@@ -27,8 +26,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   onEditMatch,
 }) => {
   const { isAdminAccessGranted } = useAdminAccess();
-
-  const hasChallongeIntegration = bracket.challongeTournamentId && bracket.challongeTournamentUrl;
 
   return (
     <Card className="mb-8" id={`bracket-${bracketId}`}>
@@ -57,11 +54,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           <div className="flex justify-center py-8">
             <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
           </div>
-        ) : hasChallongeIntegration ? (
-          <ChallongeBracketView 
-            tournamentId={bracket.challongeTournamentId!}
-            tournamentUrl={bracket.challongeTournamentUrl!}
-          />
         ) : (
           <>
             <BracketView 

@@ -7,7 +7,6 @@ export const bracketFormSchema = z.object({
   divisionId: z.string().min(1, "Division is required"),
   format: z.enum(["Single Elimination", "Double Elimination"]),
   teams: z.array(z.string()).min(2, "At least 2 teams are required"),
-  useChallonge: z.boolean().optional(),
 });
 
 export type BracketFormValues = z.infer<typeof bracketFormSchema>;

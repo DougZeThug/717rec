@@ -42,8 +42,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         divisionId: data.divisionId,
         format: data.format,
         teamIds: data.teams,
-        challongeTournamentId: data.useChallonge ? 'pending' : null,
-        challongeTournamentUrl: data.useChallonge ? 'pending' : null
       });
       
       toast({
