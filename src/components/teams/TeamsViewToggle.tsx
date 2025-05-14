@@ -24,26 +24,26 @@ const TeamsViewToggle: React.FC<TeamsViewToggleProps> = ({
         value="grid"
         aria-label="Grid View"
         className={cn(
-          "transition-all duration-200",
+          "text-xs sm:text-sm transition-all duration-200",
           viewMode === "grid" ? 
             "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500" : 
             "hover:bg-gradient-to-br hover:from-blue-50 hover:to-orange-50/30 dark:hover:from-gray-700 dark:hover:to-gray-800 dark:text-gray-300 dark:hover:text-white"
         )}
       >
-        <Grid2x2 className="h-4 w-4 mr-2" />
+        <Grid2x2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
         Grid
       </ToggleGroupItem>
       <ToggleGroupItem
         value="list"
         aria-label="List View"
         className={cn(
-          "transition-all duration-200",
+          "text-xs sm:text-sm transition-all duration-200",
           viewMode === "list" ? 
             "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500" : 
             "hover:bg-gradient-to-br hover:from-blue-50 hover:to-orange-50/30 dark:hover:from-gray-700 dark:hover:to-gray-800 dark:text-gray-300 dark:hover:text-white"
         )}
       >
-        <List className="h-4 w-4 mr-2" />
+        <List className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
         List
       </ToggleGroupItem>
     </ToggleGroup>
