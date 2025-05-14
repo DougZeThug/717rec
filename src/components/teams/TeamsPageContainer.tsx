@@ -4,6 +4,7 @@ import TeamsContainer from "@/components/teams/TeamsContainer";
 import TeamsDisplayModeToggle from "./TeamsDisplayModeToggle";
 import PageHeader from "@/components/layout/PageHeader";
 import { TeamsHeader } from "./TeamsHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type DisplayMode = "all" | "grouped";
 
@@ -11,6 +12,7 @@ const TeamsPageContainer: React.FC = () => {
   const [displayMode, setDisplayMode] = useState<DisplayMode>("all");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -18,17 +20,21 @@ const TeamsPageContainer: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <PageHeader title="Teams">
-        {/* Compact controls layout */}
-        <div className="flex flex-wrap items-center gap-2 justify-between mt-3">
-          {/* Display Mode Toggle with compact View label */}
+        {/* Improved layout with better spacing */}
+        <div className="mt-6 space-y-4">
+          {/* Display Mode Toggle in its own row */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">View:</span>
             <TeamsDisplayModeToggle displayMode={displayMode} setDisplayMode={setDisplayMode} />
           </div>
-          {/* View Mode (list/grid), sort toggle, refresh */}
-          <div className="flex gap-2 items-center">
+          
+          {/* View Mode (list/grid), sort toggle, refresh in a separate row */}
+          <div className="flex justify-between items-center">
+            <div className={`${isMobile ? 'w-full' : 'w-auto'}`}>
+              {/* This space is available for additional controls if needed */}
+            </div>
             <TeamsHeader
               viewMode={viewMode}
               onViewModeChange={setViewMode}
@@ -36,9 +42,10 @@ const TeamsPageContainer: React.FC = () => {
               isRefreshing={isRefreshing}
             />
           </div>
+          
+          {/* Divider with improved spacing */}
+          <div className="border-b border-muted my-2" />
         </div>
-        {/* Divider */}
-        <div className="border-b border-muted mt-2" />
       </PageHeader>
       
       {/* Teams Content */}

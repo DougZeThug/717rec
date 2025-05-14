@@ -23,9 +23,9 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
   const isMobile = useIsMobile();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <TooltipProvider>
-        <div className="flex bg-muted dark:bg-gray-800 dark:border dark:border-gray-700 rounded-md p-0.5 gap-1 shadow-sm">
+        <div className="flex bg-muted dark:bg-gray-800 dark:border dark:border-gray-700 rounded-md p-1 gap-1 shadow-sm">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
@@ -34,14 +34,14 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 pressed={viewMode === 'list'}
                 onPressedChange={() => onViewModeChange('list')}
                 className={cn(
-                  "px-2 py-1 text-sm rounded-md",
+                  "px-3 py-1.5 text-sm rounded-md",
                   viewMode === 'list'
                     ? "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:dark:border-blue-500"
                     : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="List view"
               >
-                <List size={16} />
+                <List size={18} />
               </Toggle>
             </TooltipTrigger>
             <TooltipContent>
@@ -56,14 +56,14 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
                 pressed={viewMode === 'grid'}
                 onPressedChange={() => onViewModeChange('grid')}
                 className={cn(
-                  "px-2 py-1 text-sm rounded-md",
+                  "px-3 py-1.5 text-sm rounded-md",
                   viewMode === 'grid'
                     ? "data-[state=on]:bg-blue-600 data-[state=on]:text-white data-[state=on]:dark:border-blue-500"
                     : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
                 )}
                 aria-label="Grid view"
               >
-                <Grid2X2 size={16} />
+                <Grid2X2 size={18} />
               </Toggle>
             </TooltipTrigger>
             <TooltipContent>
@@ -77,10 +77,10 @@ export const TeamsHeader: React.FC<TeamsHeaderProps> = ({
               onClick={onRefresh} 
               variant="outline"
               disabled={isRefreshing}
-              className="h-8 px-2 py-1 text-sm rounded-md dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="h-9 px-3 py-1.5 text-sm rounded-md dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
               size="sm"
             >
-              <RefreshCw size={15} className={isRefreshing ? "animate-spin" : ""} />
+              <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
               {!isMobile && <span className="ml-2">{isRefreshing ? "Refreshing..." : "Refresh"}</span>}
             </Button>
           </TooltipTrigger>

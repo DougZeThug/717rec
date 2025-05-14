@@ -1,11 +1,14 @@
 
 import React from "react";
 import TeamsPageContainer from "@/components/teams/TeamsPageContainer";
+import PageLayout from "@/components/layout/PageLayout";
 
 const TeamsPage: React.FC = () => (
-  <div className="container px-4 py-6 sm:py-8 mx-auto font-sans">
-    <TeamsPageContainer />
-  </div>
+  <PageLayout>
+    <div className="container mx-auto">
+      <TeamsPageContainer />
+    </div>
+  </PageLayout>
 );
 
 export default TeamsPage;

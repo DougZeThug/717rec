@@ -16,33 +16,33 @@ const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ display
     type="single"
     value={displayMode}
     onValueChange={val => setDisplayMode((val as DisplayMode) || "all")}
-    className="bg-muted dark:bg-gray-800/80 dark:border dark:border-gray-700 rounded-md p-0.5 shadow-sm"
+    className="bg-muted dark:bg-gray-800/80 dark:border dark:border-gray-700 rounded-md p-1 shadow-sm"
     aria-label="Display Mode"
   >
     <ToggleGroupItem
       value="all"
       aria-label="Show All Teams"
       className={cn(
-        "px-2 py-1 text-sm rounded-md transition-all duration-200",
+        "px-3 py-1.5 text-sm rounded-md transition-all duration-200",
         displayMode === "all" 
           ? blueAmber.interactive.active 
           : "dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
       )}
     >
-      <List size={16} className="mr-1" />
+      <List size={18} className="mr-2" />
       All
     </ToggleGroupItem>
     <ToggleGroupItem
       value="grouped"
       aria-label="Group By Division"
       className={cn(
-        "px-2 py-1 text-sm rounded-md transition-all duration-200",
+        "px-3 py-1.5 text-sm rounded-md transition-all duration-200",
         displayMode === "grouped" 
           ? blueAmber.interactive.active
           : "dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
       )}
     >
-      <Users size={16} className="mr-1" />
+      <Users size={18} className="mr-2" />
       Grouped
     </ToggleGroupItem>
   </ToggleGroup>
