@@ -22,6 +22,14 @@
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.75rem;
     
+    /* Custom color values for status indicators */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    --info: 221.2 83.2% 53.3%;
+    --info-foreground: 210 40% 98%;
+    
     --sidebar-background: 240 10% 3.9%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 0 0% 98%;
@@ -30,6 +38,11 @@
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 240 4.9% 83.9%;
+
+    /* Division-specific colors */
+    --competitive: 35 92% 43%;
+    --intermediate: 214 82% 60%;
+    --recreational: 160 84% 39%;
   }
 
   .dark {
@@ -52,5 +65,18 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+    
+    /* Custom color values for status indicators - dark mode */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+    --info: 221.2 83.2% 53.3%;
+    --info-foreground: 210 40% 98%;
+    
+    /* Division-specific colors - dark mode versions */
+    --competitive: 35 92% 50%;
+    --intermediate: 214 82% 70%;
+    --recreational: 160 84% 45%;
   }
 }

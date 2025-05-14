@@ -24,7 +24,8 @@ export function getCardStyle({
     : getCardGradient(gradient);
   
   return cn(
-    "rounded-lg border border-gray-200 dark:border-gray-700", 
+    "rounded-lg border", 
+    "border-gray-200 dark:border-gray-700/80", 
     cardGradient,
     getCardElevation(elevationType),
     isInteractive ? "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200" : "",
@@ -46,10 +47,10 @@ function getCardGradient(variant: 'default' | 'subtle' | 'highlight'): string {
 function getCardElevation(type: 'default' | 'active' | 'highlighted'): string {
   switch (type) {
     case 'active':
-      return "shadow-md hover:shadow-lg transition-all duration-300";
+      return "shadow-md hover:shadow-lg dark:shadow-gray-900/30 transition-all duration-300";
     case 'highlighted':
-      return "shadow-lg hover:shadow-xl transition-all duration-300";
+      return "shadow-lg hover:shadow-xl dark:shadow-gray-900/40 transition-all duration-300";
     default:
-      return "shadow-sm hover:shadow-md transition-all duration-300";
+      return "shadow-sm hover:shadow-md dark:shadow-gray-900/20 transition-all duration-300";
   }
 }

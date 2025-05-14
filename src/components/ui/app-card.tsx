@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { getCardStyle } from "@/styles/design-system";
 import { gradients } from "@/styles/design-system";
+import { useThemeConsistency } from "@/hooks/use-theme-consistency";
 
 interface AppCardProps {
   title?: React.ReactNode;
@@ -46,12 +47,19 @@ export const AppCard: React.FC<AppCardProps> = ({
   elevation = "default",
   gradient = "default"
 }) => {
+  const { isDark } = useThemeConsistency();
+
   const cardContent = (
     <>
       {(title || description || badge) && (
         <CardHeader className={cn(
           "flex flex-row items-start justify-between gap-4",
-          badge && "bg-gradient-to-br from-white via-white to-gray-50 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-gray-900/80",
+          badge && cn(
+            "bg-gradient-to-br",
+            isDark 
+              ? "from-gray-800/90 via-gray-800/70 to-gray-900/80" 
+              : "from-white via-white to-gray-50"
+          ),
           headerClassName
         )}>
           <div>
@@ -68,7 +76,10 @@ export const AppCard: React.FC<AppCardProps> = ({
       )}
       {footer && (
         <CardFooter className={cn(
-          "bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-800/30 dark:to-transparent",
+          "bg-gradient-to-br",
+          isDark 
+            ? "from-gray-800/30 to-transparent" 
+            : "from-gray-50/50 to-transparent",
           footerClassName
         )}>
           {footer}

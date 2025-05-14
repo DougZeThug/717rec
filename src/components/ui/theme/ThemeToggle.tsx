@@ -22,23 +22,14 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   // Once mounted, we can safely show the toggle
   useEffect(() => {
     setMounted(true);
-    
-    // On component mount, check if we need to ensure light mode is the default
-    if (typeof window !== 'undefined') {
-      // If no theme is set explicitly in localStorage, use light mode
-      if (!localStorage.getItem('theme')) {
-        document.documentElement.classList.remove('dark');
-        setTheme('light');
-      }
-    }
-  }, [setTheme]);
+  }, []);
 
   // Handle toggle
   const toggleTheme = () => {
     const newTheme = resolvedTheme === "dark" ? "light" : "dark";
     setTheme(newTheme);
-    // Store the explicit user preference
     localStorage.setItem('theme', newTheme);
+    console.log(`Theme changed to: ${newTheme}`);
   };
 
   // Don't render anything until mounted to prevent hydration mismatch
@@ -52,13 +43,14 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
       size={size}
       onClick={toggleTheme}
       className={cn(
-        "rounded-full transition-colors duration-300 border", 
+        "rounded-full transition-colors duration-300", 
         resolvedTheme === "dark" 
           ? "text-white hover:bg-gray-700 border-gray-600 dark:hover:bg-gray-700/80" 
           : "text-gray-700 hover:bg-gray-200 border-gray-300",
         className
       )}
       aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
+      title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
     >
       {resolvedTheme === "dark" ? (
         <Sun className="h-5 w-5" />
