@@ -26,10 +26,28 @@ export const useThemeConsistency = () => {
     }
   }, [setTheme]);
   
-  // Return current theme state for components that need it
+  /**
+   * Ensures theme consistency across the application
+   * Useful for enforcing theme after auth state changes
+   */
+  const ensureThemeConsistency = () => {
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme) {
+      console.log(`Ensuring theme consistency: applying ${storedTheme}`);
+      setTheme(storedTheme);
+    } else {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const defaultTheme = prefersDark ? "dark" : "light";
+      console.log(`No stored theme, applying system preference: ${defaultTheme}`);
+      setTheme(defaultTheme);
+    }
+  };
+  
+  // Return current theme state and utility function for components that need it
   return { 
     currentTheme: resolvedTheme || theme,
-    isDark: resolvedTheme === "dark" 
+    isDark: resolvedTheme === "dark",
+    ensureThemeConsistency
   };
 };
 
