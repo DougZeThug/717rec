@@ -5,7 +5,7 @@ import { TeamList } from "@/components/teams/TeamList";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
-import { getDivisionColor } from '@/utils/colors';
+import { getDivisionStyles } from '@/styles/design-system/divisions';
 
 interface TeamsDivisionSectionProps {
   divisionName: string;
