@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
@@ -17,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("upcoming");
+  const [activeTab, setActiveTab] = useState("completed");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { resolvedTheme } = useTheme();
   
