@@ -2,6 +2,7 @@
 import React from "react";
 import { FormMessage } from "@/components/ui/form";
 import { Team } from "@/types";
+import { TeamLogo } from "@/components/ui/team";
 
 interface TeamSelectionListProps {
   teams: Team[] | undefined; // Make teams possibly undefined
@@ -70,18 +71,12 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
                   }`}
                   onClick={() => handleToggle(team.id)}
                 >
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                    {team.logoUrl && (
-                      <img 
-                        src={team.logoUrl} 
-                        alt={team.name || 'Team'} 
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          // Fallback if image fails to load
-                          (e.target as HTMLImageElement).src = '/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png';
-                        }}
-                      />
-                    )}
+                  <div className="mr-2">
+                    <TeamLogo 
+                      imageUrl={team.logoUrl || team.imageUrl} 
+                      teamName={team.name || 'Unnamed Team'} 
+                      size="sm"
+                    />
                   </div>
                   <span>{team.name || 'Unnamed Team'}</span>
                   <span className="ml-auto text-xs">
