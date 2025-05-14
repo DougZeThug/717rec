@@ -1,53 +1,53 @@
 
 import React from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { List, Grid2x2 } from "lucide-react";
+import { Grid2x2, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface TeamsDisplayModeToggleProps {
-  displayMode: 'all' | 'grouped';
-  onDisplayModeChange: (mode: 'all' | 'grouped') => void;
+interface TeamsViewToggleProps {
+  viewMode: 'grid' | 'list';
+  onViewModeChange: (mode: 'grid' | 'list') => void;
 }
 
-const TeamsDisplayModeToggle: React.FC<TeamsDisplayModeToggleProps> = ({ 
-  displayMode, 
-  onDisplayModeChange 
+const TeamsViewToggle: React.FC<TeamsViewToggleProps> = ({
+  viewMode,
+  onViewModeChange
 }) => {
   return (
     <ToggleGroup
       type="single"
-      value={displayMode}
-      onValueChange={(value) => value && onDisplayModeChange(value as 'all' | 'grouped')}
+      value={viewMode}
+      onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}
       className="bg-gradient-to-br from-gray-100 to-blue-50/50 dark:from-gray-800/80 dark:to-gray-900 dark:border dark:border-gray-700 p-0.5 rounded-md shadow-sm"
     >
       <ToggleGroupItem
-        value="all"
-        aria-label="View all teams"
+        value="grid"
+        aria-label="Grid View"
         className={cn(
           "transition-all duration-200",
-          displayMode === "all" ? 
-            "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500" : 
-            "hover:bg-gradient-to-br hover:from-blue-50 hover:to-orange-50/30 dark:hover:from-gray-700 dark:hover:to-gray-800 dark:text-gray-300 dark:hover:text-white"
-        )}
-      >
-        <List className="h-4 w-4 mr-2" />
-        All Teams
-      </ToggleGroupItem>
-      <ToggleGroupItem
-        value="grouped"
-        aria-label="View teams by division"
-        className={cn(
-          "transition-all duration-200",
-          displayMode === "grouped" ? 
+          viewMode === "grid" ? 
             "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500" : 
             "hover:bg-gradient-to-br hover:from-blue-50 hover:to-orange-50/30 dark:hover:from-gray-700 dark:hover:to-gray-800 dark:text-gray-300 dark:hover:text-white"
         )}
       >
         <Grid2x2 className="h-4 w-4 mr-2" />
-        By Division
+        Grid
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="list"
+        aria-label="List View"
+        className={cn(
+          "transition-all duration-200",
+          viewMode === "list" ? 
+            "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500" : 
+            "hover:bg-gradient-to-br hover:from-blue-50 hover:to-orange-50/30 dark:hover:from-gray-700 dark:hover:to-gray-800 dark:text-gray-300 dark:hover:text-white"
+        )}
+      >
+        <List className="h-4 w-4 mr-2" />
+        List
       </ToggleGroupItem>
     </ToggleGroup>
   );
 };
 
-export default TeamsDisplayModeToggle;
+export default TeamsViewToggle;

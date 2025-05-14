@@ -31,36 +31,34 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   const powerScoreColor = getPowerScoreColor(team.power_score);
   const sosColor = getSosColor(team.sos);
 
-  // Gradients for headers and backgrounds
-  const headerGradient = "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-gray-800/40 dark:via-gray-800/50 dark:to-gray-800/40";
+  // Improved gradients for headers and backgrounds
+  const headerGradient = "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-gray-800/70 dark:via-gray-800/80 dark:to-gray-800/70";
   const contentGradient = "bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90";
-  const hoverGradient = gradients.card.blueOrange;
 
   return (
     <div className={cn(
-      "overflow-hidden h-full flex flex-col mb-4 font-inter shadow-sm hover:shadow-md",
-      "transition-all duration-200 hover:scale-[1.01] hover:border-opacity-80 active:scale-[0.98]",
       "rounded-lg border border-gray-200 dark:border-gray-800/60",
       "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
-      "m-0.5", // Add margin to prevent touching on mobile
-      hoverGradient
+      "h-full shadow-sm transition-all duration-200",
+      "hover:shadow-md hover:scale-[1.01] active:scale-[0.99]",
+      gradients.card.blueOrange
     )}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className={cn(
-          "min-h-[4.5rem] sm:h-24 flex items-center justify-center p-3",
+          "h-28 sm:h-32 relative flex items-center justify-center p-4",
           headerGradient
         )}>
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
             size="sm"
-            className="max-h-16 sm:max-h-20 object-contain"
+            className="max-h-20 sm:max-h-24 object-contain"
           />
         </div>
       </Link>
       
       <div className={cn("flex flex-col flex-grow p-3 sm:p-4", contentGradient)}>
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start mb-1">
           <Link to={`/teams/${team.id}`} className="hover:underline">
             <h3 className="font-bebas font-normal uppercase tracking-wide text-xl truncate pr-2 text-[#1a1a1a] dark:text-white" title={team.name}>
               {team.name}
@@ -69,7 +67,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+              <Button variant="ghost" size="icon" className="h-7 w-7 -mt-1 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                 <MoreHorizontal size={15} />
                 <span className="sr-only">Open menu</span>
               </Button>
@@ -98,7 +96,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           <Badge 
             variant={team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
               team.divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
-            className="self-start mb-2 font-inter uppercase text-xs tracking-widest"
+            className="self-start mb-3 font-inter uppercase text-xs tracking-widest"
           >
             {team.divisionName}
           </Badge>
@@ -107,43 +105,18 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         <div className="grid grid-cols-2 gap-2 text-xs">
           <StatBlock 
             label="Record" 
-            value={<span className="font-mono text-base text-center">{`${team.wins}-${team.losses}`}</span>}
+            value={<span className="font-mono text-base">{team.wins}-{team.losses}</span>}
             gradient="bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80"
           />
           <StatBlock 
             label="Power Score" 
             value={
-              <span className={`font-mono text-base text-center ${powerScoreColor}`}>
+              <span className={`font-mono text-base ${powerScoreColor}`}>
                 {formatPowerScore(team.power_score)}
               </span>
             }
             gradient="bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80"
           />
-        </div>
-        
-        <div className="flex flex-wrap gap-1 mt-2 max-h-[30px] overflow-hidden">
-          {team.players?.length > 0 ? (
-            team.players.slice(0, 3).map((player, index) => (
-              <PlayerChip key={`${player}-${index}`} playerName={player} />
-            )).concat(
-              team.players.length > 3 ? [
-                <TooltipProvider key="more-players">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="text-xs px-2 py-0.5 bg-gradient-to-r from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-700 text-gray-600 dark:text-gray-400 rounded-full inline-flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        +{team.players.length - 3}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{team.players.slice(3).join(', ')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ] : []
-            )
-          ) : (
-            <span className="text-xs text-gray-500 dark:text-gray-400">No players</span>
-          )}
         </div>
       </div>
     </div>

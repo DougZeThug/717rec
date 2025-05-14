@@ -1,65 +1,77 @@
 
-import { cva } from "class-variance-authority";
-
 /**
- * Division colors defined as a record to maintain consistency
- * These should match the CSS variables in theme.css
+ * Division color utilities for styling division-specific UI elements
  */
-export const divisionColors: Record<string, string> = {
-  Competitive: "hsl(var(--competitive))",
-  Intermediate: "hsl(var(--intermediate))",
-  Recreational: "hsl(var(--recreational))",
-  Default: "#6b7280",  // gray-500
-};
 
-/**
- * Get the appropriate color for a division
- * @param divisionName The name of the division
- * @returns A color hex code from the divisionColors object or HSL variable
- */
-export const getDivisionColor = (divisionName: string | null | undefined): string => {
-  if (!divisionName) return divisionColors.Default;
-  
-  const lowerDivName = divisionName.toLowerCase();
-  if (lowerDivName.includes('competitive')) return divisionColors.Competitive;
-  if (lowerDivName.includes('intermediate')) return divisionColors.Intermediate;
-  if (lowerDivName.includes('recreational')) return divisionColors.Recreational;
-  
-  return divisionColors.Default;
-};
+import { cn } from "@/lib/utils";
 
-/**
- * Division badge variants using class-variance-authority for consistency
- */
-export const divisionBadgeVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        competitive: "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/40",
-        intermediate: "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/40",
-        recreational: "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/40",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-      }
-    },
-    defaultVariants: {
-      variant: "outline",
-    },
+// Division gradients for cards and UI elements
+export const getDivisionGradientClass = (division: string): string => {
+  const divisionNameLower = division.toLowerCase();
+
+  if (divisionNameLower.includes('competitive')) {
+    return "bg-gradient-to-br from-white via-amber-50/30 to-amber-100/20 dark:from-gray-800 dark:via-amber-950/10 dark:to-gray-900";
   }
-);
 
-/**
- * Get a badge variant name based on division name
- * @param divisionName The name of the division
- * @returns A badge variant name
- */
-export const getDivisionBadgeVariant = (divisionName: string | null | undefined): string => {
-  if (!divisionName) return 'outline';
-  
-  const lowerDivName = divisionName.toLowerCase();
-  if (lowerDivName.includes('competitive')) return 'competitive';
-  if (lowerDivName.includes('intermediate')) return 'intermediate';
-  if (lowerDivName.includes('recreational')) return 'recreational';
-  
-  return 'outline';
+  if (divisionNameLower.includes('intermediate')) {
+    return "bg-gradient-to-br from-white via-blue-50/30 to-blue-100/20 dark:from-gray-800 dark:via-blue-950/10 dark:to-gray-900";
+  }
+
+  if (divisionNameLower.includes('recreational')) {
+    return "bg-gradient-to-br from-white via-emerald-50/20 to-emerald-100/10 dark:from-gray-800 dark:via-emerald-950/10 dark:to-gray-900";
+  }
+
+  // Default gradient
+  return "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900";
+};
+
+// Division header gradients 
+export const getDivisionHeaderClass = (division: string): string => {
+  const divisionNameLower = division.toLowerCase();
+
+  if (divisionNameLower.includes('competitive')) {
+    return cn(
+      "bg-gradient-to-br from-amber-100/70 to-amber-50/20 dark:from-amber-900/20 dark:to-gray-800/50",
+      "border-b-2 border-amber-200 dark:border-amber-800/30"
+    );
+  }
+
+  if (divisionNameLower.includes('intermediate')) {
+    return cn(
+      "bg-gradient-to-br from-blue-100/70 to-blue-50/20 dark:from-blue-900/20 dark:to-gray-800/50", 
+      "border-b-2 border-blue-200 dark:border-blue-800/30"
+    );
+  }
+
+  if (divisionNameLower.includes('recreational')) {
+    return cn(
+      "bg-gradient-to-br from-emerald-100/70 to-emerald-50/20 dark:from-emerald-900/20 dark:to-gray-800/50",
+      "border-b-2 border-emerald-200 dark:border-emerald-800/30"
+    );
+  }
+
+  // Default header gradient
+  return cn(
+    "bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900",
+    "border-b-2 border-gray-200 dark:border-gray-700"
+  );
+};
+
+// Division text color classes
+export const getDivisionTextClass = (division: string): string => {
+  const divisionNameLower = division.toLowerCase();
+
+  if (divisionNameLower.includes('competitive')) {
+    return "text-amber-700 dark:text-amber-400";
+  }
+
+  if (divisionNameLower.includes('intermediate')) {
+    return "text-blue-700 dark:text-blue-400";
+  }
+
+  if (divisionNameLower.includes('recreational')) {
+    return "text-emerald-700 dark:text-emerald-400";
+  }
+
+  return "text-gray-700 dark:text-gray-400";
 };

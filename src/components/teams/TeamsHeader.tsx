@@ -1,95 +1,36 @@
 
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { RefreshCw, Grid2X2, List } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Toggle } from "@/components/ui/toggle";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import React, { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { blueAmber } from "@/styles/design-system/blueAmber";
+import { gradients } from "@/styles/design-system";
 
 interface TeamsHeaderProps {
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
-  viewMode?: 'grid' | 'list';
-  onViewModeChange?: (mode: 'grid' | 'list') => void;
+  title: string;
+  description?: string;
+  children?: ReactNode;
 }
 
-export const TeamsHeader: React.FC<TeamsHeaderProps> = ({ 
-  onRefresh = () => {},
-  isRefreshing = false,
-  viewMode = 'list',
-  onViewModeChange = () => {}
-}) => {
-  const isMobile = useIsMobile();
-
+const TeamsHeader: React.FC<TeamsHeaderProps> = ({ title, description, children }) => {
   return (
-    <div className="flex items-center gap-3">
-      <TooltipProvider>
-        <div className="flex bg-muted dark:bg-gray-800/60 dark:border dark:border-gray-700/50 rounded-md p-1 gap-1 shadow-sm backdrop-blur-sm">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Toggle
-                variant="outline"
-                size="sm"
-                pressed={viewMode === 'list'}
-                onPressedChange={() => onViewModeChange('list')}
-                className={cn(
-                  "px-3 py-1.5 text-sm rounded-md transition-all duration-200",
-                  viewMode === 'list'
-                    ? blueAmber.interactive.active
-                    : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
-                )}
-                aria-label="List view"
-              >
-                <List size={18} />
-              </Toggle>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>List View</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Toggle
-                variant="outline"
-                size="sm"
-                pressed={viewMode === 'grid'}
-                onPressedChange={() => onViewModeChange('grid')}
-                className={cn(
-                  "px-3 py-1.5 text-sm rounded-md transition-all duration-200",
-                  viewMode === 'grid'
-                    ? blueAmber.interactive.active
-                    : "data-[state=off]:bg-transparent dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700/70"
-                )}
-                aria-label="Grid view"
-              >
-                <Grid2X2 size={18} />
-              </Toggle>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Grid View</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              onClick={onRefresh} 
-              variant="outline"
-              disabled={isRefreshing}
-              className="h-9 px-3 py-1.5 text-sm rounded-md dark:bg-gray-800/60 dark:border-gray-700/50 dark:text-gray-200 dark:hover:bg-gray-700 backdrop-blur-sm"
-              size="sm"
-            >
-              <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
-              {!isMobile && <span className="ml-2">{isRefreshing ? "Refreshing..." : "Refresh"}</span>}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Refresh Teams</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-gray-200 dark:border-gray-800/70">
+      <div>
+        <h1 className={cn(
+          "font-bebas text-3xl md:text-4xl tracking-wide uppercase",
+          "bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent",
+          "dark:from-blue-400 dark:to-amber-300"
+        )}>
+          {title}
+        </h1>
+        {description && (
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mt-1">
+            {description}
+          </p>
+        )}
+      </div>
+      <div className="flex-shrink-0 mt-2 sm:mt-0 w-full sm:w-auto ml-auto sm:ml-0">
+        {children}
+      </div>
     </div>
   );
 };
+
+export default TeamsHeader;

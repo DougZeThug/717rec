@@ -26,33 +26,35 @@ interface TeamCardListProps {
 export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEdit }) => {
   const location = useLocation();
   const isAdminPage = location.pathname.includes('/admin');
-  const cardBg = "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl";
   const powerScoreColor = getPowerScoreColor(team.power_score);
   const sosColor = getSosColor(team.sos);
 
   return (
-    <div className={`${cardBg} overflow-hidden h-full mb-4 font-inter shadow-sm hover:shadow-md transition-all duration-200 
-      hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.995]`}>
+    <div className="bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl 
+      overflow-hidden h-full mb-4 font-inter shadow-sm hover:shadow-md transition-all duration-200 
+      hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.995]">
       <div className="flex flex-col md:flex-row h-full">
-        <Link to={`/teams/${team.id}`} className="w-full md:w-[150px] h-[150px] md:h-auto flex items-center justify-center p-6 bg-[#f0f0f0] dark:bg-black/30">
+        <Link to={`/teams/${team.id}`} className="w-full md:w-[180px] lg:w-[200px] h-[180px] md:h-auto flex items-center justify-center p-6 
+          bg-gradient-to-br from-blue-50/30 via-white to-orange-50/20 dark:from-gray-800/60 dark:via-black/40 dark:to-gray-800/50">
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
             size="md"
+            className="max-h-[140px] object-contain"
           />
         </Link>
 
-        <div className="flex flex-col flex-grow p-4">
-          <div className="flex justify-between items-start mb-2">
+        <div className="flex flex-col flex-grow p-5">
+          <div className="flex justify-between items-start mb-3">
             <Link to={`/teams/${team.id}`} className="hover:underline">
-              <h3 className="font-bebas font-normal uppercase tracking-wide text-xl text-[#1a1a1a] dark:text-white">
+              <h3 className="font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl text-[#1a1a1a] dark:text-white">
                 {team.name}
               </h3>
             </Link>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="h-9 w-9 -mt-1 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                   <MoreHorizontal size={18} />
                   <span className="sr-only">Open menu</span>
                 </Button>
@@ -81,20 +83,20 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <Badge 
               variant={team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
                 team.divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
-              className="mb-3 self-start font-inter uppercase text-xs tracking-widest"
+              className="mb-4 self-start font-inter uppercase text-xs tracking-widest"
             >
               {team.divisionName}
             </Badge>
           )}
           
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 text-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm">
             <StatBlock 
               label="Record" 
               value={
-                <div className="flex items-center gap-1 font-mono text-base justify-end">
-                  <Trophy size={12} className="text-emerald-400" /> {team.wins}
+                <div className="flex items-center gap-1 font-mono text-lg justify-end">
+                  <Trophy size={14} className="text-emerald-400" /> {team.wins}
                   <span className="mx-1">-</span>
-                  <X size={12} className="text-rose-400" /> {team.losses}
+                  <X size={14} className="text-rose-400" /> {team.losses}
                 </div>
               }
             />
@@ -102,7 +104,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <StatBlock 
               label="Games" 
               value={
-                <span className="font-mono text-base justify-end flex">
+                <span className="font-mono text-lg justify-end flex">
                   {team.game_wins ?? 0} - {team.game_losses ?? 0}
                 </span>
               }
@@ -111,7 +113,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             <StatBlock 
               label="Power Score" 
               value={
-                <span className={`font-mono text-base justify-end flex ${powerScoreColor}`}>
+                <span className={`font-mono text-lg justify-end flex ${powerScoreColor}`}>
                   {formatPowerScore(team.power_score)}
                 </span>
               }
@@ -119,7 +121,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             
             <StatBlock 
               label="SOS" 
-              value={<span className={`font-mono text-base justify-end flex ${sosColor}`}>
+              value={<span className={`font-mono text-lg justify-end flex ${sosColor}`}>
                 {team.sos?.toFixed(3) || '0.000'}
               </span>}
             />
