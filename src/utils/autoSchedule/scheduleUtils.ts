@@ -1,5 +1,6 @@
+
 import { format } from 'date-fns';
-import { TeamPairingMap, MatchQualityMetrics } from '@/types/autoSchedule';
+import { TeamPairingMap, MatchQualityMetrics, TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 /**
  * Format date for display in schedule UI
@@ -24,9 +25,9 @@ export const formatScheduleDate = (date: Date | null): string => {
 };
 
 /**
- * Get statistics for time blocks - keep rest of function the same
+ * Get statistics for time blocks - now with proper typing
  */
-export const getTimeBlocksStatistics = (timeBlockTeams) => {
+export const getTimeBlocksStatistics = (timeBlockTeams: TimeBlockTeamsMap) => {
   const blocks = Object.keys(timeBlockTeams);
   
   if (blocks.length === 0) {
@@ -45,7 +46,7 @@ export const getTimeBlocksStatistics = (timeBlockTeams) => {
 };
 
 /**
- * Analyze match quality metrics - keep rest of function the same
+ * Analyze match quality metrics
  */
 export const analyzeMatchQuality = (generatedPairings: TeamPairingMap): MatchQualityMetrics => {
   let totalMatches = 0;
