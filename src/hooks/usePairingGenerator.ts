@@ -87,7 +87,7 @@ export const usePairingGenerator = () => {
         toast({
           title: "Some teams will be unmatched",
           description: `${newUnmatchedTeamIds.length} team${newUnmatchedTeamIds.length === 1 ? '' : 's'} will not have a match due to odd team counts.`,
-          variant: "warning"
+          variant: "default"
         });
         
         // Log the names of teams that will be unmatched

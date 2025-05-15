@@ -75,7 +75,7 @@ export const useTeamScheduleLoader = () => {
         toast({
           title: "Teams loaded with warnings",
           description: `${oddBlocksCount} ${oddBlocksCount === 1 ? 'block has' : 'blocks have'} odd team counts. Some teams may be left unmatched.`,
-          variant: "warning"
+          variant: "default"
         });
       } else {
         toast({
