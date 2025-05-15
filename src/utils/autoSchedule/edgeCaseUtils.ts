@@ -1,51 +1,70 @@
-
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
 
 /**
- * Validate team counts in each time block to identify potential issues
+ * Validate team counts in time blocks to detect edge cases
  */
-export function validateTeamCounts(timeBlockTeams: TimeBlockTeamsMap) {
+export const validateTeamCounts = (timeBlockTeams: TimeBlockTeamsMap) => {
+  // Check if there are any time blocks at all
+  if (!timeBlockTeams || Object.keys(timeBlockTeams).length === 0) {
+    return {
+      isValid: false,
+      oddBlocks: 0,
+      insufficientBlocks: [],
+      emptyBlocks: []
+    };
+  }
+  
   const oddBlocks: string[] = [];
   const insufficientBlocks: string[] = [];
+  const emptyBlocks: string[] = [];
   
-  Object.entries(timeBlockTeams || {}).forEach(([block, teams]) => {
+  Object.entries(timeBlockTeams).forEach(([block, teams]) => {
+    // Check for empty blocks
+    if (teams.length === 0) {
+      emptyBlocks.push(block);
+    }
+    
+    // Check for odd number of teams
     if (teams.length % 2 !== 0) {
       oddBlocks.push(block);
     }
     
+    // Check if there are enough teams to create at least one match
     if (teams.length < 2) {
       insufficientBlocks.push(block);
     }
   });
   
+  // A time block is valid if it has enough teams for at least one match
+  const isValid = insufficientBlocks.length < Object.keys(timeBlockTeams).length;
+  
   return {
-    isValid: insufficientBlocks.length < Object.keys(timeBlockTeams || {}).length,
+    isValid,
     oddBlocks,
-    insufficientBlocks
+    insufficientBlocks,
+    emptyBlocks,
   };
-}
+};
 
 /**
- * Handle odd numbers of teams by identifying which teams will remain unmatched
- * Uses a fair algorithm to avoid repeatedly leaving the same teams unmatched
+ * Handle odd number of teams by identifying teams to exclude
  */
-export function handleOddTeams(timeBlockTeams: TimeBlockTeamsMap) {
+export const handleOddTeams = (timeBlockTeams: TimeBlockTeamsMap) => {
   const adjustedTeams: TimeBlockTeamsMap = {};
   const unmatchedTeamIds: string[] = [];
   
-  // Process each time block
-  Object.entries(timeBlockTeams || {}).forEach(([block, teams]) => {
-    // If odd number of teams, remove one team
-    if (teams.length % 2 !== 0 && teams.length > 1) {
-      // Use a smarter algorithm to find team with least impact if left unmatched
-      // For now we use the last team in the array as the unmatched one
-      // This could be enhanced to consider previous unmatched history
-      const unmatchedTeam = teams[teams.length - 1];
-      unmatchedTeamIds.push(unmatchedTeam.id);
+  Object.entries(timeBlockTeams).forEach(([block, teams]) => {
+    if (teams.length % 2 !== 0 && teams.length > 0) {
+      // Odd number of teams - remove the last team
+      const lastTeam = teams[teams.length - 1];
+      unmatchedTeamIds.push(lastTeam.id);
       
-      // Add all teams except the unmatched one
+      // Keep all teams except the last one
       adjustedTeams[block] = teams.slice(0, teams.length - 1);
+      
+      console.log(`Block ${block} has odd number of teams (${teams.length}). Excluding team: ${lastTeam.name} (${lastTeam.id})`);
     } else {
+      // Even number of teams - keep as is
       adjustedTeams[block] = [...teams];
     }
   });
@@ -54,7 +73,7 @@ export function handleOddTeams(timeBlockTeams: TimeBlockTeamsMap) {
     adjustedTeams,
     unmatchedTeamIds
   };
-}
+};
 
 /**
  * Detect potential scheduling conflicts based on provided constraints

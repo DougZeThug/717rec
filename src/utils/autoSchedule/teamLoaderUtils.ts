@@ -1,20 +1,29 @@
-
 import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { TIME_BLOCKS } from "./constants";
+import { TIME_BLOCKS, findTimeBlockByValue } from "./constants";
 import { normalizeDate } from "@/utils/dateNormalization";
 
 /**
  * Fetches teams assigned to a specific time block for a given date
- * Simplified to use direct date string comparison
+ * Improved to handle various time block format variations
  */
 export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promise<Team[]> {
   try {
     // Format date as YYYY-MM-DD for database query using our normalizeDate function
     const simpleDateString = normalizeDate(date, 'getTeamsByTimeBlock');
     
-    // Get the exact timeslot value from our constants
-    const timeslotValue = TIME_BLOCKS[timeBlock]?.main;
+    // Get the exact timeslot value - use the block key directly if it matches TIME_BLOCKS
+    // Otherwise use the main value from the block
+    let timeslotValue: string | null = null;
+    
+    // First check if timeBlock is directly a key in TIME_BLOCKS
+    if (TIME_BLOCKS[timeBlock]) {
+      timeslotValue = TIME_BLOCKS[timeBlock].main;
+    } else {
+      // Try to find the corresponding block 
+      const normalizedBlock = findTimeBlockByValue(timeBlock);
+      timeslotValue = normalizedBlock ? TIME_BLOCKS[normalizedBlock].main : null;
+    }
     
     if (!timeslotValue) {
       console.error(`Invalid time block: ${timeBlock}. Available blocks:`, Object.keys(TIME_BLOCKS));
@@ -24,20 +33,26 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
     console.log(`Fetching teams for date: ${simpleDateString}, timeslot: ${timeslotValue}`, {
       originalDate: date,
       formattedDate: simpleDateString,
-      timeBlock,
-      timeslotValue,
+      requestedTimeBlock: timeBlock,
+      normalizedTimeslotValue: timeslotValue,
+      availableTimeBlocks: Object.keys(TIME_BLOCKS)
     });
     
     // First, log what's in the database for debugging
     const { data: allTimeslots, error: checkError } = await supabase
       .from('team_timeslots')
       .select('timeslot, match_date')
+      .eq('match_date', simpleDateString)
       .limit(10);
     
     if (checkError) {
       console.error('Error checking timeslots:', checkError);
     } else {
-      console.log(`Sample timeslots in database:`, allTimeslots);
+      console.log(`Timeslots in database for ${simpleDateString}:`, allTimeslots);
+      
+      if (allTimeslots.length === 0) {
+        console.warn(`No timeslots found for date ${simpleDateString}. Check if date format matches database.`);
+      }
     }
     
     // Now fetch teams for this specific date and timeslot
@@ -71,7 +86,8 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
     // Log the query and results for debugging
     console.log(`Team query results for ${simpleDateString} at ${timeslotValue}:`, {
       query: { match_date: simpleDateString, timeslot: timeslotValue },
-      resultsCount: timeslotData?.length || 0
+      resultsCount: timeslotData?.length || 0,
+      timeslotData
     });
 
     // Extract team data and format it according to our Team type
@@ -94,6 +110,12 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
         game_win_percentage: 0 // Will be calculated later if needed
       };
     }) || [];
+
+    if (teams.length === 0) {
+      console.warn(`No teams found for time block ${timeBlock} (${timeslotValue}) on ${simpleDateString}`);
+    } else {
+      console.log(`Found ${teams.length} teams for time block ${timeBlock} (${timeslotValue}) on ${simpleDateString}`);
+    }
 
     return teams;
   } catch (error) {

@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 import { usePairingGenerator } from '../usePairingGenerator';
@@ -16,6 +15,7 @@ import {
   analyzeMatchQuality
 } from '@/utils/autoSchedule/scheduleUtils';
 import { normalizeDate } from '@/utils/dateNormalization';
+import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 
 export function useAutoSchedule() {
   // Tab state
@@ -62,7 +62,7 @@ export function useAutoSchedule() {
   // Combined loading state
   const isLoadingState = isLoading || isGenerating || isProcessing;
 
-  // Handle loading teams for a date with additional logging
+  // Handle loading teams for a date with improved error handling and logging
   const handleLoadTeams = useCallback(async () => {
     if (!selectedDate) {
       toast({
@@ -79,25 +79,42 @@ export function useAutoSchedule() {
         selectedDate,
         selectedDateString: selectedDate.toString(),
         selectedDateIso: selectedDate.toISOString(),
-        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-before')
+        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-before'),
+        availableTimeBlocks: Object.keys(TIME_BLOCKS) // Log available time blocks
       });
       
-      await loadTeamsForDate(selectedDate);
+      const timeBlockData = await loadTeamsForDate(selectedDate);
       
       const { total, odd } = getTeamCountStatus();
       
       console.log('useAutoSchedule - handleLoadTeams - After loadTeamsForDate', {
         teamsFound: total,
         oddBlocks: odd,
-        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-after')
+        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-after'),
+        timeBlockData // Log the actual data returned
       });
       
       if (total === 0) {
-        toast({
-          title: "No teams found",
-          description: `No teams are scheduled for ${normalizeDate(selectedDate, 'toast')}`,
-          variant: "destructive"
-        });
+        // Check if we got data but it's empty
+        if (timeBlockData && Object.keys(timeBlockData).length > 0) {
+          const emptyBlocks = Object.entries(timeBlockData)
+            .filter(([_, teams]) => teams.length === 0)
+            .map(([block]) => block);
+          
+          console.warn(`Time blocks with no teams: ${emptyBlocks.join(', ')}`);
+          
+          toast({
+            title: "No teams found",
+            description: `No teams are scheduled for ${normalizeDate(selectedDate, 'toast')}. Please check team assignments in the Timeslots section.`,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "No teams found",
+            description: `No teams are scheduled for ${normalizeDate(selectedDate, 'toast')}. Check if date format matches database entries.`,
+            variant: "destructive"
+          });
+        }
         return;
       }
       
@@ -110,7 +127,7 @@ export function useAutoSchedule() {
       console.error("Error loading teams:", error);
       toast({
         title: "Error",
-        description: "Failed to load teams. Please try again.",
+        description: "Failed to load teams. Please check console for details.",
         variant: "destructive"
       });
     } finally {

@@ -21,17 +21,43 @@ export const useTeamScheduleLoader = () => {
         originalDate: date,
         originalDateString: date.toString(),
         originalDateIso: date.toISOString(),
-        simpleDateString: normalizeDate(date, 'useTeamScheduleLoader')
+        simpleDateString: normalizeDate(date, 'useTeamScheduleLoader'),
+        availableTimeBlocks: Object.keys(TIME_BLOCKS)
       });
       
       // Get teams for each time block
-      const timeBlocks = Object.keys(TIME_BLOCKS); // ["6:30", "7:30", "8:30"]
+      const timeBlocks = Object.keys(TIME_BLOCKS); // Now using full time block strings like "6:30 PM"
       const teamsData: TimeBlockTeamsMap = {};
+      
+      let totalTeamsFound = 0;
+      
+      // Track detailed stats for debugging
+      const blockStats: Record<string, { requested: string, found: number }> = {};
       
       for (const block of timeBlocks) {
         const teams = await getTeamsByTimeBlock(date, block);
         teamsData[block] = teams;
-        console.log(`Loaded ${teams.length} teams for ${block} block`);
+        totalTeamsFound += teams.length;
+        
+        blockStats[block] = {
+          requested: block,
+          found: teams.length
+        };
+        
+        console.log(`Loaded ${teams.length} teams for "${block}" block`);
+      }
+      
+      console.log("Teams loading summary:", {
+        date: normalizeDate(date, 'summary'),
+        totalTeams: totalTeamsFound,
+        blockStats
+      });
+      
+      if (totalTeamsFound === 0) {
+        console.warn("No teams found for any time block. Possible issues:");
+        console.warn("1. No team assignments exist for this date");
+        console.warn("2. Time block format in database doesn't match what we're querying");
+        console.warn("3. Date format mismatch");
       }
       
       console.log("Final teams data:", teamsData);
@@ -41,7 +67,7 @@ export const useTeamScheduleLoader = () => {
       console.error('Error loading teams for date:', error);
       toast({
         title: "Error",
-        description: "Failed to load teams. Please try again.",
+        description: "Failed to load teams. Please check console for details.",
         variant: "destructive"
       });
       return null;
