@@ -95,8 +95,7 @@ export const usePairingGenerator = () => {
           const blockPairings = await generatePairingsWithConfig(teams, {
             avoidRematches: config.avoidRematches,
             haveTeamsPlayedFn: haveTeamsPlayedBefore,
-            getCompatibilityScoreFn: (team1, team2) => getCompatibilityScore(team1, team2, config.weights),
-            weights: config.weights
+            getCompatibilityScoreFn: (team1, team2) => getCompatibilityScore(team1, team2, config.weights)
           });
           
           // Store pairings for this block
@@ -187,8 +186,7 @@ export const usePairingGenerator = () => {
       const earlyPairings = await generatePairingsWithConfig(combinedTeams, {
         avoidRematches: config.avoidRematches,
         haveTeamsPlayedFn: haveTeamsPlayedBefore,
-        getCompatibilityScoreFn: (team1, team2) => getCompatibilityScore(team1, team2, config.weights),
-        weights: config.weights
+        getCompatibilityScoreFn: (team1, team2) => getCompatibilityScore(team1, team2, config.weights)
       });
       
       // Create a map of team ID to opponent team ID in the early block
@@ -212,8 +210,7 @@ export const usePairingGenerator = () => {
           
           // Otherwise, use normal compatibility scoring
           return getCompatibilityScore(team1, team2, config.weights);
-        },
-        weights: config.weights
+        }
       });
       
       // Return the pairings for both blocks
