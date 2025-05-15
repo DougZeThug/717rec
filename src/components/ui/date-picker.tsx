@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { normalizeDate } from "@/utils/dateNormalization";
 
 interface DatePickerProps {
   date: Date | null;
@@ -23,10 +24,25 @@ export function DatePicker({ date, onDateChange }: DatePickerProps) {
       newDate,
       newDateString: newDate?.toString(),
       newDateIso: newDate?.toISOString(),
+      normalizedDate: newDate ? normalizeDate(newDate, 'DatePicker') : null
     });
     
-    // Pass the date directly without any timezone adjustments
-    onDateChange(newDate || null);
+    if (newDate) {
+      // Create a new Date object at noon to avoid timezone issues
+      // This ensures the date displayed is the same as what's selected
+      const safeDate = new Date(newDate);
+      safeDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
+      
+      console.log("DatePicker - Using safe date:", {
+        safeDate,
+        safeDateString: safeDate.toString(),
+        safeDateIso: safeDate.toISOString()
+      });
+      
+      onDateChange(safeDate);
+    } else {
+      onDateChange(null);
+    }
   };
 
   return (

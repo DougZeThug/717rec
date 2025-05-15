@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion } from "@/components/ui/accordion";
 import { Calendar } from "lucide-react";
 import AlgorithmSettings from "./AlgorithmSettings";
+import { normalizeDate } from "@/utils/dateNormalization";
 
 interface DateSettingsPanelProps {
   selectedDate: Date | null;
@@ -50,11 +51,33 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
     console.log("DateSettingsPanel - Date selection changed:", {
       originalDate: date,
       dateString: date.toString(),
-      isoString: date.toISOString()
+      isoString: date.toISOString(),
+      normalizedDate: normalizeDate(date, 'DateSettingsPanel')
     });
     
-    // Use the date as is without timezone adjustments
-    setSelectedDate(date);
+    // Set the date at noon to avoid timezone issues
+    const safeDate = new Date(date);
+    safeDate.setHours(12, 0, 0, 0);
+    setSelectedDate(safeDate);
+  };
+
+  // Handle team loading with enhanced error reporting
+  const handleLoadTeams = async () => {
+    if (!selectedDate) {
+      console.error("Date selection missing");
+      return;
+    }
+    
+    console.log("DateSettingsPanel - Loading teams for:", {
+      selectedDate,
+      normalizedDate: normalizeDate(selectedDate, 'handleLoadTeams')
+    });
+    
+    try {
+      await onLoadTeams();
+    } catch (error) {
+      console.error("Error loading teams:", error);
+    }
   };
 
   return (
@@ -66,6 +89,11 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
         {formattedDate && (
           <p className="text-xs text-muted-foreground mt-1">
             {formattedDate}
+            {selectedDate && (
+              <span className="block text-xs opacity-70">
+                (DB format: {normalizeDate(selectedDate, 'display')})
+              </span>
+            )}
           </p>
         )}
       </CardHeader>
@@ -89,7 +117,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
           
           <div className="pt-4 space-y-4">
             <Button
-              onClick={onLoadTeams}
+              onClick={handleLoadTeams}
               className="w-full"
               disabled={isLoading || !selectedDate}
               variant="secondary"

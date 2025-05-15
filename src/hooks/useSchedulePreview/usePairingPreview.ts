@@ -16,7 +16,7 @@ export const usePairingPreview = (
   const { generateMatchPairings } = usePairingGenerator();
   const { toast } = useToast();
 
-  // Generate schedule pairings
+  // Enhanced schedule generation with improved date handling
   const generateSchedule = useCallback(async (
     date: Date,
     options: AlgorithmOptions = {}
@@ -35,16 +35,30 @@ export const usePairingPreview = (
     
     setIsGenerating(true);
     try {
-      // Log the date being used
+      // Enhanced logging for date debugging
       console.log("usePairingPreview - generateSchedule date:", {
         date,
+        dateType: typeof date,
+        dateObj: date instanceof Date,
         dateString: date.toString(),
         dateIso: date.toISOString(),
+        dateTime: date.getTime(),
         simpleDateString: normalizeDate(date, 'generateSchedule')
       });
       
-      // Generate pairings with the provided options
-      const result = await generateMatchPairings(date, timeBlockTeams, {
+      // Create a safe date copy to ensure time is set to noon
+      const safeDate = new Date(date);
+      safeDate.setHours(12, 0, 0, 0);
+      
+      console.log('Using safe date for generating schedule:', {
+        safeDate,
+        safeDateString: safeDate.toString(),
+        safeDateIso: safeDate.toISOString(),
+        normalizedSafeDate: normalizeDate(safeDate, 'safeGenerateSchedule')
+      });
+      
+      // Generate pairings with the provided options using the safe date
+      const result = await generateMatchPairings(safeDate, timeBlockTeams, {
         avoidRematches: options.avoidRematches,
         weights: options.weights
       });

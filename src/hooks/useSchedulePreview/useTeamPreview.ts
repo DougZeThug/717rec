@@ -14,7 +14,7 @@ export const useTeamPreview = (
   const { loadTeamsForDate, getTeamCountStatus } = useTeamScheduleLoader();
   const { toast } = useToast();
 
-  // Load teams for a specific date
+  // Enhanced team preview with improved date handling
   const previewSchedule = useCallback(async (date: Date): Promise<PreviewResult | null> => {
     if (!date) {
       toast({
@@ -27,16 +27,28 @@ export const useTeamPreview = (
 
     setIsLoading(true);
     try {
-      // Log the date being used
+      // Enhanced logging for date debugging
       console.log("useTeamPreview - previewSchedule date:", {
         date,
         dateString: date.toString(),
         dateIso: date.toISOString(),
+        dateTime: date.getTime(),
         simpleDateString: normalizeDate(date, 'useTeamPreview')
       });
       
+      // Create a safe date copy to ensure time is set to noon
+      const safeDate = new Date(date);
+      safeDate.setHours(12, 0, 0, 0);
+      
+      console.log('Using safe date for preview schedule:', {
+        safeDate,
+        safeDateString: safeDate.toString(),
+        safeDateIso: safeDate.toISOString(),
+        normalizedSafeDate: normalizeDate(safeDate, 'safePreview')
+      });
+      
       // Load teams for the selected date
-      const teamsData = await loadTeamsForDate(date);
+      const teamsData = await loadTeamsForDate(safeDate);
       
       if (!teamsData) {
         toast({
@@ -76,7 +88,7 @@ export const useTeamPreview = (
       }
       
       return {
-        date,
+        date: safeDate,
         timeBlocks: teamsData,
         unmatchableBlocks
       };

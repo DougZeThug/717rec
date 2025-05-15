@@ -15,7 +15,7 @@ export const useTeamOperations = () => {
   
   const { toast } = useToast();
 
-  // Handle loading teams for a date with improved error handling and logging
+  // Enhanced team loading with improved error handling and date normalization
   const handleLoadTeams = useCallback(async (selectedDate: Date | null) => {
     if (!selectedDate) {
       toast({
@@ -27,27 +27,43 @@ export const useTeamOperations = () => {
     }
     
     try {
+      // Improved logging for date debugging
       console.log('useAutoSchedule - handleLoadTeams - Before loadTeamsForDate', {
         selectedDate,
+        selectedDateType: typeof selectedDate,
+        selectedDateObj: selectedDate instanceof Date,
         selectedDateString: selectedDate.toString(),
         selectedDateIso: selectedDate.toISOString(),
+        selectedDateTimestamp: selectedDate.getTime(),
         simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-before'),
         availableTimeBlocks: Object.keys(TIME_BLOCKS)
       });
       
-      const timeBlockData = await loadTeamsForDate(selectedDate);
+      // Create a safe date copy to ensure time is set to noon
+      const safeDate = new Date(selectedDate);
+      safeDate.setHours(12, 0, 0, 0);
+      
+      console.log('Using safe date for team loading:', {
+        safeDate,
+        safeDateString: safeDate.toString(),
+        safeDateIso: safeDate.toISOString(),
+        normalizedSafeDate: normalizeDate(safeDate, 'safeDate')
+      });
+      
+      // Load teams with the safe date
+      const timeBlockData = await loadTeamsForDate(safeDate);
       
       const { total, odd } = getTeamCountStatus();
       
       console.log('useAutoSchedule - handleLoadTeams - After loadTeamsForDate', {
         teamsFound: total,
         oddBlocks: odd,
-        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-after'),
+        simpleDateString: normalizeDate(safeDate, 'handleLoadTeams-after'),
         timeBlockData
       });
       
       if (total === 0) {
-        // Check if we got data but it's empty
+        // If no teams are found, try to determine if it's a data or date format issue
         if (timeBlockData && Object.keys(timeBlockData).length > 0) {
           const emptyBlocks = Object.entries(timeBlockData)
             .filter(([_, teams]) => teams.length === 0)
@@ -57,13 +73,13 @@ export const useTeamOperations = () => {
           
           toast({
             title: "No teams found",
-            description: `No teams are scheduled for ${normalizeDate(selectedDate, 'toast')}. Please check team assignments in the Timeslots section.`,
+            description: `No teams are scheduled for ${normalizeDate(safeDate, 'toast')}. Please check team assignments in the Timeslots section.`,
             variant: "destructive"
           });
         } else {
           toast({
             title: "No teams found",
-            description: `No teams are scheduled for ${normalizeDate(selectedDate, 'toast')}. Check if date format matches database entries.`,
+            description: `No teams are scheduled for ${normalizeDate(safeDate, 'toast')}. Check if date format matches database entries.`,
             variant: "destructive"
           });
         }

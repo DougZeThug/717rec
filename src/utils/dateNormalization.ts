@@ -1,7 +1,7 @@
 
 /**
  * Normalizes a date value to an ISO string with validation and tracing
- * Simplified to ensure consistent date handling across the application
+ * Handles timezone offsets consistently to prevent date shifts
  */
 export const normalizeDate = (date: Date | string | null, context: string = 'unknown'): string => {
   // Start with current date as fallback
@@ -24,17 +24,20 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
   
   try {
     // Handle Date object - extract just the YYYY-MM-DD portion
+    // IMPORTANT FIX: Use UTC methods to prevent timezone shifts
     if (typeof date === 'object' && date instanceof Date) {
-      // Create a date string in YYYY-MM-DD format without any timezone adjustments
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      // Create a date string in YYYY-MM-DD format using UTC to prevent timezone shifts
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
       
       const simpleDateString = `${year}-${month}-${day}`;
       
-      console.log(`🔍 [${context}] Simplified date to YYYY-MM-DD:`, {
+      console.log(`🔍 [${context}] Normalized to YYYY-MM-DD using UTC:`, {
         original: date,
-        simplified: simpleDateString
+        originalToString: date.toString(),
+        originalISOString: date.toISOString(),
+        normalized: simpleDateString
       });
       
       return simpleDateString;
@@ -60,16 +63,16 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
         return date;
       }
       
-      // Try to parse it as a date and convert to simple date string
+      // Try to parse it as a date and convert to simple date string using UTC
       const parsed = new Date(date);
       if (!isNaN(parsed.getTime())) {
-        const year = parsed.getFullYear();
-        const month = String(parsed.getMonth() + 1).padStart(2, '0');
-        const day = String(parsed.getDate()).padStart(2, '0');
+        const year = parsed.getUTCFullYear();
+        const month = String(parsed.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(parsed.getUTCDate()).padStart(2, '0');
         
         const simpleDateString = `${year}-${month}-${day}`;
         
-        console.log(`🔍 [${context}] Parsed string date to YYYY-MM-DD:`, {
+        console.log(`🔍 [${context}] Parsed string date to YYYY-MM-DD using UTC:`, {
           original: date,
           parsed: simpleDateString
         });

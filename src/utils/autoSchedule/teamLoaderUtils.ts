@@ -1,3 +1,4 @@
+
 import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { TIME_BLOCKS, findTimeBlockByValue } from "./constants";
@@ -5,11 +6,12 @@ import { normalizeDate } from "@/utils/dateNormalization";
 
 /**
  * Fetches teams assigned to a specific time block for a given date
- * Improved to handle various time block format variations
+ * Improved to handle various time block format variations and date issues
  */
 export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promise<Team[]> {
   try {
-    // Format date as YYYY-MM-DD for database query using our normalizeDate function
+    // Format date as YYYY-MM-DD for database query using our normalization function
+    // IMPORTANT: This is a critical fix to ensure consistent date handling
     const simpleDateString = normalizeDate(date, 'getTeamsByTimeBlock');
     
     // Get the exact timeslot value - use the block key directly if it matches TIME_BLOCKS
@@ -32,6 +34,8 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
     
     console.log(`Fetching teams for date: ${simpleDateString}, timeslot: ${timeslotValue}`, {
       originalDate: date,
+      originalDateString: date.toString(),
+      originalIsoString: date.toISOString(),
       formattedDate: simpleDateString,
       requestedTimeBlock: timeBlock,
       normalizedTimeslotValue: timeslotValue,
@@ -43,7 +47,7 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
       .from('team_timeslots')
       .select('timeslot, match_date')
       .eq('match_date', simpleDateString)
-      .limit(10);
+      .limit(20);
     
     if (checkError) {
       console.error('Error checking timeslots:', checkError);
@@ -51,7 +55,19 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
       console.log(`Timeslots in database for ${simpleDateString}:`, allTimeslots);
       
       if (allTimeslots.length === 0) {
-        console.warn(`No timeslots found for date ${simpleDateString}. Check if date format matches database.`);
+        // If no exact match was found, try alternative date formats
+        console.warn(`No timeslots found for date ${simpleDateString}. Checking if date format is the issue...`);
+        
+        // Try with different date formats - get all timeslots to see what dates are available
+        const { data: sampleTimeslots } = await supabase
+          .from('team_timeslots')
+          .select('match_date')
+          .order('match_date', { ascending: false })
+          .limit(10);
+          
+        if (sampleTimeslots && sampleTimeslots.length > 0) {
+          console.log("Available dates in database:", sampleTimeslots.map(ts => ts.match_date));
+        }
       }
     }
     
