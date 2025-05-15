@@ -1,5 +1,5 @@
 
-import { TeamPairingMap, TimeBlockTeamsMap, PairingResult, DualBlockConfig } from "@/types/autoSchedule";
+import { TeamPairing, TeamPairingMap, TimeBlockTeamsMap, PairingResult, DualBlockConfig } from "@/types/autoSchedule";
 import { Team } from "@/types";
 import { NotificationCallback } from "@/types/dualBlock";
 import { validateDualBlockTeams, handleOddTeamCount, createCrossBlockCompatibilityAdjuster } from "./dualBlockUtils";
