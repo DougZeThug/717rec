@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { usePairingGenerator } from '../usePairingGenerator';
 import { useSchedulePreview } from '../useSchedulePreview';
 import { useToast } from '@/hooks/use-toast';
-import { AlgorithmConfig, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { AlgorithmConfig, TimeBlockTeamsMap, TeamPairingMap } from '@/types/autoSchedule';
 import { analyzeMatchQuality } from '@/utils/autoSchedule/scheduleUtils';
 
 export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
@@ -75,7 +75,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
 
   // Handle applying schedule
   const handleApplySchedule = useCallback((
-    generatedPairings: typeof usePairingGenerator()['generatedPairings'],
+    generatedPairings: TeamPairingMap | null,
     selectedDate: Date | null,
     setGeneratedMatches: (matches: any[]) => void,
     setMatchQualityMetrics: (metrics: any) => void
