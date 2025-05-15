@@ -75,7 +75,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
     }
   }, [generateMatchPairings, toast, setActiveTab]);
 
-  // Handle applying schedule
+  // Handle applying schedule - Enhanced for dual match mode
   const handleApplySchedule = useCallback((
     generatedPairings: TeamPairingMap | null,
     selectedDate: Date | null,
@@ -93,8 +93,49 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
     }
     
     try {
-      // Convert pairings to matches
-      const matches = convertPairingsToMatches(generatedPairings, selectedDate, { dualMatchMode });
+      // Convert pairings to matches with dual match mode awareness
+      const matches = convertPairingsToMatches(generatedPairings, selectedDate, { 
+        dualMatchMode 
+      });
+      
+      // Log match conversion results
+      console.log(`Converted ${matches.length} matches ${dualMatchMode ? 'with dual match mode' : ''}`);
+      
+      // If in dual match mode, validate that teams have different opponents
+      if (dualMatchMode) {
+        // Check for teams with same opponent in both blocks
+        const teamOpponents: Record<string, Set<string>> = {};
+        
+        matches.forEach(match => {
+          // Track team1's opponents
+          if (!teamOpponents[match.team1Id]) {
+            teamOpponents[match.team1Id] = new Set();
+          }
+          teamOpponents[match.team1Id].add(match.team2Id);
+          
+          // Track team2's opponents
+          if (!teamOpponents[match.team2Id]) {
+            teamOpponents[match.team2Id] = new Set();
+          }
+          teamOpponents[match.team2Id].add(match.team1Id);
+        });
+        
+        // Count teams with duplicate opponents and teams with matches in both blocks
+        const teamsWithDuplicateOpponents = Object.entries(teamOpponents)
+          .filter(([_, opponents]) => opponents.size < 2 && opponents.size > 0)
+          .map(([teamId]) => teamId);
+          
+        const teamsWithBothMatches = Object.entries(teamOpponents)
+          .filter(([_, opponents]) => opponents.size === 2)
+          .length;
+          
+        if (teamsWithDuplicateOpponents.length > 0) {
+          console.warn(`${teamsWithDuplicateOpponents.length} teams have the same opponent in both blocks`);
+        }
+        
+        console.log(`${teamsWithBothMatches} teams have matches in both blocks`);
+      }
+      
       setGeneratedMatches(matches);
       
       // Analyze match quality
@@ -106,7 +147,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       
       toast({
         title: "Schedule created",
-        description: `${matches.length} matches ready for export`
+        description: `${matches.length} matches ready for export${dualMatchMode ? ' in dual match mode' : ''}`
       });
       
       return matches;

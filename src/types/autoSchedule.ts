@@ -56,6 +56,7 @@ export interface AutoScheduleMatch {
   team2Id: string;
   timeslot: string;
   date?: Date;
+  blockType?: 'primary' | 'secondary'; // Added for dual block match identification
 }
 
 export interface AlgorithmConfig {
@@ -100,4 +101,11 @@ export interface DualMatchMetrics {
   teamsWithBothMatches: number;
   teamsWithSingleMatch: number;
   crossBlockCompatibility: number;
+}
+
+// New interface for dual match conversion options
+export interface MatchConversionOptions {
+  dualMatchMode?: boolean;
+  preserveBlockInfo?: boolean;
+  customBlockMapping?: Record<string, string>;
 }
