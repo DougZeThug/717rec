@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
@@ -13,12 +14,23 @@ import { useTheme } from "next-themes";
 import { Clock } from "lucide-react";
 import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { normalizeDate } from "@/utils/dateNormalization";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("completed");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { resolvedTheme } = useTheme();
+  
+  // Log date for debugging
+  React.useEffect(() => {
+    console.log("Schedule - Current selected date:", {
+      selectedDate,
+      selectedDateString: selectedDate.toString(),
+      selectedDateIso: selectedDate.toISOString(),
+      normalizedDate: normalizeDate(selectedDate, "Schedule")
+    });
+  }, [selectedDate]);
   
   const { data: teams, isLoading: teamsLoading } = useTeamData();
   const { 
@@ -42,6 +54,24 @@ const Schedule = () => {
     handleUpdateMatch,
     handleDeleteMatch
   } = useMatchManagement(matchesData || []);
+
+  // Handle date selection with proper normalization
+  const handleDateSelect = (date: Date) => {
+    // Create consistent UTC date
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    const normalizedDate = new Date(Date.UTC(year, month, day));
+    console.log("Schedule - Date selection changed:", {
+      originalDate: date,
+      normalizedDate,
+      dateString: normalizedDate.toString(),
+      isoString: normalizedDate.toISOString()
+    });
+    
+    setSelectedDate(normalizedDate);
+  };
 
   const filteredMatches = React.useMemo(() => {
     const sourceMatches = activeTab === "upcoming" ? upcomingMatches : completedMatches;
@@ -72,7 +102,7 @@ const Schedule = () => {
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           selectedDate={selectedDate}
-          onDateSelect={setSelectedDate}
+          onDateSelect={handleDateSelect}
         />
 
         {/* REORDERED: Matches section appears first now */}

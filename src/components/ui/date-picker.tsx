@@ -17,6 +17,17 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ date, onDateChange }: DatePickerProps) {
+  // Add logging to track date selection
+  const handleDateSelect = (newDate: Date | undefined) => {
+    console.log("DatePicker - Date selected:", {
+      newDate,
+      newDateString: newDate?.toString(),
+      newDateIso: newDate?.toISOString(),
+    });
+    
+    onDateChange(newDate || null);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -35,7 +46,7 @@ export function DatePicker({ date, onDateChange }: DatePickerProps) {
         <Calendar
           mode="single"
           selected={date || undefined}
-          onSelect={onDateChange}
+          onSelect={handleDateSelect}
           initialFocus
         />
       </PopoverContent>

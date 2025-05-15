@@ -3,6 +3,7 @@ import { useTeamScheduleLoader } from './useTeamScheduleLoader';
 import { usePairingGenerator } from './usePairingGenerator';
 import { useSchedulePreview } from './useSchedulePreview';
 import { useState } from 'react';
+import { normalizeDate } from '@/utils/dateNormalization';
 
 export const useAutoSchedule = () => {
   const teamLoader = useTeamScheduleLoader();
@@ -11,6 +12,14 @@ export const useAutoSchedule = () => {
   const [createdMatches, setCreatedMatches] = useState<any[]>([]);
   
   const generateAndExportSchedule = async (date: Date, options: any = {}) => {
+    // Log the date being used
+    console.log("useAutoSchedule - generateAndExportSchedule date:", {
+      date,
+      dateString: date.toString(),
+      dateIso: date.toISOString(),
+      normalizedDate: normalizeDate(date, 'useAutoSchedule')
+    });
+    
     // Load teams first if not already loaded
     if (!teamLoader.timeBlockTeams || Object.keys(teamLoader.timeBlockTeams).length === 0) {
       await schedulePreview.previewSchedule(date);

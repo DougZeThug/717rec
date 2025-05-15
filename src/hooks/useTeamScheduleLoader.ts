@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getTeamsByTimeBlock } from "@/utils/autoSchedule/teamLoaderUtils";
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
+import { normalizeDate } from "@/utils/dateNormalization";
 
 export const useTeamScheduleLoader = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,20 +17,25 @@ export const useTeamScheduleLoader = () => {
     try {
       setIsLoading(true);
       
+      // Use normalizeDate for consistency
+      const normalizedDateStr = normalizeDate(date, 'useTeamScheduleLoader');
+      const normalizedDate = new Date(normalizedDateStr);
+      
       console.log("Loading teams for date:", {
-        date,
-        dateType: typeof date,
-        dateString: date.toString(),
-        dateIso: date.toISOString(),
-        dateLocal: date.toLocaleDateString()
+        originalDate: date,
+        originalDateString: date.toString(),
+        originalDateIso: date.toISOString(),
+        normalizedDate: normalizedDateStr,
+        normalizedDateObj: normalizedDate,
+        timeBlocks: Object.keys(TIME_BLOCKS)
       });
       
       // Get teams for each time block - updated to use keys from TIME_BLOCKS
-      const timeBlocks = Object.keys(TIME_BLOCKS); // ["6:30 PM", "7:30 PM", "8:30 PM"]
+      const timeBlocks = Object.keys(TIME_BLOCKS); // ["6:30", "7:30", "8:30"]
       const teamsData: TimeBlockTeamsMap = {};
       
       for (const block of timeBlocks) {
-        const teams = await getTeamsByTimeBlock(date, block);
+        const teams = await getTeamsByTimeBlock(normalizedDate, block);
         teamsData[block] = teams;
         console.log(`Loaded ${teams.length} teams for ${block} block`);
       }

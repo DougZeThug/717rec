@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion } from "@/components/ui/accordion";
 import { Calendar } from "lucide-react";
 import AlgorithmSettings from "./AlgorithmSettings";
+import { format } from "date-fns";
 
 interface DateSettingsPanelProps {
   selectedDate: Date | null;
@@ -40,27 +41,30 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   onLoadTeams,
   onGenerateSchedule
 }) => {
-  // Handle date selection to ensure UTC consistency
+  // Handle date selection to ensure consistency
   const handleDateChange = (date: Date | null) => {
-    if (date) {
-      // Create a date at midnight UTC to avoid timezone issues
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const day = date.getDate();
-      
-      // Create a new date at 12:00 PM to avoid timezone issues
-      const normalizedDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
-      console.log("Date selection changed:", {
-        originalDate: date,
-        normalizedDate,
-        dateString: normalizedDate.toString(),
-        utcString: normalizedDate.toUTCString(),
-        isoString: normalizedDate.toISOString()
-      });
-      setSelectedDate(normalizedDate);
-    } else {
+    if (!date) {
       setSelectedDate(null);
+      return;
     }
+    
+    // Create a date at midnight to avoid timezone issues
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create a consistent date object
+    const normalizedDate = new Date(Date.UTC(year, month, day));
+    
+    console.log("DateSettingsPanel - Date selection changed:", {
+      originalDate: date,
+      normalizedDate,
+      dateString: normalizedDate.toString(),
+      utcString: normalizedDate.toUTCString(),
+      isoString: normalizedDate.toISOString()
+    });
+    
+    setSelectedDate(normalizedDate);
   };
 
   return (

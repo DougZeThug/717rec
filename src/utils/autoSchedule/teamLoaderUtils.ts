@@ -11,7 +11,10 @@ import { normalizeDate } from "@/utils/dateNormalization";
 export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promise<Team[]> {
   // Format date for database query - use normalizeDate for consistency
   const normalizedDate = normalizeDate(date, 'getTeamsByTimeBlock');
-  const formattedDate = format(new Date(normalizedDate), 'yyyy-MM-dd');
+  
+  // Parse the normalized date and format it as YYYY-MM-DD for the database query
+  const parsedDate = new Date(normalizedDate);
+  const formattedDate = format(parsedDate, 'yyyy-MM-dd');
   
   // Get the exact timeslot value from our constants
   const timeslotValue = TIME_BLOCKS[timeBlock]?.main;
@@ -23,10 +26,13 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
   
   console.log(`Fetching teams for date: ${formattedDate}, timeslot: ${timeslotValue}`, {
     originalDate: date,
+    originalDateString: date.toString(),
+    originalDateIso: date.toISOString(),
     normalizedDate,
     formattedDate,
     timeBlock,
-    timeslotValue
+    timeslotValue,
+    timeBlocks: TIME_BLOCKS
   });
   
   // For debugging, let's log what's in the database for this date regardless of timeslot

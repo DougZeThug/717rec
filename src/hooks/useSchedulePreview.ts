@@ -7,6 +7,7 @@ import { usePairingGenerator } from "./usePairingGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
 import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
+import { normalizeDate } from "@/utils/dateNormalization";
 
 export type AutoScheduleStep = 'teams' | 'pairings';
 
@@ -18,6 +19,14 @@ export const useSchedulePreview = () => {
 
   const previewSchedule = async (date: Date): Promise<PreviewResult | null> => {
     try {
+      // Log the date being used
+      console.log("useSchedulePreview - previewSchedule date:", {
+        date,
+        dateString: date.toString(),
+        dateIso: date.toISOString(),
+        normalizedDate: normalizeDate(date, 'useSchedulePreview')
+      });
+      
       // Load teams for each time block if not loaded yet
       const teamsData = timeBlockTeams && Object.keys(timeBlockTeams).length > 0 
         ? timeBlockTeams 
@@ -40,7 +49,7 @@ export const useSchedulePreview = () => {
         toast({
           title: "Warning",
           description: `Blocks with odd number of teams: ${unmatchableBlocks.join(', ')}. Some teams may not get matched.`,
-          variant: "default" // Changed from "warning" to "default"
+          variant: "default"
         });
       }
       
@@ -48,7 +57,7 @@ export const useSchedulePreview = () => {
         toast({
           title: "Warning",
           description: `Blocks with insufficient teams: ${insufficientBlocks.join(', ')}. These blocks cannot create matches.`,
-          variant: "default" // Changed from "warning" to "default"
+          variant: "default"
         });
       }
       
@@ -93,6 +102,14 @@ export const useSchedulePreview = () => {
     
     // Add performance tracking
     const startTime = performance.now();
+    
+    // Log the date being used
+    console.log("useSchedulePreview - handleGenerateSchedule date:", {
+      date,
+      dateString: date.toString(),
+      dateIso: date.toISOString(),
+      normalizedDate: normalizeDate(date, 'handleGenerateSchedule')
+    });
     
     const pairings = await generateMatchPairings(date, timeBlockTeams, {
       avoidRematches: options.avoidRematches,

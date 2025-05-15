@@ -24,17 +24,17 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
   try {
     // Handle Date object
     if (typeof date === 'object' && date instanceof Date) {
-      // Use UTC date methods to avoid timezone issues with the DB query
-      // Get year, month, day separately and rebuild as consistent format
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(date.getUTCDate()).padStart(2, '0');
+      // Create a date string in YYYY-MM-DD format to avoid timezone issues
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
       
-      // Create a normalized ISO date string with time at 00:00:00
+      // Create a normalized ISO date string with time at 00:00:00 in UTC
       const normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
       
       console.log(`🔍 [${context}] Normalized date object to ISO string:`, {
         original: date,
+        originalISO: date.toISOString(),
         normalized: normalizedDate
       });
       
@@ -45,12 +45,12 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
     if (typeof date === 'string') {
       const parsed = new Date(date);
       if (!isNaN(parsed.getTime())) {
-        // Use UTC date methods to avoid timezone issues
-        const year = parsed.getUTCFullYear();
-        const month = String(parsed.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(parsed.getUTCDate()).padStart(2, '0');
+        // Create a date string in YYYY-MM-DD format to avoid timezone issues
+        const year = parsed.getFullYear();
+        const month = String(parsed.getMonth() + 1).padStart(2, '0');
+        const day = String(parsed.getDate()).padStart(2, '0');
         
-        // Create a normalized ISO date string with time at 00:00:00
+        // Create a normalized ISO date string with time at 00:00:00 in UTC
         const normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
         
         console.log(`🔍 [${context}] Normalized string date to ISO:`, {
