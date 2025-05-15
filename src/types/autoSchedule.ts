@@ -71,6 +71,13 @@ export interface AlgorithmConfig {
   };
 }
 
+// Add DualBlockConfig interface
+export interface DualBlockConfig extends AlgorithmConfig {
+  primaryBlock?: string;
+  secondaryBlock?: string;
+  unmatchedTeamStrategy?: 'random' | 'lowest-rank' | 'manual';
+}
+
 export interface MatchQualityMetrics {
   totalMatches: number;
   rematchCount: number;

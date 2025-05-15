@@ -1,13 +1,13 @@
+
 import { useState } from "react";
 import { Team } from "@/types";
-import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult, PairingResult, PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
+import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult, PairingResult, PairedTimeBlockTeamsMap, DualBlockConfig } from "@/types/autoSchedule";
 import { useTeamScheduleLoader } from "./useTeamScheduleLoader";
 import { usePairingGenerator } from "./usePairingGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
 import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 import { normalizeDate } from "@/utils/dateNormalization";
-import { DualBlockConfig } from "@/types/dualBlock";
 import { createTimeBlockPairs, balanceTeamsBetweenBlocks } from "@/utils/autoSchedule/dualBlockUtils";
 
 export type AutoScheduleStep = 'teams' | 'pairings';

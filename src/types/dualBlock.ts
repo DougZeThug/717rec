@@ -1,15 +1,6 @@
 
 import { Team } from "@/types";
-import { AlgorithmConfig, PairingResult } from "@/types/autoSchedule";
-
-/**
- * Configuration for dual block pairings
- */
-export interface DualBlockConfig extends AlgorithmConfig {
-  primaryBlock?: string;
-  secondaryBlock?: string;
-  unmatchedTeamStrategy?: 'random' | 'lowest-rank' | 'manual';
-}
+import { PairingResult } from "@/types/autoSchedule";
 
 /**
  * Notification callback for errors and warnings

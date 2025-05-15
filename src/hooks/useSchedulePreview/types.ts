@@ -16,6 +16,7 @@ export interface PreviewMatch {
   team1Id: string;
   team2Id: string;
   timeslot: string;
+  blockType?: 'primary' | 'secondary'; // Add this property for dual match mode
 }
 
 export interface TeamCountsStatus {
