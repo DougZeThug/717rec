@@ -80,34 +80,52 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
     }
     
     // Extract teams from timeslots and restructure as Team objects
-    const teams: Team[] = timeslots
-      .filter(slot => slot.teams) // Filter out slots without team data
-      .map(slot => {
-        const team = slot.teams;
-        
-        // Add type safety - make sure team object has required properties
-        if (!team) {
-          console.warn('Received empty team data for timeslot:', slot);
-          return null;
-        }
-        
-        // Ensure we're safely accessing team properties with fallbacks
-        return {
-          id: team.id || '',
-          name: team.name || 'Unknown Team',
-          logoUrl: team.logo_url || null,
-          imageUrl: team.image_url || null,
-          players: team.players || [],
-          wins: team.wins || 0,
-          losses: team.losses || 0,
-          game_wins: team.game_wins || 0,
-          game_losses: team.game_losses || 0,
-          power_score: team.power_score || 0,
-          sos: team.sos || 0.5,
-          division: team.division_id
-        };
-      })
-      .filter(Boolean) as Team[]; // Filter out any null entries from mapping
+    const teams: Team[] = [];
+    
+    // Process each timeslot safely
+    for (const slot of timeslots) {
+      // Skip if no team data exists
+      if (!slot.teams) continue;
+      
+      // Instead of directly accessing properties, use type assertion
+      // to help TypeScript understand the structure
+      const teamData = slot.teams as {
+        id?: string;
+        name?: string;
+        logo_url?: string | null;
+        image_url?: string | null;
+        players?: any[];
+        wins?: number;
+        losses?: number;
+        game_wins?: number;
+        game_losses?: number;
+        power_score?: number;
+        sos?: number;
+        division_id?: string;
+      };
+      
+      // Skip if we received invalid team data
+      if (!teamData.id) {
+        console.warn('Received invalid team data for timeslot:', slot);
+        continue;
+      }
+      
+      // Create team object with safe property access using defaults
+      teams.push({
+        id: teamData.id,
+        name: teamData.name || 'Unknown Team',
+        logoUrl: teamData.logo_url || null,
+        imageUrl: teamData.image_url || null,
+        players: Array.isArray(teamData.players) ? teamData.players : [],
+        wins: teamData.wins || 0,
+        losses: teamData.losses || 0,
+        game_wins: teamData.game_wins || 0,
+        game_losses: teamData.game_losses || 0,
+        power_score: typeof teamData.power_score === 'number' ? teamData.power_score : 0,
+        sos: typeof teamData.sos === 'number' ? teamData.sos : 0.5,
+        division: teamData.division_id
+      });
+    }
       
     console.log(`Processed ${teams.length} teams for ${timeBlock} block`);
     return teams;
