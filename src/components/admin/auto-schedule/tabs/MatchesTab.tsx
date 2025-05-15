@@ -1,10 +1,14 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics } from "@/types/autoSchedule";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ScheduleMatchesPreview from "@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview";
-import { calculateDualBlockMetrics } from "@/utils/autoSchedule/dualBlock"; // Updated import path
+import { 
+  calculateDualBlockMetrics, 
+  validateDualBlockSchedule 
+} from "@/utils/autoSchedule/dualBlock"; 
+import DualMatchWarningDisplay from "@/components/admin/auto-schedule/DualMatchWarningDisplay";
 
 interface MatchesTabProps {
   selectedDate: Date | null;
@@ -32,7 +36,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
     Object.values(generatedPairings || {}).some(blockPairings => blockPairings?.length > 0);
 
   // Calculate dual block metrics if in dual match mode and we have pairings
-  const dualBlockMetrics = React.useMemo(() => {
+  const dualBlockMetrics = useMemo(() => {
     if (dualMatchMode && hasPairings) {
       // Get the first two blocks in generatedPairings - typically Early and Late
       const blocks = Object.keys(generatedPairings);
@@ -45,6 +49,36 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
     }
     return null;
   }, [dualMatchMode, generatedPairings, hasPairings]);
+
+  // Validate dual block schedule
+  const dualBlockValidation = useMemo(() => {
+    if (dualMatchMode && hasPairings) {
+      const blocks = Object.keys(generatedPairings);
+      if (blocks.length >= 2) {
+        const primaryBlockPairings = generatedPairings[blocks[0]] || [];
+        const secondaryBlockPairings = generatedPairings[blocks[1]] || [];
+        
+        return validateDualBlockSchedule(primaryBlockPairings, secondaryBlockPairings);
+      }
+    }
+    return null;
+  }, [dualMatchMode, generatedPairings, hasPairings]);
+
+  // Calculate total teams in the schedule
+  const totalTeams = useMemo(() => {
+    if (!hasPairings) return 0;
+    
+    const uniqueTeamIds = new Set<string>();
+    
+    Object.values(generatedPairings).forEach(blockPairings => {
+      blockPairings.forEach(pairing => {
+        uniqueTeamIds.add(pairing.team1.id);
+        uniqueTeamIds.add(pairing.team2.id);
+      });
+    });
+    
+    return uniqueTeamIds.size;
+  }, [generatedPairings, hasPairings]);
 
   return (
     <div className="space-y-4">
@@ -66,6 +100,17 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
               {matchQualityMetrics.qualityRating} Quality
             </Badge>
           )}
+          
+          {dualMatchMode && dualBlockMetrics && (
+            <Badge 
+              variant={
+                dualBlockMetrics.overallQualityScore >= 85 ? "recreational" :
+                dualBlockMetrics.overallQualityScore >= 70 ? "intermediate" : "outline"
+              }
+            >
+              Dual Match Score: {dualBlockMetrics.overallQualityScore}
+            </Badge>
+          )}
         </div>
       </div>
       
@@ -77,22 +122,42 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
       {hasPairings ? (
         <div className="space-y-4">
           {dualMatchMode && dualBlockMetrics && (
-            <div className="grid grid-cols-3 gap-3 mt-2 mb-4">
-              <div className="bg-muted/50 p-3 rounded-md text-center">
-                <div className="text-lg font-semibold">{dualBlockMetrics.teamsWithBothMatches}</div>
-                <div className="text-xs text-muted-foreground">Teams With Both Matches</div>
-              </div>
-              <div className="bg-muted/50 p-3 rounded-md text-center">
-                <div className="text-lg font-semibold">{dualBlockMetrics.teamsWithSingleMatch}</div>
-                <div className="text-xs text-muted-foreground">Teams With One Match</div>
-              </div>
-              <div className="bg-muted/50 p-3 rounded-md text-center">
-                <div className="text-lg font-semibold">
-                  {dualBlockMetrics.crossBlockCompatibility.toFixed(1)}
+            <>
+              <div className="grid grid-cols-4 gap-3 mt-2 mb-4">
+                <div className="bg-muted/50 p-3 rounded-md text-center">
+                  <div className="text-lg font-semibold">{dualBlockMetrics.teamsWithBothMatches}</div>
+                  <div className="text-xs text-muted-foreground">Teams With Both Matches</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Cross-Block Compatibility</div>
+                <div className="bg-muted/50 p-3 rounded-md text-center">
+                  <div className="text-lg font-semibold">{dualBlockMetrics.teamsWithSingleMatch}</div>
+                  <div className="text-xs text-muted-foreground">Teams With One Match</div>
+                </div>
+                <div className="bg-muted/50 p-3 rounded-md text-center">
+                  <div className="text-lg font-semibold">
+                    {dualBlockMetrics.crossBlockCompatibility.toFixed(1)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Cross-Block Compatibility</div>
+                </div>
+                <div className="bg-muted/50 p-3 rounded-md text-center">
+                  <div className="text-lg font-semibold"
+                    style={{
+                      color: dualBlockMetrics.teamsWithDuplicateOpponents > 0 ? 
+                        'var(--amber-500)' : 'inherit'
+                    }}
+                  >
+                    {dualBlockMetrics.teamsWithDuplicateOpponents}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Teams With Duplicate Opponents</div>
+                </div>
               </div>
-            </div>
+              
+              <DualMatchWarningDisplay 
+                validation={dualBlockValidation}
+                duplicateOpponentsCount={dualBlockMetrics.teamsWithDuplicateOpponents}
+                teamsInBothBlocks={dualBlockMetrics.teamsWithBothMatches}
+                totalTeams={totalTeams}
+              />
+            </>
           )}
           
           <ScheduleMatchesPreview

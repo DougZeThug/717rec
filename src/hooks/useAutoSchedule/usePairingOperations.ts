@@ -5,6 +5,7 @@ import { useSchedulePreview } from '../useSchedulePreview';
 import { useToast } from '@/hooks/use-toast';
 import { AlgorithmConfig, TimeBlockTeamsMap, TeamPairingMap } from '@/types/autoSchedule';
 import { analyzeMatchQuality } from '@/utils/autoSchedule/scheduleUtils';
+import { validateDualBlockSchedule } from '@/utils/autoSchedule/dualBlock';
 
 export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
   const { 
@@ -75,7 +76,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
     }
   }, [generateMatchPairings, toast, setActiveTab]);
 
-  // Handle applying schedule - Enhanced for dual match mode
+  // Handle applying schedule - Enhanced for dual match mode and validation
   const handleApplySchedule = useCallback((
     generatedPairings: TeamPairingMap | null,
     selectedDate: Date | null,
@@ -93,6 +94,35 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
     }
     
     try {
+      // For dual match mode, run validation first
+      if (dualMatchMode) {
+        const blocks = Object.keys(generatedPairings);
+        if (blocks.length >= 2) {
+          const primaryBlockPairings = generatedPairings[blocks[0]] || [];
+          const secondaryBlockPairings = generatedPairings[blocks[1]] || [];
+          
+          const validation = validateDualBlockSchedule(primaryBlockPairings, secondaryBlockPairings);
+          
+          // If validation has errors and overbookedTeams, show warning but still allow export
+          if (validation.overbookedTeams.length > 0) {
+            toast({
+              title: "Warning",
+              description: `${validation.overbookedTeams.length} team(s) are scheduled for overlapping time slots.`,
+              variant: "destructive"
+            });
+          }
+          
+          // If validation found teams with duplicate opponents, show warning but still allow export
+          if (validation.teamsWithDuplicateOpponents.length > 0) {
+            toast({
+              title: "Warning",
+              description: `${validation.teamsWithDuplicateOpponents.length} team(s) will face the same opponent in both blocks.`,
+              variant: "default"
+            });
+          }
+        }
+      }
+      
       // Convert pairings to matches with dual match mode awareness
       const matches = convertPairingsToMatches(generatedPairings, selectedDate, { 
         dualMatchMode 
