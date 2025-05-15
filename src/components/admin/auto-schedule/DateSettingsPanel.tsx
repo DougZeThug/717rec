@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { DualBlockConfig } from "@/types/dualBlock";
+import { DualBlockConfig } from "@/types/autoSchedule";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DateSettingsPanelProps {

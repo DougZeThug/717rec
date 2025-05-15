@@ -1,7 +1,5 @@
-
 import { useState, useCallback } from 'react';
-import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult } from '@/types/autoSchedule';
-import { DualBlockConfig } from '@/types/dualBlock';
+import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult, DualBlockConfig } from '@/types/autoSchedule';
 import { generatePairingsWithConfig } from '@/utils/autoSchedule/pairingAlgorithm';
 import { calculateConfigurableCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { useTeamFetching } from './useTeamFetching';

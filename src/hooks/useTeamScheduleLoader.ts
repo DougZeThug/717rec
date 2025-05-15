@@ -1,10 +1,8 @@
-
 import { useState, useCallback } from 'react';
-import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap } from '@/types/autoSchedule';
+import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
 import { getTeamsByTimeBlock, getTeamsByTimeBlockPair } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { normalizeDate } from '@/utils/dateNormalization';
-import { DualBlockConfig } from '@/types/dualBlock';
 
 /**
  * Hook for loading team schedules and handling team count status

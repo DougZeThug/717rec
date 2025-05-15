@@ -1,10 +1,8 @@
-
 import { useState, useCallback } from 'react';
-import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap } from '@/types/autoSchedule';
+import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
 import { getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { normalizeDate } from '@/utils/dateNormalization';
-import { DualBlockConfig } from '@/types/dualBlock';
 import { createTimeBlockPairs, balanceTeamsBetweenBlocks } from '@/utils/autoSchedule/dualBlockUtils';
 
 export const useTeamOperations = () => {

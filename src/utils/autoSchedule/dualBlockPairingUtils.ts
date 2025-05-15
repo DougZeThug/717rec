@@ -1,7 +1,8 @@
 
-import { TeamPairing, TeamPairingMap, DualBlockConfig, PairingResult } from "@/types/autoSchedule";
+import { TeamPairingMap, TimeBlockTeamsMap, PairingResult, DualBlockConfig } from "@/types/autoSchedule";
 import { Team } from "@/types";
 import { NotificationCallback } from "@/types/dualBlock";
+import { validateDualBlockTeams, handleOddTeamCount, createCrossBlockCompatibilityAdjuster } from "./dualBlockUtils";
 import { generatePairingsWithConfig } from "./pairingAlgorithm";
 import { calculateConfigurableCompatibility } from "./compatibilityUtils";
 import { haveTeamsPlayedBefore } from "./matchHistoryService";
