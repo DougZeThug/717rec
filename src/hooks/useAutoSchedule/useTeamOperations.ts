@@ -1,19 +1,26 @@
 
 import { useState, useCallback } from 'react';
-import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap } from '@/types/autoSchedule';
 import { getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { normalizeDate } from '@/utils/dateNormalization';
+import { DualBlockConfig } from '@/types/dualBlock';
+import { createTimeBlockPairs, balanceTeamsBetweenBlocks } from '@/utils/autoSchedule/dualBlockUtils';
 
 export const useTeamOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
+  const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
 
   /**
    * Load teams for all time blocks for a specific date
-   * With improved date handling
+   * With improved date handling and dual block support
    */
-  const handleLoadTeams = useCallback(async (date: Date | null): Promise<TimeBlockTeamsMap> => {
+  const handleLoadTeams = useCallback(async (
+    date: Date | null, 
+    dualBlockMode: boolean = false, 
+    dualBlockConfig: DualBlockConfig = {}
+  ): Promise<TimeBlockTeamsMap> => {
     if (!date) {
       console.warn("No date provided to handleLoadTeams");
       return {};
@@ -26,7 +33,8 @@ export const useTeamOperations = () => {
         date: date,
         dateString: date.toString(),
         dateIso: date.toISOString(),
-        normalizedDate: normalizeDate(date, 'loadTeamsForDate')
+        normalizedDate: normalizeDate(date, 'loadTeamsForDate'),
+        dualBlockMode
       });
       
       // Ensure the date is properly formatted to prevent timezone issues
@@ -62,25 +70,71 @@ export const useTeamOperations = () => {
         }
       });
       
+      // Update state with regular time block structure
+      setTimeBlockTeams(timeBlocksData);
+      
+      // If dual block mode is enabled, create paired blocks structure
+      if (dualBlockMode) {
+        const pairedBlocks = createTimeBlockPairs(timeBlocksData, dualBlockConfig);
+        setPairedTimeBlockTeams(pairedBlocks);
+        
+        console.log("Created paired time blocks:", pairedBlocks);
+      } else {
+        // Reset paired blocks if not in dual mode
+        setPairedTimeBlockTeams({});
+      }
+      
       console.log("Team loading completed", {
         date: safeDate,
         normalizedDate: normalizeDate(safeDate, 'complete'),
         timeBlockCount: Object.keys(timeBlocksData).length,
-        totalTeams: Object.values(timeBlocksData).flat().length
+        totalTeams: Object.values(timeBlocksData).flat().length,
+        dualBlockMode
       });
       
-      // Update state
-      setTimeBlockTeams(timeBlocksData);
       return timeBlocksData;
     } catch (error) {
       console.error('Error loading teams for date:', error);
       // Return empty object on error
       setTimeBlockTeams({});
+      setPairedTimeBlockTeams({});
       return {};
     } finally {
       setIsLoading(false);
     }
   }, []);
+  
+  /**
+   * Balance team counts for dual block mode
+   */
+  const balanceDualBlockTeams = useCallback((
+    dualBlockConfig: DualBlockConfig = {}
+  ): { 
+    balancedTeams: TimeBlockTeamsMap, 
+    unmatchedTeamIds: string[] 
+  } => {
+    // Get block names from config or use defaults
+    const primaryBlock = dualBlockConfig.primaryBlock || 'Early';
+    const secondaryBlock = dualBlockConfig.secondaryBlock || 'Late';
+    
+    // Get teams from each block
+    const primaryTeams = timeBlockTeams[primaryBlock] || [];
+    const secondaryTeams = timeBlockTeams[secondaryBlock] || [];
+    
+    // Balance teams between blocks
+    const { 
+      primaryAdjusted, 
+      secondaryAdjusted, 
+      unmatchedTeamIds 
+    } = balanceTeamsBetweenBlocks(primaryTeams, secondaryTeams, dualBlockConfig);
+    
+    // Create balanced team block map
+    const balancedTeams = { ...timeBlockTeams };
+    balancedTeams[primaryBlock] = primaryAdjusted;
+    balancedTeams[secondaryBlock] = secondaryAdjusted;
+    
+    return { balancedTeams, unmatchedTeamIds };
+  }, [timeBlockTeams]);
 
   /**
    * Get counts for all teams and blocks with odd number of teams
@@ -101,8 +155,11 @@ export const useTeamOperations = () => {
   return {
     isLoading,
     timeBlockTeams,
+    pairedTimeBlockTeams,
     setTimeBlockTeams,
+    setPairedTimeBlockTeams,
     handleLoadTeams,
+    balanceDualBlockTeams,
     getTeamCountStatus
   };
 };

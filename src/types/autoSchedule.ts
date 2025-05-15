@@ -27,6 +27,16 @@ export interface TimeBlockTeamsMap {
   [timeBlock: string]: Team[];
 }
 
+// New interface for paired blocks structure
+export interface PairedTimeBlockTeamsMap {
+  [blockPairKey: string]: {
+    primaryBlock: string;
+    secondaryBlock: string;
+    primaryTeams: Team[];
+    secondaryTeams: Team[];
+  };
+}
+
 export interface PreviewResult {
   date: Date;
   timeBlocks: TimeBlockTeamsMap;

@@ -1,14 +1,16 @@
 
-import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon, RefreshCw, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Accordion } from "@/components/ui/accordion";
-import { Calendar } from "lucide-react";
-import AlgorithmSettings from "./AlgorithmSettings";
-import { normalizeDate } from "@/utils/dateNormalization";
+import { DualBlockConfig } from "@/types/dualBlock";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DateSettingsPanelProps {
   selectedDate: Date | null;
@@ -23,7 +25,7 @@ interface DateSettingsPanelProps {
   isGenerating: boolean;
   totalTeams: number;
   oddBlocks: number;
-  formattedDate?: string;
+  formattedDate: string;
   onLoadTeams: () => Promise<void>;
   onGenerateSchedule: () => Promise<void>;
 }
@@ -45,113 +47,234 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   onLoadTeams,
   onGenerateSchedule
 }) => {
-  // Handle date selection to ensure consistency
-  const handleDateChange = (date: Date | null) => {
-    if (!date) {
-      setSelectedDate(null);
-      return;
-    }
-    
-    console.log("DateSettingsPanel - Date selection changed:", {
-      originalDate: date,
-      dateString: date.toString(),
-      isoString: date.toISOString(),
-      normalizedDate: normalizeDate(date, 'DateSettingsPanel')
-    });
-    
-    // Set the date at noon to avoid timezone issues
-    const safeDate = new Date(date);
-    safeDate.setHours(12, 0, 0, 0);
-    setSelectedDate(safeDate);
-  };
+  // State for dual block configuration
+  const [dualBlockConfig, setDualBlockConfig] = useState<DualBlockConfig>({
+    primaryBlock: 'Early',
+    secondaryBlock: 'Late',
+    unmatchedTeamStrategy: 'lowest-rank'
+  });
 
-  // Handle team loading with enhanced error reporting
-  const handleLoadTeams = async () => {
-    if (!selectedDate) {
-      console.error("Date selection missing");
-      return;
-    }
-    
-    console.log("DateSettingsPanel - Loading teams for:", {
-      selectedDate,
-      normalizedDate: normalizeDate(selectedDate, 'handleLoadTeams')
-    });
-    
-    try {
-      await onLoadTeams();
-    } catch (error) {
-      console.error("Error loading teams:", error);
-    }
+  // Handle dual block primary block selection
+  const handlePrimaryBlockChange = (value: string) => {
+    setDualBlockConfig(prev => ({
+      ...prev,
+      primaryBlock: value,
+      // If same block selected for both, swap them
+      secondaryBlock: prev.secondaryBlock === value ? prev.primaryBlock : prev.secondaryBlock
+    }));
+  };
+  
+  // Handle dual block secondary block selection
+  const handleSecondaryBlockChange = (value: string) => {
+    setDualBlockConfig(prev => ({
+      ...prev,
+      secondaryBlock: value,
+      // If same block selected for both, swap them
+      primaryBlock: prev.primaryBlock === value ? prev.secondaryBlock : prev.primaryBlock
+    }));
+  };
+  
+  // Handle strategy selection for unmatched teams
+  const handleStrategyChange = (value: string) => {
+    setDualBlockConfig(prev => ({
+      ...prev,
+      unmatchedTeamStrategy: value as 'random' | 'lowest-rank' | 'manual'
+    }));
   };
 
   return (
-    <Card className="lg:col-span-1">
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Calendar className="h-4 w-4" /> Select Date
-        </CardTitle>
-        {formattedDate && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {formattedDate}
-            {selectedDate && (
-              <span className="block text-xs opacity-70">
-                (DB format: {normalizeDate(selectedDate, 'display')})
-              </span>
+    <div className="lg:col-span-1">
+      <Card>
+        <CardHeader>
+          <CardTitle>Schedule Settings</CardTitle>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          {/* Date Selection */}
+          <div>
+            <h4 className="text-sm font-medium mb-2">Date Selection</h4>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? (
+                    format(selectedDate, "PPP")
+                  ) : (
+                    <span>Select a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate || undefined}
+                  onSelect={(date) => setSelectedDate(date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          {/* Algorithm Settings */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium mb-2">Algorithm Settings</h4>
+            
+            <div className="flex items-center justify-between space-x-2">
+              <Label htmlFor="avoid-rematches" className="flex-1">
+                Avoid Rematches
+              </Label>
+              <Switch
+                id="avoid-rematches"
+                checked={avoidRematches}
+                onCheckedChange={setAvoidRematches}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between space-x-2">
+              <Label htmlFor="prioritize-quality" className="flex-1">
+                Prioritize Match Quality
+              </Label>
+              <Switch
+                id="prioritize-quality"
+                checked={prioritizeQuality}
+                onCheckedChange={setPrioritizeQuality}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between space-x-2">
+              <Label htmlFor="dual-match-mode" className="flex-1">
+                Dual Match Mode
+              </Label>
+              <Switch
+                id="dual-match-mode"
+                checked={dualMatchMode}
+                onCheckedChange={setDualMatchMode}
+              />
+            </div>
+            
+            {/* Dual Block Configuration - only show when dual match mode is enabled */}
+            {dualMatchMode && (
+              <div className="mt-4 space-y-3 border rounded-md p-3 bg-slate-50 dark:bg-slate-900">
+                <h5 className="text-sm font-medium">Dual Block Configuration</h5>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="primary-block">Primary Time Block</Label>
+                  <Select 
+                    value={dualBlockConfig.primaryBlock} 
+                    onValueChange={handlePrimaryBlockChange}
+                  >
+                    <SelectTrigger id="primary-block">
+                      <SelectValue placeholder="Select primary block" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Early">Early (6:30)</SelectItem>
+                      <SelectItem value="Late">Late (7:30)</SelectItem>
+                      <SelectItem value="Overflow">Overflow (8:30)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="secondary-block">Secondary Time Block</Label>
+                  <Select 
+                    value={dualBlockConfig.secondaryBlock} 
+                    onValueChange={handleSecondaryBlockChange}
+                  >
+                    <SelectTrigger id="secondary-block">
+                      <SelectValue placeholder="Select secondary block" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Early">Early (6:30)</SelectItem>
+                      <SelectItem value="Late">Late (7:30)</SelectItem>
+                      <SelectItem value="Overflow">Overflow (8:30)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="unmatched-strategy">Unmatched Teams Strategy</Label>
+                  <Select 
+                    value={dualBlockConfig.unmatchedTeamStrategy || 'lowest-rank'} 
+                    onValueChange={handleStrategyChange}
+                  >
+                    <SelectTrigger id="unmatched-strategy">
+                      <SelectValue placeholder="Select strategy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="lowest-rank">Lowest Ranked Team</SelectItem>
+                      <SelectItem value="random">Random Team</SelectItem>
+                      <SelectItem value="manual">Manual Assignment</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             )}
-          </p>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <DatePicker
-            date={selectedDate}
-            onDateChange={handleDateChange}
-          />
+          </div>
           
-          <Separator className="my-4" />
+          <Separator />
           
-          <Accordion type="single" collapsible>
-            <AlgorithmSettings 
-              avoidRematches={avoidRematches}
-              setAvoidRematches={setAvoidRematches}
-              prioritizeQuality={prioritizeQuality}
-              setPrioritizeQuality={setPrioritizeQuality}
-              dualMatchMode={dualMatchMode}
-              setDualMatchMode={setDualMatchMode}
-            />
-          </Accordion>
-          
-          <div className="pt-4 space-y-4">
+          {/* Action Buttons */}
+          <div className="space-y-3">
             <Button
-              onClick={handleLoadTeams}
-              className="w-full"
-              disabled={isLoading || !selectedDate}
+              onClick={onLoadTeams}
+              disabled={!selectedDate || isLoading}
               variant="secondary"
+              className="w-full flex items-center justify-center"
             >
-              {isLoading ? "Loading..." : "Load Teams"}
+              {isLoading ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Load Teams
+                </>
+              )}
             </Button>
             
             <Button
               onClick={onGenerateSchedule}
-              className="w-full"
-              variant="default"
-              disabled={isGenerating || totalTeams === 0}
+              disabled={isGenerating || !selectedDate || totalTeams === 0}
+              className="w-full flex items-center justify-center"
             >
-              {isGenerating ? "Generating..." : "Generate Schedule"}
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  Generate Schedule
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
           
+          {/* Status Display */}
           {totalTeams > 0 && (
-            <div className="flex justify-between items-center text-sm mt-2">
-              <span>Total Teams:</span>
-              <Badge variant={oddBlocks > 0 ? "destructive" : "outline"}>
-                {totalTeams} {oddBlocks > 0 && `(${oddBlocks} Odd Blocks)`}
-              </Badge>
+            <div className="bg-slate-100 dark:bg-slate-800 rounded-md p-2 text-sm">
+              <p>
+                Date: <span className="font-medium">{formattedDate}</span>
+              </p>
+              <p>
+                Teams: <span className="font-medium">{totalTeams}</span>
+                {oddBlocks > 0 && (
+                  <span className="text-amber-600 ml-1">
+                    ({oddBlocks} block{oddBlocks === 1 ? '' : 's'} with odd number of teams)
+                  </span>
+                )}
+              </p>
             </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

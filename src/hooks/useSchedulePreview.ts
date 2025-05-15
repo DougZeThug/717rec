@@ -1,13 +1,15 @@
 
 import { useState } from "react";
 import { Team } from "@/types";
-import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult, PairingResult } from "@/types/autoSchedule";
+import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult, PairingResult, PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
 import { useTeamScheduleLoader } from "./useTeamScheduleLoader";
 import { usePairingGenerator } from "./usePairingGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
 import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 import { normalizeDate } from "@/utils/dateNormalization";
+import { DualBlockConfig } from "@/types/dualBlock";
+import { createTimeBlockPairs, balanceTeamsBetweenBlocks } from "@/utils/autoSchedule/dualBlockUtils";
 
 export type AutoScheduleStep = 'teams' | 'pairings';
 
@@ -16,23 +18,55 @@ export const useSchedulePreview = () => {
   const { isLoading, timeBlockTeams, loadTeamsForDate, getTeamCountStatus } = useTeamScheduleLoader();
   const { isGenerating, generatedPairings, unmatchedTeamIds, generateMatchPairings } = usePairingGenerator();
   const { toast } = useToast();
+  const [pairedBlocks, setPairedBlocks] = useState<PairedTimeBlockTeamsMap>({});
 
-  const previewSchedule = async (date: Date): Promise<PreviewResult | null> => {
+  const previewSchedule = async (date: Date, dualBlockMode = false, blockConfig?: DualBlockConfig): Promise<PreviewResult | null> => {
     try {
       // Log the date being used
       console.log("useSchedulePreview - previewSchedule date:", {
         date,
         dateString: date.toString(),
         dateIso: date.toISOString(),
-        simpleDateString: normalizeDate(date, 'useSchedulePreview')
+        simpleDateString: normalizeDate(date, 'useSchedulePreview'),
+        dualBlockMode
       });
       
       // Load teams for each time block if not loaded yet
       const teamsData = timeBlockTeams && Object.keys(timeBlockTeams).length > 0 
         ? timeBlockTeams 
-        : await loadTeamsForDate(date);
+        : await loadTeamsForDate(date, dualBlockMode, blockConfig);
         
       if (!teamsData) return null;
+      
+      // Process for dual block mode if enabled
+      if (dualBlockMode && blockConfig) {
+        // Create paired blocks structure
+        const pairs = createTimeBlockPairs(teamsData, blockConfig);
+        setPairedBlocks(pairs);
+        
+        // Get primary and secondary block names
+        const primaryBlock = blockConfig.primaryBlock || 'Early';
+        const secondaryBlock = blockConfig.secondaryBlock || 'Late';
+        
+        // Check if both blocks have teams
+        if (!teamsData[primaryBlock] || !teamsData[secondaryBlock]) {
+          toast({
+            title: "Warning",
+            description: `Dual match mode requires teams in both ${primaryBlock} and ${secondaryBlock} blocks.`,
+            variant: "default"
+          });
+        }
+        
+        // Balance team counts if needed
+        const { balancedTeams, unmatchedTeamIds } = performTeamBalancing(teamsData, blockConfig);
+        if (unmatchedTeamIds.length > 0) {
+          toast({
+            title: "Notice",
+            description: `${unmatchedTeamIds.length} team(s) are unmatched due to odd number of teams.`,
+            variant: "default"
+          });
+        }
+      }
       
       // Validate team counts to identify insufficient and odd blocks
       const { isValid, insufficientBlocks } = validateTeamCounts(teamsData);
@@ -77,6 +111,33 @@ export const useSchedulePreview = () => {
       return null;
     }
   };
+  
+  /**
+   * Helper function to balance teams between blocks
+   */
+  const performTeamBalancing = (
+    teamBlocks: TimeBlockTeamsMap,
+    blockConfig: DualBlockConfig
+  ): { balancedTeams: TimeBlockTeamsMap, unmatchedTeamIds: string[] } => {
+    // Get primary and secondary block names from config or use defaults
+    const primaryBlock = blockConfig.primaryBlock || 'Early';
+    const secondaryBlock = blockConfig.secondaryBlock || 'Late';
+    
+    // Get teams from each block
+    const primaryTeams = teamBlocks[primaryBlock] || [];
+    const secondaryTeams = teamBlocks[secondaryBlock] || [];
+    
+    // Balance teams between blocks
+    const { primaryAdjusted, secondaryAdjusted, unmatchedTeamIds } = 
+      balanceTeamsBetweenBlocks(primaryTeams, secondaryTeams, blockConfig);
+    
+    // Create updated team blocks map
+    const balancedTeams = { ...teamBlocks };
+    balancedTeams[primaryBlock] = primaryAdjusted;
+    balancedTeams[secondaryBlock] = secondaryAdjusted;
+    
+    return { balancedTeams, unmatchedTeamIds };
+  };
 
   const handleGenerateSchedule = async (
     date: Date,
@@ -109,10 +170,30 @@ export const useSchedulePreview = () => {
       date,
       dateString: date.toString(),
       dateIso: date.toISOString(),
-      simpleDateString: normalizeDate(date, 'handleGenerateSchedule')
+      simpleDateString: normalizeDate(date, 'handleGenerateSchedule'),
+      dualMatchMode: options.dualMatchMode
     });
     
-    const result = await generateMatchPairings(date, timeBlockTeams, {
+    // If in dual match mode, use the balanced teams
+    let teamsToUse = timeBlockTeams;
+    
+    if (options.dualMatchMode) {
+      // Create a dual block config from options
+      const dualConfig: DualBlockConfig = {
+        dualMatchMode: true,
+        primaryBlock: 'Early',
+        secondaryBlock: 'Late',
+        unmatchedTeamStrategy: 'lowest-rank'
+      };
+      
+      // Balance teams to ensure even counts
+      const { balancedTeams } = performTeamBalancing(timeBlockTeams, dualConfig);
+      teamsToUse = balancedTeams;
+      
+      console.log("Using balanced teams for dual match mode:", teamsToUse);
+    }
+    
+    const result = await generateMatchPairings(date, teamsToUse, {
       avoidRematches: options.avoidRematches,
       dualMatchMode: options.dualMatchMode,
       weights: options.weights
@@ -199,11 +280,13 @@ export const useSchedulePreview = () => {
     isLoading,
     isGenerating,
     timeBlockTeams,
+    pairedBlocks,
     generatedPairings,
     unmatchedTeamIds,
     previewSchedule,
     handleGenerateSchedule,
     convertPairingsToMatches,
-    getTeamCountStatus
+    getTeamCountStatus,
+    performTeamBalancing
   };
 };

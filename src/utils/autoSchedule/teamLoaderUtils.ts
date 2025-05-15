@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 import { normalizeDate } from "@/utils/dateNormalization";
+import { PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
 
 /**
  * Get teams by specific time block and date
@@ -134,4 +135,84 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
     console.error(`Unexpected error fetching teams for ${timeBlock}:`, error);
     return [];
   }
+};
+
+/**
+ * Get teams for a pair of time blocks
+ * This loads teams for both blocks and creates a structure for dual block pairing
+ */
+export const getTeamsByTimeBlockPair = async (
+  date: Date, 
+  primaryBlock: string, 
+  secondaryBlock: string
+): Promise<PairedTimeBlockTeamsMap> => {
+  console.log(`Loading teams for block pair: ${primaryBlock}/${secondaryBlock}`, {
+    date: date.toISOString()
+  });
+  
+  try {
+    // Load teams for both blocks in parallel for efficiency
+    const [primaryTeams, secondaryTeams] = await Promise.all([
+      getTeamsByTimeBlock(date, primaryBlock),
+      getTeamsByTimeBlock(date, secondaryBlock)
+    ]);
+    
+    // Create a paired block structure
+    const blockPairKey = `${primaryBlock}-${secondaryBlock}`;
+    const pairedBlocks: PairedTimeBlockTeamsMap = {
+      [blockPairKey]: {
+        primaryBlock,
+        secondaryBlock,
+        primaryTeams,
+        secondaryTeams
+      }
+    };
+    
+    console.log(`Created block pair with ${primaryTeams.length} primary teams and ${secondaryTeams.length} secondary teams`);
+    
+    return pairedBlocks;
+  } catch (error) {
+    console.error(`Error fetching teams for block pair ${primaryBlock}/${secondaryBlock}:`, error);
+    return {};
+  }
+};
+
+/**
+ * Find teams that are common between two time blocks
+ */
+export const findCommonTeamsBetweenBlocks = (
+  primaryTeams: Team[],
+  secondaryTeams: Team[]
+): Team[] => {
+  // Get set of primary team IDs for fast lookups
+  const primaryTeamIds = new Set(primaryTeams.map(team => team.id));
+  
+  // Filter secondary teams to only include those found in primary
+  const commonTeams = secondaryTeams.filter(team => primaryTeamIds.has(team.id));
+  
+  return commonTeams;
+};
+
+/**
+ * Create a map of team availability across different time blocks
+ * This is useful for understanding which teams are available in which blocks
+ */
+export const createTeamAvailabilityMap = (
+  timeBlocks: Record<string, Team[]>
+): Map<string, string[]> => {
+  const teamAvailabilityMap = new Map<string, string[]>();
+  
+  // Process each time block
+  Object.entries(timeBlocks).forEach(([blockName, teams]) => {
+    // Process each team in the current block
+    teams.forEach(team => {
+      // Get current availability list or create new one
+      const currentAvailability = teamAvailabilityMap.get(team.id) || [];
+      
+      // Add current block to availability
+      teamAvailabilityMap.set(team.id, [...currentAvailability, blockName]);
+    });
+  });
+  
+  return teamAvailabilityMap;
 };

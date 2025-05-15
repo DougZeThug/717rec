@@ -1,8 +1,7 @@
 
 import { Team } from "@/types";
-import { DualBlockConfig, DualBlockValidationResult, DualBlockPairingState } from "@/types/dualBlock";
-import { NotificationCallback } from "@/types/dualBlock";
-import { TeamPairing } from "@/types/autoSchedule";
+import { DualBlockConfig, DualBlockValidationResult, DualBlockPairingState, NotificationCallback } from "@/types/dualBlock";
+import { TeamPairing, TimeBlockTeamsMap, PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
 
 /**
  * Default block names if not specified in config
@@ -133,4 +132,88 @@ export function createCrossBlockCompatibilityAdjuster(
     }
     return 0; // No adjustment
   };
+}
+
+/**
+ * Create time block pairs from individual time blocks
+ */
+export function createTimeBlockPairs(
+  timeBlockTeams: TimeBlockTeamsMap,
+  config: DualBlockConfig
+): PairedTimeBlockTeamsMap {
+  const { primaryBlock = DEFAULT_BLOCKS.PRIMARY, secondaryBlock = DEFAULT_BLOCKS.SECONDARY } = config;
+  
+  // Get teams from blocks or empty arrays if not found
+  const primaryTeams = timeBlockTeams[primaryBlock] || [];
+  const secondaryTeams = timeBlockTeams[secondaryBlock] || [];
+  
+  // Create a single pair entry with both blocks
+  const pairKey = `${primaryBlock}-${secondaryBlock}`;
+  const pairedBlocks: PairedTimeBlockTeamsMap = {
+    [pairKey]: {
+      primaryBlock,
+      secondaryBlock,
+      primaryTeams,
+      secondaryTeams
+    }
+  };
+  
+  return pairedBlocks;
+}
+
+/**
+ * Transform paired time block structure back to standard time blocks
+ */
+export function transformPairedTeamsToRegular(pairedBlocks: PairedTimeBlockTeamsMap): TimeBlockTeamsMap {
+  const regularBlocks: TimeBlockTeamsMap = {};
+  
+  Object.values(pairedBlocks).forEach(pair => {
+    regularBlocks[pair.primaryBlock] = pair.primaryTeams;
+    regularBlocks[pair.secondaryBlock] = pair.secondaryTeams;
+  });
+  
+  return regularBlocks;
+}
+
+/**
+ * Balance team counts between paired blocks to ensure even numbers
+ */
+export function balanceTeamsBetweenBlocks(
+  primaryTeams: Team[],
+  secondaryTeams: Team[],
+  config: DualBlockConfig = {}
+): { primaryAdjusted: Team[], secondaryAdjusted: Team[], unmatchedTeamIds: string[] } {
+  const unmatchedTeamIds: string[] = [];
+  
+  // Make copies so we don't modify the original arrays
+  const primaryAdjusted = [...primaryTeams];
+  const secondaryAdjusted = [...secondaryTeams];
+  
+  // Handle odd counts in each block
+  if (primaryAdjusted.length % 2 !== 0) {
+    const { adjustedTeams, unmatchedTeamId } = handleOddTeamCount(primaryAdjusted, config);
+    if (unmatchedTeamId) unmatchedTeamIds.push(unmatchedTeamId);
+    primaryAdjusted.length = 0; // Clear array
+    primaryAdjusted.push(...adjustedTeams); // Fill with adjusted teams
+  }
+  
+  if (secondaryAdjusted.length % 2 !== 0) {
+    const { adjustedTeams, unmatchedTeamId } = handleOddTeamCount(secondaryAdjusted, config);
+    if (unmatchedTeamId) unmatchedTeamIds.push(unmatchedTeamId);
+    secondaryAdjusted.length = 0; // Clear array
+    secondaryAdjusted.push(...adjustedTeams); // Fill with adjusted teams
+  }
+  
+  return { primaryAdjusted, secondaryAdjusted, unmatchedTeamIds };
+}
+
+/**
+ * Find common teams between primary and secondary blocks
+ */
+export function findCommonTeams(primaryTeams: Team[], secondaryTeams: Team[]): Team[] {
+  // Create set of primary team IDs for fast lookup
+  const primaryTeamIds = new Set(primaryTeams.map(team => team.id));
+  
+  // Filter secondary teams to find those that also exist in primary
+  return secondaryTeams.filter(team => primaryTeamIds.has(team.id));
 }
