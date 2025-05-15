@@ -16,6 +16,14 @@ export const useTeamScheduleLoader = () => {
     try {
       setIsLoading(true);
       
+      console.log("Loading teams for date:", {
+        date,
+        dateType: typeof date,
+        dateString: date.toString(),
+        dateIso: date.toISOString(),
+        dateLocal: date.toLocaleDateString()
+      });
+      
       // Get teams for each time block - updated to use keys from TIME_BLOCKS
       const timeBlocks = Object.keys(TIME_BLOCKS); // ["6:30 PM", "7:30 PM", "8:30 PM"]
       const teamsData: TimeBlockTeamsMap = {};

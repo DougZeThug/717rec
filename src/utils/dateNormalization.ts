@@ -24,33 +24,42 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
   try {
     // Handle Date object
     if (typeof date === 'object' && date instanceof Date) {
-      const isoString = date.toISOString();
-      console.log(`🔍 [${context}] Converted Date object to ISO string:`, {
+      // Use UTC date methods to avoid timezone issues with the DB query
+      // Get year, month, day separately and rebuild as consistent format
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      
+      // Create a normalized ISO date string with time at 00:00:00
+      const normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+      
+      console.log(`🔍 [${context}] Normalized date object to ISO string:`, {
         original: date,
-        normalized: isoString
+        normalized: normalizedDate
       });
-      return isoString;
+      
+      return normalizedDate;
     }
     
     // Handle string - ensure it's valid ISO
     if (typeof date === 'string') {
       const parsed = new Date(date);
       if (!isNaN(parsed.getTime())) {
-        const isoString = parsed.toISOString();
+        // Use UTC date methods to avoid timezone issues
+        const year = parsed.getUTCFullYear();
+        const month = String(parsed.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(parsed.getUTCDate()).padStart(2, '0');
         
-        console.log(`🔍 [${context}] String date check:`, {
+        // Create a normalized ISO date string with time at 00:00:00
+        const normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+        
+        console.log(`🔍 [${context}] Normalized string date to ISO:`, {
           original: date,
-          parsed: isoString,
-          isUnchanged: isoString === date
+          parsed: normalizedDate,
+          isUnchanged: normalizedDate === date
         });
         
-        if (isoString !== date) {
-          console.log(`🔍 [${context}] Reformatted string date to ISO:`, {
-            original: date,
-            normalized: isoString
-          });
-        }
-        return isoString;
+        return normalizedDate;
       }
     }
     
@@ -64,19 +73,5 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
   } catch (error) {
     console.error(`❌ [${context}] Date normalization error:`, error);
     return fallbackDate;
-  } finally {
-    // Always log the final result
-    const result = typeof date === 'object' && date instanceof Date 
-      ? date.toISOString() 
-      : typeof date === 'string' && !isNaN(new Date(date).getTime())
-        ? new Date(date).toISOString()
-        : fallbackDate;
-        
-    console.log(`🕒 [${context}] normalizeDate result:`, {
-      input: date,
-      inputType: typeof date,
-      output: result,
-      outputType: typeof result
-    });
   }
 };

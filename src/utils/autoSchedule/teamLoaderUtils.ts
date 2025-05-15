@@ -3,13 +3,15 @@ import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { TIME_BLOCKS } from "./constants";
+import { normalizeDate } from "@/utils/dateNormalization";
 
 /**
  * Fetches teams assigned to a specific time block for a given date
  */
 export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promise<Team[]> {
-  // Format date for database query
-  const formattedDate = format(date, 'yyyy-MM-dd');
+  // Format date for database query - use normalizeDate for consistency
+  const normalizedDate = normalizeDate(date, 'getTeamsByTimeBlock');
+  const formattedDate = format(new Date(normalizedDate), 'yyyy-MM-dd');
   
   // Get the exact timeslot value from our constants
   const timeslotValue = TIME_BLOCKS[timeBlock]?.main;
@@ -19,7 +21,30 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
     return [];
   }
   
-  console.log(`Fetching teams for date: ${formattedDate}, timeslot: ${timeslotValue}`);
+  console.log(`Fetching teams for date: ${formattedDate}, timeslot: ${timeslotValue}`, {
+    originalDate: date,
+    normalizedDate,
+    formattedDate,
+    timeBlock,
+    timeslotValue
+  });
+  
+  // For debugging, let's log what's in the database for this date regardless of timeslot
+  try {
+    const { data: allTimeslots, error: checkError } = await supabase
+      .from('team_timeslots')
+      .select('timeslot, match_date')
+      .eq('match_date', formattedDate);
+    
+    if (checkError) {
+      console.error('Error checking existing timeslots:', checkError);
+    } else {
+      console.log(`Available timeslots for ${formattedDate}:`, 
+        allTimeslots?.length > 0 ? allTimeslots : 'None found');
+    }
+  } catch (e) {
+    console.error('Error checking timeslots:', e);
+  }
   
   // Block entries for a selected date based on start time
   const { data: timeslotData, error } = await supabase
@@ -51,7 +76,9 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
 
   // Log the data we received or lack thereof
   if (!timeslotData || timeslotData.length === 0) {
-    console.log(`No teams found for date ${formattedDate} at timeslot ${timeslotValue}`);
+    console.log(`No teams found for date ${formattedDate} at timeslot ${timeslotValue}`, {
+      query: { match_date: formattedDate, timeslot: timeslotValue }
+    });
   } else {
     console.log(`Found ${timeslotData.length} teams for date ${formattedDate} at timeslot ${timeslotValue}`);
   }

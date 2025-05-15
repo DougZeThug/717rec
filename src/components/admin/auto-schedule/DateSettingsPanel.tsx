@@ -40,6 +40,29 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   onLoadTeams,
   onGenerateSchedule
 }) => {
+  // Handle date selection to ensure UTC consistency
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      // Create a date at midnight UTC to avoid timezone issues
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const day = date.getDate();
+      
+      // Create a new date at 12:00 PM to avoid timezone issues
+      const normalizedDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
+      console.log("Date selection changed:", {
+        originalDate: date,
+        normalizedDate,
+        dateString: normalizedDate.toString(),
+        utcString: normalizedDate.toUTCString(),
+        isoString: normalizedDate.toISOString()
+      });
+      setSelectedDate(normalizedDate);
+    } else {
+      setSelectedDate(null);
+    }
+  };
+
   return (
     <Card className="lg:col-span-1">
       <CardHeader>
@@ -56,7 +79,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
         <div className="space-y-4">
           <DatePicker
             date={selectedDate}
-            onDateChange={setSelectedDate}
+            onDateChange={handleDateChange}
           />
           
           <Separator className="my-4" />
