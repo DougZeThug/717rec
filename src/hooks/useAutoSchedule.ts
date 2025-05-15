@@ -1,14 +1,21 @@
 
-import { useTeamScheduleLoader } from './useTeamScheduleLoader';
-import { usePairingGenerator } from './usePairingGenerator';
-import { useSchedulePreview } from './useSchedulePreview';
+import { useAutoSchedule as useModularAutoSchedule } from './useAutoSchedule/index';
 import { useState } from 'react';
 import { normalizeDate } from '@/utils/dateNormalization';
 
+/**
+ * @deprecated Use the modular useAutoSchedule from './useAutoSchedule/index' instead
+ */
 export const useAutoSchedule = () => {
-  const teamLoader = useTeamScheduleLoader();
-  const pairingGenerator = usePairingGenerator();
-  const schedulePreview = useSchedulePreview();
+  const {
+    timeBlockTeams,
+    isLoading: isGenerating,
+    handleLoadTeams,
+    handleGenerateClick,
+    handleApplySchedule,
+    generatedPairings
+  } = useModularAutoSchedule();
+  
   const [createdMatches, setCreatedMatches] = useState<any[]>([]);
   
   const generateAndExportSchedule = async (date: Date, options: any = {}) => {
@@ -20,34 +27,31 @@ export const useAutoSchedule = () => {
       normalizedDate: normalizeDate(date, 'useAutoSchedule')
     });
     
-    // Load teams first if not already loaded
-    if (!teamLoader.timeBlockTeams || Object.keys(teamLoader.timeBlockTeams).length === 0) {
-      await schedulePreview.previewSchedule(date);
-    }
+    // Load teams
+    await handleLoadTeams();
     
     // Generate match pairings
-    const pairings = await schedulePreview.handleGenerateSchedule(date, options);
+    await handleGenerateClick();
     
-    if (pairings) {
-      // Convert pairings to match format
-      const matches = schedulePreview.convertPairingsToMatches(pairings, date);
-      setCreatedMatches(matches);
-      return matches;
+    if (generatedPairings) {
+      // Apply the schedule (which converts pairings to matches)
+      const matches = handleApplySchedule();
+      if (matches) {
+        setCreatedMatches(matches);
+        return matches;
+      }
     }
     
     return null;
   };
   
   return {
-    // Re-export all functionalities from the individual hooks
-    isGenerating: teamLoader.isLoading || pairingGenerator.isGenerating,
-    timeBlockTeams: teamLoader.timeBlockTeams,
+    // Re-export functionality from the individual hooks
+    isGenerating,
+    timeBlockTeams,
     scheduledMatches: createdMatches,
-    generatedPairings: pairingGenerator.generatedPairings,
-    loadTeamsForDate: teamLoader.loadTeamsForDate,
-    previewSchedule: schedulePreview.previewSchedule,
-    generateMatchPairings: pairingGenerator.generateMatchPairings,
-    convertPairingsToMatches: schedulePreview.convertPairingsToMatches,
+    generatedPairings,
+    loadTeamsForDate: handleLoadTeams,
     generateAndExportSchedule,
   };
 };

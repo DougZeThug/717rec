@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { useAutoSchedule } from "@/hooks/useAutoSchedule/index";
+import { useAutoSchedule } from "@/hooks/useAutoSchedule";
 import AutoScheduleHeader from "./AutoScheduleHeader";
 import DateSettingsPanel from "./DateSettingsPanel";
 import ScheduleWorkflowTabs from "./ScheduleWorkflowTabs";
@@ -65,7 +65,7 @@ const AutoScheduleTab = () => {
           oddBlocks={oddBlocks}
           formattedDate={formattedDate}
           onLoadTeams={handleLoadTeams}
-          onGenerateSchedule={handleGenerateClick} // Now correctly mapped
+          onGenerateSchedule={handleGenerateClick}
         />
         
         <ScheduleWorkflowTabs 
