@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult } from '@/types/autoSchedule';
 import { generatePairingsWithConfig } from '@/utils/autoSchedule/pairingAlgorithm';
-import { getCompatibilityScore } from '@/utils/autoSchedule/compatibilityUtils';
+import { calculateConfigurableCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { useTeamFetching } from './useTeamFetching';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -95,7 +95,7 @@ export const usePairingGenerator = () => {
           const blockPairings = await generatePairingsWithConfig(teams, {
             avoidRematches: config.avoidRematches,
             haveTeamsPlayedFn: haveTeamsPlayedBefore,
-            getCompatibilityScoreFn: (team1, team2) => getCompatibilityScore(team1, team2, config.weights)
+            getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, config.weights)
           });
           
           // Store pairings for this block
@@ -186,7 +186,7 @@ export const usePairingGenerator = () => {
       const earlyPairings = await generatePairingsWithConfig(combinedTeams, {
         avoidRematches: config.avoidRematches,
         haveTeamsPlayedFn: haveTeamsPlayedBefore,
-        getCompatibilityScoreFn: (team1, team2) => getCompatibilityScore(team1, team2, config.weights)
+        getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, config.weights)
       });
       
       // Create a map of team ID to opponent team ID in the early block
@@ -209,7 +209,7 @@ export const usePairingGenerator = () => {
           }
           
           // Otherwise, use normal compatibility scoring
-          return getCompatibilityScore(team1, team2, config.weights);
+          return calculateConfigurableCompatibility(team1, team2, config.weights);
         }
       });
       
