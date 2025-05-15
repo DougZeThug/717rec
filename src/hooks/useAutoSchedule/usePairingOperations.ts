@@ -103,7 +103,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       
       toast({
         title: "Schedule created",
-        description: `${matches.length} matches ready for export`,
+        description: `${matches.length} matches ready for export`
       });
       
       return matches;
