@@ -5,11 +5,11 @@
  */
 
 // Re-export all dual block utilities
-export { calculateDualBlockMetrics } from './metricsUtils';
+export { calculateDualBlockMetrics, validateDualBlockSchedule } from './metricsUtils';
 export { generateDualBlockPairings } from './pairingGenerator';
 export { findTeamsWithSameOpponent } from './opponentUtils';
 export { balanceTeamsBetweenBlocks } from './teamBalancer';
 
 // Types
-export type { DualMatchMetrics, TeamMatchCount } from './types';
+export type { DualMatchMetrics, TeamMatchCount, DualBlockValidationResult } from './types';
 export type { TeamBalanceResult } from './teamBalancer';
