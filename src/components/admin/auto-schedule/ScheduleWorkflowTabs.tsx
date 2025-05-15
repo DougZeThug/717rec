@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import TeamsTab from "@/components/admin/auto-schedule/tabs/TeamsTab";
 import MatchesTab from "@/components/admin/auto-schedule/tabs/MatchesTab";
 import ExportTab from "@/components/admin/auto-schedule/tabs/ExportTab";
-import { Team } from "@/types";
 import { TimeBlockTeamsMap, TeamPairingMap, MatchQualityMetrics } from "@/types/autoSchedule";
 
 interface ScheduleWorkflowTabsProps {

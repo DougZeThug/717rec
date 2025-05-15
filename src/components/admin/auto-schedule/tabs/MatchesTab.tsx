@@ -4,6 +4,7 @@ import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics } from "@/types/
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ScheduleMatchesPreview from "@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview";
+import { calculateDualBlockMetrics } from "@/utils/autoSchedule/dualBlockPairingUtils";
 
 interface MatchesTabProps {
   selectedDate: Date | null;
@@ -26,8 +27,24 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   dualMatchMode,
   onApplySchedule
 }) => {
+  // Check if we have generated any pairings
   const hasPairings = Object.keys(generatedPairings || {}).length > 0 &&
     Object.values(generatedPairings || {}).some(blockPairings => blockPairings?.length > 0);
+
+  // Calculate dual block metrics if in dual match mode and we have pairings
+  const dualBlockMetrics = React.useMemo(() => {
+    if (dualMatchMode && hasPairings) {
+      // Get the first two blocks in generatedPairings - typically Early and Late
+      const blocks = Object.keys(generatedPairings);
+      if (blocks.length >= 2) {
+        const primaryBlockPairings = generatedPairings[blocks[0]] || [];
+        const secondaryBlockPairings = generatedPairings[blocks[1]] || [];
+        
+        return calculateDualBlockMetrics(primaryBlockPairings, secondaryBlockPairings);
+      }
+    }
+    return null;
+  }, [dualMatchMode, generatedPairings, hasPairings]);
 
   return (
     <div className="space-y-4">
@@ -59,6 +76,25 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
       
       {hasPairings ? (
         <div className="space-y-4">
+          {dualMatchMode && dualBlockMetrics && (
+            <div className="grid grid-cols-3 gap-3 mt-2 mb-4">
+              <div className="bg-muted/50 p-3 rounded-md text-center">
+                <div className="text-lg font-semibold">{dualBlockMetrics.teamsWithBothMatches}</div>
+                <div className="text-xs text-muted-foreground">Teams With Both Matches</div>
+              </div>
+              <div className="bg-muted/50 p-3 rounded-md text-center">
+                <div className="text-lg font-semibold">{dualBlockMetrics.teamsWithSingleMatch}</div>
+                <div className="text-xs text-muted-foreground">Teams With One Match</div>
+              </div>
+              <div className="bg-muted/50 p-3 rounded-md text-center">
+                <div className="text-lg font-semibold">
+                  {dualBlockMetrics.crossBlockCompatibility.toFixed(1)}
+                </div>
+                <div className="text-xs text-muted-foreground">Cross-Block Compatibility</div>
+              </div>
+            </div>
+          )}
+          
           <ScheduleMatchesPreview
             pairings={generatedPairings}
             date={selectedDate}

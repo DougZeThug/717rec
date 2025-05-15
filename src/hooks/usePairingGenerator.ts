@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult } from '@/types/autoSchedule';
+import { DualBlockConfig } from '@/types/dualBlock';
 import { generatePairingsWithConfig } from '@/utils/autoSchedule/pairingAlgorithm';
 import { calculateConfigurableCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { useTeamFetching } from './useTeamFetching';
@@ -44,10 +45,15 @@ export const usePairingGenerator = () => {
       if (config.dualMatchMode) {
         // For dual match mode, we need to ensure each team plays in both
         // the early and late blocks with different opponents
+        const dualBlockConfig: DualBlockConfig = {
+          ...config,
+          // Add any dual-specific config here
+        };
+        
         const dualBlockPairingResult = await generateDualBlockPairings(
           timeBlockTeams,
-          config,
-          toast
+          dualBlockConfig,
+          toast // Pass the toast function for notifications
         );
         
         if (dualBlockPairingResult) {
