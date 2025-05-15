@@ -37,7 +37,12 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
         original: date,
         originalToString: date.toString(),
         originalISOString: date.toISOString(),
-        normalized: simpleDateString
+        normalized: simpleDateString,
+        // Add extra info for debugging
+        getDate: date.getDate(),
+        getUTCDate: date.getUTCDate(),
+        getMonth: date.getMonth(),
+        getUTCMonth: date.getUTCMonth(),
       });
       
       return simpleDateString;

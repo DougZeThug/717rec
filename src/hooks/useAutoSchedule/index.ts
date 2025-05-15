@@ -4,6 +4,7 @@ import { useAutoScheduleState } from './useAutoScheduleState';
 import { useTeamOperations } from './useTeamOperations';
 import { usePairingOperations } from './usePairingOperations';
 import { formatDate } from './utils';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 export function useAutoSchedule() {
   // Get state management
@@ -28,6 +29,7 @@ export function useAutoSchedule() {
   const {
     isLoading,
     timeBlockTeams,
+    setTimeBlockTeams, // Expose this function for manual team assignment
     handleLoadTeams,
     getTeamCountStatus
   } = useTeamOperations();
@@ -97,6 +99,7 @@ export function useAutoSchedule() {
     isLoading: isLoadingState,
     isGenerating,
     timeBlockTeams,
+    setTimeBlockTeams, // Expose this for manual team assignment
     generatedPairings,
     unmatchedTeamIds,
     totalTeams: total,

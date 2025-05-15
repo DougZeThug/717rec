@@ -1,111 +1,107 @@
 
-import { useCallback } from 'react';
-import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
-import { useToast } from '@/hooks/use-toast';
-import { normalizeDate } from '@/utils/dateNormalization';
+import { useState, useCallback } from 'react';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
+import { normalizeDate } from '@/utils/dateNormalization';
 
 export const useTeamOperations = () => {
-  const { 
-    isLoading, 
-    timeBlockTeams, 
-    loadTeamsForDate, 
-    getTeamCountStatus 
-  } = useTeamScheduleLoader();
-  
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
 
-  // Enhanced team loading with improved error handling and date normalization
-  const handleLoadTeams = useCallback(async (selectedDate: Date | null) => {
-    if (!selectedDate) {
-      toast({
-        title: "Error",
-        description: "Please select a date first",
-        variant: "destructive"
-      });
-      return null;
+  /**
+   * Load teams for all time blocks for a specific date
+   * With improved date handling
+   */
+  const handleLoadTeams = useCallback(async (date: Date | null): Promise<TimeBlockTeamsMap> => {
+    if (!date) {
+      console.warn("No date provided to handleLoadTeams");
+      return {};
     }
     
+    setIsLoading(true);
+    
     try {
-      // Improved logging for date debugging
-      console.log('useAutoSchedule - handleLoadTeams - Before loadTeamsForDate', {
-        selectedDate,
-        selectedDateType: typeof selectedDate,
-        selectedDateObj: selectedDate instanceof Date,
-        selectedDateString: selectedDate.toString(),
-        selectedDateIso: selectedDate.toISOString(),
-        selectedDateTimestamp: selectedDate.getTime(),
-        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-before'),
-        availableTimeBlocks: Object.keys(TIME_BLOCKS)
+      console.log("useTeamOperations - loadTeamsForDate called with:", {
+        date: date,
+        dateString: date.toString(),
+        dateIso: date.toISOString(),
+        normalizedDate: normalizeDate(date, 'loadTeamsForDate')
       });
       
-      // Create a safe date copy to ensure time is set to noon
-      const safeDate = new Date(selectedDate);
-      safeDate.setHours(12, 0, 0, 0);
+      // Ensure the date is properly formatted to prevent timezone issues
+      const safeDate = new Date(date);
+      safeDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
       
-      console.log('Using safe date for team loading:', {
+      console.log("Using safe date for team loading:", {
         safeDate,
         safeDateString: safeDate.toString(),
         safeDateIso: safeDate.toISOString(),
         normalizedSafeDate: normalizeDate(safeDate, 'safeDate')
       });
       
-      // Load teams with the safe date
-      const timeBlockData = await loadTeamsForDate(safeDate);
+      const timeBlocksData: TimeBlockTeamsMap = {};
       
-      const { total, odd } = getTeamCountStatus();
-      
-      console.log('useAutoSchedule - handleLoadTeams - After loadTeamsForDate', {
-        teamsFound: total,
-        oddBlocks: odd,
-        simpleDateString: normalizeDate(safeDate, 'handleLoadTeams-after'),
-        timeBlockData
+      // Load teams for each time block concurrently for better performance
+      const timeBlockPromises = Object.keys(TIME_BLOCKS).map(async (block) => {
+        const teams = await getTeamsByTimeBlock(safeDate, block);
+        return { block, teams };
       });
       
-      if (total === 0) {
-        // If no teams are found, try to determine if it's a data or date format issue
-        if (timeBlockData && Object.keys(timeBlockData).length > 0) {
-          const emptyBlocks = Object.entries(timeBlockData)
-            .filter(([_, teams]) => teams.length === 0)
-            .map(([block]) => block);
-          
-          console.warn(`Time blocks with no teams: ${emptyBlocks.join(', ')}`);
-          
-          toast({
-            title: "No teams found",
-            description: `No teams are scheduled for ${normalizeDate(safeDate, 'toast')}. Please check team assignments in the Timeslots section.`,
-            variant: "destructive"
-          });
+      // Wait for all promises to resolve
+      const results = await Promise.all(timeBlockPromises);
+      
+      // Populate the time blocks data
+      results.forEach(({ block, teams }) => {
+        // Only include time blocks that have teams
+        if (teams && teams.length > 0) {
+          timeBlocksData[block] = teams;
         } else {
-          toast({
-            title: "No teams found",
-            description: `No teams are scheduled for ${normalizeDate(safeDate, 'toast')}. Check if date format matches database entries.`,
-            variant: "destructive"
-          });
+          // Include empty blocks too, for UI consistency
+          timeBlocksData[block] = [];
         }
-        return null;
-      }
-      
-      toast({
-        title: "Teams loaded",
-        description: `Loaded ${total} teams${odd > 0 ? ` (${odd} blocks have odd team counts)` : ''}`,
       });
       
-      return timeBlockData;
+      console.log("Team loading completed", {
+        date: safeDate,
+        normalizedDate: normalizeDate(safeDate, 'complete'),
+        timeBlockCount: Object.keys(timeBlocksData).length,
+        totalTeams: Object.values(timeBlocksData).flat().length
+      });
+      
+      // Update state
+      setTimeBlockTeams(timeBlocksData);
+      return timeBlocksData;
     } catch (error) {
-      console.error("Error loading teams:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load teams. Please check console for details.",
-        variant: "destructive"
-      });
-      return null;
+      console.error('Error loading teams for date:', error);
+      // Return empty object on error
+      setTimeBlockTeams({});
+      return {};
+    } finally {
+      setIsLoading(false);
     }
-  }, [loadTeamsForDate, toast, getTeamCountStatus]);
+  }, []);
+
+  /**
+   * Get counts for all teams and blocks with odd number of teams
+   */
+  const getTeamCountStatus = useCallback(() => {
+    // Count total teams across all time blocks
+    const total = Object.values(timeBlockTeams)
+      .reduce((sum, teams) => sum + (teams?.length || 0), 0);
+    
+    // Count blocks with odd number of teams 
+    const odd = Object.values(timeBlockTeams)
+      .filter(teams => teams && teams.length % 2 !== 0)
+      .length;
+    
+    return { total, odd };
+  }, [timeBlockTeams]);
 
   return {
     isLoading,
     timeBlockTeams,
+    setTimeBlockTeams,
     handleLoadTeams,
     getTeamCountStatus
   };

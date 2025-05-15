@@ -5,6 +5,7 @@ import AutoScheduleHeader from "./AutoScheduleHeader";
 import DateSettingsPanel from "./DateSettingsPanel";
 import ScheduleWorkflowTabs from "./ScheduleWorkflowTabs";
 import InformationSection from "./InformationSection";
+import { TimeBlockTeamsMap } from "@/types/autoSchedule";
 
 /**
  * AutoScheduleTab provides a workflow to generate and manage match schedules
@@ -28,6 +29,7 @@ const AutoScheduleTab = () => {
     isLoading,
     isGenerating,
     timeBlockTeams,
+    setTimeBlockTeams, // We need to expose this
     generatedPairings,
     unmatchedTeamIds,
     totalTeams,
@@ -46,6 +48,12 @@ const AutoScheduleTab = () => {
   useEffect(() => {
     console.log(`Auto schedule tab changed to: ${activeTab}`);
   }, [activeTab]);
+  
+  // Handle manual team assignment
+  const handleManualTeamAssign = (updatedTeams: TimeBlockTeamsMap) => {
+    console.log("Manually assigned teams:", updatedTeams);
+    setTimeBlockTeams(updatedTeams);
+  };
   
   return (
     <div className="space-y-6">
@@ -81,6 +89,7 @@ const AutoScheduleTab = () => {
           totalTeams={totalTeams}
           matchQualityMetrics={matchQualityMetrics}
           onApplySchedule={handleApplySchedule}
+          onManualTeamAssign={handleManualTeamAssign}
         />
       </div>
       
