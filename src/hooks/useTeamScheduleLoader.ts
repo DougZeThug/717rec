@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { getTeamsByTimeBlock } from "@/utils/autoSchedule/teamLoaderUtils";
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
+import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
 
 export const useTeamScheduleLoader = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -15,8 +16,8 @@ export const useTeamScheduleLoader = () => {
     try {
       setIsLoading(true);
       
-      // Get teams for each time block
-      const timeBlocks = ["6:30", "7:30", "8:30"];
+      // Get teams for each time block - updated to use keys from TIME_BLOCKS
+      const timeBlocks = Object.keys(TIME_BLOCKS); // ["6:30 PM", "7:30 PM", "8:30 PM"]
       const teamsData: TimeBlockTeamsMap = {};
       
       for (const block of timeBlocks) {

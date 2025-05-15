@@ -146,6 +146,12 @@ export const useSchedulePreview = () => {
     const matches = [];
     
     Object.entries(pairings).forEach(([block, blockPairings]) => {
+      // Ensure we can access the TIME_BLOCKS for this block
+      if (!TIME_BLOCKS[block]) {
+        console.error(`Missing time block data for ${block}`);
+        return;
+      }
+      
       blockPairings.forEach((pairing, index) => {
         // Alternate between main and secondary timeslots
         const timeslot = index % 2 === 0 

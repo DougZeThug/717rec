@@ -11,6 +11,16 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
   // Format date for database query
   const formattedDate = format(date, 'yyyy-MM-dd');
   
+  // Get the exact timeslot value from our constants
+  const timeslotValue = TIME_BLOCKS[timeBlock]?.main;
+  
+  if (!timeslotValue) {
+    console.error(`Invalid time block: ${timeBlock}. Available blocks:`, Object.keys(TIME_BLOCKS));
+    return [];
+  }
+  
+  console.log(`Fetching teams for date: ${formattedDate}, timeslot: ${timeslotValue}`);
+  
   // Block entries for a selected date based on start time
   const { data: timeslotData, error } = await supabase
     .from('team_timeslots')
@@ -32,11 +42,18 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
       )
     `)
     .eq('match_date', formattedDate)
-    .eq('timeslot', TIME_BLOCKS[timeBlock].main);
+    .eq('timeslot', timeslotValue);
 
   if (error) {
     console.error('Error fetching teams by time block:', error);
     throw error;
+  }
+
+  // Log the data we received or lack thereof
+  if (!timeslotData || timeslotData.length === 0) {
+    console.log(`No teams found for date ${formattedDate} at timeslot ${timeslotValue}`);
+  } else {
+    console.log(`Found ${timeslotData.length} teams for date ${formattedDate} at timeslot ${timeslotValue}`);
   }
 
   // Extract team data and format it according to our Team type
