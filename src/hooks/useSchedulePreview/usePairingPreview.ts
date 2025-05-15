@@ -53,19 +53,26 @@ export const usePairingPreview = (
       if (pairings) {
         setGeneratedPairings(pairings);
         
+        // Extract unmatchedTeamIds from the pairings object if it exists
+        const unmatchedIds = pairings.unmatchedTeamIds || [];
+        
+        // Now we're using string[] instead of TeamPairing[]
+        setUnmatchedTeamIds(unmatchedIds);
+          
         // Count total matches generated
         const totalMatches = Object.values(pairings).reduce((sum, blockPairings) => 
-          sum + blockPairings.length, 0);
+          sum + (Array.isArray(blockPairings) ? blockPairings.length : 0), 0);
           
         // Count any pairings that have played before
-        const rematchCount = Object.values(pairings).reduce((sum, blockPairings) => 
-          sum + blockPairings.filter(p => p.hasPlayedBefore).length, 0);
+        const rematchCount = Object.values(pairings).reduce((sum, blockPairings) => {
+          if (!Array.isArray(blockPairings)) return sum;
+          return sum + blockPairings.filter(p => p.hasPlayedBefore).length;
+        }, 0);
           
         let toastMessage = `${totalMatches} match pairings generated based on team compatibility.`;
         
-        if (pairings.unmatchedTeamIds && pairings.unmatchedTeamIds.length > 0) {
-          setUnmatchedTeamIds(pairings.unmatchedTeamIds);
-          toastMessage += ` ${pairings.unmatchedTeamIds.length} teams were left unmatched due to odd numbers.`;
+        if (unmatchedIds.length > 0) {
+          toastMessage += ` ${unmatchedIds.length} teams were left unmatched due to odd numbers.`;
         }
         
         if (rematchCount > 0) {
