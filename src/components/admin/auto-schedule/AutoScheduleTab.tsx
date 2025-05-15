@@ -1,6 +1,6 @@
 
 import React, { useEffect } from "react";
-import { useAutoSchedule } from "@/hooks/useAutoSchedule";
+import { useAutoSchedule } from "@/hooks/useAutoSchedule/index";
 import AutoScheduleHeader from "./AutoScheduleHeader";
 import DateSettingsPanel from "./DateSettingsPanel";
 import ScheduleWorkflowTabs from "./ScheduleWorkflowTabs";
