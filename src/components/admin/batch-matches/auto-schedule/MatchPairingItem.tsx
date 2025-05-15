@@ -10,12 +10,14 @@ interface MatchPairingItemProps {
   pairing: TeamPairing;
   index: number;
   blockName: string;
+  isDualMatchMode?: boolean;
 }
 
 export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({ 
   pairing, 
   index,
-  blockName 
+  blockName,
+  isDualMatchMode
 }) => {
   // Determine UI state based on compatibility score and match history
   const isWarning = pairing.compatibilityScore < 5 || pairing.hasPlayedBefore;
@@ -91,12 +93,24 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
           {pairing.team1.wins}-{pairing.team1.losses}
         </div>
         <div className="text-center">
-          {timeslot}
+          {isDualMatchMode && blockName === 'Early' ? TIME_BLOCKS[blockName]?.main : 
+           isDualMatchMode && blockName === 'Late' ? TIME_BLOCKS[blockName]?.secondary : 
+           timeslot}
         </div>
         <div>
           {pairing.team2.wins}-{pairing.team2.losses}
         </div>
       </div>
+      
+      {isDualMatchMode && (
+        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="text-xs text-center text-muted-foreground">
+            {blockName === 'Early' ? 
+              "Teams will also play at 7:00 PM with different opponents" : 
+              "Teams also played at 6:30 PM with different opponents"}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

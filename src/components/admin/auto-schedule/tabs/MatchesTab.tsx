@@ -34,18 +34,27 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">Generated Match Pairings</h3>
         
-        {matchQualityMetrics && (
-          <Badge variant={
-            matchQualityMetrics.qualityRating === "Excellent" ? "recreational" :
-            matchQualityMetrics.qualityRating === "Good" ? "intermediate" : "outline"
-          }>
-            {matchQualityMetrics.qualityRating} Quality
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {dualMatchMode && (
+            <Badge variant="secondary" className="text-xs">
+              Dual Match Mode
+            </Badge>
+          )}
+          
+          {matchQualityMetrics && (
+            <Badge variant={
+              matchQualityMetrics.qualityRating === "Excellent" ? "recreational" :
+              matchQualityMetrics.qualityRating === "Good" ? "intermediate" : "outline"
+            }>
+              {matchQualityMetrics.qualityRating} Quality
+            </Badge>
+          )}
+        </div>
       </div>
       
       <p className="text-sm text-muted-foreground">
         Review the generated match pairings based on team compatibility.
+        {dualMatchMode && " Teams play in both Early (6:30) and Late (7:00) blocks with different opponents."}
       </p>
       
       {hasPairings ? (

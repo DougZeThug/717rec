@@ -82,5 +82,12 @@ export interface TimeBlockPair {
   secondaryBlock: string;
   primaryTime: string;
   secondaryTime: string;
+  teams?: Team[];
 }
 
+// Interface for dual-match specific metrics
+export interface DualMatchMetrics {
+  teamsWithBothMatches: number;
+  teamsWithSingleMatch: number;
+  crossBlockCompatibility: number;
+}

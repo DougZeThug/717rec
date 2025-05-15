@@ -69,8 +69,7 @@ export const usePairingGenerator = () => {
         // This would generate pairings that ensure teams play in both time blocks
         const dualBlockPairingResult = await generateDualBlockPairings(
           timeBlockTeams,
-          config,
-          haveTeamsPlayedBefore
+          config
         );
         
         if (dualBlockPairingResult) {
@@ -147,8 +146,7 @@ export const usePairingGenerator = () => {
    */
   const generateDualBlockPairings = async (
     timeBlockTeams: TimeBlockTeamsMap,
-    config: AlgorithmConfig,
-    haveTeamsPlayedFn: (team1Id: string, team2Id: string) => Promise<boolean>
+    config: AlgorithmConfig
   ): Promise<PairingResult | null> => {
     try {
       // For dual match mode, we focus on the Early and Late blocks
@@ -188,7 +186,7 @@ export const usePairingGenerator = () => {
       // First generate pairings for the early block
       const earlyPairings = await generatePairingsWithConfig(combinedTeams, {
         avoidRematches: config.avoidRematches,
-        haveTeamsPlayedFn,
+        haveTeamsPlayedFn: haveTeamsPlayedBefore,
         getCompatibilityScoreFn: (team1, team2) => getCompatibilityScore(team1, team2, config.weights),
         weights: config.weights
       });
@@ -205,7 +203,7 @@ export const usePairingGenerator = () => {
       // heavily penalizes matching teams that played each other in the early block
       const latePairings = await generatePairingsWithConfig(combinedTeams, {
         avoidRematches: config.avoidRematches,
-        haveTeamsPlayedFn,
+        haveTeamsPlayedFn: haveTeamsPlayedBefore,
         getCompatibilityScoreFn: (team1, team2) => {
           // Heavily penalize matching teams that played each other in the early block
           if (earlyOpponents.get(team1.id) === team2.id) {
