@@ -53,10 +53,13 @@ export const usePairingPreview = (
       if (pairings) {
         setGeneratedPairings(pairings);
         
-        // Extract unmatchedTeamIds from the pairings object if it exists
-        const unmatchedIds = pairings.unmatchedTeamIds || [];
+        // Extract unmatchedTeamIds from the pairings object
+        // Make sure we're getting an array of strings, not TeamPairing objects
+        const unmatchedIds: string[] = Array.isArray(pairings.unmatchedTeamIds) 
+          ? pairings.unmatchedTeamIds 
+          : [];
         
-        // Now we're using string[] instead of TeamPairing[]
+        // Set the unmatched team IDs
         setUnmatchedTeamIds(unmatchedIds);
           
         // Count total matches generated
