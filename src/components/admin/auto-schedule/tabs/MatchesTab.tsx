@@ -1,26 +1,25 @@
 
 import React from "react";
-import { TeamPairingMap } from "@/types/autoSchedule";
+import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics } from "@/types/autoSchedule";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ScheduleMatchesPreview from "@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview";
 
 interface MatchesTabProps {
   selectedDate: Date | null;
+  timeBlockTeams: TimeBlockTeamsMap; // Added missing prop
   generatedPairings: TeamPairingMap;
+  unmatchedTeamIds: string[];
   isGenerating: boolean;
-  matchQualityMetrics: {
-    totalMatches: number;
-    rematchCount: number;
-    averageCompatibilityScore: number;
-    qualityRating: string;
-  } | null;
-  onApplySchedule: () => void;
+  matchQualityMetrics: MatchQualityMetrics | null;
+  onApplySchedule?: () => void;
 }
 
 const MatchesTab: React.FC<MatchesTabProps> = ({
   selectedDate,
+  timeBlockTeams, // Added missing prop
   generatedPairings,
+  unmatchedTeamIds,
   isGenerating,
   matchQualityMetrics,
   onApplySchedule

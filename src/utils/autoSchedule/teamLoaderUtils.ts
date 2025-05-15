@@ -84,11 +84,19 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
       .filter(slot => slot.teams) // Filter out slots without team data
       .map(slot => {
         const team = slot.teams;
+        
+        // Add type safety - make sure team object has required properties
+        if (!team) {
+          console.warn('Received empty team data for timeslot:', slot);
+          return null;
+        }
+        
+        // Ensure we're safely accessing team properties with fallbacks
         return {
-          id: team.id,
-          name: team.name,
-          logoUrl: team.logo_url,
-          imageUrl: team.image_url,
+          id: team.id || '',
+          name: team.name || 'Unknown Team',
+          logoUrl: team.logo_url || null,
+          imageUrl: team.image_url || null,
           players: team.players || [],
           wins: team.wins || 0,
           losses: team.losses || 0,
@@ -98,7 +106,8 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
           sos: team.sos || 0.5,
           division: team.division_id
         };
-      });
+      })
+      .filter(Boolean) as Team[]; // Filter out any null entries from mapping
       
     console.log(`Processed ${teams.length} teams for ${timeBlock} block`);
     return teams;

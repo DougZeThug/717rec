@@ -2,18 +2,21 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MatchQualityMetrics } from "@/types/autoSchedule";
 
 interface ExportTabProps {
-  generatedMatches: any[];
-  matchQualityMetrics: {
-    totalMatches: number;
-    rematchCount: number;
-    averageCompatibilityScore: number;
-    qualityRating: string;
-  } | null;
+  selectedDate: Date | null; // Added missing prop
+  generatedMatches: any[] | null;
+  matchQualityMetrics?: MatchQualityMetrics | null;
+  onApplySchedule?: () => void;
 }
 
-const ExportTab: React.FC<ExportTabProps> = ({ generatedMatches, matchQualityMetrics }) => {
+const ExportTab: React.FC<ExportTabProps> = ({ 
+  selectedDate, // Added missing prop
+  generatedMatches, 
+  matchQualityMetrics,
+  onApplySchedule 
+}) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Export Schedule</h3>
@@ -21,7 +24,7 @@ const ExportTab: React.FC<ExportTabProps> = ({ generatedMatches, matchQualityMet
         The generated schedule can now be used in the Batch Matches tab.
       </p>
       
-      {generatedMatches.length > 0 ? (
+      {generatedMatches && generatedMatches.length > 0 ? (
         <div className="space-y-4">
           <div className="border rounded-md p-4 bg-muted/30">
             <p className="text-center font-medium">

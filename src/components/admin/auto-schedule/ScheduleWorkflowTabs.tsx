@@ -68,6 +68,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               unmatchedTeamIds={unmatchedTeamIds}
               isGenerating={isGenerating}
               matchQualityMetrics={matchQualityMetrics}
+              onApplySchedule={onApplySchedule}
             />
           </TabsContent>
           
@@ -75,6 +76,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
             <ExportTab
               selectedDate={selectedDate}
               generatedMatches={generatedMatches}
+              matchQualityMetrics={matchQualityMetrics}
               onApplySchedule={onApplySchedule}
             />
           </TabsContent>
