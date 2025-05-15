@@ -30,10 +30,11 @@ export const useAutoSchedule = () => {
     // Load teams
     await handleLoadTeams();
     
-    // Generate match pairings
-    const result = await handleGenerateClick();
+    // Generate match pairings - no longer checking return value
+    await handleGenerateClick();
     
-    if (result) {
+    // Check if we have generated pairings (from the hook state) instead
+    if (generatedPairings && Object.keys(generatedPairings).length > 0) {
       // Apply the schedule (which converts pairings to matches)
       const matches = handleApplySchedule();
       if (matches) {
