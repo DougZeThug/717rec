@@ -12,7 +12,8 @@ import {
 } from "@/utils/autoSchedule/cachingUtils";
 import { 
   handleOddTeams, 
-  validateTeamCounts 
+  validateTeamCounts,
+  generateTeamDistributionSummary
 } from "@/utils/autoSchedule/edgeCaseUtils";
 import { TimeBlockTeamsMap, TeamPairingMap } from "@/types/autoSchedule";
 import { generatePairingsWithConfig } from "@/utils/autoSchedule/pairingAlgorithm";
@@ -21,6 +22,10 @@ export const usePairingGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
+  const [unmatchedTeamDetails, setUnmatchedTeamDetails] = useState<Array<{
+    timeBlock: string;
+    team: { id: string; name: string };
+  }>>([]);
   const { toast } = useToast();
 
   const generateMatchPairings = async (
@@ -43,6 +48,7 @@ export const usePairingGenerator = () => {
       // Reset previously generated pairings
       setGeneratedPairings({});
       setUnmatchedTeamIds([]);
+      setUnmatchedTeamDetails([]);
       
       // Clear caches for fresh calculation
       clearCompatibilityCache();
@@ -50,8 +56,12 @@ export const usePairingGenerator = () => {
       
       if (!timeBlockTeams) return null;
       
+      // Get a summary of the teams distribution
+      const summary = generateTeamDistributionSummary(timeBlockTeams);
+      console.log('Team distribution summary:', summary);
+      
       // Validate team counts
-      const { isValid, insufficientBlocks } = validateTeamCounts(timeBlockTeams);
+      const { isValid, insufficientBlocks, oddBlocks } = validateTeamCounts(timeBlockTeams);
       if (!isValid && insufficientBlocks.length === Object.keys(timeBlockTeams).length) {
         toast({
           title: "Error",
@@ -62,10 +72,27 @@ export const usePairingGenerator = () => {
       }
       
       // Handle odd numbers of teams
-      const { adjustedTeams, unmatchedTeamIds: newUnmatchedTeamIds } = handleOddTeams(timeBlockTeams);
+      const { 
+        adjustedTeams, 
+        unmatchedTeamIds: newUnmatchedTeamIds,
+        unmatchedTeamDetails: newUnmatchedDetails
+      } = handleOddTeams(timeBlockTeams);
       
-      // Store unmatched team IDs
+      // Store unmatched team IDs and details
       setUnmatchedTeamIds(newUnmatchedTeamIds);
+      setUnmatchedTeamDetails(newUnmatchedDetails);
+      
+      // If we have unmatched teams, show a warning toast but continue
+      if (newUnmatchedTeamIds.length > 0) {
+        toast({
+          title: "Some teams will be unmatched",
+          description: `${newUnmatchedTeamIds.length} team${newUnmatchedTeamIds.length === 1 ? '' : 's'} will not have a match due to odd team counts.`,
+          variant: "warning"
+        });
+        
+        // Log the names of teams that will be unmatched
+        console.log('Unmatched teams:', newUnmatchedDetails);
+      }
       
       // Generate pairings for each block
       const pairings: TeamPairingMap = {};
@@ -118,6 +145,7 @@ export const usePairingGenerator = () => {
     isGenerating,
     generatedPairings,
     unmatchedTeamIds,
+    unmatchedTeamDetails,
     generateMatchPairings
   };
 };

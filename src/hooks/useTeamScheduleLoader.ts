@@ -30,26 +30,32 @@ export const useTeamScheduleLoader = () => {
       const teamsData: TimeBlockTeamsMap = {};
       
       let totalTeamsFound = 0;
+      let oddBlocksCount = 0;
       
       // Track detailed stats for debugging
-      const blockStats: Record<string, { requested: string, found: number }> = {};
+      const blockStats: Record<string, { requested: string, found: number, isOdd: boolean }> = {};
       
       for (const block of timeBlocks) {
         const teams = await getTeamsByTimeBlock(date, block);
         teamsData[block] = teams;
         totalTeamsFound += teams.length;
         
+        const isOdd = teams.length % 2 !== 0;
+        if (isOdd) oddBlocksCount++;
+        
         blockStats[block] = {
           requested: block,
-          found: teams.length
+          found: teams.length,
+          isOdd
         };
         
-        console.log(`Loaded ${teams.length} teams for "${block}" block`);
+        console.log(`Loaded ${teams.length} teams for "${block}" block (${isOdd ? 'odd' : 'even'} count)`);
       }
       
       console.log("Teams loading summary:", {
         date: normalizeDate(date, 'summary'),
         totalTeams: totalTeamsFound,
+        oddBlocks: oddBlocksCount,
         blockStats
       });
       
@@ -58,6 +64,24 @@ export const useTeamScheduleLoader = () => {
         console.warn("1. No team assignments exist for this date");
         console.warn("2. Time block format in database doesn't match what we're querying");
         console.warn("3. Date format mismatch");
+        
+        toast({
+          title: "No teams found",
+          description: `No teams scheduled for ${normalizeDate(date, 'toast')}. Please check team assignments.`,
+          variant: "destructive"
+        });
+      } else if (oddBlocksCount > 0) {
+        // Still show a toast but make it a warning instead of an error
+        toast({
+          title: "Teams loaded with warnings",
+          description: `${oddBlocksCount} ${oddBlocksCount === 1 ? 'block has' : 'blocks have'} odd team counts. Some teams may be left unmatched.`,
+          variant: "warning"
+        });
+      } else {
+        toast({
+          title: "Teams loaded successfully",
+          description: `${totalTeamsFound} teams loaded across ${Object.keys(blockStats).length} time blocks`,
+        });
       }
       
       console.log("Final teams data:", teamsData);
@@ -91,11 +115,28 @@ export const useTeamScheduleLoader = () => {
     
     return { total: totalTeams, odd: oddBlocks };
   };
+  
+  const getTeamCountsPerBlock = () => {
+    // Return detailed information about team counts per block
+    const blockCounts: Record<string, { count: number, isOdd: boolean }> = {};
+    
+    if (timeBlockTeams) {
+      Object.entries(timeBlockTeams).forEach(([block, teams]) => {
+        blockCounts[block] = {
+          count: teams.length,
+          isOdd: teams.length % 2 !== 0
+        };
+      });
+    }
+    
+    return blockCounts;
+  };
 
   return {
     isLoading,
     timeBlockTeams,
     loadTeamsForDate,
-    getTeamCountStatus
+    getTeamCountStatus,
+    getTeamCountsPerBlock
   };
 };

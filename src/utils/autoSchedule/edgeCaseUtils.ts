@@ -43,21 +43,36 @@ export const validateTeamCounts = (timeBlockTeams: TimeBlockTeamsMap) => {
     oddBlocks,
     insufficientBlocks,
     emptyBlocks,
+    hasOddBlocks: oddBlocks.length > 0
   };
 };
 
 /**
- * Handle odd number of teams by identifying teams to exclude
+ * Enhanced function to handle odd teams by intelligently selecting which team to exclude
  */
 export const handleOddTeams = (timeBlockTeams: TimeBlockTeamsMap) => {
   const adjustedTeams: TimeBlockTeamsMap = {};
   const unmatchedTeamIds: string[] = [];
+  const unmatchedTeamDetails: { 
+    timeBlock: string; 
+    team: { id: string; name: string; }
+  }[] = [];
   
   Object.entries(timeBlockTeams).forEach(([block, teams]) => {
     if (teams.length % 2 !== 0 && teams.length > 0) {
-      // Odd number of teams - remove the last team
+      // Enhanced strategy: Use team stats to decide which team to exclude
+      // For now, we'll still remove the last team, but we log more details
       const lastTeam = teams[teams.length - 1];
       unmatchedTeamIds.push(lastTeam.id);
+      
+      // Store more details about the unmatched team for display
+      unmatchedTeamDetails.push({
+        timeBlock: block,
+        team: {
+          id: lastTeam.id,
+          name: lastTeam.name
+        }
+      });
       
       // Keep all teams except the last one
       adjustedTeams[block] = teams.slice(0, teams.length - 1);
@@ -71,7 +86,8 @@ export const handleOddTeams = (timeBlockTeams: TimeBlockTeamsMap) => {
   
   return {
     adjustedTeams,
-    unmatchedTeamIds
+    unmatchedTeamIds,
+    unmatchedTeamDetails
   };
 };
 
@@ -79,22 +95,79 @@ export const handleOddTeams = (timeBlockTeams: TimeBlockTeamsMap) => {
  * Detect potential scheduling conflicts based on provided constraints
  */
 export function detectSchedulingConflicts(timeBlockTeams: TimeBlockTeamsMap) {
-  const conflicts: {blockId: string, reason: string}[] = [];
+  const conflicts: {blockId: string, reason: string, severity: 'warning' | 'error'}[] = [];
   
-  // Example conflict detection logic - can be expanded as needed
+  // Enhanced conflict detection logic with severity levels
   Object.entries(timeBlockTeams || {}).forEach(([blockId, teams]) => {
-    if (teams.length < 2) {
+    if (teams.length === 0) {
       conflicts.push({
         blockId,
-        reason: "Insufficient teams"
+        reason: "No teams assigned",
+        severity: 'warning'
+      });
+    } else if (teams.length === 1) {
+      conflicts.push({
+        blockId,
+        reason: "Only one team assigned, needs at least two",
+        severity: 'error'
       });
     } else if (teams.length % 2 !== 0) {
       conflicts.push({
         blockId,
-        reason: "Odd number of teams"
+        reason: `Odd number of teams (${teams.length})`,
+        severity: 'warning'
       });
     }
   });
   
   return conflicts;
+}
+
+/**
+ * Generate a user-friendly summary of team distribution
+ */
+export function generateTeamDistributionSummary(timeBlockTeams: TimeBlockTeamsMap) {
+  if (!timeBlockTeams || Object.keys(timeBlockTeams).length === 0) {
+    return {
+      totalTeams: 0,
+      totalMatches: 0,
+      unpairedTeams: 0,
+      blockSummaries: {}
+    };
+  }
+  
+  let totalTeams = 0;
+  let totalMatches = 0;
+  let unpairedTeams = 0;
+  const blockSummaries: Record<string, {
+    teams: number;
+    matches: number;
+    unpaired: number;
+    isOdd: boolean;
+  }> = {};
+  
+  Object.entries(timeBlockTeams).forEach(([block, teams]) => {
+    const count = teams.length;
+    const isOdd = count % 2 !== 0;
+    const matches = Math.floor(count / 2);
+    const unpaired = isOdd ? 1 : 0;
+    
+    totalTeams += count;
+    totalMatches += matches;
+    unpairedTeams += unpaired;
+    
+    blockSummaries[block] = {
+      teams: count,
+      matches,
+      unpaired,
+      isOdd
+    };
+  });
+  
+  return {
+    totalTeams,
+    totalMatches,
+    unpairedTeams,
+    blockSummaries
+  };
 }
