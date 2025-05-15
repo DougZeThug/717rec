@@ -6,7 +6,7 @@ import { useTeamFetching } from './useTeamFetching';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { haveTeamsPlayedBefore } from '@/utils/autoSchedule/matchHistoryService';
-import { generateDualBlockPairings } from '@/utils/autoSchedule/dualBlockPairingUtils';
+import { generateDualBlockPairings } from '@/utils/autoSchedule/dualBlock'; // Updated import
 
 /**
  * Hook to generate and manage team pairings for scheduling
