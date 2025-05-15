@@ -5,7 +5,9 @@
  */
 
 // Re-export all dual block utilities
-export { calculateDualBlockMetrics, validateDualBlockSchedule } from './metricsUtils';
+export { calculateDualBlockMetrics } from './metricsUtils';
+export { validateDualBlockSchedule } from './validationUtils';
+export { calculateOverallQualityScore } from './qualityScoreUtils';
 export { generateDualBlockPairings } from './pairingGenerator';
 export { findTeamsWithSameOpponent } from './opponentUtils';
 export { balanceTeamsBetweenBlocks } from './teamBalancer';
