@@ -31,9 +31,9 @@ export const useAutoSchedule = () => {
     await handleLoadTeams();
     
     // Generate match pairings
-    await handleGenerateClick();
+    const result = await handleGenerateClick();
     
-    if (generatedPairings) {
+    if (result) {
       // Apply the schedule (which converts pairings to matches)
       const matches = handleApplySchedule();
       if (matches) {

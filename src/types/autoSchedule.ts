@@ -15,7 +15,12 @@ export interface TimeBlockData {
 
 export interface TeamPairingMap {
   [timeBlock: string]: TeamPairing[];
-  unmatchedTeamIds?: string[];
+}
+
+// Separate interface to hold pairings result with unmatchedTeamIds
+export interface PairingResult {
+  pairings: TeamPairingMap;
+  unmatchedTeamIds: string[];
 }
 
 export interface TimeBlockTeamsMap {

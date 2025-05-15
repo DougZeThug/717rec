@@ -50,7 +50,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       };
       
       // Generate pairings
-      const pairings = await generateMatchPairings(selectedDate, timeBlockTeams, algorithmConfig);
+      const result = await generateMatchPairings(selectedDate, timeBlockTeams, algorithmConfig);
       
       // Performance metrics
       const endTime = performance.now();
@@ -59,7 +59,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       // Switch to matches tab to show results
       setActiveTab("matches");
       
-      return pairings;
+      return result ? result.pairings : null;
     } catch (error) {
       console.error("Error generating schedule:", error);
       toast({

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Team } from "@/types";
-import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult } from "@/types/autoSchedule";
+import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult, PairingResult } from "@/types/autoSchedule";
 import { useTeamScheduleLoader } from "./useTeamScheduleLoader";
 import { usePairingGenerator } from "./usePairingGenerator";
 import { useToast } from "@/hooks/use-toast";
@@ -110,7 +110,7 @@ export const useSchedulePreview = () => {
       simpleDateString: normalizeDate(date, 'handleGenerateSchedule')
     });
     
-    const pairings = await generateMatchPairings(date, timeBlockTeams, {
+    const result = await generateMatchPairings(date, timeBlockTeams, {
       avoidRematches: options.avoidRematches,
       weights: options.weights
     });
@@ -119,7 +119,9 @@ export const useSchedulePreview = () => {
     const endTime = performance.now();
     console.log(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
     
-    if (pairings) {
+    if (result) {
+      const { pairings, unmatchedTeamIds } = result;
+      
       // Count total matches generated
       const totalMatches = Object.values(pairings).reduce((sum, blockPairings) => 
         sum + blockPairings.length, 0);

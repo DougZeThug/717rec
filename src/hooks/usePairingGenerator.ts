@@ -15,7 +15,7 @@ import {
   validateTeamCounts,
   generateTeamDistributionSummary
 } from "@/utils/autoSchedule/edgeCaseUtils";
-import { TimeBlockTeamsMap, TeamPairingMap } from "@/types/autoSchedule";
+import { TimeBlockTeamsMap, TeamPairingMap, PairingResult } from "@/types/autoSchedule";
 import { generatePairingsWithConfig } from "@/utils/autoSchedule/pairingAlgorithm";
 
 export const usePairingGenerator = () => {
@@ -41,7 +41,7 @@ export const usePairingGenerator = () => {
         gameRecordWeight?: number;
       }
     } = {}
-  ): Promise<TeamPairingMap | null> => {
+  ): Promise<PairingResult | null> => {
     try {
       setIsGenerating(true);
       
@@ -127,7 +127,11 @@ export const usePairingGenerator = () => {
       // Store generated pairings
       setGeneratedPairings(pairings);
       
-      return pairings;
+      // Return pairings and unmatchedTeamIds as a PairingResult
+      return {
+        pairings,
+        unmatchedTeamIds: newUnmatchedTeamIds
+      };
     } catch (error) {
       console.error('Error generating match pairings:', error);
       toast({

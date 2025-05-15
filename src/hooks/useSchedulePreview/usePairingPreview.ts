@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { TeamPairingMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { TeamPairingMap, TimeBlockTeamsMap, PairingResult } from '@/types/autoSchedule';
 import { usePairingGenerator } from '../usePairingGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeDate } from '@/utils/dateNormalization';
@@ -44,23 +44,20 @@ export const usePairingPreview = (
       });
       
       // Generate pairings with the provided options
-      const pairings = await generateMatchPairings(date, timeBlockTeams, {
+      const result = await generateMatchPairings(date, timeBlockTeams, {
         avoidRematches: options.avoidRematches,
         weights: options.weights
       });
       
       // Update state with generated pairings
-      if (pairings) {
+      if (result) {
+        // Extract pairings and unmatchedTeamIds
+        const { pairings, unmatchedTeamIds } = result;
+        
         setGeneratedPairings(pairings);
         
-        // Extract unmatchedTeamIds from the pairings object
-        // Make sure we're getting an array of strings, not TeamPairing objects
-        const unmatchedIds: string[] = Array.isArray(pairings.unmatchedTeamIds) 
-          ? pairings.unmatchedTeamIds 
-          : [];
-        
         // Set the unmatched team IDs
-        setUnmatchedTeamIds(unmatchedIds);
+        setUnmatchedTeamIds(unmatchedTeamIds || []);
           
         // Count total matches generated
         const totalMatches = Object.values(pairings).reduce((sum, blockPairings) => 
@@ -74,8 +71,8 @@ export const usePairingPreview = (
           
         let toastMessage = `${totalMatches} match pairings generated based on team compatibility.`;
         
-        if (unmatchedIds.length > 0) {
-          toastMessage += ` ${unmatchedIds.length} teams were left unmatched due to odd numbers.`;
+        if (unmatchedTeamIds && unmatchedTeamIds.length > 0) {
+          toastMessage += ` ${unmatchedTeamIds.length} teams were left unmatched due to odd numbers.`;
         }
         
         if (rematchCount > 0) {
