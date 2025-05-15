@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Team } from "@/types";
 import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult, PairingResult } from "@/types/autoSchedule";
@@ -82,6 +83,7 @@ export const useSchedulePreview = () => {
     options: {
       avoidRematches?: boolean;
       prioritizeQuality?: boolean;
+      dualMatchMode?: boolean;
       weights?: {
         powerScoreWeight?: number;
         sosWeight?: number;
@@ -112,6 +114,7 @@ export const useSchedulePreview = () => {
     
     const result = await generateMatchPairings(date, timeBlockTeams, {
       avoidRematches: options.avoidRematches,
+      dualMatchMode: options.dualMatchMode,
       weights: options.weights
     });
     
@@ -154,7 +157,8 @@ export const useSchedulePreview = () => {
 
   const convertPairingsToMatches = (
     pairings: TeamPairingMap,
-    date: Date
+    date: Date,
+    options: { dualMatchMode?: boolean } = {}
   ): {
     id: string;
     team1Id: string;
@@ -171,10 +175,11 @@ export const useSchedulePreview = () => {
       }
       
       blockPairings.forEach((pairing, index) => {
-        // Alternate between main and secondary timeslots
-        const timeslot = index % 2 === 0 
-          ? TIME_BLOCKS[block].main 
-          : TIME_BLOCKS[block].secondary;
+        // In dual match mode, teams should be assigned to both time slots
+        // In standard mode, alternate between main and secondary timeslots
+        const timeslot = options.dualMatchMode
+          ? (block === 'Early' ? TIME_BLOCKS[block].main : TIME_BLOCKS[block].secondary)
+          : (index % 2 === 0 ? TIME_BLOCKS[block].main : TIME_BLOCKS[block].secondary);
         
         matches.push({
           id: Date.now().toString() + '-' + block + '-' + index,

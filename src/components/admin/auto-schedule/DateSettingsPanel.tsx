@@ -17,6 +17,8 @@ interface DateSettingsPanelProps {
   setAvoidRematches: (value: boolean) => void;
   prioritizeQuality: boolean;
   setPrioritizeQuality: (value: boolean) => void;
+  dualMatchMode: boolean;
+  setDualMatchMode: (value: boolean) => void;
   isLoading: boolean;
   isGenerating: boolean;
   totalTeams: number;
@@ -33,6 +35,8 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   setAvoidRematches,
   prioritizeQuality,
   setPrioritizeQuality,
+  dualMatchMode,
+  setDualMatchMode,
   isLoading,
   isGenerating,
   totalTeams,
@@ -112,6 +116,8 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
               setAvoidRematches={setAvoidRematches}
               prioritizeQuality={prioritizeQuality}
               setPrioritizeQuality={setPrioritizeQuality}
+              dualMatchMode={dualMatchMode}
+              setDualMatchMode={setDualMatchMode}
             />
           </Accordion>
           

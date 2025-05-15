@@ -10,13 +10,17 @@ interface AlgorithmSettingsProps {
   setAvoidRematches: (value: boolean) => void;
   prioritizeQuality: boolean;
   setPrioritizeQuality: (value: boolean) => void;
+  dualMatchMode: boolean;
+  setDualMatchMode: (value: boolean) => void;
 }
 
 const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
   avoidRematches,
   setAvoidRematches,
   prioritizeQuality,
-  setPrioritizeQuality
+  setPrioritizeQuality,
+  dualMatchMode,
+  setDualMatchMode
 }) => {
   return (
     <AccordionItem value="settings">
@@ -27,6 +31,20 @@ const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
       </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4 py-2">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="dual-match-mode">Dual Match Mode</Label>
+              <p className="text-[0.8rem] text-muted-foreground">
+                Each team plays in two consecutive time blocks (6:30 & 7:00)
+              </p>
+            </div>
+            <Switch
+              id="dual-match-mode"
+              checked={dualMatchMode}
+              onCheckedChange={setDualMatchMode}
+            />
+          </div>
+          
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="avoid-rematches">Avoid Rematches</Label>

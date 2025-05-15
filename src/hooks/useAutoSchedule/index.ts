@@ -17,6 +17,8 @@ export function useAutoSchedule() {
     setAvoidRematches,
     prioritizeQuality,
     setPrioritizeQuality,
+    dualMatchMode,
+    setDualMatchMode,
     isProcessing,
     setIsProcessing,
     generatedMatches,
@@ -63,6 +65,7 @@ export function useAutoSchedule() {
       timeBlockTeams,
       avoidRematches,
       prioritizeQuality,
+      dualMatchMode,
       setIsProcessing
     );
     // Return void explicitly by not having a return statement
@@ -72,6 +75,7 @@ export function useAutoSchedule() {
     return handleApplySchedule(
       generatedPairings,
       selectedDate,
+      dualMatchMode,
       setGeneratedMatches,
       setMatchQualityMetrics
     );
@@ -92,6 +96,8 @@ export function useAutoSchedule() {
     setAvoidRematches,
     prioritizeQuality,
     setPrioritizeQuality,
+    dualMatchMode,
+    setDualMatchMode,
     generatedMatches,
     matchQualityMetrics,
     

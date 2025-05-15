@@ -22,6 +22,8 @@ const AutoScheduleTab = () => {
     setAvoidRematches,
     prioritizeQuality,
     setPrioritizeQuality,
+    dualMatchMode,
+    setDualMatchMode,
     generatedMatches,
     matchQualityMetrics,
     
@@ -67,6 +69,8 @@ const AutoScheduleTab = () => {
           setAvoidRematches={setAvoidRematches}
           prioritizeQuality={prioritizeQuality}
           setPrioritizeQuality={setPrioritizeQuality}
+          dualMatchMode={dualMatchMode}
+          setDualMatchMode={setDualMatchMode}
           isLoading={isLoading}
           isGenerating={isGenerating}
           totalTeams={totalTeams}

@@ -7,21 +7,23 @@ import ScheduleMatchesPreview from "@/components/admin/batch-matches/auto-schedu
 
 interface MatchesTabProps {
   selectedDate: Date | null;
-  timeBlockTeams: TimeBlockTeamsMap; // Added missing prop
+  timeBlockTeams: TimeBlockTeamsMap; 
   generatedPairings: TeamPairingMap;
   unmatchedTeamIds: string[];
   isGenerating: boolean;
   matchQualityMetrics: MatchQualityMetrics | null;
+  dualMatchMode?: boolean;
   onApplySchedule?: () => void;
 }
 
 const MatchesTab: React.FC<MatchesTabProps> = ({
   selectedDate,
-  timeBlockTeams, // Added missing prop
+  timeBlockTeams,
   generatedPairings,
   unmatchedTeamIds,
   isGenerating,
   matchQualityMetrics,
+  dualMatchMode,
   onApplySchedule
 }) => {
   const hasPairings = Object.keys(generatedPairings || {}).length > 0 &&
@@ -52,6 +54,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
             pairings={generatedPairings}
             date={selectedDate}
             isGenerating={isGenerating}
+            dualMatchMode={dualMatchMode}
           />
           
           <div className="flex justify-end mt-4">

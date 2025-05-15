@@ -10,6 +10,7 @@ export const useAutoScheduleState = () => {
   // Algorithm settings
   const [avoidRematches, setAvoidRematches] = useState(true);
   const [prioritizeQuality, setPrioritizeQuality] = useState(false);
+  const [dualMatchMode, setDualMatchMode] = useState(false);
   
   // Processing state
   const [isProcessing, setIsProcessing] = useState(false);
@@ -28,6 +29,8 @@ export const useAutoScheduleState = () => {
     setAvoidRematches,
     prioritizeQuality,
     setPrioritizeQuality,
+    dualMatchMode,
+    setDualMatchMode,
     isProcessing,
     setIsProcessing,
     generatedMatches,

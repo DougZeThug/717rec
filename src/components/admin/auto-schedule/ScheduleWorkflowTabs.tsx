@@ -20,6 +20,7 @@ interface ScheduleWorkflowTabsProps {
   oddBlocks: number;
   totalTeams: number;
   matchQualityMetrics: MatchQualityMetrics | null;
+  dualMatchMode?: boolean;
   onApplySchedule: () => void;
   onManualTeamAssign?: (updatedTeams: TimeBlockTeamsMap) => void;
 }
@@ -36,6 +37,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   oddBlocks,
   totalTeams,
   matchQualityMetrics,
+  dualMatchMode,
   onApplySchedule,
   onManualTeamAssign
 }) => {
@@ -68,6 +70,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               unmatchedTeamIds={unmatchedTeamIds}
               isGenerating={isGenerating}
               matchQualityMetrics={matchQualityMetrics}
+              dualMatchMode={dualMatchMode}
               onApplySchedule={onApplySchedule}
             />
           </TabsContent>

@@ -23,6 +23,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
     timeBlockTeams: TimeBlockTeamsMap, 
     avoidRematches: boolean,
     prioritizeQuality: boolean,
+    dualMatchMode: boolean,
     setIsProcessing: (isProcessing: boolean) => void
   ) => {
     if (!selectedDate) {
@@ -43,6 +44,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       const algorithmConfig: AlgorithmConfig = {
         avoidRematches,
         prioritizeQuality,
+        dualMatchMode,
         weights: prioritizeQuality ? {
           powerScoreWeight: 5,
           recordWeight: 3.5
@@ -77,6 +79,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
   const handleApplySchedule = useCallback((
     generatedPairings: TeamPairingMap | null,
     selectedDate: Date | null,
+    dualMatchMode: boolean,
     setGeneratedMatches: (matches: any[]) => void,
     setMatchQualityMetrics: (metrics: any) => void
   ) => {
@@ -91,7 +94,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
     
     try {
       // Convert pairings to matches
-      const matches = convertPairingsToMatches(generatedPairings, selectedDate);
+      const matches = convertPairingsToMatches(generatedPairings, selectedDate, { dualMatchMode });
       setGeneratedMatches(matches);
       
       // Analyze match quality

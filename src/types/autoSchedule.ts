@@ -51,6 +51,7 @@ export interface AutoScheduleMatch {
 export interface AlgorithmConfig {
   avoidRematches?: boolean;
   prioritizeQuality?: boolean;
+  dualMatchMode?: boolean;
   weights?: {
     powerScoreWeight?: number;
     sosWeight?: number;
@@ -74,3 +75,12 @@ export interface TabProps {
   unmatchedTeamIds?: string[];
   matchQualityMetrics?: MatchQualityMetrics | null;
 }
+
+// New interface for paired time blocks in dual match mode
+export interface TimeBlockPair {
+  primaryBlock: string;
+  secondaryBlock: string;
+  primaryTime: string;
+  secondaryTime: string;
+}
+
