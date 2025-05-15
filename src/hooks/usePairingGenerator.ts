@@ -1,43 +1,23 @@
+
 import { useState, useCallback } from 'react';
 import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult } from '@/types/autoSchedule';
 import { generatePairingsWithConfig } from '@/utils/autoSchedule/pairingAlgorithm';
 import { calculateConfigurableCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { useTeamFetching } from './useTeamFetching';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { normalizeDate } from '@/utils/dateNormalization';
+import { haveTeamsPlayedBefore } from '@/utils/autoSchedule/matchHistoryService';
+import { generateDualBlockPairings } from '@/utils/autoSchedule/dualBlockPairingUtils';
 
+/**
+ * Hook to generate and manage team pairings for scheduling
+ */
 export const usePairingGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
   const { teams } = useTeamFetching();
   const { toast } = useToast();
-
-  /**
-   * Check whether two teams have played each other before
-   */
-  const haveTeamsPlayedBefore = useCallback(async (team1Id: string, team2Id: string): Promise<boolean> => {
-    try {
-      // Query the matches table to find if these teams have played against each other
-      const { count, error } = await supabase
-        .from('matches')
-        .select('id', { count: 'exact', head: true })
-        .or(`team1_id.eq.${team1Id},team2_id.eq.${team1Id}`)
-        .or(`team1_id.eq.${team2Id},team2_id.eq.${team2Id}`)
-        .eq('iscompleted', true);
-      
-      if (error) {
-        console.error('Error checking match history:', error);
-        return false;
-      }
-      
-      return count !== null && count > 0;
-    } catch (error) {
-      console.error('Error checking if teams played before:', error);
-      return false;
-    }
-  }, []);
 
   /**
    * Generate pairings for all time blocks
@@ -64,12 +44,10 @@ export const usePairingGenerator = () => {
       if (config.dualMatchMode) {
         // For dual match mode, we need to ensure each team plays in both
         // the early and late blocks with different opponents
-        
-        // Implement dual match pairing logic for Early/Late blocks
-        // This would generate pairings that ensure teams play in both time blocks
         const dualBlockPairingResult = await generateDualBlockPairings(
           timeBlockTeams,
-          config
+          config,
+          toast
         );
         
         if (dualBlockPairingResult) {
@@ -77,7 +55,7 @@ export const usePairingGenerator = () => {
           allUnmatchedTeamIds = dualBlockPairingResult.unmatchedTeamIds;
         }
       } else {
-        // Standard single-block pairing algorithm (original logic)
+        // Standard single-block pairing algorithm
         for (const [block, teams] of Object.entries(timeBlockTeams)) {
           // Skip empty blocks
           if (!teams || teams.length < 2) {
@@ -137,96 +115,7 @@ export const usePairingGenerator = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [haveTeamsPlayedBefore, toast]);
-
-  /**
-   * Generate pairings that ensure each team plays in both Early and Late blocks
-   * with different opponents in each block
-   */
-  const generateDualBlockPairings = async (
-    timeBlockTeams: TimeBlockTeamsMap,
-    config: AlgorithmConfig
-  ): Promise<PairingResult | null> => {
-    try {
-      // For dual match mode, we focus on the Early and Late blocks
-      const earlyTeams = timeBlockTeams['Early'] || [];
-      const lateTeams = timeBlockTeams['Late'] || [];
-      
-      // Ensure we have the same teams in both blocks
-      if (earlyTeams.length === 0 || lateTeams.length === 0) {
-        toast({
-          title: "Error",
-          description: "Dual match mode requires teams in both Early and Late blocks",
-          variant: "destructive"
-        });
-        return null;
-      }
-      
-      // Check if we have an equal number of teams in both blocks
-      const combinedTeams = [...earlyTeams];
-      
-      // Check if we have an odd number of teams
-      const hasOddTeams = combinedTeams.length % 2 !== 0;
-      let unmatchedTeamId = '';
-      
-      if (hasOddTeams) {
-        // Remove one team randomly to make it even
-        const randomIndex = Math.floor(Math.random() * combinedTeams.length);
-        const removedTeam = combinedTeams.splice(randomIndex, 1)[0];
-        unmatchedTeamId = removedTeam.id;
-        
-        toast({
-          title: "Warning",
-          description: `Odd number of teams. Team "${removedTeam.name}" will not be scheduled.`,
-          variant: "default"
-        });
-      }
-      
-      // First generate pairings for the early block
-      const earlyPairings = await generatePairingsWithConfig(combinedTeams, {
-        avoidRematches: config.avoidRematches,
-        haveTeamsPlayedFn: haveTeamsPlayedBefore,
-        getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, config.weights)
-      });
-      
-      // Create a map of team ID to opponent team ID in the early block
-      const earlyOpponents = new Map<string, string>();
-      earlyPairings.forEach(pair => {
-        earlyOpponents.set(pair.team1.id, pair.team2.id);
-        earlyOpponents.set(pair.team2.id, pair.team1.id);
-      });
-      
-      // Now generate pairings for the late block, ensuring different opponents
-      // To do this, we need to create a new custom compatibility function that 
-      // heavily penalizes matching teams that played each other in the early block
-      const latePairings = await generatePairingsWithConfig(combinedTeams, {
-        avoidRematches: config.avoidRematches,
-        haveTeamsPlayedFn: haveTeamsPlayedBefore,
-        getCompatibilityScoreFn: (team1, team2) => {
-          // Heavily penalize matching teams that played each other in the early block
-          if (earlyOpponents.get(team1.id) === team2.id) {
-            return -100; // Strong negative score to avoid matching
-          }
-          
-          // Otherwise, use normal compatibility scoring
-          return calculateConfigurableCompatibility(team1, team2, config.weights);
-        }
-      });
-      
-      // Return the pairings for both blocks
-      return {
-        pairings: {
-          'Early': earlyPairings,
-          'Late': latePairings
-        },
-        unmatchedTeamIds: hasOddTeams ? [unmatchedTeamId] : []
-      };
-      
-    } catch (error) {
-      console.error('Error generating dual block pairings:', error);
-      return null;
-    }
-  };
+  }, [toast]);
 
   return {
     isGenerating,
