@@ -55,8 +55,8 @@ export const balanceTeamsBetweenBlocks = (
     
     if (strategy === 'lowest-rank') {
       // Sort by power score (ascending)
-      primaryAdjusted.sort((a, b) => (a.powerScore || 0) - (b.powerScore || 0));
-      secondaryAdjusted.sort((a, b) => (a.powerScore || 0) - (b.powerScore || 0));
+      primaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
+      secondaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
       
       // Remove lowest ranked team from primary block
       const removedTeam = primaryAdjusted.shift();
@@ -89,7 +89,7 @@ export const balanceTeamsBetweenBlocks = (
     // Move one team from secondary to primary
     if (secondaryAdjusted.length > 0) {
       // Sort secondary by power score for better matching
-      secondaryAdjusted.sort((a, b) => (b.powerScore || 0) - (a.powerScore || 0));
+      secondaryAdjusted.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
       const movedTeam = secondaryAdjusted.pop();
       
       if (movedTeam) {
@@ -104,7 +104,7 @@ export const balanceTeamsBetweenBlocks = (
     // Move one team from primary to secondary
     if (primaryAdjusted.length > 0) {
       // Sort primary by power score for better matching
-      primaryAdjusted.sort((a, b) => (b.powerScore || 0) - (a.powerScore || 0));
+      primaryAdjusted.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
       const movedTeam = primaryAdjusted.pop();
       
       if (movedTeam) {
