@@ -65,7 +65,7 @@ const AutoScheduleTab = () => {
           oddBlocks={oddBlocks}
           formattedDate={formattedDate}
           onLoadTeams={handleLoadTeams}
-          onGenerateSchedule={handleGenerateClick}
+          onGenerateSchedule={handleGenerateClick} // Now correctly mapped
         />
         
         <ScheduleWorkflowTabs 

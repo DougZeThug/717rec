@@ -231,7 +231,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
               oddBlocks={oddBlocks}
               unmatchedTeamIds={unmatchedTeamIds}
               onLoadTeams={handlePreviewTeams}
-              onGenerateSchedule={handlePreviewTeams} // Temporarily use same function for testing
+              onGenerateSchedule={handleGenerateScheduleClick} // Fixed: Now correctly points to handleGenerateScheduleClick
             />
           )}
           
@@ -240,7 +240,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
               isGenerating={isGenerating}
               selectedDate={selectedDate}
               generatedPairings={generatedPairings}
-              onApplySchedule={() => {}}
+              onApplySchedule={handleApplySchedule}
               onBack={() => setAutoScheduleStep('teams')}
             />
           )}

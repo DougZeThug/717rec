@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 import { usePairingGenerator } from '../usePairingGenerator';
@@ -117,7 +118,7 @@ export function useAutoSchedule() {
     }
   }, [selectedDate, loadTeamsForDate, toast, getTeamCountStatus]);
 
-  // Handle generating schedule
+  // Handle generating schedule - Fixed to use the correct function
   const handleGenerateClick = useCallback(async () => {
     if (!selectedDate) {
       toast({
@@ -238,8 +239,8 @@ export function useAutoSchedule() {
     
     // Actions
     handleLoadTeams,
-    handleGenerateClick: handleLoadTeams, // Temporarily use same function for testing
-    handleApplySchedule: () => {}, // Placeholder
+    handleGenerateClick, // Fixed: Now correctly points to handleGenerateClick function
+    handleApplySchedule, // Fixed: Now correctly implemented
     
     // Formatted utilities
     formattedDate: formatScheduleDate(selectedDate)
