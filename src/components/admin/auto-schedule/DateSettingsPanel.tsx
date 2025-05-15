@@ -8,7 +8,6 @@ import { Separator } from "@/components/ui/separator";
 import { Accordion } from "@/components/ui/accordion";
 import { Calendar } from "lucide-react";
 import AlgorithmSettings from "./AlgorithmSettings";
-import { format } from "date-fns";
 
 interface DateSettingsPanelProps {
   selectedDate: Date | null;
@@ -48,23 +47,14 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
       return;
     }
     
-    // Create a date at midnight to avoid timezone issues
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-    
-    // Create a consistent date object
-    const normalizedDate = new Date(Date.UTC(year, month, day));
-    
     console.log("DateSettingsPanel - Date selection changed:", {
       originalDate: date,
-      normalizedDate,
-      dateString: normalizedDate.toString(),
-      utcString: normalizedDate.toUTCString(),
-      isoString: normalizedDate.toISOString()
+      dateString: date.toString(),
+      isoString: date.toISOString()
     });
     
-    setSelectedDate(normalizedDate);
+    // Use the date as is without timezone adjustments
+    setSelectedDate(date);
   };
 
   return (

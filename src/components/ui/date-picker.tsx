@@ -25,6 +25,7 @@ export function DatePicker({ date, onDateChange }: DatePickerProps) {
       newDateIso: newDate?.toISOString(),
     });
     
+    // Pass the date directly without any timezone adjustments
     onDateChange(newDate || null);
   };
 

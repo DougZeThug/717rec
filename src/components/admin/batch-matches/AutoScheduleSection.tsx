@@ -18,6 +18,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { normalizeDate } from "@/utils/dateNormalization";
 
 interface AutoScheduleSectionProps {
   selectedDate: Date | null;
@@ -58,11 +59,32 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
       return;
     }
     
+    console.log('AutoScheduleSection - handlePreviewTeams - Before previewSchedule', {
+      selectedDate,
+      selectedDateString: selectedDate.toString(),
+      selectedDateIso: selectedDate.toISOString(),
+      simpleDateString: normalizeDate(selectedDate, 'handlePreviewTeams')
+    });
+    
     const preview = await previewSchedule(selectedDate);
+    
     if (preview) {
+      console.log('AutoScheduleSection - handlePreviewTeams - After previewSchedule', {
+        timeBlocksCount: Object.keys(preview.timeBlocks).length,
+        totalTeams: Object.values(preview.timeBlocks).reduce((sum, teams) => sum + teams.length, 0)
+      });
+      
       toast({
         title: "Teams Loaded",
         description: "Teams for each time block have been loaded.",
+      });
+    } else {
+      // If preview is null, something went wrong
+      console.error('Failed to preview teams - got null response');
+      toast({
+        title: "Error",
+        description: `Failed to load teams for date ${normalizeDate(selectedDate, 'toast-error')}`,
+        variant: "destructive"
       });
     }
   };
@@ -209,7 +231,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
               oddBlocks={oddBlocks}
               unmatchedTeamIds={unmatchedTeamIds}
               onLoadTeams={handlePreviewTeams}
-              onGenerateSchedule={handleGenerateScheduleClick}
+              onGenerateSchedule={handlePreviewTeams} // Temporarily use same function for testing
             />
           )}
           
@@ -218,7 +240,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
               isGenerating={isGenerating}
               selectedDate={selectedDate}
               generatedPairings={generatedPairings}
-              onApplySchedule={handleApplySchedule}
+              onApplySchedule={() => {}}
               onBack={() => setAutoScheduleStep('teams')}
             />
           )}

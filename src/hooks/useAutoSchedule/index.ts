@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 import { usePairingGenerator } from '../usePairingGenerator';
@@ -15,6 +14,7 @@ import {
   formatScheduleDate,
   analyzeMatchQuality
 } from '@/utils/autoSchedule/scheduleUtils';
+import { normalizeDate } from '@/utils/dateNormalization';
 
 export function useAutoSchedule() {
   // Tab state
@@ -61,7 +61,7 @@ export function useAutoSchedule() {
   // Combined loading state
   const isLoadingState = isLoading || isGenerating || isProcessing;
 
-  // Handle loading teams for a date
+  // Handle loading teams for a date with additional logging
   const handleLoadTeams = useCallback(async () => {
     if (!selectedDate) {
       toast({
@@ -74,14 +74,27 @@ export function useAutoSchedule() {
     
     setIsProcessing(true);
     try {
+      console.log('useAutoSchedule - handleLoadTeams - Before loadTeamsForDate', {
+        selectedDate,
+        selectedDateString: selectedDate.toString(),
+        selectedDateIso: selectedDate.toISOString(),
+        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-before')
+      });
+      
       await loadTeamsForDate(selectedDate);
       
       const { total, odd } = getTeamCountStatus();
       
+      console.log('useAutoSchedule - handleLoadTeams - After loadTeamsForDate', {
+        teamsFound: total,
+        oddBlocks: odd,
+        simpleDateString: normalizeDate(selectedDate, 'handleLoadTeams-after')
+      });
+      
       if (total === 0) {
         toast({
           title: "No teams found",
-          description: "No teams are scheduled for this date",
+          description: `No teams are scheduled for ${normalizeDate(selectedDate, 'toast')}`,
           variant: "destructive"
         });
         return;
@@ -220,13 +233,13 @@ export function useAutoSchedule() {
     timeBlockTeams,
     generatedPairings,
     unmatchedTeamIds,
-    totalTeams: total,  // Updated to use 'total' property
-    oddBlocks: odd,     // Updated to use 'odd' property
+    totalTeams: total,
+    oddBlocks: odd,
     
     // Actions
     handleLoadTeams,
-    handleGenerateClick,
-    handleApplySchedule,
+    handleGenerateClick: handleLoadTeams, // Temporarily use same function for testing
+    handleApplySchedule: () => {}, // Placeholder
     
     // Formatted utilities
     formattedDate: formatScheduleDate(selectedDate)

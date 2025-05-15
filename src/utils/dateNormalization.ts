@@ -1,10 +1,11 @@
 
 /**
  * Normalizes a date value to an ISO string with validation and tracing
+ * Simplified to ensure consistent date handling across the application
  */
 export const normalizeDate = (date: Date | string | null, context: string = 'unknown'): string => {
   // Start with current date as fallback
-  const fallbackDate = new Date().toISOString();
+  const fallbackDate = new Date().toISOString().split('T')[0];
   
   // Log the incoming value for detailed tracing
   console.log(`🕒 [${context}] normalizeDate input:`, {
@@ -22,44 +23,58 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
   }
   
   try {
-    // Handle Date object
+    // Handle Date object - extract just the YYYY-MM-DD portion
     if (typeof date === 'object' && date instanceof Date) {
-      // Create a date string in YYYY-MM-DD format to avoid timezone issues
+      // Create a date string in YYYY-MM-DD format without any timezone adjustments
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       
-      // Create a normalized ISO date string with time at 00:00:00 in UTC
-      const normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+      const simpleDateString = `${year}-${month}-${day}`;
       
-      console.log(`🔍 [${context}] Normalized date object to ISO string:`, {
+      console.log(`🔍 [${context}] Simplified date to YYYY-MM-DD:`, {
         original: date,
-        originalISO: date.toISOString(),
-        normalized: normalizedDate
+        simplified: simpleDateString
       });
       
-      return normalizedDate;
+      return simpleDateString;
     }
     
-    // Handle string - ensure it's valid ISO
+    // Handle string - extract just the YYYY-MM-DD portion if it's an ISO string
     if (typeof date === 'string') {
+      if (date.includes('T')) {
+        // It's an ISO string, extract just the date part
+        const simpleDateString = date.split('T')[0];
+        
+        console.log(`🔍 [${context}] Extracted date from ISO string:`, {
+          original: date,
+          simplified: simpleDateString
+        });
+        
+        return simpleDateString;
+      }
+      
+      // It might already be a simple date string
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        console.log(`🔍 [${context}] Date is already in YYYY-MM-DD format:`, date);
+        return date;
+      }
+      
+      // Try to parse it as a date and convert to simple date string
       const parsed = new Date(date);
       if (!isNaN(parsed.getTime())) {
-        // Create a date string in YYYY-MM-DD format to avoid timezone issues
         const year = parsed.getFullYear();
         const month = String(parsed.getMonth() + 1).padStart(2, '0');
         const day = String(parsed.getDate()).padStart(2, '0');
         
-        // Create a normalized ISO date string with time at 00:00:00 in UTC
-        const normalizedDate = `${year}-${month}-${day}T00:00:00.000Z`;
+        const simpleDateString = `${year}-${month}-${day}`;
         
-        console.log(`🔍 [${context}] Normalized string date to ISO:`, {
+        console.log(`🔍 [${context}] Parsed string date to YYYY-MM-DD:`, {
           original: date,
-          parsed: normalizedDate,
-          isUnchanged: normalizedDate === date
+          parsed: simpleDateString
         });
         
-        return normalizedDate;
+        return simpleDateString;
       }
     }
     

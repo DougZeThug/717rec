@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Team } from "@/types";
 import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult } from "@/types/autoSchedule";
@@ -24,7 +23,7 @@ export const useSchedulePreview = () => {
         date,
         dateString: date.toString(),
         dateIso: date.toISOString(),
-        normalizedDate: normalizeDate(date, 'useSchedulePreview')
+        simpleDateString: normalizeDate(date, 'useSchedulePreview')
       });
       
       // Load teams for each time block if not loaded yet
@@ -108,7 +107,7 @@ export const useSchedulePreview = () => {
       date,
       dateString: date.toString(),
       dateIso: date.toISOString(),
-      normalizedDate: normalizeDate(date, 'handleGenerateSchedule')
+      simpleDateString: normalizeDate(date, 'handleGenerateSchedule')
     });
     
     const pairings = await generateMatchPairings(date, timeBlockTeams, {
