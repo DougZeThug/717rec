@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Team } from "@/types";
 import { TimeBlockTeamsMap, TeamPairingMap, PreviewResult, PairingResult, PairedTimeBlockTeamsMap, DualBlockConfig } from "@/types/autoSchedule";
@@ -8,7 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
 import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 import { normalizeDate } from "@/utils/dateNormalization";
-import { createTimeBlockPairs, balanceTeamsBetweenBlocks } from "@/utils/autoSchedule/dualBlockUtils";
+import { createTimeBlockPairs } from "@/utils/autoSchedule/dualBlockUtils";
+import { balanceTeamsBetweenBlocks } from "@/utils/autoSchedule/dualBlock";
 
 export type AutoScheduleStep = 'teams' | 'pairings';
 
@@ -126,7 +126,7 @@ export const useSchedulePreview = () => {
     const primaryTeams = teamBlocks[primaryBlock] || [];
     const secondaryTeams = teamBlocks[secondaryBlock] || [];
     
-    // Balance teams between blocks
+    // Balance teams between blocks using the refactored function
     const { primaryAdjusted, secondaryAdjusted, unmatchedTeamIds } = 
       balanceTeamsBetweenBlocks(primaryTeams, secondaryTeams, blockConfig);
     

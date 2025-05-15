@@ -1,9 +1,11 @@
+
 import { useState, useCallback } from 'react';
 import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
 import { getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { normalizeDate } from '@/utils/dateNormalization';
-import { createTimeBlockPairs, balanceTeamsBetweenBlocks } from '@/utils/autoSchedule/dualBlockUtils';
+import { createTimeBlockPairs } from '@/utils/autoSchedule/dualBlockUtils';
+import { balanceTeamsBetweenBlocks } from '@/utils/autoSchedule/dualBlock';
 
 export const useTeamOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -119,7 +121,7 @@ export const useTeamOperations = () => {
     const primaryTeams = timeBlockTeams[primaryBlock] || [];
     const secondaryTeams = timeBlockTeams[secondaryBlock] || [];
     
-    // Balance teams between blocks
+    // Balance teams between blocks using the refactored function
     const { 
       primaryAdjusted, 
       secondaryAdjusted, 

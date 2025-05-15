@@ -8,7 +8,8 @@
 export { calculateDualBlockMetrics } from './metricsUtils';
 export { generateDualBlockPairings } from './pairingGenerator';
 export { findTeamsWithSameOpponent } from './opponentUtils';
-// Note: We use balanceTeamsBetweenBlocks from dualBlockUtils instead of duplicating
+export { balanceTeamsBetweenBlocks } from './teamBalancer';
 
 // Types
-export type { DualMatchMetrics } from './types';
+export type { DualMatchMetrics, TeamMatchCount } from './types';
+export type { TeamBalanceResult } from './teamBalancer';

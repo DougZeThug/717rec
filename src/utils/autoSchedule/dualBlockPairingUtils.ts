@@ -10,8 +10,6 @@ import { NotificationCallback } from '@/types/dualBlock';
 export { 
   calculateDualBlockMetrics,
   generateDualBlockPairings,
-  findTeamsWithSameOpponent
+  findTeamsWithSameOpponent,
+  balanceTeamsBetweenBlocks
 } from './dualBlock';
-
-// Re-export balanceTeamsBetweenBlocks from dualBlockUtils to avoid duplication
-export { balanceTeamsBetweenBlocks } from './dualBlockUtils';

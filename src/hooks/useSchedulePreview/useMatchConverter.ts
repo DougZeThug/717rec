@@ -4,6 +4,7 @@ import { TeamPairingMap, MatchConversionOptions } from '@/types/autoSchedule';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { PreviewMatch } from './types';
 import { useToast } from '@/hooks/use-toast';
+import { calculateDualBlockMetrics, findTeamsWithSameOpponent } from '@/utils/autoSchedule/dualBlock';
 
 export const useMatchConverter = () => {
   const { toast } = useToast();
@@ -90,22 +91,21 @@ export const useMatchConverter = () => {
           });
         });
         
-        // Log metrics about dual matches
-        const teamsWithBothMatches = Object.values(teamMatchCounts).filter(tc => tc.matchCount === 2).length;
-        const teamsWithOneMatch = Object.values(teamMatchCounts).filter(tc => tc.matchCount === 1).length;
-        const teamsWithDuplicateOpponents = Object.values(teamMatchCounts).filter(tc => 
-          tc.matchCount === 2 && tc.opponents.length < 2
-        ).length;
+        // Use the refactored metric calculation
+        const primaryBlockPairings = pairings[primaryBlock] || [];
+        const secondaryBlockPairings = pairings[secondaryBlock] || [];
         
-        console.log("Dual match conversion metrics:", {
-          teamsWithBothMatches,
-          teamsWithOneMatch,
-          teamsWithDuplicateOpponents
-        });
+        const metrics = calculateDualBlockMetrics(primaryBlockPairings, secondaryBlockPairings);
+        
+        // Log metrics about dual matches
+        console.log("Dual match conversion metrics:", metrics);
+        
+        // Find teams with same opponent in both blocks
+        const teamsWithSameOpponent = findTeamsWithSameOpponent(primaryBlockPairings, secondaryBlockPairings);
         
         // Warn if any teams have duplicate opponents
-        if (teamsWithDuplicateOpponents > 0) {
-          console.warn(`${teamsWithDuplicateOpponents} teams have the same opponent in both blocks`);
+        if (teamsWithSameOpponent.length > 0) {
+          console.warn(`${teamsWithSameOpponent.length} teams have the same opponent in both blocks`);
         }
       } else {
         // Standard single-block conversion logic
