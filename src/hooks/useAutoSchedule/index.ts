@@ -55,13 +55,15 @@ export function useAutoSchedule() {
   };
 
   const generateSchedule = async () => {
-    return handleGenerateClick(
+    // Convert return type to void by not returning the result
+    await handleGenerateClick(
       selectedDate,
       timeBlockTeams,
       avoidRematches,
       prioritizeQuality,
       setIsProcessing
     );
+    // Return void explicitly by not having a return statement
   };
 
   const applySchedule = () => {
