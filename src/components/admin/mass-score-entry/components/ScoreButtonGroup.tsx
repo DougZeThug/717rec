@@ -64,10 +64,18 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
       team2GameWins: Number(option.team2GameWins)
     };
     
+    console.log(`ScoreButtonGroup: Option selected for match ${matchId}:`, {
+      option: option.label,
+      scores: `${option.team1Score}-${option.team2Score}`,
+      gameWins: `${option.team1GameWins}-${option.team2GameWins}`
+    });
+    
     setSelectedOption(newSelection);
     onChange(newSelection);
     
+    // Auto-complete when a score is selected
     if (onComplete) {
+      console.log(`ScoreButtonGroup: Auto-completing match ${matchId} after score selection`);
       onComplete();
     }
   };

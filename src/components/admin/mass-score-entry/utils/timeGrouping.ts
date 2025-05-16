@@ -6,32 +6,44 @@ import { extractTimeSlot } from "@/utils/timeUtils";
  * Groups matches by their time slot for the mass score entry page
  */
 export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string, MatchWithTeams[]> => {
-  return matches.reduce((acc, match) => {
+  console.log(`⏰ Grouping ${matches.length} matches by time slot`);
+  
+  return matches.reduce((acc, match, index) => {
     if (!match.date) {
       // For matches without dates, group them under "No Time"
       const key = "No Time";
+      console.log(`⏰ Match ${match.id} (index ${index}) has no date, assigned to "${key}"`);
+      
       if (!acc[key]) {
         acc[key] = [];
       }
-      acc[key].push(match);
+      acc[key].push({
+        ...match,
+        id: `${match.id}-index-${index}` // Append index for reference
+      });
       return acc;
     }
     
     // Log date before extraction to help with debugging
-    console.log(`⏰ groupMatchesByTimeSlot processing match ${match.id}:`, {
+    console.log(`⏰ groupMatchesByTimeSlot processing match ${match.id} (index ${index}):`, {
       matchDate: match.date,
       matchDateType: typeof match.date
     });
     
     const timeSlot = extractTimeSlot(match.date);
     
-    console.log(`⏰ Match ${match.id} assigned to time slot: "${timeSlot}"`);
+    console.log(`⏰ Match ${match.id} (index ${index}) assigned to time slot: "${timeSlot}"`);
     
     if (!acc[timeSlot]) {
       acc[timeSlot] = [];
     }
     
-    acc[timeSlot].push(match);
+    // Add the match with index reference embedded in the ID
+    acc[timeSlot].push({
+      ...match,
+      id: `${match.id}-index-${index}`
+    });
+    
     return acc;
   }, {} as Record<string, MatchWithTeams[]>);
 };

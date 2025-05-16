@@ -29,26 +29,18 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   };
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center gap-2">
-        <Label 
-          className="text-sm flex items-center gap-1 cursor-pointer" 
-          onClick={handleStatusClick}
+    <div className="flex items-center gap-2">
+      {isCompleted ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center text-green-600 dark:text-green-400"
         >
-          {isCompleted ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center text-green-600 dark:text-green-400"
-            >
-              <Check className="h-3 w-3 mr-1" />
-              <span>Match Completed</span>
-            </motion.div>
-          ) : (
-            "Match Status"
-          )}
-        </Label>
-      </div>
+          <Check className="h-3 w-3 mr-1" />
+          <span className="text-sm">Complete</span>
+        </motion.div>
+      ) : null}
+      
       <MatchStatusIndicator
         isEdited={isEdited}
         isValid={isValid}

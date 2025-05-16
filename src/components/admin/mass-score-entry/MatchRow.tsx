@@ -31,14 +31,16 @@ const MatchRow: React.FC<MatchRowProps> = ({
 }) => {
   console.log(`MatchRow render for match ${match.id}:`, {
     matchId: match.id,
+    index: index,
     isCompleted: match.iscompleted,
     scores: `${match.team1Score}-${match.team2Score}`,
+    gameWins: `${match.team1_game_wins}-${match.team2_game_wins}`,
     isValid: match.isValid,
     isEdited: match.isEdited
   });
 
   const handleCompletedChange = (checked: boolean) => {
-    console.log(`MatchRow: handleCompletedChange called with ${checked} for match ${match.id}`);
+    console.log(`MatchRow: handleCompletedChange called with ${checked} for match ${match.id} at index ${index}`);
     onMarkCompleted(checked);
   };
 
@@ -62,21 +64,25 @@ const MatchRow: React.FC<MatchRowProps> = ({
           onClearError={() => onClearError?.(match.id)}
         />
 
-        {/* Match Status Section */}
-        <MatchStatusSection
-          isCompleted={match.iscompleted}
-          onCompletedChange={handleCompletedChange}
-          isEdited={match.isEdited}
-          isValid={match.isValid}
-          disabled={isSubmitting}
-        />
-
-        {/* Explicit Mark as Complete toggle */}
-        <div className="flex items-center gap-2 pt-2">
-          <label className="text-sm font-medium">Mark as Complete</label>
-          <Switch
-            checked={match.iscompleted}
-            onCheckedChange={handleCompletedChange}
+        {/* Match Status & Completion Toggle combined */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium cursor-pointer" onClick={() => handleCompletedChange(!match.iscompleted)}>
+              Mark as Complete
+            </label>
+            <Switch
+              checked={match.iscompleted}
+              onCheckedChange={handleCompletedChange}
+              disabled={isSubmitting}
+              data-match-id={match.id}
+              data-match-index={index}
+            />
+          </div>
+          <MatchStatusSection
+            isCompleted={match.iscompleted}
+            onCompletedChange={handleCompletedChange}
+            isEdited={match.isEdited}
+            isValid={match.isValid}
             disabled={isSubmitting}
           />
         </div>

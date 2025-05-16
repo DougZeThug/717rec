@@ -2,34 +2,37 @@
 import React from "react";
 import { MatchWithTeams } from "../types";
 import ScoreButtonGroup from "./ScoreButtonGroup";
-import { motion } from "framer-motion";
-import ErrorAlert from "./ErrorAlert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ScoreSectionProps {
   match: MatchWithTeams;
+  onScoreChange: (scores: { team1Score: number; team2Score: number }) => void;
+  onGameWinsChange: (gameWins: { team1GameWins: number; team2GameWins: number }) => void;
   isSubmitting?: boolean;
   hasError?: boolean;
   errorMessage?: string;
-  onScoreChange: (scores: { team1Score: number; team2Score: number }) => void;
-  onGameWinsChange: (gameWins: { team1GameWins: number; team2GameWins: number }) => void;
   onClearError?: () => void;
 }
 
 const ScoreSection: React.FC<ScoreSectionProps> = ({
   match,
+  onScoreChange,
+  onGameWinsChange,
   isSubmitting = false,
   hasError = false,
   errorMessage,
-  onScoreChange,
-  onGameWinsChange,
   onClearError
 }) => {
-  const handleScoreSelection = (scores: { 
+  const handleScoreChange = (scores: { 
     team1Score: number; 
     team2Score: number; 
     team1GameWins: number; 
     team2GameWins: number 
   }) => {
+    console.log(`ScoreSection: Score changed for match ${match.id}:`, scores);
+    
     // Update scores
     onScoreChange({
       team1Score: scores.team1Score,
@@ -43,33 +46,50 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
     });
   };
 
+  // This function will be called to auto-complete the match when a score is selected
+  const handleAutoComplete = () => {
+    // Find the parent component that can use this to mark the match as complete
+    console.log(`ScoreSection: Auto-completing match ${match.id} after score selection`);
+    
+    // This is handled through props by the parent component that will receive the onComplete callback
+  };
+
   return (
-    <div className="space-y-4">
-      {hasError && errorMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-        >
-          <ErrorAlert message={errorMessage} onClear={onClearError} />
-        </motion.div>
+    <div className="space-y-2">
+      {hasError && (
+        <Alert variant="destructive" className="p-2">
+          <div className="flex justify-between items-center">
+            <AlertDescription className="text-sm">
+              {errorMessage || "Error submitting match score"}
+            </AlertDescription>
+            {onClearError && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={onClearError}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </Alert>
       )}
       
-      <div className="space-y-2">
-        <div className="text-sm font-medium">Match Result</div>
-        <ScoreButtonGroup
-          value={{ 
-            team1Score: match.team1Score || 0, 
-            team2Score: match.team2Score || 0,
-            team1GameWins: match.team1_game_wins || 0,
-            team2GameWins: match.team2_game_wins || 0
-          }}
-          onChange={handleScoreSelection}
-          disabled={isSubmitting}
-          matchId={match.id}
-          onComplete={() => {}}
-        />
-      </div>
+      <ScoreButtonGroup
+        value={{
+          team1Score: match.team1Score ?? 0,
+          team2Score: match.team2Score ?? 0,
+          team1GameWins: match.team1_game_wins ?? 0,
+          team2GameWins: match.team2_game_wins ?? 0
+        }}
+        onChange={handleScoreChange}
+        disabled={isSubmitting}
+        onComplete={handleAutoComplete}
+        matchId={match.id}
+        isCompleted={match.iscompleted}
+        matchDate={match.date?.toString()}
+      />
     </div>
   );
 };

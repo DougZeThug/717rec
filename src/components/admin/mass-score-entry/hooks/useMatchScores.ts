@@ -11,11 +11,16 @@ export const useMatchScores = (
   };
 
   const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
+    console.log(`useMatchScores.handleScoreChange for match at index ${index}:`, {
+      team1Score,
+      team2Score
+    });
+    
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`Match at index ${index} not found`);
+      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
@@ -24,15 +29,23 @@ export const useMatchScores = (
     match.isEdited = true;
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
+    // Score is being manually set, we should consider auto-completing the match
+    // but we'll leave that as a separate step for clarity
+    
     setMatches(newMatches);
   };
   
   const handleGameWinsChange = (index: number, team1GameWins: number, team2GameWins: number) => {
+    console.log(`useMatchScores.handleGameWinsChange for match at index ${index}:`, {
+      team1GameWins,
+      team2GameWins
+    });
+    
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`Match at index ${index} not found`);
+      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
@@ -40,17 +53,31 @@ export const useMatchScores = (
     match.team2_game_wins = team2GameWins;
     match.isEdited = true;
     
+    // Update match validity based on game wins
+    match.isValid = validateMatchScores(match.team1Score, match.team2Score);
+    
     setMatches(newMatches);
   };
   
   const handleMarkCompleted = (index: number, checked: boolean) => {
+    console.log(`useMatchScores.handleMarkCompleted for match at index ${index}:`, {
+      checked,
+      matches: matches.length,
+      matchExists: Boolean(matches[index])
+    });
+    
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`Match at index ${index} not found`);
+      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
+    
+    console.log(`Updating completion status for match ${match.id}`, {
+      before: match.iscompleted,
+      after: checked
+    });
     
     match.iscompleted = checked;
     match.isEdited = true;

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MatchWithTeams } from "../types";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -38,14 +38,17 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   
-  // Helper function to translate match index 
-  const getGlobalIndex = (localIndex: number): number => {
-    // This is needed to maintain the correct indices when passing to parent handlers
-    // We find the first match's original index and add our local index to it
-    const firstMatchOriginalIndex = matches.length > 0 ? 
-      parseInt(matches[0].id.split("-index-")[1] || "0", 10) : 0;
-    return firstMatchOriginalIndex + localIndex;
-  };
+  // Debug log to track the matches in this group
+  useEffect(() => {
+    console.log(`TimeSlotMatchGroup "${timeSlot}" rendering with ${matches.length} matches:`, 
+      matches.map((m, idx) => ({
+        id: m.id,
+        localIndex: idx,
+        globalIndex: parseInt(m.id.split("-index-")[1] || "0", 10),
+        teams: `${m.team1?.name || 'Unknown'} vs ${m.team2?.name || 'Unknown'}`
+      }))
+    );
+  }, [timeSlot, matches]);
 
   return (
     <Collapsible
@@ -79,27 +82,43 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
           transition={{ duration: 0.2 }}
           className="pt-2 grid grid-cols-1 md:grid-cols-2 gap-4"
         >
-          {matches.map((match, idx) => (
-            <div key={match.id} className="relative">
-              <MatchRow
-                match={match}
-                index={idx}
-                isSubmitting={submitting}
-                hasError={failedMatches?.includes(match.id)}
-                errorMessage={errorMessages?.[match.id]}
-                onScoreChange={(team1Score, team2Score) => 
-                  onScoreChange(idx, team1Score, team2Score)
-                }
-                onGameWinsChange={(team1GameWins, team2GameWins) => 
-                  onGameWinsChange(idx, team1GameWins, team2GameWins)
-                }
-                onMarkCompleted={(checked) => 
-                  onMarkCompleted(idx, checked)
-                }
-                onClearError={onClearError}
-              />
-            </div>
-          ))}
+          {matches.map((match, localIndex) => {
+            // Extract the global index from the match ID
+            const globalIndex = parseInt(match.id.split("-index-")[1] || "0", 10);
+            
+            console.log(`Rendering match at timeslot "${timeSlot}":`, {
+              id: match.id,
+              localIndex,
+              globalIndex,
+              isCompleted: match.iscompleted
+            });
+            
+            return (
+              <div key={match.id} className="relative">
+                <MatchRow
+                  match={match}
+                  index={globalIndex} // Use the global index for parent callbacks
+                  isSubmitting={submitting}
+                  hasError={failedMatches?.includes(match.id)}
+                  errorMessage={errorMessages?.[match.id]}
+                  onScoreChange={(team1Score, team2Score) => 
+                    onScoreChange(globalIndex, team1Score, team2Score)
+                  }
+                  onGameWinsChange={(team1GameWins, team2GameWins) => 
+                    onGameWinsChange(globalIndex, team1GameWins, team2GameWins)
+                  }
+                  onMarkCompleted={(checked) => {
+                    console.log(`TimeSlotMatchGroup: Marking match ${match.id} as ${checked ? 'completed' : 'incomplete'}`, {
+                      globalIndex,
+                      localIndex
+                    });
+                    onMarkCompleted(globalIndex, checked);
+                  }}
+                  onClearError={onClearError}
+                />
+              </div>
+            );
+          })}
         </motion.div>
       </CollapsibleContent>
     </Collapsible>
