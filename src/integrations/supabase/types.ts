@@ -17,8 +17,10 @@ export type Database = {
           division_id: string | null
           format: string | null
           id: string
+          reset_match_needed: boolean | null
           state: string | null
           title: string
+          wb_champion_id: string | null
         }
         Insert: {
           challonge_tournament_id?: string | null
@@ -27,8 +29,10 @@ export type Database = {
           division_id?: string | null
           format?: string | null
           id?: string
+          reset_match_needed?: boolean | null
           state?: string | null
           title: string
+          wb_champion_id?: string | null
         }
         Update: {
           challonge_tournament_id?: string | null
@@ -37,8 +41,10 @@ export type Database = {
           division_id?: string | null
           format?: string | null
           id?: string
+          reset_match_needed?: boolean | null
           state?: string | null
           title?: string
+          wb_champion_id?: string | null
         }
         Relationships: [
           {
@@ -47,6 +53,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "divisions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brackets_wb_champion_id_fkey"
+            columns: ["wb_champion_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brackets_wb_champion_id_fkey"
+            columns: ["wb_champion_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "brackets_wb_champion_id_fkey"
+            columns: ["wb_champion_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "brackets_wb_champion_id_fkey"
+            columns: ["wb_champion_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "brackets_wb_champion_id_fkey"
+            columns: ["wb_champion_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
           },
         ]
       }
@@ -489,6 +530,307 @@ export type Database = {
           {
             foreignKeyName: "messages_team_id_fkey"
             columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+        ]
+      }
+      playoff_games: {
+        Row: {
+          created_at: string | null
+          game_number: number
+          id: string
+          match_id: string | null
+          team1_score: number
+          team2_score: number
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          game_number: number
+          id?: string
+          match_id?: string | null
+          team1_score: number
+          team2_score: number
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          game_number?: number
+          id?: string
+          match_id?: string | null
+          team1_score?: number
+          team2_score?: number
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playoff_games_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "playoff_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_games_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_games_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_games_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_games_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_games_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+        ]
+      }
+      playoff_matches: {
+        Row: {
+          best_of: number | null
+          bracket_id: string | null
+          created_at: string | null
+          id: string
+          loser_id: string | null
+          match_type: Database["public"]["Enums"]["playoff_match_type"]
+          next_lose_match_id: string | null
+          next_win_match_id: string | null
+          position: number
+          round: number
+          status: string | null
+          team1_id: string | null
+          team1_score: number | null
+          team1_seed: number | null
+          team2_id: string | null
+          team2_score: number | null
+          team2_seed: number | null
+          updated_at: string | null
+          winner_id: string | null
+        }
+        Insert: {
+          best_of?: number | null
+          bracket_id?: string | null
+          created_at?: string | null
+          id?: string
+          loser_id?: string | null
+          match_type?: Database["public"]["Enums"]["playoff_match_type"]
+          next_lose_match_id?: string | null
+          next_win_match_id?: string | null
+          position: number
+          round: number
+          status?: string | null
+          team1_id?: string | null
+          team1_score?: number | null
+          team1_seed?: number | null
+          team2_id?: string | null
+          team2_score?: number | null
+          team2_seed?: number | null
+          updated_at?: string | null
+          winner_id?: string | null
+        }
+        Update: {
+          best_of?: number | null
+          bracket_id?: string | null
+          created_at?: string | null
+          id?: string
+          loser_id?: string | null
+          match_type?: Database["public"]["Enums"]["playoff_match_type"]
+          next_lose_match_id?: string | null
+          next_win_match_id?: string | null
+          position?: number
+          round?: number
+          status?: string | null
+          team1_id?: string | null
+          team1_score?: number | null
+          team1_seed?: number | null
+          team2_id?: string | null
+          team2_score?: number | null
+          team2_seed?: number | null
+          updated_at?: string | null
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playoff_matches_bracket_id_fkey"
+            columns: ["bracket_id"]
+            isOneToOne: false
+            referencedRelation: "brackets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_loser_id_fkey"
+            columns: ["loser_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_next_lose_match_id_fkey"
+            columns: ["next_lose_match_id"]
+            isOneToOne: false
+            referencedRelation: "playoff_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_next_win_match_id_fkey"
+            columns: ["next_win_match_id"]
+            isOneToOne: false
+            referencedRelation: "playoff_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_matches_winner_id_fkey"
+            columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
@@ -996,6 +1338,12 @@ export type Database = {
     }
     Enums: {
       match_type: "winners" | "losers" | "finals"
+      playoff_match_type:
+        | "winners"
+        | "losers"
+        | "finals"
+        | "play-in"
+        | "play-in-2"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1112,6 +1460,13 @@ export const Constants = {
   public: {
     Enums: {
       match_type: ["winners", "losers", "finals"],
+      playoff_match_type: [
+        "winners",
+        "losers",
+        "finals",
+        "play-in",
+        "play-in-2",
+      ],
     },
   },
 } as const

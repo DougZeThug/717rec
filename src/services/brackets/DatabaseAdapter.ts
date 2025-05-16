@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch } from "./types";
+import { PlayoffDatabaseAdapter } from "./PlayoffDatabaseAdapter";
 
 /**
  * Handles persistence of bracket data to the database
@@ -48,7 +49,7 @@ export class DatabaseAdapter {
    */
   static async updateMatchResult(
     matchId: string, 
-    winnerId: string, 
+    winnerId: string | null, 
     team1Score: number, 
     team2Score: number
   ): Promise<void> {
@@ -102,9 +103,11 @@ export class DatabaseAdapter {
    */
   private static async advanceTeamToNextMatch(
     nextMatchId: string,
-    teamId: string,
+    teamId: string | null,
     isWinner: boolean
   ): Promise<void> {
+    if (!teamId) return;
+    
     try {
       // Get the next match
       const { data: nextMatch, error: nextMatchError } = await supabase
