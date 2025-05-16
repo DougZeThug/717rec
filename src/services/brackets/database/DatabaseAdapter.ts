@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch } from "../types";
 
 /**
- * Handles database operations for brackets
+ * Handles database operations for standard brackets
  */
 export class DatabaseAdapter {
   /**
@@ -39,12 +39,12 @@ export class DatabaseAdapter {
   }
   
   /**
-   * Update a match with a winner and advance to next rounds
+   * Update a match with a result and advance teams
    */
   static async updateMatchResult(
-    matchId: string, 
-    winnerId: string, 
-    team1Score: number, 
+    matchId: string,
+    winnerId: string,
+    team1Score: number,
     team2Score: number
   ): Promise<void> {
     try {
