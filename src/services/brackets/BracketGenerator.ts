@@ -66,10 +66,9 @@ export class BracketGenerator {
     let teamsForBracket = seedTeams;
     if (seedTeams.length > bracketSize) {
       const playInResult = PlayInGenerator.createPlayInMatches(
-        bracketId,
         seedTeams,
         bracketSize,
-        matchMap
+        bracketId
       );
       teamsForBracket = playInResult.advancingTeams;
     }
