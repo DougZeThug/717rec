@@ -107,7 +107,8 @@ export const useBatchMatchForm = (teams: Team[]) => {
           localTimeslot: timeslot,
           utcDate: dateWithTime.toISOString(),
           utcHours: dateWithTime.getUTCHours(),
-          utcMinutes: dateWithTime.getUTCMinutes()
+          utcMinutes: dateWithTime.getUTCMinutes(),
+          utcDay: dateWithTime.getUTCDate()
         });
         
         return {

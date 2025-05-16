@@ -1,3 +1,4 @@
+
 import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezoneUtils';
 
 /**
@@ -22,8 +23,18 @@ export const createDateWithTime = (date: Date, timeSlot: string | null): Date =>
     action: "Converting to UTC for storage"
   });
   
-  // Use our utility to handle time conversion properly
-  return createUTCDateWithTime(date, timeSlot);
+  // Use our fixed utility to handle time conversion properly
+  const utcDate = createUTCDateWithTime(date, timeSlot);
+  
+  // Add extra validation logging
+  console.log("🌐 Time conversion complete:", {
+    originalTimeSlot: timeSlot,
+    resultTime: utcDate.toISOString(),
+    utcHours: utcDate.getUTCHours(),
+    utcMinutes: utcDate.getUTCMinutes()
+  });
+  
+  return utcDate;
 };
 
 /**

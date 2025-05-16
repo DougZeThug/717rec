@@ -24,10 +24,13 @@ export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string
       return acc;
     }
     
-    // Log date before extraction to help with debugging
+    // Enhanced logging for date object investigation
     console.log(`⏰ groupMatchesByTimeSlot processing match ${match.id} (index ${index}):`, {
       matchDate: match.date,
-      matchDateType: typeof match.date
+      matchDateType: typeof match.date,
+      originalDateObject: typeof match.date === 'string' ? new Date(match.date) : match.date,
+      utcHours: (typeof match.date === 'string' ? new Date(match.date) : match.date).getUTCHours(),
+      utcMinutes: (typeof match.date === 'string' ? new Date(match.date) : match.date).getUTCMinutes()
     });
     
     // Use our updated timezone-aware utility

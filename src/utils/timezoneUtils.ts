@@ -2,7 +2,7 @@
 /**
  * Timezone utilities for consistent time handling between EST frontend and UTC storage
  * 
- * This module provides functions to convert between local time (EST) and UTC
+ * This module provides functions to convert between local time (EST/EDT) and UTC
  * for proper display and storage of time values.
  */
 
@@ -64,17 +64,16 @@ export const formatTimeToUTC = (timeString: string): string => {
 
 /**
  * Create a date object with the correct UTC time for storage
+ * FIXED: Previously was applying timezone offset twice
  */
 export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   console.log(`🌐 createUTCDateWithTime inputs:`, {
     date: date.toISOString(),
-    timeString
+    timeString,
+    localDateString: date.toString()
   });
   
-  // Create a new date object to avoid modifying the original
-  const result = new Date(date);
-  
-  // Parse the time string
+  // Extract hours and minutes from the time string
   let hours = 0;
   let minutes = 0;
   
@@ -99,23 +98,33 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
     minutes = parseInt(minuteStr);
   }
   
-  // Set time components in local time
-  result.setHours(hours, minutes, 0, 0);
+  // Create a new date object with the date part (year, month, day) from the input date
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
   
-  console.log(`🌐 Local date-time set:`, {
-    date: result.toString(),
-    hours,
-    minutes
-  });
+  // Create a new date at UTC midnight for this date
+  const utcDate = new Date(Date.UTC(year, month, day)); 
   
-  // Convert to UTC ISO string and create a new Date to ensure UTC storage
-  const utcDate = new Date(result.toISOString());
+  // Set the hours and minutes directly to UTC time values
+  // This avoids the double conversion issue we had before
+  utcDate.setUTCHours(hours, minutes, 0, 0);
   
-  console.log(`🌐 createUTCDateWithTime output:`, {
-    original: result.toString(),
-    utc: utcDate.toISOString(),
-    utcHours: utcDate.getUTCHours(),
-    utcMinutes: utcDate.getUTCMinutes()
+  console.log(`🌐 createUTCDateWithTime detailed debugging:`, {
+    original: {
+      year, month, day,
+      inputDateString: date.toString(),
+      inputTimeString: timeString
+    },
+    localTime: {
+      hours, minutes
+    },
+    result: {
+      utcIsoString: utcDate.toISOString(),
+      utcDateString: utcDate.toString(),
+      utcHours: utcDate.getUTCHours(),
+      utcMinutes: utcDate.getUTCMinutes()
+    }
   });
   
   return utcDate;
