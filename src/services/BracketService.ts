@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
-import { BracketGenerator } from "./BracketGenerator";
+import { BracketGenerator } from "./brackets";
 
 interface BracketCreationParams {
   title: string;
@@ -49,7 +49,7 @@ export class BracketService {
       // Get the full team objects to work with
       const fullTeams = teams as Team[];
       
-      // Use our new generator
+      // Use our modular bracket generator
       const matches = BracketGenerator.generateDoubleEliminationBracket(bracketId, fullTeams);
       await BracketGenerator.saveBracketMatches(matches);
     }
@@ -236,7 +236,7 @@ export class BracketService {
     }
     
     if (bracket.format === 'Double Elimination') {
-      // Use our new generator for double elimination updates
+      // Use our updated BracketGenerator
       await BracketGenerator.updateMatchResult(
         matchId, 
         winnerId, 
