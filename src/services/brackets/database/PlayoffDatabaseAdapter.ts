@@ -7,7 +7,7 @@ import { PlayoffDatabaseFacade } from "./PlayoffDatabaseFacade";
  * for better organization and testability
  */
 export class PlayoffDatabaseAdapter {
-  // Singleton facade instance
+  // Use a static private readonly field for better encapsulation
   private static readonly facade = new PlayoffDatabaseFacade();
   
   /**

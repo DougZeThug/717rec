@@ -1,7 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch } from "./types";
-import { PlayoffDatabaseAdapter } from "./PlayoffDatabaseAdapter";
+// Import from database directory instead of direct file
+import { PlayoffDatabaseAdapter } from "./database";
 
 /**
  * Handles persistence of bracket data to the database
