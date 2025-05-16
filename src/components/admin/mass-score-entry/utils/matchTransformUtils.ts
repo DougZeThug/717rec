@@ -1,14 +1,16 @@
 
 import { MatchWithTeams } from "../types";
-import { normalizeDate } from "@/utils/dateNormalization";
+import { normalizeDateWithTime } from "@/utils/dateNormalization";
 
 export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTeams => {
-  const normalizedDate = normalizeDate(match.date, `transformDatabaseMatchToMatchWithTeams(${match.id})`);
+  // Use the new normalizeDateWithTime function to preserve time information
+  const normalizedDate = normalizeDateWithTime(match.date, `transformDatabaseMatchToMatchWithTeams(${match.id})`);
   
   // Enhanced logging to debug date transformation
   console.log(`🔄 transformDatabaseMatchToMatchWithTeams for match ${match.id}:`, {
     originalDate: match.date,
     originalDateType: typeof match.date,
+    originalDateString: match.date ? match.date.toString() : null,
     normalizedDate,
     normalizedDateType: typeof normalizedDate,
     team1_game_wins: match.team1_game_wins,

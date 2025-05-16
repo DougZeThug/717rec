@@ -1,10 +1,10 @@
 
 import { Match } from "@/types";
-import { normalizeDate } from "./dateNormalization";
+import { normalizeDateWithTime } from "./dateNormalization";
 
 export const transformMatchData = (match: any): Match => {
-  // Force date normalization with detailed context
-  const normalizedDate = normalizeDate(match.date, `transformMatchData(${match.id})`);
+  // Force date normalization with detailed context but preserve time
+  const normalizedDate = normalizeDateWithTime(match.date, `transformMatchData(${match.id})`);
   
   // Log before/after state for debugging
   console.log(`🔄 transformMatchData for match ${match.id}:`, {

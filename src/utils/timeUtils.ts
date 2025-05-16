@@ -84,8 +84,34 @@ export const getTimePairForBlock = (block: string): [string, string] | null => {
  */
 export const extractTimeSlot = (dateString: string): string => {
   try {
+    console.log(`🕰️ extractTimeSlot input:`, {
+      dateString,
+      type: typeof dateString
+    });
+    
+    if (!dateString) {
+      console.warn('Empty date string passed to extractTimeSlot');
+      return 'No Time';
+    }
+    
     const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid date string in extractTimeSlot: "${dateString}"`);
+      return 'No Time';
+    }
+    
+    const timeSlot = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    console.log(`🕰️ extractTimeSlot output:`, {
+      input: dateString,
+      parsed: date.toString(),
+      hours: date.getHours(),
+      minutes: date.getMinutes(),
+      timeSlot
+    });
+    
+    return timeSlot;
   } catch (error) {
     console.error('Error extracting time slot:', error);
     return 'No Time';

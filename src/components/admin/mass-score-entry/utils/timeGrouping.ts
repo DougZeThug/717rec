@@ -17,7 +17,15 @@ export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string
       return acc;
     }
     
+    // Log date before extraction to help with debugging
+    console.log(`⏰ groupMatchesByTimeSlot processing match ${match.id}:`, {
+      matchDate: match.date,
+      matchDateType: typeof match.date
+    });
+    
     const timeSlot = extractTimeSlot(match.date);
+    
+    console.log(`⏰ Match ${match.id} assigned to time slot: "${timeSlot}"`);
     
     if (!acc[timeSlot]) {
       acc[timeSlot] = [];
@@ -36,8 +44,33 @@ export const sortTimeSlots = (timeSlots: string[]): string[] => {
     if (a === "No Time") return 1;
     if (b === "No Time") return -1;
     
-    const timeA = new Date(`1970/01/01 ${a}`).getTime();
-    const timeB = new Date(`1970/01/01 ${b}`).getTime();
-    return timeA - timeB;
+    // Enhanced parsing to handle different time formats
+    const parseTime = (timeStr: string): number => {
+      try {
+        // Try to parse as 12-hour format
+        if (timeStr.includes('AM') || timeStr.includes('PM')) {
+          const [time, period] = timeStr.split(/\s+/);
+          const [hours, minutes] = time.split(':').map(Number);
+          
+          let hours24 = hours;
+          if (period === 'PM' && hours < 12) hours24 += 12;
+          if (period === 'AM' && hours === 12) hours24 = 0;
+          
+          return hours24 * 60 + minutes;
+        }
+        
+        // Try standard time parsing
+        const timeA = new Date(`1970/01/01 ${timeStr}`).getTime();
+        if (!isNaN(timeA)) return timeA;
+        
+        // Last resort, just compare strings
+        return 0;
+      } catch (e) {
+        console.error(`Error parsing time "${timeStr}":`, e);
+        return 0;
+      }
+    };
+    
+    return parseTime(a) - parseTime(b);
   });
 };
