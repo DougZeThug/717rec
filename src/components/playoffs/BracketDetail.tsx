@@ -7,6 +7,9 @@ import BracketView from "@/components/playoffs/BracketView";
 import ChampionDisplay from "@/components/playoffs/ChampionDisplay";
 import { PlayoffBracket, Team } from "@/types";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import { blueAmber } from "@/styles/design-system";
 
 interface BracketDetailProps {
   bracketId: string;
@@ -26,19 +29,53 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   onEditMatch,
 }) => {
   const { isAdminAccessGranted } = useAdminAccess();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+
+  // Get the division color class based on division name
+  const getDivisionColorClass = (division: string) => {
+    const divisonLower = division.toLowerCase();
+    if (divisonLower.includes("recreational")) return "border-green-400 dark:border-green-600";
+    if (divisonLower.includes("intermediate")) return "border-blue-400 dark:border-blue-600";
+    if (divisonLower.includes("competitive")) return "border-amber-400 dark:border-amber-600";
+    return "border-gray-400 dark:border-gray-600";
+  };
 
   return (
-    <Card className="mb-8" id={`bracket-${bracketId}`}>
-      <CardHeader>
+    <Card 
+      className={cn(
+        "mb-8 overflow-hidden",
+        "border-t-4",
+        getDivisionColorClass(bracket.division),
+        isLight ? blueAmber.background.card : ""
+      )}
+      id={`bracket-${bracketId}`}
+    >
+      <CardHeader className="bg-gradient-to-r from-transparent via-blue-50/30 to-amber-50/20 dark:from-transparent dark:via-gray-800/30 dark:to-gray-900/80">
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>{bracket.name}</CardTitle>
-            <CardDescription>
-              {bracket.division} Division • {bracket.format}
+            <CardTitle className={cn(
+              blueAmber.text.heading,
+              "text-2xl font-bold tracking-tight"
+            )}>
+              {bracket.name}
+            </CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <span className="font-medium">{bracket.division} Division</span>
+              <span className="text-gray-400">•</span>
+              <span>{bracket.format}</span>
               {bracket.state && (
-                <span className="ml-2">
-                  • Status: <span className="font-medium">{bracket.state}</span>
-                </span>
+                <>
+                  <span className="text-gray-400">•</span>
+                  <span className={cn(
+                    "px-2 py-0.5 rounded-full text-xs font-medium",
+                    bracket.state === 'pending' ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" :
+                    bracket.state === 'underway' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
+                    "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  )}>
+                    {bracket.state.charAt(0).toUpperCase() + bracket.state.slice(1)}
+                  </span>
+                </>
               )}
             </CardDescription>
           </div>
@@ -49,9 +86,9 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           )}
         </div>
       </CardHeader>
-      <CardContent className="overflow-x-auto">
+      <CardContent className="p-0 overflow-x-auto">
         {bracketLoading ? (
-          <div className="flex justify-center py-8">
+          <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-cornhole-navy" />
           </div>
         ) : (

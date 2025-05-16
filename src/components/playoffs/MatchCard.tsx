@@ -1,7 +1,12 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { PlayoffMatch, Team, PlayoffGame } from "@/types";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import { CheckCircle } from "lucide-react";
+import { blueAmber } from "@/styles/design-system";
 
 interface MatchCardProps {
   match: PlayoffMatch;
@@ -16,6 +21,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
   onEditMatch,
   hasNextMatch
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+
   const getTeamById = (id?: string) => {
     if (!id) return null;
     return teams.find(team => team.id === id);
@@ -25,136 +33,165 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team2 = getTeamById(match.team2Id);
   const winner = getTeamById(match.winnerId);
 
+  // Determine team seeds (using position as a fallback for seed)
+  const team1Seed = team1?.seed || match.position;
+  const team2Seed = team2?.seed || match.position + 1;
+
   const cardClasses = onEditMatch
-    ? getRowInteractionStyles("w-80 transition-shadow")
-    : "w-80 transition-shadow";
+    ? getRowInteractionStyles("w-64 transition-shadow")
+    : "w-64 transition-shadow";
   
+  const getTeamRowClasses = (isWinner: boolean) => cn(
+    "flex items-center p-2 rounded-md",
+    isWinner ? (
+      isLight ? "bg-green-50 border-l-4 border-green-500" : "bg-green-900/20 border-l-4 border-green-500"
+    ) : (
+      isLight ? "bg-gray-50" : "bg-gray-800/40"
+    )
+  );
+
   return (
     <div className="relative flex">
       <Card 
-        className={cardClasses}
+        className={cn(
+          cardClasses,
+          isLight 
+            ? "border border-gray-200 hover:border-gray-300 shadow-sm"
+            : "border border-gray-800 hover:border-gray-700 bg-gray-900/50 shadow-md"
+        )}
         onClick={() => onEditMatch && onEditMatch(match.id)}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           <div className="space-y-2">
-            <div className="flex justify-between items-center mb-2 text-sm text-gray-500">
+            <div className="flex justify-between items-center mb-1 text-xs text-gray-500 dark:text-gray-400">
               <span>Best of {match.bestOf || 3}</span>
-              <span>{match.matchType || "Match"}</span>
+              <span className="text-xs font-mono">Match #{match.position}</span>
             </div>
 
-            {/* Team 1 */}
-            <div className={`flex items-center p-2 rounded-t-md ${match.team1Id === match.winnerId ? 'bg-green-50' : 'bg-gray-50'}`}>
+            {/* Team 1 Row */}
+            <div className={getTeamRowClasses(match.team1Id === match.winnerId)}>
               {team1 ? (
-                <>
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                    {(team1.imageUrl || team1.logoUrl) && (
-                      <img 
-                        src={team1.imageUrl || team1.logoUrl} 
-                        alt={team1.name} 
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
-                        }}
-                      />
-                    )}
+                <div className="flex items-center w-full">
+                  <div className="flex-none w-6 h-6 flex items-center justify-center mr-2 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-bold">
+                    {team1Seed}
                   </div>
-                  <span className="flex-1 truncate">{team1.name}</span>
+                  
+                  <div className="flex-1 min-w-0 flex items-center">
+                    {team1.imageUrl || team1.logoUrl ? (
+                      <div className="w-5 h-5 rounded-full overflow-hidden bg-gray-200 mr-2">
+                        <img 
+                          src={team1.imageUrl || team1.logoUrl} 
+                          alt={team1.name} 
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                    <span className="truncate text-sm font-medium">{team1.name}</span>
+                  </div>
+                  
                   {match.team1Score !== undefined && (
-                    <span className={`font-bold ${match.team1Id === match.winnerId ? 'text-green-600' : ''}`}>
+                    <span className={cn(
+                      "flex-none ml-2 text-sm font-bold",
+                      match.team1Id === match.winnerId ? "text-green-600 dark:text-green-400" : ""
+                    )}>
                       {match.team1Score}
                     </span>
                   )}
-                </>
+                  
+                  {match.team1Id === match.winnerId && (
+                    <CheckCircle className="flex-none ml-1 h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                  )}
+                </div>
               ) : (
-                <span className="text-gray-400 italic">TBD</span>
+                <span className="text-gray-400 italic text-sm">TBD</span>
               )}
             </div>
             
-            {/* Team 2 */}
-            <div className={`flex items-center p-2 rounded-b-md ${match.team2Id === match.winnerId ? 'bg-green-50' : 'bg-gray-50'}`}>
+            {/* Team 2 Row */}
+            <div className={getTeamRowClasses(match.team2Id === match.winnerId)}>
               {team2 ? (
-                <>
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-2">
-                    {(team2.imageUrl || team2.logoUrl) && (
-                      <img 
-                        src={team2.imageUrl || team2.logoUrl} 
-                        alt={team2.name} 
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
-                        }}
-                      />
-                    )}
+                <div className="flex items-center w-full">
+                  <div className="flex-none w-6 h-6 flex items-center justify-center mr-2 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-bold">
+                    {team2Seed}
                   </div>
-                  <span className="flex-1 truncate">{team2.name}</span>
+                  
+                  <div className="flex-1 min-w-0 flex items-center">
+                    {team2.imageUrl || team2.logoUrl ? (
+                      <div className="w-5 h-5 rounded-full overflow-hidden bg-gray-200 mr-2">
+                        <img 
+                          src={team2.imageUrl || team2.logoUrl} 
+                          alt={team2.name} 
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                    <span className="truncate text-sm font-medium">{team2.name}</span>
+                  </div>
+                  
                   {match.team2Score !== undefined && (
-                    <span className={`font-bold ${match.team2Id === match.winnerId ? 'text-green-600' : ''}`}>
+                    <span className={cn(
+                      "flex-none ml-2 text-sm font-bold",
+                      match.team2Id === match.winnerId ? "text-green-600 dark:text-green-400" : ""
+                    )}>
                       {match.team2Score}
                     </span>
                   )}
-                </>
+                  
+                  {match.team2Id === match.winnerId && (
+                    <CheckCircle className="flex-none ml-1 h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                  )}
+                </div>
               ) : (
-                <span className="text-gray-400 italic">TBD</span>
+                <span className="text-gray-400 italic text-sm">TBD</span>
               )}
             </div>
 
-            {/* Games details */}
-            <MatchGames match={match} />
+            {/* Games detail section - only show if there are games */}
+            {match.games && match.games.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Games</div>
+                <div className="grid grid-cols-3 gap-1">
+                  {match.games.map((game, index) => (
+                    <GameResult key={game.id} game={game} index={index} />
+                  ))}
+                </div>
+              </div>
+            )}
             
+            {/* Champion display for finals */}
             {winner && match.matchType === 'Finals' && (
-              <div className="mt-3 pt-3 border-t text-center">
-                <div className="text-sm text-gray-500">Champion</div>
-                <div className="font-bold text-cornhole-green">{winner.name}</div>
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
+                <div className="text-xs text-gray-500 dark:text-gray-400">Champion</div>
+                <div className={blueAmber.text.heading + " font-semibold"}>
+                  {winner.name}
+                </div>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
-      
-      {hasNextMatch && (
-        <svg 
-          className="absolute top-1/2 -right-16 h-full w-16"
-          style={{ 
-            pointerEvents: 'none', 
-            zIndex: 1,
-            transform: 'translateY(-50%)'
-          }}
-        >
-          <line
-            x1="0"
-            y1="40"
-            x2="64"
-            y2="40"
-            stroke="#9ca3af"
-            strokeWidth="2"
-          />
-        </svg>
-      )}
     </div>
   );
 };
 
-const MatchGames: React.FC<{ match: PlayoffMatch }> = ({ match }) => {
-  if (!match.games || match.games.length === 0) return null;
-  
+const GameResult: React.FC<{ game: PlayoffGame, index: number }> = ({ game, index }) => {
   return (
-    <div className="mt-3 pt-3 border-t">
-      <div className="text-sm font-semibold mb-2">Games</div>
-      <div className="space-y-2">
-        {match.games.map((game, index) => (
-          <div key={game.id} className="flex justify-between items-center text-sm">
-            <span>Game {index + 1}</span>
-            <div>
-              <span className={game.winner === match.team1Id ? "font-bold" : ""}>
-                {game.team1Score}
-              </span>
-              {" - "}
-              <span className={game.winner === match.team2Id ? "font-bold" : ""}>
-                {game.team2Score}
-              </span>
-            </div>
-          </div>
-        ))}
+    <div className="text-center text-xs bg-gray-50 dark:bg-gray-800/40 p-1 rounded">
+      <div className="font-medium text-gray-500 dark:text-gray-400">Game {index + 1}</div>
+      <div className="font-mono">
+        <span className={game.winner === 'team1Id' ? "font-bold" : ""}>
+          {game.team1Score}
+        </span>
+        {" - "}
+        <span className={game.winner === 'team2Id' ? "font-bold" : ""}>
+          {game.team2Score}
+        </span>
       </div>
     </div>
   );

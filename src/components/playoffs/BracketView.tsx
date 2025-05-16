@@ -2,7 +2,10 @@
 import React from "react";
 import type { PlayoffBracket, Team } from "@/types";
 import RoundColumn from "./RoundColumn";
-import { getVerticalSpacing, getNextMatch } from "./BracketUtils";
+import { getBracketConnectorPaths, getVerticalSpacing, getNextMatch } from "./BracketUtils";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import { blueAmber } from "@/styles/design-system";
 
 interface BracketViewProps {
   bracket: PlayoffBracket;
@@ -11,6 +14,9 @@ interface BracketViewProps {
 }
 
 const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
   // Group matches by round and type
   const matchesByRoundAndType: Record<string, typeof bracket.matches> = {};
   
@@ -40,10 +46,24 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
     return parseInt(roundA) - parseInt(roundB);
   });
 
+  // Calculate bracket visualization paths for connectors
+  const connectorPaths = getBracketConnectorPaths(bracket.matches);
+
   return (
-    <div className="overflow-auto">
-      <div className="flex flex-col space-y-6 min-w-max p-4">
+    <div className="overflow-auto my-4">
+      <div className={cn(
+        "flex flex-col space-y-6 min-w-max p-6 rounded-lg",
+        isLight 
+          ? "bg-gradient-to-br from-white to-blue-50/10" 
+          : "bg-gradient-to-br from-gray-900/80 to-gray-800/80"
+      )}>
         <div className="flex space-x-16 relative">
+          {/* Background grid for visual structure */}
+          <div className="absolute inset-0 grid grid-cols-1 opacity-10">
+            <div className="border-r border-dashed border-gray-300 dark:border-gray-600 h-full"></div>
+          </div>
+
+          {/* Tournament bracket rounds */}
           {roundsAndTypes.map((key, roundIndex) => {
             const [round, type] = key.split('-');
             const roundMatches = matchesByRoundAndType[key];
@@ -65,6 +85,26 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
               />
             );
           })}
+
+          {/* SVG layer for bracket connectors */}
+          <svg 
+            className="absolute inset-0 w-full h-full pointer-events-none z-0"
+            style={{ 
+              overflow: 'visible',
+            }}
+          >
+            {connectorPaths.map((path, i) => (
+              <path
+                key={`connector-${i}`}
+                d={path}
+                fill="none"
+                stroke={isLight ? "#9ca3af" : "#6b7280"}
+                strokeWidth="2"
+                strokeDasharray={path.includes('M') && path.includes('C') ? "0" : "0"}
+                className="transition-colors duration-300"
+              />
+            ))}
+          </svg>
         </div>
       </div>
     </div>
