@@ -4,7 +4,6 @@ import { extractTimeSlot } from "@/utils/timeUtils";
 
 /**
  * Groups matches by their time slot for the mass score entry page
- * Enhanced to properly handle all time slots including evening times
  */
 export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string, MatchWithTeams[]> => {
   return matches.reduce((acc, match) => {
@@ -21,8 +20,7 @@ export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string
     // Log date before extraction to help with debugging
     console.log(`⏰ groupMatchesByTimeSlot processing match ${match.id}:`, {
       matchDate: match.date,
-      matchDateType: typeof match.date,
-      matchDateObject: new Date(match.date).toString()
+      matchDateType: typeof match.date
     });
     
     const timeSlot = extractTimeSlot(match.date);
@@ -40,7 +38,6 @@ export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string
 
 /**
  * Sorts time slots in chronological order
- * Enhanced to properly handle all time formats including evening times
  */
 export const sortTimeSlots = (timeSlots: string[]): string[] => {
   return timeSlots.sort((a, b) => {
@@ -50,35 +47,23 @@ export const sortTimeSlots = (timeSlots: string[]): string[] => {
     // Enhanced parsing to handle different time formats
     const parseTime = (timeStr: string): number => {
       try {
-        // First try to handle 12-hour format (8:00 PM, etc.)
+        // Try to parse as 12-hour format
         if (timeStr.includes('AM') || timeStr.includes('PM')) {
-          // Split time string into components
-          const [timeComponent, period] = timeStr.split(/\s+/);
-          let [hours, minutes] = timeComponent.split(':').map(Number);
+          const [time, period] = timeStr.split(/\s+/);
+          const [hours, minutes] = time.split(':').map(Number);
           
-          // Convert to 24-hour format for proper sorting
-          if (period.toUpperCase() === 'PM' && hours < 12) {
-            hours += 12;
-          } else if (period.toUpperCase() === 'AM' && hours === 12) {
-            hours = 0;
-          }
+          let hours24 = hours;
+          if (period === 'PM' && hours < 12) hours24 += 12;
+          if (period === 'AM' && hours === 12) hours24 = 0;
           
-          return hours * 60 + (minutes || 0);
+          return hours24 * 60 + minutes;
         }
         
-        // Try to parse as 24-hour format (13:00, etc.)
-        const [hours24, minutes24] = timeStr.split(':').map(Number);
-        if (!isNaN(hours24)) {
-          return hours24 * 60 + (minutes24 || 0);
-        }
+        // Try standard time parsing
+        const timeA = new Date(`1970/01/01 ${timeStr}`).getTime();
+        if (!isNaN(timeA)) return timeA;
         
-        // If we couldn't parse it directly, try as a full date string
-        const date = new Date(`1970-01-01T${timeStr}`);
-        if (!isNaN(date.getTime())) {
-          return date.getHours() * 60 + date.getMinutes();
-        }
-        
-        console.warn(`Failed to parse time: ${timeStr}`);
+        // Last resort, just compare strings
         return 0;
       } catch (e) {
         console.error(`Error parsing time "${timeStr}":`, e);
@@ -86,11 +71,6 @@ export const sortTimeSlots = (timeSlots: string[]): string[] => {
       }
     };
     
-    const timeValueA = parseTime(a);
-    const timeValueB = parseTime(b);
-    
-    console.log(`Comparing times: "${a}" (${timeValueA}) vs "${b}" (${timeValueB})`);
-    
-    return timeValueA - timeValueB;
+    return parseTime(a) - parseTime(b);
   });
 };

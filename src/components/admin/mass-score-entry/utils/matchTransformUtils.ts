@@ -11,14 +11,8 @@ export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTea
     originalDate: match.date,
     originalDateType: typeof match.date,
     originalDateString: match.date ? match.date.toString() : null,
-    originalDateObject: match.date ? new Date(match.date).toString() : null,
     normalizedDate,
     normalizedDateType: typeof normalizedDate,
-    normalizedTimeSlot: new Date(normalizedDate).toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    }),
     team1_game_wins: match.team1_game_wins,
     team1_game_wins_type: typeof match.team1_game_wins,
     team2_game_wins: match.team2_game_wins,

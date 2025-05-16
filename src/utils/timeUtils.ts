@@ -81,7 +81,6 @@ export const getTimePairForBlock = (block: string): [string, string] | null => {
 /**
  * Extract time slot from a date string
  * Used specifically for grouping matches by time in the admin panel
- * Enhanced to better handle various time formats including 8:00 PM, 8:30 PM, and 9:00 PM
  */
 export const extractTimeSlot = (dateString: string): string => {
   try {
@@ -102,23 +101,14 @@ export const extractTimeSlot = (dateString: string): string => {
       return 'No Time';
     }
     
-    // Use specific formatting options to ensure consistent representation of time
-    // Using 12-hour time format with AM/PM to match expected display format
-    const timeSlot = date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true
-    });
+    const timeSlot = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
     console.log(`🕰️ extractTimeSlot output:`, {
       input: dateString,
       parsed: date.toString(),
       hours: date.getHours(),
       minutes: date.getMinutes(),
-      timeSlot,
-      // Add raw 24-hour time for debugging
-      rawHours24: date.getHours(),
-      rawMinutes: date.getMinutes()
+      timeSlot
     });
     
     return timeSlot;
@@ -127,4 +117,3 @@ export const extractTimeSlot = (dateString: string): string => {
     return 'No Time';
   }
 };
-

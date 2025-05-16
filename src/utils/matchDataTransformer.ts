@@ -10,18 +10,8 @@ export const transformMatchData = (match: any): Match => {
   console.log(`🔄 transformMatchData for match ${match.id}:`, {
     originalDate: match.date, 
     originalDateType: typeof match.date,
-    originalTimeDisplay: match.date ? new Date(match.date).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    }) : null,
     normalizedDate,
-    normalizedDateType: typeof normalizedDate,
-    normalizedTimeDisplay: normalizedDate ? new Date(normalizedDate).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    }) : null
+    normalizedDateType: typeof normalizedDate
   });
   
   return {
