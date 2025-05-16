@@ -2,159 +2,141 @@
 import { PlayoffMatch } from "@/types";
 
 /**
- * Get the vertical spacing between matches in a round based on round index
+ * Calculate vertical spacing between matches based on round
  */
 export const getVerticalSpacing = (roundIndex: number): number => {
-  // As we progress deeper in the bracket, space increases between matches
-  const baseSpacing = 16; // Base spacing in pixels
-  const spacingMultiplier = Math.pow(2, roundIndex);
-  
-  return baseSpacing * spacingMultiplier;
+  // We want more space in earlier rounds and less in later rounds
+  const baseSpacing = 120; // Base spacing for final matches
+  const multiplier = Math.pow(1.5, roundIndex); // Exponential spacing
+
+  return baseSpacing * multiplier;
 };
 
 /**
- * Find the next match for a given match in the bracket
+ * Get the next match in the bracket for a given match
  */
 export const getNextMatch = (match: PlayoffMatch, allMatches: PlayoffMatch[]): PlayoffMatch | null => {
-  // Find the match that has this match as a prerequisite 
-  // (handles both winners and losers paths in double elimination)
-  
-  for (const potentialNextMatch of allMatches) {
-    if (potentialNextMatch.round > match.round) {
-      // For normal progression in same bracket type
-      if (potentialNextMatch.matchType === match.matchType) {
-        // Check if positions align for next round
-        // In a traditional bracket, match positions 1 and 2 feed into position 1 of the next round, etc.
-        const shouldFeedIntoPosition = Math.ceil(match.position / 2);
-        if (potentialNextMatch.position === shouldFeedIntoPosition) {
-          return potentialNextMatch;
-        }
-      }
-      
-      // For losers bracket progression
-      if (match.matchType === 'Winners' && potentialNextMatch.matchType === 'Losers') {
-        // This requires specific bracket structure knowledge
-        // Typically odd-positioned matches in winners bracket feed into specific losers bracket positions
-        // This is a simplistic approach and may need refinement based on actual bracket structure
-        return null;
-      }
-      
-      // For finals (winners of winners and losers brackets)
-      if ((match.matchType === 'Winners' || match.matchType === 'Losers') && 
-          potentialNextMatch.matchType === 'Finals' && 
-          match.position === 1) { // Usually position 1 is the final match of a bracket
-        return potentialNextMatch;
-      }
-    }
+  // If we have explicit win match linking
+  if (match.nextWinMatchId) {
+    return allMatches.find(m => m.id === match.nextWinMatchId) || null;
   }
   
+  // Legacy calculation (for backward compatibility)
+  const nextRound = match.round + 1;
+  const nextPosition = Math.ceil(match.position / 2);
+  
+  return allMatches.find(
+    m => m.round === nextRound && 
+         m.position === nextPosition && 
+         m.matchType === match.matchType
+  ) || null;
+};
+
+/**
+ * Get the loser's next match in the bracket (for double elimination)
+ */
+export const getLoserNextMatch = (match: PlayoffMatch, allMatches: PlayoffMatch[]): PlayoffMatch | null => {
+  // If we have explicit lose match linking
+  if (match.nextLoseMatchId) {
+    return allMatches.find(m => m.id === match.nextLoseMatchId) || null;
+  }
+  
+  // For backward compatibility, return null
   return null;
 };
 
 /**
- * Generate SVG path data for bracket connectors
+ * Calculate SVG paths for bracket connectors
  */
 export const getBracketConnectorPaths = (matches: PlayoffMatch[]): string[] => {
   const paths: string[] = [];
-  const matchPositions: Record<string, DOMRect | null> = {};
   
-  // Wait for DOM to be ready and get match element positions
-  setTimeout(() => {
-    document.querySelectorAll('[data-match-id]').forEach(element => {
-      const matchId = element.getAttribute('data-match-id');
-      if (matchId) {
-        matchPositions[matchId] = element.getBoundingClientRect();
-      }
-    });
+  // Group matches by round and type for easier access
+  const matchesByRoundAndType: Record<string, PlayoffMatch[]> = {};
+  matches.forEach(match => {
+    const key = `${match.round}-${match.matchType}`;
+    if (!matchesByRoundAndType[key]) {
+      matchesByRoundAndType[key] = [];
+    }
+    matchesByRoundAndType[key].push(match);
+  });
+  
+  // Function to get match element position by id
+  const getMatchElement = (matchId: string): HTMLElement | null => {
+    return document.querySelector(`[data-match-id="${matchId}"]`);
+  };
+  
+  // Process each match
+  matches.forEach(match => {
+    const matchElement = getMatchElement(match.id);
+    if (!matchElement) return;
     
-    // Now generate the paths based on these positions
-    matches.forEach(match => {
-      const nextMatch = getNextMatch(match, matches);
-      if (nextMatch) {
-        const currentRect = matchPositions[match.id];
-        const nextRect = matchPositions[nextMatch.id];
-        
-        if (currentRect && nextRect) {
-          // Calculate path coordinates
-          const startX = currentRect.right;
-          const startY = currentRect.top + (currentRect.height / 2);
-          const endX = nextRect.left;
-          const endY = nextRect.top + (nextRect.height / 2);
-          
-          // Create path
-          const path = `M${startX},${startY} L${startX + (endX - startX) / 2},${startY} L${startX + (endX - startX) / 2},${endY} L${endX},${endY}`;
-          paths.push(path);
+    // Connect to next win match
+    const nextMatch = getNextMatch(match, matches);
+    if (nextMatch) {
+      const nextMatchElement = getMatchElement(nextMatch.id);
+      if (nextMatchElement) {
+        const path = createConnectorPath(matchElement, nextMatchElement, "right");
+        if (path) paths.push(path);
+      }
+    }
+    
+    // Connect to next loser match (only in winners bracket)
+    if (match.matchType === "winners") {
+      const loserMatch = getLoserNextMatch(match, matches);
+      if (loserMatch) {
+        const loserMatchElement = getMatchElement(loserMatch.id);
+        if (loserMatchElement) {
+          const path = createConnectorPath(matchElement, loserMatchElement, "bottom");
+          if (path) paths.push(path);
         }
       }
-    });
-  }, 100);
+    }
+  });
   
-  // For the initial render, return empty paths (they'll be populated after DOM is ready)
   return paths;
 };
 
 /**
- * Create a simpler version of SVG path data for bracket connectors
- * This is used for the initial render before DOM positions are known
+ * Create an SVG path between two bracket elements
  */
-export const getSimpleBracketPaths = (matches: PlayoffMatch[]): string[] => {
-  const paths: string[] = [];
-  const roundsMap: Record<number, PlayoffMatch[]> = {};
+const createConnectorPath = (
+  fromElement: HTMLElement, 
+  toElement: HTMLElement,
+  direction: "right" | "bottom"
+): string | null => {
+  if (!fromElement || !toElement) return null;
   
-  // Group matches by round
-  matches.forEach(match => {
-    if (!roundsMap[match.round]) {
-      roundsMap[match.round] = [];
-    }
-    roundsMap[match.round].push(match);
-  });
+  const fromRect = fromElement.getBoundingClientRect();
+  const toRect = toElement.getBoundingClientRect();
   
-  // Sort rounds
-  const rounds = Object.keys(roundsMap)
-    .map(Number)
-    .sort((a, b) => a - b);
+  // Get positions relative to the SVG container
+  const svgContainer = fromElement.closest("div")?.parentElement;
+  if (!svgContainer) return null;
   
-  // For each round except the last, connect to the next round
-  for (let i = 0; i < rounds.length - 1; i++) {
-    const currentRound = rounds[i];
-    const nextRound = rounds[i + 1];
+  const svgRect = svgContainer.getBoundingClientRect();
+  
+  // Calculate start and end points
+  let startX = (fromRect.left + fromRect.right) / 2 - svgRect.left;
+  let startY = (fromRect.top + fromRect.bottom) / 2 - svgRect.top;
+  let endX = (toRect.left + toRect.right) / 2 - svgRect.left;
+  let endY = (toRect.top + toRect.bottom) / 2 - svgRect.top;
+  
+  if (direction === "right") {
+    // Right-to-left connection (standard for brackets)
+    startX = fromRect.right - svgRect.left;
+    endX = toRect.left - svgRect.left;
     
-    const currentMatches = roundsMap[currentRound].sort((a, b) => a.position - b.position);
-    const nextMatches = roundsMap[nextRound].sort((a, b) => a.position - b.position);
+    const controlX = (startX + endX) / 2;
     
-    // Each pair of matches in the current round connects to one match in the next round
-    for (let j = 0; j < currentMatches.length; j += 2) {
-      const match1 = currentMatches[j];
-      const match2 = j + 1 < currentMatches.length ? currentMatches[j + 1] : null;
-      
-      const nextMatchIndex = Math.floor(j / 2);
-      if (nextMatchIndex < nextMatches.length) {
-        const nextMatch = nextMatches[nextMatchIndex];
-        
-        // Define horizontal span and vertical placement
-        const horizontalGap = 80; // Space between rounds
-        const startX = (currentRound - 1) * horizontalGap + 64; // Width of match card
-        const endX = startX + horizontalGap;
-        
-        const verticalGap = getVerticalSpacing(currentRound - 1);
-        const startY1 = j * verticalGap + 20; // Vertical center of first match
-        
-        if (match2) {
-          const startY2 = (j + 1) * verticalGap + 20; // Vertical center of second match
-          const endY = (startY1 + startY2) / 2; // Midpoint between the two matches
-          
-          // Create path for first match
-          paths.push(`M${startX},${startY1} H${startX + horizontalGap/2} V${endY} H${endX}`);
-          
-          // Create path for second match
-          paths.push(`M${startX},${startY2} H${startX + horizontalGap/2} V${endY} H${endX}`);
-        } else {
-          // If only one match in the pair, create direct line
-          paths.push(`M${startX},${startY1} H${endX}`);
-        }
-      }
-    }
+    // Create a bezier curve
+    return `M${startX},${startY} C${controlX},${startY} ${controlX},${endY} ${endX},${endY}`;
+  } else {
+    // Bottom-to-top connection (for losers bracket)
+    startY = fromRect.bottom - svgRect.top;
+    endY = toRect.top - svgRect.top;
+    
+    // Create a path with a right angle
+    return `M${startX},${startY} L${startX},${(startY + endY) / 2} L${endX},${(startY + endY) / 2} L${endX},${endY}`;
   }
-  
-  return paths;
 };

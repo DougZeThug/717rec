@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
+import { BracketGenerator } from "./BracketGenerator";
 
 interface BracketCreationParams {
   title: string;
@@ -34,11 +34,24 @@ export class BracketService {
     
     const bracketId = bracketData.id;
     
+    // Get full team data
+    const { data: teams, error: teamsError } = await supabase
+      .from('teams')
+      .select('*')
+      .in('id', teamIds);
+      
+    if (teamsError) throw teamsError;
+    
     // Generate matches based on format and teams
     if (format === 'Single Elimination') {
       await this.generateSingleEliminationMatches(bracketId, teamIds);
     } else if (format === 'Double Elimination') {
-      await this.generateDoubleEliminationMatches(bracketId, teamIds);
+      // Get the full team objects to work with
+      const fullTeams = teams as Team[];
+      
+      // Use our new generator
+      const matches = BracketGenerator.generateDoubleEliminationBracket(bracketId, fullTeams);
+      await BracketGenerator.saveBracketMatches(matches);
     }
     
     return bracketId;
@@ -199,11 +212,20 @@ export class BracketService {
     // Get the match first
     const { data: match, error: fetchError } = await supabase
       .from('matches')
-      .select('team1_id, team2_id')
+      .select('team1_id, team2_id, bracket_id')
       .eq('id', matchId)
       .single();
       
     if (fetchError) throw fetchError;
+    
+    // Get bracket format
+    const { data: bracket, error: bracketError } = await supabase
+      .from('brackets')
+      .select('format')
+      .eq('id', match.bracket_id)
+      .single();
+      
+    if (bracketError) throw bracketError;
     
     // Determine winner
     let winnerId = null;
@@ -213,45 +235,57 @@ export class BracketService {
       winnerId = match.team2_id;
     }
     
-    // Update the match
-    const { error: updateError } = await supabase
-      .from('matches')
-      .update({ 
-        winner_id: winnerId,
-        team1_score: team1Score,
-        team2_score: team2Score,
-        team1_game_wins: games.filter(game => game.team1Score > game.team2Score).length,
-        team2_game_wins: games.filter(game => game.team2Score > game.team1Score).length
-      })
-      .eq('id', matchId);
-      
-    if (updateError) throw updateError;
-    
-    // Delete existing games for this match
-    await supabase
-      .from('games')
-      .delete()
-      .eq('match_id', matchId);
-    
-    // Insert new games
-    if (games.length > 0) {
-      const gameRecords = games.map((game, index) => ({
-        match_id: matchId,
-        game_number: index + 1,
-        team1_score: game.team1Score,
-        team2_score: game.team2Score
-      }));
-      
-      const { error: gamesError } = await supabase
-        .from('games')
-        .insert(gameRecords);
+    if (bracket.format === 'Double Elimination') {
+      // Use our new generator for double elimination updates
+      await BracketGenerator.updateMatchResult(
+        matchId, 
+        winnerId, 
+        team1Score, 
+        team2Score
+      );
+    } else {
+      // Original code for single elimination
+      // Update the match
+      const { error: updateError } = await supabase
+        .from('matches')
+        .update({ 
+          winner_id: winnerId,
+          team1_score: team1Score,
+          team2_score: team2Score,
+          team1_game_wins: games.filter(game => game.team1Score > game.team2Score).length,
+          team2_game_wins: games.filter(game => game.team2Score > game.team1Score).length,
+          iscompleted: true
+        })
+        .eq('id', matchId);
+          
+      if (updateError) throw updateError;
         
-      if (gamesError) throw gamesError;
-    }
-    
-    // Update next matches if winner is determined
-    if (winnerId) {
-      await this.advanceTeamToNextMatch(matchId, winnerId);
+      // Delete existing games for this match
+      await supabase
+        .from('games')
+        .delete()
+        .eq('match_id', matchId);
+        
+      // Insert new games
+      if (games.length > 0) {
+        const gameRecords = games.map((game, index) => ({
+          match_id: matchId,
+          game_number: index + 1,
+          team1_score: game.team1Score,
+          team2_score: game.team2Score
+        }));
+          
+        const { error: gamesError } = await supabase
+          .from('games')
+          .insert(gameRecords);
+            
+        if (gamesError) throw gamesError;
+      }
+        
+      // Update next matches if winner is determined
+      if (winnerId) {
+        await this.advanceTeamToNextMatch(matchId, winnerId);
+      }
     }
   }
   

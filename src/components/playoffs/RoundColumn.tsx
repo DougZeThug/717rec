@@ -35,20 +35,40 @@ const RoundColumn: React.FC<RoundColumnProps> = ({
   const maxRound = Math.max(...matches.map(match => match.round));
   const roundNum = parseInt(round);
   
-  const roundLabel = 
-    type === 'Finals' ? "Finals" : 
-    roundNum === maxRound && type === 'Winners' ? "Winners Finals" :
-    roundNum === maxRound - 1 && type === 'Winners' ? "Winners Semifinals" : 
-    roundNum === maxRound - 2 && type === 'Winners' ? "Winners Quarterfinals" : 
-    roundNum === maxRound && type === 'Losers' ? "Losers Finals" :
-    roundNum === maxRound - 1 && type === 'Losers' ? "Losers Semifinals" : 
-    `${type} Round ${round}`;
+  let roundLabel;
+  
+  if (type === 'play-in') {
+    roundLabel = "Play-in Round";
+  } else if (type === 'finals') {
+    roundLabel = "Finals";
+  } else if (type === 'winners') {
+    if (roundNum === maxRound) {
+      roundLabel = "Winners Finals";
+    } else if (roundNum === maxRound - 1) {
+      roundLabel = "Winners Semifinals";
+    } else if (roundNum === maxRound - 2) {
+      roundLabel = "Winners Quarterfinals";
+    } else {
+      roundLabel = `Winners Round ${round}`;
+    }
+  } else if (type === 'losers') {
+    if (roundNum === maxRound) {
+      roundLabel = "Losers Finals";
+    } else if (roundNum === maxRound - 1) {
+      roundLabel = "Losers Semifinals";
+    } else {
+      roundLabel = `Losers Round ${round}`;
+    }
+  } else {
+    roundLabel = `${type} Round ${round}`;
+  }
   
   // Determine the variant for the badge based on the bracket type
   const badgeVariant = 
-    type === 'Winners' ? 'default' : 
-    type === 'Losers' ? 'secondary' : 
-    type === 'Finals' ? 'blueorange' : 
+    type === 'winners' ? 'default' : 
+    type === 'losers' ? 'secondary' : 
+    type === 'play-in' ? 'outline' :
+    type === 'finals' ? 'blueorange' : 
     'outline';
 
   return (
@@ -64,9 +84,10 @@ const RoundColumn: React.FC<RoundColumnProps> = ({
           variant={badgeVariant}
           className={cn(
             "font-bold py-1.5 px-4",
-            type === 'Winners' && isLight && "bg-gradient-to-r from-blue-500 to-blue-600",
-            type === 'Losers' && isLight && "bg-gradient-to-r from-amber-500 to-amber-600",
-            type === 'Finals' && isLight && "bg-gradient-to-r from-blue-500 to-amber-500"
+            type === 'winners' && isLight && "bg-gradient-to-r from-blue-500 to-blue-600",
+            type === 'losers' && isLight && "bg-gradient-to-r from-amber-500 to-amber-600",
+            type === 'finals' && isLight && "bg-gradient-to-r from-blue-500 to-amber-500",
+            type === 'play-in' && isLight && "bg-gradient-to-r from-purple-500 to-pink-500"
           )}
         >
           {roundLabel}

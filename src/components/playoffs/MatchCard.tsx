@@ -26,6 +26,16 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   const getTeamById = (id?: string) => {
     if (!id) return null;
+    
+    // Special handling for play-in placeholders
+    if (id.startsWith('play-in-')) {
+      return {
+        id,
+        name: `Winner of Play-in ${id.split('-')[2]}`,
+        seed: match.team1Seed || match.team2Seed || 0
+      };
+    }
+    
     return teams.find(team => team.id === id);
   };
 
@@ -33,9 +43,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team2 = getTeamById(match.team2Id);
   const winner = getTeamById(match.winnerId);
 
-  // Determine team seeds (using position as a fallback for seed)
-  const team1Seed = team1?.seed || match.position;
-  const team2Seed = team2?.seed || match.position + 1;
+  // Determine team seeds
+  const team1Seed = match.team1Seed || (team1?.seed || 0);
+  const team2Seed = match.team2Seed || (team2?.seed || 0);
 
   const cardClasses = onEditMatch
     ? getRowInteractionStyles("w-64 transition-shadow")
@@ -50,6 +60,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
     )
   );
 
+  // Determine match state
+  const isPending = !match.team1Id || !match.team2Id;
+  const isComplete = !!match.winnerId;
+  const isPlayIn = match.matchType === 'play-in';
+
   return (
     <div className="relative flex">
       <Card 
@@ -57,9 +72,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
           cardClasses,
           isLight 
             ? "border border-gray-200 hover:border-gray-300 shadow-sm"
-            : "border border-gray-800 hover:border-gray-700 bg-gray-900/50 shadow-md"
+            : "border border-gray-800 hover:border-gray-700 bg-gray-900/50 shadow-md",
+          isPlayIn && "border-l-4 border-purple-500"
         )}
-        onClick={() => onEditMatch && onEditMatch(match.id)}
+        onClick={() => onEditMatch && match.team1Id && match.team2Id && onEditMatch(match.id)}
       >
         <CardContent className="p-3">
           <div className="space-y-2">
@@ -152,6 +168,15 @@ const MatchCard: React.FC<MatchCardProps> = ({
               )}
             </div>
 
+            {/* Match Status Display */}
+            {isPending && (
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {isPlayIn ? "Play-in Match" : "Waiting for teams"}
+                </span>
+              </div>
+            )}
+
             {/* Games detail section - only show if there are games */}
             {match.games && match.games.length > 0 && (
               <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
@@ -165,7 +190,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             )}
             
             {/* Champion display for finals */}
-            {winner && match.matchType === 'Finals' && (
+            {winner && match.matchType === 'finals' && (
               <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
                 <div className="text-xs text-gray-500 dark:text-gray-400">Champion</div>
                 <div className={blueAmber.text.heading + " font-semibold"}>

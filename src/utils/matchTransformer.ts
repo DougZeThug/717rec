@@ -12,11 +12,18 @@ export const transformMatches = (matchesData: any[]): PlayoffMatch[] => {
     team1Id: match.team1_id,
     team2Id: match.team2_id,
     winnerId: match.winner_id,
-    team1Score: match.games?.filter(g => g.team1_score > g.team2_score).length || 0,
-    team2Score: match.games?.filter(g => g.team2_score > g.team1_score).length || 0,
-    matchType: match.match_type as "Winners" | "Losers" | "Finals" || "Winners",
+    loserId: match.loser_id,
+    team1Score: match.team1_score,
+    team2Score: match.team2_score,
+    team1GameWins: match.team1_game_wins,
+    team2GameWins: match.team2_game_wins,
+    matchType: match.match_type as "winners" | "losers" | "finals" | "play-in" || "winners",
     bestOf: match.best_of || 3,
-    games: transformGames(match.games || [])
+    games: transformGames(match.games || []),
+    nextWinMatchId: match.next_match_id, // Link to next match for winner
+    nextLoseMatchId: match.next_loser_match_id, // Link to next match for loser
+    team1Seed: match.team1_seed, // Team 1 seed
+    team2Seed: match.team2_seed // Team 2 seed
   }));
 };
 

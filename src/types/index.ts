@@ -109,12 +109,16 @@ export interface PlayoffMatch {
   team2Score?: number;
   team1GameWins?: number;
   team2GameWins?: number;
-  matchType: "Winners" | "Losers" | "Finals";
+  matchType: "winners" | "losers" | "finals" | "play-in";
   bestOf: number;
   games?: PlayoffGame[];
   team1ChallongeId?: number;
   team2ChallongeId?: number;
   challongeMatchId?: string;
+  team1Seed?: number;  // New field for seed
+  team2Seed?: number;  // New field for seed
+  nextWinMatchId?: string;  // New field for linking
+  nextLoseMatchId?: string; // New field for linking
 }
 
 export interface PlayoffGame {

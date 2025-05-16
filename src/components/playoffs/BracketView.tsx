@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import type { PlayoffBracket, Team } from "@/types";
 import RoundColumn from "./RoundColumn";
 import { getBracketConnectorPaths, getVerticalSpacing, getNextMatch } from "./BracketUtils";
@@ -18,33 +18,45 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
   const isLight = resolvedTheme === "light";
   
   // Group matches by round and type
-  const matchesByRoundAndType: Record<string, typeof bracket.matches> = {};
-  
-  bracket.matches.forEach(match => {
-    const key = `${match.round}-${match.matchType || 'Winners'}`;
-    if (!matchesByRoundAndType[key]) {
-      matchesByRoundAndType[key] = [];
-    }
-    matchesByRoundAndType[key].push(match);
-  });
-  
-  // Sort each group by position
-  Object.keys(matchesByRoundAndType).forEach(key => {
-    matchesByRoundAndType[key].sort((a, b) => a.position - b.position);
-  });
+  const matchesByRoundAndType = useMemo(() => {
+    const grouped: Record<string, typeof bracket.matches> = {};
+    
+    bracket.matches.forEach(match => {
+      const key = `${match.round}-${match.matchType}`;
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(match);
+    });
+    
+    // Sort each group by position
+    Object.keys(grouped).forEach(key => {
+      grouped[key].sort((a, b) => a.position - b.position);
+    });
+    
+    return grouped;
+  }, [bracket.matches]);
 
   // Get unique rounds and types
-  const roundsAndTypes = Object.keys(matchesByRoundAndType).sort((a, b) => {
-    const [roundA, typeA] = a.split('-');
-    const [roundB, typeB] = b.split('-');
-    if (parseInt(roundA) === parseInt(roundB)) {
-      // Winners bracket comes first, then losers, then finals
-      if (typeA === 'Finals') return 1;
-      if (typeB === 'Finals') return -1;
-      return typeA === 'Winners' ? -1 : 1;
-    }
-    return parseInt(roundA) - parseInt(roundB);
-  });
+  const roundsAndTypes = useMemo(() => {
+    const keys = Object.keys(matchesByRoundAndType);
+    return keys.sort((a, b) => {
+      const [roundA, typeA] = a.split('-');
+      const [roundB, typeB] = b.split('-');
+      
+      // Play-in round should come first
+      if (typeA === 'play-in') return -1;
+      if (typeB === 'play-in') return 1;
+      
+      if (parseInt(roundA) === parseInt(roundB)) {
+        // Winners bracket comes first, then losers, then finals
+        if (typeA === 'finals') return 1;
+        if (typeB === 'finals') return -1;
+        return typeA === 'winners' ? -1 : 1;
+      }
+      return parseInt(roundA) - parseInt(roundB);
+    });
+  }, [matchesByRoundAndType]);
 
   // Calculate bracket visualization paths for connectors
   const connectorPaths = getBracketConnectorPaths(bracket.matches);
