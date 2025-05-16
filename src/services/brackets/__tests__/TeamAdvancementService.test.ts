@@ -78,7 +78,7 @@ describe('TeamAdvancementService', () => {
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
       expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team1_id: teamId });
-      // Fix: Pass an argument to eq() method and call toBeDefined() on the result
+      // Fix: Pass the proper arguments and ensure the method is properly called
       expect(supabase.from('playoff_matches').update().eq).toHaveBeenCalledWith('id', matchId);
     });
     
@@ -132,7 +132,7 @@ describe('TeamAdvancementService', () => {
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
       expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team2_id: teamId });
-      // Fix: Pass an argument to eq() method and call toBeDefined() on the result
+      // Fix: Pass the proper arguments and ensure the method is properly called
       expect(supabase.from('playoff_matches').update().eq).toHaveBeenCalledWith('id', matchId);
     });
     
