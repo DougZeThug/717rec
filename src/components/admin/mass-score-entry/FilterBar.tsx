@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Filter, X } from "lucide-react";
+import { CalendarIcon, Filter, Info, X } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { FilterState } from "./types";
 import { motion } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface FilterBarProps {
   filters: FilterState;
@@ -73,6 +74,26 @@ const FilterBar: React.FC<FilterBarProps> = ({
           </SelectContent>
         </Select>
       </div>
+
+      {filters.date && (
+        <div className="flex items-center text-xs text-muted-foreground">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center">
+                  <Info className="h-3 w-3 mr-1" />
+                  <span>Showing matches for the entire session (including evening games)</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">
+                  This view includes evening matches that might be stored with next-day UTC dates
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
 
       {hasActiveFilters ? (
         <motion.div 

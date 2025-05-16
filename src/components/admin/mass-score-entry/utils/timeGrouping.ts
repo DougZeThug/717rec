@@ -4,6 +4,7 @@ import { extractTimeSlotFromUTC } from "@/utils/timezoneUtils";
 
 /**
  * Groups matches by their time slot for the mass score entry page
+ * Now enhanced to handle evening games that span UTC days properly
  */
 export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string, MatchWithTeams[]> => {
   console.log(`⏰ Grouping ${matches.length} matches by time slot`);
@@ -28,7 +29,9 @@ export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string
     console.log(`⏰ groupMatchesByTimeSlot processing match ${match.id} (index ${index}):`, {
       matchDate: match.date,
       matchDateType: typeof match.date,
-      originalDateObject: typeof match.date === 'string' ? new Date(match.date) : match.date,
+      matchDateObj: typeof match.date === 'string' ? new Date(match.date) : match.date,
+      localDate: new Date(match.date).toLocaleDateString(),
+      localTime: new Date(match.date).toLocaleTimeString(),
       utcHours: (typeof match.date === 'string' ? new Date(match.date) : match.date).getUTCHours(),
       utcMinutes: (typeof match.date === 'string' ? new Date(match.date) : match.date).getUTCMinutes()
     });

@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
 import { FilterState } from "../types";
+import { createEveningAwareDateRange } from "@/utils/timezoneUtils";
 
 export const buildMatchQuery = (filters: FilterState) => {
   let query = supabase
@@ -14,9 +14,18 @@ export const buildMatchQuery = (filters: FilterState) => {
     .order('date', { ascending: true });
 
   if (filters.date) {
-    const dateStr = format(filters.date, 'yyyy-MM-dd');
-    query = query.gte('date', `${dateStr}T00:00:00`)
-                 .lt('date', `${dateStr}T23:59:59`);
+    // Use the evening-aware date range for more intuitive filtering
+    const { startDate, endDate } = createEveningAwareDateRange(filters.date);
+    
+    console.log(`🔍 Filtering matches with evening-aware date range:`, {
+      date: filters.date.toDateString(),
+      startDateUTC: startDate.toISOString(),
+      endDateUTC: endDate.toISOString()
+    });
+    
+    // Use the extended date range that includes evening matches
+    query = query.gte('date', startDate.toISOString())
+               .lte('date', endDate.toISOString());
   }
 
   if (filters.bracketId) {

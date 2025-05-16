@@ -1,9 +1,9 @@
 
-import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { FilterState, MatchWithTeams } from "../../types";
 import { useToast } from "@/hooks/use-toast";
 import { transformDatabaseMatchToMatchWithTeams } from "../../utils/matchTransformUtils";
+import { createEveningAwareDateRange } from "@/utils/timezoneUtils";
 
 export const useMatchesFetching = () => {
   const { toast } = useToast();
@@ -19,9 +19,17 @@ export const useMatchesFetching = () => {
       .order('date', { ascending: true });
 
     if (filters.date) {
-      const dateStr = format(filters.date, 'yyyy-MM-dd');
-      query = query.gte('date', `${dateStr}T00:00:00`)
-                   .lt('date', `${dateStr}T23:59:59`);
+      // Use the evening-aware date range for more intuitive filtering
+      const { startDate, endDate } = createEveningAwareDateRange(filters.date);
+      
+      console.log(`🔍 Fetching matches with evening-aware date range:`, {
+        date: filters.date.toDateString(),
+        startDateUTC: startDate.toISOString(),
+        endDateUTC: endDate.toISOString()
+      });
+      
+      query = query.gte('date', startDate.toISOString())
+                 .lte('date', endDate.toISOString());
     }
 
     if (filters.bracketId) {
