@@ -15,7 +15,7 @@ export interface BracketMatch {
   id: string;
   round: number;
   position: number;
-  matchType: "play-in" | "winners" | "losers" | "finals";
+  matchType: "winners" | "losers" | "finals" | "play-in";
   team1Id: string | null;
   team2Id: string | null;
   team1Seed: number | null;
@@ -335,7 +335,7 @@ export class BracketGenerator {
       id: match.id,
       round_number: match.round,
       position: match.position,
-      match_type: match.matchType,
+      match_type: match.matchType === "play-in" ? "winners" : match.matchType, // Map play-in to winners for database compatibility
       team1_id: match.team1Id,
       team2_id: match.team2Id,
       next_match_id: match.nextWinMatchId,

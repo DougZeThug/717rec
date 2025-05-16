@@ -1,3 +1,4 @@
+
 // Team related types
 export interface Team {
   id: string;

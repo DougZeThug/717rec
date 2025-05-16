@@ -566,7 +566,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       winnerId: "1",
       team1Score: 2,
       team2Score: 1,
-      matchType: "Winners",
+      matchType: "winners",
       bestOf: 3,
       games: createBestOf3Games("1", "2", "1")
     },
@@ -579,7 +579,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       winnerId: "3",
       team1Score: 2,
       team2Score: 0,
-      matchType: "Winners",
+      matchType: "winners",
       bestOf: 3,
       games: [
         {
@@ -607,7 +607,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       winnerId: "1",
       team1Score: 2,
       team2Score: 1,
-      matchType: "Winners",
+      matchType: "winners",
       bestOf: 3,
       games: createBestOf3Games("1", "3", "1")
     },
@@ -622,7 +622,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       winnerId: "2",
       team1Score: 2,
       team2Score: 0,
-      matchType: "Losers",
+      matchType: "losers",
       bestOf: 3,
       games: [
         {
@@ -650,7 +650,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       winnerId: "2",
       team1Score: 2,
       team2Score: 1,
-      matchType: "Losers",
+      matchType: "losers",
       bestOf: 3,
       games: createBestOf3Games("2", "3", "2")
     },
@@ -665,7 +665,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       winnerId: "1",
       team1Score: 2,
       team2Score: 0,
-      matchType: "Finals",
+      matchType: "finals",
       bestOf: 3,
       games: [
         {
@@ -702,7 +702,7 @@ export const mockIntermediatePlayoffBracket: PlayoffBracket = {
       winnerId: "7",
       team1Score: 2,
       team2Score: 1,
-      matchType: "Winners",
+      matchType: "winners",
       bestOf: 3,
       games: createBestOf3Games("7", "8", "7")
     }
@@ -726,7 +726,7 @@ export const mockCompetitivePlayoffBracket: PlayoffBracket = {
       winnerId: "4",
       team1Score: 2,
       team2Score: 0,
-      matchType: "Winners",
+      matchType: "winners",
       bestOf: 3,
       games: [
         {
