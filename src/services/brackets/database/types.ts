@@ -1,3 +1,4 @@
+
 import { PlayoffGame } from "../types";
 
 /**
@@ -34,6 +35,16 @@ export interface MatchResult {
   team1Score: number;
   team2Score: number;
   games: PlayoffGame[];
+}
+
+/**
+ * DTO for updating match results
+ */
+export interface MatchResultDTO {
+  winnerId: string;
+  loserId: string;
+  team1Score: number;
+  team2Score: number;
 }
 
 /**

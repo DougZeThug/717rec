@@ -6,15 +6,17 @@ import { DatabaseOperationError } from '../database/types';
 
 // Mock Supabase client
 vi.mock('@/integrations/supabase/client', () => {
+  const mockSupabase = {
+    from: vi.fn(() => mockSupabase),
+    select: vi.fn(() => mockSupabase),
+    insert: vi.fn(() => mockSupabase),
+    eq: vi.fn(() => mockSupabase),
+    order: vi.fn(() => mockSupabase),
+    single: vi.fn()
+  };
+  
   return {
-    supabase: {
-      from: vi.fn(() => supabase),
-      select: vi.fn(() => supabase),
-      insert: vi.fn(() => supabase),
-      eq: vi.fn(() => supabase),
-      order: vi.fn(() => supabase),
-      single: vi.fn()
-    }
+    supabase: mockSupabase
   };
 });
 
@@ -124,8 +126,8 @@ describe('PlayoffGamesRepository', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_games');
-      expect(supabase.from('playoff_games').select).toHaveBeenCalledWith('*');
-      expect(supabase.from('playoff_games').select('*').eq).toHaveBeenCalledWith('match_id', 'match1');
+      expect(supabase.select).toHaveBeenCalledWith('*');
+      expect(supabase.eq).toHaveBeenCalledWith('match_id', 'match1');
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('1');
       expect(result[0].matchId).toBe('match1');
