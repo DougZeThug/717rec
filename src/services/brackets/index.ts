@@ -9,3 +9,4 @@ export * from './utils/TeamSeeding';
 export * from './utils/ScoreParser';
 export * from './database/DatabaseAdapter';
 export * from './database/PlayoffDatabaseAdapter';
+export * from './database/types';
