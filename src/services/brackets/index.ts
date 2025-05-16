@@ -1,8 +1,9 @@
 
 // Public API exports
 export * from './types';
+
 // Database types (with explicitly named exports to avoid ambiguity)
-export { 
+export type { 
   IBracketRepository,
   IMatchResultService, 
   IPlayoffMatchesRepository, 
@@ -13,6 +14,17 @@ export {
   DatabaseOperationError
 } from './database/types';
 
+// Re-export types that would be ambiguous if exported from both modules
+// Creating explicit named exports to resolve ambiguity
+export { 
+  BracketMatch, 
+  BracketGenerationResult, 
+  MatchType, 
+  PlayInResult,
+  SeedTeam
+} from './types';
+
+// Re-export classes and function exports
 export * from './BracketGenerator';
 export * from './BracketFactory';
 export * from './generators/BaseBracketGenerator';

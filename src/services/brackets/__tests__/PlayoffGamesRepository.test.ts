@@ -126,8 +126,8 @@ describe('PlayoffGamesRepository', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_games');
-      expect(supabase.select).toHaveBeenCalledWith('*');
-      expect(supabase.eq).toHaveBeenCalledWith('match_id', 'match1');
+      expect(supabase.from('playoff_games').select).toHaveBeenCalledWith('*');
+      expect(supabase.from('playoff_games').select().eq).toHaveBeenCalledWith('match_id', 'match1');
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('1');
       expect(result[0].matchId).toBe('match1');
