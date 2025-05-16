@@ -79,7 +79,8 @@ describe('TeamAdvancementService', () => {
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
       expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team1_id: teamId });
       // Fix: Pass the proper arguments to eq and use toHaveBeenCalledWith to verify
-      expect(supabase.from('playoff_matches').update().eq).toHaveBeenCalledWith('id', matchId);
+      const updateEqMock = supabase.from('playoff_matches').update().eq;
+      expect(updateEqMock).toHaveBeenCalledWith('id', matchId);
     });
     
     it('should advance team to team2 slot when team1 is already filled', async () => {
@@ -133,7 +134,8 @@ describe('TeamAdvancementService', () => {
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
       expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team2_id: teamId });
       // Fix: Pass the proper arguments to eq and use toHaveBeenCalledWith to verify
-      expect(supabase.from('playoff_matches').update().eq).toHaveBeenCalledWith('id', matchId);
+      const updateEqMock = supabase.from('playoff_matches').update().eq;
+      expect(updateEqMock).toHaveBeenCalledWith('id', matchId);
     });
     
     it('should throw DatabaseOperationError when match fetch fails', async () => {

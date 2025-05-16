@@ -1,8 +1,9 @@
 
+
 // Public API exports
-export { BracketState } from './types';
-export { MatchResult } from './types';
-export { PlayoffMatch } from './types';
+export type { BracketState } from './types';
+export type { MatchResult } from './types';
+export type { PlayoffMatch } from './types';
 
 // Non-ambiguous types export from types.ts
 export type { 
@@ -38,3 +39,4 @@ export * from './utils/TeamSeeding';
 export * from './utils/ScoreParser';
 export * from './DatabaseAdapter';
 export * from './database';
+
