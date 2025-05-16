@@ -7,6 +7,7 @@ import { MatchPair } from "./MatchPairsList";
 import { createDateWithTime } from "@/components/schedule/form-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { normalizeTimeFormat } from "@/utils/timeUtils";
+import { formatTimeToUTC } from "@/utils/timezoneUtils";
 
 export const useBatchMatchForm = (teams: Team[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -93,17 +94,21 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
     try {
       const matchesToCreate = matchPairs.map(pair => {
-        // Create a date with the selected timeslot
         // Ensure the timeslot is properly formatted
         const timeslot = pair.timeslot || "6:30 PM"; // Default to 6:30 PM if missing
         
-        // Create a date with the selected timeslot
+        // Use our updated utility to create a UTC date for storage
         const dateWithTime = createDateWithTime(
           selectedDate as Date,
           timeslot
         );
         
-        console.log("Creating match at date:", dateWithTime.toISOString(), "with timeslot:", timeslot);
+        console.log("🌐 Creating match with UTC time:", {
+          localTimeslot: timeslot,
+          utcDate: dateWithTime.toISOString(),
+          utcHours: dateWithTime.getUTCHours(),
+          utcMinutes: dateWithTime.getUTCMinutes()
+        });
         
         return {
           team1_id: pair.team1Id,
@@ -119,7 +124,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
         };
       });
 
-      console.log("Batch creating matches:", matchesToCreate);
+      console.log("🌐 Batch creating matches:", matchesToCreate);
 
       const { data, error } = await supabase
         .from('matches')
@@ -128,7 +133,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
       if (error) throw error;
 
-      console.log("Successfully created matches:", data);
+      console.log("🌐 Successfully created matches:", data);
       
       toast({
         title: "Success",

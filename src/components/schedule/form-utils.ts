@@ -1,3 +1,4 @@
+import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezoneUtils';
 
 /**
  * Format a date object for use in an HTML date input
@@ -7,63 +8,29 @@ export const formatDateForInput = (date: Date): string => {
 };
 
 /**
- * Create a date with the selected time slot
+ * Create a date with the selected time slot, properly converted to UTC for storage
  */
 export const createDateWithTime = (date: Date, timeSlot: string | null): Date => {
-  const dateWithTime = new Date(date);
-  
   if (!timeSlot) {
-    return dateWithTime;
+    console.log("🌐 No time slot provided, returning date with default time");
+    return date;
   }
   
-  // Handle both formats: "6:30 PM" and "18:30"
-  if (timeSlot.includes(':')) {
-    // Extract hours and minutes regardless of format
-    let hours = 0;
-    let minutes = 0;
-    
-    if (timeSlot.includes('PM') || timeSlot.includes('AM')) {
-      // 12-hour format like "6:30 PM"
-      const [time, period] = timeSlot.split(' ');
-      const [hourStr, minuteStr] = time.split(':');
-      
-      hours = parseInt(hourStr);
-      minutes = parseInt(minuteStr);
-      
-      // Convert to 24-hour format
-      if (period === 'PM' && hours < 12) {
-        hours += 12;
-      } else if (period === 'AM' && hours === 12) {
-        hours = 0;
-      }
-    } else {
-      // 24-hour format like "18:30"
-      const [hourStr, minuteStr] = timeSlot.split(':');
-      hours = parseInt(hourStr);
-      minutes = parseInt(minuteStr);
-    }
-    
-    dateWithTime.setHours(hours, minutes, 0, 0);
-  } else {
-    console.warn("Invalid time slot format:", timeSlot);
-  }
+  console.log("🌐 Creating date with time:", {
+    date: date.toString(),
+    timeSlot,
+    action: "Converting to UTC for storage"
+  });
   
-  return dateWithTime;
+  // Use our utility to handle time conversion properly
+  return createUTCDateWithTime(date, timeSlot);
 };
 
 /**
- * Get time slot from a date object
+ * Get time slot from a date object, converting from UTC to local time
  */
 export const getTimeSlotFromDate = (date: Date): string | null => {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  
-  // Format as "H:MM AM/PM"
-  return date.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true
-  });
+  return formatUTCToLocalTimeString(date);
 };
 
 /**

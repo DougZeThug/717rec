@@ -13,6 +13,12 @@ const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
   setSelectedTimeSlot,
   timeSlots
 }) => {
+  // Add debug logging when time slot is selected
+  const handleTimeSlotSelect = (timeSlot: string) => {
+    console.log(`🌐 Time slot selected: "${timeSlot}" (will be converted to UTC for storage)`);
+    setSelectedTimeSlot(timeSlot);
+  };
+  
   return (
     <>
       <div>
@@ -38,7 +44,7 @@ const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
                   w-28 transition-colors py-2
                   ${selectedTimeSlot === time ? 'bg-cornhole-navy text-white' : 'border-cornhole-navy text-cornhole-navy'}
                 `}
-                onClick={() => setSelectedTimeSlot(time)}
+                onClick={() => handleTimeSlotSelect(time)}
               >
                 {time}
               </Button>

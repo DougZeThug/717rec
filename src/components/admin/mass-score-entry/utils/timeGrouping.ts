@@ -1,6 +1,6 @@
 
 import { MatchWithTeams } from "../types";
-import { extractTimeSlot } from "@/utils/timeUtils";
+import { extractTimeSlotFromUTC } from "@/utils/timezoneUtils";
 
 /**
  * Groups matches by their time slot for the mass score entry page
@@ -30,7 +30,8 @@ export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string
       matchDateType: typeof match.date
     });
     
-    const timeSlot = extractTimeSlot(match.date);
+    // Use our updated timezone-aware utility
+    const timeSlot = extractTimeSlotFromUTC(match.date);
     
     console.log(`⏰ Match ${match.id} (index ${index}) assigned to time slot: "${timeSlot}"`);
     

@@ -1,5 +1,6 @@
 
 import { Match } from "@/types";
+import { extractTimeSlotFromUTC, formatTimeToUTC } from "./timezoneUtils";
 
 /**
  * Groups an array of matches by time slot.
@@ -9,8 +10,8 @@ import { Match } from "@/types";
  */
 export const groupMatchesByTimeSlot = (matches: Match[]): { [timeSlot: string]: Match[] } => {
   return matches.reduce((acc: { [timeSlot: string]: Match[] }, match: Match) => {
-    // Use a default value if match.date is undefined
-    const timeSlot = new Date(match.date || '').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    // Use our utility to extract time slot from UTC date
+    const timeSlot = match.date ? extractTimeSlotFromUTC(match.date) : "No Time";
     
     if (!acc[timeSlot]) {
       acc[timeSlot] = [];
@@ -83,37 +84,5 @@ export const getTimePairForBlock = (block: string): [string, string] | null => {
  * Used specifically for grouping matches by time in the admin panel
  */
 export const extractTimeSlot = (dateString: string): string => {
-  try {
-    console.log(`🕰️ extractTimeSlot input:`, {
-      dateString,
-      type: typeof dateString
-    });
-    
-    if (!dateString) {
-      console.warn('Empty date string passed to extractTimeSlot');
-      return 'No Time';
-    }
-    
-    const date = new Date(dateString);
-    
-    if (isNaN(date.getTime())) {
-      console.warn(`Invalid date string in extractTimeSlot: "${dateString}"`);
-      return 'No Time';
-    }
-    
-    const timeSlot = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    console.log(`🕰️ extractTimeSlot output:`, {
-      input: dateString,
-      parsed: date.toString(),
-      hours: date.getHours(),
-      minutes: date.getMinutes(),
-      timeSlot
-    });
-    
-    return timeSlot;
-  } catch (error) {
-    console.error('Error extracting time slot:', error);
-    return 'No Time';
-  }
+  return extractTimeSlotFromUTC(dateString);
 };
