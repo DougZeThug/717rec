@@ -8,10 +8,10 @@ import { DatabaseOperationError } from '../database/types';
 vi.mock('@/integrations/supabase/client', () => {
   return {
     supabase: {
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
+      from: vi.fn(() => supabase),
+      select: vi.fn(() => supabase),
+      update: vi.fn(() => supabase),
+      eq: vi.fn(() => supabase),
       single: vi.fn()
     }
   };
@@ -35,39 +35,39 @@ describe('TeamAdvancementService', () => {
       // Mock next match with empty team1_id
       vi.mocked(supabase.from).mockReturnValue({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            single: vi.fn().mockReturnValue({
+            single: vi.fn(() => ({
               data: { team1_id: null, team2_id: 'other-team' },
               error: null
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any);
       
       // Mock update
       vi.mocked(supabase.from).mockReturnValueOnce({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            single: vi.fn().mockReturnValue({
+            single: vi.fn(() => ({
               data: { team1_id: null, team2_id: 'other-team' },
               error: null
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any).mockReturnValueOnce({
         ...supabase,
-        update: vi.fn().mockReturnValue({
+        update: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             error: null
-          })
-        })
+          }))
+        }))
       } as any);
       
       // Act
@@ -75,8 +75,8 @@ describe('TeamAdvancementService', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
-      expect(supabase.from().update).toHaveBeenCalledWith({ team1_id: teamId });
-      expect(supabase.from().update().eq).toHaveBeenCalledWith('id', matchId);
+      expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team1_id: teamId });
+      expect(supabase.from('playoff_matches').update({ team1_id: teamId }).eq).toHaveBeenCalledWith('id', matchId);
     });
     
     it('should advance team to team2 slot when team1 is already filled', async () => {
@@ -88,39 +88,39 @@ describe('TeamAdvancementService', () => {
       // Mock next match with filled team1_id
       vi.mocked(supabase.from).mockReturnValue({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            single: vi.fn().mockReturnValue({
+            single: vi.fn(() => ({
               data: { team1_id: 'existing-team', team2_id: null },
               error: null
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any);
       
       // Mock update
       vi.mocked(supabase.from).mockReturnValueOnce({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            single: vi.fn().mockReturnValue({
+            single: vi.fn(() => ({
               data: { team1_id: 'existing-team', team2_id: null },
               error: null
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any).mockReturnValueOnce({
         ...supabase,
-        update: vi.fn().mockReturnValue({
+        update: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             error: null
-          })
-        })
+          }))
+        }))
       } as any);
       
       // Act
@@ -128,8 +128,8 @@ describe('TeamAdvancementService', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
-      expect(supabase.from().update).toHaveBeenCalledWith({ team2_id: teamId });
-      expect(supabase.from().update().eq).toHaveBeenCalledWith('id', matchId);
+      expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team2_id: teamId });
+      expect(supabase.from('playoff_matches').update({ team2_id: teamId }).eq).toHaveBeenCalledWith('id', matchId);
     });
     
     it('should throw DatabaseOperationError when match fetch fails', async () => {
@@ -141,16 +141,16 @@ describe('TeamAdvancementService', () => {
       
       vi.mocked(supabase.from).mockReturnValue({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            single: vi.fn().mockReturnValue({
+            single: vi.fn(() => ({
               data: null,
               error: mockError
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any);
       
       // Act & Assert
@@ -168,24 +168,24 @@ describe('TeamAdvancementService', () => {
       
       vi.mocked(supabase.from).mockReturnValueOnce({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            single: vi.fn().mockReturnValue({
+            single: vi.fn(() => ({
               data: { team1_id: null, team2_id: 'other-team' },
               error: null
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any).mockReturnValueOnce({
         ...supabase,
-        update: vi.fn().mockReturnValue({
+        update: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             error: mockError
-          })
-        })
+          }))
+        }))
       } as any);
       
       // Act & Assert

@@ -8,11 +8,11 @@ import { DatabaseOperationError } from '../database/types';
 vi.mock('@/integrations/supabase/client', () => {
   return {
     supabase: {
-      from: vi.fn().mockReturnThis(),
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
+      from: vi.fn(() => supabase),
+      select: vi.fn(() => supabase),
+      insert: vi.fn(() => supabase),
+      eq: vi.fn(() => supabase),
+      order: vi.fn(() => supabase),
       single: vi.fn()
     }
   };
@@ -32,7 +32,7 @@ describe('PlayoffGamesRepository', () => {
       const mockInsert = { error: null };
       vi.mocked(supabase.from).mockReturnValue({
         ...supabase,
-        insert: vi.fn().mockReturnValue(mockInsert)
+        insert: vi.fn(() => mockInsert)
       } as any);
       
       const games = [
@@ -51,7 +51,7 @@ describe('PlayoffGamesRepository', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_games');
-      expect(supabase.from().insert).toHaveBeenCalled();
+      expect(supabase.from('playoff_games').insert).toHaveBeenCalled();
     });
     
     it('should throw DatabaseOperationError on error', async () => {
@@ -59,7 +59,7 @@ describe('PlayoffGamesRepository', () => {
       const mockError = { message: 'DB error' };
       vi.mocked(supabase.from).mockReturnValue({
         ...supabase,
-        insert: vi.fn().mockReturnValue({ error: mockError })
+        insert: vi.fn(() => ({ error: mockError }))
       } as any);
       
       const games = [
@@ -107,16 +107,16 @@ describe('PlayoffGamesRepository', () => {
       
       vi.mocked(supabase.from).mockReturnValue({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            order: vi.fn().mockReturnValue({
+            order: vi.fn(() => ({
               data: mockGames,
               error: null
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any);
       
       // Act
@@ -124,8 +124,8 @@ describe('PlayoffGamesRepository', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_games');
-      expect(supabase.from().select).toHaveBeenCalledWith('*');
-      expect(supabase.from().select().eq).toHaveBeenCalledWith('match_id', 'match1');
+      expect(supabase.from('playoff_games').select).toHaveBeenCalledWith('*');
+      expect(supabase.from('playoff_games').select('*').eq).toHaveBeenCalledWith('match_id', 'match1');
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('1');
       expect(result[0].matchId).toBe('match1');
@@ -136,16 +136,16 @@ describe('PlayoffGamesRepository', () => {
       const mockError = { message: 'DB error' };
       vi.mocked(supabase.from).mockReturnValue({
         ...supabase,
-        select: vi.fn().mockReturnValue({
+        select: vi.fn(() => ({
           ...supabase,
-          eq: vi.fn().mockReturnValue({
+          eq: vi.fn(() => ({
             ...supabase,
-            order: vi.fn().mockReturnValue({
+            order: vi.fn(() => ({
               data: null,
               error: mockError
-            })
-          })
-        })
+            }))
+          }))
+        }))
       } as any);
       
       // Act & Assert
