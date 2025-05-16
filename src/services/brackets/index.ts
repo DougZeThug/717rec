@@ -1,6 +1,16 @@
 
 // Public API exports
-export * from './types';
+export { BracketState } from './types';
+export { MatchResult } from './types';
+export { PlayoffMatch } from './types';
+
+// Non-ambiguous types export from types.ts
+export type { 
+  SeedTeam,
+  BracketGenerationResult, 
+  MatchType, 
+  PlayInResult
+} from './types';
 
 // Database types (with explicitly named exports to avoid ambiguity)
 export type { 
@@ -13,16 +23,6 @@ export type {
   MatchResultDTO,
   DatabaseOperationError
 } from './database/types';
-
-// Re-export types that would be ambiguous if exported from both modules
-// Creating explicit named exports to resolve ambiguity
-export type { 
-  BracketMatch, 
-  BracketGenerationResult, 
-  MatchType, 
-  PlayInResult,
-  SeedTeam
-} from './types';
 
 // Explicitly handle ambiguous types by using a namespace or renaming
 export type { BracketState as DatabaseBracketState } from './database/types';
