@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { MatchResult, PlayoffGame, PlayoffMatch } from "./types";
+import { BracketState, MatchResult, PlayoffGame, PlayoffMatch, PlayoffMatchType } from "./types";
 import { nanoid } from "nanoid";
 
 /**
@@ -303,7 +304,16 @@ export class PlayoffDatabaseAdapter {
    */
   static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<string> {
     try {
-      const resetMatch = {
+      const resetMatch: {
+        bracket_id: string;
+        round: number;
+        position: number;
+        match_type: PlayoffMatchType;
+        team1_id: string;
+        team2_id: string;
+        status: "pending";
+        best_of: number;
+      } = {
         bracket_id: bracketId,
         round: 2, // Second finals round
         position: 1,

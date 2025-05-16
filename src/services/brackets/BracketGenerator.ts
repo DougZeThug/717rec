@@ -1,4 +1,3 @@
-
 import { Team } from "@/types";
 import { nanoid } from "nanoid";
 import { SeedTeam, BracketMatch, BracketGenerationResult, PlayoffMatch } from "./types";
@@ -38,7 +37,6 @@ export class BracketGenerator {
     const winnersBracket = WinnersBracketGenerator.generateWinnersBracket(
       bracketId,
       seedTeams,
-      bracketSize,
       matchMap
     );
     
@@ -67,7 +65,7 @@ export class BracketGenerator {
     // Generate play-in matches if needed
     let teamsForBracket = seedTeams;
     if (seedTeams.length > bracketSize) {
-      const playInResult = PlayInGenerator.generatePlayInMatches(
+      const playInResult = PlayInGenerator.createPlayInMatches(
         bracketId,
         seedTeams,
         bracketSize,
@@ -80,7 +78,6 @@ export class BracketGenerator {
     const winnersBracket = WinnersBracketGenerator.generateWinnersBracket(
       bracketId,
       teamsForBracket,
-      bracketSize,
       matchMap
     );
     
