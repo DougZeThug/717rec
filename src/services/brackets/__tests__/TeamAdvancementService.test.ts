@@ -78,7 +78,8 @@ describe('TeamAdvancementService', () => {
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
       expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team1_id: teamId });
-      expect(supabase.from('playoff_matches').update().eq('id', matchId)).toBeDefined();
+      // Fix: Pass an argument to eq() method
+      expect(supabase.from('playoff_matches').update().eq).toHaveBeenCalledWith('id', matchId);
     });
     
     it('should advance team to team2 slot when team1 is already filled', async () => {
@@ -131,7 +132,8 @@ describe('TeamAdvancementService', () => {
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
       expect(supabase.from('playoff_matches').update).toHaveBeenCalledWith({ team2_id: teamId });
-      expect(supabase.from('playoff_matches').update().eq('id', matchId)).toBeDefined();
+      // Fix: Pass an argument to eq() method
+      expect(supabase.from('playoff_matches').update().eq).toHaveBeenCalledWith('id', matchId);
     });
     
     it('should throw DatabaseOperationError when match fetch fails', async () => {
