@@ -47,7 +47,15 @@ describe('PlayoffDatabaseAdapter', () => {
       team2Id: 'team2',
       team1Seed: 1,
       team2Seed: 2,
-      status: 'pending'
+      status: 'pending',
+      // Add missing properties to fix TS errors
+      team1Score: null,
+      team2Score: null,
+      bestOf: 3,
+      winnerId: null,
+      loserId: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null
     }];
     
     // Act
@@ -70,7 +78,15 @@ describe('PlayoffDatabaseAdapter', () => {
       team2Id: 'team2',
       team1Seed: 1,
       team2Seed: 2,
-      status: 'pending'
+      status: 'pending',
+      // Add missing properties to fix TS errors
+      team1Score: null,
+      team2Score: null,
+      bestOf: 3,
+      winnerId: null,
+      loserId: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null
     }];
     
     vi.mocked(facade.getBracketMatches).mockResolvedValueOnce(expectedMatches);
@@ -83,5 +99,82 @@ describe('PlayoffDatabaseAdapter', () => {
     expect(result).toBe(expectedMatches);
   });
 
-  // Add more tests for other methods as needed
+  // Add more tests for the Adapter methods
+  it('should call facade.savePlayoffGames when savePlayoffGames is called', async () => {
+    // Arrange
+    const games = [{ 
+      id: '1', 
+      matchId: 'match1', 
+      gameNumber: 1,
+      team1Score: 21,
+      team2Score: 18,
+      winnerId: 'team1'
+    }];
+    
+    // Act
+    await PlayoffDatabaseAdapter.savePlayoffGames(games);
+    
+    // Assert
+    expect(facade.savePlayoffGames).toHaveBeenCalledWith(games);
+  });
+
+  it('should call facade.recordMatchResult when recordMatchResult is called', async () => {
+    // Arrange
+    const matchResult = {
+      matchId: 'match1',
+      winnerId: 'team1',
+      loserId: 'team2',
+      team1Score: 2,
+      team2Score: 1,
+      games: [{ 
+        id: '1', 
+        matchId: 'match1', 
+        gameNumber: 1,
+        team1Score: 21,
+        team2Score: 18,
+        winnerId: 'team1'
+      }]
+    };
+    
+    // Act
+    await PlayoffDatabaseAdapter.recordMatchResult(matchResult);
+    
+    // Assert
+    expect(facade.recordMatchResult).toHaveBeenCalledWith(matchResult);
+  });
+
+  it('should call facade.markTournamentComplete when markTournamentComplete is called', async () => {
+    // Arrange
+    const bracketId = 'bracket1';
+    const championId = 'team1';
+    
+    // Act
+    await PlayoffDatabaseAdapter.markTournamentComplete(bracketId, championId);
+    
+    // Assert
+    expect(facade.markTournamentComplete).toHaveBeenCalledWith(bracketId, championId);
+  });
+
+  it('should call facade.getBracketState when getBracketState is called', async () => {
+    // Arrange
+    const bracketId = 'bracket1';
+    const expectedState = {
+      isWinnersBracketComplete: true,
+      isLosersBracketComplete: false,
+      isResetMatchNeeded: false,
+      isComplete: false,
+      winnersBracketChampionId: 'team1',
+      losersBracketChampionId: null,
+      championId: null
+    };
+    
+    vi.mocked(facade.getBracketState).mockResolvedValueOnce(expectedState);
+    
+    // Act
+    const result = await PlayoffDatabaseAdapter.getBracketState(bracketId);
+    
+    // Assert
+    expect(facade.getBracketState).toHaveBeenCalledWith(bracketId);
+    expect(result).toEqual(expectedState);
+  });
 });
