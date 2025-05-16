@@ -16,13 +16,18 @@ export type {
 
 // Re-export types that would be ambiguous if exported from both modules
 // Creating explicit named exports to resolve ambiguity
-export { 
+export type { 
   BracketMatch, 
   BracketGenerationResult, 
   MatchType, 
   PlayInResult,
   SeedTeam
 } from './types';
+
+// Explicitly handle ambiguous types by using a namespace or renaming
+export { BracketState as BracketStateType } from './database/types';
+export { MatchResult as DatabaseMatchResult } from './database/types';
+export { PlayoffMatch as DatabasePlayoffMatch } from './database/types';
 
 // Re-export classes and function exports
 export * from './BracketGenerator';
