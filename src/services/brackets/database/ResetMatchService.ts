@@ -48,7 +48,7 @@ export class ResetMatchService {
     };
 
     // Save the reset match to the database
-    await this.matchesRepository.saveMatch(resetMatch);
+    await this.matchesRepository.saveMatches([resetMatch]); // Fixed: using saveMatches instead of saveMatch
 
     return resetMatch;
   }

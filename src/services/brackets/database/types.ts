@@ -1,15 +1,15 @@
 
-import { PlayoffMatchType, PlayoffGame } from "../types";
+import { PlayoffMatchType, PlayoffGame, PlayoffMatch } from "../types";
 
 export class DatabaseOperationError extends Error {
   public operation: string;
   public originalError: Error;
 
-  constructor(operation: string, message: string, originalError: Error) {
+  constructor(operation: string, message: string, originalError?: Error) {
     super(message);
     this.name = "DatabaseOperationError";
     this.operation = operation;
-    this.originalError = originalError;
+    this.originalError = originalError as Error;
   }
 }
 
@@ -72,7 +72,7 @@ export interface ITeamAdvancementService {
 }
 
 export interface IResetMatchService {
-  createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<string>;
+  createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch>; // Changed return type to PlayoffMatch
 }
 
 export interface IMatchResultService {

@@ -1,17 +1,17 @@
 
 import { nanoid } from "nanoid";
 import { BracketMatch, PlayoffMatch, PlayoffMatchType } from "../types";
-import { BaseBracketLinker } from "./BaseBracketLinker";
-import { LinkingUtils } from "./utils/LinkingUtils";
-import { BracketLinkingUtils } from "./utils/BracketLinkingUtils";
+import { MatchTypeAdapter } from "../utils/TypeAdapter";
+import { AbstractBracketLinker } from "./base/AbstractBracketLinker";
 import { IFinalsGenerator } from "./types/MatchLinkingTypes";
 import { PlayoffFinalsGenerator } from "./utils/FinalsGeneratorUtils";
+import { ConnectionCalculator, MatchOrganizer, PositionResolver } from "./utils/BracketLinkingUtilities";
 
 /**
  * Specialized linker for playoff brackets that handles the complexities
  * of double elimination brackets with true finals format
  */
-export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
+export class PlayoffBracketLinker extends AbstractBracketLinker<PlayoffMatch> {
   private roundLabels: Record<string, string>;
   private finalsGenerator: IFinalsGenerator<PlayoffMatch>;
   
@@ -93,8 +93,13 @@ export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
    */
   linkMatches(matches: PlayoffMatch[], rounds: number): void {
     // Extract play-in matches and first round matches
-    const playInMatches = matches.filter(m => m.matchType === "play-in" || m.matchType === "play-in-2");
-    const firstRoundMatches = matches.filter(m => m.matchType === "winners" && m.round === 1);
+    const playInMatches = matches.filter(m => 
+      m.matchType === "play-in" || m.matchType === "play-in-2"
+    );
+    
+    const firstRoundMatches = matches.filter(m => 
+      m.matchType === "winners" && m.round === 1
+    );
     
     // Link play-in matches if any exist
     if (playInMatches.length > 0) {
@@ -115,19 +120,73 @@ export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
    */
   linkWinnersBracket(matches: PlayoffMatch[], rounds: number): void {
     // Organize matches by round
-    const winnersByRound = LinkingUtils.organizeMatchesByRound('winners', matches);
+    const winnersByRound = MatchOrganizer.organizeByRound('winners', matches);
     
     // Link each round to the next
     for (let round = 1; round < rounds; round++) {
       const currentRoundMatches = winnersByRound[round] || [];
       const nextRoundMatches = winnersByRound[round + 1] || [];
       
-      BracketLinkingUtils.linkMatchesToNextRound(currentRoundMatches, nextRoundMatches);
-      this.linkWinnersToLosers(currentRoundMatches, matches, round);
+      currentRoundMatches.forEach((match, idx) => {
+        // Link to next round
+        const nextPos = PositionResolver.calculateNextRoundPosition(match.position);
+        const nextMatch = nextRoundMatches.find(m => m.position === nextPos);
+        
+        if (nextMatch) {
+          match.nextWinMatchId = nextMatch.id;
+        }
+        
+        // Link to losers bracket
+        this.linkWinnerMatchToLosersBracket(match, matches, round);
+      });
     }
     
     // Link final winners bracket match to grand finals
-    BracketLinkingUtils.linkWinnersFinalToGrandFinals(matches, rounds);
+    this.linkWinnersFinalToGrandFinals(matches, rounds);
+  }
+  
+  /**
+   * Link a winner's bracket match loser to losers bracket
+   */
+  private linkWinnerMatchToLosersBracket(
+    winnerMatch: PlayoffMatch,
+    allMatches: PlayoffMatch[],
+    round: number
+  ): void {
+    const loserRound = ConnectionCalculator.calculateLoserDestinationRound(round);
+    const loserPosition = ConnectionCalculator.calculateLoserDestinationPosition(
+      winnerMatch.position, round
+    );
+    
+    const loserMatches = allMatches.filter(m => 
+      m.matchType === 'losers' && m.round === loserRound
+    );
+    
+    const destination = loserMatches.find(m => m.position === loserPosition);
+    
+    if (destination) {
+      winnerMatch.nextLoseMatchId = destination.id;
+    }
+  }
+  
+  /**
+   * Link winners final to grand finals
+   */
+  private linkWinnersFinalToGrandFinals(
+    matches: PlayoffMatch[],
+    rounds: number
+  ): void {
+    const winnersFinal = matches.find(m => 
+      m.matchType === 'winners' && m.round === rounds && m.position === 1
+    );
+    
+    const grandFinal = matches.find(m => 
+      m.matchType === 'finals' && m.round === 1 && m.position === 1
+    );
+    
+    if (winnersFinal && grandFinal) {
+      winnersFinal.nextWinMatchId = grandFinal.id;
+    }
   }
   
   /**
@@ -135,26 +194,6 @@ export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
    * @param winnersMatches - Matches from winners bracket
    * @param allMatches - All bracket matches
    * @param winnerRound - Current round number in winners bracket
-   */
-  private linkWinnersToLosers(
-    winnersMatches: PlayoffMatch[], 
-    allMatches: PlayoffMatch[],
-    winnerRound: number
-  ): void {
-    winnersMatches.forEach(match => {
-      const loserDestination = this.findLoserDestination(winnerRound, match.position, allMatches);
-      if (loserDestination) {
-        match.nextLoseMatchId = loserDestination.id;
-      }
-    });
-  }
-  
-  /**
-   * Find the appropriate losers bracket match for a winner's bracket loser
-   * @param winnerRound - Round in winners bracket
-   * @param position - Position in winners bracket round
-   * @param matches - All bracket matches
-   * @returns Destination match in losers bracket or null
    */
   private findLoserDestination(
     winnerRound: number, 
@@ -164,10 +203,10 @@ export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
     // Find appropriate losers bracket match based on round and position
     const loserMatches = matches.filter(m => m.matchType === 'losers');
     
-    const loserRound = LinkingUtils.calculateLoserDestinationRound(winnerRound);
+    const loserRound = ConnectionCalculator.calculateLoserDestinationRound(winnerRound);
     const destinations = loserMatches.filter(m => m.round === loserRound);
     
-    const loserPosition = LinkingUtils.calculateLoserDestinationPosition(position, winnerRound);
+    const loserPosition = ConnectionCalculator.calculateLoserDestinationPosition(position, winnerRound);
     
     return destinations.find(m => m.position === loserPosition) || null;
   }
@@ -179,7 +218,7 @@ export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
    */
   linkLosersBracket(matches: PlayoffMatch[], rounds: number): void {
     // Organize matches by round
-    const losersByRound = LinkingUtils.organizeMatchesByRound('losers', matches);
+    const losersByRound = MatchOrganizer.organizeByRound('losers', matches);
     
     // Calculate the maximum loser round
     const maxLoserRound = Math.max(
@@ -192,11 +231,39 @@ export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
       const currentRoundMatches = losersByRound[round] || [];
       const nextRoundMatches = losersByRound[round + 1] || [];
       
-      BracketLinkingUtils.linkMatchesToNextRound(currentRoundMatches, nextRoundMatches);
+      currentRoundMatches.forEach((match, idx) => {
+        // Link to next round
+        const nextPos = PositionResolver.calculateNextRoundPosition(match.position);
+        const nextMatch = nextRoundMatches.find(m => m.position === nextPos);
+        
+        if (nextMatch) {
+          match.nextWinMatchId = nextMatch.id;
+        }
+      });
     }
     
     // Link the final losers bracket match to the grand finals
-    BracketLinkingUtils.linkLosersFinalToGrandFinals(matches, maxLoserRound);
+    this.linkLosersFinalToGrandFinals(matches, maxLoserRound);
+  }
+
+  /**
+   * Link losers final to grand finals
+   */
+  private linkLosersFinalToGrandFinals(
+    matches: PlayoffMatch[],
+    maxLoserRound: number
+  ): void {
+    const losersFinal = matches.find(m => 
+      m.matchType === 'losers' && m.round === maxLoserRound && m.position === 1
+    );
+    
+    const grandFinal = matches.find(m => 
+      m.matchType === 'finals' && m.round === 1 && m.position === 1
+    );
+    
+    if (losersFinal && grandFinal) {
+      losersFinal.nextWinMatchId = grandFinal.id;
+    }
   }
   
   /**

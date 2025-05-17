@@ -40,6 +40,8 @@ export * from './generators/PlayoffBracketGenerator';
 export * from './utils/BracketSizeCalculator';
 export * from './utils/TeamSeeding';
 export * from './utils/ScoreParser';
+export * from './utils/TypeAdapter';
+
 // Export the DatabaseAdapter from the root directory (not the one in database folder)
 export { DatabaseAdapter } from './DatabaseAdapter';
 // Export PlayoffDatabaseAdapter from the correct location
@@ -48,9 +50,11 @@ export * from './database';
 
 // Export our new linker implementations and interfaces
 export * from './linkers/IBracketLinker';
-export * from './linkers/BaseBracketLinker';
+export * from './linkers/interfaces/BracketLinkerInterfaces';
+export * from './linkers/base/AbstractBracketLinker';
+export * from './linkers/implementations/StandardBracketLinker';
 export * from './linkers/PlayoffBracketLinker';
 export * from './linkers/utils/LinkingUtils';
-export * from './linkers/utils/BracketLinkingUtils';
+export * from './linkers/utils/BracketLinkingUtilities';
 export * from './linkers/utils/FinalsGeneratorUtils';
 export * from './linkers/types/MatchLinkingTypes';

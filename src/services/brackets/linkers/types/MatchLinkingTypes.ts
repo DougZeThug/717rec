@@ -1,5 +1,6 @@
 
 import { BracketMatch, MatchType, PlayoffMatch, PlayoffMatchType } from "../../types";
+import { MatchTypeAdapter } from "../../utils/TypeAdapter";
 
 /**
  * Types and interfaces for bracket linking operations
@@ -16,7 +17,7 @@ export interface IMatchMapper<TMatch extends BracketMatch> {
    * @param round Round number
    * @param position Position in the round
    */
-  addMatch(match: TMatch, matchType: MatchType | PlayoffMatchType, round: number, position: number): void;
+  addMatch(match: TMatch, matchType: string, round: number, position: number): void;
   
   /**
    * Get a match from the match map
@@ -25,7 +26,7 @@ export interface IMatchMapper<TMatch extends BracketMatch> {
    * @param position Position in the round
    * @returns The match or undefined if not found
    */
-  getMatch(matchType: MatchType | PlayoffMatchType, round: number, position: number): TMatch | undefined;
+  getMatch(matchType: string, round: number, position: number): TMatch | undefined;
   
   /**
    * Create a key for a match in the matchMap
@@ -34,7 +35,7 @@ export interface IMatchMapper<TMatch extends BracketMatch> {
    * @param position Position in the round
    * @returns Unique key for the match
    */
-  createKey(matchType: MatchType | PlayoffMatchType, round: number, position: number): string;
+  createKey(matchType: string, round: number, position: number): string;
 }
 
 /**
@@ -85,7 +86,7 @@ export interface IFinalsGenerator<TMatch extends BracketMatch> {
  * @param match The match to check
  * @returns True if it's a PlayoffMatch
  */
-export function isPlayoffMatch(match: BracketMatch): match is PlayoffMatch {
+export function isPlayoffMatch(match: any): match is PlayoffMatch {
   return 'team1Score' in match && 'team2Score' in match;
 }
 
@@ -95,8 +96,5 @@ export function isPlayoffMatch(match: BracketMatch): match is PlayoffMatch {
  * @returns The standard MatchType
  */
 export function toMatchType(matchType: PlayoffMatchType): MatchType {
-  if (matchType === 'play-in-2') {
-    return 'play-in';
-  }
-  return matchType as MatchType;
+  return MatchTypeAdapter.toStandardMatchType(matchType);
 }

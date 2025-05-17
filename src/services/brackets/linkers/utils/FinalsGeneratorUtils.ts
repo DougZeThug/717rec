@@ -1,7 +1,8 @@
 
 import { nanoid } from "nanoid";
-import { BracketMatch, MatchType, PlayoffMatch } from "../../types";
+import { BracketMatch, MatchType, PlayoffMatch, PlayoffMatchType } from "../../types";
 import { IFinalsGenerator } from "../types/MatchLinkingTypes";
+import { MatchTypeAdapter } from "../../utils/TypeAdapter";
 
 /**
  * Base class for finals generation functionality
@@ -56,7 +57,7 @@ export class FinalsGenerator<TMatch extends BracketMatch> implements IFinalsGene
       id: nanoid(),
       round,
       position: 1,
-      matchType: "finals",
+      matchType: "finals" as MatchType,
       team1Id: null,
       team2Id: null,
       team1Seed: null,
@@ -65,7 +66,7 @@ export class FinalsGenerator<TMatch extends BracketMatch> implements IFinalsGene
       nextLoseMatchId: null,
       winnerId: null,
       bracket_id: this.bracketId
-    } as TMatch;
+    } as unknown as TMatch;
   }
 }
 
@@ -83,7 +84,7 @@ export class PlayoffFinalsGenerator extends FinalsGenerator<PlayoffMatch> {
       id: nanoid(),
       round,
       position: 1,
-      matchType: "finals",
+      matchType: "finals" as PlayoffMatchType,
       bracket_id: this.bracketId,
       team1Id: null,
       team2Id: null,

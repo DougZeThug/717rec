@@ -96,7 +96,8 @@ export class PlayoffDatabaseFacade {
    * Create reset match if needed
    */
   async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<string> {
-    return this.resetMatchService.createResetMatch(bracketId, team1Id, team2Id);
+    const resetMatch = await this.resetMatchService.createResetMatch(bracketId, team1Id, team2Id);
+    return resetMatch.id; // Return the match ID as a string
   }
   
   /**
