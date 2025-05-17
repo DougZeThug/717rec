@@ -1,4 +1,3 @@
-
 import { nanoid } from "nanoid";
 import { PlayoffMatch } from "../types";
 import { BaseBracketGenerator } from "./BaseBracketGenerator";
@@ -54,12 +53,6 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
       matchMap[key] = match;
     });
     
-    // Link play-in matches to first round
-    const playInMatches = matches.filter(m => m.matchType === "play-in");
-    const firstRoundMatches = matches.filter(m => m.matchType === "winners" && m.round === 1);
-    
-    this.linker.linkPlayInMatches(playInMatches, firstRoundMatches);
-    
     // Calculate the number of rounds in the winners bracket
     const winnerRounds = Math.log2(this.bracketSize);
     
@@ -68,6 +61,13 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
     
     // Link losers bracket matches
     this.linker.linkLosersBracket(matches, winnerRounds);
+    
+    // Link play-in matches if they exist
+    const playInMatches = matches.filter(m => m.matchType === "play-in" || m.matchType === "play-in-2");
+    
+    if (playInMatches.length > 0) {
+      this.linker.linkPlayInMatches(matches);
+    }
   }
   
   /**

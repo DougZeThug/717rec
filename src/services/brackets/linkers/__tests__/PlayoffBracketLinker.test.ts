@@ -74,7 +74,7 @@ describe("PlayoffBracketLinker", () => {
         createTestMatch(1, 3) // Not linked to play-in
       ];
       
-      linker.linkPlayInMatches([playInMatch1, playInMatch2], [firstRoundMatch1, firstRoundMatch2]);
+      linker.linkPlayInMatches(matches);
       
       expect(playInMatch1.nextWinMatchId).toBe(firstRoundMatch1.id);
       expect(playInMatch2.nextWinMatchId).toBe(firstRoundMatch2.id);
@@ -86,7 +86,8 @@ describe("PlayoffBracketLinker", () => {
       const playInMatch = createTestMatch(0, 3, "play-in");
       const firstRoundMatch = createTestMatch(1, 1);
       
-      linker.linkPlayInMatches([playInMatch], [firstRoundMatch]);
+      const matches = [playInMatch, firstRoundMatch];
+      linker.linkPlayInMatches(matches);
       
       expect(playInMatch.nextWinMatchId).toBeNull();
     });
@@ -160,7 +161,9 @@ describe("PlayoffBracketLinker", () => {
       // Finals match
       const finalsMatch = createTestMatch(1, 1, "finals");
       
-      linker.linkLosersBracket([...losersMatches, finalsMatch], 3);
+      const matches = [...losersMatches, finalsMatch];
+      
+      linker.linkLosersBracket(matches, 3);
       
       // Check that each losers match links to the next round
       expect(losersMatches[0].nextWinMatchId).toBe(losersMatches[2].id);

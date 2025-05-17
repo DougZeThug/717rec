@@ -1,22 +1,23 @@
 
 import { nanoid } from "nanoid";
-import { BracketMatch, PlayoffMatch, PlayoffMatchType } from "../types";
+import { BracketMatch, PlayoffMatch, PlayoffMatchType, MatchType } from "../types";
 import { MatchTypeAdapter } from "../utils/TypeAdapter";
 import { IBracketConnectionOperations, IMatchMapOperations } from "./interfaces/BracketLinkerInterfaces";
 import { IFinalsGenerator } from "./types/MatchLinkingTypes";
 import { PlayoffFinalsGenerator } from "./utils/FinalsGeneratorUtils";
 import { ConnectionCalculator, MatchOrganizer, PositionResolver } from "./utils/BracketLinkingUtilities";
+import { AbstractBracketLinker } from "./base/AbstractBracketLinker";
 
 /**
  * Specialized linker for playoff brackets that handles the complexities
  * of double elimination brackets with true finals format
  */
 export class PlayoffBracketLinker 
+  extends AbstractBracketLinker<PlayoffMatch>
   implements IMatchMapOperations<PlayoffMatch>, IBracketConnectionOperations<PlayoffMatch> {
+  
   private roundLabels: Record<string, string>;
   private finalsGenerator: IFinalsGenerator<PlayoffMatch>;
-  private bracketId: string;
-  private matchMap: Record<string, PlayoffMatch>;
   
   /**
    * Create a new PlayoffBracketLinker instance
@@ -27,18 +28,9 @@ export class PlayoffBracketLinker
     bracketId: string,
     matchMap: Record<string, PlayoffMatch> = {}
   ) {
-    this.bracketId = bracketId;
-    this.matchMap = matchMap;
+    super(bracketId, matchMap);
     this.roundLabels = this.generateRoundLabels();
     this.finalsGenerator = new PlayoffFinalsGenerator(bracketId, matchMap);
-  }
-
-  /**
-   * Get the map of all matches
-   * @returns Match map
-   */
-  getMatchMap(): Record<string, PlayoffMatch> {
-    return this.matchMap;
   }
   
   /**

@@ -54,7 +54,7 @@ export type {
   IMatchMapOperations,
   IBracketConnectionOperations
 } from './linkers/interfaces/BracketLinkerInterfaces';
-export type * from './linkers/base/AbstractBracketLinker';
+export * from './linkers/base/AbstractBracketLinker';
 export * from './linkers/implementations/StandardBracketLinker';
 export * from './linkers/PlayoffBracketLinker';
 export * from './linkers/utils/LinkingUtils';
