@@ -28,9 +28,6 @@ export interface Team {
   power_score?: number;
   sos?: number;
   division?: string;
-  created_at?: string;
-  win_percentage?: number;
-  game_win_percentage?: number;
 }
 
 export interface Division {
@@ -50,7 +47,6 @@ export interface TeamTimeslot {
   timeslot: string;
   match_date: string;
   team_id: string;
-  teams?: Team;
 }
 
 export interface Match {
@@ -66,7 +62,6 @@ export interface Match {
   winner_id?: string;
   winnerId?: string;
   loser_id?: string;
-  loserId?: string;
   date?: string;
   timeSlot?: string;
   location?: string;
@@ -123,7 +118,7 @@ export interface PlayoffMatch {
 
 export interface PlayoffGame {
   id: string;
-  matchId?: string;
+  matchId: string;
   gameNumber: number;
   team1Score: number;
   team2Score: number;
@@ -184,8 +179,6 @@ export interface Ranking {
   previousRank?: number;
   headToHead?: HeadToHeadEntry[];
   closeMatchLosses?: number;
-  logoUrl?: string;
-  imageUrl?: string;
 }
 
 export type {

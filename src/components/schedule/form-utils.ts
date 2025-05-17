@@ -1,62 +1,80 @@
 
-import { Match } from "@/types";
+import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezoneUtils';
 
+/**
+ * Format a date object for use in an HTML date input
+ */
+export const formatDateForInput = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+/**
+ * Create a date with the selected time slot, properly converted to UTC for storage
+ */
 export const createDateWithTime = (date: Date, timeSlot: string | null): Date => {
-  if (!timeSlot) return date;
-  
-  const newDate = new Date(date);
-  const [hourStr, minuteStr] = timeSlot.split(':');
-  const hour = parseInt(hourStr, 10);
-  
-  // Handle "PM" or "AM" suffix if present
-  let adjustedHour = hour;
-  if (timeSlot.includes('PM') && hour < 12) {
-    adjustedHour = hour + 12;
-  } else if (timeSlot.includes('AM') && hour === 12) {
-    adjustedHour = 0;
+  if (!timeSlot) {
+    console.log("🌐 No time slot provided, returning date with default time");
+    return date;
   }
   
-  // Get minutes, handling potential "PM" suffix
-  let minutes = 0;
-  if (minuteStr) {
-    const minutePart = minuteStr.split(' ')[0];
-    minutes = parseInt(minutePart, 10);
-  }
+  console.log("🌐 Creating date with time:", {
+    date: date.toString(),
+    timeSlot,
+    action: "Converting to UTC for storage"
+  });
   
-  newDate.setHours(adjustedHour, minutes, 0, 0);
-  return newDate;
+  // Use our fixed utility to handle time conversion properly
+  const utcDate = createUTCDateWithTime(date, timeSlot);
+  
+  // Add extra validation logging
+  console.log("🌐 Time conversion complete:", {
+    originalTimeSlot: timeSlot,
+    resultTime: utcDate.toISOString(),
+    utcHours: utcDate.getUTCHours(),
+    utcMinutes: utcDate.getUTCMinutes()
+  });
+  
+  return utcDate;
 };
 
+/**
+ * Get time slot from a date object, converting from UTC to local time
+ */
 export const getTimeSlotFromDate = (date: Date): string | null => {
-  if (!date) return null;
-  
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  
-  // Format as 12-hour time with AM/PM
-  let hour = hours % 12;
-  if (hour === 0) hour = 12;
-  const amPm = hours < 12 ? 'AM' : 'PM';
-  
-  return `${hour}:${minutes.toString().padStart(2, '0')} ${amPm}`;
+  return formatUTCToLocalTimeString(date);
 };
 
+/**
+ * Calculate winner and loser IDs based on team scores
+ */
 export const determineMatchOutcome = (
   isCompleted: boolean,
   team1Id: string,
   team2Id: string,
-  team1Score?: number,
-  team2Score?: number
-): { winner_id: string | undefined; loser_id: string | undefined } => {
+  team1Score: number | undefined,
+  team2Score: number | undefined
+): { winnerId?: string, loserId?: string } => {
   if (!isCompleted || team1Score === undefined || team2Score === undefined) {
-    return { winner_id: undefined, loser_id: undefined };
+    return {};
   }
   
   if (team1Score > team2Score) {
-    return { winner_id: team1Id, loser_id: team2Id };
+    return { winnerId: team1Id, loserId: team2Id };
   } else if (team2Score > team1Score) {
-    return { winner_id: team2Id, loser_id: team1Id };
+    return { winnerId: team2Id, loserId: team1Id };
   }
   
-  return { winner_id: undefined, loser_id: undefined };
+  return {};
+};
+
+/**
+ * Determine if a match time is in the evening
+ * This helps with UI display to indicate which matches may appear on different UTC days
+ */
+export const isEveningMatch = (date: Date): boolean => {
+  if (!date) return false;
+  
+  const hours = date.getHours();
+  // Consider matches after 6pm to be "evening" matches
+  return hours >= 18; 
 };

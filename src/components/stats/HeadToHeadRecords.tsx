@@ -15,14 +15,12 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ headToHead }) => 
     <div className="space-y-2 p-2">
       <h4 className="font-medium text-sm">Head-to-Head Records</h4>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-        {Object.values(headToHead).flatMap(entries => 
-          entries.map(record => (
-            <div key={record.opponentName} className="border rounded p-2 bg-gray-50">
-              <span className="font-medium">vs. {record.opponentName}: </span>
-              <span>{record.wins}–{record.losses}</span>
-            </div>
-          ))
-        )}
+        {Object.values(headToHead).map((record) => (
+          <div key={record.opponentName} className="border rounded p-2 bg-gray-50">
+            <span className="font-medium">vs. {record.opponentName}: </span>
+            <span>{record.wins}–{record.losses}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
