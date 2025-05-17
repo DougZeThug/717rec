@@ -105,10 +105,19 @@ export class PlayoffBracketLinker
   
   /**
    * Link play-in matches to the main bracket
-   * @param playInMatches - Array of play-in matches
-   * @param firstRoundMatches - Array of first round matches in winners bracket
+   * @param matches All bracket matches
    */
-  linkPlayInMatches(playInMatches: PlayoffMatch[], firstRoundMatches: PlayoffMatch[]): void {
+  linkPlayInMatches(matches: PlayoffMatch[]): void {
+    // Extract play-in matches and first round matches
+    const playInMatches = matches.filter(m => 
+      m.matchType === "play-in" || m.matchType === "play-in-2"
+    );
+    
+    const firstRoundMatches = matches.filter(m => 
+      m.matchType === "winners" && m.round === 1
+    );
+    
+    // Link each play-in match to its target match in first round
     playInMatches.forEach(playInMatch => {
       const targetMatch = this.findTargetMatchForPlayIn(playInMatch, firstRoundMatches);
       if (targetMatch) {
@@ -150,7 +159,7 @@ export class PlayoffBracketLinker
     
     // Link play-in matches if any exist
     if (playInMatches.length > 0) {
-      this.linkPlayInMatches(playInMatches, firstRoundMatches);
+      this.linkPlayInMatches(matches);
     }
     
     // Link winners bracket
@@ -329,10 +338,9 @@ export class PlayoffBracketLinker
     
     // Link play-in matches if they exist
     const playInMatches = matches.filter(m => m.matchType === "play-in" || m.matchType === "play-in-2");
-    const firstRoundMatches = matches.filter(m => m.matchType === "winners" && m.round === 1);
     
     if (playInMatches.length > 0) {
-      this.linkPlayInMatches(playInMatches, firstRoundMatches);
+      this.linkPlayInMatches(matches);
     }
   }
   

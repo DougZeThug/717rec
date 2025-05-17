@@ -50,11 +50,11 @@ export * from './database';
 
 // Export our linker interfaces and implementations
 // But avoid duplicate exports for IBracketLinker
-export { 
+export type { 
   IMatchMapOperations,
   IBracketConnectionOperations
 } from './linkers/interfaces/BracketLinkerInterfaces';
-export * from './linkers/base/AbstractBracketLinker';
+export type * from './linkers/base/AbstractBracketLinker';
 export * from './linkers/implementations/StandardBracketLinker';
 export * from './linkers/PlayoffBracketLinker';
 export * from './linkers/utils/LinkingUtils';
