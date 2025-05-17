@@ -1,4 +1,3 @@
-
 import { BracketState, MatchResult, PlayoffGame, PlayoffMatch, PlayoffMatchType } from "../types";
 import { DatabaseMatchResult, DatabasePlayoffMatch } from "./types";
 import { PlayoffDatabaseFacade } from "./PlayoffDatabaseFacade";
@@ -54,6 +53,8 @@ export class PlayoffDatabaseAdapter {
       team2Seed: dbMatch.team2_seed,
       team1Score: dbMatch.team1_score,
       team2Score: dbMatch.team2_score,
+      team1GameWins: dbMatch.team1_game_wins,
+      team2GameWins: dbMatch.team2_game_wins,
       winnerId: dbMatch.winner_id,
       loserId: dbMatch.loser_id,
       nextWinMatchId: dbMatch.next_win_match_id,
@@ -75,7 +76,8 @@ export class PlayoffDatabaseAdapter {
       team2_score: matchResult.team2Score,
       team1_game_wins: matchResult.games?.filter(g => g.winnerId === matchResult.winnerId).length || 0,
       team2_game_wins: matchResult.games?.filter(g => g.winnerId !== matchResult.winnerId).length || 0,
-      completed: true
+      completed: true,
+      games: matchResult.games
     };
   }
 

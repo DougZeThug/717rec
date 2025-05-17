@@ -1,4 +1,3 @@
-
 import { nanoid } from "nanoid";
 import { PlayoffMatch, PlayoffMatchType } from "../types";
 
@@ -199,6 +198,8 @@ export class PlayoffBracketLinker {
       team2Seed: null,
       team1Score: null,
       team2Score: null,
+      team1GameWins: null,
+      team2GameWins: null,
       bestOf: 3,
       winnerId: null,
       loserId: null,
@@ -234,6 +235,8 @@ export class PlayoffBracketLinker {
       team2Seed: null,
       team1Score: null,
       team2Score: null,
+      team1GameWins: null,
+      team2GameWins: null,
       bestOf: 3,
       winnerId: null,
       loserId: null,

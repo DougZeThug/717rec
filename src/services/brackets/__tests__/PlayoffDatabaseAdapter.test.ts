@@ -1,3 +1,4 @@
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { PlayoffDatabaseFacade } from '../database/PlayoffDatabaseFacade';
@@ -50,6 +51,8 @@ describe('PlayoffDatabaseAdapter', () => {
       status: 'pending' as "pending" | "in_progress" | "completed",
       team1Score: null,
       team2Score: null,
+      team1GameWins: null,
+      team2GameWins: null,
       bestOf: 3,
       winnerId: null,
       loserId: null,

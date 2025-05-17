@@ -47,7 +47,7 @@ export class MatchResultService {
         games: matchResult.games
       };
       
-      await this.matchesRepository.updateMatchResult(matchResult.match_id, resultDTO);
+      await this.matchesRepository.updateMatchResult(match.id, resultDTO);
       
       // 2. Save individual game results if they exist
       if (matchResult.games && Array.isArray(matchResult.games) && matchResult.games.length > 0) {
