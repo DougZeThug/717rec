@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch, MatchResult, PlayoffGame } from "./types";
 import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from "./database/types";
@@ -27,11 +28,18 @@ export class DatabaseAdapter {
         team2_seed: match.team2Seed,
       }));
 
+      console.log(`Saving ${dbMatches.length} standard bracket matches to matches table`);
+
       const { error } = await supabase
         .from('matches')
         .insert(dbMatches);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error saving bracket matches:', error);
+        throw error;
+      }
+      
+      console.log('Successfully saved standard bracket matches');
     } catch (error) {
       console.error('Error saving bracket matches:', error);
       throw error;

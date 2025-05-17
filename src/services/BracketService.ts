@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 import { BracketGenerator } from "./brackets";
+import { PlayoffDatabaseAdapter } from "./brackets/database/PlayoffDatabaseAdapter";
 
 interface BracketCreationParams {
   title: string;
@@ -46,12 +47,49 @@ export class BracketService {
     if (format === 'Single Elimination') {
       await this.generateSingleEliminationMatches(bracketId, teamIds);
     } else if (format === 'Double Elimination') {
+      console.log("Creating double elimination bracket with ID:", bracketId);
+      
       // Get the full team objects to work with
       const fullTeams = teams as Team[];
       
-      // Use our modular bracket generator
-      const matches = BracketGenerator.generateDoubleEliminationBracket(bracketId, fullTeams);
-      await BracketGenerator.saveBracketMatches(matches);
+      try {
+        // Use our modular bracket generator to create matches
+        const matches = BracketGenerator.generateDoubleEliminationBracket(bracketId, fullTeams);
+        
+        // Log the number of matches created
+        console.log(`Generated ${matches.length} matches for double elimination bracket`);
+        
+        // ** IMPORTANT CHANGE: Use PlayoffDatabaseAdapter instead of standard DatabaseAdapter **
+        // Convert BracketMatch to PlayoffMatch format and save to playoff_matches table
+        const playoffMatches = matches.map(match => ({
+          id: match.id,
+          bracket_id: match.bracket_id,
+          round: match.round,
+          position: match.position,
+          matchType: match.matchType,
+          team1Id: match.team1Id,
+          team2Id: match.team2Id,
+          team1Score: null,
+          team2Score: null,
+          team1GameWins: null,
+          team2GameWins: null,
+          team1Seed: match.team1Seed,
+          team2Seed: match.team2Seed,
+          winnerId: match.winnerId,
+          loserId: null,
+          nextWinMatchId: match.nextWinMatchId,
+          nextLoseMatchId: match.nextLoseMatchId,
+          bestOf: 3, // Default to best of 3
+          status: "pending"
+        }));
+        
+        // Save matches to playoff_matches table
+        await PlayoffDatabaseAdapter.savePlayoffMatches(playoffMatches);
+        console.log("Successfully saved playoff matches to database");
+      } catch (error) {
+        console.error("Error creating double elimination bracket:", error);
+        throw error;
+      }
     }
     
     return bracketId;
@@ -236,13 +274,45 @@ export class BracketService {
     }
     
     if (bracket.format === 'Double Elimination') {
-      // Use our updated BracketGenerator
-      await BracketGenerator.updateMatchResult(
-        matchId, 
-        winnerId, 
-        team1Score, 
-        team2Score
-      );
+      // ** IMPORTANT CHANGE: Check if this match exists in playoff_matches table **
+      const { data: playoffMatch } = await supabase
+        .from('playoff_matches')
+        .select('id')
+        .eq('id', matchId)
+        .maybeSingle();
+        
+      if (playoffMatch) {
+        // Use PlayoffDatabaseAdapter for playoff matches
+        const team1GameWins = games.filter(game => game.team1Score > game.team2Score).length;
+        const team2GameWins = games.filter(game => game.team2Score > game.team1Score).length;
+        const loserId = match.team1_id === winnerId ? match.team2_id : match.team1_id;
+        
+        await PlayoffDatabaseAdapter.recordMatchResult({
+          matchId,
+          winnerId,
+          loserId,
+          team1Score,
+          team2Score,
+          team1GameWins,
+          team2GameWins,
+          games: games.map((game, index) => ({
+            id: `${matchId}-game-${index + 1}`,
+            matchId,
+            gameNumber: index + 1,
+            team1Score: game.team1Score,
+            team2Score: game.team2Score,
+            winnerId: game.team1Score > game.team2Score ? match.team1_id : match.team2_id
+          }))
+        });
+      } else {
+        // Use our updated BracketGenerator for regular matches
+        await BracketGenerator.updateMatchResult(
+          matchId, 
+          winnerId, 
+          team1Score, 
+          team2Score
+        );
+      }
     } else {
       // Original code for single elimination
       // Update the match
