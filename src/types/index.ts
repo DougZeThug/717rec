@@ -1,188 +1,170 @@
 
-import { MatchFormProps, MatchFormValues, TeamSelectorProps } from "./match";
-
-export interface UserProfile {
-  id: string;
-  user_id?: string;
-  username?: string;
-  full_name?: string;
-  is_admin?: boolean;
-  avatar_url?: string;
-}
-
+// Team related types
 export interface Team {
   id: string;
   name: string;
-  seed?: number;
-  division_id?: string;
-  divisionName?: string;
-  imageUrl?: string;
-  image_url?: string;
-  logo_url?: string;
-  logoUrl?: string;
-  players?: string[];
   wins?: number;
   losses?: number;
   game_wins?: number;
   game_losses?: number;
+  divisionName?: string;
+  division_id?: string;
+  division?: string;
+  imageUrl?: string;
+  logoUrl?: string;
+  players?: string[];
+  seed?: number;
+  challongeParticipantId?: number;
   power_score?: number;
   sos?: number;
-  division?: string;
+  win_percentage?: number;
+  game_win_percentage?: number;
+  created_at?: string;
+  close_match_losses?: number;
 }
 
-export interface Division {
-  id: string;
-  name: string;
-}
-
-export interface TimeSlot {
-  id: string;
-  timeslot: string;
-  match_date: string;
-  team_id: string;
-}
-
-export interface TeamTimeslot {
-  id: string;
-  timeslot: string;
-  match_date: string;
-  team_id: string;
-}
-
+// Match related types
 export interface Match {
   id: string;
   team1Id: string;
   team2Id: string;
   team1Score?: number;
   team2Score?: number;
-  team1_game_wins?: number;
-  team2_game_wins?: number;
-  team1Details?: Team;
-  team2Details?: Team;
-  winner_id?: string;
   winnerId?: string;
-  loser_id?: string;
+  loserId?: string;
   date?: string;
-  timeSlot?: string;
   location?: string;
   iscompleted?: boolean;
+  round_number?: number;
+  position?: number;
+  bracket_id?: string;
+  match_type?: string;
+  next_match_id?: string;
+  next_loser_match_id?: string;
   best_of?: number;
-  status?: "pending" | "in_progress" | "completed" | "postponed" | "canceled";
+  team1_game_wins?: number;
+  team2_game_wins?: number;
+  created_at?: string;
+  status?: "postponed" | "canceled" | null; // Added status property
+  timeSlot?: string | null; // Added timeSlot property
+  team1Details?: {
+    team_id: string;
+    name: string;
+    image_url: string | null;
+    logo_url: string | null;
+    divisionName: string | null;
+  } | null;
+  team2Details?: {
+    team_id: string;
+    name: string;
+    image_url: string | null;
+    logo_url: string | null;
+    divisionName: string | null;
+  } | null;
 }
 
-export interface Message {
-  id: string;
-  user_id: string;
-  content: string;
-  username: string;
-  team_id?: string;
-  team_name?: string;
-  created_at: string;
-  updated_at?: string;
-  is_edited?: boolean;
-  category?: string;
-}
-
-export interface MessageReaction {
-  id: string;
-  message_id: string;
-  user_id: string;
-  emoji: string;
-}
-
-export interface MessageCategory {
-  value: string;
-  label: string;
-  description?: string;
-}
-
-export interface PlayoffMatch {
-  id: string;
-  round: number;
-  position: number;
-  matchType: "winners" | "losers" | "finals" | "play-in" | "play-in-2";
-  team1Id: string | null;
-  team2Id: string | null;
-  team1Seed: number | null;
-  team2Seed: number | null;
-  team1Score: number | null;
-  team2Score: number | null;
-  winnerId: string | null;
-  loserId: string | null;
-  nextWinMatchId: string | null;
-  nextLoseMatchId: string | null;
-  bestOf: number;
-  status: "pending" | "in_progress" | "completed";
-  games?: PlayoffGame[];
-}
-
-export interface PlayoffGame {
-  id: string;
-  matchId: string;
-  gameNumber: number;
-  team1Score: number;
-  team2Score: number;
-  winnerId: string | null;
-  winner?: "team1Id" | "team2Id" | null;
-}
-
-export interface PlayoffBracket {
-  id: string;
-  title: string;
-  name?: string;
-  format: string;
-  division?: string;
-  matches: PlayoffMatch[];
-  state?: BracketState;
-  champion?: string;
-}
-
-export interface BracketState {
-  isWinnersBracketComplete: boolean;
-  isLosersBracketComplete: boolean;
-  isResetMatchNeeded: boolean;
-  isComplete: boolean;
-  winnersBracketChampionId: string | null;
-  losersBracketChampionId: string | null;
-  championId: string | null;
-}
-
-// Rankings types
+// Head to Head types
 export interface HeadToHeadEntry {
-  opponentId: string;
   opponentName: string;
   wins: number;
   losses: number;
 }
 
 export interface HeadToHeadMap {
-  [teamId: string]: HeadToHeadEntry[];
+  [teamId: string]: HeadToHeadEntry;
 }
 
+// Rankings related types
 export interface Ranking {
   teamId: string;
   teamName: string;
-  divisionId?: string;
-  divisionName?: string;
+  logoUrl?: string | null;
+  imageUrl?: string | null;
   wins: number;
   losses: number;
+  winPercentage: number;
   gamesWon: number;
   gamesLost: number;
-  winPercentage: number;
   gameWinPercentage: number;
-  streak?: string;
   sos: number;
   powerScore: number;
-  rank?: number;
-  divisionRank?: number;
+  streak?: string;
   rankChange?: number;
   previousRank?: number;
-  headToHead?: HeadToHeadEntry[];
-  closeMatchLosses?: number;
+  divisionName?: string | null;
+  headToHead: HeadToHeadMap;
+  closeMatchLosses: number;
+  divisionRank?: number;
 }
 
-export type {
-  MatchFormProps,
-  MatchFormValues,
-  TeamSelectorProps
+// Types for playoff brackets
+export interface PlayoffMatch {
+  id: string;
+  round: number;
+  position: number;
+  team1Id?: string;
+  team2Id?: string;
+  winnerId?: string;
+  loserId?: string;
+  team1Score?: number;
+  team2Score?: number;
+  team1GameWins?: number;
+  team2GameWins?: number;
+  matchType: "winners" | "losers" | "finals" | "play-in";
+  bestOf: number;
+  games?: PlayoffGame[];
+  team1ChallongeId?: number;
+  team2ChallongeId?: number;
+  challongeMatchId?: string;
+  team1Seed?: number;  // New field for seed
+  team2Seed?: number;  // New field for seed
+  nextWinMatchId?: string;  // New field for linking
+  nextLoseMatchId?: string; // New field for linking
 }
+
+export interface PlayoffGame {
+  id: string;
+  team1Score: number;
+  team2Score: number;
+  winner: string;
+}
+
+export interface PlayoffBracket {
+  id: string;
+  name: string;
+  division: string;
+  format: "Single Elimination" | "Double Elimination";
+  matches: PlayoffMatch[];
+  champion?: string;
+  challongeTournamentId?: string;
+  challongeTournamentUrl?: string;
+  state?: "pending" | "underway" | "complete";
+}
+
+// Division type
+export interface Division {
+  id: string;
+  name: string;
+  division_weight?: number;
+  created_at?: string;
+}
+
+// Types for team timeslots
+export interface TeamTimeslot {
+  id: string;
+  match_date: string;
+  timeslot: string;
+  team_id: string;
+  created_at: string;
+  teams?: {
+    id: string;
+    name: string;
+    logo_url?: string | null;
+    image_url?: string | null;
+    divisionName: string | null;
+  };
+}
+
+export * from './chart';
+export * from './match';
+export * from './admin';

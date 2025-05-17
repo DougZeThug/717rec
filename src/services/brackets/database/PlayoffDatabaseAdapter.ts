@@ -1,108 +1,169 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { MatchResult, PlayoffGame } from "../types";
-import { MatchResultService } from "./MatchResultService";
-import { DatabaseMatchResult } from "./types";
+import { BracketState, MatchResult, PlayoffGame, PlayoffMatch, PlayoffMatchType } from "../types";
+import { DatabaseMatchResult, DatabasePlayoffMatch } from "./types";
+import { PlayoffDatabaseFacade } from "./PlayoffDatabaseFacade";
 
 /**
- * Adapter for playoff bracket database operations
+ * Handles database operations for playoff brackets using a facade pattern
+ * for better organization and testability
  */
 export class PlayoffDatabaseAdapter {
+  // Use a static private readonly field for better encapsulation
+  private static readonly facade = new PlayoffDatabaseFacade();
+  
   /**
-   * Convert app MatchResult to database DatabaseMatchResult
+   * Convert PlayoffMatch to DatabasePlayoffMatch
    */
-  static convertToDbMatchResult(matchResult: MatchResult): DatabaseMatchResult {
+  private static convertToDbMatch(match: PlayoffMatch): DatabasePlayoffMatch {
+    return {
+      id: match.id,
+      bracket_id: match.bracket_id,
+      round: match.round,
+      position: match.position,
+      match_type: match.matchType as string,
+      team1_id: match.team1Id,
+      team2_id: match.team2Id,
+      team1_seed: match.team1Seed,
+      team2_seed: match.team2Seed,
+      team1_score: match.team1Score,
+      team2_score: match.team2Score,
+      winner_id: match.winnerId,
+      loser_id: match.loserId,
+      next_win_match_id: match.nextWinMatchId,
+      next_lose_match_id: match.nextLoseMatchId,
+      best_of: match.bestOf,
+      status: match.status
+    };
+  }
+  
+  /**
+   * Convert DatabasePlayoffMatch to PlayoffMatch
+   */
+  private static convertToAppMatch(dbMatch: DatabasePlayoffMatch): PlayoffMatch {
+    return {
+      id: dbMatch.id,
+      bracket_id: dbMatch.bracket_id,
+      round: dbMatch.round,
+      position: dbMatch.position,
+      matchType: dbMatch.match_type as PlayoffMatchType,
+      team1Id: dbMatch.team1_id,
+      team2Id: dbMatch.team2_id,
+      team1Seed: dbMatch.team1_seed,
+      team2Seed: dbMatch.team2_seed,
+      team1Score: dbMatch.team1_score,
+      team2Score: dbMatch.team2_score,
+      winnerId: dbMatch.winner_id,
+      loserId: dbMatch.loser_id,
+      nextWinMatchId: dbMatch.next_win_match_id,
+      nextLoseMatchId: dbMatch.next_lose_match_id,
+      bestOf: dbMatch.best_of || 3,
+      status: dbMatch.status as "pending" | "in_progress" | "completed"
+    };
+  }
+
+  /**
+   * Convert MatchResult to DatabaseMatchResult
+   */
+  private static convertToDbMatchResult(matchResult: MatchResult): DatabaseMatchResult {
     return {
       match_id: matchResult.matchId,
       winner_id: matchResult.winnerId,
       loser_id: matchResult.loserId,
       team1_score: matchResult.team1Score,
       team2_score: matchResult.team2Score,
-      team1_game_wins: matchResult.games?.filter(g => g.winnerId === 'team1Id').length || 0,
-      team2_game_wins: matchResult.games?.filter(g => g.winnerId === 'team2Id').length || 0,
-      completed: true,
-      games: matchResult.games
+      team1_game_wins: matchResult.games?.filter(g => g.winnerId === matchResult.winnerId).length || 0,
+      team2_game_wins: matchResult.games?.filter(g => g.winnerId !== matchResult.winnerId).length || 0,
+      completed: true
     };
   }
 
   /**
-   * Submit a match result and handle bracket advancement
+   * Save playoff matches to the database
    */
-  static async submitMatchResult(matchResult: MatchResult): Promise<void> {
-    try {
-      console.log("Submitting match result:", matchResult);
-      
-      // Convert to database format
-      const dbMatchResult = this.convertToDbMatchResult(matchResult);
-      
-      // Save the match result using the service
-      const matchResultService = new MatchResultService();
-      await matchResultService.recordMatchResult(dbMatchResult);
-      
-      // Save individual games if they exist
-      if (matchResult.games && matchResult.games.length > 0) {
-        await this.savePlayoffGames(matchResult.games);
-      }
-      
-      console.log("Match result submitted successfully");
-    } catch (error) {
-      console.error("Error submitting match result:", error);
-      throw error;
-    }
+  static async savePlayoffMatches(matches: PlayoffMatch[]): Promise<void> {
+    const dbMatches = matches.map(match => this.convertToDbMatch(match));
+    return this.facade.savePlayoffMatches(dbMatches);
   }
-  
+
   /**
    * Save playoff games to the database
    */
-  private static async savePlayoffGames(games: PlayoffGame[]): Promise<void> {
-    try {
-      // Prepare games for database insert
-      const gamesToInsert = games.map(game => ({
-        id: game.id.startsWith('temp-') ? undefined : game.id, // Use undefined to generate new UUID
-        match_id: game.matchId,
-        game_number: game.gameNumber,
-        team1_score: game.team1Score,
-        team2_score: game.team2Score,
-        winner_id: game.winnerId
-      }));
-      
-      // Insert games into database
-      const { error } = await supabase
-        .from('playoff_games')
-        .upsert(gamesToInsert, { onConflict: 'id' });
-      
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error saving playoff games:", error);
-      throw error;
-    }
+  static async savePlayoffGames(games: PlayoffGame[]): Promise<void> {
+    return this.facade.savePlayoffGames(games);
+  }
+
+  /**
+   * Record match result and advance teams in bracket
+   */
+  static async recordMatchResult(matchResult: MatchResult): Promise<void> {
+    const dbMatchResult = this.convertToDbMatchResult(matchResult);
+    return this.facade.recordMatchResult(dbMatchResult);
+  }
+
+  /**
+   * Mark a team as the winners bracket champion
+   */
+  static async markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void> {
+    return this.facade.markWinnersBracketChampion(bracketId, teamId);
+  }
+
+  /**
+   * Set whether a reset match is needed
+   */
+  static async setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void> {
+    return this.facade.setResetMatchNeeded(bracketId, needed);
+  }
+
+  /**
+   * Mark the tournament as complete with a champion
+   */
+  static async markTournamentComplete(bracketId: string, championId: string): Promise<void> {
+    return this.facade.markTournamentComplete(bracketId, championId);
+  }
+
+  /**
+   * Advance a team to the next match
+   */
+  static async advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void> {
+    return this.facade.advanceTeam(nextMatchId, teamId, isWinner);
+  }
+
+  /**
+   * Get all matches for a bracket
+   */
+  static async getBracketMatches(bracketId: string): Promise<PlayoffMatch[]> {
+    const dbMatches = await this.facade.getBracketMatches(bracketId);
+    return dbMatches.map(match => this.convertToAppMatch(match));
+  }
+
+  /**
+   * Get games for a specific match
+   */
+  static async getMatchGames(matchId: string): Promise<PlayoffGame[]> {
+    return this.facade.getMatchGames(matchId);
+  }
+
+  /**
+   * Create reset match if needed
+   */
+  static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<string> {
+    return this.facade.createResetMatch(bracketId, team1Id, team2Id);
   }
   
   /**
-   * Load playoff games for a specific match
+   * Get bracket state information
    */
-  static async loadPlayoffGames(matchId: string): Promise<PlayoffGame[]> {
-    try {
-      const { data, error } = await supabase
-        .from('playoff_games')
-        .select('*')
-        .eq('match_id', matchId)
-        .order('game_number', { ascending: true });
-        
-      if (error) throw error;
-      
-      // Convert to app format
-      return (data || []).map(game => ({
-        id: game.id,
-        matchId: game.match_id,
-        gameNumber: game.game_number,
-        team1Score: game.team1_score,
-        team2Score: game.team2_score,
-        winnerId: game.winner_id
-      }));
-    } catch (error) {
-      console.error("Error loading playoff games:", error);
-      return [];
-    }
+  static async getBracketState(bracketId: string): Promise<BracketState> {
+    const dbState = await this.facade.getBracketState(bracketId);
+    // Convert DatabaseBracketState to BracketState
+    return {
+      isWinnersBracketComplete: dbState.isWinnersBracketComplete,
+      isLosersBracketComplete: dbState.isLosersBracketComplete,
+      isResetMatchNeeded: dbState.isResetMatchNeeded,
+      isComplete: dbState.isComplete,
+      winnersBracketChampionId: dbState.winnersBracketChampionId,
+      losersBracketChampionId: dbState.losersBracketChampionId,
+      championId: dbState.championId
+    };
   }
 }

@@ -1,189 +1,198 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import GamesList from './GamesList';
-import { PlayoffGame } from '@/types';
-import { nanoid } from 'nanoid';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
+import type { PlayoffMatch, Team } from "@/types";
+import { validateGameScore } from "@/hooks/matches/utils/matchValidationUtils";
+import { ChallongeService } from "@/services/ChallongeService";
+import GameScoreRow from "./GameScoreRow";
+import GamesList from "./GamesList";
+import MatchScoreActions from "./MatchScoreActions";
 
 interface MatchScoreEditorProps {
-  matchId: string;
-  bracketId: string;
-  team1Id: string;
-  team2Id: string;
-  team1Name: string;
-  team2Name: string;
-  bestOf: number;
-  onClose?: () => void;
-  onSaveSuccess?: () => void;
+  match: PlayoffMatch;
+  teams: Team[];
+  onSave: (
+    matchId: string,
+    team1Score: number,
+    team2Score: number,
+    games: { team1Score: number; team2Score: number; }[],
+    team1GameWins: number,
+    team2GameWins: number
+  ) => Promise<void>;
+  onCancel: () => void;
+  challongeTournamentId?: string | null;
+  challongeMatchId?: string | null;
 }
 
 const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
-  matchId,
-  bracketId,
-  team1Id,
-  team2Id,
-  team1Name,
-  team2Name,
-  bestOf,
-  onClose,
-  onSaveSuccess
+  match,
+  teams,
+  onSave,
+  onCancel,
+  challongeTournamentId,
+  challongeMatchId
 }) => {
-  const [games, setGames] = useState<PlayoffGame[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [games, setGames] = useState<{ team1Score: number; team2Score: number; }[]>(
+    match.games && match.games.length > 0
+      ? match.games.map(game => ({
+          team1Score: game.team1Score,
+          team2Score: game.team2Score
+        }))
+      : [{ team1Score: 0, team2Score: 0 }]
+  );
+
+  const team1 = teams.find(t => t.id === match.team1Id);
+  const team2 = teams.find(t => t.id === match.team2Id);
   
-  // Generate initial games on component mount
-  useEffect(() => {
-    // Create empty games based on bestOf count
-    const initialGames = Array.from({ length: bestOf }, (_, i) => ({
-      id: nanoid(),
-      matchId,
-      gameNumber: i + 1,
-      team1Score: 0,
-      team2Score: 0,
-      winnerId: null
-    }));
-    
-    setGames(initialGames);
-  }, [bestOf, matchId]);
-
-  // Calculate the match result based on games
-  const calculateMatchResult = () => {
-    let team1Wins = 0;
-    let team2Wins = 0;
-    
-    games.forEach(game => {
-      if (game.team1Score > game.team2Score) {
-        team1Wins++;
-      } else if (game.team2Score > game.team1Score) {
-        team2Wins++;
-      }
-    });
-    
-    const winThreshold = Math.ceil(bestOf / 2);
-    let winnerId = null;
-    let loserId = null;
-    
-    if (team1Wins >= winThreshold) {
-      winnerId = team1Id;
-      loserId = team2Id;
-    } else if (team2Wins >= winThreshold) {
-      winnerId = team2Id;
-      loserId = team1Id;
+  const handleGameScoreChange = (index: number, team: 1 | 2, score: number) => {
+    const newGames = [...games];
+    if (team === 1) {
+      newGames[index].team1Score = score;
+    } else {
+      newGames[index].team2Score = score;
     }
-    
-    return {
-      team1Score: team1Wins,
-      team2Score: team2Wins,
-      winnerId,
-      loserId,
-      complete: team1Wins >= winThreshold || team2Wins >= winThreshold
-    };
+    setGames(newGames);
+    validateGameScores();
   };
-
-  // Validate if all games have valid scores
-  const validateGames = () => {
-    for (const game of games) {
-      // For each completed game, there should be a winner
-      if (game.team1Score === game.team2Score && (game.team1Score > 0 || game.team2Score > 0)) {
-        return "Games cannot end in a tie. Please fix the score entries.";
-      }
-    }
-    
-    const result = calculateMatchResult();
-    if (!result.complete) {
-      return "Match is incomplete. One team needs to win majority of games.";
-    }
-    
-    return null;
+  
+  const addGame = () => {
+    setGames([...games, { team1Score: 0, team2Score: 0 }]);
   };
-
-  // Handle save button click
+  
+  const removeGame = (index: number) => {
+    if (games.length <= 1) return;
+    const newGames = [...games];
+    newGames.splice(index, 1);
+    setGames(newGames);
+    validateGameScores();
+  };
+  
+  const calculateTotalScore = () => {
+    const team1Wins = games.filter(g => g.team1Score > g.team2Score).length;
+    const team2Wins = games.filter(g => g.team2Score > g.team1Score).length;
+    return { team1Wins, team2Wins };
+  };
+  
+  const validateGameScores = () => {
+    const { team1Wins, team2Wins } = calculateTotalScore();
+    const validation = validateGameScore(team1Wins, team2Wins, match.bestOf);
+    
+    if (!validation.isValid) {
+      setValidationError(validation.errorMessage || "Invalid score combination");
+      return false;
+    }
+    
+    setValidationError(null);
+    return true;
+  };
+  
   const handleSave = async () => {
-    const validationError = validateGames();
-    if (validationError) {
-      setError(validationError);
+    if (!validateGameScores()) {
       return;
     }
     
-    setIsSaving(true);
-    setError(null);
-    
     try {
-      const result = calculateMatchResult();
+      setIsSubmitting(true);
+      const { team1Wins, team2Wins } = calculateTotalScore();
       
-      console.log("Saving match result:", {
-        matchId,
-        winnerId: result.winnerId,
-        loserId: result.loserId,
-        team1Score: result.team1Score,
-        team2Score: result.team2Score,
-        games
-      });
+      const team1Score = team1Wins > team2Wins ? 1 : 0;
+      const team2Score = team2Wins > team1Wins ? 1 : 0;
       
-      // In a real implementation, this would be an API call to save the results
-      // await saveMatchResult(matchId, result.winnerId, result.loserId, result.team1Score, result.team2Score, games);
-      
-      if (onSaveSuccess) {
-        onSaveSuccess();
+      // Update Challonge if we have the necessary IDs
+      if (challongeTournamentId && challongeMatchId) {
+        try {
+          // Create scores CSV string - format: "team1score-team2score,team1score-team2score"
+          const scoresCsv = games.map(game => `${game.team1Score}-${game.team2Score}`).join(',');
+          
+          // Calculate the winner ID for Challonge
+          const winnerId = team1Wins > team2Wins 
+            ? match.team1ChallongeId 
+            : team2Wins > team1Wins 
+              ? match.team2ChallongeId 
+              : undefined;
+              
+          const loserId = team1Wins > team2Wins 
+            ? match.team2ChallongeId 
+            : team2Wins > team1Wins 
+              ? match.team1ChallongeId 
+              : undefined;
+          
+          if (winnerId) {
+            await ChallongeService.updateMatch({
+              tournamentId: challongeTournamentId,
+              matchId: challongeMatchId,
+              scoresCsv: scoresCsv,
+              winnerId: winnerId.toString(),
+              loserId: loserId?.toString(),
+            });
+            console.log("Challonge match updated successfully");
+          }
+        } catch (error) {
+          console.error("Error updating Challonge match:", error);
+          // Continue with local update even if Challonge update fails
+        }
       }
       
-      if (onClose) {
-        onClose();
-      }
-    } catch (err) {
-      console.error("Failed to save match result:", err);
-      setError("Failed to save match result. Please try again.");
+      // Pass the game win counts to onSave
+      await onSave(match.id, team1Score, team2Score, games, team1Wins, team2Wins);
+      onCancel();
+    } catch (error) {
+      console.error("Error saving match scores:", error);
+      setValidationError("Failed to save match scores");
     } finally {
-      setIsSaving(false);
+      setIsSubmitting(false);
     }
   };
 
+  const { team1Wins, team2Wins } = calculateTotalScore();
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-center">
-        Match Score Editor
-      </h2>
-      
-      <div className="flex items-center justify-center gap-3 text-base font-medium">
-        <span>{team1Name}</span>
-        <span className="text-gray-400">vs</span>
-        <span>{team2Name}</span>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="text-lg font-semibold">
+          {team1?.name || "TBD"} vs {team2?.name || "TBD"}
+        </div>
+        <div className="text-sm text-gray-500">
+          {match.matchType} Round {match.round}
+        </div>
       </div>
       
-      <div className={cn(
-        "p-2 text-center text-xs rounded-md",
-        "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-      )}>
-        Best of {bestOf} series - First to win {Math.ceil(bestOf / 2)} games wins the match
-      </div>
-      
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      
-      <GamesList
-        games={games}
-        setGames={setGames}
-        team1Name={team1Name}
-        team2Name={team2Name}
-      />
-      
-      <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={onClose} disabled={isSaving}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} disabled={isLoading || isSaving}>
-          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Save Match Result
-        </Button>
+      <div className="border-t pt-4">
+        <div className="text-sm font-medium mb-2">Game Scores (Best of {match.bestOf})</div>
+        
+        {games.map((game, index) => (
+          <GameScoreRow
+            key={index}
+            index={index}
+            game={game}
+            team1={team1}
+            team2={team2}
+            onScoreChange={handleGameScoreChange}
+            onRemoveGame={removeGame}
+            canRemove={games.length > 1}
+          />
+        ))}
+        
+        {validationError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-start">
+            <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+            <span>{validationError}</span>
+          </div>
+        )}
+        
+        <MatchScoreActions
+          onAddGame={addGame}
+          onSave={handleSave}
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
+          hasValidationError={!!validationError}
+          canAddGames={games.length < match.bestOf}
+          team1Wins={team1Wins}
+          team2Wins={team2Wins}
+        />
       </div>
     </div>
   );
