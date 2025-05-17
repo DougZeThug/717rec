@@ -73,7 +73,46 @@ export class FinalsGenerator<TMatch extends BracketMatch> implements IFinalsGene
 /**
  * Finals generator specifically for playoff matches
  */
-export class PlayoffFinalsGenerator extends FinalsGenerator<PlayoffMatch> {
+export class PlayoffFinalsGenerator implements IFinalsGenerator<PlayoffMatch> {
+  protected bracketId: string;
+  protected matchMap: Record<string, PlayoffMatch>;
+  
+  /**
+   * Create a new PlayoffFinalsGenerator
+   * @param bracketId ID of the bracket
+   * @param matchMap Map of matches
+   */
+  constructor(
+    bracketId: string,
+    matchMap: Record<string, PlayoffMatch>
+  ) {
+    this.bracketId = bracketId;
+    this.matchMap = matchMap;
+  }
+  
+  /**
+   * Generate the finals match(es)
+   * @param matches Array of all matches
+   * @returns Updated array of matches with finals added
+   */
+  generateFinals(matches: PlayoffMatch[]): PlayoffMatch[] {
+    const finalsMatch = this.createFinalsMatch();
+    this.matchMap['finals-1'] = finalsMatch;
+    matches.push(finalsMatch);
+    
+    return matches;
+  }
+  
+  /**
+   * Create a reset match for the grand finals
+   * @returns Reset match
+   */
+  createResetMatch(): PlayoffMatch {
+    const resetMatch = this.createFinalsMatch(2);
+    this.matchMap['finals-2'] = resetMatch;
+    return resetMatch;
+  }
+  
   /**
    * Create a finals match with specific round
    * @param round Round number (defaults to 1)

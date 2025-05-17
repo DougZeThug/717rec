@@ -78,7 +78,7 @@ describe("BracketLinker", () => {
     });
   });
   
-  describe("connectBrackets", () => {
+  describe("connectBracketSections", () => {
     it("should link winners bracket matches to next round and losers bracket", () => {
       // Create an 8-team bracket structure
       const matches: BracketMatch[] = [];
@@ -113,8 +113,8 @@ describe("BracketLinker", () => {
       // Finals - Round 1 (1 match)
       matches.push(createTestMatch(1, 1, "finals"));
       
-      // Execute test
-      linker.connectBrackets(matches);
+      // Execute test - use the proper method now
+      linker.connectBracketSections(matches);
       
       // Get matches by type and round
       const wb_r1 = matches.filter(m => m.matchType === "winners" && m.round === 1);

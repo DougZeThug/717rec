@@ -2,7 +2,7 @@
 import { nanoid } from "nanoid";
 import { BracketMatch, PlayoffMatch, PlayoffMatchType } from "../types";
 import { MatchTypeAdapter } from "../utils/TypeAdapter";
-import { AbstractBracketLinker } from "./base/AbstractBracketLinker";
+import { IBracketConnectionOperations, IMatchMapOperations } from "./interfaces/BracketLinkerInterfaces";
 import { IFinalsGenerator } from "./types/MatchLinkingTypes";
 import { PlayoffFinalsGenerator } from "./utils/FinalsGeneratorUtils";
 import { ConnectionCalculator, MatchOrganizer, PositionResolver } from "./utils/BracketLinkingUtilities";
@@ -11,9 +11,12 @@ import { ConnectionCalculator, MatchOrganizer, PositionResolver } from "./utils/
  * Specialized linker for playoff brackets that handles the complexities
  * of double elimination brackets with true finals format
  */
-export class PlayoffBracketLinker extends AbstractBracketLinker<PlayoffMatch> {
+export class PlayoffBracketLinker 
+  implements IMatchMapOperations<PlayoffMatch>, IBracketConnectionOperations<PlayoffMatch> {
   private roundLabels: Record<string, string>;
   private finalsGenerator: IFinalsGenerator<PlayoffMatch>;
+  private bracketId: string;
+  private matchMap: Record<string, PlayoffMatch>;
   
   /**
    * Create a new PlayoffBracketLinker instance
@@ -24,9 +27,18 @@ export class PlayoffBracketLinker extends AbstractBracketLinker<PlayoffMatch> {
     bracketId: string,
     matchMap: Record<string, PlayoffMatch> = {}
   ) {
-    super(bracketId, matchMap);
+    this.bracketId = bracketId;
+    this.matchMap = matchMap;
     this.roundLabels = this.generateRoundLabels();
     this.finalsGenerator = new PlayoffFinalsGenerator(bracketId, matchMap);
+  }
+
+  /**
+   * Get the map of all matches
+   * @returns Match map
+   */
+  getMatchMap(): Record<string, PlayoffMatch> {
+    return this.matchMap;
   }
   
   /**
@@ -54,6 +66,41 @@ export class PlayoffBracketLinker extends AbstractBracketLinker<PlayoffMatch> {
       'finals-1': 'GF1',
       'finals-2': 'GF2',
     };
+  }
+
+  /**
+   * Create a match key for the map
+   * @param matchType Type of match
+   * @param round Round number
+   * @param position Position in the round
+   */
+  createMatchKey(matchType: string, round: number, position: number): string {
+    // Convert PlayoffMatchType to MatchType if needed
+    const standardType = MatchTypeAdapter.toStandardMatchType(matchType as PlayoffMatchType);
+    return `${standardType}-${round}`;
+  }
+
+  /**
+   * Add a match to the match map
+   * @param match Match to add
+   * @param matchType Type of match
+   * @param round Round number
+   * @param position Position within the round
+   */
+  addMatchToMap(match: PlayoffMatch, matchType: string, round: number, position: number): void {
+    const key = this.createMatchKey(matchType, round, position);
+    this.matchMap[key] = match;
+  }
+
+  /**
+   * Get a match from the map
+   * @param matchType Type of match
+   * @param round Round number
+   * @param position Position within the round
+   */
+  getMatchFromMap(matchType: string, round: number, position: number): PlayoffMatch | undefined {
+    const key = this.createMatchKey(matchType, round, position);
+    return this.matchMap[key];
   }
   
   /**
@@ -263,6 +310,29 @@ export class PlayoffBracketLinker extends AbstractBracketLinker<PlayoffMatch> {
     
     if (losersFinal && grandFinal) {
       losersFinal.nextWinMatchId = grandFinal.id;
+    }
+  }
+  
+  /**
+   * Connect different sections of the bracket
+   * @param matches All matches in the bracket
+   */
+  connectBracketSections(matches: PlayoffMatch[]): void {
+    // This is a compatibility method that delegates to other methods
+    const rounds = Math.log2(matches.filter(m => m.matchType === "winners" && m.round === 1).length * 2);
+    
+    // Link winners bracket matches to next round and losers bracket
+    this.linkWinnersBracket(matches, rounds);
+    
+    // Link losers bracket matches to next round
+    this.linkLosersBracket(matches, rounds);
+    
+    // Link play-in matches if they exist
+    const playInMatches = matches.filter(m => m.matchType === "play-in" || m.matchType === "play-in-2");
+    const firstRoundMatches = matches.filter(m => m.matchType === "winners" && m.round === 1);
+    
+    if (playInMatches.length > 0) {
+      this.linkPlayInMatches(playInMatches, firstRoundMatches);
     }
   }
   

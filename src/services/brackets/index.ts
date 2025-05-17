@@ -48,9 +48,12 @@ export { DatabaseAdapter } from './DatabaseAdapter';
 export { PlayoffDatabaseAdapter } from './database/PlayoffDatabaseAdapter';
 export * from './database';
 
-// Export our new linker implementations and interfaces
-export * from './linkers/IBracketLinker';
-export * from './linkers/interfaces/BracketLinkerInterfaces';
+// Export our linker interfaces and implementations
+// But avoid duplicate exports for IBracketLinker
+export { 
+  IMatchMapOperations,
+  IBracketConnectionOperations
+} from './linkers/interfaces/BracketLinkerInterfaces';
 export * from './linkers/base/AbstractBracketLinker';
 export * from './linkers/implementations/StandardBracketLinker';
 export * from './linkers/PlayoffBracketLinker';

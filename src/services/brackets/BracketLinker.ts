@@ -18,4 +18,13 @@ export class BracketLinker extends StandardBracketLinker<BracketMatch> {
   ) {
     super(bracketId, matchMap);
   }
+  
+  /**
+   * Connect different sections of the bracket
+   * @param matches Array of all matches in the bracket
+   */
+  connectBrackets(matches: BracketMatch[]): void {
+    // For backward compatibility with tests
+    this.connectBracketSections(matches);
+  }
 }
