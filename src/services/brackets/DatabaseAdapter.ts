@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch, MatchResult, PlayoffGame } from "./types";
 import { DatabaseMatchResult } from "./database/types";
@@ -66,8 +65,6 @@ export class DatabaseAdapter {
       loserId: dbResult.loser_id,
       team1Score: dbResult.team1_score,
       team2Score: dbResult.team2_score,
-      team1Id: '', // These need to be populated elsewhere
-      team2Id: '',
       games: dbResult.games || []
     };
   }
