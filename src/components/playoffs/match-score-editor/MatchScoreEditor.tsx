@@ -8,6 +8,8 @@ import { ChallongeService } from "@/services/ChallongeService";
 import GameScoreRow from "./GameScoreRow";
 import GamesList from "./GamesList";
 import MatchScoreActions from "./MatchScoreActions";
+import { animations } from "@/styles/design-system";
+import { cn } from "@/lib/utils";
 
 interface MatchScoreEditorProps {
   match: PlayoffMatch;
@@ -150,8 +152,9 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   const { team1Wins, team2Wins } = calculateTotalScore();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className={cn("space-y-6", animations.fadeIn)}>
+      {/* Header with match info */}
+      <div className={cn("flex items-center justify-between", animations.scaleIn)}>
         <div className="text-lg font-semibold">
           {team1?.name || "TBD"} vs {team2?.name || "TBD"}
         </div>
@@ -160,39 +163,50 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
         </div>
       </div>
       
-      <div className="border-t pt-4">
+      {/* Game scores section */}
+      <div className={cn("border-t pt-4", animations.fadeIn)} style={{ animationDelay: '0.1s' }}>
         <div className="text-sm font-medium mb-2">Game Scores (Best of {match.bestOf})</div>
         
         {games.map((game, index) => (
-          <GameScoreRow
+          <div 
             key={index}
-            index={index}
-            game={game}
-            team1={team1}
-            team2={team2}
-            onScoreChange={handleGameScoreChange}
-            onRemoveGame={removeGame}
-            canRemove={games.length > 1}
-          />
+            className={animations.fadeIn}
+            style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+          >
+            <GameScoreRow
+              index={index}
+              game={game}
+              team1={team1}
+              team2={team2}
+              onScoreChange={handleGameScoreChange}
+              onRemoveGame={removeGame}
+              canRemove={games.length > 1}
+            />
+          </div>
         ))}
         
         {validationError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-start">
+          <div className={cn(
+            "mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-start",
+            animations.fadeIn
+          )} style={{ animationDelay: '0.3s' }}>
             <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
             <span>{validationError}</span>
           </div>
         )}
         
-        <MatchScoreActions
-          onAddGame={addGame}
-          onSave={handleSave}
-          onCancel={onCancel}
-          isSubmitting={isSubmitting}
-          hasValidationError={!!validationError}
-          canAddGames={games.length < match.bestOf}
-          team1Wins={team1Wins}
-          team2Wins={team2Wins}
-        />
+        <div className={animations.fadeIn} style={{ animationDelay: '0.4s' }}>
+          <MatchScoreActions
+            onAddGame={addGame}
+            onSave={handleSave}
+            onCancel={onCancel}
+            isSubmitting={isSubmitting}
+            hasValidationError={!!validationError}
+            canAddGames={games.length < match.bestOf}
+            team1Wins={team1Wins}
+            team2Wins={team2Wins}
+          />
+        </div>
       </div>
     </div>
   );

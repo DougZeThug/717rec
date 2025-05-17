@@ -1,12 +1,12 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { PlayoffMatch, Team, PlayoffGame } from "@/types";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { CheckCircle, AlertTriangle } from "lucide-react";
+import { CheckCircle, AlertTriangle, Trophy } from "lucide-react";
 import { blueAmber } from "@/styles/design-system";
+import { matchUpdateAnimation } from "./animation/BracketAnimationUtils";
 
 interface MatchCardProps {
   match: PlayoffMatch;
@@ -23,6 +23,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  const isUpdated = match.team1Score !== null || match.team2Score !== null;
 
   const getTeamById = (id?: string) => {
     if (!id) return null;
@@ -47,10 +48,34 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const team1Seed = match.team1Seed || (team1?.seed || 0);
   const team2Seed = match.team2Seed || (team2?.seed || 0);
 
-  const cardClasses = onEditMatch
-    ? getRowInteractionStyles("w-64 transition-shadow")
-    : "w-64 transition-shadow";
+  // Determine card style based on match type
+  const getCardStyle = () => {
+    switch (match.matchType) {
+      case 'winners':
+        return "border-blue-300 dark:border-blue-800 shadow-blue-900/5 dark:shadow-blue-500/5";
+      case 'losers':
+        return "border-amber-300 dark:border-amber-800 shadow-amber-900/5 dark:shadow-amber-500/5";
+      case 'finals':
+        return "border-purple-300 dark:border-purple-800 shadow-purple-900/5 dark:shadow-purple-500/5";
+      case 'play-in':
+      case 'play-in-2':
+        return "border-teal-300 dark:border-teal-800 shadow-teal-900/5 dark:shadow-teal-500/5";
+      default:
+        return "border-gray-300 dark:border-gray-700";
+    }
+  };
+
+  const cardClasses = cn(
+    "w-64 transition-shadow",
+    getCardStyle(),
+    onEditMatch ? getRowInteractionStyles("") : "",
+    isUpdated && !match.winnerId && "animate-pulse"
+  );
   
+  // Animation style for updated matches
+  const animationStyle = isUpdated ? { animation: matchUpdateAnimation } : {};
+
+  // Determine team row classes
   const getTeamRowClasses = (isWinner: boolean) => cn(
     "flex items-center p-2 rounded-md",
     isWinner ? (
@@ -94,12 +119,16 @@ const MatchCard: React.FC<MatchCardProps> = ({
         className={cn(
           cardClasses,
           isLight 
-            ? "border border-gray-200 hover:border-gray-300 shadow-sm"
-            : "border border-gray-800 hover:border-gray-700 bg-gray-900/50 shadow-md",
-          isPlayIn && "border-l-4 border-purple-500",
-          isResetMatch && "border-l-4 border-amber-500"
+            ? "border hover:border-gray-300 shadow-sm"
+            : "border hover:border-gray-700 bg-gray-900/50 shadow-md",
+          isPlayIn && "border-l-4 border-l-teal-500",
+          isResetMatch && "border-l-4 border-l-amber-500",
+          match.matchType === 'finals' && match.round === 1 && "border-l-4 border-l-purple-500",
+          match.matchType === 'winners' && "border-l-4 border-l-blue-500",
+          match.matchType === 'losers' && "border-l-4 border-l-amber-500"
         )}
         onClick={() => onEditMatch && match.team1Id && match.team2Id && onEditMatch(match.id)}
+        style={animationStyle}
       >
         <CardContent className="p-3">
           <div className="space-y-2">
@@ -119,7 +148,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <div className={getTeamRowClasses(match.team1Id === match.winnerId)}>
               {team1 ? (
                 <div className="flex items-center w-full">
-                  <div className="flex-none w-6 h-6 flex items-center justify-center mr-2 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-bold">
+                  <div className={cn(
+                    "flex-none w-6 h-6 flex items-center justify-center mr-2 rounded-full",
+                    "bg-gray-200 dark:bg-gray-700 text-xs font-bold",
+                    match.matchType === 'winners' && "bg-blue-100 dark:bg-blue-900/30"
+                  )}>
                     {team1Seed}
                   </div>
                   
@@ -161,7 +194,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <div className={getTeamRowClasses(match.team2Id === match.winnerId)}>
               {team2 ? (
                 <div className="flex items-center w-full">
-                  <div className="flex-none w-6 h-6 flex items-center justify-center mr-2 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-bold">
+                  <div className={cn(
+                    "flex-none w-6 h-6 flex items-center justify-center mr-2 rounded-full",
+                    "bg-gray-200 dark:bg-gray-700 text-xs font-bold",
+                    match.matchType === 'winners' && "bg-blue-100 dark:bg-blue-900/30"
+                  )}>
                     {team2Seed}
                   </div>
                   
@@ -199,7 +236,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               )}
             </div>
 
-            {/* Match Status Display */}
+            {/* Match Status Display - Enhanced with status styling */}
             <div className={cn(
               "mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center",
             )}>
@@ -214,6 +251,13 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 <div className="flex items-center text-amber-500">
                   <AlertTriangle className="h-3.5 w-3.5 mr-1" />
                   <span className="text-xs">Bracket Reset</span>
+                </div>
+              )}
+              
+              {match.matchType === 'finals' && match.winnerId && (
+                <div className="flex items-center text-amber-500">
+                  <Trophy className="h-3.5 w-3.5 mr-1" />
+                  <span className="text-xs">Champion</span>
                 </div>
               )}
             </div>

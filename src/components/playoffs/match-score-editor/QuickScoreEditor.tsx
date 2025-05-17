@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { animations } from "@/styles/design-system";
 
 interface QuickScoreEditorProps {
   match: PlayoffMatch;
@@ -28,6 +29,7 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({
   onCancel,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   // Find team details
   const team1 = match.team1Id ? teams.find(t => t.id === match.team1Id) : null;
@@ -48,6 +50,7 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({
   const handleQuickScore = async (option: typeof scoreOptions[0]) => {
     if (!match.team1Id || !match.team2Id) return;
     
+    setSelectedOption(option.label);
     setIsSubmitting(true);
     
     try {
@@ -94,21 +97,21 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({
   };
 
   return (
-    <div>
+    <div className={animations.fadeIn}>
       <DialogHeader className="text-left">
-        <DialogTitle>Quick Score Entry</DialogTitle>
-        <DialogDescription>
+        <DialogTitle className={animations.scaleIn}>Quick Score Entry</DialogTitle>
+        <DialogDescription className={animations.fadeIn} style={{ animationDelay: '0.1s' }}>
           Quickly enter the match score for {team1Name} vs {team2Name}
         </DialogDescription>
       </DialogHeader>
 
       <div className="py-6 flex flex-col space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className={cn("grid grid-cols-2 gap-4", animations.fadeIn)} style={{ animationDelay: '0.15s' }}>
           <div className="text-center font-medium">{team1Name}</div>
           <div className="text-center font-medium">{team2Name}</div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className={cn("grid grid-cols-2 gap-3", animations.fadeIn)} style={{ animationDelay: '0.2s' }}>
           {/* Team logo/images */}
           <div className="flex justify-center">
             {team1?.imageUrl || team1?.logoUrl ? (
@@ -143,45 +146,57 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({
           </div>
         </div>
 
-        <div className="mt-6 space-y-2">
+        <div className={cn("mt-6 space-y-2", animations.fadeIn)} style={{ animationDelay: '0.25s' }}>
           <div className="text-sm font-medium">Quick Score Options:</div>
           <div className="grid grid-cols-2 gap-2">
-            {scoreOptions.slice(0, 2).map(option => (
+            {scoreOptions.slice(0, 2).map((option, index) => (
               <Button
                 key={option.label}
-                variant="outline"
+                variant={selectedOption === option.label ? "default" : "outline"}
                 className={cn(
                   "h-12 text-lg font-mono",
-                  option.winner === match.team1Id && "bg-blue-50 dark:bg-blue-900/20"
+                  option.winner === match.team1Id && "bg-blue-50 dark:bg-blue-900/20",
+                  selectedOption === option.label && "ring-2 ring-offset-2 ring-blue-500 dark:ring-blue-700"
                 )}
                 onClick={() => handleQuickScore(option)}
                 disabled={isSubmitting}
+                style={{ animationDelay: `${0.3 + index * 0.05}s` }}
+                className={animations.scaleIn}
               >
                 {option.label}
-                <Check className="ml-1 h-4 w-4 text-green-500" />
+                <Check className={cn(
+                  "ml-1 h-4 w-4",
+                  selectedOption === option.label ? "text-white" : "text-green-500"
+                )} />
               </Button>
             ))}
 
-            {scoreOptions.slice(2, 4).map(option => (
+            {scoreOptions.slice(2, 4).map((option, index) => (
               <Button
                 key={option.label}
-                variant="outline"
+                variant={selectedOption === option.label ? "default" : "outline"}
                 className={cn(
                   "h-12 text-lg font-mono", 
-                  option.winner === match.team2Id && "bg-red-50 dark:bg-red-900/20"
+                  option.winner === match.team2Id && "bg-red-50 dark:bg-red-900/20",
+                  selectedOption === option.label && "ring-2 ring-offset-2 ring-red-500 dark:ring-red-700"
                 )}
                 onClick={() => handleQuickScore(option)}
                 disabled={isSubmitting}
+                style={{ animationDelay: `${0.4 + index * 0.05}s` }}
+                className={animations.scaleIn}
               >
                 {option.label}
-                <Check className="ml-1 h-4 w-4 text-green-500" />
+                <Check className={cn(
+                  "ml-1 h-4 w-4",
+                  selectedOption === option.label ? "text-white" : "text-green-500"
+                )} />
               </Button>
             ))}
           </div>
         </div>
       </div>
 
-      <DialogFooter>
+      <DialogFooter className={animations.fadeIn} style={{ animationDelay: '0.5s' }}>
         <Button variant="ghost" onClick={onCancel} disabled={isSubmitting}>
           <X className="mr-1 h-4 w-4" />
           Cancel

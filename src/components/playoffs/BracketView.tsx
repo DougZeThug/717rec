@@ -1,11 +1,11 @@
-
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import type { PlayoffBracket, Team } from "@/types";
 import RoundColumn from "./RoundColumn";
 import { getBracketConnectorPaths, getVerticalSpacing, getNextMatch } from "./BracketUtils";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { blueAmber } from "@/styles/design-system";
+import ChampionDisplay from "./celebration/ChampionDisplay";
 
 interface BracketViewProps {
   bracket: PlayoffBracket;
@@ -16,6 +16,7 @@ interface BracketViewProps {
 const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  const [showChampion, setShowChampion] = useState(true);
   
   // Group matches by round and type
   const matchesByRoundAndType = useMemo(() => {
@@ -58,11 +59,27 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
     });
   }, [matchesByRoundAndType]);
 
+  // Find the champion if the tournament is complete
+  const champion = useMemo(() => {
+    const finalsMatches = bracket.matches.filter(m => m.matchType === 'finals');
+    
+    // If we have a finals match with a winner
+    if (finalsMatches.length > 0) {
+      const lastFinals = finalsMatches[finalsMatches.length - 1];
+      
+      if (lastFinals.winnerId) {
+        return teams.find(team => team.id === lastFinals.winnerId) || null;
+      }
+    }
+    
+    return null;
+  }, [bracket.matches, teams]);
+
   // Calculate bracket visualization paths for connectors
   const connectorPaths = getBracketConnectorPaths(bracket.matches);
 
   return (
-    <div className="overflow-auto my-4">
+    <div className="overflow-auto my-4 relative">
       <div className={cn(
         "flex flex-col space-y-6 min-w-max p-6 rounded-lg",
         isLight 
@@ -119,6 +136,17 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
           </svg>
         </div>
       </div>
+      
+      {/* Champion display modal when tournament is complete */}
+      {champion && showChampion && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <ChampionDisplay 
+            champion={champion} 
+            onClose={() => setShowChampion(false)} 
+            showConfetti={true}
+          />
+        </div>
+      )}
     </div>
   );
 };
