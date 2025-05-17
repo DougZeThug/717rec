@@ -39,7 +39,7 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
     const dateWithTime = createDateWithTime(selectedDate, selectedTimeSlot);
     
     // Determine winner and loser
-    const { winnerId, loserId } = determineMatchOutcome(
+    const { winner_id, loser_id } = determineMatchOutcome(
       isCompleted,
       team1Id,
       team2Id,
@@ -55,8 +55,8 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
       iscompleted: isCompleted,
       team1Score: isCompleted ? team1Score : undefined,
       team2Score: isCompleted ? team2Score : undefined,
-      winnerId,
-      loserId
+      winner_id,
+      loser_id
     });
   };
 

@@ -1,186 +1,176 @@
-import React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Ranking } from "@/types";
+import React, { useState, useEffect } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Ranking, HeadToHeadMap, HeadToHeadEntry } from "@/types";
+import { cn } from "@/lib/utils";
+import RankingTableRow from "../RankingTableRow";
 import HeadToHeadRecords from "../HeadToHeadRecords";
-import { SortOptions } from "../RankingsTable";
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { getPowerScoreColor } from "@/utils/colors";
-import { getSosColor } from "@/utils/colors";
+import { useTheme } from "next-themes";
+import { gradients } from "@/styles/design-system";
 
 interface DivisionRankingsTableProps {
   rankings: Ranking[];
-  allRankings: Ranking[];
-  expandedTeam: string | null;
-  toggleExpand: (teamId: string) => void;
-  sortOptions: SortOptions;
-  onSortChange: (field: string) => void;
-  showUnified: boolean;
-  isLight: boolean;
+  headToHeadMap?: HeadToHeadMap;
+  showDivision?: boolean;
+  title?: string;
+  divisionId?: string;
 }
+
+// Fix the teamHeadToHeadMap type
+const transformHeadToHeadForTeam = (
+  standings: Ranking[],
+  teamId: string,
+  headToHeadMap: HeadToHeadMap
+): HeadToHeadEntry[] => {
+  // If we have specific data for this team, use it
+  if (headToHeadMap && headToHeadMap[teamId]) {
+    return headToHeadMap[teamId];
+  }
+  
+  // Otherwise, generate empty head-to-head records
+  return standings
+    .filter(team => team.teamId !== teamId)
+    .map(opponent => ({
+      opponentId: opponent.teamId,
+      opponentName: opponent.teamName,
+      wins: 0,
+      losses: 0,
+    }));
+};
 
 const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
   rankings,
-  allRankings,
-  expandedTeam,
-  toggleExpand,
-  sortOptions,
-  onSortChange,
-  showUnified,
-  isLight
+  headToHeadMap = {},
+  showDivision = false,
+  title,
+  divisionId,
 }) => {
-  const renderSortIndicator = (field: string) =>
-    sortOptions.field === field
-      ? sortOptions.direction === "asc"
-        ? <ArrowUp className="inline-block ml-1 h-4 w-4" />
-        : <ArrowDown className="inline-block ml-1 h-4 w-4" />
-      : null;
+  const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
+  const [currentTeamHeadToHead, setCurrentTeamHeadToHead] = useState<HeadToHeadEntry[]>([]);
+  const [filteredRankings, setFilteredRankings] = useState<Ranking[]>([]);
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
 
-  const SortableHeader = ({ field, children, className }: { field: string, children: React.ReactNode, className?: string }) => (
-    <TableHead 
-      className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium text-gray-800 dark:text-white font-mono ${className || ''}`}
-      onClick={() => onSortChange(field)}
-    >
-      <div className="flex items-center justify-center">
-        {children}
-        {renderSortIndicator(field)}
-      </div>
-    </TableHead>
-  );
+  useEffect(() => {
+    // Filter rankings by division if divisionId is provided
+    if (divisionId) {
+      setFilteredRankings(rankings.filter(team => team.divisionId === divisionId));
+    } else {
+      setFilteredRankings(rankings);
+    }
+  }, [rankings, divisionId]);
+
+  const expandRow = (teamId: string) => {
+    if (expandedTeamId === teamId) {
+      setExpandedTeamId(null);
+      return;
+    }
+    
+    setExpandedTeamId(teamId);
+    
+    // Find the team to get its head to head data
+    const team = filteredRankings.find(team => team.teamId === teamId);
+    if (!team) return;
+    
+    // Transform the head to head data properly
+    const headToHeadData = transformHeadToHeadForTeam(
+      filteredRankings,
+      teamId,
+      headToHeadMap
+    );
+    
+    setCurrentTeamHeadToHead(headToHeadData);
+  };
 
   return (
     <div className="overflow-x-auto">
-      <Table className="bg-white text-gray-800 dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
+      <Table className={cn(
+        "bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow-sm",
+        "border-t-2 border-t-blue-300 dark:border-t-blue-700/70"
+      )}>
         <TableHeader>
-          <TableRow>
-            <TableHead className="w-12 text-sm font-mono font-semibold text-gray-800 dark:text-white tracking-wide">Rank</TableHead>
-            <TableHead className="text-sm font-semibold font-oswald uppercase tracking-wide text-gray-800 dark:text-white">
+          <TableRow className={cn(
+            isLight ? "bg-gradient-to-r from-blue-50/80 to-blue-100/50" : "bg-gradient-to-r from-gray-800/90 to-gray-800/60",
+            "border-b border-blue-200/70 dark:border-blue-900/30"
+          )}>
+            <TableHead
+              className="w-10 font-mono tracking-wide text-gray-700 dark:text-gray-200"
+            >
+              Rank
+            </TableHead>
+            <TableHead
+              className="font-semibold uppercase tracking-wide font-oswald text-gray-700 dark:text-gray-200"
+            >
               Team
             </TableHead>
-            {showUnified && (
-              <TableHead className="text-sm font-semibold font-oswald uppercase tracking-wide text-gray-800 dark:text-white">Division</TableHead>
+            {showDivision && (
+              <TableHead className="font-semibold uppercase tracking-wide font-oswald text-gray-700 dark:text-gray-200">
+                Division
+              </TableHead>
             )}
-            <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">
-              <div className="flex items-center justify-center gap-1">
-                <span onClick={() => onSortChange('powerScore')} className="cursor-pointer flex items-center">
-                  <span className="mr-1 font-mono">Power Score</span> {renderSortIndicator('powerScore')}
-                </span>
-              </div>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
+            >
+              Power
             </TableHead>
-            <SortableHeader field="wins">W-L</SortableHeader>
-            <SortableHeader field="winPercentage">Win %</SortableHeader>
-            <SortableHeader field="gamesWon" className="hidden md:table-cell">Games (W-L)</SortableHeader>
-            <SortableHeader field="gameWinPercentage" className="hidden lg:table-cell">Game %</SortableHeader>
-            <SortableHeader field="sos">
-              <div className="flex items-center gap-1 justify-center">
-                <span>SOS</span>
-              </div>
-            </SortableHeader>
-            <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">Streak</TableHead>
-            <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">Trend</TableHead>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
+            >
+              Record
+            </TableHead>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
+            >
+              Win %
+            </TableHead>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200 hidden md:table-cell"
+            >
+              Games
+            </TableHead>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200 hidden lg:table-cell"
+            >
+              Game %
+            </TableHead>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
+            >
+              SOS
+            </TableHead>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
+            >
+              Streak
+            </TableHead>
+            <TableHead
+              className="text-center font-mono text-gray-700 dark:text-gray-200"
+            >
+              Trend
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rankings.map((ranking) => {
-            const overallIndex = allRankings.findIndex(r => r.teamId === ranking.teamId);
-            return (
-              <React.Fragment key={ranking.teamId}>
-                <TableRow className="font-inter">
-                  <TableCell className="font-mono font-semibold text-lg">
-                    {overallIndex + 1}
-                    {!showUnified && ranking.divisionRank && (
-                      <span className="ml-1 text-xs text-gray-500 dark:text-gray-400 font-inter">
-                        ({ranking.divisionRank})
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/** Logo as square with consistent sizing */}
-                      {ranking.logoUrl || ranking.imageUrl ? (
-                        <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                          <img
-                            src={ranking.logoUrl || ranking.imageUrl}
-                            alt={ranking.teamName}
-                            className="w-full h-full object-contain"
-                            style={{ minWidth: "2rem", minHeight: "2rem" }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">
-                          N/A
-                        </div>
-                      )}
-                      <span
-                        className="uppercase tracking-wide font-bebas"
-                        style={{
-                          fontFamily: "'Bebas Neue', 'Arial Narrow', Arial, sans-serif",
-                          fontSize: "1.1rem",
-                          lineHeight: "1.1",
-                          letterSpacing: "0.05em",
-                          wordBreak: "break-word",
-                          whiteSpace: "normal",
-                          textTransform: "uppercase"
-                        }}
-                      >
-                        {ranking.teamName}
-                      </span>
+          {filteredRankings.map((team, index) => (
+            <React.Fragment key={team.teamId}>
+              <RankingTableRow
+                ranking={team}
+                index={index}
+                rowIndex={index}
+                isExpanded={expandedTeamId === team.teamId}
+                onToggleExpand={() => expandRow(team.teamId)}
+                showDivision={showDivision}
+              />
+              {expandedTeamId === team.teamId && (
+                <TableRow>
+                  <TableCell colSpan={showDivision ? 11 : 10} className="bg-gray-50 dark:bg-gray-800/50 p-0">
+                    <div className="p-2">
+                      <HeadToHeadRecords headToHead={{ [team.teamId]: currentTeamHeadToHead }} />
                     </div>
                   </TableCell>
-                  {showUnified && (
-                    <TableCell>
-                      <span className="font-inter">{ranking.divisionName}</span>
-                    </TableCell>
-                  )}
-                  <TableCell className="text-center font-mono font-semibold">
-                    <span className={isLight ? '' : getPowerScoreColor(ranking.powerScore)} 
-                          style={{ color: isLight ? (
-                            ranking.powerScore >= 75 ? '#2f855a' : // green-600
-                            ranking.powerScore >= 60 ? '#3182ce' : // blue-500
-                            ranking.powerScore >= 40 ? '#dd6b20' : // orange-500
-                            '#e53e3e' // red-500
-                          ) : undefined }}>
-                      {ranking.powerScore?.toFixed(2)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center font-mono">{ranking.wins}-{ranking.losses}</TableCell>
-                  <TableCell className="text-center font-mono">{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
-                  <TableCell className="hidden md:table-cell text-center font-mono">{ranking.gamesWon}-{ranking.gamesLost}</TableCell>
-                  <TableCell className="hidden lg:table-cell text-center font-mono">{(ranking.gameWinPercentage * 100).toFixed(1)}%</TableCell>
-                  <TableCell className="text-center font-mono">
-                    <span className={isLight ? '' : getSosColor(ranking.sos)}
-                          style={{ color: isLight ? (
-                            ranking.sos >= 75 ? '#2f855a' : // green-600
-                            ranking.sos >= 60 ? '#3182ce' : // blue-500
-                            ranking.sos >= 40 ? '#dd6b20' : // orange-500
-                            '#e53e3e' // red-500
-                          ) : undefined }}>
-                      {ranking.sos?.toFixed(3)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="font-mono">{ranking.streak}</span>
-                  </TableCell>
-                  <TableCell className="text-center">{/* Trend indicator can be added if desired */}</TableCell>
                 </TableRow>
-                {expandedTeam === ranking.teamId && (
-                  <TableRow>
-                    <TableCell colSpan={showUnified ? 11 : 10} className="bg-[#f5f5f5] dark:bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
-                      <div className="p-4">
-                        <HeadToHeadRecords headToHead={ranking.headToHead} />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </React.Fragment>
-            );
-          })}
+              )}
+            </React.Fragment>
+          ))}
         </TableBody>
       </Table>
     </div>

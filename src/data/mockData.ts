@@ -431,8 +431,8 @@ export const mockMatches: Match[] = [
     date: new Date(2023, 5, 15, 18, 0).toISOString(),
     location: "Community Park",
     iscompleted: true,
-    winnerId: "1",
-    loserId: "2"
+    winner_id: "1",
+    loser_id: "2"
   },
   {
     id: "m2",
@@ -443,8 +443,8 @@ export const mockMatches: Match[] = [
     date: new Date(2023, 5, 15, 19, 30).toISOString(),
     location: "Community Park",
     iscompleted: true,
-    winnerId: "4",
-    loserId: "3"
+    winner_id: "4",
+    loser_id: "3"
   },
   {
     id: "m3",
@@ -455,8 +455,8 @@ export const mockMatches: Match[] = [
     date: new Date(2023, 5, 16, 18, 0).toISOString(),
     location: "Riverside Grounds",
     iscompleted: true,
-    winnerId: "6",
-    loserId: "5"
+    winner_id: "6",
+    loser_id: "5"
   },
   {
     id: "m4",
@@ -467,8 +467,8 @@ export const mockMatches: Match[] = [
     date: new Date(2023, 5, 16, 19, 30).toISOString(),
     location: "Riverside Grounds",
     iscompleted: true,
-    winnerId: "7",
-    loserId: "8"
+    winner_id: "7",
+    loser_id: "8"
   },
   {
     id: "m5",
@@ -511,19 +511,22 @@ const createBestOf3Games = (team1Id: string, team2Id: string, winningTeamId: str
         id: `game-${Math.random().toString(36).substr(2, 9)}`,
         team1Score: 21,
         team2Score: 15,
-        winner: team1Id
+        winner: "team1Id",
+        winnerId: team1Id
       },
       {
         id: `game-${Math.random().toString(36).substr(2, 9)}`,
         team1Score: 18,
         team2Score: 21,
-        winner: team2Id
+        winner: "team2Id",
+        winnerId: team2Id
       },
       {
         id: `game-${Math.random().toString(36).substr(2, 9)}`,
         team1Score: 21,
         team2Score: 17,
-        winner: team1Id
+        winner: "team1Id",
+        winnerId: team1Id
       }
     ];
   } else {
@@ -532,19 +535,22 @@ const createBestOf3Games = (team1Id: string, team2Id: string, winningTeamId: str
         id: `game-${Math.random().toString(36).substr(2, 9)}`,
         team1Score: 18,
         team2Score: 21,
-        winner: team2Id
+        winner: "team2Id",
+        winnerId: team2Id
       },
       {
         id: `game-${Math.random().toString(36).substr(2, 9)}`,
         team1Score: 21,
         team2Score: 15,
-        winner: team1Id
+        winner: "team1Id",
+        winnerId: team1Id
       },
       {
         id: `game-${Math.random().toString(36).substr(2, 9)}`,
         team1Score: 17,
         team2Score: 21,
-        winner: team2Id
+        winner: "team2Id",
+        winnerId: team2Id
       }
     ];
   }
@@ -564,10 +570,16 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Id: "1",
       team2Id: "2",
       winnerId: "1",
+      loserId: "2",
       team1Score: 2,
       team2Score: 1,
       matchType: "winners",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: createBestOf3Games("1", "2", "1")
     },
     {
@@ -580,7 +592,12 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Score: 2,
       team2Score: 0,
       matchType: "winners",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: [
         {
           id: "game-1a",
@@ -608,7 +625,12 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Score: 2,
       team2Score: 1,
       matchType: "winners",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: createBestOf3Games("1", "3", "1")
     },
     
@@ -623,7 +645,12 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Score: 2,
       team2Score: 0,
       matchType: "losers",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: [
         {
           id: "game-2a",
@@ -651,7 +678,12 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Score: 2,
       team2Score: 1,
       matchType: "losers",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: createBestOf3Games("2", "3", "2")
     },
     
@@ -666,7 +698,12 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Score: 2,
       team2Score: 0,
       matchType: "finals",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: [
         {
           id: "game-3a",
@@ -683,7 +720,16 @@ export const mockPlayoffBracket: PlayoffBracket = {
       ]
     }
   ],
-  champion: "1"
+  champion: "1",
+  state: {
+    isWinnersBracketComplete: true,
+    isLosersBracketComplete: true,
+    isResetMatchNeeded: false,
+    isComplete: true,
+    winnersBracketChampionId: "1",
+    losersBracketChampionId: "2",
+    championId: "1"
+  }
 };
 
 export const mockIntermediatePlayoffBracket: PlayoffBracket = {
@@ -703,7 +749,12 @@ export const mockIntermediatePlayoffBracket: PlayoffBracket = {
       team1Score: 2,
       team2Score: 1,
       matchType: "winners",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: createBestOf3Games("7", "8", "7")
     }
   ],
@@ -727,7 +778,12 @@ export const mockCompetitivePlayoffBracket: PlayoffBracket = {
       team1Score: 2,
       team2Score: 0,
       matchType: "winners",
+      team1Seed: null,
+      team2Seed: null,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
       bestOf: 3,
+      status: "completed",
       games: [
         {
           id: "game-comp1a",
@@ -755,15 +811,15 @@ export const mockRankings: Ranking[] = mockTeams.map(team => {
   return {
     teamId: team.id,
     teamName: team.name,
-    logoUrl: team.logoUrl,
-    imageUrl: team.imageUrl,
-    wins: team.wins,
-    losses: team.losses,
+    logoUrl: team.logoUrl || team.logo_url,
+    imageUrl: team.imageUrl || team.image_url,
+    wins: team.wins || 0,
+    losses: team.losses || 0,
     winPercentage,
     divisionName: team.division || null,
     sos: Number((Math.random() * 0.5 + 0.5).toFixed(3)), // Random SOS between 0.5 and 1.0
     streak: Math.random() > 0.5 ? `W${Math.floor(Math.random() * 5) + 1}` : `L${Math.floor(Math.random() * 3) + 1}`,
-    headToHead: {}, // Empty head-to-head records
+    headToHead: [], // Empty head-to-head records
     gamesWon: Math.floor(Math.random() * 10) + 1,
     gamesLost: Math.floor(Math.random() * 5) + 1,
     gameWinPercentage: Math.random(),
