@@ -38,33 +38,39 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
     console.log(`Found ${playoffMatchesData?.length || 0} playoff matches for bracket ${bracketId}`);
     
     // Transform matches to application format
-    matches = playoffMatchesData?.map(match => ({
-      id: match.id,
-      round: match.round,
-      position: match.position,
-      team1Id: match.team1_id,
-      team2Id: match.team2_id,
-      team1Score: match.team1_score,
-      team2Score: match.team2_score,
-      // The database fields might be named differently or not exist in playoff_matches
-      // Use null as default if fields don't exist
-      team1GameWins: match.team1_game_wins ?? null,
-      team2GameWins: match.team2_game_wins ?? null,
-      winnerId: match.winner_id,
-      loserId: match.loser_id,
-      matchType: match.match_type,
-      team1Seed: match.team1_seed,
-      team2Seed: match.team2_seed,
-      nextWinMatchId: match.next_win_match_id,
-      nextLoseMatchId: match.next_lose_match_id,
-      bestOf: match.best_of || 3,
-      games: match.playoff_games?.map(game => ({
-        id: game.id,
-        team1Score: game.team1_score,
-        team2Score: game.team2_score,
-        winner: game.winner_id
-      })) || []
-    })) || [];
+    matches = playoffMatchesData?.map(match => {
+      // Calculate game wins from the actual games if needed
+      const gamesData = match.playoff_games || [];
+      const calculatedTeam1GameWins = gamesData.filter(game => game.winner_id === match.team1_id).length;
+      const calculatedTeam2GameWins = gamesData.filter(game => game.winner_id === match.team2_id).length;
+      
+      return {
+        id: match.id,
+        round: match.round,
+        position: match.position,
+        team1Id: match.team1_id,
+        team2Id: match.team2_id,
+        team1Score: match.team1_score,
+        team2Score: match.team2_score,
+        // Use calculated values from games if direct fields don't exist
+        team1GameWins: calculatedTeam1GameWins,
+        team2GameWins: calculatedTeam2GameWins,
+        winnerId: match.winner_id,
+        loserId: match.loser_id,
+        matchType: match.match_type,
+        team1Seed: match.team1_seed,
+        team2Seed: match.team2_seed,
+        nextWinMatchId: match.next_win_match_id,
+        nextLoseMatchId: match.next_lose_match_id,
+        bestOf: match.best_of || 3,
+        games: match.playoff_games?.map(game => ({
+          id: game.id,
+          team1Score: game.team1_score,
+          team2Score: game.team2_score,
+          winner: game.winner_id
+        })) || []
+      };
+    }) || [];
   } else {
     // For Single Elimination, query the regular matches table (existing logic)
     const { data: matchesData, error: matchesError } = await supabase
