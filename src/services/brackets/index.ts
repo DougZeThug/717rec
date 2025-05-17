@@ -45,4 +45,9 @@ export { DatabaseAdapter } from './DatabaseAdapter';
 // Export PlayoffDatabaseAdapter from the correct location
 export { PlayoffDatabaseAdapter } from './database/PlayoffDatabaseAdapter';
 export * from './database';
+
+// Export our new linker implementations and interfaces
+export * from './linkers/IBracketLinker';
+export * from './linkers/BaseBracketLinker';
 export * from './linkers/PlayoffBracketLinker';
+export * from './linkers/utils/LinkingUtils';

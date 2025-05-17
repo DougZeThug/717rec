@@ -1,22 +1,14 @@
 
 import { nanoid } from "nanoid";
 import { PlayoffMatch, PlayoffMatchType } from "../types";
-
-/**
- * Maps the connection points between different parts of a double elimination bracket
- */
-interface BracketConnectionMap {
-  winners: {[key: string]: string};
-  losers: {[key: string]: string};
-}
+import { BaseBracketLinker } from "./BaseBracketLinker";
+import { LinkingUtils } from "./utils/LinkingUtils";
 
 /**
  * Specialized linker for playoff brackets that handles the complexities
  * of double elimination brackets with true finals format
  */
-export class PlayoffBracketLinker {
-  private bracketId: string;
-  private matchMap: Record<string, PlayoffMatch>;
+export class PlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
   private roundLabels: Record<string, string>;
   
   /**
@@ -28,8 +20,7 @@ export class PlayoffBracketLinker {
     bracketId: string,
     matchMap: Record<string, PlayoffMatch> = {}
   ) {
-    this.bracketId = bracketId;
-    this.matchMap = matchMap;
+    super(bracketId, matchMap);
     this.roundLabels = this.generateRoundLabels();
   }
   
@@ -91,69 +82,49 @@ export class PlayoffBracketLinker {
   }
   
   /**
+   * Link all matches in the bracket
+   * @param matches All bracket matches
+   * @param rounds Number of rounds in winners bracket
+   */
+  linkMatches(matches: PlayoffMatch[], rounds: number): void {
+    // Extract play-in matches and first round matches
+    const playInMatches = matches.filter(m => m.matchType === "play-in");
+    const firstRoundMatches = matches.filter(m => m.matchType === "winners" && m.round === 1);
+    
+    // Link play-in matches if any exist
+    if (playInMatches.length > 0) {
+      this.linkPlayInMatches(playInMatches, firstRoundMatches);
+    }
+    
+    // Link winners bracket
+    this.linkWinnersBracket(matches, rounds);
+    
+    // Link losers bracket
+    this.linkLosersBracket(matches, rounds);
+    
+    // Link finals (already done in the other methods)
+  }
+  
+  /**
    * Link winners bracket matches to both next winners round and losers bracket
    * @param matches - All bracket matches
    * @param rounds - Number of rounds in winners bracket
    */
   linkWinnersBracket(matches: PlayoffMatch[], rounds: number): void {
     // Organize matches by round
-    const winnersByRound = this.organizeMatchesByRound('winners', matches);
+    const winnersByRound = LinkingUtils.organizeMatchesByRound('winners', matches);
     
     // Link each round to the next
     for (let round = 1; round < rounds; round++) {
       const currentRoundMatches = winnersByRound[round] || [];
       const nextRoundMatches = winnersByRound[round + 1] || [];
       
-      this.linkMatchesToNextRound(currentRoundMatches, nextRoundMatches);
+      LinkingUtils.linkMatchesToNextRound(currentRoundMatches, nextRoundMatches);
       this.linkWinnersToLosers(currentRoundMatches, matches, round);
     }
     
     // Link final winners bracket match to grand finals
     this.linkWinnersFinalsToGrandFinals(matches, rounds);
-  }
-  
-  /**
-   * Organize matches by round for a specific bracket type
-   * @param matchType - Type of bracket (winners, losers)
-   * @param matches - All matches
-   * @returns Matches organized by round
-   */
-  private organizeMatchesByRound(
-    matchType: PlayoffMatchType, 
-    matches: PlayoffMatch[]
-  ): Record<number, PlayoffMatch[]> {
-    const matchesByRound: Record<number, PlayoffMatch[]> = {};
-    
-    matches
-      .filter(m => m.matchType === matchType)
-      .forEach(match => {
-        if (!matchesByRound[match.round]) {
-          matchesByRound[match.round] = [];
-        }
-        matchesByRound[match.round].push(match);
-      });
-      
-    return matchesByRound;
-  }
-  
-  /**
-   * Link a set of matches to their next round
-   * @param currentRoundMatches - Matches in current round
-   * @param nextRoundMatches - Matches in next round
-   */
-  private linkMatchesToNextRound(
-    currentRoundMatches: PlayoffMatch[], 
-    nextRoundMatches: PlayoffMatch[]
-  ): void {
-    currentRoundMatches.forEach((match, idx) => {
-      // Calculate next round position (integer division)
-      const nextPos = Math.floor(idx / 2);
-      
-      // Link to next match if it exists
-      if (nextPos < nextRoundMatches.length) {
-        match.nextWinMatchId = nextRoundMatches[nextPos].id;
-      }
-    });
   }
   
   /**
@@ -210,11 +181,11 @@ export class PlayoffBracketLinker {
     
     // In a standard double elimination bracket, losers from winners round 1
     // go to losers round 1, losers from winners round 2 go to losers round 3, etc.
-    const loserRound = winnerRound * 2 - 1;
+    const loserRound = LinkingUtils.calculateLoserDestinationRound(winnerRound);
     const destinations = loserMatches.filter(m => m.round === loserRound);
     
     // The position calculation depends on the bracket structure
-    const loserPosition = Math.ceil(position / 2);
+    const loserPosition = LinkingUtils.calculateLoserDestinationPosition(position, winnerRound);
     
     return destinations.find(m => m.position === loserPosition) || null;
   }
@@ -226,7 +197,7 @@ export class PlayoffBracketLinker {
    */
   linkLosersBracket(matches: PlayoffMatch[], rounds: number): void {
     // Organize matches by round
-    const losersByRound = this.organizeMatchesByRound('losers', matches);
+    const losersByRound = LinkingUtils.organizeMatchesByRound('losers', matches);
     
     // Calculate the maximum loser round
     const maxLoserRound = Math.max(
@@ -239,7 +210,7 @@ export class PlayoffBracketLinker {
       const currentRoundMatches = losersByRound[round] || [];
       const nextRoundMatches = losersByRound[round + 1] || [];
       
-      this.linkMatchesToNextRound(currentRoundMatches, nextRoundMatches);
+      LinkingUtils.linkMatchesToNextRound(currentRoundMatches, nextRoundMatches);
     }
     
     // Link the final losers bracket match to the grand finals
@@ -313,13 +284,5 @@ export class PlayoffBracketLinker {
     const gf2 = this.createFinalsMatch(2);
     this.matchMap['finals-2'] = gf2;
     return gf2;
-  }
-  
-  /**
-   * Get the map of all matches by their key
-   * @returns Match map
-   */
-  getMatchMap(): Record<string, PlayoffMatch> {
-    return this.matchMap;
   }
 }
