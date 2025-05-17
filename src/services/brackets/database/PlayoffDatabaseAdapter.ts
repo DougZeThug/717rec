@@ -1,3 +1,4 @@
+
 import { BracketState, MatchResult, PlayoffGame, PlayoffMatch, PlayoffMatchType } from "../types";
 import { DatabaseMatchResult, DatabasePlayoffMatch } from "./types";
 import { PlayoffDatabaseFacade } from "./PlayoffDatabaseFacade";
@@ -26,6 +27,8 @@ export class PlayoffDatabaseAdapter {
       team2_seed: match.team2Seed,
       team1_score: match.team1Score,
       team2_score: match.team2Score,
+      team1_game_wins: match.team1GameWins || null,
+      team2_game_wins: match.team2GameWins || null,
       winner_id: match.winnerId,
       loser_id: match.loserId,
       next_win_match_id: match.nextWinMatchId,

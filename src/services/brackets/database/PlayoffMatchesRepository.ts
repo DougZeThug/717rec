@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffMatchType } from "../types";
+import { PlayoffGame } from "../types";
 import { DatabaseOperationError, DatabasePlayoffMatch, IPlayoffMatchesRepository, MatchResultDTO } from "./types";
 
 /**
@@ -34,7 +33,7 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
   }
 
   /**
-   * Update a match with result information
+   * Update a match with the result and mark it as completed
    */
   async updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void> {
     try {
@@ -47,16 +46,19 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
           team2_score: result.team2Score,
           team1_game_wins: result.team1GameWins,
           team2_game_wins: result.team2GameWins,
-          status: 'completed'
+          status: 'completed',
+          updated_at: new Date().toISOString()
         })
         .eq('id', matchId);
       
-      if (error) throw new DatabaseOperationError('updateMatchResult', 'Failed to update match result', error);
+      if (error) {
+        throw new DatabaseOperationError('updateMatchResult', `Failed to update match ${matchId} with result`, error);
+      }
     } catch (error) {
-      console.error(`Error updating match result for match ${matchId}:`, error);
+      console.error('Error updating match result:', error);
       throw error instanceof DatabaseOperationError 
         ? error 
-        : new DatabaseOperationError('updateMatchResult', `Failed to update match ${matchId}`, error as Error);
+        : new DatabaseOperationError('updateMatchResult', `Failed to update match ${matchId} with result`, error as Error);
     }
   }
 
