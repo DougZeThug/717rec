@@ -1,112 +1,30 @@
 
-import { PlayoffGame } from "../types";
+import { PlayoffMatchType, PlayoffGame } from "../types";
 
-/**
- * Interface for repository handling teams advancement
- */
-export interface ITeamAdvancementService {
-  advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void>;
-  handleGrandFinalsReset?(bracketId: string, winnersBracketChampionId: string, losersBracketChampionId: string, gf1WinnerId: string): Promise<string>;
-}
-
-/**
- * Interface for repository handling reset matches
- */
-export interface IResetMatchService {
-  createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<string>;
-}
-
-/**
- * Interface for bracket operations repository
- */
-export interface IBracketRepository {
-  markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void>;
-  setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void>;
-  markTournamentComplete(bracketId: string, championId: string): Promise<void>;
-  getBracketState(bracketId: string): Promise<DatabaseBracketState>;
-}
-
-/**
- * Interface for playoff matches repository operations
- */
-export interface IPlayoffMatchesRepository {
-  saveMatches(matches: DatabasePlayoffMatch[]): Promise<void>;
-  getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
-  getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
-  updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
-}
-
-/**
- * Interface for playoff games repository operations
- */
-export interface IPlayoffGamesRepository {
-  saveGames(games: PlayoffGame[]): Promise<void>;
-  getMatchGames(matchId: string): Promise<PlayoffGame[]>;
-}
-
-/**
- * Interface for match result service operations
- */
-export interface IMatchResultService {
-  recordMatchResult(matchResult: DatabaseMatchResult): Promise<void>;
-}
-
-/**
- * Data transfer object for match results
- */
-export interface MatchResultDTO {
-  winnerId: string;
-  loserId: string;
-  team1Score: number;
-  team2Score: number;
-  team1GameWins?: number;
-  team2GameWins?: number;
-}
-
-/**
- * Custom error class for database operations
- */
 export class DatabaseOperationError extends Error {
   public operation: string;
-  public originalError?: Error;
+  public originalError: Error;
 
-  constructor(operation: string, message: string, originalError?: Error) {
+  constructor(operation: string, message: string, originalError: Error) {
     super(message);
-    this.name = 'DatabaseOperationError';
+    this.name = "DatabaseOperationError";
     this.operation = operation;
     this.originalError = originalError;
-
-    // Properly maintain the prototype chain when extending Error
-    Object.setPrototypeOf(this, DatabaseOperationError.prototype);
   }
 }
 
-/**
- * Database representation of bracket state
- */
-export interface DatabaseBracketState {
-  isWinnersBracketComplete: boolean;
-  isLosersBracketComplete: boolean;
-  isResetMatchNeeded: boolean;
-  isComplete: boolean;
-  winnersBracketChampionId: string | null;
-  losersBracketChampionId: string | null;
-  championId: string | null;
-}
-
-/**
- * Database representation of a bracket match
- */
 export interface DatabasePlayoffMatch {
   id: string;
   bracket_id: string;
   round: number;
   position: number;
-  match_type: string;
+  match_type: PlayoffMatchType;
   team1_id: string | null;
   team2_id: string | null;
   team1_score: number | null;
   team2_score: number | null;
+  team1_game_wins: number | null;
+  team2_game_wins: number | null;
   team1_seed: number | null;
   team2_seed: number | null;
   winner_id: string | null;
@@ -114,22 +32,24 @@ export interface DatabasePlayoffMatch {
   next_win_match_id: string | null;
   next_lose_match_id: string | null;
   best_of: number;
-  status: "pending" | "in_progress" | "completed";
+  status: 'pending' | 'in_progress' | 'completed';
   created_at?: string;
   updated_at?: string;
 }
 
-/**
- * Database representation of a match result
- */
-export interface DatabaseMatchResult {
-  match_id: string;
-  winner_id: string;
-  loser_id: string;
-  team1_score: number;
-  team2_score: number;
-  team1_game_wins?: number;
-  team2_game_wins?: number;
-  completed: boolean;
+export interface MatchResultDTO {
+  winnerId: string;
+  loserId: string;
+  team1Score: number;
+  team2Score: number;
+  team1GameWins: number;
+  team2GameWins: number;
   games?: PlayoffGame[];
+}
+
+export interface IPlayoffMatchesRepository {
+  saveMatches(matches: DatabasePlayoffMatch[]): Promise<void>;
+  updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
+  getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
+  getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
 }

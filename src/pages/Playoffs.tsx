@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Trophy, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -11,6 +11,10 @@ import { usePlayoffData } from "@/hooks/usePlayoffData";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MatchScoreEditor, QuickScoreEditor } from "@/components/playoffs/match-score-editor";
 import { PlayoffMatch } from "@/types";
+import { useAuth } from "@/contexts/AuthContext";
+import PlayoffAdminSection from "@/components/playoffs/admin/PlayoffAdminSection";
+import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Playoffs = () => {
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
@@ -18,7 +22,10 @@ const Playoffs = () => {
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
   const [isQuickEdit, setIsQuickEdit] = useState(false);
+  const [activeTab, setActiveTab] = useState("view");
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const isAdmin = profile?.is_admin || false;
   
   const {
     teams,
@@ -35,6 +42,16 @@ const Playoffs = () => {
     handleTeamDivisionChange,
     refetchBrackets
   } = usePlayoffData(selectedBracketId);
+  
+  // Subscribe to real-time updates for the selected bracket
+  const { realtimeEnabled, lastUpdatedMatch } = usePlayoffRealtime(selectedBracketId);
+
+  // Refetch bracket data when we receive a real-time update
+  useEffect(() => {
+    if (lastUpdatedMatch) {
+      refetchBrackets();
+    }
+  }, [lastUpdatedMatch, refetchBrackets]);
 
   const handleCreateBracket = () => {
     setBracketDialogOpen(true);
@@ -112,20 +129,65 @@ const Playoffs = () => {
           onOpenTeamDialog={() => setTeamDialogOpen(true)} 
         />
         
-        <PlayoffPageContent
-          availableDivisions={availableDivisions}
-          bracketsByDivision={bracketsByDivision}
-          selectedBracketId={selectedBracketId}
-          bracket={bracket}
-          teams={teams || []}
-          bracketLoading={bracketLoading}
-          allBracketsData={allBracketsData}
-          isLoading={isLoading}
-          onCreateBracket={handleCreateBracket}
-          onViewBracket={setSelectedBracketId}
-          onEditBracket={handleCreateBracket}
-          onEditMatch={(matchId) => handleEditMatch(matchId, true)}
-        />
+        {bracket && isAdmin && (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="my-4">
+            <TabsList>
+              <TabsTrigger value="view">Bracket View</TabsTrigger>
+              <TabsTrigger value="admin">Admin</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="view" className="pt-2">
+              <PlayoffPageContent
+                availableDivisions={availableDivisions}
+                bracketsByDivision={bracketsByDivision}
+                selectedBracketId={selectedBracketId}
+                bracket={bracket}
+                teams={teams || []}
+                bracketLoading={bracketLoading}
+                allBracketsData={allBracketsData}
+                isLoading={isLoading}
+                onCreateBracket={handleCreateBracket}
+                onViewBracket={setSelectedBracketId}
+                onEditBracket={handleCreateBracket}
+                onEditMatch={(matchId) => handleEditMatch(matchId, true)}
+              />
+            </TabsContent>
+            
+            <TabsContent value="admin" className="pt-2">
+              <PlayoffAdminSection
+                bracket={bracket}
+                teams={teams || []}
+                onEditMatch={handleEditMatch}
+              />
+            </TabsContent>
+          </Tabs>
+        )}
+        
+        {/* If not admin or no bracket selected, just show the normal view */}
+        {(!bracket || !isAdmin) && (
+          <PlayoffPageContent
+            availableDivisions={availableDivisions}
+            bracketsByDivision={bracketsByDivision}
+            selectedBracketId={selectedBracketId}
+            bracket={bracket}
+            teams={teams || []}
+            bracketLoading={bracketLoading}
+            allBracketsData={allBracketsData}
+            isLoading={isLoading}
+            onCreateBracket={handleCreateBracket}
+            onViewBracket={setSelectedBracketId}
+            onEditBracket={handleCreateBracket}
+            onEditMatch={(matchId) => handleEditMatch(matchId, true)}
+          />
+        )}
+        
+        {/* Realtime indicator */}
+        {realtimeEnabled && selectedBracketId && (
+          <div className="fixed bottom-4 right-4 z-20 bg-green-100 dark:bg-green-900/30 rounded-full px-3 py-1 text-xs flex items-center shadow-md">
+            <span className="h-2 w-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+            <span className="text-green-700 dark:text-green-400">Live updates enabled</span>
+          </div>
+        )}
       </div>
 
       <TeamDivisionDialog 

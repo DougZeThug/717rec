@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Check } from "lucide-react";
 import { PlayoffMatch, Team } from "@/types";
-import { validateGameScore } from "@/hooks/matches/utils/matchValidationUtils";
-import { nanoid } from "nanoid";
+import { DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Check, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface QuickScoreEditorProps {
   match: PlayoffMatch;
@@ -16,180 +17,176 @@ interface QuickScoreEditorProps {
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
     team2GameWins: number
-  ) => Promise<void>;
+  ) => void;
   onCancel: () => void;
-}
-
-interface ScoreOption {
-  label: string;
-  team1Wins: number;
-  team2Wins: number;
-  scores: { team1Score: number; team2Score: number }[];
 }
 
 const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({
   match,
   teams,
   onSave,
-  onCancel
+  onCancel,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+
+  // Find team details
+  const team1 = match.team1Id ? teams.find(t => t.id === match.team1Id) : null;
+  const team2 = match.team2Id ? teams.find(t => t.id === match.team2Id) : null;
   
-  const team1 = teams.find(t => t.id === match.team1Id);
-  const team2 = teams.find(t => t.id === match.team2Id);
-  
-  // Score options for best-of-3 format
-  const scoreOptions: ScoreOption[] = [
-    {
-      label: "2-0",
-      team1Wins: 2,
-      team2Wins: 0,
-      scores: [
-        { team1Score: 21, team2Score: 15 },
-        { team1Score: 21, team2Score: 18 }
-      ]
-    },
-    {
-      label: "2-1",
-      team1Wins: 2,
-      team2Wins: 1,
-      scores: [
-        { team1Score: 21, team2Score: 15 },
-        { team1Score: 18, team2Score: 21 },
-        { team1Score: 21, team2Score: 17 }
-      ]
-    },
-    {
-      label: "1-2",
-      team1Wins: 1,
-      team2Wins: 2,
-      scores: [
-        { team1Score: 15, team2Score: 21 },
-        { team1Score: 21, team2Score: 18 },
-        { team1Score: 17, team2Score: 21 }
-      ]
-    },
-    {
-      label: "0-2",
-      team1Wins: 0, 
-      team2Wins: 2,
-      scores: [
-        { team1Score: 15, team2Score: 21 },
-        { team1Score: 18, team2Score: 21 }
-      ]
-    }
+  const team1Name = team1?.name || "Team 1";
+  const team2Name = team2?.name || "Team 2";
+
+  // For a best of 3 match, we have 4 possible outcomes: 2-0, 2-1, 1-2, 0-2
+  const scoreOptions = [
+    { team1GameWins: 2, team2GameWins: 0, label: "2-0", winner: match.team1Id },
+    { team1GameWins: 2, team2GameWins: 1, label: "2-1", winner: match.team1Id },
+    { team1GameWins: 1, team2GameWins: 2, label: "1-2", winner: match.team2Id },
+    { team1GameWins: 0, team2GameWins: 2, label: "0-2", winner: match.team2Id },
   ];
   
-  const handleOptionSelect = (option: ScoreOption) => {
-    setSelectedOption(option.label);
-    setErrorMessage(null);
-  };
-  
-  const handleSubmit = async (option: ScoreOption) => {
-    // Validate the score
-    const validation = validateGameScore(option.team1Wins, option.team2Wins, match.bestOf);
+  // Handle quick score submission
+  const handleQuickScore = async (option: typeof scoreOptions[0]) => {
+    if (!match.team1Id || !match.team2Id) return;
     
-    if (!validation.isValid) {
-      setErrorMessage(validation.errorMessage || "Invalid score");
-      return;
-    }
+    setIsSubmitting(true);
     
     try {
-      setIsSubmitting(true);
+      // Generate mock game data based on the score pattern
+      const games: { team1Score: number; team2Score: number }[] = [];
       
-      // Create games with proper IDs
-      const games = option.scores.map(score => ({
-        ...score,
-        id: nanoid()
-      }));
+      // For 2-0 or 0-2, we create two games with clear victories
+      if (option.team1GameWins === 2 && option.team2GameWins === 0) {
+        games.push({ team1Score: 21, team2Score: 15 });
+        games.push({ team1Score: 21, team2Score: 16 });
+      } 
+      // For 0-2, team2 wins both games
+      else if (option.team1GameWins === 0 && option.team2GameWins === 2) {
+        games.push({ team1Score: 15, team2Score: 21 });
+        games.push({ team1Score: 16, team2Score: 21 });
+      }
+      // For 2-1, team1 wins two, loses one
+      else if (option.team1GameWins === 2 && option.team2GameWins === 1) {
+        games.push({ team1Score: 21, team2Score: 17 });
+        games.push({ team1Score: 18, team2Score: 21 });
+        games.push({ team1Score: 21, team2Score: 15 });
+      }
+      // For 1-2, team1 wins one, loses two
+      else if (option.team1GameWins === 1 && option.team2GameWins === 2) {
+        games.push({ team1Score: 21, team2Score: 17 });
+        games.push({ team1Score: 18, team2Score: 21 });
+        games.push({ team1Score: 15, team2Score: 21 });
+      }
       
-      // Determine match score (who won the match)
-      const team1Score = option.team1Wins > option.team2Wins ? 1 : 0;
-      const team2Score = option.team2Wins > option.team1Wins ? 1 : 0;
-      
-      // Pass the data to the parent component
+      // Save the match score
       await onSave(
         match.id,
-        team1Score,
-        team2Score,
+        option.team1GameWins > option.team2GameWins ? 1 : 0, // Binary match score
+        option.team2GameWins > option.team1GameWins ? 1 : 0, // Binary match score
         games,
-        option.team1Wins,
-        option.team2Wins
+        option.team1GameWins,
+        option.team2GameWins
       );
     } catch (error) {
-      console.error("Error saving score:", error);
-      setErrorMessage("Failed to save score");
+      console.error("Error saving quick score:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="text-lg font-semibold">
-          {team1?.name || "TBD"} vs {team2?.name || "TBD"}
+    <div>
+      <DialogHeader className="text-left">
+        <DialogTitle>Quick Score Entry</DialogTitle>
+        <DialogDescription>
+          Quickly enter the match score for {team1Name} vs {team2Name}
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="py-6 flex flex-col space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center font-medium">{team1Name}</div>
+          <div className="text-center font-medium">{team2Name}</div>
         </div>
-        <div className="text-sm text-gray-500">
-          Best of {match.bestOf}
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {scoreOptions.map(option => (
-          <Button
-            key={option.label}
-            variant={selectedOption === option.label ? "default" : "outline"}
-            className={`relative h-16 ${selectedOption === option.label ? "ring-2 ring-primary ring-offset-2" : ""}`}
-            onClick={() => handleOptionSelect(option)}
-            disabled={isSubmitting}
-          >
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-lg font-bold">{option.label}</span>
-              <span className="text-xs text-gray-500">
-                {option.label.startsWith("2") ? team1?.name : team2?.name} wins
-              </span>
-            </div>
-            {selectedOption === option.label && (
-              <div className="absolute top-1 right-1">
-                <Check className="h-4 w-4 text-primary" />
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* Team logo/images */}
+          <div className="flex justify-center">
+            {team1?.imageUrl || team1?.logoUrl ? (
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100">
+                <img
+                  src={team1.imageUrl || team1.logoUrl}
+                  alt={team1.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-blue-600 font-bold text-lg">T1</span>
               </div>
             )}
-          </Button>
-        ))}
-      </div>
-      
-      {errorMessage && (
-        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-center">
-          <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-          <span>{errorMessage}</span>
+          </div>
+
+          <div className="flex justify-center">
+            {team2?.imageUrl || team2?.logoUrl ? (
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100">
+                <img
+                  src={team2.imageUrl || team2.logoUrl}
+                  alt={team2.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                <span className="text-red-600 font-bold text-lg">T2</span>
+              </div>
+            )}
+          </div>
         </div>
-      )}
-      
-      <div className="flex justify-end space-x-2 pt-2">
-        <Button
-          variant="outline"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+
+        <div className="mt-6 space-y-2">
+          <div className="text-sm font-medium">Quick Score Options:</div>
+          <div className="grid grid-cols-2 gap-2">
+            {scoreOptions.slice(0, 2).map(option => (
+              <Button
+                key={option.label}
+                variant="outline"
+                className={cn(
+                  "h-12 text-lg font-mono",
+                  option.winner === match.team1Id && "bg-blue-50 dark:bg-blue-900/20"
+                )}
+                onClick={() => handleQuickScore(option)}
+                disabled={isSubmitting}
+              >
+                {option.label}
+                <Check className="ml-1 h-4 w-4 text-green-500" />
+              </Button>
+            ))}
+
+            {scoreOptions.slice(2, 4).map(option => (
+              <Button
+                key={option.label}
+                variant="outline"
+                className={cn(
+                  "h-12 text-lg font-mono", 
+                  option.winner === match.team2Id && "bg-red-50 dark:bg-red-900/20"
+                )}
+                onClick={() => handleQuickScore(option)}
+                disabled={isSubmitting}
+              >
+                {option.label}
+                <Check className="ml-1 h-4 w-4 text-green-500" />
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <DialogFooter>
+        <Button variant="ghost" onClick={onCancel} disabled={isSubmitting}>
+          <X className="mr-1 h-4 w-4" />
           Cancel
         </Button>
-        <Button
-          onClick={() => {
-            const option = scoreOptions.find(o => o.label === selectedOption);
-            if (option) {
-              handleSubmit(option);
-            } else {
-              setErrorMessage("Please select a score option");
-            }
-          }}
-          disabled={isSubmitting || !selectedOption}
-        >
-          Submit Score
-        </Button>
-      </div>
+      </DialogFooter>
     </div>
   );
 };

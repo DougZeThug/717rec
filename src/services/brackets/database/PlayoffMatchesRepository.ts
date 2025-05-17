@@ -45,6 +45,8 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
           loser_id: result.loserId,
           team1_score: result.team1Score,
           team2_score: result.team2Score,
+          team1_game_wins: result.team1GameWins,
+          team2_game_wins: result.team2GameWins,
           status: 'completed'
         })
         .eq('id', matchId);
