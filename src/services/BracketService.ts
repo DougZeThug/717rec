@@ -79,7 +79,7 @@ export class BracketService {
           nextWinMatchId: match.nextWinMatchId,
           nextLoseMatchId: match.nextLoseMatchId,
           bestOf: 3, // Default to best of 3
-          status: "pending" // Fix: Use string literal instead of casting
+          status: "pending" as "pending" // Fix: Explicitly type as one of the allowed status values
         }));
         
         // Save matches to playoff_matches table
