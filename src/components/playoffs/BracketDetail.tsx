@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Loader2 } from "lucide-react";
+import { Edit, Loader2, Trash } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
 import ChampionDisplay from "@/components/playoffs/ChampionDisplay";
 import { PlayoffBracket, Team } from "@/types";
@@ -18,6 +18,7 @@ interface BracketDetailProps {
   bracketLoading: boolean;
   onEditBracket: () => void;
   onEditMatch: (matchId: string) => void;
+  onDeleteBracket?: (bracketId: string, bracketName: string) => void;
 }
 
 const BracketDetail: React.FC<BracketDetailProps> = ({
@@ -27,6 +28,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   bracketLoading,
   onEditBracket,
   onEditMatch,
+  onDeleteBracket,
 }) => {
   const { isAdminAccessGranted } = useAdminAccess();
   const { resolvedTheme } = useTheme();
@@ -80,9 +82,22 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             </CardDescription>
           </div>
           {isAdminAccessGranted && (
-            <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEditBracket}>
-              <Edit className="h-4 w-4 mr-2" /> Edit Bracket
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEditBracket}>
+                <Edit className="h-4 w-4 mr-2" /> Edit Bracket
+              </Button>
+              
+              {onDeleteBracket && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="hidden md:flex text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20" 
+                  onClick={() => onDeleteBracket(bracketId, bracket.name)}
+                >
+                  <Trash className="h-4 w-4 mr-2" /> Delete
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </CardHeader>

@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Trophy, Users } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import BracketCreationDialog from "@/components/playoffs/BracketCreationDialog";
 import TeamDivisionDialog from "@/components/playoffs/TeamDivisionDialog";
 import PlayoffPageContent from "@/components/playoffs/PlayoffPageContent";
@@ -14,6 +15,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import PlayoffAdminSection from "@/components/playoffs/admin/PlayoffAdminSection";
 import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DeleteBracketDialog from "@/components/playoffs/DeleteBracketDialog";
+import { BracketService } from "@/services/BracketService";
+import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Playoffs = () => {
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
@@ -22,7 +27,11 @@ const Playoffs = () => {
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
   const [isQuickEdit, setIsQuickEdit] = useState(false);
   const [activeTab, setActiveTab] = useState("view");
+  const [deletingBracket, setDeletingBracket] = useState<{ id: string, name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
   
@@ -115,6 +124,47 @@ const Playoffs = () => {
       });
     }
   };
+  
+  const handleDeleteBracket = (bracketId: string, bracketName: string) => {
+    setDeletingBracket({ id: bracketId, name: bracketName });
+  };
+  
+  const confirmDeleteBracket = async () => {
+    if (!deletingBracket) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      await BracketService.deleteBracket(deletingBracket.id);
+      
+      toast({
+        title: "Bracket Deleted",
+        description: `"${deletingBracket.name}" has been successfully deleted.`,
+      });
+      
+      // Reset selected bracket if we're deleting the current one
+      if (selectedBracketId === deletingBracket.id) {
+        setSelectedBracketId(null);
+      }
+      
+      // Invalidate all related queries
+      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
+      await invalidateMatchRelatedQueries(queryClient);
+      
+      // Refetch bracket data
+      refetchBrackets();
+    } catch (error) {
+      console.error("Error deleting bracket:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete bracket. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeletingBracket(null);
+    }
+  };
 
   const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
   const allBracketsData = allBrackets || [];
@@ -149,6 +199,7 @@ const Playoffs = () => {
                 onViewBracket={setSelectedBracketId}
                 onEditBracket={handleCreateBracket}
                 onEditMatch={(matchId) => handleEditMatch(matchId, true)}
+                onDeleteBracket={isAdmin ? handleDeleteBracket : undefined}
               />
             </TabsContent>
             
@@ -177,6 +228,7 @@ const Playoffs = () => {
             onViewBracket={setSelectedBracketId}
             onEditBracket={handleCreateBracket}
             onEditMatch={(matchId) => handleEditMatch(matchId, true)}
+            onDeleteBracket={isAdmin ? handleDeleteBracket : undefined}
           />
         )}
         
@@ -233,6 +285,17 @@ const Playoffs = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Delete Bracket Confirmation Dialog */}
+      <DeleteBracketDialog
+        open={!!deletingBracket}
+        onOpenChange={(open) => {
+          if (!open) setDeletingBracket(null);
+        }}
+        bracketName={deletingBracket?.name || ""}
+        onConfirm={confirmDeleteBracket}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

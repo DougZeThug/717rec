@@ -19,6 +19,7 @@ interface PlayoffPageContentProps {
   onViewBracket: (id: string) => void;
   onEditBracket: () => void;
   onEditMatch: (id: string) => void;
+  onDeleteBracket?: (id: string, name: string) => void;
 }
 
 const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
@@ -33,7 +34,8 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   onCreateBracket,
   onViewBracket,
   onEditBracket,
-  onEditMatch
+  onEditMatch,
+  onDeleteBracket
 }) => {
   if (isLoading && !allBracketsData.length) {
     return (
@@ -66,6 +68,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
           bracketLoading={bracketLoading}
           onEditBracket={onEditBracket}
           onEditMatch={onEditMatch}
+          onDeleteBracket={onDeleteBracket}
         />
       )}
       

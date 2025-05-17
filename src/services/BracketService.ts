@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 import { BracketGenerator } from "./brackets";
@@ -411,6 +410,134 @@ export class BracketService {
       // Omitted for brevity
     } catch (error) {
       console.error("Error advancing team to next match:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Deletes a bracket and all related data
+   */
+  static async deleteBracket(bracketId: string): Promise<void> {
+    console.log(`Deleting bracket with ID: ${bracketId}`);
+    
+    try {
+      // Get the bracket format first to determine which tables we need to clean up
+      const { data: bracketData, error: bracketError } = await supabase
+        .from('brackets')
+        .select('format')
+        .eq('id', bracketId)
+        .single();
+        
+      if (bracketError) {
+        console.error("Error fetching bracket format:", bracketError);
+        throw bracketError;
+      }
+      
+      const format = bracketData.format;
+      console.log(`Bracket format: ${format}`);
+      
+      // For Double Elimination, delete from playoff_games and playoff_matches tables
+      if (format === 'Double Elimination') {
+        // First get all match IDs to delete their games
+        const { data: matchData, error: matchError } = await supabase
+          .from('playoff_matches')
+          .select('id')
+          .eq('bracket_id', bracketId);
+          
+        if (matchError) {
+          console.error("Error fetching playoff matches:", matchError);
+          throw matchError;
+        }
+        
+        const matchIds = matchData?.map(match => match.id) || [];
+        console.log(`Found ${matchIds.length} playoff matches to delete`);
+        
+        if (matchIds.length > 0) {
+          // Delete all games for these matches
+          const { error: gamesError } = await supabase
+            .from('playoff_games')
+            .delete()
+            .in('match_id', matchIds);
+            
+          if (gamesError) {
+            console.error("Error deleting playoff games:", gamesError);
+            throw gamesError;
+          }
+          
+          console.log(`Deleted games for ${matchIds.length} playoff matches`);
+        }
+        
+        // Delete all matches for this bracket
+        const { error: matchesDeleteError } = await supabase
+          .from('playoff_matches')
+          .delete()
+          .eq('bracket_id', bracketId);
+          
+        if (matchesDeleteError) {
+          console.error("Error deleting playoff matches:", matchesDeleteError);
+          throw matchesDeleteError;
+        }
+        
+        console.log(`Deleted all playoff matches for bracket ${bracketId}`);
+      } else {
+        // For Single Elimination, delete from games and matches tables
+        // First get all match IDs to delete their games
+        const { data: matchData, error: matchError } = await supabase
+          .from('matches')
+          .select('id')
+          .eq('bracket_id', bracketId);
+          
+        if (matchError) {
+          console.error("Error fetching matches:", matchError);
+          throw matchError;
+        }
+        
+        const matchIds = matchData?.map(match => match.id) || [];
+        console.log(`Found ${matchIds.length} standard matches to delete`);
+        
+        if (matchIds.length > 0) {
+          // Delete all games for these matches
+          const { error: gamesError } = await supabase
+            .from('games')
+            .delete()
+            .in('match_id', matchIds);
+            
+          if (gamesError) {
+            console.error("Error deleting games:", gamesError);
+            throw gamesError;
+          }
+          
+          console.log(`Deleted games for ${matchIds.length} standard matches`);
+        }
+        
+        // Delete all matches for this bracket
+        const { error: matchesDeleteError } = await supabase
+          .from('matches')
+          .delete()
+          .eq('bracket_id', bracketId);
+          
+        if (matchesDeleteError) {
+          console.error("Error deleting matches:", matchesDeleteError);
+          throw matchesDeleteError;
+        }
+        
+        console.log(`Deleted all standard matches for bracket ${bracketId}`);
+      }
+      
+      // Finally, delete the bracket itself
+      const { error: bracketDeleteError } = await supabase
+        .from('brackets')
+        .delete()
+        .eq('id', bracketId);
+        
+      if (bracketDeleteError) {
+        console.error("Error deleting bracket:", bracketDeleteError);
+        throw bracketDeleteError;
+      }
+      
+      console.log(`Successfully deleted bracket ${bracketId}`);
+    } catch (error) {
+      console.error("Error in deleteBracket:", error);
       throw error;
     }
   }
