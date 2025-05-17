@@ -9,7 +9,9 @@ export type {
   SeedTeam,
   BracketGenerationResult, 
   MatchType, 
-  PlayInResult
+  PlayInResult,
+  PlayoffGame,
+  PlayoffMatchType
 } from './types';
 
 // Database types (with explicitly named exports to avoid ambiguity)
@@ -33,8 +35,11 @@ export type { PlayoffMatch as DatabasePlayoffMatch } from './database/types';
 export * from './BracketGenerator';
 export * from './BracketFactory';
 export * from './generators/BaseBracketGenerator';
+export * from './generators/PlayoffBracketGenerator';
 export * from './utils/BracketSizeCalculator';
 export * from './utils/TeamSeeding';
 export * from './utils/ScoreParser';
 export * from './DatabaseAdapter';
 export * from './database';
+export * from './linkers/PlayoffBracketLinker';
+

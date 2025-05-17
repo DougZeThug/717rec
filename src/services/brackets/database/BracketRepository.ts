@@ -1,9 +1,10 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { BracketState } from "../types";
 import { DatabaseOperationError, IBracketRepository } from "./types";
 
 /**
- * Repository implementation for bracket state management
+ * Repository for bracket operations
  */
 export class BracketRepository implements IBracketRepository {
   /**
@@ -13,17 +14,15 @@ export class BracketRepository implements IBracketRepository {
     try {
       const { error } = await supabase
         .from('brackets')
-        .update({ 
-          wb_champion_id: teamId 
-        })
+        .update({ wb_champion_id: teamId })
         .eq('id', bracketId);
       
-      if (error) throw new DatabaseOperationError('markWinnersBracketChampion', `Failed to mark WB champion for bracket ${bracketId}`, error);
+      if (error) throw new DatabaseOperationError('markWinnersBracketChampion', `Failed to mark winners bracket champion for bracket ${bracketId}`, error);
     } catch (error) {
       console.error(`Error marking winners bracket champion for bracket ${bracketId}:`, error);
       throw error instanceof DatabaseOperationError 
         ? error 
-        : new DatabaseOperationError('markWinnersBracketChampion', `Failed to mark WB champion for bracket ${bracketId}`, error as Error);
+        : new DatabaseOperationError('markWinnersBracketChampion', `Failed to mark winners bracket champion for bracket ${bracketId}`, error as Error);
     }
   }
 
@@ -34,17 +33,15 @@ export class BracketRepository implements IBracketRepository {
     try {
       const { error } = await supabase
         .from('brackets')
-        .update({ 
-          reset_match_needed: needed 
-        })
+        .update({ reset_match_needed: needed })
         .eq('id', bracketId);
       
-      if (error) throw new DatabaseOperationError('setResetMatchNeeded', `Failed to set reset match needed for bracket ${bracketId}`, error);
+      if (error) throw new DatabaseOperationError('setResetMatchNeeded', `Failed to update reset_match_needed for bracket ${bracketId}`, error);
     } catch (error) {
-      console.error(`Error setting reset match needed for bracket ${bracketId}:`, error);
+      console.error(`Error updating reset_match_needed for bracket ${bracketId}:`, error);
       throw error instanceof DatabaseOperationError 
         ? error 
-        : new DatabaseOperationError('setResetMatchNeeded', `Failed to set reset match needed for bracket ${bracketId}`, error as Error);
+        : new DatabaseOperationError('setResetMatchNeeded', `Failed to update reset_match_needed for bracket ${bracketId}`, error as Error);
     }
   }
 
@@ -55,10 +52,9 @@ export class BracketRepository implements IBracketRepository {
     try {
       const { error } = await supabase
         .from('brackets')
-        .update({ 
-          state: 'completed',
-          wb_champion_id: championId,
-          reset_match_needed: false
+        .update({
+          state: 'complete',
+          champion_id: championId
         })
         .eq('id', bracketId);
       
@@ -76,68 +72,45 @@ export class BracketRepository implements IBracketRepository {
    */
   async getBracketState(bracketId: string): Promise<BracketState> {
     try {
-      const { data, error } = await supabase
+      // Get the bracket data
+      const { data: bracket, error: bracketError } = await supabase
         .from('brackets')
         .select('wb_champion_id, reset_match_needed, state')
         .eq('id', bracketId)
         .single();
-        
-      if (error) throw new DatabaseOperationError('getBracketState', `Failed to get bracket state for bracket ${bracketId}`, error);
       
-      // Get the finals matches to determine champions
-      const { data: finalsMatches } = await supabase
+      if (bracketError) throw new DatabaseOperationError('getBracketState', `Failed to get bracket state for bracket ${bracketId}`, bracketError);
+      
+      // Get the losers bracket champion (the winner of the last losers bracket match)
+      const { data: loserFinalMatch, error: loserMatchError } = await supabase
         .from('playoff_matches')
-        .select('winner_id, team1_id, team2_id')
+        .select('winner_id')
         .eq('bracket_id', bracketId)
-        .eq('match_type', 'finals');
-        
-      // Find losers bracket champion (team that's not the WB champion in the finals)
-      let losersBracketChampionId: string | null = null;
+        .eq('match_type', 'losers')
+        .order('round', { ascending: false })
+        .order('position', { ascending: true })
+        .limit(1)
+        .maybeSingle();
       
-      if (finalsMatches && finalsMatches.length > 0 && data.wb_champion_id) {
-        const finalsMatch = finalsMatches[0];
-        if (finalsMatch.team1_id && finalsMatch.team1_id !== data.wb_champion_id) {
-          losersBracketChampionId = finalsMatch.team1_id;
-        } else if (finalsMatch.team2_id && finalsMatch.team2_id !== data.wb_champion_id) {
-          losersBracketChampionId = finalsMatch.team2_id;
-        }
-      }
+      if (loserMatchError) throw new DatabaseOperationError('getBracketState', `Failed to get losers bracket final match for bracket ${bracketId}`, loserMatchError);
       
-      // Determine overall champion based on matches and bracket state
-      let championId = null;
-      if (data.state === 'completed') {
-        // If there was a reset match, the winner of that is the champion
-        if (finalsMatches.length > 1) {
-          championId = finalsMatches[1].winner_id;
-        } 
-        // Otherwise if WB champion won the finals, they're the champion
-        else if (finalsMatches.length > 0 && finalsMatches[0].winner_id === data.wb_champion_id) {
-          championId = data.wb_champion_id;
-        }
-      }
+      const isWinnersBracketComplete = !!bracket.wb_champion_id;
+      const isLosersBracketComplete = !!loserFinalMatch?.winner_id;
       
       return {
-        isWinnersBracketComplete: !!data.wb_champion_id,
-        isLosersBracketComplete: !!losersBracketChampionId,
-        isResetMatchNeeded: !!data.reset_match_needed,
-        isComplete: data.state === 'completed',
-        winnersBracketChampionId: data.wb_champion_id,
-        losersBracketChampionId: losersBracketChampionId,
-        championId: championId
+        isWinnersBracketComplete,
+        isLosersBracketComplete,
+        isResetMatchNeeded: bracket.reset_match_needed || false,
+        isComplete: bracket.state === 'complete',
+        winnersBracketChampionId: bracket.wb_champion_id,
+        losersBracketChampionId: loserFinalMatch?.winner_id || null,
+        championId: null // We don't store this directly, would need another query
       };
     } catch (error) {
       console.error(`Error getting bracket state for bracket ${bracketId}:`, error);
-      if (error instanceof DatabaseOperationError) throw error;
-      
-      return {
-        isWinnersBracketComplete: false,
-        isLosersBracketComplete: false,
-        isResetMatchNeeded: false,
-        isComplete: false,
-        winnersBracketChampionId: null,
-        losersBracketChampionId: null,
-        championId: null
-      };
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('getBracketState', `Failed to get bracket state for bracket ${bracketId}`, error as Error);
     }
   }
 }

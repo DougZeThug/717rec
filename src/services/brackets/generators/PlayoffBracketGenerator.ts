@@ -2,11 +2,19 @@
 import { nanoid } from "nanoid";
 import { PlayoffMatch } from "../types";
 import { BaseBracketGenerator } from "./BaseBracketGenerator";
+import { PlayoffBracketLinker } from "../linkers/PlayoffBracketLinker";
 
 /**
  * Generator for playoff brackets with true double elimination
  */
 export class PlayoffBracketGenerator extends BaseBracketGenerator {
+  private linker: PlayoffBracketLinker;
+
+  constructor(bracketId: string, teams: any[]) {
+    super(bracketId, teams);
+    this.linker = new PlayoffBracketLinker(bracketId);
+  }
+
   /**
    * Generate a playoff bracket with true double elimination
    * @returns Array of matches for the bracket
@@ -28,9 +36,38 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
     this.generateFinalsMatch(matches);
     
     // Phase 4: Link matches together
-    // This would need to be implemented in a more complex method
+    this.linkMatches(matches);
     
     return matches;
+  }
+  
+  /**
+   * Link all matches together correctly
+   */
+  private linkMatches(matches: PlayoffMatch[]): void {
+    // Create a map of matches for easy lookup by round and position
+    const matchMap: Record<string, PlayoffMatch> = {};
+    
+    // Group by round and position for easier linking
+    matches.forEach(match => {
+      const key = `${match.matchType}-${match.round}-${match.position}`;
+      matchMap[key] = match;
+    });
+    
+    // Link play-in matches to first round
+    const playInMatches = matches.filter(m => m.matchType === "play-in");
+    const firstRoundMatches = matches.filter(m => m.matchType === "winners" && m.round === 1);
+    
+    this.linker.linkPlayInMatches(playInMatches, firstRoundMatches);
+    
+    // Calculate the number of rounds in the winners bracket
+    const winnerRounds = Math.log2(this.bracketSize);
+    
+    // Link winners bracket matches
+    this.linker.linkWinnersBracket(matches, winnerRounds);
+    
+    // Link losers bracket matches
+    this.linker.linkLosersBracket(matches, winnerRounds);
   }
   
   /**
@@ -104,6 +141,8 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
     const loserRounds = roundCount * 2 - 1; // Double the winners rounds minus 1
     
     for (let round = 1; round <= loserRounds; round++) {
+      // The number of matches in each losers round follows a pattern
+      // that alternates between small and large rounds
       const matchesInRound = round <= roundCount 
         ? this.bracketSize / Math.pow(2, round + 1)
         : this.bracketSize / Math.pow(2, 2 * roundCount - round);
@@ -138,26 +177,7 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
    * Generate finals match
    */
   private generateFinalsMatch(matches: PlayoffMatch[]): void {
-    const finalsMatch: PlayoffMatch = {
-      id: nanoid(),
-      round: 1,
-      position: 1,
-      matchType: "finals",
-      bracket_id: this.bracketId,
-      team1Id: null, // Winners bracket champion
-      team2Id: null, // Losers bracket champion
-      team1Seed: null,
-      team2Seed: null,
-      team1Score: null,
-      team2Score: null,
-      bestOf: 3,
-      winnerId: null,
-      loserId: null,
-      nextWinMatchId: null,
-      nextLoseMatchId: null,
-      status: "pending"
-    };
-    
-    matches.push(finalsMatch);
+    // Use the linker to create the finals matches properly
+    this.linker.generateFinals(matches);
   }
 }

@@ -57,19 +57,26 @@ export class MatchResultService {
         await this.bracketRepository.markWinnersBracketChampion(match.bracket_id, matchResult.winnerId);
       }
 
-      // 4. Advance winning team to next round
-      if (match.nextWinMatchId) {
-        await this.teamAdvancementService.advanceTeam(match.nextWinMatchId, matchResult.winnerId, true);
+      // 4. Handle special case for grand finals first match (GF1)
+      if (match.matchType === 'finals' && match.round === 1) {
+        await this.handleGrandFinalsResult(match.bracket_id, matchResult);
+      } 
+      // 5. Handle special case for grand finals reset match (GF2)
+      else if (match.matchType === 'finals' && match.round === 2) {
+        // This is the reset match, winner is tournament champion
+        await this.bracketRepository.markTournamentComplete(match.bracket_id, matchResult.winnerId);
       }
-      
-      // 5. Send loser to losers bracket if applicable
-      if (match.matchType === 'winners' && match.nextLoseMatchId) {
-        await this.teamAdvancementService.advanceTeam(match.nextLoseMatchId, matchResult.loserId, false);
-      }
-
-      // 6. Handle finals logic
-      if (match.matchType === 'finals') {
-        await this.handleFinalsResult(match.bracket_id, matchResult.winnerId);
+      // 6. Standard bracket advancement 
+      else {
+        // Advance winning team to next round if applicable
+        if (match.nextWinMatchId) {
+          await this.teamAdvancementService.advanceTeam(match.nextWinMatchId, matchResult.winnerId, true);
+        }
+        
+        // Send loser to losers bracket if applicable
+        if (match.matchType === 'winners' && match.nextLoseMatchId) {
+          await this.teamAdvancementService.advanceTeam(match.nextLoseMatchId, matchResult.loserId, false);
+        }
       }
     } catch (error) {
       console.error('Error recording match result:', error);
@@ -80,23 +87,24 @@ export class MatchResultService {
   }
 
   /**
-   * Handle the result of a finals match
+   * Handle the result of the first grand finals match
    */
-  private async handleFinalsResult(bracketId: string, winnerId: string): Promise<void> {
+  private async handleGrandFinalsResult(bracketId: string, matchResult: MatchResult): Promise<void> {
     const bracketState = await this.bracketRepository.getBracketState(bracketId);
     
-    const isWinnerFromLosersBracket = winnerId !== bracketState.winnersBracketChampionId;
+    const { winnerId, loserId } = matchResult;
+    const isWinnerFromLosersBracket = winnerId === bracketState.losersBracketChampionId;
     
     if (isWinnerFromLosersBracket) {
-      // Loser's bracket champion won, need reset match
+      // Losers bracket champion won, need reset match
       await this.bracketRepository.setResetMatchNeeded(bracketId, true);
       
-      // We could create the reset match here if needed
+      // Create the reset match (GF2)
       if (bracketState.losersBracketChampionId && bracketState.winnersBracketChampionId) {
         await this.resetMatchService.createResetMatch(
           bracketId,
-          bracketState.losersBracketChampionId,
-          bracketState.winnersBracketChampionId
+          bracketState.losersBracketChampionId, // GF1 winner goes to team1
+          bracketState.winnersBracketChampionId  // GF1 loser goes to team2
         );
       }
     } else {
