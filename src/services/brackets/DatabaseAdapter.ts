@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch, MatchResult, PlayoffGame } from "./types";
-import { DatabaseMatchResult } from "./database/types";
+import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from "./database/types";
 
 /**
  * Handles database operations for standard brackets

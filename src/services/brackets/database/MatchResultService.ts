@@ -41,7 +41,10 @@ export class MatchResultService {
         winnerId: matchResult.winner_id,
         loserId: matchResult.loser_id,
         team1Score: matchResult.team1_score,
-        team2Score: matchResult.team2_score
+        team2Score: matchResult.team2_score,
+        team1GameWins: matchResult.team1_game_wins,
+        team2GameWins: matchResult.team2_game_wins,
+        games: matchResult.games
       };
       
       await this.matchesRepository.updateMatchResult(matchResult.match_id, resultDTO);

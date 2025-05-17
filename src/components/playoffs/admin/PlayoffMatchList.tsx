@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { PlayoffMatch, Team } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,7 +81,7 @@ const PlayoffMatchList: React.FC<PlayoffMatchListProps> = ({
     if (!match.team1Id || !match.team2Id) {
       return <Badge variant="outline">Pending Teams</Badge>;
     } else if (match.winnerId) {
-      return <Badge variant="success">Complete</Badge>;
+      return <Badge variant="recreational">Complete</Badge>;
     } else {
       return <Badge variant="secondary">Ready</Badge>;
     }

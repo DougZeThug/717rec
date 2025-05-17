@@ -53,3 +53,50 @@ export interface IPlayoffMatchesRepository {
   getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
   getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
 }
+
+export interface IPlayoffGamesRepository {
+  saveGames(games: PlayoffGame[]): Promise<void>;
+  getMatchGames(matchId: string): Promise<PlayoffGame[]>;
+}
+
+export interface IBracketRepository {
+  markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void>;
+  setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void>;
+  markTournamentComplete(bracketId: string, championId: string): Promise<void>;
+  getBracketState(bracketId: string): Promise<DatabaseBracketState>;
+}
+
+export interface ITeamAdvancementService {
+  advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void>;
+  handleGrandFinalsReset(bracketId: string, winnersBracketChampionId: string, losersBracketChampionId: string, gf1WinnerId: string): Promise<string>;
+}
+
+export interface IResetMatchService {
+  createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<string>;
+}
+
+export interface IMatchResultService {
+  recordMatchResult(matchResult: DatabaseMatchResult): Promise<void>;
+}
+
+export interface DatabaseBracketState {
+  isWinnersBracketComplete: boolean;
+  isLosersBracketComplete: boolean;
+  isResetMatchNeeded: boolean;
+  isComplete: boolean;
+  winnersBracketChampionId: string | null;
+  losersBracketChampionId: string | null;
+  championId: string | null;
+}
+
+export interface DatabaseMatchResult {
+  match_id: string;
+  winner_id: string;
+  loser_id: string;
+  team1_score: number;
+  team2_score: number;
+  team1_game_wins: number;
+  team2_game_wins: number;
+  completed: boolean;
+  games?: PlayoffGame[];
+}

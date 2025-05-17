@@ -75,7 +75,9 @@ describe('PlayoffDatabaseAdapter', () => {
       winner_id: null,
       loser_id: null,
       next_win_match_id: null,
-      next_lose_match_id: null
+      next_lose_match_id: null,
+      team1_game_wins: null,
+      team2_game_wins: null
     };
     
     // Act
@@ -105,7 +107,9 @@ describe('PlayoffDatabaseAdapter', () => {
       winner_id: null,
       loser_id: null,
       next_win_match_id: null,
-      next_lose_match_id: null
+      next_lose_match_id: null,
+      team1_game_wins: null,
+      team2_game_wins: null
     }];
     
     vi.mocked(facade.getBracketMatches).mockResolvedValueOnce(dbMatches);
