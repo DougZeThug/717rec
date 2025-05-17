@@ -1,66 +1,64 @@
 
-import { PlayoffMatch, PlayoffMatchType } from "../../../types";
+import { PlayoffMatch } from "../../../types";
 
 /**
- * Utility class for organizing playoff matches by round and type
+ * Utility class for organizing playoff matches by type and round
  */
 export class PlayoffMatchOrganizer {
   /**
-   * Group matches by their matchType and round
-   * @param matches Array of all playoff matches
-   * @returns Object with matches grouped by type and round
-   */
-  static organizeByTypeAndRound(matches: PlayoffMatch[]): Record<PlayoffMatchType, Record<number, PlayoffMatch[]>> {
-    const result: Record<PlayoffMatchType, Record<number, PlayoffMatch[]>> = {
-      'winners': {},
-      'losers': {},
-      'finals': {},
-      'play-in': {},
-      'play-in-2': {}
-    };
-    
-    matches.forEach(match => {
-      if (!result[match.matchType][match.round]) {
-        result[match.matchType][match.round] = [];
-      }
-      result[match.matchType][match.round].push(match);
-    });
-    
-    return result;
-  }
-  
-  /**
-   * Group matches by round for a specific match type
-   * @param matchType Type of matches to filter
+   * Organize matches by round for a specific match type
+   * @param matchType Type of matches to organize
    * @param matches All bracket matches
-   * @returns Object with matches grouped by round
+   * @returns Object with rounds as keys and arrays of matches as values
    */
-  static organizeByRound(matchType: PlayoffMatchType, matches: PlayoffMatch[]): Record<number, PlayoffMatch[]> {
+  static organizeByRound(
+    matchType: string, 
+    matches: PlayoffMatch[]
+  ): Record<number, PlayoffMatch[]> {
+    // Filter matches by type
     const filteredMatches = matches.filter(m => m.matchType === matchType);
-    const rounds: Record<number, PlayoffMatch[]> = {};
+    
+    // Group by round
+    const matchesByRound: Record<number, PlayoffMatch[]> = {};
     
     filteredMatches.forEach(match => {
-      if (!rounds[match.round]) {
-        rounds[match.round] = [];
+      if (!matchesByRound[match.round]) {
+        matchesByRound[match.round] = [];
       }
-      rounds[match.round].push(match);
+      matchesByRound[match.round].push(match);
     });
     
-    return rounds;
+    return matchesByRound;
   }
   
   /**
-   * Find the maximum round number for a specific match type
+   * Get the highest round number for a specific match type
    * @param matchType Type of matches to check
    * @param matches All bracket matches
-   * @returns The highest round number
+   * @returns Highest round number
    */
-  static findMaxRound(matchType: PlayoffMatchType, matches: PlayoffMatch[]): number {
-    const byRound = this.organizeByRound(matchType, matches);
+  static getMaxRound(matchType: string, matches: PlayoffMatch[]): number {
+    const filteredMatches = matches.filter(m => m.matchType === matchType);
+    if (filteredMatches.length === 0) return 0;
     
-    return Math.max(
-      ...Object.keys(byRound).map(Number),
-      0 // Provide fallback if there are no rounds
+    return Math.max(...filteredMatches.map(m => m.round));
+  }
+  
+  /**
+   * Get matches for a specific type and round
+   * @param matchType Type of matches to get
+   * @param round Round number
+   * @param matches All bracket matches
+   * @returns Array of matches
+   */
+  static getMatchesForRound(
+    matchType: string, 
+    round: number, 
+    matches: PlayoffMatch[]
+  ): PlayoffMatch[] {
+    return matches.filter(m => 
+      m.matchType === matchType && 
+      m.round === round
     );
   }
 }

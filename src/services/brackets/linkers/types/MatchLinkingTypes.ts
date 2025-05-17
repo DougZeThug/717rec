@@ -66,7 +66,7 @@ export interface IMatchLinker<TMatch extends BracketMatch> {
 /**
  * Interface for finals generation
  */
-export interface IFinalsGenerator<TMatch extends BracketMatch> {
+export interface IFinalsGenerator<TMatch> {
   /**
    * Generate finals match(es)
    * @param matches Array of all matches

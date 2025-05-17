@@ -35,4 +35,16 @@ export class MatchTypeAdapter {
     const standardTypes: MatchType[] = ["winners", "losers", "finals", "play-in"];
     return standardTypes.includes(matchType as MatchType);
   }
+  
+  /**
+   * Check if a value is a PlayoffMatch
+   * @param match The match to check
+   * @returns True if the match is a PlayoffMatch
+   */
+  static isPlayoffMatch(match: any): boolean {
+    return match && 
+      typeof match === 'object' && 
+      'team1Score' in match && 
+      'team2Score' in match;
+  }
 }

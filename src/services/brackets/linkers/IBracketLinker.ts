@@ -1,11 +1,11 @@
 
-import { BracketMatch, PlayoffMatch } from "../types";
+import { BracketMatch } from "../types";
 
 /**
  * Interface for bracket linker implementations
  * Defines the common methods that all bracket linkers must implement
  */
-export interface IBracketLinker<TMatch extends BracketMatch = BracketMatch> {
+export interface IBracketLinker<TMatch extends BracketMatch> {
   /**
    * Get the map of all matches by their key
    * @returns Match map

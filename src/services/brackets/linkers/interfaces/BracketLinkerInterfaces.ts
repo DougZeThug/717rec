@@ -4,7 +4,7 @@ import { BracketMatch } from "../../types";
 /**
  * Base interface for all bracket linker implementations
  */
-export interface IBracketLinker<TMatch extends BracketMatch = BracketMatch> {
+export interface IBracketLinker<TMatch> {
   /**
    * Get the map of all matches by their key
    * @returns Match map
@@ -35,7 +35,7 @@ export interface IBracketLinker<TMatch extends BracketMatch = BracketMatch> {
 /**
  * Interface for match map operations
  */
-export interface IMatchMapOperations<TMatch extends BracketMatch> {
+export interface IMatchMapOperations<TMatch> {
   /**
    * Add a match to the match map
    * @param match The match to add
@@ -67,7 +67,7 @@ export interface IMatchMapOperations<TMatch extends BracketMatch> {
 /**
  * Interface for bracket connection operations
  */
-export interface IBracketConnectionOperations<TMatch extends BracketMatch> {
+export interface IBracketConnectionOperations<TMatch> {
   /**
    * Link winners bracket matches
    * @param matches Array of all matches
