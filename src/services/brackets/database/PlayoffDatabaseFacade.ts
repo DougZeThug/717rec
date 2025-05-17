@@ -1,5 +1,5 @@
 
-import { BracketState, MatchResult, PlayoffGame, PlayoffMatch } from "../types";
+import { BracketState, PlayoffGame } from "../types";
 import { BracketRepository } from "./BracketRepository";
 import { MatchResultService } from "./MatchResultService";
 import { PlayoffGamesRepository } from "./PlayoffGamesRepository";

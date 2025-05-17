@@ -39,6 +39,9 @@ export * from './generators/PlayoffBracketGenerator';
 export * from './utils/BracketSizeCalculator';
 export * from './utils/TeamSeeding';
 export * from './utils/ScoreParser';
-export * from './DatabaseAdapter';
+// Export the DatabaseAdapter from the root directory (not the one in database folder)
+export { DatabaseAdapter } from './DatabaseAdapter';
+// Export PlayoffDatabaseAdapter from the correct location
+export { PlayoffDatabaseAdapter } from './database/PlayoffDatabaseAdapter';
 export * from './database';
 export * from './linkers/PlayoffBracketLinker';

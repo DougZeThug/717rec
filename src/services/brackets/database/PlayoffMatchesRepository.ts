@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffMatch, PlayoffMatchType } from "../types";
+import { PlayoffMatchType } from "../types";
 import { DatabaseOperationError, DatabasePlayoffMatch, IPlayoffMatchesRepository, MatchResultDTO } from "./types";
 
 /**
@@ -14,9 +14,15 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
     try {
       if (!matches || matches.length === 0) return;
 
+      // We need to make sure match_type is a valid enum value for the database
+      const preparedMatches = matches.map(match => ({
+        ...match,
+        match_type: match.match_type as PlayoffMatchType
+      }));
+
       const { error } = await supabase
         .from('playoff_matches')
-        .insert(matches);
+        .insert(preparedMatches);
       
       if (error) throw new DatabaseOperationError('saveMatches', 'Failed to save matches', error);
     } catch (error) {
