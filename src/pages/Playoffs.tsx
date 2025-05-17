@@ -229,8 +229,6 @@ const Playoffs = () => {
               teams={teams || []}
               onSave={handleSaveMatchScore}
               onCancel={handleCloseMatchEditor}
-              challongeTournamentId={bracket?.challongeTournamentId}
-              challongeMatchId={editingMatch.challongeMatchId}
             />
           )}
         </DialogContent>
