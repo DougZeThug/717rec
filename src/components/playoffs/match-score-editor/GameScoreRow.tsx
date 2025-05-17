@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MinusCircle } from "lucide-react";
 import { Team } from "@/types";
 import GameScoreInput from "./GameScoreInput";
+import { cn } from "@/lib/utils";
 
 interface GameScoreRowProps {
   index: number;
@@ -25,7 +26,11 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
   canRemove
 }) => {
   return (
-    <div className="flex items-center space-x-2 mb-3">
+    <div className="flex items-center space-x-2 mb-3 rounded-md p-2 bg-gray-50 dark:bg-gray-800/20">
+      <div className="flex-none w-6 h-6 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-full text-xs font-bold">
+        {index + 1}
+      </div>
+      
       <GameScoreInput
         index={index}
         team={team1}
@@ -35,8 +40,11 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
         teamNumber={1}
       />
       
-      <div className="flex items-center justify-center h-full pt-4">
-        <span className="text-gray-500">vs</span>
+      <div className={cn(
+        "flex items-center justify-center h-full",
+        "px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800"
+      )}>
+        <span className="text-gray-500 dark:text-gray-400">vs</span>
       </div>
       
       <GameScoreInput

@@ -1,6 +1,8 @@
 
 import React from "react";
 import { PlayoffGame } from "@/types";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface GamesListProps {
   games: PlayoffGame[];
@@ -9,6 +11,9 @@ interface GamesListProps {
 }
 
 const GamesList: React.FC<GamesListProps> = ({ games, team1Id, team2Id }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
   if (!games || games.length === 0) return null;
   
   return (
@@ -16,15 +21,38 @@ const GamesList: React.FC<GamesListProps> = ({ games, team1Id, team2Id }) => {
       <div className="text-sm font-semibold mb-2">Games</div>
       <div className="space-y-2">
         {games.map((game, index) => (
-          <div key={game.id} className="flex justify-between items-center text-sm">
-            <span>Game {index + 1}</span>
-            <div>
-              <span className={game.winner === team1Id ? "font-bold" : ""}>
+          <div 
+            key={game.id} 
+            className={cn(
+              "flex justify-between items-center text-sm p-2 rounded-md",
+              isLight ? "bg-gray-50" : "bg-gray-800/30"
+            )}
+          >
+            <span className="font-medium">Game {index + 1}</span>
+            <div className="flex items-center">
+              <span className={cn(
+                "tabular-nums",
+                game.winner === "team1Id" ? "font-bold" : ""
+              )}>
                 {game.team1Score}
               </span>
-              {" - "}
-              <span className={game.winner === team2Id ? "font-bold" : ""}>
+              
+              <span className="mx-1 text-gray-400">-</span>
+              
+              <span className={cn(
+                "tabular-nums",
+                game.winner === "team2Id" ? "font-bold" : ""
+              )}>
                 {game.team2Score}
+              </span>
+              
+              <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700">
+                {game.winner === "team1Id" 
+                  ? "Team 1 won" 
+                  : game.winner === "team2Id" 
+                    ? "Team 2 won" 
+                    : "Draw"
+                }
               </span>
             </div>
           </div>

@@ -5,7 +5,7 @@ import type { PlayoffMatch, Team, PlayoffGame } from "@/types";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, AlertTriangle } from "lucide-react";
 import { blueAmber } from "@/styles/design-system";
 
 interface MatchCardProps {
@@ -64,6 +64,29 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const isPending = !match.team1Id || !match.team2Id;
   const isComplete = !!match.winnerId;
   const isPlayIn = match.matchType === 'play-in';
+  const isResetMatch = match.matchType === 'finals' && match.round > 3;
+
+  // Format series score for display
+  const getSeriesScoreText = () => {
+    if (!match.team1GameWins && !match.team2GameWins) return '';
+    return `${match.team1GameWins || 0}-${match.team2GameWins || 0}`;
+  };
+
+  // Get match status text
+  const getMatchStatusText = () => {
+    if (isPending) return "Waiting for teams";
+    if (isComplete) return "Final";
+    if (isResetMatch) return "Bracket Reset";
+    return "In progress";
+  };
+
+  // Get match status color classes
+  const getStatusClasses = () => {
+    if (isPending) return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400";
+    if (isComplete) return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+    if (isResetMatch) return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+    return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+  };
 
   return (
     <div className="relative flex">
@@ -73,14 +96,22 @@ const MatchCard: React.FC<MatchCardProps> = ({
           isLight 
             ? "border border-gray-200 hover:border-gray-300 shadow-sm"
             : "border border-gray-800 hover:border-gray-700 bg-gray-900/50 shadow-md",
-          isPlayIn && "border-l-4 border-purple-500"
+          isPlayIn && "border-l-4 border-purple-500",
+          isResetMatch && "border-l-4 border-amber-500"
         )}
         onClick={() => onEditMatch && match.team1Id && match.team2Id && onEditMatch(match.id)}
       >
         <CardContent className="p-3">
           <div className="space-y-2">
             <div className="flex justify-between items-center mb-1 text-xs text-gray-500 dark:text-gray-400">
-              <span>Best of {match.bestOf || 3}</span>
+              <div className="flex items-center">
+                <span>Best of {match.bestOf || 3}</span>
+                {getSeriesScoreText() && (
+                  <span className="ml-2 font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800">
+                    {getSeriesScoreText()}
+                  </span>
+                )}
+              </div>
               <span className="text-xs font-mono">Match #{match.position}</span>
             </div>
 
@@ -169,21 +200,36 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
 
             {/* Match Status Display */}
-            {isPending && (
-              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {isPlayIn ? "Play-in Match" : "Waiting for teams"}
-                </span>
+            <div className={cn(
+              "mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center",
+            )}>
+              <div className={cn(
+                "text-center px-2 py-1 rounded-full text-xs",
+                getStatusClasses()
+              )}>
+                {getMatchStatusText()}
               </div>
-            )}
+              
+              {isResetMatch && (
+                <div className="flex items-center text-amber-500">
+                  <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+                  <span className="text-xs">Bracket Reset</span>
+                </div>
+              )}
+            </div>
 
-            {/* Games detail section - only show if there are games */}
+            {/* Games detail section - condensed view */}
             {match.games && match.games.length > 0 && (
               <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div className="text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Games</div>
-                <div className="grid grid-cols-3 gap-1">
+                <div className="flex justify-center gap-1">
                   {match.games.map((game, index) => (
-                    <GameResult key={game.id} game={game} index={index} />
+                    <GameResultDot 
+                      key={game.id || index} 
+                      winnerTeam={game.winner === "team1Id" ? 1 : 2}
+                      isTeam1Winner={match.winnerId === match.team1Id}
+                      isTeam2Winner={match.winnerId === match.team2Id}
+                    />
                   ))}
                 </div>
               </div>
@@ -205,20 +251,29 @@ const MatchCard: React.FC<MatchCardProps> = ({
   );
 };
 
-const GameResult: React.FC<{ game: PlayoffGame, index: number }> = ({ game, index }) => {
+const GameResultDot: React.FC<{ 
+  winnerTeam: number; 
+  isTeam1Winner: boolean;
+  isTeam2Winner: boolean;
+}> = ({ winnerTeam, isTeam1Winner, isTeam2Winner }) => {
+  const team1WonGame = winnerTeam === 1;
+  const team2WonGame = winnerTeam === 2;
+  
   return (
-    <div className="text-center text-xs bg-gray-50 dark:bg-gray-800/40 p-1 rounded">
-      <div className="font-medium text-gray-500 dark:text-gray-400">Game {index + 1}</div>
-      <div className="font-mono">
-        <span className={game.winner === 'team1Id' ? "font-bold" : ""}>
-          {game.team1Score}
-        </span>
-        {" - "}
-        <span className={game.winner === 'team2Id' ? "font-bold" : ""}>
-          {game.team2Score}
-        </span>
-      </div>
-    </div>
+    <div 
+      className={cn(
+        "w-3 h-3 rounded-full",
+        team1WonGame 
+          ? isTeam1Winner 
+            ? "bg-green-500" 
+            : "bg-blue-400"
+          : team2WonGame 
+            ? isTeam2Winner 
+              ? "bg-green-500" 
+              : "bg-blue-400"
+            : "bg-gray-300 dark:bg-gray-600"
+      )}
+    />
   );
 };
 
