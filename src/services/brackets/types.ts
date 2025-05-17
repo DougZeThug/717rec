@@ -1,4 +1,3 @@
-
 import { Team } from "@/types";
 import { nanoid } from "nanoid";
 
@@ -53,6 +52,8 @@ export interface PlayoffMatch {
   team2Seed: number | null;
   team1Score: number | null;
   team2Score: number | null;
+  team1GameWins: number | null;
+  team2GameWins: number | null;
   bestOf: number;
   winnerId: string | null;
   loserId: string | null;

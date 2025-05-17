@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffGame } from "../types";
+import { PlayoffGame, PlayoffMatchType } from "../types";
 import { DatabaseOperationError, DatabasePlayoffMatch, IPlayoffMatchesRepository, MatchResultDTO } from "./types";
 
 /**
