@@ -1,7 +1,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { nanoid } from "nanoid";
-import { PlayoffBracketLinker } from "../PlayoffBracketLinker";
+import { PlayoffBracketLinker } from "../playoff/PlayoffBracketLinker";
 import { PlayoffMatch, PlayoffMatchType } from "../../types";
 
 describe("PlayoffBracketLinker", () => {

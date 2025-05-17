@@ -56,7 +56,7 @@ export type {
 } from './linkers/interfaces/BracketLinkerInterfaces';
 export * from './linkers/base/AbstractBracketLinker';
 export * from './linkers/implementations/StandardBracketLinker';
-export * from './linkers/PlayoffBracketLinker';
+export * from './linkers/playoff/PlayoffBracketLinker';
 export * from './linkers/utils/LinkingUtils';
 export * from './linkers/utils/BracketLinkingUtilities';
 export * from './linkers/utils/FinalsGeneratorUtils';

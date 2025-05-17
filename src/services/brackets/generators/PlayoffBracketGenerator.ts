@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { PlayoffMatch } from "../types";
 import { BaseBracketGenerator } from "./BaseBracketGenerator";
-import { PlayoffBracketLinker } from "../linkers/PlayoffBracketLinker";
+import { PlayoffBracketLinker } from "../linkers/playoff/PlayoffBracketLinker";
 
 /**
  * Generator for playoff brackets with true double elimination
@@ -43,31 +43,12 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
   /**
    * Link all matches together correctly
    */
-  private linkMatches(matches: PlayoffMatch[]): void {
-    // Create a map of matches for easy lookup by round and position
-    const matchMap: Record<string, PlayoffMatch> = {};
-    
-    // Group by round and position for easier linking
-    matches.forEach(match => {
-      const key = `${match.matchType}-${match.round}-${match.position}`;
-      matchMap[key] = match;
-    });
-    
+  private linkMatches(matches: PlayoffMatch[]): void {    
     // Calculate the number of rounds in the winners bracket
     const winnerRounds = Math.log2(this.bracketSize);
     
-    // Link winners bracket matches
-    this.linker.linkWinnersBracket(matches, winnerRounds);
-    
-    // Link losers bracket matches
-    this.linker.linkLosersBracket(matches, winnerRounds);
-    
-    // Link play-in matches if they exist
-    const playInMatches = matches.filter(m => m.matchType === "play-in" || m.matchType === "play-in-2");
-    
-    if (playInMatches.length > 0) {
-      this.linker.linkPlayInMatches(matches);
-    }
+    // Use the linker to connect all bracket sections
+    this.linker.linkMatches(matches, winnerRounds);
   }
   
   /**
