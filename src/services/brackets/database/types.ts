@@ -1,5 +1,5 @@
 
-import { BracketState, MatchResult, PlayoffGame, PlayoffMatch } from "../types";
+import { PlayoffGame } from "../types";
 
 /**
  * Interface for repository handling teams advancement
@@ -23,16 +23,16 @@ export interface IBracketRepository {
   markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void>;
   setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void>;
   markTournamentComplete(bracketId: string, championId: string): Promise<void>;
-  getBracketState(bracketId: string): Promise<BracketState>;
+  getBracketState(bracketId: string): Promise<DatabaseBracketState>;
 }
 
 /**
  * Interface for playoff matches repository operations
  */
 export interface IPlayoffMatchesRepository {
-  saveMatches(matches: PlayoffMatch[]): Promise<void>;
-  getBracketMatches(bracketId: string): Promise<PlayoffMatch[]>;
-  getMatchById(matchId: string): Promise<PlayoffMatch | null>;
+  saveMatches(matches: DatabasePlayoffMatch[]): Promise<void>;
+  getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
+  getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
   updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
 }
 
@@ -48,7 +48,7 @@ export interface IPlayoffGamesRepository {
  * Interface for match result service operations
  */
 export interface IMatchResultService {
-  recordMatchResult(matchResult: MatchResult): Promise<void>;
+  recordMatchResult(matchResult: DatabaseMatchResult): Promise<void>;
 }
 
 /**
@@ -84,7 +84,7 @@ export class DatabaseOperationError extends Error {
 /**
  * Database representation of bracket state
  */
-export interface BracketState {
+export interface DatabaseBracketState {
   isWinnersBracketComplete: boolean;
   isLosersBracketComplete: boolean;
   isResetMatchNeeded: boolean;

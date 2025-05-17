@@ -27,9 +27,9 @@ export type {
 } from './database/types';
 
 // Explicitly handle ambiguous types by using a namespace or renaming
-export type { BracketState as DatabaseBracketState } from './database/types';
-export type { MatchResult as DatabaseMatchResult } from './database/types';
-export type { PlayoffMatch as DatabasePlayoffMatch } from './database/types';
+export type { DatabaseBracketState } from './database/types';
+export type { DatabaseMatchResult } from './database/types';
+export type { DatabasePlayoffMatch } from './database/types';
 
 // Re-export classes and function exports
 export * from './BracketGenerator';
@@ -42,4 +42,3 @@ export * from './utils/ScoreParser';
 export * from './DatabaseAdapter';
 export * from './database';
 export * from './linkers/PlayoffBracketLinker';
-

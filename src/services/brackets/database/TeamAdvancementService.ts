@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { PlayoffMatchType } from "../types";
 import { DatabaseOperationError, ITeamAdvancementService } from "./types";
 
 /**
@@ -75,7 +76,7 @@ export class TeamAdvancementService implements ITeamAdvancementService {
           bracket_id: bracketId,
           round: 2,
           position: 1,
-          match_type: 'finals',
+          match_type: 'finals' as PlayoffMatchType, // Fixed: explicitly cast to PlayoffMatchType
           team1_id: losersBracketChampionId, // GF1 winner
           team2_id: winnersBracketChampionId, // GF1 loser
           status: 'pending',

@@ -46,7 +46,7 @@ export class ResetMatchService implements IResetMatchService {
         bracket_id: bracketId,
         round: 2, // Second finals round
         position: 1,
-        match_type: 'finals',
+        match_type: 'finals' as PlayoffMatchType, // Type cast to ensure correct type
         team1_id: team1Id, // Winner of GF1 (usually the loser's bracket champion)
         team2_id: team2Id, // Loser of GF1 (usually the winner's bracket champion) 
         status: 'pending',
