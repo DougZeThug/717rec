@@ -1,11 +1,13 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import type { PlayoffBracket, Team } from "@/types";
 import RoundColumn from "./RoundColumn";
 import { getBracketConnectorPaths, getVerticalSpacing, getNextMatch } from "./BracketUtils";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { blueAmber } from "@/styles/design-system";
+import MatchScoreEditor from "./match-score-editor/MatchScoreEditor";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface BracketViewProps {
   bracket: PlayoffBracket;
@@ -16,6 +18,28 @@ interface BracketViewProps {
 const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  const [selectedMatch, setSelectedMatch] = useState<any | null>(null);
+  const [scoreEditorOpen, setScoreEditorOpen] = useState(false);
+  
+  // Handle match edit
+  const handleMatchEdit = (match: any) => {
+    setSelectedMatch(match);
+    setScoreEditorOpen(true);
+  };
+  
+  // Handle score editor close
+  const handleScoreEditorClose = () => {
+    setScoreEditorOpen(false);
+    setSelectedMatch(null);
+  };
+  
+  // Handle successful score save
+  const handleScoreSaved = () => {
+    // Could trigger a refetch of bracket data here
+    if (onEditMatch && selectedMatch) {
+      onEditMatch(selectedMatch.id);
+    }
+  };
   
   // Group matches by round and type
   const matchesByRoundAndType = useMemo(() => {
@@ -58,6 +82,16 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
     });
   }, [matchesByRoundAndType]);
 
+  // Determine if this is a double elimination bracket with potential reset match
+  const isDoubleElimination = useMemo(() => {
+    return bracket.matches.some(match => match.matchType === 'losers');
+  }, [bracket.matches]);
+
+  // Check if a reset match exists
+  const hasResetMatch = useMemo(() => {
+    return bracket.matches.some(match => match.matchType === 'finals' && match.round === 2);
+  }, [bracket.matches]);
+
   // Calculate bracket visualization paths for connectors
   const connectorPaths = getBracketConnectorPaths(bracket.matches);
 
@@ -83,6 +117,11 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
             // Calculate vertical spacing between matches based on round
             const verticalSpacing = getVerticalSpacing(roundIndex);
             
+            // If this is a reset match and it doesn't exist, don't render it
+            if (type === 'finals' && parseInt(round) === 2 && !hasResetMatch) {
+              return null;
+            }
+            
             return (
               <RoundColumn
                 key={key}
@@ -90,7 +129,13 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
                 type={type}
                 matches={roundMatches}
                 teams={teams}
-                onEditMatch={onEditMatch}
+                onEditMatch={(matchId) => {
+                  // Find the match to edit
+                  const match = bracket.matches.find(m => m.id === matchId);
+                  if (match) {
+                    handleMatchEdit(match);
+                  }
+                }}
                 verticalSpacing={verticalSpacing}
                 roundIndex={roundIndex}
                 getNextMatch={(match) => getNextMatch(match, bracket.matches)}
@@ -118,7 +163,41 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
             ))}
           </svg>
         </div>
+        
+        {/* Special indicators for bracket type */}
+        {isDoubleElimination && (
+          <div className={cn(
+            "text-sm text-center p-2 rounded",
+            isLight ? "bg-amber-50 text-amber-800" : "bg-amber-900/20 text-amber-400"
+          )}>
+            <p>
+              Double Elimination Bracket: 
+              {hasResetMatch ? 
+                " Grand finals reset match will be played if loser's bracket champion wins first grand final match." :
+                " A reset match will be created if the loser's bracket champion wins the first grand final match."}
+            </p>
+          </div>
+        )}
       </div>
+      
+      {/* Match Score Editor Dialog */}
+      {selectedMatch && (
+        <Dialog open={scoreEditorOpen} onOpenChange={setScoreEditorOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <MatchScoreEditor
+              matchId={selectedMatch.id}
+              bracketId={bracket.id}
+              team1Id={selectedMatch.team1Id || ''}
+              team2Id={selectedMatch.team2Id || ''}
+              team1Name={teams.find(t => t.id === selectedMatch.team1Id)?.name || 'Team 1'}
+              team2Name={teams.find(t => t.id === selectedMatch.team2Id)?.name || 'Team 2'}
+              bestOf={selectedMatch.bestOf || 3}
+              onClose={handleScoreEditorClose}
+              onSaveSuccess={handleScoreSaved}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

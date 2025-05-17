@@ -64,6 +64,18 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const isPending = !match.team1Id || !match.team2Id;
   const isComplete = !!match.winnerId;
   const isPlayIn = match.matchType === 'play-in';
+  
+  // Determine if this is a grand finals reset match
+  const isResetMatch = match.matchType === 'finals' && match.round === 2;
+  
+  // Get match status text
+  const getMatchStatusText = () => {
+    if (isPlayIn) return "Play-in Match";
+    if (isPending) return "Waiting for teams";
+    if (isResetMatch) return "Grand Finals Reset";
+    if (match.matchType === 'finals' && match.round === 1) return "Grand Finals";
+    return "";
+  };
 
   return (
     <div className="relative flex">
@@ -73,7 +85,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
           isLight 
             ? "border border-gray-200 hover:border-gray-300 shadow-sm"
             : "border border-gray-800 hover:border-gray-700 bg-gray-900/50 shadow-md",
-          isPlayIn && "border-l-4 border-purple-500"
+          isPlayIn && "border-l-4 border-purple-500",
+          isResetMatch && "border-l-4 border-amber-500"
         )}
         onClick={() => onEditMatch && match.team1Id && match.team2Id && onEditMatch(match.id)}
       >
@@ -169,10 +182,17 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
 
             {/* Match Status Display */}
-            {isPending && (
+            {(isPending || isPlayIn || isResetMatch) && (
               <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {isPlayIn ? "Play-in Match" : "Waiting for teams"}
+                <span className={cn(
+                  "text-xs px-2 py-0.5 rounded",
+                  isPlayIn 
+                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300" 
+                    : isResetMatch
+                      ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                      : "text-gray-500 dark:text-gray-400"
+                )}>
+                  {getMatchStatusText()}
                 </span>
               </div>
             )}
@@ -185,6 +205,20 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   {match.games.map((game, index) => (
                     <GameResult key={game.id} game={game} index={index} />
                   ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Match status indicator */}
+            {match.status && match.status !== 'pending' && (
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-center">
+                <div className={cn(
+                  "text-xs px-2 py-0.5 rounded-full",
+                  match.status === 'completed' 
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+                )}>
+                  {match.status === 'completed' ? 'Completed' : 'In Progress'}
                 </div>
               </div>
             )}

@@ -1,200 +1,245 @@
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
-import type { PlayoffMatch, Team } from "@/types";
-import { validateGameScore } from "@/hooks/matches/utils/matchValidationUtils";
-import { ChallongeService } from "@/services/ChallongeService";
-import GameScoreRow from "./GameScoreRow";
-import GamesList from "./GamesList";
-import MatchScoreActions from "./MatchScoreActions";
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Loader2, Save, X } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { PlayoffGame, MatchResult } from "@/services/brackets/types";
+import { supabase } from "@/integrations/supabase/client";
+import { PlayoffDatabaseAdapter } from "@/services/brackets/database/PlayoffDatabaseAdapter";
+import GamesList from './GamesList';
+import QuickScoreEditor from './QuickScoreEditor';
 
 interface MatchScoreEditorProps {
-  match: PlayoffMatch;
-  teams: Team[];
-  onSave: (
-    matchId: string,
-    team1Score: number,
-    team2Score: number,
-    games: { team1Score: number; team2Score: number; }[],
-    team1GameWins: number,
-    team2GameWins: number
-  ) => Promise<void>;
-  onCancel: () => void;
-  challongeTournamentId?: string | null;
-  challongeMatchId?: string | null;
+  matchId: string;
+  bracketId: string;
+  team1Id: string;
+  team2Id: string;
+  team1Name: string;
+  team2Name: string;
+  bestOf: number;
+  onClose: () => void;
+  onSaveSuccess: () => void;
 }
 
 const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
-  match,
-  teams,
-  onSave,
-  onCancel,
-  challongeTournamentId,
-  challongeMatchId
+  matchId,
+  bracketId,
+  team1Id,
+  team2Id, 
+  team1Name,
+  team2Name,
+  bestOf = 3,
+  onClose,
+  onSaveSuccess
 }) => {
+  const { toast } = useToast();
+  const [games, setGames] = useState<PlayoffGame[]>([
+    { id: '1', matchId, gameNumber: 1, team1Score: 0, team2Score: 0, winnerId: null },
+    { id: '2', matchId, gameNumber: 2, team1Score: 0, team2Score: 0, winnerId: null },
+    { id: '3', matchId, gameNumber: 3, team1Score: 0, team2Score: 0, winnerId: null },
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [games, setGames] = useState<{ team1Score: number; team2Score: number; }[]>(
-    match.games && match.games.length > 0
-      ? match.games.map(game => ({
-          team1Score: game.team1Score,
-          team2Score: game.team2Score
-        }))
-      : [{ team1Score: 0, team2Score: 0 }]
-  );
+  const [viewMode, setViewMode] = useState<'quick' | 'detailed'>('quick');
 
-  const team1 = teams.find(t => t.id === match.team1Id);
-  const team2 = teams.find(t => t.id === match.team2Id);
-  
-  const handleGameScoreChange = (index: number, team: 1 | 2, score: number) => {
-    const newGames = [...games];
-    if (team === 1) {
-      newGames[index].team1Score = score;
-    } else {
-      newGames[index].team2Score = score;
-    }
-    setGames(newGames);
-    validateGameScores();
-  };
-  
-  const addGame = () => {
-    setGames([...games, { team1Score: 0, team2Score: 0 }]);
-  };
-  
-  const removeGame = (index: number) => {
-    if (games.length <= 1) return;
-    const newGames = [...games];
-    newGames.splice(index, 1);
-    setGames(newGames);
-    validateGameScores();
-  };
-  
-  const calculateTotalScore = () => {
-    const team1Wins = games.filter(g => g.team1Score > g.team2Score).length;
-    const team2Wins = games.filter(g => g.team2Score > g.team1Score).length;
-    return { team1Wins, team2Wins };
-  };
-  
-  const validateGameScores = () => {
-    const { team1Wins, team2Wins } = calculateTotalScore();
-    const validation = validateGameScore(team1Wins, team2Wins, match.bestOf);
+  // Calculate match result based on games
+  const calculateMatchResult = (selectedGames: PlayoffGame[]): MatchResult | null => {
+    const completedGames = selectedGames.filter(
+      game => game.team1Score > 0 || game.team2Score > 0
+    );
     
-    if (!validation.isValid) {
-      setValidationError(validation.errorMessage || "Invalid score combination");
-      return false;
+    if (!completedGames.length) {
+      return null;
     }
     
-    setValidationError(null);
-    return true;
-  };
-  
-  const handleSave = async () => {
-    if (!validateGameScores()) {
-      return;
+    const team1Wins = completedGames.filter(
+      game => game.team1Score > game.team2Score
+    ).length;
+    
+    const team2Wins = completedGames.filter(
+      game => game.team2Score > game.team1Score
+    ).length;
+    
+    // Determine match winner if either team has won enough games
+    if (team1Wins > bestOf / 2) {
+      return {
+        matchId,
+        winnerId: team1Id,
+        loserId: team2Id,
+        team1Score: team1Wins,
+        team2Score: team2Wins,
+        games: completedGames
+      };
+    } else if (team2Wins > bestOf / 2) {
+      return {
+        matchId,
+        winnerId: team2Id,
+        loserId: team1Id,
+        team1Score: team1Wins,
+        team2Score: team2Wins,
+        games: completedGames
+      };
     }
+    
+    return null;
+  };
+
+  const handleQuickScoreSubmit = async (team1GameWins: number, team2GameWins: number) => {
+    setIsSubmitting(true);
+    console.log(`Quick score submission: ${team1GameWins}-${team2GameWins}`);
     
     try {
-      setIsSubmitting(true);
-      const { team1Wins, team2Wins } = calculateTotalScore();
+      // Generate games array based on quick score
+      const quickGames: PlayoffGame[] = [];
       
-      const team1Score = team1Wins > team2Wins ? 1 : 0;
-      const team2Score = team2Wins > team1Wins ? 1 : 0;
-      
-      // Update Challonge if we have the necessary IDs
-      if (challongeTournamentId && challongeMatchId) {
-        try {
-          // Create scores CSV string - format: "team1score-team2score,team1score-team2score"
-          const scoresCsv = games.map(game => `${game.team1Score}-${game.team2Score}`).join(',');
-          
-          // Calculate the winner ID for Challonge
-          const winnerId = team1Wins > team2Wins 
-            ? match.team1ChallongeId 
-            : team2Wins > team1Wins 
-              ? match.team2ChallongeId 
-              : undefined;
-              
-          const loserId = team1Wins > team2Wins 
-            ? match.team2ChallongeId 
-            : team2Wins > team1Wins 
-              ? match.team1ChallongeId 
-              : undefined;
-          
-          if (winnerId) {
-            await ChallongeService.updateMatch({
-              tournamentId: challongeTournamentId,
-              matchId: challongeMatchId,
-              scoresCsv: scoresCsv,
-              winnerId: winnerId.toString(),
-              loserId: loserId?.toString(),
-            });
-            console.log("Challonge match updated successfully");
-          }
-        } catch (error) {
-          console.error("Error updating Challonge match:", error);
-          // Continue with local update even if Challonge update fails
-        }
+      // Add games for team1 wins
+      for (let i = 0; i < team1GameWins; i++) {
+        quickGames.push({
+          id: `${i+1}`,
+          matchId,
+          gameNumber: i+1,
+          team1Score: 21,
+          team2Score: 11,
+          winnerId: team1Id
+        });
       }
       
-      // Pass the game win counts to onSave
-      await onSave(match.id, team1Score, team2Score, games, team1Wins, team2Wins);
-      onCancel();
+      // Add games for team2 wins
+      for (let i = 0; i < team2GameWins; i++) {
+        quickGames.push({
+          id: `${i+team1GameWins+1}`,
+          matchId,
+          gameNumber: i+team1GameWins+1,
+          team1Score: 11,
+          team2Score: 21,
+          winnerId: team2Id
+        });
+      }
+      
+      // Calculate the match result
+      const winnerId = team1GameWins > team2GameWins ? team1Id : team2Id;
+      const loserId = team1GameWins > team2GameWins ? team2Id : team1Id;
+      
+      const matchResult: MatchResult = {
+        matchId,
+        winnerId,
+        loserId,
+        team1Score: team1GameWins,
+        team2Score: team2GameWins,
+        games: quickGames
+      };
+      
+      // Submit the match result to the database
+      await PlayoffDatabaseAdapter.submitMatchResult(matchResult);
+      
+      toast({
+        title: "Score Submitted",
+        description: `Match result: ${team1GameWins}-${team2GameWins}`,
+      });
+      
+      onSaveSuccess();
+      onClose();
+      
     } catch (error) {
-      console.error("Error saving match scores:", error);
-      setValidationError("Failed to save match scores");
+      console.error("Error submitting match score:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit match score. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  const handleSaveDetailedScore = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      const matchResult = calculateMatchResult(games);
+      
+      if (!matchResult) {
+        toast({
+          title: "Invalid Score",
+          description: "Match must have a clear winner.",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Submit the match result
+      await PlayoffDatabaseAdapter.submitMatchResult(matchResult);
+      
+      toast({
+        title: "Score Submitted",
+        description: `Match result: ${matchResult.team1Score}-${matchResult.team2Score}`,
+      });
+      
+      onSaveSuccess();
+      onClose();
+      
+    } catch (error) {
+      console.error("Error submitting detailed match score:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit match score. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const { team1Wins, team2Wins } = calculateTotalScore();
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="text-lg font-semibold">
-          {team1?.name || "TBD"} vs {team2?.name || "TBD"}
-        </div>
-        <div className="text-sm text-gray-500">
-          {match.matchType} Round {match.round}
-        </div>
-      </div>
+    <Card className="w-full max-w-lg mx-auto">
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>Match Score: {team1Name} vs {team2Name}</span>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </CardTitle>
+      </CardHeader>
       
-      <div className="border-t pt-4">
-        <div className="text-sm font-medium mb-2">Game Scores (Best of {match.bestOf})</div>
-        
-        {games.map((game, index) => (
-          <GameScoreRow
-            key={index}
-            index={index}
-            game={game}
-            team1={team1}
-            team2={team2}
-            onScoreChange={handleGameScoreChange}
-            onRemoveGame={removeGame}
-            canRemove={games.length > 1}
+      <CardContent>
+        {viewMode === 'quick' ? (
+          <QuickScoreEditor 
+            team1Name={team1Name} 
+            team2Name={team2Name}
+            onSubmitScore={handleQuickScoreSubmit}
+            disabled={isSubmitting}
           />
-        ))}
-        
-        {validationError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm flex items-start">
-            <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
-            <span>{validationError}</span>
-          </div>
+        ) : (
+          <GamesList 
+            games={games} 
+            setGames={setGames} 
+            team1Name={team1Name} 
+            team2Name={team2Name}
+          />
         )}
+      </CardContent>
+      
+      <CardFooter className="flex justify-between">
+        <Button 
+          variant="outline" 
+          onClick={() => setViewMode(viewMode === 'quick' ? 'detailed' : 'quick')}
+          disabled={isSubmitting}
+        >
+          {viewMode === 'quick' ? 'Game-by-Game Entry' : 'Quick Score Entry'}
+        </Button>
         
-        <MatchScoreActions
-          onAddGame={addGame}
-          onSave={handleSave}
-          onCancel={onCancel}
-          isSubmitting={isSubmitting}
-          hasValidationError={!!validationError}
-          canAddGames={games.length < match.bestOf}
-          team1Wins={team1Wins}
-          team2Wins={team2Wins}
-        />
-      </div>
-    </div>
+        {viewMode === 'detailed' && (
+          <Button 
+            onClick={handleSaveDetailedScore} 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Save
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
 

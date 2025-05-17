@@ -1,170 +1,138 @@
 
-// Team related types
+import { MatchFormProps, MatchFormValues, TeamSelectorProps } from "./match";
+
+export interface UserProfile {
+  id: string;
+  user_id?: string;
+  username?: string;
+  full_name?: string;
+  is_admin?: boolean;
+  avatar_url?: string;
+}
+
 export interface Team {
   id: string;
   name: string;
+  seed?: number;
+  division_id?: string;
+  divisionName?: string;
+  imageUrl?: string;
+  image_url?: string;
+  logo_url?: string;
+  players?: string[];
   wins?: number;
   losses?: number;
   game_wins?: number;
   game_losses?: number;
-  divisionName?: string;
-  division_id?: string;
-  division?: string;
-  imageUrl?: string;
-  logoUrl?: string;
-  players?: string[];
-  seed?: number;
-  challongeParticipantId?: number;
-  power_score?: number;
-  sos?: number;
-  win_percentage?: number;
-  game_win_percentage?: number;
-  created_at?: string;
-  close_match_losses?: number;
 }
 
-// Match related types
+export interface Division {
+  id: string;
+  name: string;
+}
+
+export interface TimeSlot {
+  id: string;
+  timeslot: string;
+  match_date: string;
+  team_id: string;
+}
+
 export interface Match {
   id: string;
   team1Id: string;
   team2Id: string;
   team1Score?: number;
   team2Score?: number;
-  winnerId?: string;
-  loserId?: string;
+  team1_game_wins?: number;
+  team2_game_wins?: number;
+  team1Details?: Team;
+  team2Details?: Team;
+  winner_id?: string;
+  loser_id?: string;
   date?: string;
   location?: string;
   iscompleted?: boolean;
-  round_number?: number;
-  position?: number;
-  bracket_id?: string;
-  match_type?: string;
-  next_match_id?: string;
-  next_loser_match_id?: string;
-  best_of?: number;
-  team1_game_wins?: number;
-  team2_game_wins?: number;
-  created_at?: string;
-  status?: "postponed" | "canceled" | null; // Added status property
-  timeSlot?: string | null; // Added timeSlot property
-  team1Details?: {
-    team_id: string;
-    name: string;
-    image_url: string | null;
-    logo_url: string | null;
-    divisionName: string | null;
-  } | null;
-  team2Details?: {
-    team_id: string;
-    name: string;
-    image_url: string | null;
-    logo_url: string | null;
-    divisionName: string | null;
-  } | null;
+  status?: "pending" | "in_progress" | "completed" | "postponed" | "canceled";
 }
 
-// Head to Head types
-export interface HeadToHeadEntry {
-  opponentName: string;
-  wins: number;
-  losses: number;
+export interface Message {
+  id: string;
+  user_id: string;
+  content: string;
+  username: string;
+  team_id?: string;
+  team_name?: string;
+  created_at: string;
+  updated_at?: string;
+  is_edited?: boolean;
+  category?: string;
 }
 
-export interface HeadToHeadMap {
-  [teamId: string]: HeadToHeadEntry;
+export interface MessageReaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  emoji: string;
 }
 
-// Rankings related types
-export interface Ranking {
-  teamId: string;
-  teamName: string;
-  logoUrl?: string | null;
-  imageUrl?: string | null;
-  wins: number;
-  losses: number;
-  winPercentage: number;
-  gamesWon: number;
-  gamesLost: number;
-  gameWinPercentage: number;
-  sos: number;
-  powerScore: number;
-  streak?: string;
-  rankChange?: number;
-  previousRank?: number;
-  divisionName?: string | null;
-  headToHead: HeadToHeadMap;
-  closeMatchLosses: number;
-  divisionRank?: number;
+export interface MessageCategory {
+  value: string;
+  label: string;
+  description?: string;
 }
 
-// Types for playoff brackets
 export interface PlayoffMatch {
   id: string;
   round: number;
   position: number;
-  team1Id?: string;
-  team2Id?: string;
-  winnerId?: string;
-  loserId?: string;
-  team1Score?: number;
-  team2Score?: number;
-  team1GameWins?: number;
-  team2GameWins?: number;
-  matchType: "winners" | "losers" | "finals" | "play-in";
+  matchType: "winners" | "losers" | "finals" | "play-in" | "play-in-2";
+  team1Id: string | null;
+  team2Id: string | null;
+  team1Seed: number | null;
+  team2Seed: number | null;
+  team1Score: number | null;
+  team2Score: number | null;
+  winnerId: string | null;
+  loserId: string | null;
+  nextWinMatchId: string | null;
+  nextLoseMatchId: string | null;
   bestOf: number;
+  status: "pending" | "in_progress" | "completed";
   games?: PlayoffGame[];
-  team1ChallongeId?: number;
-  team2ChallongeId?: number;
-  challongeMatchId?: string;
-  team1Seed?: number;  // New field for seed
-  team2Seed?: number;  // New field for seed
-  nextWinMatchId?: string;  // New field for linking
-  nextLoseMatchId?: string; // New field for linking
 }
 
 export interface PlayoffGame {
   id: string;
+  matchId: string;
+  gameNumber: number;
   team1Score: number;
   team2Score: number;
-  winner: string;
+  winnerId: string | null;
+  winner?: "team1Id" | "team2Id" | null;
 }
 
 export interface PlayoffBracket {
   id: string;
-  name: string;
-  division: string;
-  format: "Single Elimination" | "Double Elimination";
+  title: string;
+  format: string;
+  division?: string;
   matches: PlayoffMatch[];
-  champion?: string;
-  challongeTournamentId?: string;
-  challongeTournamentUrl?: string;
-  state?: "pending" | "underway" | "complete";
+  state?: BracketState;
 }
 
-// Division type
-export interface Division {
-  id: string;
-  name: string;
-  division_weight?: number;
-  created_at?: string;
+export interface BracketState {
+  isWinnersBracketComplete: boolean;
+  isLosersBracketComplete: boolean;
+  isResetMatchNeeded: boolean;
+  isComplete: boolean;
+  winnersBracketChampionId: string | null;
+  losersBracketChampionId: string | null;
+  championId: string | null;
 }
 
-// Types for team timeslots
-export interface TeamTimeslot {
-  id: string;
-  match_date: string;
-  timeslot: string;
-  team_id: string;
-  created_at: string;
-  teams?: {
-    id: string;
-    name: string;
-    logo_url?: string | null;
-    image_url?: string | null;
-    divisionName: string | null;
-  };
+export type {
+  MatchFormProps,
+  MatchFormValues,
+  TeamSelectorProps
 }
-
-export * from './chart';
-export * from './match';
-export * from './admin';

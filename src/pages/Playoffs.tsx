@@ -35,10 +35,8 @@ const Playoffs = () => {
   };
   
   const handleEditMatch = (matchId: string) => {
-    toast({
-      title: "Coming Soon",
-      description: `Match editing functionality will be available soon. (Match ID: ${matchId})`,
-    });
+    // The match editor will now be handled by the BracketView component directly
+    console.log("Edit match requested:", matchId);
   };
 
   const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
