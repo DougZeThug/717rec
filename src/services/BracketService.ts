@@ -59,7 +59,6 @@ export class BracketService {
         // Log the number of matches created
         console.log(`Generated ${matches.length} matches for double elimination bracket`);
         
-        // ** IMPORTANT CHANGE: Use PlayoffDatabaseAdapter instead of standard DatabaseAdapter **
         // Convert BracketMatch to PlayoffMatch format and save to playoff_matches table
         const playoffMatches = matches.map(match => ({
           id: match.id,
@@ -80,7 +79,7 @@ export class BracketService {
           nextWinMatchId: match.nextWinMatchId,
           nextLoseMatchId: match.nextLoseMatchId,
           bestOf: 3, // Default to best of 3
-          status: "pending" as "pending" | "in_progress" | "completed" // Fix: Explicitly cast to the literal type
+          status: "pending" // Fix: Use string literal instead of casting
         }));
         
         // Save matches to playoff_matches table
@@ -293,7 +292,6 @@ export class BracketService {
           loserId,
           team1Score,
           team2Score,
-          // Fix: Remove team1GameWins and team2GameWins from here since they're not part of MatchResult
           games: games.map((game, index) => ({
             id: `${matchId}-game-${index + 1}`,
             matchId,
