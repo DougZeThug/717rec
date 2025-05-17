@@ -6,6 +6,7 @@ import { PlayoffGamesRepository } from "./PlayoffGamesRepository";
 import { PlayoffMatchesRepository } from "./PlayoffMatchesRepository";
 import { ResetMatchService } from "./ResetMatchService";
 import { TeamAdvancementService } from "./TeamAdvancementService";
+import { DatabaseBracketState, DatabaseMatchResult, DatabasePlayoffMatch } from "./types";
 
 /**
  * Facade service that maintains backward compatibility with the original PlayoffDatabaseAdapter API
@@ -31,7 +32,7 @@ export class PlayoffDatabaseFacade {
   /**
    * Save playoff matches to the database
    */
-  async savePlayoffMatches(matches: PlayoffMatch[]): Promise<void> {
+  async savePlayoffMatches(matches: DatabasePlayoffMatch[]): Promise<void> {
     return this.matchesRepository.saveMatches(matches);
   }
 
@@ -45,7 +46,7 @@ export class PlayoffDatabaseFacade {
   /**
    * Record match result and advance teams in bracket
    */
-  async recordMatchResult(matchResult: MatchResult): Promise<void> {
+  async recordMatchResult(matchResult: DatabaseMatchResult): Promise<void> {
     return this.matchResultService.recordMatchResult(matchResult);
   }
 
@@ -80,7 +81,7 @@ export class PlayoffDatabaseFacade {
   /**
    * Get all matches for a bracket
    */
-  async getBracketMatches(bracketId: string): Promise<PlayoffMatch[]> {
+  async getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]> {
     return this.matchesRepository.getBracketMatches(bracketId);
   }
 
@@ -101,7 +102,7 @@ export class PlayoffDatabaseFacade {
   /**
    * Get bracket state information
    */
-  async getBracketState(bracketId: string): Promise<BracketState> {
+  async getBracketState(bracketId: string): Promise<DatabaseBracketState> {
     return this.bracketRepository.getBracketState(bracketId);
   }
 }

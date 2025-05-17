@@ -1,139 +1,152 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { BracketMatch } from "./types";
-// Import from database directory instead of direct file
-import { PlayoffDatabaseAdapter } from "./database";
+import { BracketState, MatchResult, PlayoffGame, PlayoffMatch, PlayoffMatchType } from "./types";
+import { PlayoffDatabaseFacade } from "./database/PlayoffDatabaseFacade";
+import { DatabaseBracketState, DatabasePlayoffMatch } from "./database/types";
 
 /**
- * Handles persistence of bracket data to the database
+ * Handles database operations for playoff brackets using a facade pattern
+ * for better organization and testability
  */
-export class DatabaseAdapter {
+export class PlayoffDatabaseAdapter {
+  // Use a static private readonly field for better encapsulation
+  private static readonly facade = new PlayoffDatabaseFacade();
+  
   /**
-   * Save all matches to the database
-   * @param matches Array of matches to save
+   * Convert PlayoffMatch to DatabasePlayoffMatch
    */
-  static async saveBracketMatches(matches: BracketMatch[]): Promise<void> {
-    // Convert to database format
-    const dbMatches = matches.map(match => ({
+  private static convertToDbMatch(match: PlayoffMatch): DatabasePlayoffMatch {
+    return {
       id: match.id,
-      round_number: match.round,
+      bracket_id: match.bracket_id,
+      round: match.round,
       position: match.position,
-      match_type: match.matchType === "play-in" ? "winners" : match.matchType, // Map play-in to winners for database compatibility
+      match_type: match.matchType as string,
       team1_id: match.team1Id,
       team2_id: match.team2Id,
-      next_match_id: match.nextWinMatchId,
-      next_loser_match_id: match.nextLoseMatchId,
-      winner_id: match.winnerId,
-      bracket_id: match.bracket_id,
       team1_seed: match.team1Seed,
       team2_seed: match.team2Seed,
-    }));
-
-    try {
-      const { error } = await supabase
-        .from('matches')
-        .insert(dbMatches);
-      
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving bracket matches:', error);
-      throw error;
-    }
+      team1_score: match.team1Score,
+      team2_score: match.team2Score,
+      winner_id: match.winnerId,
+      loser_id: match.loserId,
+      next_win_match_id: match.nextWinMatchId,
+      next_lose_match_id: match.nextLoseMatchId,
+      best_of: match.bestOf,
+      status: match.status
+    };
   }
   
   /**
-   * Update a match with a winner and advance to next rounds
-   * @param matchId ID of the match to update
-   * @param winnerId ID of the winning team
-   * @param team1Score Score of team 1
-   * @param team2Score Score of team 2
+   * Convert DatabasePlayoffMatch to PlayoffMatch
    */
-  static async updateMatchResult(
-    matchId: string, 
-    winnerId: string | null, 
-    team1Score: number, 
-    team2Score: number
-  ): Promise<void> {
-    try {
-      // Get the match to update
-      const { data: match, error: matchError } = await supabase
-        .from('matches')
-        .select('*')
-        .eq('id', matchId)
-        .single();
-      
-      if (matchError) throw matchError;
-      
-      // Determine loser ID
-      const loserId = match.team1_id === winnerId ? match.team2_id : match.team1_id;
-      
-      // Update the current match
-      const { error: updateError } = await supabase
-        .from('matches')
-        .update({
-          winner_id: winnerId,
-          loser_id: loserId,
-          team1_score: team1Score,
-          team2_score: team2Score,
-          iscompleted: true
-        })
-        .eq('id', matchId);
-      
-      if (updateError) throw updateError;
-      
-      // Advance winner to next winners match if it exists
-      if (match.next_match_id) {
-        await this.advanceTeamToNextMatch(match.next_match_id, winnerId, true);
-      }
-      
-      // Advance loser to next losers match if it exists
-      if (match.next_loser_match_id) {
-        await this.advanceTeamToNextMatch(match.next_loser_match_id, loserId, false);
-      }
-    } catch (error) {
-      console.error('Error updating match result:', error);
-      throw error;
-    }
+  private static convertToAppMatch(dbMatch: DatabasePlayoffMatch): PlayoffMatch {
+    return {
+      id: dbMatch.id,
+      bracket_id: dbMatch.bracket_id,
+      round: dbMatch.round,
+      position: dbMatch.position,
+      matchType: dbMatch.match_type as PlayoffMatchType,
+      team1Id: dbMatch.team1_id,
+      team2Id: dbMatch.team2_id,
+      team1Seed: dbMatch.team1_seed,
+      team2Seed: dbMatch.team2_seed,
+      team1Score: dbMatch.team1_score,
+      team2Score: dbMatch.team2_score,
+      winnerId: dbMatch.winner_id,
+      loserId: dbMatch.loser_id,
+      nextWinMatchId: dbMatch.next_win_match_id,
+      nextLoseMatchId: dbMatch.next_lose_match_id,
+      bestOf: dbMatch.best_of || 3,
+      status: dbMatch.status as "pending" | "in_progress" | "completed"
+    };
   }
-  
+
+  /**
+   * Save playoff matches to the database
+   */
+  static async savePlayoffMatches(matches: PlayoffMatch[]): Promise<void> {
+    const dbMatches = matches.map(match => this.convertToDbMatch(match));
+    return this.facade.savePlayoffMatches(dbMatches);
+  }
+
+  /**
+   * Save playoff games to the database
+   */
+  static async savePlayoffGames(games: PlayoffGame[]): Promise<void> {
+    return this.facade.savePlayoffGames(games);
+  }
+
+  /**
+   * Record match result and advance teams in bracket
+   */
+  static async recordMatchResult(matchResult: MatchResult): Promise<void> {
+    return this.facade.recordMatchResult(matchResult);
+  }
+
+  /**
+   * Mark a team as the winners bracket champion
+   */
+  static async markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void> {
+    return this.facade.markWinnersBracketChampion(bracketId, teamId);
+  }
+
+  /**
+   * Set whether a reset match is needed
+   */
+  static async setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void> {
+    return this.facade.setResetMatchNeeded(bracketId, needed);
+  }
+
+  /**
+   * Mark the tournament as complete with a champion
+   */
+  static async markTournamentComplete(bracketId: string, championId: string): Promise<void> {
+    return this.facade.markTournamentComplete(bracketId, championId);
+  }
+
   /**
    * Advance a team to the next match
-   * @param nextMatchId ID of the next match
-   * @param teamId ID of the team to advance
-   * @param isWinner Whether the team is a winner or loser
    */
-  private static async advanceTeamToNextMatch(
-    nextMatchId: string,
-    teamId: string | null,
-    isWinner: boolean
-  ): Promise<void> {
-    if (!teamId) return;
-    
-    try {
-      // Get the next match
-      const { data: nextMatch, error: nextMatchError } = await supabase
-        .from('matches')
-        .select('*')
-        .eq('id', nextMatchId)
-        .single();
-      
-      if (nextMatchError) throw nextMatchError;
-      
-      // For simplicity, always assign to team1 if empty, otherwise team2
-      // In a more complex implementation, you might want to consider seeding
-      const updateData = !nextMatch.team1_id
-        ? { team1_id: teamId }
-        : { team2_id: teamId };
-      
-      const { error: updateError } = await supabase
-        .from('matches')
-        .update(updateData)
-        .eq('id', nextMatchId);
-      
-      if (updateError) throw updateError;
-    } catch (error) {
-      console.error('Error advancing team to next match:', error);
-      throw error;
-    }
+  static async advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void> {
+    return this.facade.advanceTeam(nextMatchId, teamId, isWinner);
+  }
+
+  /**
+   * Get all matches for a bracket
+   */
+  static async getBracketMatches(bracketId: string): Promise<PlayoffMatch[]> {
+    const dbMatches = await this.facade.getBracketMatches(bracketId);
+    return dbMatches.map(match => this.convertToAppMatch(match));
+  }
+
+  /**
+   * Get games for a specific match
+   */
+  static async getMatchGames(matchId: string): Promise<PlayoffGame[]> {
+    return this.facade.getMatchGames(matchId);
+  }
+
+  /**
+   * Create reset match if needed
+   */
+  static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<string> {
+    return this.facade.createResetMatch(bracketId, team1Id, team2Id);
+  }
+  
+  /**
+   * Get bracket state information
+   */
+  static async getBracketState(bracketId: string): Promise<BracketState> {
+    const dbState = await this.facade.getBracketState(bracketId);
+    // Convert DatabaseBracketState to BracketState
+    return {
+      isWinnersBracketComplete: dbState.isWinnersBracketComplete,
+      isLosersBracketComplete: dbState.isLosersBracketComplete,
+      isResetMatchNeeded: dbState.isResetMatchNeeded,
+      isComplete: dbState.isComplete,
+      winnersBracketChampionId: dbState.winnersBracketChampionId,
+      losersBracketChampionId: dbState.losersBracketChampionId,
+      championId: dbState.championId
+    };
   }
 }
