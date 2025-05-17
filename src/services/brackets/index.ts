@@ -34,6 +34,7 @@ export type { DatabasePlayoffMatch } from './database/types';
 // Re-export classes and function exports
 export * from './BracketGenerator';
 export * from './BracketFactory';
+export * from './BracketLinker';
 export * from './generators/BaseBracketGenerator';
 export * from './generators/PlayoffBracketGenerator';
 export * from './utils/BracketSizeCalculator';
