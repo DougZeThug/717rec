@@ -1,6 +1,6 @@
 
 import { IBracketLinker } from "../IBracketLinker";
-import { PlayoffMatch, PlayoffMatchType } from "../../types";
+import { PlayoffMatch, PlayoffMatchType, BracketMatch } from "../../types";
 
 /**
  * Base abstract class for playoff bracket linkers

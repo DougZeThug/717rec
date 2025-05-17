@@ -1,5 +1,5 @@
 
-import { PlayoffMatch } from "../../../types";
+import { PlayoffMatch, PlayoffMatchType } from "../../../types";
 
 /**
  * Utility class for organizing playoff matches by type and round
@@ -12,7 +12,7 @@ export class PlayoffMatchOrganizer {
    * @returns Object with rounds as keys and arrays of matches as values
    */
   static organizeByRound(
-    matchType: string, 
+    matchType: PlayoffMatchType, 
     matches: PlayoffMatch[]
   ): Record<number, PlayoffMatch[]> {
     // Filter matches by type
@@ -37,7 +37,7 @@ export class PlayoffMatchOrganizer {
    * @param matches All bracket matches
    * @returns Highest round number
    */
-  static getMaxRound(matchType: string, matches: PlayoffMatch[]): number {
+  static getMaxRound(matchType: PlayoffMatchType, matches: PlayoffMatch[]): number {
     const filteredMatches = matches.filter(m => m.matchType === matchType);
     if (filteredMatches.length === 0) return 0;
     
@@ -52,7 +52,7 @@ export class PlayoffMatchOrganizer {
    * @returns Array of matches
    */
   static getMatchesForRound(
-    matchType: string, 
+    matchType: PlayoffMatchType, 
     round: number, 
     matches: PlayoffMatch[]
   ): PlayoffMatch[] {

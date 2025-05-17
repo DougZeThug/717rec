@@ -87,7 +87,7 @@ export interface IFinalsGenerator<TMatch> {
  * @returns True if it's a PlayoffMatch
  */
 export function isPlayoffMatch(match: any): match is PlayoffMatch {
-  return 'team1Score' in match && 'team2Score' in match;
+  return MatchTypeAdapter.isPlayoffMatch(match);
 }
 
 /**
