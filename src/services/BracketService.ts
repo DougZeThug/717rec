@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 import { BracketGenerator } from "./brackets";
@@ -80,7 +81,7 @@ export class BracketService {
           nextWinMatchId: match.nextWinMatchId,
           nextLoseMatchId: match.nextLoseMatchId,
           bestOf: 3, // Default to best of 3
-          status: "pending"
+          status: "pending" as "pending" | "in_progress" | "completed" // Fix: Explicitly cast to the literal type
         }));
         
         // Save matches to playoff_matches table
@@ -293,8 +294,7 @@ export class BracketService {
           loserId,
           team1Score,
           team2Score,
-          team1GameWins,
-          team2GameWins,
+          // Fix: Remove team1GameWins and team2GameWins from here since they're not part of MatchResult
           games: games.map((game, index) => ({
             id: `${matchId}-game-${index + 1}`,
             matchId,

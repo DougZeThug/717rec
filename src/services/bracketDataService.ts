@@ -46,8 +46,9 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
       team2Id: match.team2_id,
       team1Score: match.team1_score,
       team2Score: match.team2_score,
-      team1GameWins: match.team1_game_wins,
-      team2GameWins: match.team2_game_wins,
+      // Fix: Use nullish coalescing for optional fields that might not be present
+      team1GameWins: match.team1_game_wins ?? null,
+      team2GameWins: match.team2_game_wins ?? null,
       winnerId: match.winner_id,
       loserId: match.loser_id,
       matchType: match.match_type,
