@@ -1,10 +1,10 @@
 
-import { BracketMatch } from "../../types";
+import { BaseBracketMatch } from "../../types";
 
 /**
  * Base interface for all bracket linker implementations
  */
-export interface IBracketLinker<TMatch> {
+export interface IBracketLinker<TMatch extends BaseBracketMatch> {
   /**
    * Get the map of all matches by their key
    * @returns Match map
@@ -35,7 +35,7 @@ export interface IBracketLinker<TMatch> {
 /**
  * Interface for match map operations
  */
-export interface IMatchMapOperations<TMatch> {
+export interface IMatchMapOperations<TMatch extends BaseBracketMatch> {
   /**
    * Add a match to the match map
    * @param match The match to add
@@ -67,7 +67,7 @@ export interface IMatchMapOperations<TMatch> {
 /**
  * Interface for bracket connection operations
  */
-export interface IBracketConnectionOperations<TMatch> {
+export interface IBracketConnectionOperations<TMatch extends BaseBracketMatch> {
   /**
    * Link winners bracket matches
    * @param matches Array of all matches

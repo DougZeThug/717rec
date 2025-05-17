@@ -1,11 +1,11 @@
 
-import { BracketMatch } from "../types";
+import { BaseBracketMatch } from "../types";
 
 /**
  * Interface for bracket linker implementations
  * Defines the common methods that all bracket linkers must implement
  */
-export interface IBracketLinker<TMatch extends BracketMatch> {
+export interface IBracketLinker<TMatch extends BaseBracketMatch> {
   /**
    * Get the map of all matches by their key
    * @returns Match map

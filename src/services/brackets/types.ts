@@ -1,3 +1,4 @@
+
 import { Team } from "@/types";
 import { nanoid } from "nanoid";
 
@@ -12,19 +13,36 @@ export interface SeedTeam {
 
 export type MatchType = "winners" | "losers" | "finals" | "play-in";
 
-export interface BracketMatch {
+// Base interface for all bracket matches with common properties
+export interface BaseBracketMatch {
   id: string;
   round: number;
   position: number;
-  matchType: MatchType;
   team1Id: string | null;
   team2Id: string | null;
   team1Seed: number | null;
   team2Seed: number | null;
+  winnerId: string | null;
   nextWinMatchId: string | null;
   nextLoseMatchId: string | null;
-  winnerId: string | null;
   bracket_id: string;
+}
+
+export interface BracketMatch extends BaseBracketMatch {
+  matchType: MatchType;
+}
+
+export type PlayoffMatchType = "winners" | "losers" | "finals" | "play-in" | "play-in-2";
+
+export interface PlayoffMatch extends BaseBracketMatch {
+  matchType: PlayoffMatchType;
+  team1Score: number | null;
+  team2Score: number | null;
+  team1GameWins: number | null;
+  team2GameWins: number | null;
+  bestOf: number;
+  loserId: string | null;
+  status: "pending" | "in_progress" | "completed";
 }
 
 export interface PlayInResult {
@@ -35,31 +53,6 @@ export interface PlayInResult {
 export interface BracketGenerationResult {
   matches: BracketMatch[];
   bracketId: string;
-}
-
-// New types for playoff brackets
-export type PlayoffMatchType = "winners" | "losers" | "finals" | "play-in" | "play-in-2";
-
-export interface PlayoffMatch {
-  id: string;
-  round: number;
-  position: number;
-  matchType: PlayoffMatchType;
-  bracket_id: string;
-  team1Id: string | null;
-  team2Id: string | null;
-  team1Seed: number | null;
-  team2Seed: number | null;
-  team1Score: number | null;
-  team2Score: number | null;
-  team1GameWins: number | null;
-  team2GameWins: number | null;
-  bestOf: number;
-  winnerId: string | null;
-  loserId: string | null;
-  nextWinMatchId: string | null;
-  nextLoseMatchId: string | null;
-  status: "pending" | "in_progress" | "completed";
 }
 
 export interface PlayoffGame {

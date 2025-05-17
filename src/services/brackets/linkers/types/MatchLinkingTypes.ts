@@ -1,5 +1,5 @@
 
-import { BracketMatch, MatchType, PlayoffMatch, PlayoffMatchType } from "../../types";
+import { BaseBracketMatch, BracketMatch, MatchType, PlayoffMatch, PlayoffMatchType } from "../../types";
 import { MatchTypeAdapter } from "../../utils/TypeAdapter";
 
 /**
@@ -9,7 +9,7 @@ import { MatchTypeAdapter } from "../../utils/TypeAdapter";
 /**
  * Interface for match mapping operations
  */
-export interface IMatchMapper<TMatch extends BracketMatch> {
+export interface IMatchMapper<TMatch extends BaseBracketMatch> {
   /**
    * Add a match to the match map
    * @param match The match to add
@@ -41,7 +41,7 @@ export interface IMatchMapper<TMatch extends BracketMatch> {
 /**
  * Interface for match linking operations
  */
-export interface IMatchLinker<TMatch extends BracketMatch> {
+export interface IMatchLinker<TMatch extends BaseBracketMatch> {
   /**
    * Link winners bracket matches
    * @param matches Array of all matches
@@ -66,7 +66,7 @@ export interface IMatchLinker<TMatch extends BracketMatch> {
 /**
  * Interface for finals generation
  */
-export interface IFinalsGenerator<TMatch> {
+export interface IFinalsGenerator<TMatch extends BaseBracketMatch> {
   /**
    * Generate finals match(es)
    * @param matches Array of all matches

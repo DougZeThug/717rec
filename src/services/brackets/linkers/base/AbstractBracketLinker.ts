@@ -1,11 +1,11 @@
 
-import { BracketMatch, MatchType } from "../../types";
+import { BaseBracketMatch, BracketMatch, MatchType } from "../../types";
 import { IBracketLinker, IMatchMapOperations } from "../interfaces/BracketLinkerInterfaces";
 
 /**
  * Abstract base class for bracket linkers with common functionality
  */
-export abstract class AbstractBracketLinker<TMatch extends BracketMatch> implements IBracketLinker<TMatch>, IMatchMapOperations<TMatch> {
+export abstract class AbstractBracketLinker<TMatch extends BaseBracketMatch> implements IBracketLinker<TMatch>, IMatchMapOperations<TMatch> {
   protected bracketId: string;
   protected matchMap: Record<string, TMatch>;
   

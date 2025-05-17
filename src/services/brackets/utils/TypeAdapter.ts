@@ -47,4 +47,13 @@ export class MatchTypeAdapter {
       'team1Score' in match && 
       'team2Score' in match;
   }
+  
+  /**
+   * Check if a PlayoffMatchType can be safely converted to MatchType
+   * @param matchType The match type to check
+   * @returns Whether the conversion is safe
+   */
+  static isSafeMatchTypeConversion(matchType: PlayoffMatchType): boolean {
+    return matchType !== "play-in-2";
+  }
 }
