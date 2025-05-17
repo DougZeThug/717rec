@@ -131,4 +131,5 @@ export interface DatabaseMatchResult {
   team1_game_wins?: number;
   team2_game_wins?: number;
   completed: boolean;
+  games?: PlayoffGame[];
 }

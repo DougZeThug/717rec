@@ -1,5 +1,5 @@
 
-import { MatchResult } from "../types";
+import { PlayoffGame } from "../types";
 import { BracketRepository } from "./BracketRepository";
 import { PlayoffGamesRepository } from "./PlayoffGamesRepository";
 import { PlayoffMatchesRepository } from "./PlayoffMatchesRepository";
@@ -47,7 +47,7 @@ export class MatchResultService {
       await this.matchesRepository.updateMatchResult(matchResult.match_id, resultDTO);
       
       // 2. Save individual game results if they exist
-      if ('games' in matchResult && matchResult.games && matchResult.games.length > 0) {
+      if (matchResult.games && Array.isArray(matchResult.games) && matchResult.games.length > 0) {
         await this.gamesRepository.saveGames(matchResult.games);
       }
       

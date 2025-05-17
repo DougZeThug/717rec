@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { BracketMatch, MatchResult } from "../types";
+import { BracketMatch, MatchResult, PlayoffGame } from "./types";
 import { DatabaseMatchResult } from "./database/types";
 
 /**
@@ -48,9 +49,10 @@ export class DatabaseAdapter {
       loser_id: matchResult.loserId,
       team1_score: matchResult.team1Score,
       team2_score: matchResult.team2Score,
-      team1_game_wins: matchResult.games?.filter(g => g.winnerId === matchResult.team1Id).length || 0,
-      team2_game_wins: matchResult.games?.filter(g => g.winnerId === matchResult.team2Id).length || 0,
-      completed: true
+      team1_game_wins: matchResult.games?.filter(g => g.winnerId === matchResult.winnerId).length || 0,
+      team2_game_wins: matchResult.games?.filter(g => g.winnerId !== matchResult.winnerId).length || 0,
+      completed: true,
+      games: matchResult.games
     };
   }
 
@@ -66,7 +68,7 @@ export class DatabaseAdapter {
       team2Score: dbResult.team2_score,
       team1Id: '', // These need to be populated elsewhere
       team2Id: '',
-      games: [] // These need to be populated elsewhere
+      games: dbResult.games || []
     };
   }
   
