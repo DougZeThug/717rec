@@ -53,11 +53,12 @@ export class FinalsGenerator<TMatch extends BaseBracketMatch> implements IFinals
    * @returns Created finals match
    */
   protected createFinalsMatch(round: number = 1): TMatch {
-    return {
+    // Create a base bracket match object
+    const baseMatch: BaseBracketMatch = {
       id: nanoid(),
       round,
       position: 1,
-      matchType: "finals" as any,
+      matchType: "finals",
       team1Id: null,
       team2Id: null,
       team1Seed: null,
@@ -66,7 +67,11 @@ export class FinalsGenerator<TMatch extends BaseBracketMatch> implements IFinals
       nextLoseMatchId: null,
       winnerId: null,
       bracket_id: this.bracketId
-    } as TMatch;
+    };
+    
+    // Use type assertion to convert the base match to TMatch
+    // This is safe because we're only using properties that are guaranteed to be in BaseBracketMatch
+    return baseMatch as unknown as TMatch;
   }
 }
 

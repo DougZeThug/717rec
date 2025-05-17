@@ -26,6 +26,7 @@ export interface BaseBracketMatch {
   nextWinMatchId: string | null;
   nextLoseMatchId: string | null;
   bracket_id: string;
+  matchType: MatchType | PlayoffMatchType; // Added matchType property to base interface
 }
 
 export interface BracketMatch extends BaseBracketMatch {
