@@ -161,7 +161,6 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({
                 onClick={() => handleQuickScore(option)}
                 disabled={isSubmitting}
                 style={{ animationDelay: `${0.3 + index * 0.05}s` }}
-                className={animations.scaleIn}
               >
                 {option.label}
                 <Check className={cn(
@@ -183,7 +182,6 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({
                 onClick={() => handleQuickScore(option)}
                 disabled={isSubmitting}
                 style={{ animationDelay: `${0.4 + index * 0.05}s` }}
-                className={animations.scaleIn}
               >
                 {option.label}
                 <Check className={cn(

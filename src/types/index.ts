@@ -1,4 +1,3 @@
-
 // Team related types
 export interface Team {
   id: string;
@@ -110,7 +109,7 @@ export interface PlayoffMatch {
   team2Score?: number;
   team1GameWins?: number;
   team2GameWins?: number;
-  matchType: "winners" | "losers" | "finals" | "play-in";
+  matchType: "winners" | "losers" | "finals" | "play-in" | "play-in-2";
   bestOf: number;
   games?: PlayoffGame[];
   team1ChallongeId?: number;

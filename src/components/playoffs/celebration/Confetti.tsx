@@ -72,21 +72,23 @@ const Confetti: React.FC = () => {
         />
       ))}
       
-      <style jsx global>{`
-        @keyframes fall {
-          0% {
-            transform: translateY(0) rotate(${Math.random() * 360}deg);
-            opacity: 1;
+      <style>
+        {`
+          @keyframes fall {
+            0% {
+              transform: translateY(0) rotate(${Math.random() * 360}deg);
+              opacity: 1;
+            }
+            70% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(100vh) rotate(${Math.random() * 720}deg);
+              opacity: 0;
+            }
           }
-          70% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(100vh) rotate(${Math.random() * 720}deg);
-            opacity: 0;
-          }
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

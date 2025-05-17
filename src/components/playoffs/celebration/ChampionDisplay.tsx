@@ -31,7 +31,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
       toast({
         title: "Tournament Complete!",
         description: `${champion.name} is the tournament champion!`,
-        variant: "recreational",
+        variant: "default",
       });
     }
   }, [champion, toast]);
