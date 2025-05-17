@@ -1,5 +1,4 @@
 
-
 // Public API exports
 export type { BracketState } from './types';
 export type { MatchResult } from './types';
@@ -39,4 +38,3 @@ export * from './utils/TeamSeeding';
 export * from './utils/ScoreParser';
 export * from './DatabaseAdapter';
 export * from './database';
-
