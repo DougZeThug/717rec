@@ -19,11 +19,15 @@ export interface Team {
   imageUrl?: string;
   image_url?: string;
   logo_url?: string;
+  logoUrl?: string;
   players?: string[];
   wins?: number;
   losses?: number;
   game_wins?: number;
   game_losses?: number;
+  power_score?: number;
+  sos?: number;
+  division?: string;
 }
 
 export interface Division {
@@ -32,6 +36,13 @@ export interface Division {
 }
 
 export interface TimeSlot {
+  id: string;
+  timeslot: string;
+  match_date: string;
+  team_id: string;
+}
+
+export interface TeamTimeslot {
   id: string;
   timeslot: string;
   match_date: string;
@@ -49,10 +60,13 @@ export interface Match {
   team1Details?: Team;
   team2Details?: Team;
   winner_id?: string;
+  winnerId?: string;
   loser_id?: string;
   date?: string;
+  timeSlot?: string;
   location?: string;
   iscompleted?: boolean;
+  best_of?: number;
   status?: "pending" | "in_progress" | "completed" | "postponed" | "canceled";
 }
 
@@ -115,10 +129,12 @@ export interface PlayoffGame {
 export interface PlayoffBracket {
   id: string;
   title: string;
+  name?: string;
   format: string;
   division?: string;
   matches: PlayoffMatch[];
   state?: BracketState;
+  champion?: string;
 }
 
 export interface BracketState {
@@ -129,6 +145,40 @@ export interface BracketState {
   winnersBracketChampionId: string | null;
   losersBracketChampionId: string | null;
   championId: string | null;
+}
+
+// Rankings types
+export interface HeadToHeadEntry {
+  opponentId: string;
+  opponentName: string;
+  wins: number;
+  losses: number;
+}
+
+export interface HeadToHeadMap {
+  [teamId: string]: HeadToHeadEntry[];
+}
+
+export interface Ranking {
+  teamId: string;
+  teamName: string;
+  divisionId?: string;
+  divisionName?: string;
+  wins: number;
+  losses: number;
+  gamesWon: number;
+  gamesLost: number;
+  winPercentage: number;
+  gameWinPercentage: number;
+  streak?: string;
+  sos: number;
+  powerScore: number;
+  rank?: number;
+  divisionRank?: number;
+  rankChange?: number;
+  previousRank?: number;
+  headToHead?: HeadToHeadEntry[];
+  closeMatchLosses?: number;
 }
 
 export type {

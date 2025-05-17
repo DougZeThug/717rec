@@ -40,13 +40,24 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     if (divisonLower.includes("competitive")) return "border-amber-400 dark:border-amber-600";
     return "border-gray-400 dark:border-gray-600";
   };
+  
+  // Determine bracket state as a string
+  const getBracketStateString = () => {
+    if (!bracket.state) return "pending";
+    
+    if (bracket.state.isComplete) return "completed";
+    if (bracket.state.isWinnersBracketComplete || bracket.state.isLosersBracketComplete) return "underway";
+    return "pending";
+  };
+  
+  const bracketState = getBracketStateString();
 
   return (
     <Card 
       className={cn(
         "mb-8 overflow-hidden",
         "border-t-4",
-        getDivisionColorClass(bracket.division),
+        getDivisionColorClass(bracket.division || ""),
         isLight ? blueAmber.background.card : ""
       )}
       id={`bracket-${bracketId}`}
@@ -58,22 +69,22 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
               blueAmber.text.heading,
               "text-2xl font-bold tracking-tight"
             )}>
-              {bracket.name}
+              {bracket.title || bracket.name || "Playoff Bracket"}
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
-              <span className="font-medium">{bracket.division} Division</span>
+              <span className="font-medium">{bracket.division || "Division"} Division</span>
               <span className="text-gray-400">•</span>
               <span>{bracket.format}</span>
-              {bracket.state && (
+              {bracketState && (
                 <>
                   <span className="text-gray-400">•</span>
                   <span className={cn(
                     "px-2 py-0.5 rounded-full text-xs font-medium",
-                    bracket.state === 'pending' ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" :
-                    bracket.state === 'underway' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
+                    bracketState === 'pending' ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" :
+                    bracketState === 'underway' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
                     "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                   )}>
-                    {bracket.state.charAt(0).toUpperCase() + bracket.state.slice(1)}
+                    {bracketState.charAt(0).toUpperCase() + bracketState.slice(1)}
                   </span>
                 </>
               )}

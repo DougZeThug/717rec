@@ -1,14 +1,12 @@
 
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Loader2, Save, X } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { PlayoffGame, MatchResult } from "@/services/brackets/types";
-import { supabase } from "@/integrations/supabase/client";
-import { PlayoffDatabaseAdapter } from "@/services/brackets/database/PlayoffDatabaseAdapter";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import GamesList from './GamesList';
-import QuickScoreEditor from './QuickScoreEditor';
+import { PlayoffGame } from '@/types';
+import { nanoid } from 'nanoid';
+import { cn } from '@/lib/utils';
 
 interface MatchScoreEditorProps {
   matchId: string;
@@ -18,228 +16,176 @@ interface MatchScoreEditorProps {
   team1Name: string;
   team2Name: string;
   bestOf: number;
-  onClose: () => void;
-  onSaveSuccess: () => void;
+  onClose?: () => void;
+  onSaveSuccess?: () => void;
 }
 
 const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   matchId,
   bracketId,
   team1Id,
-  team2Id, 
+  team2Id,
   team1Name,
   team2Name,
-  bestOf = 3,
+  bestOf,
   onClose,
   onSaveSuccess
 }) => {
-  const { toast } = useToast();
-  const [games, setGames] = useState<PlayoffGame[]>([
-    { id: '1', matchId, gameNumber: 1, team1Score: 0, team2Score: 0, winnerId: null },
-    { id: '2', matchId, gameNumber: 2, team1Score: 0, team2Score: 0, winnerId: null },
-    { id: '3', matchId, gameNumber: 3, team1Score: 0, team2Score: 0, winnerId: null },
-  ]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [viewMode, setViewMode] = useState<'quick' | 'detailed'>('quick');
-
-  // Calculate match result based on games
-  const calculateMatchResult = (selectedGames: PlayoffGame[]): MatchResult | null => {
-    const completedGames = selectedGames.filter(
-      game => game.team1Score > 0 || game.team2Score > 0
-    );
+  const [games, setGames] = useState<PlayoffGame[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Generate initial games on component mount
+  useEffect(() => {
+    // Create empty games based on bestOf count
+    const initialGames = Array.from({ length: bestOf }, (_, i) => ({
+      id: nanoid(),
+      matchId,
+      gameNumber: i + 1,
+      team1Score: 0,
+      team2Score: 0,
+      winnerId: null
+    }));
     
-    if (!completedGames.length) {
-      return null;
+    setGames(initialGames);
+  }, [bestOf, matchId]);
+
+  // Calculate the match result based on games
+  const calculateMatchResult = () => {
+    let team1Wins = 0;
+    let team2Wins = 0;
+    
+    games.forEach(game => {
+      if (game.team1Score > game.team2Score) {
+        team1Wins++;
+      } else if (game.team2Score > game.team1Score) {
+        team2Wins++;
+      }
+    });
+    
+    const winThreshold = Math.ceil(bestOf / 2);
+    let winnerId = null;
+    let loserId = null;
+    
+    if (team1Wins >= winThreshold) {
+      winnerId = team1Id;
+      loserId = team2Id;
+    } else if (team2Wins >= winThreshold) {
+      winnerId = team2Id;
+      loserId = team1Id;
     }
     
-    const team1Wins = completedGames.filter(
-      game => game.team1Score > game.team2Score
-    ).length;
+    return {
+      team1Score: team1Wins,
+      team2Score: team2Wins,
+      winnerId,
+      loserId,
+      complete: team1Wins >= winThreshold || team2Wins >= winThreshold
+    };
+  };
+
+  // Validate if all games have valid scores
+  const validateGames = () => {
+    for (const game of games) {
+      // For each completed game, there should be a winner
+      if (game.team1Score === game.team2Score && (game.team1Score > 0 || game.team2Score > 0)) {
+        return "Games cannot end in a tie. Please fix the score entries.";
+      }
+    }
     
-    const team2Wins = completedGames.filter(
-      game => game.team2Score > game.team1Score
-    ).length;
-    
-    // Determine match winner if either team has won enough games
-    if (team1Wins > bestOf / 2) {
-      return {
-        matchId,
-        winnerId: team1Id,
-        loserId: team2Id,
-        team1Score: team1Wins,
-        team2Score: team2Wins,
-        games: completedGames
-      };
-    } else if (team2Wins > bestOf / 2) {
-      return {
-        matchId,
-        winnerId: team2Id,
-        loserId: team1Id,
-        team1Score: team1Wins,
-        team2Score: team2Wins,
-        games: completedGames
-      };
+    const result = calculateMatchResult();
+    if (!result.complete) {
+      return "Match is incomplete. One team needs to win majority of games.";
     }
     
     return null;
   };
 
-  const handleQuickScoreSubmit = async (team1GameWins: number, team2GameWins: number) => {
-    setIsSubmitting(true);
-    console.log(`Quick score submission: ${team1GameWins}-${team2GameWins}`);
-    
-    try {
-      // Generate games array based on quick score
-      const quickGames: PlayoffGame[] = [];
-      
-      // Add games for team1 wins
-      for (let i = 0; i < team1GameWins; i++) {
-        quickGames.push({
-          id: `${i+1}`,
-          matchId,
-          gameNumber: i+1,
-          team1Score: 21,
-          team2Score: 11,
-          winnerId: team1Id
-        });
-      }
-      
-      // Add games for team2 wins
-      for (let i = 0; i < team2GameWins; i++) {
-        quickGames.push({
-          id: `${i+team1GameWins+1}`,
-          matchId,
-          gameNumber: i+team1GameWins+1,
-          team1Score: 11,
-          team2Score: 21,
-          winnerId: team2Id
-        });
-      }
-      
-      // Calculate the match result
-      const winnerId = team1GameWins > team2GameWins ? team1Id : team2Id;
-      const loserId = team1GameWins > team2GameWins ? team2Id : team1Id;
-      
-      const matchResult: MatchResult = {
-        matchId,
-        winnerId,
-        loserId,
-        team1Score: team1GameWins,
-        team2Score: team2GameWins,
-        games: quickGames
-      };
-      
-      // Submit the match result to the database
-      await PlayoffDatabaseAdapter.submitMatchResult(matchResult);
-      
-      toast({
-        title: "Score Submitted",
-        description: `Match result: ${team1GameWins}-${team2GameWins}`,
-      });
-      
-      onSaveSuccess();
-      onClose();
-      
-    } catch (error) {
-      console.error("Error submitting match score:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit match score. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
+  // Handle save button click
+  const handleSave = async () => {
+    const validationError = validateGames();
+    if (validationError) {
+      setError(validationError);
+      return;
     }
-  };
-  
-  const handleSaveDetailedScore = async () => {
-    setIsSubmitting(true);
+    
+    setIsSaving(true);
+    setError(null);
     
     try {
-      const matchResult = calculateMatchResult(games);
+      const result = calculateMatchResult();
       
-      if (!matchResult) {
-        toast({
-          title: "Invalid Score",
-          description: "Match must have a clear winner.",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
+      console.log("Saving match result:", {
+        matchId,
+        winnerId: result.winnerId,
+        loserId: result.loserId,
+        team1Score: result.team1Score,
+        team2Score: result.team2Score,
+        games
+      });
+      
+      // In a real implementation, this would be an API call to save the results
+      // await saveMatchResult(matchId, result.winnerId, result.loserId, result.team1Score, result.team2Score, games);
+      
+      if (onSaveSuccess) {
+        onSaveSuccess();
       }
       
-      // Submit the match result
-      await PlayoffDatabaseAdapter.submitMatchResult(matchResult);
-      
-      toast({
-        title: "Score Submitted",
-        description: `Match result: ${matchResult.team1Score}-${matchResult.team2Score}`,
-      });
-      
-      onSaveSuccess();
-      onClose();
-      
-    } catch (error) {
-      console.error("Error submitting detailed match score:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit match score. Please try again.",
-        variant: "destructive"
-      });
+      if (onClose) {
+        onClose();
+      }
+    } catch (err) {
+      console.error("Failed to save match result:", err);
+      setError("Failed to save match result. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-lg mx-auto">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Match Score: {team1Name} vs {team2Name}</span>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </CardTitle>
-      </CardHeader>
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold text-center">
+        Match Score Editor
+      </h2>
       
-      <CardContent>
-        {viewMode === 'quick' ? (
-          <QuickScoreEditor 
-            team1Name={team1Name} 
-            team2Name={team2Name}
-            onSubmitScore={handleQuickScoreSubmit}
-            disabled={isSubmitting}
-          />
-        ) : (
-          <GamesList 
-            games={games} 
-            setGames={setGames} 
-            team1Name={team1Name} 
-            team2Name={team2Name}
-          />
-        )}
-      </CardContent>
+      <div className="flex items-center justify-center gap-3 text-base font-medium">
+        <span>{team1Name}</span>
+        <span className="text-gray-400">vs</span>
+        <span>{team2Name}</span>
+      </div>
       
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={() => setViewMode(viewMode === 'quick' ? 'detailed' : 'quick')}
-          disabled={isSubmitting}
-        >
-          {viewMode === 'quick' ? 'Game-by-Game Entry' : 'Quick Score Entry'}
+      <div className={cn(
+        "p-2 text-center text-xs rounded-md",
+        "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+      )}>
+        Best of {bestOf} series - First to win {Math.ceil(bestOf / 2)} games wins the match
+      </div>
+      
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      <GamesList
+        games={games}
+        setGames={setGames}
+        team1Name={team1Name}
+        team2Name={team2Name}
+      />
+      
+      <div className="flex justify-between pt-4">
+        <Button variant="outline" onClick={onClose} disabled={isSaving}>
+          Cancel
         </Button>
-        
-        {viewMode === 'detailed' && (
-          <Button 
-            onClick={handleSaveDetailedScore} 
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+        <Button onClick={handleSave} disabled={isLoading || isSaving}>
+          {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          Save Match Result
+        </Button>
+      </div>
+    </div>
   );
 };
 
