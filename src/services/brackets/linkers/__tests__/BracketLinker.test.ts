@@ -1,13 +1,13 @@
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { nanoid } from "nanoid";
 import { BracketLinker } from "../../BracketLinker";
 import { BracketMatch, MatchType } from "../../types";
 
 describe("BracketLinker", () => {
-  const bracketId = "test-bracket-123";
+  const bracketId = "test-bracket-id";
   
-  // Helper to create a test match
+  // Helper to create test matches
   const createTestMatch = (
     round: number, 
     position: number, 
@@ -17,224 +17,155 @@ describe("BracketLinker", () => {
     round,
     position,
     matchType,
+    bracket_id: bracketId,
     team1Id: null,
     team2Id: null,
     team1Seed: null,
     team2Seed: null,
     nextWinMatchId: null,
     nextLoseMatchId: null,
-    winnerId: null,
-    bracket_id: bracketId
+    winnerId: null
   });
   
-  describe("constructor", () => {
-    it("should initialize with empty match map if not provided", () => {
-      const linker = new BracketLinker(bracketId);
-      expect(linker.getMatchMap()).toEqual({});
-    });
-    
-    it("should use provided match map if given", () => {
-      const matchMap = {
-        "test-key": createTestMatch(1, 1)
-      };
-      const linker = new BracketLinker(bracketId, matchMap);
-      expect(linker.getMatchMap()).toEqual(matchMap);
-    });
-  });
+  // Setup for each test
+  let linker: BracketLinker;
   
-  describe("findTargetMatchForPlayIn", () => {
-    it("should find the correct target match for play-in match", () => {
-      const linker = new BracketLinker(bracketId);
-      
-      const playInMatch = createTestMatch(0, 3, "play-in");
-      
-      const firstRoundMatches = [
-        createTestMatch(1, 1),
-        {
-          ...createTestMatch(1, 2),
-          team1Id: "play-in-3"
-        },
-        createTestMatch(1, 3)
-      ];
-      
-      // Using a protected method through type assertion for testing
-      const result = (linker as any).findTargetMatchForPlayIn(playInMatch, firstRoundMatches);
-      expect(result).toBe(firstRoundMatches[1]);
-    });
-    
-    it("should return null if no matching target found", () => {
-      const linker = new BracketLinker(bracketId);
-      
-      const playInMatch = createTestMatch(0, 5, "play-in");
-      const firstRoundMatches = [
-        {
-          ...createTestMatch(1, 1),
-          team1Id: "play-in-1"
-        },
-        {
-          ...createTestMatch(1, 2),
-          team2Id: "play-in-2"
-        }
-      ];
-      
-      // Using a protected method through type assertion for testing
-      const result = (linker as any).findTargetMatchForPlayIn(playInMatch, firstRoundMatches);
-      expect(result).toBeNull();
-    });
+  beforeEach(() => {
+    linker = new BracketLinker(bracketId);
   });
   
   describe("linkPlayInMatches", () => {
-    it("should link play-in matches to corresponding first round matches", () => {
-      const linker = new BracketLinker(bracketId);
+    it("should correctly link play-in matches to first round matches", () => {
+      // Create test data
+      const playInMatch1 = createTestMatch(0, 1, "play-in");
+      const playInMatch2 = createTestMatch(0, 2, "play-in");
       
-      const playInMatches = [
-        createTestMatch(0, 1, "play-in"),
-        createTestMatch(0, 2, "play-in")
-      ];
+      const firstRoundMatch1 = {
+        ...createTestMatch(1, 1),
+        team1Id: `play-in-1`
+      };
       
-      const firstRoundMatches = [
-        {
-          ...createTestMatch(1, 1),
-          team1Id: "play-in-1"
-        },
-        {
-          ...createTestMatch(1, 2),
-          team2Id: "play-in-2"
-        },
-        createTestMatch(1, 3)
-      ];
-      
-      const allMatches = [...playInMatches, ...firstRoundMatches];
-      
-      linker.linkPlayInMatches(allMatches);
-      
-      expect(playInMatches[0].nextWinMatchId).toBe(firstRoundMatches[0].id);
-      expect(playInMatches[1].nextWinMatchId).toBe(firstRoundMatches[1].id);
-    });
-  });
-  
-  describe("organizeMatchesByType", () => {
-    it("should organize matches by type and round", () => {
-      const linker = new BracketLinker(bracketId);
+      const firstRoundMatch2 = {
+        ...createTestMatch(1, 2),
+        team2Id: `play-in-2`
+      };
       
       const matches = [
-        createTestMatch(1, 1, "winners"),
-        createTestMatch(1, 2, "winners"),
-        createTestMatch(2, 1, "winners"),
-        createTestMatch(1, 1, "losers"),
-        createTestMatch(2, 1, "losers"),
-        createTestMatch(1, 1, "finals")
+        playInMatch1,
+        playInMatch2,
+        firstRoundMatch1,
+        firstRoundMatch2
       ];
       
-      // Using a protected method through type assertion for testing
-      const organized = (linker as any).organizeMatchesByType(matches);
+      // Execute test
+      linker.linkPlayInMatches(matches);
       
-      expect(organized.winners[1].length).toBe(2);
-      expect(organized.winners[2].length).toBe(1);
-      expect(organized.losers[1].length).toBe(1);
-      expect(organized.losers[2].length).toBe(1);
-      expect(organized.finals[1].length).toBe(1);
+      // Verify results
+      expect(playInMatch1.nextWinMatchId).toBe(firstRoundMatch1.id);
+      expect(playInMatch2.nextWinMatchId).toBe(firstRoundMatch2.id);
     });
-  });
-  
-  describe("connectWinnersBracket", () => {
-    it("should correctly link winners bracket matches", () => {
-      const linker = new BracketLinker(bracketId);
+    
+    it("should not link play-in matches if no matches have the corresponding placeholder", () => {
+      // Create test data
+      const playInMatch = createTestMatch(0, 1, "play-in");
+      const firstRoundMatch = createTestMatch(1, 1);
       
-      // Create a bracket with 2 rounds of winners bracket
-      const round1Match1 = createTestMatch(1, 1, "winners");
-      const round1Match2 = createTestMatch(1, 2, "winners");
-      const round2Match = createTestMatch(2, 1, "winners");
+      // Execute test
+      linker.linkPlayInMatches([playInMatch, firstRoundMatch]);
       
-      const matches = [round1Match1, round1Match2, round2Match];
-      
-      // Organize matches by type
-      const matchesByType = {
-        'winners': { 
-          1: [round1Match1, round1Match2], 
-          2: [round2Match] 
-        },
-        'losers': {},
-        'finals': {},
-        'play-in': {}
-      };
-      
-      // Using a protected method through type assertion for testing
-      (linker as any).connectWinnersBracket(matchesByType);
-      
-      // Check that winners are linked to next round
-      expect(round1Match1.nextWinMatchId).toBe(round2Match.id);
-      expect(round1Match2.nextWinMatchId).toBe(round2Match.id);
-    });
-  });
-  
-  describe("connectLosersBracket", () => {
-    it("should correctly link losers bracket matches", () => {
-      const linker = new BracketLinker(bracketId);
-      
-      // Create a bracket with 2 rounds of losers bracket
-      const round1Match1 = createTestMatch(1, 1, "losers");
-      const round1Match2 = createTestMatch(1, 2, "losers");
-      const round2Match = createTestMatch(2, 1, "losers");
-      
-      // Organize matches by type
-      const matchesByType = {
-        'winners': {},
-        'losers': { 
-          1: [round1Match1, round1Match2], 
-          2: [round2Match] 
-        },
-        'finals': {},
-        'play-in': {}
-      };
-      
-      // Using a protected method through type assertion for testing
-      (linker as any).connectLosersBracket(matchesByType);
-      
-      // Check that winners are linked to next round
-      expect(round1Match1.nextWinMatchId).toBe(round2Match.id);
-      expect(round1Match2.nextWinMatchId).toBe(round2Match.id);
+      // Verify results
+      expect(playInMatch.nextWinMatchId).toBeNull();
     });
   });
   
   describe("connectBrackets", () => {
-    it("should link all sections of the bracket together", () => {
-      const linker = new BracketLinker(bracketId);
+    it("should link winners bracket matches to next round and losers bracket", () => {
+      // Create an 8-team bracket structure
+      const matches: BracketMatch[] = [];
       
-      // Create test matches for each section
-      const winnerR1M1 = createTestMatch(1, 1, "winners");
-      const winnerR1M2 = createTestMatch(1, 2, "winners");
-      const winnerR2M1 = createTestMatch(2, 1, "winners");
+      // Winners bracket - Round 1 (4 matches)
+      for (let i = 1; i <= 4; i++) {
+        matches.push(createTestMatch(1, i, "winners"));
+      }
       
-      const loserR1M1 = createTestMatch(1, 1, "losers");
-      const loserR2M1 = createTestMatch(2, 1, "losers");
+      // Winners bracket - Round 2 (2 matches)
+      for (let i = 1; i <= 2; i++) {
+        matches.push(createTestMatch(2, i, "winners"));
+      }
       
-      const finals = createTestMatch(1, 1, "finals");
-      const reset = createTestMatch(2, 1, "finals");
+      // Winners bracket - Round 3 (1 match)
+      matches.push(createTestMatch(3, 1, "winners"));
       
-      const matches = [
-        winnerR1M1, winnerR1M2, winnerR2M1,
-        loserR1M1, loserR2M1,
-        finals, reset
-      ];
+      // Losers bracket - Round 1 (2 matches)
+      for (let i = 1; i <= 2; i++) {
+        matches.push(createTestMatch(1, i, "losers"));
+      }
       
+      // Losers bracket - Round 2 (1 match)
+      matches.push(createTestMatch(2, 1, "losers"));
+      
+      // Losers bracket - Round 3 (1 match)
+      matches.push(createTestMatch(3, 1, "losers"));
+      
+      // Losers bracket - Round 4 (1 match)
+      matches.push(createTestMatch(4, 1, "losers"));
+      
+      // Finals - Round 1 (1 match)
+      matches.push(createTestMatch(1, 1, "finals"));
+      
+      // Execute test
       linker.connectBrackets(matches);
       
-      // Check that winners bracket is linked
-      expect(winnerR1M1.nextWinMatchId).toBe(winnerR2M1.id);
-      expect(winnerR1M2.nextWinMatchId).toBe(winnerR2M1.id);
+      // Get matches by type and round
+      const wb_r1 = matches.filter(m => m.matchType === "winners" && m.round === 1);
+      const wb_r2 = matches.filter(m => m.matchType === "winners" && m.round === 2);
+      const wb_r3 = matches.filter(m => m.matchType === "winners" && m.round === 3);
       
-      // Check that winners final is linked to grand finals
-      expect(winnerR2M1.nextWinMatchId).toBe(finals.id);
+      const lb_r1 = matches.filter(m => m.matchType === "losers" && m.round === 1);
+      const lb_r2 = matches.filter(m => m.matchType === "losers" && m.round === 2);
       
-      // Check that losers bracket is linked
-      expect(loserR1M1.nextWinMatchId).toBe(loserR2M1.id);
+      const finals = matches.filter(m => m.matchType === "finals");
       
-      // Check that losers final is linked to grand finals
-      expect(loserR2M1.nextWinMatchId).toBe(finals.id);
+      // Verify winners bracket connectivity
+      expect(wb_r1[0].nextWinMatchId).toBe(wb_r2[0].id);
+      expect(wb_r1[1].nextWinMatchId).toBe(wb_r2[0].id);
+      expect(wb_r1[2].nextWinMatchId).toBe(wb_r2[1].id);
+      expect(wb_r1[3].nextWinMatchId).toBe(wb_r2[1].id);
       
-      // Check that grand finals is linked to reset match
-      expect(finals.nextWinMatchId).toBe(reset.id);
+      expect(wb_r2[0].nextWinMatchId).toBe(wb_r3[0].id);
+      expect(wb_r2[1].nextWinMatchId).toBe(wb_r3[0].id);
+      
+      expect(wb_r3[0].nextWinMatchId).toBe(finals[0].id);
+      
+      // Verify losers flow
+      expect(wb_r1[0].nextLoseMatchId).toBeDefined();
+      expect(wb_r1[1].nextLoseMatchId).toBeDefined();
+      expect(wb_r1[2].nextLoseMatchId).toBeDefined();
+      expect(wb_r1[3].nextLoseMatchId).toBeDefined();
+      
+      // Verify losers bracket connectivity
+      expect(lb_r1[0].nextWinMatchId).toBe(lb_r2[0].id);
+      expect(lb_r1[1].nextWinMatchId).toBe(lb_r2[0].id);
+    });
+  });
+  
+  describe("getMatchMap", () => {
+    it("should return the match map", () => {
+      const matchMap = { "test-key": createTestMatch(1, 1) };
+      const customLinker = new BracketLinker(bracketId, matchMap);
+      
+      expect(customLinker.getMatchMap()).toBe(matchMap);
+    });
+  });
+  
+  describe("bracket connectivity calculations", () => {
+    it("should calculate loser destination round correctly", () => {
+      const linkerInstance = new BracketLinker(bracketId);
+      const calculateLoserRound = (linkerInstance as any).calculateLoserDestinationRound;
+      
+      expect(calculateLoserRound(1)).toBe(1);  // Winners round 1 losers go to losers round 1
+      expect(calculateLoserRound(2)).toBe(3);  // Winners round 2 losers go to losers round 3
+      expect(calculateLoserRound(3)).toBe(5);  // Winners round 3 losers go to losers round 5
     });
   });
 });

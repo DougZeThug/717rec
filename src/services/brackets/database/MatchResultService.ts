@@ -107,8 +107,7 @@ export class MatchResultService {
         await this.resetMatchService.createResetMatch(
           bracketId,
           bracketState.losersBracketChampionId, // GF1 winner goes to team1
-          bracketState.winnersBracketChampionId, // GF1 loser goes to team2
-          "finals" // Match type for reset match
+          bracketState.winnersBracketChampionId  // GF1 loser goes to team2
         );
       }
     } else {

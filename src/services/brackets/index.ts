@@ -51,3 +51,6 @@ export * from './linkers/IBracketLinker';
 export * from './linkers/BaseBracketLinker';
 export * from './linkers/PlayoffBracketLinker';
 export * from './linkers/utils/LinkingUtils';
+export * from './linkers/utils/BracketLinkingUtils';
+export * from './linkers/utils/FinalsGeneratorUtils';
+export * from './linkers/types/MatchLinkingTypes';
