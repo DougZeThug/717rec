@@ -22,6 +22,8 @@ vi.mock('@/integrations/supabase/client', () => {
 describe('TeamAdvancementService', () => {
   let service: TeamAdvancementService;
   let mockUpdateEq: ReturnType<typeof vi.fn>;
+  let mockUpdate: ReturnType<typeof vi.fn>;
+  let mockFrom: ReturnType<typeof vi.fn>;
   
   beforeEach(() => {
     service = new TeamAdvancementService();
@@ -29,32 +31,36 @@ describe('TeamAdvancementService', () => {
     
     // Setup the mock update.eq chain that's reused in tests
     mockUpdateEq = vi.fn().mockReturnValue({ error: null });
-    vi.mocked(supabase.from).mockImplementation(() => {
-      return {
-        ...supabase,
-        update: vi.fn().mockReturnValue({
-          ...supabase,
-          eq: mockUpdateEq
+    mockUpdate = vi.fn().mockReturnValue({ eq: mockUpdateEq });
+    mockFrom = vi.fn().mockReturnValue({ 
+      update: mockUpdate, 
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn()
         })
-      } as any;
+      })
     });
+    
+    // Setup the main from mock
+    vi.mocked(supabase.from).mockImplementation(mockFrom);
   });
   
   // Helper function to setup match data mocks
   const setupMatchDataMock = (teamData: { team1_id: string | null, team2_id: string | null }) => {
+    const mockSingle = vi.fn().mockReturnValue({
+      data: teamData,
+      error: null
+    });
+    
+    const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
+    const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+    
     vi.mocked(supabase.from).mockReturnValueOnce({
       ...supabase,
-      select: vi.fn().mockReturnValue({
-        ...supabase,
-        eq: vi.fn().mockReturnValue({
-          ...supabase,
-          single: vi.fn().mockReturnValue({
-            data: teamData,
-            error: null
-          })
-        })
-      })
+      select: mockSelect
     } as any);
+    
+    return { mockSelect, mockEq, mockSingle };
   };
   
   describe('advanceTeam', () => {
@@ -72,13 +78,13 @@ describe('TeamAdvancementService', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
-      expect(vi.mocked(supabase.from)().update).toHaveBeenCalledWith({ team1_id: teamId });
+      expect(mockUpdate).toHaveBeenCalledWith({ team1_id: teamId });
       expect(mockUpdateEq).toHaveBeenCalledWith('id', matchId);
     });
     
     it('should advance team to team2 slot when team1 is already filled', async () => {
       // Arrange
-      const matchId = 'next-match-1';
+      const matchId = 'next-match-2';
       const teamId = 'team-1';
       const isWinner = true;
       
@@ -90,7 +96,7 @@ describe('TeamAdvancementService', () => {
       
       // Assert
       expect(supabase.from).toHaveBeenCalledWith('playoff_matches');
-      expect(vi.mocked(supabase.from)().update).toHaveBeenCalledWith({ team2_id: teamId });
+      expect(mockUpdate).toHaveBeenCalledWith({ team2_id: teamId });
       expect(mockUpdateEq).toHaveBeenCalledWith('id', matchId);
     });
     
@@ -102,18 +108,17 @@ describe('TeamAdvancementService', () => {
       const mockError = { message: 'DB Error' };
       
       // Mock fetch error
+      const mockSingle = vi.fn().mockReturnValue({
+        data: null,
+        error: mockError
+      });
+      
+      const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
+      const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
+      
       vi.mocked(supabase.from).mockReturnValueOnce({
         ...supabase,
-        select: vi.fn().mockReturnValue({
-          ...supabase,
-          eq: vi.fn().mockReturnValue({
-            ...supabase,
-            single: vi.fn().mockReturnValue({
-              data: null,
-              error: mockError
-            })
-          })
-        })
+        select: mockSelect
       } as any);
       
       // Act & Assert
