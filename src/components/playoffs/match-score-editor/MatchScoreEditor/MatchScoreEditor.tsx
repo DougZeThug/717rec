@@ -9,7 +9,7 @@ import { MatchScoreEditorProps } from "./types";
 import MatchScoreHeader from "./components/MatchScoreHeader";
 import ValidationErrorDisplay from "./components/ValidationErrorDisplay";
 import GameScoresList from "./components/GameScoresList";
-import MatchScoreActions from "../../match-score-editor/MatchScoreActions";
+import MatchScoreActions from "./components/MatchScoreActions";
 
 const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   match,

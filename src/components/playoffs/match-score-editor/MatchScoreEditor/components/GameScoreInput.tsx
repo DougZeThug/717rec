@@ -52,9 +52,10 @@ const GameScoreInput: React.FC<GameScoreInputProps> = ({
           "mt-1",
           teamNumber === 1 ? "border-blue-200 focus:border-blue-300" : "border-red-200 focus:border-red-300"
         )}
+        aria-label={`Score for ${label} in game ${index + 1}`}
       />
     </div>
   );
 };
 
-export default GameScoreInput;
+export default React.memo(GameScoreInput);

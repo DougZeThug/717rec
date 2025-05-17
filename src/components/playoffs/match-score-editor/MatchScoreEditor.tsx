@@ -15,8 +15,6 @@ interface MatchScoreEditorWrapperProps {
     team2GameWins: number
   ) => Promise<void>;
   onCancel: () => void;
-  challongeTournamentId?: string | null;
-  challongeMatchId?: string | null;
 }
 
 // This is a simple wrapper component that maintains backward compatibility
@@ -25,10 +23,7 @@ const MatchScoreEditorWrapper: React.FC<MatchScoreEditorWrapperProps> = ({
   match,
   teams,
   onSave,
-  onCancel,
-  // We're removing Challonge integration as per the requirements
-  // challongeTournamentId,
-  // challongeMatchId
+  onCancel
 }) => {
   return (
     <MatchScoreEditor

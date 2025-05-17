@@ -63,6 +63,7 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
         onClick={() => onRemoveGame(index)}
         disabled={!canRemove}
         className="mt-4"
+        aria-label={`Remove game ${index + 1}`}
       >
         <MinusCircle className="h-5 w-5 text-red-500" />
       </Button>
@@ -70,4 +71,4 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
   );
 };
 
-export default GameScoreRow;
+export default React.memo(GameScoreRow);

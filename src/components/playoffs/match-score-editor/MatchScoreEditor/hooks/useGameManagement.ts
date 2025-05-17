@@ -1,6 +1,7 @@
 
 import { useCallback } from "react";
 import { GameData } from "../types";
+import { canAddMoreGames } from "../utils/scoreUtils";
 
 interface UseGameManagementProps {
   games: GameData[];
@@ -28,8 +29,9 @@ export const useGameManagement = ({
   }, [games, setGames, validateGameScores]);
   
   const addGame = useCallback(() => {
+    if (!canAddMoreGames(games, maxGames)) return;
     setGames(prev => [...prev, { team1Score: 0, team2Score: 0 }]);
-  }, [setGames]);
+  }, [games, maxGames, setGames]);
   
   const removeGame = useCallback((index: number) => {
     if (games.length <= 1) return;
@@ -45,6 +47,6 @@ export const useGameManagement = ({
     handleGameScoreChange,
     addGame,
     removeGame,
-    canAddGames: games.length < maxGames
+    canAddGames: canAddMoreGames(games, maxGames)
   };
 };

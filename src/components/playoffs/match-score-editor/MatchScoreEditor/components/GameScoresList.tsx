@@ -3,7 +3,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
 import { Team } from "@/types";
-import GameScoreRow from "../../GameScoreRow";
+import GameScoreRow from "./GameScoreRow";
 import { GameData } from "../types";
 
 interface GamesScoresListProps {
