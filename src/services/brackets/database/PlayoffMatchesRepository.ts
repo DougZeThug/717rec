@@ -109,6 +109,7 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
       // Map database columns to expected DatabasePlayoffMatch format
       return data.map(match => {
         // Extract team seeds from metadata or use defaults
+        // Add proper null check for metadata field
         const metadata = match.metadata || {};
         
         return {
@@ -159,6 +160,7 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
       }
       
       // Extract team seeds from metadata or use defaults
+      // Add proper null check for metadata field
       const metadata = data.metadata || {};
       
       // Map database columns to expected DatabasePlayoffMatch format
