@@ -53,7 +53,7 @@ export class FinalsGenerator<TMatch extends BaseBracketMatch> implements IFinals
    * @returns Created finals match
    */
   protected createFinalsMatch(round: number = 1): TMatch {
-    // Create a base bracket match object
+    // Create a base bracket match object without team1Seed and team2Seed
     const baseMatch: BaseBracketMatch = {
       id: nanoid(),
       round,
@@ -61,12 +61,10 @@ export class FinalsGenerator<TMatch extends BaseBracketMatch> implements IFinals
       matchType: "finals",
       team1Id: null,
       team2Id: null,
-      team1Seed: null,
-      team2Seed: null,
-      nextWinMatchId: null,
-      nextLoseMatchId: null,
       winnerId: null,
-      bracket_id: this.bracketId
+      bracket_id: this.bracketId,
+      nextWinMatchId: null,
+      nextLoseMatchId: null
     };
     
     // Use type assertion to convert the base match to TMatch

@@ -55,6 +55,8 @@ export abstract class AbstractPlayoffBracketLinker extends BaseBracketLinker<Pla
       ...match,
       team1Id: match.team1Id || null,
       team2Id: match.team2Id || null,
+      team1Seed: match.team1Seed || null,
+      team2Seed: match.team2Seed || null,
       nextWinMatchId: match.nextWinMatchId || null,
       nextLoseMatchId: match.nextLoseMatchId || null,
       bracket_id: match.bracket_id || this.bracketId

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch, MatchResult, PlayoffGame, PlayoffMatch, MatchType } from "./types";
 import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from "./database/types";

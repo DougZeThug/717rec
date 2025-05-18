@@ -1,4 +1,3 @@
-
 import { PlayoffMatch, PlayoffMatchType } from "../../types";
 import { MatchTypeAdapter } from "../../utils/TypeAdapter";
 import { IBracketConnectionOperations, IMatchMapOperations } from "../interfaces/BracketLinkerInterfaces";

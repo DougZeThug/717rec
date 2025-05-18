@@ -25,10 +25,28 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
       if (!matches || matches.length === 0) return;
 
       // We need to make sure match_type is a valid enum value for the database
+      // and map needed fields to the database schema
       const preparedMatches = matches.map(match => ({
-        ...match,
+        id: match.id,
+        round_number: match.round,
+        position: match.position,
         match_type: this.convertMatchTypeForDB(match.match_type),
-        round_number: match.round // Map round to round_number for database
+        team1_id: match.team1_id,
+        team2_id: match.team2_id,
+        next_match_id: match.next_win_match_id,
+        next_loser_match_id: match.next_lose_match_id,
+        winner_id: match.winner_id,
+        loser_id: match.loser_id,
+        bracket_id: match.bracket_id,
+        team1_score: match.team1_score,
+        team2_score: match.team2_score,
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins,
+        best_of: match.best_of,
+        iscompleted: match.status === 'completed',
+        // Add team seeds as custom columns
+        team1_seed: match.team1_seed,
+        team2_seed: match.team2_seed
       }));
 
       const { error } = await supabase
@@ -99,8 +117,9 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_score: match.team2_score,
         team1_game_wins: match.team1_game_wins,
         team2_game_wins: match.team2_game_wins,
-        team1_seed: match.team1_seed || null,
-        team2_seed: match.team2_seed || null,
+        // Map seed fields directly
+        team1_seed: match.team1_seed,
+        team2_seed: match.team2_seed,
         winner_id: match.winner_id,
         loser_id: match.loser_id,
         next_win_match_id: match.next_match_id, // Map next_match_id to next_win_match_id
@@ -145,8 +164,9 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_score: data.team2_score,
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
-        team1_seed: data.team1_seed || null,
-        team2_seed: data.team2_seed || null,
+        // Map seed fields directly 
+        team1_seed: data.team1_seed,
+        team2_seed: data.team2_seed,
         winner_id: data.winner_id,
         loser_id: data.loser_id,
         next_win_match_id: data.next_match_id, // Map next_match_id to next_win_match_id

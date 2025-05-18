@@ -12,7 +12,7 @@ export interface BracketMatchesByType {
 export type BracketState = "pending" | "underway" | "complete" | undefined;
 
 // Re-export these types from @/types so they're available through our service
-export { PlayoffMatch, PlayoffBracket, Team };
+export type { PlayoffMatch, PlayoffBracket, Team };
 
 // Basic match type for brackets
 export interface BaseBracketMatch {
@@ -23,6 +23,9 @@ export interface BaseBracketMatch {
   team1Id: string | null;
   team2Id: null | string;
   winnerId: string | null;
+  nextWinMatchId?: string | null;
+  nextLoseMatchId?: string | null;
+  bracket_id?: string;
 }
 
 // Match type for bracket operations
