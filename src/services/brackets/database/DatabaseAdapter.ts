@@ -16,15 +16,17 @@ export class DatabaseAdapter {
         id: match.id,
         round_number: match.round,
         position: match.position,
-        match_type: match.matchType === "play-in" ? "winners" : match.matchType, // Map play-in to winners for database compatibility
+        match_type: match.matchType === "play-in" || match.matchType === "play-in-2" ? "winners" : match.matchType, // Map play-in to winners for database compatibility
         team1_id: match.team1Id,
         team2_id: match.team2Id,
         next_match_id: match.nextWinMatchId,
         next_loser_match_id: match.nextLoseMatchId,
         winner_id: match.winnerId,
         bracket_id: match.bracket_id,
-        team1_seed: match.team1Seed,
-        team2_seed: match.team2Seed,
+        metadata: {
+          team1_seed: match.team1Seed,
+          team2_seed: match.team2Seed
+        }
       }));
 
       const { error } = await supabase
