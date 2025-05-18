@@ -25,6 +25,8 @@ export function transformMatches(matchesData: any[]): PlayoffMatch[] {
     nextWinMatchId: match.next_match_id,
     nextLoseMatchId: match.next_loser_match_id,
     bestOf: match.best_of || 3,
+    bracket_id: match.bracket_id,
+    status: match.iscompleted ? 'completed' : 'pending',
     games: match.games?.map(game => ({
       id: game.id,
       team1Score: game.team1_score,

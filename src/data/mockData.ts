@@ -1,3 +1,4 @@
+
 import { Team, Match, PlayoffBracket, Ranking, PlayoffGame } from "../types";
 
 export const mockTeams: Team[] = [
@@ -564,11 +565,18 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Id: "1",
       team2Id: "2",
       winnerId: "1",
+      loserId: "2",
       team1Score: 2,
       team2Score: 1,
       matchType: "winners",
       bestOf: 3,
-      games: createBestOf3Games("1", "2", "1")
+      games: createBestOf3Games("1", "2", "1"),
+      team1Seed: 1,
+      team2Seed: 8,
+      nextWinMatchId: "pm3",
+      nextLoseMatchId: "pm4",
+      bracket_id: "pb1",
+      status: "completed"
     },
     {
       id: "pm2",
@@ -577,6 +585,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Id: "3",
       team2Id: "5",
       winnerId: "3",
+      loserId: "5",
       team1Score: 2,
       team2Score: 0,
       matchType: "winners",
@@ -594,7 +603,13 @@ export const mockPlayoffBracket: PlayoffBracket = {
           team2Score: 18,
           winner: "3"
         }
-      ]
+      ],
+      team1Seed: 4,
+      team2Seed: 5,
+      nextWinMatchId: "pm3",
+      nextLoseMatchId: "pm4",
+      bracket_id: "pb1",
+      status: "completed"
     },
     
     // Winners Round 2
@@ -605,11 +620,18 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Id: "1",
       team2Id: "3",
       winnerId: "1",
+      loserId: "3",
       team1Score: 2,
       team2Score: 1,
       matchType: "winners",
       bestOf: 3,
-      games: createBestOf3Games("1", "3", "1")
+      games: createBestOf3Games("1", "3", "1"),
+      team1Seed: 1,
+      team2Seed: 4,
+      nextWinMatchId: "pm6",
+      nextLoseMatchId: "pm5",
+      bracket_id: "pb1",
+      status: "completed"
     },
     
     // Losers Round 1
@@ -620,6 +642,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Id: "2",
       team2Id: "5",
       winnerId: "2",
+      loserId: "5",
       team1Score: 2,
       team2Score: 0,
       matchType: "losers",
@@ -637,7 +660,13 @@ export const mockPlayoffBracket: PlayoffBracket = {
           team2Score: 19,
           winner: "2"
         }
-      ]
+      ],
+      team1Seed: 8,
+      team2Seed: 5,
+      nextWinMatchId: "pm5",
+      nextLoseMatchId: null,
+      bracket_id: "pb1",
+      status: "completed"
     },
     
     // Losers Round 2
@@ -648,11 +677,18 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Id: "2",
       team2Id: "3",
       winnerId: "2",
+      loserId: "3",
       team1Score: 2,
       team2Score: 1,
       matchType: "losers",
       bestOf: 3,
-      games: createBestOf3Games("2", "3", "2")
+      games: createBestOf3Games("2", "3", "2"),
+      team1Seed: 8,
+      team2Seed: 4,
+      nextWinMatchId: "pm6",
+      nextLoseMatchId: null,
+      bracket_id: "pb1",
+      status: "completed"
     },
     
     // Finals
@@ -663,6 +699,7 @@ export const mockPlayoffBracket: PlayoffBracket = {
       team1Id: "1",
       team2Id: "2",
       winnerId: "1",
+      loserId: "2",
       team1Score: 2,
       team2Score: 0,
       matchType: "finals",
@@ -680,7 +717,13 @@ export const mockPlayoffBracket: PlayoffBracket = {
           team2Score: 19,
           winner: "1"
         }
-      ]
+      ],
+      team1Seed: 1,
+      team2Seed: 8,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
+      bracket_id: "pb1",
+      status: "completed"
     }
   ],
   champion: "1"
@@ -700,11 +743,18 @@ export const mockIntermediatePlayoffBracket: PlayoffBracket = {
       team1Id: "7",
       team2Id: "8",
       winnerId: "7",
+      loserId: "8",
       team1Score: 2,
       team2Score: 1,
       matchType: "winners",
       bestOf: 3,
-      games: createBestOf3Games("7", "8", "7")
+      games: createBestOf3Games("7", "8", "7"),
+      team1Seed: 2,
+      team2Seed: 7,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
+      bracket_id: "pb2",
+      status: "completed"
     }
   ],
   champion: "7"
@@ -724,6 +774,7 @@ export const mockCompetitivePlayoffBracket: PlayoffBracket = {
       team1Id: "4",
       team2Id: "6",
       winnerId: "4",
+      loserId: "6",
       team1Score: 2,
       team2Score: 0,
       matchType: "winners",
@@ -741,7 +792,13 @@ export const mockCompetitivePlayoffBracket: PlayoffBracket = {
           team2Score: 18,
           winner: "4"
         }
-      ]
+      ],
+      team1Seed: 3,
+      team2Seed: 6,
+      nextWinMatchId: null,
+      nextLoseMatchId: null,
+      bracket_id: "pb3",
+      status: "completed"
     }
   ],
   champion: "4"
