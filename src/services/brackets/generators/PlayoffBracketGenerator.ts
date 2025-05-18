@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { PlayoffMatch } from "../types";
 import { BaseBracketGenerator } from "./BaseBracketGenerator";
 import { PlayoffBracketLinker } from "../linkers/playoff/PlayoffBracketLinker";
+import { BracketMatch } from "../types";
 
 /**
  * Generator for playoff brackets with true double elimination
@@ -24,7 +25,9 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
     const { advancingTeams, playInMatches } = this.handlePlayInMatches();
     
     // Generate playoff structure
-    const matches: PlayoffMatch[] = [...playInMatches];
+    // Convert play-in matches to PlayoffMatch type
+    const playoffPlayInMatches: PlayoffMatch[] = this.convertToPlayoffMatches(playInMatches);
+    const matches: PlayoffMatch[] = [...playoffPlayInMatches];
     
     // Phase 1: Create winners bracket matches
     this.generateWinnersBracket(matches, advancingTeams);
@@ -39,6 +42,21 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
     this.linkMatches(matches);
     
     return matches;
+  }
+
+  /**
+   * Convert BracketMatch[] to PlayoffMatch[] by ensuring all required fields are present
+   */
+  private convertToPlayoffMatches(bracketMatches: BracketMatch[]): PlayoffMatch[] {
+    return bracketMatches.map(match => ({
+      ...match,
+      bestOf: match.bestOf || 3, // Default to bestOf 3 if not specified
+      team1Score: match.team1Score || null,
+      team2Score: match.team2Score || null,
+      team1GameWins: null,
+      team2GameWins: null,
+      status: match.status || "pending"
+    } as PlayoffMatch));
   }
   
   /**
