@@ -1,6 +1,6 @@
 
 import { Team } from "@/types";
-import { BracketMatch, PlayInResult, SeedTeam } from "../types";
+import { BracketMatch, PlayInResult, PlayoffMatch, SeedTeam } from "../types";
 import { TeamSeeding } from "../utils/TeamSeeding";
 import { BracketSizeCalculator } from "../utils/BracketSizeCalculator";
 import { PlayInGenerator } from "../utils/PlayInGenerator";

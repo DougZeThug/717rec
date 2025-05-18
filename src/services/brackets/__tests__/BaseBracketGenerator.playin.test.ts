@@ -2,6 +2,7 @@
 import { Team } from "@/types";
 import { BaseBracketGenerator } from "../generators/BaseBracketGenerator";
 import { BracketMatch, PlayInResult, SeedTeam } from "../types";
+import { describe, test, expect } from "vitest";
 
 // Mock implementation of BaseBracketGenerator to test protected methods
 class TestBracketGenerator extends BaseBracketGenerator {
