@@ -4,6 +4,7 @@ import { PlayoffBracket, PlayoffMatch, Team } from '@/types';
 import { transformDoubleEliminationMatches } from './transformers/doubleElimination';
 import { transformSingleEliminationMatches } from './transformers/singleElimination';
 import { normalizeBracketFormat, normalizeBracketState, determineChampion } from './bracketFormatters';
+import { BRACKET_FORMATS } from '@/constants/brackets';
 
 /**
  * Fetch a specific bracket by ID
@@ -16,7 +17,7 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
   try {
     // Fetch the bracket data
     const { data: bracketData, error: bracketError } = await supabase
-      .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
+      .from('brackets')
       .select(`
         id,
         title,
@@ -35,30 +36,31 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
     
     // Fetch all matches for the bracket
     const { data: matchesData, error: matchesError } = await supabase
-      .from('matches')  // Changed from 'playoff_matches' to 'matches'
+      .from('matches')
       .select('*')
       .eq('bracket_id', bracketId)
-      .order('round_number', { ascending: true })  // Changed from 'round' to 'round_number'
+      .order('round_number', { ascending: true })
       .order('position', { ascending: true });
     
     if (matchesError) throw matchesError;
     
     // Determine which transformation to use based on bracket format
     const format = normalizeBracketFormat(bracketData.format);
-    const matches = format === 'Double Elimination' 
+    const matches = format === BRACKET_FORMATS.DOUBLE 
       ? transformDoubleEliminationMatches(matchesData)
       : transformSingleEliminationMatches(matchesData);
     
-    // Determine the champion if the bracket is complete
-    const champion = determineChampion(matches);
+    // Determine the champion from matches first, then fall back to wb_champion_id
+    const matchChampion = determineChampion(matches);
+    const champion = matchChampion || bracketData.wb_champion_id;
     
     return {
       id: bracketData.id,
-      name: bracketData.title,  // Changed from 'name' to 'title'
+      name: bracketData.title,
       division: bracketData.division?.name || 'Unknown',
       format,
       matches,
-      champion: champion || bracketData.wb_champion_id,  // Changed from 'champion_id' to 'wb_champion_id'
+      champion,
       challongeTournamentId: bracketData.challonge_tournament_id,
       challongeTournamentUrl: bracketData.challonge_tournament_url,
       state: normalizeBracketState(bracketData.state)
@@ -76,7 +78,7 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
 export const fetchAllBrackets = async (): Promise<Partial<PlayoffBracket>[]> => {
   try {
     const { data, error } = await supabase
-      .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
+      .from('brackets')
       .select(`
         id,
         title,
@@ -93,10 +95,10 @@ export const fetchAllBrackets = async (): Promise<Partial<PlayoffBracket>[]> => 
     
     return data.map(bracket => ({
       id: bracket.id,
-      name: bracket.title,  // Changed from 'name' to 'title'
+      name: bracket.title,
       division: bracket.division?.name || 'Unknown',
       format: normalizeBracketFormat(bracket.format),
-      champion: bracket.wb_champion_id,  // Changed from 'champion_id' to 'wb_champion_id'
+      champion: bracket.wb_champion_id,
       challongeTournamentId: bracket.challonge_tournament_id,
       challongeTournamentUrl: bracket.challonge_tournament_url,
       state: normalizeBracketState(bracket.state)

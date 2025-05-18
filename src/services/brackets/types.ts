@@ -1,5 +1,5 @@
-
 import { PlayoffMatch, PlayoffBracket, Team } from "@/types";
+import { BRACKET_STATES } from "@/constants/brackets";
 
 // Interface for grouping matches by type (winners, losers, finals)
 export interface BracketMatchesByType {
@@ -9,7 +9,7 @@ export interface BracketMatchesByType {
 }
 
 // Bracket state types
-export type BracketState = "pending" | "underway" | "complete" | undefined;
+export type BracketState = typeof BRACKET_STATES[keyof typeof BRACKET_STATES];
 
 // Re-export these types from @/types so they're available through our service
 export type { PlayoffMatch, PlayoffBracket, Team };

@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 import { BracketGenerator } from "./brackets/BracketGenerator";
+import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
 
 /**
  * Service for bracket-related operations
@@ -19,12 +20,12 @@ export class BracketService {
     try {
       // Create the bracket in the database
       const { data: bracketData, error: bracketError } = await supabase
-        .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
+        .from('brackets')
         .insert({
           title: name,
           format,
           division_id: divisionId,
-          state: 'pending'
+          state: BRACKET_STATES.PENDING
         })
         .select('id')
         .single();
@@ -53,7 +54,7 @@ export class BracketService {
       // Generate bracket matches
       let matches: PlayoffMatch[];
       
-      if (format === "Single Elimination") {
+      if (format === BRACKET_FORMATS.SINGLE) {
         // Add bestOf property to ensure type compatibility
         const singleEliminationMatches = BracketGenerator.generateSingleEliminationBracket(bracketId, bracketTeams);
         matches = singleEliminationMatches.map(match => ({

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from "react";
 import type { PlayoffBracket, Team } from "@/types";
 import RoundColumn from "./RoundColumn";
@@ -9,6 +8,7 @@ import { blueAmber } from "@/styles/design-system";
 import ChampionDisplay from "./celebration/ChampionDisplay";
 import { usePlayoffBracketData, BracketMatchesByType } from "@/hooks/usePlayoffBracketData";
 import DoubleElimBracket from "./DoubleElimBracket";
+import { BRACKET_FORMATS } from "@/constants/brackets";
 
 interface BracketViewProps {
   bracket: PlayoffBracket;
@@ -25,7 +25,7 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
   const { bracketMatchesByType } = usePlayoffBracketData(bracket.id);
 
   // Check if we should use the double elimination layout
-  const isDoubleElimination = bracket.format === "Double Elimination";
+  const isDoubleElimination = bracket.format === BRACKET_FORMATS.DOUBLE;
   
   // If we have a double elimination bracket and the data is organized by type,
   // use the specialized double elimination component

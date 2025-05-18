@@ -1,6 +1,6 @@
 
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
-import { BracketState } from "./types";
+import { BRACKET_FORMATS, BRACKET_STATES, BracketState } from "@/constants/brackets";
 
 /**
  * Determines the champion of a bracket if it exists
@@ -27,14 +27,14 @@ export const determineChampion = (matches: PlayoffMatch[]): string | null => {
  * @returns A valid bracket state
  */
 export const normalizeBracketState = (stateValue: string | null): BracketState => {
-  if (!stateValue) return undefined;
+  if (!stateValue) return BRACKET_STATES.PENDING;
   
-  if (["pending", "underway", "complete"].includes(stateValue)) {
+  if (Object.values(BRACKET_STATES).includes(stateValue as any)) {
     return stateValue as BracketState;
   }
   
   // Default to pending if invalid value
-  return "pending";
+  return BRACKET_STATES.PENDING;
 };
 
 /**
@@ -42,9 +42,9 @@ export const normalizeBracketState = (stateValue: string | null): BracketState =
  * @param format The format value from the database
  * @returns A valid bracket format
  */
-export const normalizeBracketFormat = (format: string | null): "Single Elimination" | "Double Elimination" => {
-  if (format === "Double Elimination" || format === "Single Elimination") {
+export const normalizeBracketFormat = (format: string | null): BracketFormat => {
+  if (format === BRACKET_FORMATS.DOUBLE || format === BRACKET_FORMATS.SINGLE) {
     return format;
   }
-  return "Single Elimination"; // Default format
+  return BRACKET_FORMATS.SINGLE; // Default format
 };
