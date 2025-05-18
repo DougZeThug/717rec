@@ -44,7 +44,7 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_game_wins: match.team2_game_wins,
         best_of: match.best_of,
         iscompleted: match.status === 'completed',
-        // Store team seeds in the matches metadata
+        // Store team seeds in the metadata field
         metadata: {
           team1_seed: match.team1_seed,
           team2_seed: match.team2_seed

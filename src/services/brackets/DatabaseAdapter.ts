@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { BracketMatch, MatchResult, PlayoffGame, PlayoffMatch, MatchType } from "./types";
 import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from "./database/types";
@@ -24,8 +25,11 @@ export class DatabaseAdapter {
         next_loser_match_id: match.nextLoseMatchId,
         winner_id: match.winnerId,
         bracket_id: match.bracket_id,
-        team1_seed: match.team1Seed,
-        team2_seed: match.team2Seed,
+        // Store team seeds in the metadata field
+        metadata: {
+          team1_seed: match.team1Seed,
+          team2_seed: match.team2Seed
+        }
       }));
 
       console.log(`Saving ${dbMatches.length} standard bracket matches to matches table`);
