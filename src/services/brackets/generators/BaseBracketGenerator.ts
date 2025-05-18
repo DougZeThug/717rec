@@ -1,6 +1,6 @@
 
 import { Team } from "@/types";
-import { BracketMatch, PlayInResult, PlayoffMatch, SeedTeam } from "../types";
+import { BracketMatch, PlayInResult, SeedTeam } from "../types";
 import { TeamSeeding } from "../utils/TeamSeeding";
 import { BracketSizeCalculator } from "../utils/BracketSizeCalculator";
 import { PlayInGenerator } from "../utils/PlayInGenerator";
@@ -24,14 +24,22 @@ export abstract class BaseBracketGenerator {
    * @returns Object containing play-in matches and teams that advance to the main bracket
    */
   protected handlePlayInMatches(): PlayInResult {
-    if (this.teams.length <= this.bracketSize) {
+    // How many play-in matches are required to fill the bracket?
+    const numPlayIn = BracketSizeCalculator.calculatePlayInMatchCount(
+      this.teams.length,   // actual teams
+      this.bracketSize,    // target power-of-two size (8, 16, …)
+    );
+
+    if (numPlayIn <= 0) {
+      // Perfect power-of-two → no play-ins.
       return { playInMatches: [], advancingTeams: this.teams };
     }
-    
+
+    // Delegate to existing helper; returns { playInMatches, advancingTeams }
     return PlayInGenerator.createPlayInMatches(
       this.teams,
       this.bracketSize,
-      this.bracketId
+      this.bracketId,
     );
   }
   
