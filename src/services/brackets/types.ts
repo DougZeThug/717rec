@@ -33,6 +33,7 @@ export interface BracketMatch extends BaseBracketMatch {
   nextLoseMatchId: string | null;
   bracket_id: string;
   loserId?: string | null;
+  bestOf?: number; // Added bestOf to make compatible with PlayoffMatch
 }
 
 // Types for match types in brackets
@@ -69,11 +70,12 @@ export interface MatchResult {
 // Game within a match
 export interface PlayoffGame {
   id: string;
-  matchId: string;
-  gameNumber: number;
+  matchId?: string;
+  gameNumber?: number;
   team1Score: number;
   team2Score: number;
-  winnerId: string;
+  winnerId?: string;
+  winner?: string;
 }
 
 // Database bracket state information

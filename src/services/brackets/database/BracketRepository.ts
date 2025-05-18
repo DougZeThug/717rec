@@ -13,9 +13,9 @@ export class BracketRepository implements IBracketRepository {
   async markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void> {
     try {
       const { error } = await supabase
-        .from('playoff_brackets')
+        .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
         .update({
-          winners_bracket_champion_id: teamId
+          wb_champion_id: teamId  // Changed from 'winners_bracket_champion_id' to 'wb_champion_id'
         })
         .eq('id', bracketId);
       
@@ -34,7 +34,7 @@ export class BracketRepository implements IBracketRepository {
   async setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void> {
     try {
       const { error } = await supabase
-        .from('playoff_brackets')
+        .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
         .update({
           reset_match_needed: needed
         })
@@ -55,9 +55,9 @@ export class BracketRepository implements IBracketRepository {
   async markTournamentComplete(bracketId: string, championId: string): Promise<void> {
     try {
       const { error } = await supabase
-        .from('playoff_brackets')
+        .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
         .update({
-          champion_id: championId,
+          wb_champion_id: championId,  // Changed from 'champion_id' to 'wb_champion_id'
           state: 'complete'
         })
         .eq('id', bracketId);
@@ -77,8 +77,8 @@ export class BracketRepository implements IBracketRepository {
   async getBracketState(bracketId: string): Promise<DatabaseBracketState> {
     try {
       const { data, error } = await supabase
-        .from('playoff_brackets')
-        .select('winners_bracket_champion_id, losers_bracket_champion_id, champion_id, reset_match_needed, state')
+        .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
+        .select('wb_champion_id, reset_match_needed, state')  // Changed from column names to match table schema
         .eq('id', bracketId)
         .single();
       
@@ -86,13 +86,13 @@ export class BracketRepository implements IBracketRepository {
       
       // Convert the database representation to our application model
       const bracketState: DatabaseBracketState = {
-        isWinnersBracketComplete: !!data.winners_bracket_champion_id,
-        isLosersBracketComplete: !!data.losers_bracket_champion_id,
+        isWinnersBracketComplete: !!data.wb_champion_id,
+        isLosersBracketComplete: false, // No column for this in the schema
         isResetMatchNeeded: !!data.reset_match_needed,
         isComplete: data.state === 'complete',
-        winnersBracketChampionId: data.winners_bracket_champion_id,
-        losersBracketChampionId: data.losers_bracket_champion_id,
-        championId: data.champion_id
+        winnersBracketChampionId: data.wb_champion_id,
+        losersBracketChampionId: null, // No column for this in the schema
+        championId: data.wb_champion_id // Using wb_champion_id as the champion
       };
       
       return bracketState;

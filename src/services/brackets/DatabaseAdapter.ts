@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { BracketMatch, MatchResult, PlayoffGame } from "./types";
+import { BracketMatch, MatchResult, PlayoffGame, PlayoffMatch, MatchType } from "./types";
 import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from "./database/types";
 
 /**
@@ -13,11 +13,12 @@ export class DatabaseAdapter {
   static async saveBracketMatches(matches: BracketMatch[]): Promise<void> {
     try {
       // Convert to database format
+      // Map play-in and play-in-2 to winners for database compatibility
       const dbMatches = matches.map(match => ({
         id: match.id,
         round_number: match.round,
         position: match.position,
-        match_type: match.matchType === "play-in" ? "winners" : match.matchType, // Map play-in to winners for database compatibility
+        match_type: this.convertMatchTypeForDB(match.matchType),
         team1_id: match.team1Id,
         team2_id: match.team2Id,
         next_match_id: match.nextWinMatchId,
@@ -44,6 +45,17 @@ export class DatabaseAdapter {
       console.error('Error saving bracket matches:', error);
       throw error;
     }
+  }
+  
+  /**
+   * Convert match type for database compatibility
+   * Maps play-in and play-in-2 to winners for database storage
+   */
+  private static convertMatchTypeForDB(matchType: MatchType): "winners" | "losers" | "finals" {
+    if (matchType === "play-in" || matchType === "play-in-2") {
+      return "winners";
+    }
+    return matchType as "winners" | "losers" | "finals";
   }
   
   /**

@@ -19,7 +19,7 @@ export class PlayoffDatabaseAdapter {
       bracket_id: match.bracket_id || null,
       round: match.round,
       position: match.position,
-      match_type: match.matchType,
+      match_type: this.convertMatchTypeForDB(match.matchType),
       team1_id: match.team1Id,
       team2_id: match.team2Id,
       team1_score: match.team1Score || null,
@@ -37,6 +37,17 @@ export class PlayoffDatabaseAdapter {
     }));
 
     await this.facade.savePlayoffMatches(dbMatches);
+  }
+
+  /**
+   * Convert PlayoffMatchType to database compatible match type
+   * Maps play-in and play-in-2 to winners for database storage
+   */
+  private static convertMatchTypeForDB(matchType: PlayoffMatchType): "winners" | "losers" | "finals" {
+    if (matchType === "play-in" || matchType === "play-in-2") {
+      return "winners";
+    }
+    return matchType as "winners" | "losers" | "finals";
   }
 
   /**

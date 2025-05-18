@@ -37,12 +37,12 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       if (!data.divisionId) console.warn("Missing divisionId in form submission");
       if (!data.teams.length) console.warn("No teams selected in form submission");
       
-      const bracketId = await BracketService.createBracket({
-        title: data.title,
-        divisionId: data.divisionId,
-        format: data.format,
-        teamIds: data.teams,
-      });
+      const bracketId = await BracketService.createBracket(
+        data.title,
+        data.format,
+        data.divisionId,
+        data.teams
+      );
       
       toast({
         title: "Bracket Created",

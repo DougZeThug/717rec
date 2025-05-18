@@ -19,9 +19,9 @@ export class BracketService {
     try {
       // Create the bracket in the database
       const { data: bracketData, error: bracketError } = await supabase
-        .from('playoff_brackets')
+        .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
         .insert({
-          name,
+          title: name,
           format,
           division_id: divisionId,
           state: 'pending'
@@ -54,9 +54,19 @@ export class BracketService {
       let matches: PlayoffMatch[];
       
       if (format === "Single Elimination") {
-        matches = BracketGenerator.generateSingleEliminationBracket(bracketId, bracketTeams) as PlayoffMatch[];
+        // Add bestOf property to ensure type compatibility
+        const singleEliminationMatches = BracketGenerator.generateSingleEliminationBracket(bracketId, bracketTeams);
+        matches = singleEliminationMatches.map(match => ({
+          ...match,
+          bestOf: 3 // Default to best of 3
+        })) as PlayoffMatch[];
       } else {
-        matches = BracketGenerator.generateDoubleEliminationBracket(bracketId, bracketTeams) as PlayoffMatch[];
+        // Add bestOf property to ensure type compatibility
+        const doubleEliminationMatches = BracketGenerator.generateDoubleEliminationBracket(bracketId, bracketTeams);
+        matches = doubleEliminationMatches.map(match => ({
+          ...match,
+          bestOf: 3 // Default to best of 3
+        })) as PlayoffMatch[];
       }
       
       // Save the matches to the database
@@ -76,7 +86,7 @@ export class BracketService {
     try {
       // Delete the matches first (due to foreign key constraint)
       const { error: matchesError } = await supabase
-        .from('playoff_matches')
+        .from('matches') // Changed from 'playoff_matches' to 'matches'
         .delete()
         .eq('bracket_id', bracketId);
       
@@ -84,7 +94,7 @@ export class BracketService {
       
       // Then delete the bracket
       const { error: bracketError } = await supabase
-        .from('playoff_brackets')
+        .from('brackets') // Changed from 'playoff_brackets' to 'brackets'
         .delete()
         .eq('id', bracketId);
       
@@ -108,9 +118,9 @@ export class BracketService {
   ): Promise<void> {
     try {
       const { error } = await supabase
-        .from('playoff_brackets')
+        .from('brackets') // Changed from 'playoff_brackets' to 'brackets'
         .update({
-          name: updates.name,
+          title: updates.name, // Changed to 'title' from 'name' to match the column name
           format: updates.format,
           division_id: updates.divisionId
         })
@@ -141,7 +151,7 @@ export class BracketService {
       // For now, just update the match score
       // In a real implementation, we would create game records and handle advancement logic
       const { error } = await supabase
-        .from('playoff_matches')
+        .from('matches') // Changed from 'playoff_matches' to 'matches'
         .update({
           team1_score: team1Score,
           team2_score: team2Score,

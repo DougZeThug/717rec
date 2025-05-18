@@ -16,14 +16,14 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
   try {
     // Fetch the bracket data
     const { data: bracketData, error: bracketError } = await supabase
-      .from('playoff_brackets')
+      .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
       .select(`
         id,
-        name,
+        title,
         division:division_id (name),
         format,
         state,
-        champion_id,
+        wb_champion_id,
         challonge_tournament_id,
         challonge_tournament_url
       `)
@@ -35,10 +35,10 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
     
     // Fetch all matches for the bracket
     const { data: matchesData, error: matchesError } = await supabase
-      .from('playoff_matches')
+      .from('matches')  // Changed from 'playoff_matches' to 'matches'
       .select('*')
       .eq('bracket_id', bracketId)
-      .order('round', { ascending: true })
+      .order('round_number', { ascending: true })  // Changed from 'round' to 'round_number'
       .order('position', { ascending: true });
     
     if (matchesError) throw matchesError;
@@ -54,11 +54,11 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
     
     return {
       id: bracketData.id,
-      name: bracketData.name,
+      name: bracketData.title,  // Changed from 'name' to 'title'
       division: bracketData.division?.name || 'Unknown',
       format,
       matches,
-      champion: champion || bracketData.champion_id,
+      champion: champion || bracketData.wb_champion_id,  // Changed from 'champion_id' to 'wb_champion_id'
       challongeTournamentId: bracketData.challonge_tournament_id,
       challongeTournamentUrl: bracketData.challonge_tournament_url,
       state: normalizeBracketState(bracketData.state)
@@ -76,14 +76,14 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
 export const fetchAllBrackets = async (): Promise<Partial<PlayoffBracket>[]> => {
   try {
     const { data, error } = await supabase
-      .from('playoff_brackets')
+      .from('brackets')  // Changed from 'playoff_brackets' to 'brackets'
       .select(`
         id,
-        name,
+        title,
         division:division_id (name),
         format,
         state,
-        champion_id,
+        wb_champion_id,
         challonge_tournament_id,
         challonge_tournament_url
       `)
@@ -93,10 +93,10 @@ export const fetchAllBrackets = async (): Promise<Partial<PlayoffBracket>[]> => 
     
     return data.map(bracket => ({
       id: bracket.id,
-      name: bracket.name,
+      name: bracket.title,  // Changed from 'name' to 'title'
       division: bracket.division?.name || 'Unknown',
       format: normalizeBracketFormat(bracket.format),
-      champion: bracket.champion_id,
+      champion: bracket.wb_champion_id,  // Changed from 'champion_id' to 'wb_champion_id'
       challongeTournamentId: bracket.challonge_tournament_id,
       challongeTournamentUrl: bracket.challonge_tournament_url,
       state: normalizeBracketState(bracket.state)
