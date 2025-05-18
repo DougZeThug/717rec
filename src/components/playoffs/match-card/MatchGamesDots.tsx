@@ -5,9 +5,9 @@ import { PlayoffGame } from "@/types";
 
 interface MatchGamesDotsProps {
   games: PlayoffGame[];
-  team1Id: string | undefined;
-  team2Id: string | undefined;
-  winnerId: string | undefined;
+  team1Id: string | null;
+  team2Id: string | null;
+  winnerId: string | null;
 }
 
 interface GameResultDotProps { 
@@ -57,7 +57,7 @@ const MatchGamesDots: React.FC<MatchGamesDotsProps> = ({
         {games.map((game, index) => (
           <GameResultDot 
             key={game.id || index} 
-            winnerTeam={game.winner === "team1Id" ? 1 : 2}
+            winnerTeam={game.winner === "team1Score" ? 1 : 2}
             isTeam1Winner={winnerId === team1Id}
             isTeam2Winner={winnerId === team2Id}
           />

@@ -8,7 +8,7 @@ interface MatchStatusIndicatorProps {
   isComplete: boolean;
   isResetMatch: boolean;
   matchType: string;
-  winnerId?: string;
+  winnerId?: string | null;
 }
 
 const MatchStatusIndicator: React.FC<MatchStatusIndicatorProps> = ({

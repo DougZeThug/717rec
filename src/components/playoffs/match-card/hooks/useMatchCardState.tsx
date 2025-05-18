@@ -8,7 +8,7 @@ interface UseMatchCardStateProps {
 }
 
 export const useMatchCardState = ({ match, teams }: UseMatchCardStateProps) => {
-  const getTeamById = (id?: string) => {
+  const getTeamById = (id?: string | null) => {
     if (!id) return null;
     
     // Special handling for play-in placeholders
@@ -17,10 +17,10 @@ export const useMatchCardState = ({ match, teams }: UseMatchCardStateProps) => {
         id,
         name: `Winner of Play-in ${id.split('-')[2]}`,
         seed: match.team1Seed || match.team2Seed || 0
-      };
+      } as Team;
     }
     
-    return teams.find(team => team.id === id);
+    return teams.find(team => team.id === id) || null;
   };
 
   const team1 = getTeamById(match.team1Id);
