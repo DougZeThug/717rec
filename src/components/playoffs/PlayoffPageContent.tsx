@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Loader2 } from "lucide-react";
 import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
@@ -6,7 +5,6 @@ import BracketDetail from "@/components/playoffs/BracketDetail";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
 import { PlayoffBracket, Team } from "@/types";
 import BracketView from "./BracketView";
-import { groupBracketMatchesByType } from "@/services/bracketDataService";
 
 interface PlayoffPageContentProps {
   availableDivisions: string[];

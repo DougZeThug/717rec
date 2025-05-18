@@ -1,13 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchBracketById, groupBracketMatchesByType } from "@/services/bracketDataService";
 import { PlayoffMatch } from "@/types";
-
-export interface BracketMatchesByType {
-  winners: PlayoffMatch[][];
-  losers: PlayoffMatch[][];
-  finals: PlayoffMatch[];
-}
+import { fetchBracketById, groupBracketMatchesByType, BracketMatchesByType } from "@/services/brackets";
 
 /**
  * Hook to fetch and organize bracket data by match type and round
@@ -39,3 +33,5 @@ export const usePlayoffBracketData = (bracketId: string | null) => {
     refetch
   };
 };
+
+export type { BracketMatchesByType };
