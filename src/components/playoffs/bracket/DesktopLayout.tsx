@@ -58,7 +58,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           connectorPaths={winnersConnectorPaths}
         />
       ) : (
-        <div />  {/* Empty column placeholder to maintain grid layout */}
+        /* Empty column placeholder to maintain grid layout */
+        <div />
       )}
       
       {/* Middle Column: Finals */}
@@ -70,7 +71,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           getNextMatch={getNextMatch}
         />
       ) : (
-        <div />  {/* Empty column placeholder to maintain grid layout */}
+        /* Empty column placeholder to maintain grid layout */
+        <div />
       )}
       
       {/* Right Column: Losers Bracket */}
@@ -85,7 +87,8 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
           connectorPaths={losersConnectorPaths}
         />
       ) : (
-        <div />  {/* Empty column placeholder to maintain grid layout */}
+        /* Empty column placeholder to maintain grid layout */
+        <div />
       )}
       
       {/* SVG layer for cross-bracket connectors - only render if both winners and losers brackets exist */}
