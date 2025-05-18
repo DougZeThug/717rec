@@ -1,30 +1,31 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import PlayoffMatchCard from '../PlayoffMatchCard';
 
 // Mock the child components to simplify testing
-jest.mock('../MatchCardHeader', () => ({
+vi.mock('../MatchCardHeader', () => ({
   __esModule: true,
   default: () => <div data-testid="match-card-header">Match Header</div>
 }));
 
-jest.mock('../MatchTeamsSection', () => ({
+vi.mock('../MatchTeamsSection', () => ({
   __esModule: true,
   default: () => <div data-testid="match-teams-section">Teams Section</div>
 }));
 
-jest.mock('../MatchStatusIndicator', () => ({
+vi.mock('../MatchStatusIndicator', () => ({
   __esModule: true,
   default: () => <div data-testid="match-status">Match Status</div>
 }));
 
-jest.mock('../MatchGamesDots', () => ({
+vi.mock('../MatchGamesDots', () => ({
   __esModule: true,
   default: () => <div data-testid="match-games-dots">Games Dots</div>
 }));
 
-jest.mock('../ChampionIndicator', () => ({
+vi.mock('../ChampionIndicator', () => ({
   __esModule: true,
   default: () => <div data-testid="champion-indicator">Champion</div>
 }));
@@ -37,11 +38,12 @@ describe('PlayoffMatchCard', () => {
     team1Id: 'team-1',
     team2Id: 'team-2',
     winnerId: 'team-1',
+    loserId: 'team-2',
     team1Score: 2,
     team2Score: 1,
     team1GameWins: 2,
     team2GameWins: 1,
-    matchType: 'winners',
+    matchType: 'winners' as "winners" | "losers" | "finals" | "play-in" | "play-in-2",
     bestOf: 3,
     team1Seed: 1,
     team2Seed: 2,
@@ -74,7 +76,7 @@ describe('PlayoffMatchCard', () => {
   });
   
   it('calls onEditMatch when clicked', () => {
-    const mockOnEditMatch = jest.fn();
+    const mockOnEditMatch = vi.fn();
     
     render(<PlayoffMatchCard 
       match={mockMatch}
@@ -90,7 +92,7 @@ describe('PlayoffMatchCard', () => {
   });
   
   it('supports keyboard navigation', () => {
-    const mockOnEditMatch = jest.fn();
+    const mockOnEditMatch = vi.fn();
     
     render(<PlayoffMatchCard 
       match={mockMatch}
