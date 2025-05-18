@@ -18,6 +18,13 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
   }
 
   /**
+   * Check if a metadata object has the expected team seed properties
+   */
+  private isTeamSeedMetadata(metadata: any): metadata is { team1_seed: number | null; team2_seed: number | null } {
+    return metadata && typeof metadata === 'object';
+  }
+
+  /**
    * Save multiple playoff matches to the database
    */
   async saveMatches(matches: DatabasePlayoffMatch[]): Promise<void> {
@@ -109,8 +116,9 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
       // Map database columns to expected DatabasePlayoffMatch format
       return data.map(match => {
         // Extract team seeds from metadata or use defaults
-        // Add proper null check for metadata field
         const metadata = match.metadata || {};
+        const team1Seed = this.isTeamSeedMetadata(metadata) ? metadata.team1_seed : null;
+        const team2Seed = this.isTeamSeedMetadata(metadata) ? metadata.team2_seed : null;
         
         return {
           id: match.id,
@@ -125,8 +133,8 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
           team1_game_wins: match.team1_game_wins,
           team2_game_wins: match.team2_game_wins,
           // Get team seeds from metadata or default to null
-          team1_seed: metadata.team1_seed || null,
-          team2_seed: metadata.team2_seed || null,
+          team1_seed: team1Seed,
+          team2_seed: team2Seed,
           winner_id: match.winner_id,
           loser_id: match.loser_id,
           next_win_match_id: match.next_match_id,
@@ -159,9 +167,10 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         throw new DatabaseOperationError('getMatchById', `Failed to get match ${matchId}`, error);
       }
       
-      // Extract team seeds from metadata or use defaults
-      // Add proper null check for metadata field
+      // Extract team seeds from metadata with proper typechecking
       const metadata = data.metadata || {};
+      const team1Seed = this.isTeamSeedMetadata(metadata) ? metadata.team1_seed : null;
+      const team2Seed = this.isTeamSeedMetadata(metadata) ? metadata.team2_seed : null;
       
       // Map database columns to expected DatabasePlayoffMatch format
       return {
@@ -177,8 +186,8 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
         // Get team seeds from metadata or default to null
-        team1_seed: metadata.team1_seed || null,
-        team2_seed: metadata.team2_seed || null,
+        team1_seed: team1Seed,
+        team2_seed: team2Seed,
         winner_id: data.winner_id,
         loser_id: data.loser_id,
         next_win_match_id: data.next_match_id,
