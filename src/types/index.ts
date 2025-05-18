@@ -101,26 +101,26 @@ export interface PlayoffMatch {
   id: string;
   round: number;
   position: number;
-  team1Id?: string;
-  team2Id?: string;
-  winnerId?: string;
-  loserId?: string;
-  team1Score?: number;
-  team2Score?: number;
-  team1GameWins?: number;
-  team2GameWins?: number;
+  team1Id: string | null; // Changed from optional to nullable to satisfy BaseBracketMatch
+  team2Id: string | null; // Changed from optional to nullable to satisfy BaseBracketMatch
+  winnerId: string | null; // Changed from optional to nullable
+  loserId?: string | null;
+  team1Score?: number | null;
+  team2Score?: number | null;
+  team1GameWins?: number | null;
+  team2GameWins?: number | null;
   matchType: "winners" | "losers" | "finals" | "play-in" | "play-in-2";
   bestOf: number;
   games?: PlayoffGame[];
   team1ChallongeId?: number;
   team2ChallongeId?: number;
   challongeMatchId?: string;
-  team1Seed?: number;  // New field for seed
-  team2Seed?: number;  // New field for seed
-  nextWinMatchId?: string;  // New field for linking
-  nextLoseMatchId?: string; // New field for linking
-  bracket_id?: string;  // Added field to match database schema
-  status?: "pending" | "in_progress" | "completed"; // Added status field
+  team1Seed: number | null;  // Changed from optional to nullable to satisfy BracketMatch
+  team2Seed: number | null;  // Changed from optional to nullable to satisfy BracketMatch
+  nextWinMatchId: string | null;  // Changed from optional to nullable
+  nextLoseMatchId: string | null; // Changed from optional to nullable
+  bracket_id: string;  // Changed from optional to required
+  status?: "pending" | "in_progress" | "completed"; // Status field kept optional
 }
 
 export interface PlayoffGame {

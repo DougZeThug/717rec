@@ -44,7 +44,7 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_game_wins: match.team2_game_wins,
         best_of: match.best_of,
         iscompleted: match.status === 'completed',
-        // Add team seeds as custom columns
+        // Add team seeds using custom fields
         team1_seed: match.team1_seed,
         team2_seed: match.team2_seed
       }));
@@ -117,7 +117,7 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_score: match.team2_score,
         team1_game_wins: match.team1_game_wins,
         team2_game_wins: match.team2_game_wins,
-        // Map seed fields directly
+        // Map seed fields using custom fields
         team1_seed: match.team1_seed,
         team2_seed: match.team2_seed,
         winner_id: match.winner_id,
@@ -164,7 +164,7 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_score: data.team2_score,
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
-        // Map seed fields directly 
+        // Map seed fields using custom columns
         team1_seed: data.team1_seed,
         team2_seed: data.team2_seed,
         winner_id: data.winner_id,

@@ -2,7 +2,7 @@ import { PlayoffMatch, PlayoffMatchType } from "../../types";
 import { MatchTypeAdapter } from "../../utils/TypeAdapter";
 import { IBracketConnectionOperations, IMatchMapOperations } from "../interfaces/BracketLinkerInterfaces";
 import { AbstractPlayoffBracketLinker } from "../base/AbstractPlayoffBracketLinker";
-import { PlayoffFinalsGenerator } from "./utils/PlayoffFinalsGenerator";
+import { PlayoffFinalsGenerator } from "../playoff/utils/PlayoffFinalsGenerator";
 import { PlayInLinker } from "./utils/PlayInLinker";
 import { WinnersBracketLinker } from "./utils/WinnersBracketLinker";
 import { LosersBracketLinker } from "./utils/LosersBracketLinker";
