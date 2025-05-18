@@ -27,7 +27,7 @@ describe("DoubleElimBracket Empty Rendering", () => {
     // Mock bracket data
     const emptyBracket: PlayoffBracket = {
       id: "test-bracket-123",
-      title: "Test Empty Bracket",
+      name: "Test Empty Bracket",
       format: "Double Elimination"
     };
 
@@ -55,7 +55,7 @@ describe("DoubleElimBracket Empty Rendering", () => {
     // Mock bracket data
     const bracketWithSomeMatches: PlayoffBracket = {
       id: "test-bracket-123",
-      title: "Test Partial Bracket",
+      name: "Test Partial Bracket",
       format: "Double Elimination"
     };
 
@@ -66,10 +66,19 @@ describe("DoubleElimBracket Empty Rendering", () => {
           id: "match-1",
           round: 1,
           position: 1,
-          matchType: "winners",
+          matchType: "winners" as const,
           team1Id: "team-1",
           team2Id: "team-2",
-          bracket_id: "test-bracket-123"
+          bracket_id: "test-bracket-123",
+          winnerId: null,
+          loserId: null,
+          team1Score: null,
+          team2Score: null,
+          bestOf: 3,
+          team1Seed: 1,
+          team2Seed: 2,
+          nextWinMatchId: null,
+          nextLoseMatchId: null
         }
       ]
     ];
