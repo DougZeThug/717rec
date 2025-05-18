@@ -1,3 +1,4 @@
+
 import { PlayoffMatch, PlayoffBracket, Team } from "@/types";
 import { BRACKET_STATES } from "@/constants/brackets";
 
@@ -37,6 +38,9 @@ export interface BracketMatch extends BaseBracketMatch {
   bracket_id: string;
   loserId?: string | null;
   bestOf?: number; // Added bestOf to make compatible with PlayoffMatch
+  team1Score?: number | null; // Add team1Score
+  team2Score?: number | null; // Add team2Score
+  status?: string | null; // Add status
 }
 
 // Types for match types in brackets
