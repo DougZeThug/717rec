@@ -32,7 +32,7 @@ const createMatch = (
   id: string,
   round: number,
   position: number,
-  matchType: string,
+  matchType: "winners" | "losers" | "finals" | "play-in" | "play-in-2",
   team1Id?: string,
   team2Id?: string,
   nextWinMatchId?: string, 
@@ -108,7 +108,7 @@ const finalsMatches: PlayoffMatch[] = [
 const mockBracket: PlayoffBracket = {
   id: "bracket1",
   format: "Double Elimination",
-  title: "Tournament X",
+  name: "Tournament X",
   matches: [
     ...winnersRound1,
     ...winnersRound2,
