@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { PlayoffBracket, Team } from "@/types";
 import { useTeamData } from "./useTeamData";
-import { fetchBracketById } from "@/services/bracketDataService";
+import { fetchBracketById } from "@/services/brackets";
 
 export const useBracketData = (bracketId?: string) => {
   // Use the shared team data hook to get teams

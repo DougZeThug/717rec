@@ -72,7 +72,7 @@ export interface ITeamAdvancementService {
 }
 
 export interface IResetMatchService {
-  createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch>; // Changed return type to PlayoffMatch
+  createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch>;
 }
 
 export interface IMatchResultService {

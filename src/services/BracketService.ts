@@ -1,541 +1,161 @@
-import { supabase } from "@/integrations/supabase/client";
-import { Team } from "@/types";
-import { BracketGenerator } from "./brackets";
-import { PlayoffDatabaseAdapter } from "./brackets/database/PlayoffDatabaseAdapter";
 
-interface BracketCreationParams {
-  title: string;
-  divisionId: string;
-  format: 'Single Elimination' | 'Double Elimination';
-  teamIds: string[];
-}
+import { supabase } from "@/integrations/supabase/client";
+import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
+import { BracketGenerator } from "./brackets/BracketGenerator";
 
 /**
- * Service for managing playoff brackets
+ * Service for bracket-related operations
  */
 export class BracketService {
   /**
-   * Creates a new bracket with initial matches
+   * Create a new bracket
    */
-  static async createBracket(params: BracketCreationParams): Promise<string> {
-    const { title, divisionId, format, teamIds } = params;
-    
-    // Create the bracket
-    const { data: bracketData, error: bracketError } = await supabase
-      .from('brackets')
-      .insert({
-        title,
-        division_id: divisionId,
-        format
-      })
-      .select()
-      .single();
-      
-    if (bracketError) throw bracketError;
-    
-    const bracketId = bracketData.id;
-    
-    // Get full team data
-    const { data: teams, error: teamsError } = await supabase
-      .from('teams')
-      .select('*')
-      .in('id', teamIds);
-      
-    if (teamsError) throw teamsError;
-    
-    // Generate matches based on format and teams
-    if (format === 'Single Elimination') {
-      await this.generateSingleEliminationMatches(bracketId, teamIds);
-    } else if (format === 'Double Elimination') {
-      console.log("Creating double elimination bracket with ID:", bracketId);
-      
-      // Get the full team objects to work with
-      const fullTeams = teams as Team[];
-      
-      try {
-        // Use our modular bracket generator to create matches
-        const matches = BracketGenerator.generateDoubleEliminationBracket(bracketId, fullTeams);
-        
-        // Log the number of matches created
-        console.log(`Generated ${matches.length} matches for double elimination bracket`);
-        
-        // Convert BracketMatch to PlayoffMatch format and save to playoff_matches table
-        const playoffMatches = matches.map(match => ({
-          id: match.id,
-          bracket_id: match.bracket_id,
-          round: match.round,
-          position: match.position,
-          matchType: match.matchType,
-          team1Id: match.team1Id,
-          team2Id: match.team2Id,
-          team1Score: null,
-          team2Score: null,
-          team1GameWins: null,
-          team2GameWins: null,
-          team1Seed: match.team1Seed,
-          team2Seed: match.team2Seed,
-          winnerId: match.winnerId,
-          loserId: null,
-          nextWinMatchId: match.nextWinMatchId,
-          nextLoseMatchId: match.nextLoseMatchId,
-          bestOf: 3, // Default to best of 3
-          status: "pending" as "pending" // Fix: Explicitly type as one of the allowed status values
-        }));
-        
-        // Save matches to playoff_matches table
-        await PlayoffDatabaseAdapter.savePlayoffMatches(playoffMatches);
-        console.log("Successfully saved playoff matches to database");
-      } catch (error) {
-        console.error("Error creating double elimination bracket:", error);
-        throw error;
-      }
-    }
-    
-    return bracketId;
-  }
-  
-  /**
-   * Generates matches for a single elimination bracket
-   */
-  private static async generateSingleEliminationMatches(bracketId: string, teamIds: string[]): Promise<void> {
-    const numTeams = teamIds.length;
-    const numRounds = Math.ceil(Math.log2(numTeams));
-    const totalMatches = Math.pow(2, numRounds) - 1;
-    
-    // Create array of match objects to insert
-    const matches = [];
-    
-    // First round matches - pair teams
-    const firstRoundMatchCount = Math.floor(numTeams / 2);
-    for (let i = 0; i < firstRoundMatchCount; i++) {
-      matches.push({
-        bracket_id: bracketId,
-        round_number: 1,
-        position: i + 1,
-        team1_id: teamIds[i * 2],
-        team2_id: teamIds[i * 2 + 1],
-        match_type: 'winners'
-      });
-    }
-    
-    // Add bye matches if needed
-    if (numTeams % 2 !== 0) {
-      matches.push({
-        bracket_id: bracketId,
-        round_number: 1,
-        position: firstRoundMatchCount + 1,
-        team1_id: teamIds[teamIds.length - 1],
-        team2_id: null, // Bye
-        match_type: 'winners'
-      });
-    }
-    
-    // Create later round matches (empty)
-    for (let round = 2; round <= numRounds; round++) {
-      const roundMatchCount = Math.pow(2, numRounds - round);
-      for (let i = 0; i < roundMatchCount; i++) {
-        matches.push({
-          bracket_id: bracketId,
-          round_number: round,
-          position: i + 1,
-          team1_id: null,
-          team2_id: null,
-          match_type: 'winners'
-        });
-      }
-    }
-    
-    // Insert all matches
-    const { error } = await supabase.from('matches').insert(matches);
-    if (error) throw error;
-  }
-  
-  /**
-   * Generates matches for a double elimination bracket
-   */
-  private static async generateDoubleEliminationMatches(bracketId: string, teamIds: string[]): Promise<void> {
-    const numTeams = teamIds.length;
-    const winnersRounds = Math.ceil(Math.log2(numTeams));
-    
-    // Create array of match objects to insert
-    const matches = [];
-    
-    // WINNERS BRACKET
-    
-    // First round matches - pair teams
-    const firstRoundMatchCount = Math.floor(numTeams / 2);
-    for (let i = 0; i < firstRoundMatchCount; i++) {
-      matches.push({
-        bracket_id: bracketId,
-        round_number: 1,
-        position: i + 1,
-        team1_id: teamIds[i * 2],
-        team2_id: teamIds[i * 2 + 1],
-        match_type: 'winners'
-      });
-    }
-    
-    // Add bye matches if needed
-    if (numTeams % 2 !== 0) {
-      matches.push({
-        bracket_id: bracketId,
-        round_number: 1,
-        position: firstRoundMatchCount + 1,
-        team1_id: teamIds[teamIds.length - 1],
-        team2_id: null, // Bye
-        match_type: 'winners'
-      });
-    }
-    
-    // Create later winner rounds (empty)
-    for (let round = 2; round <= winnersRounds; round++) {
-      const roundMatchCount = Math.pow(2, winnersRounds - round);
-      for (let i = 0; i < roundMatchCount; i++) {
-        matches.push({
-          bracket_id: bracketId,
-          round_number: round,
-          position: i + 1,
-          team1_id: null,
-          team2_id: null,
-          match_type: 'winners'
-        });
-      }
-    }
-    
-    // LOSERS BRACKET
-    // In a double elimination, losers bracket has more complex structure
-    // This is a simplified version
-    
-    // For each winner round except finals, create corresponding loser rounds
-    for (let round = 1; round < winnersRounds; round++) {
-      const losersRoundMatchCount = Math.pow(2, winnersRounds - round - 1);
-      for (let i = 0; i < losersRoundMatchCount; i++) {
-        matches.push({
-          bracket_id: bracketId,
-          round_number: round,
-          position: i + 1,
-          team1_id: null, // Will be filled by losers from winners bracket
-          team2_id: null,
-          match_type: 'losers'
-        });
-      }
-    }
-    
-    // FINALS
-    // Add grand finals match
-    matches.push({
-      bracket_id: bracketId,
-      round_number: winnersRounds + 1,
-      position: 1,
-      team1_id: null, // Winner of winners bracket
-      team2_id: null, // Winner of losers bracket
-      match_type: 'finals'
-    });
-    
-    // Insert all matches
-    const { error } = await supabase.from('matches').insert(matches);
-    if (error) throw error;
-  }
-  
-  /**
-   * Updates a match with new scores
-   */
-  static async updateMatchScores(
-    matchId: string, 
-    team1Score: number, 
-    team2Score: number,
-    games: { team1Score: number, team2Score: number }[]
-  ): Promise<void> {
-    // Get the match first
-    const { data: match, error: fetchError } = await supabase
-      .from('matches')
-      .select('team1_id, team2_id, bracket_id')
-      .eq('id', matchId)
-      .single();
-      
-    if (fetchError) throw fetchError;
-    
-    // Get bracket format
-    const { data: bracket, error: bracketError } = await supabase
-      .from('brackets')
-      .select('format')
-      .eq('id', match.bracket_id)
-      .single();
-      
-    if (bracketError) throw bracketError;
-    
-    // Determine winner
-    let winnerId = null;
-    if (team1Score > team2Score) {
-      winnerId = match.team1_id;
-    } else if (team2Score > team1Score) {
-      winnerId = match.team2_id;
-    }
-    
-    if (bracket.format === 'Double Elimination') {
-      // ** IMPORTANT CHANGE: Check if this match exists in playoff_matches table **
-      const { data: playoffMatch } = await supabase
-        .from('playoff_matches')
-        .select('id')
-        .eq('id', matchId)
-        .maybeSingle();
-        
-      if (playoffMatch) {
-        // Use PlayoffDatabaseAdapter for playoff matches
-        const team1GameWins = games.filter(game => game.team1Score > game.team2Score).length;
-        const team2GameWins = games.filter(game => game.team2Score > game.team1Score).length;
-        const loserId = match.team1_id === winnerId ? match.team2_id : match.team1_id;
-        
-        await PlayoffDatabaseAdapter.recordMatchResult({
-          matchId,
-          winnerId,
-          loserId,
-          team1Score,
-          team2Score,
-          games: games.map((game, index) => ({
-            id: `${matchId}-game-${index + 1}`,
-            matchId,
-            gameNumber: index + 1,
-            team1Score: game.team1Score,
-            team2Score: game.team2Score,
-            winnerId: game.team1Score > game.team2Score ? match.team1_id : match.team2_id
-          }))
-        });
-      } else {
-        // Use our updated BracketGenerator for regular matches
-        await BracketGenerator.updateMatchResult(
-          matchId, 
-          winnerId, 
-          team1Score, 
-          team2Score
-        );
-      }
-    } else {
-      // Original code for single elimination
-      // Update the match
-      const { error: updateError } = await supabase
-        .from('matches')
-        .update({ 
-          winner_id: winnerId,
-          team1_score: team1Score,
-          team2_score: team2Score,
-          team1_game_wins: games.filter(game => game.team1Score > game.team2Score).length,
-          team2_game_wins: games.filter(game => game.team2Score > game.team1Score).length,
-          iscompleted: true
-        })
-        .eq('id', matchId);
-          
-      if (updateError) throw updateError;
-        
-      // Delete existing games for this match
-      await supabase
-        .from('games')
-        .delete()
-        .eq('match_id', matchId);
-        
-      // Insert new games
-      if (games.length > 0) {
-        const gameRecords = games.map((game, index) => ({
-          match_id: matchId,
-          game_number: index + 1,
-          team1_score: game.team1Score,
-          team2_score: game.team2Score
-        }));
-          
-        const { error: gamesError } = await supabase
-          .from('games')
-          .insert(gameRecords);
-            
-        if (gamesError) throw gamesError;
-      }
-        
-      // Update next matches if winner is determined
-      if (winnerId) {
-        await this.advanceTeamToNextMatch(matchId, winnerId);
-      }
-    }
-  }
-  
-  /**
-   * Advances a team to the next match after they win
-   */
-  private static async advanceTeamToNextMatch(matchId: string, winnerId: string): Promise<void> {
-    // Get the current match to find the next match
+  static async createBracket(
+    name: string,
+    format: "Single Elimination" | "Double Elimination",
+    divisionId: string,
+    teamIds: string[]
+  ): Promise<string> {
     try {
-      const { data: currentMatch, error: matchError } = await supabase
-        .from('matches')
-        .select('bracket_id, round_number, position, match_type')
-        .eq('id', matchId)
+      // Create the bracket in the database
+      const { data: bracketData, error: bracketError } = await supabase
+        .from('playoff_brackets')
+        .insert({
+          name,
+          format,
+          division_id: divisionId,
+          state: 'pending'
+        })
+        .select('id')
         .single();
-        
-      if (matchError) throw matchError;
       
-      // Find the next match based on the current match's position
-      // This is a simplified approach and would need to be more sophisticated in a real app
+      if (bracketError) throw bracketError;
       
-      // If it's a winners match, find the next winners match
-      if (currentMatch.match_type === 'winners') {
-        const nextRound = currentMatch.round_number + 1;
-        const nextPosition = Math.ceil(currentMatch.position / 2);
-        
-        const { data: nextMatches, error: nextMatchError } = await supabase
-          .from('matches')
-          .select('id, team1_id, team2_id')
-          .eq('bracket_id', currentMatch.bracket_id)
-          .eq('round_number', nextRound)
-          .eq('position', nextPosition)
-          .eq('match_type', 'winners');
-          
-        if (nextMatchError) throw nextMatchError;
-        
-        if (nextMatches && nextMatches.length > 0) {
-          const nextMatch = nextMatches[0];
-          
-          // Update the appropriate team slot
-          const isEvenPosition = currentMatch.position % 2 === 0;
-          const updateData = isEvenPosition 
-            ? { team2_id: winnerId } 
-            : { team1_id: winnerId };
-            
-          await supabase
-            .from('matches')
-            .update(updateData)
-            .eq('id', nextMatch.id);
-        }
+      const bracketId = bracketData.id;
+      
+      // Get the teams to include in the bracket
+      const { data: teams, error: teamsError } = await supabase
+        .from('teams')
+        .select('id, name, seed, image_url, logo_url')
+        .in('id', teamIds);
+      
+      if (teamsError) throw teamsError;
+      
+      // Map the teams to the expected format
+      const bracketTeams: Team[] = teams.map(team => ({
+        id: team.id,
+        name: team.name,
+        seed: team.seed,
+        imageUrl: team.image_url,
+        logoUrl: team.logo_url
+      }));
+      
+      // Generate bracket matches
+      let matches: PlayoffMatch[];
+      
+      if (format === "Single Elimination") {
+        matches = BracketGenerator.generateSingleEliminationBracket(bracketId, bracketTeams) as PlayoffMatch[];
+      } else {
+        matches = BracketGenerator.generateDoubleEliminationBracket(bracketId, bracketTeams) as PlayoffMatch[];
       }
       
-      // Similar logic for losers bracket and finals
-      // Omitted for brevity
+      // Save the matches to the database
+      await BracketGenerator.savePlayoffMatches(matches);
+      
+      return bracketId;
     } catch (error) {
-      console.error("Error advancing team to next match:", error);
+      console.error("Error creating bracket:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a bracket and its matches
+   */
+  static async deleteBracket(bracketId: string): Promise<void> {
+    try {
+      // Delete the matches first (due to foreign key constraint)
+      const { error: matchesError } = await supabase
+        .from('playoff_matches')
+        .delete()
+        .eq('bracket_id', bracketId);
+      
+      if (matchesError) throw matchesError;
+      
+      // Then delete the bracket
+      const { error: bracketError } = await supabase
+        .from('playoff_brackets')
+        .delete()
+        .eq('id', bracketId);
+      
+      if (bracketError) throw bracketError;
+    } catch (error) {
+      console.error("Error deleting bracket:", error);
       throw error;
     }
   }
   
   /**
-   * Deletes a bracket and all related data
+   * Update a bracket's basic information
    */
-  static async deleteBracket(bracketId: string): Promise<void> {
-    console.log(`Deleting bracket with ID: ${bracketId}`);
-    
+  static async updateBracket(
+    bracketId: string,
+    updates: {
+      name?: string;
+      format?: "Single Elimination" | "Double Elimination";
+      divisionId?: string;
+    }
+  ): Promise<void> {
     try {
-      // Get the bracket format first to determine which tables we need to clean up
-      const { data: bracketData, error: bracketError } = await supabase
-        .from('brackets')
-        .select('format')
-        .eq('id', bracketId)
-        .single();
-        
-      if (bracketError) {
-        console.error("Error fetching bracket format:", bracketError);
-        throw bracketError;
-      }
-      
-      const format = bracketData.format;
-      console.log(`Bracket format: ${format}`);
-      
-      // For Double Elimination, delete from playoff_games and playoff_matches tables
-      if (format === 'Double Elimination') {
-        // First get all match IDs to delete their games
-        const { data: matchData, error: matchError } = await supabase
-          .from('playoff_matches')
-          .select('id')
-          .eq('bracket_id', bracketId);
-          
-        if (matchError) {
-          console.error("Error fetching playoff matches:", matchError);
-          throw matchError;
-        }
-        
-        const matchIds = matchData?.map(match => match.id) || [];
-        console.log(`Found ${matchIds.length} playoff matches to delete`);
-        
-        if (matchIds.length > 0) {
-          // Delete all games for these matches
-          const { error: gamesError } = await supabase
-            .from('playoff_games')
-            .delete()
-            .in('match_id', matchIds);
-            
-          if (gamesError) {
-            console.error("Error deleting playoff games:", gamesError);
-            throw gamesError;
-          }
-          
-          console.log(`Deleted games for ${matchIds.length} playoff matches`);
-        }
-        
-        // Delete all matches for this bracket
-        const { error: matchesDeleteError } = await supabase
-          .from('playoff_matches')
-          .delete()
-          .eq('bracket_id', bracketId);
-          
-        if (matchesDeleteError) {
-          console.error("Error deleting playoff matches:", matchesDeleteError);
-          throw matchesDeleteError;
-        }
-        
-        console.log(`Deleted all playoff matches for bracket ${bracketId}`);
-      } else {
-        // For Single Elimination, delete from games and matches tables
-        // First get all match IDs to delete their games
-        const { data: matchData, error: matchError } = await supabase
-          .from('matches')
-          .select('id')
-          .eq('bracket_id', bracketId);
-          
-        if (matchError) {
-          console.error("Error fetching matches:", matchError);
-          throw matchError;
-        }
-        
-        const matchIds = matchData?.map(match => match.id) || [];
-        console.log(`Found ${matchIds.length} standard matches to delete`);
-        
-        if (matchIds.length > 0) {
-          // Delete all games for these matches
-          const { error: gamesError } = await supabase
-            .from('games')
-            .delete()
-            .in('match_id', matchIds);
-            
-          if (gamesError) {
-            console.error("Error deleting games:", gamesError);
-            throw gamesError;
-          }
-          
-          console.log(`Deleted games for ${matchIds.length} standard matches`);
-        }
-        
-        // Delete all matches for this bracket
-        const { error: matchesDeleteError } = await supabase
-          .from('matches')
-          .delete()
-          .eq('bracket_id', bracketId);
-          
-        if (matchesDeleteError) {
-          console.error("Error deleting matches:", matchesDeleteError);
-          throw matchesDeleteError;
-        }
-        
-        console.log(`Deleted all standard matches for bracket ${bracketId}`);
-      }
-      
-      // Finally, delete the bracket itself
-      const { error: bracketDeleteError } = await supabase
-        .from('brackets')
-        .delete()
+      const { error } = await supabase
+        .from('playoff_brackets')
+        .update({
+          name: updates.name,
+          format: updates.format,
+          division_id: updates.divisionId
+        })
         .eq('id', bracketId);
-        
-      if (bracketDeleteError) {
-        console.error("Error deleting bracket:", bracketDeleteError);
-        throw bracketDeleteError;
-      }
       
-      console.log(`Successfully deleted bracket ${bracketId}`);
+      if (error) throw error;
     } catch (error) {
-      console.error("Error in deleteBracket:", error);
+      console.error("Error updating bracket:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a match's score
+   */
+  static async updateMatchScore(
+    matchId: string,
+    team1Score: number,
+    team2Score: number,
+    games: { team1Score: number; team2Score: number }[],
+    team1GameWins: number,
+    team2GameWins: number
+  ): Promise<void> {
+    try {
+      // Determine the winner based on game wins
+      const winnerId = team1GameWins > team2GameWins ? "team1" : "team2";
+      
+      // For now, just update the match score
+      // In a real implementation, we would create game records and handle advancement logic
+      const { error } = await supabase
+        .from('playoff_matches')
+        .update({
+          team1_score: team1Score,
+          team2_score: team2Score,
+          team1_game_wins: team1GameWins,
+          team2_game_wins: team2GameWins,
+          winner_id: winnerId
+        })
+        .eq('id', matchId);
+      
+      if (error) throw error;
+      
+      // TODO: Handle match advancement logic here
+    } catch (error) {
+      console.error("Error updating match score:", error);
       throw error;
     }
   }
