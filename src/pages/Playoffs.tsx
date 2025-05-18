@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Trophy, Users } from "lucide-react";
@@ -14,6 +13,7 @@ import { PlayoffMatch } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import PlayoffAdminSection from "@/components/playoffs/admin/PlayoffAdminSection";
 import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
+import { usePlayoffBracketData } from "@/hooks/usePlayoffBracketData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DeleteBracketDialog from "@/components/playoffs/DeleteBracketDialog";
 import { BracketService } from "@/services/BracketService";

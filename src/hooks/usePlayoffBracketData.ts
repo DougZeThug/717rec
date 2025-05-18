@@ -1,0 +1,41 @@
+
+import { useQuery } from "@tanstack/react-query";
+import { fetchBracketById, groupBracketMatchesByType } from "@/services/bracketDataService";
+import { PlayoffMatch } from "@/types";
+
+export interface BracketMatchesByType {
+  winners: PlayoffMatch[][];
+  losers: PlayoffMatch[][];
+  finals: PlayoffMatch[];
+}
+
+/**
+ * Hook to fetch and organize bracket data by match type and round
+ * Returns matches grouped by type (winners/losers/finals) for double elimination brackets
+ */
+export const usePlayoffBracketData = (bracketId: string | null) => {
+  const {
+    data: bracket,
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ["bracket", bracketId],
+    queryFn: () => bracketId ? fetchBracketById(bracketId) : null,
+    enabled: !!bracketId
+  });
+  
+  // Process bracket data to separate winners, losers and finals matches
+  // This is mainly useful for double elimination brackets
+  const bracketMatchesByType: BracketMatchesByType | null = bracket
+    ? groupBracketMatchesByType(bracket)
+    : null;
+    
+  return {
+    bracket,
+    bracketMatchesByType,
+    isLoading,
+    error,
+    refetch
+  };
+};

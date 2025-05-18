@@ -1,24 +1,25 @@
-
 import React from "react";
 import { Loader2 } from "lucide-react";
 import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
 import BracketDetail from "@/components/playoffs/BracketDetail";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
 import { PlayoffBracket, Team } from "@/types";
+import BracketView from "./BracketView";
+import { groupBracketMatchesByType } from "@/services/bracketDataService";
 
 interface PlayoffPageContentProps {
   availableDivisions: string[];
-  bracketsByDivision: Record<string, any[]>;
+  bracketsByDivision: Record<string, Partial<PlayoffBracket>[]>;
   selectedBracketId: string | null;
-  bracket: PlayoffBracket | undefined;
+  bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
-  allBracketsData: any[];
+  allBracketsData: Partial<PlayoffBracket>[];
   isLoading: boolean;
   onCreateBracket: () => void;
   onViewBracket: (id: string) => void;
   onEditBracket: () => void;
-  onEditMatch: (id: string) => void;
+  onEditMatch: (matchId: string) => void;
   onDeleteBracket?: (id: string, name: string) => void;
 }
 
@@ -47,7 +48,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   }
 
   return (
-    <>
+    <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {availableDivisions.map((division) => (
           <DivisionBracketsCard 
@@ -60,22 +61,21 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         ))}
       </div>
       
-      {selectedBracketId && bracket && (
-        <BracketDetail 
-          bracketId={selectedBracketId}
-          bracket={bracket}
-          teams={teams}
-          bracketLoading={bracketLoading}
-          onEditBracket={onEditBracket}
-          onEditMatch={onEditMatch}
-          onDeleteBracket={onDeleteBracket}
-        />
+      {/* Selected bracket view */}
+      {bracket && (
+        <div className="mt-8">
+          <BracketView 
+            bracket={bracket} 
+            teams={teams} 
+            onEditMatch={onEditMatch} 
+          />
+        </div>
       )}
       
       {allBracketsData.length === 0 && !isLoading && (
         <EmptyBracketState onCreateBracket={onCreateBracket} />
       )}
-    </>
+    </div>
   );
 };
 
