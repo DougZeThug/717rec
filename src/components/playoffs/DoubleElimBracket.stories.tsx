@@ -1,5 +1,5 @@
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "../../../src/types/storybook";
 import DoubleElimBracket from "./DoubleElimBracket";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 
@@ -119,9 +119,9 @@ const mockBracket: PlayoffBracket = {
     ...losersRound4,
     ...finalsMatches
   ],
-  division_id: "div1",
-  challonge_tournament_id: null,
-  challonge_tournament_url: null
+  division: "div1",
+  challongeTournamentId: null,
+  challongeTournamentUrl: null
 };
 
 export const Default: Story = {
