@@ -51,11 +51,11 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
     return bracketMatches.map(match => ({
       ...match,
       bestOf: match.bestOf || 3, // Default to bestOf 3 if not specified
-      team1Score: match.team1Score || null,
-      team2Score: match.team2Score || null,
+      team1Score: null,
+      team2Score: null,
       team1GameWins: null,
       team2GameWins: null,
-      status: match.status || "pending"
+      status: "pending"
     } as PlayoffMatch));
   }
   
