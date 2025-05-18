@@ -29,7 +29,10 @@ const RoundColumn: React.FC<RoundColumnProps> = ({
   getNextMatch
 }) => {
   return (
-    <div className="flex flex-col space-y-4 relative z-10">
+    <div 
+      className="flex flex-col space-y-4 relative z-10"
+      data-testid={`round-column-${type}-${roundIndex}`}
+    >
       {/* Round header */}
       <RoundHeader 
         round={round} 

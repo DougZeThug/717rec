@@ -37,55 +37,76 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   
+  // Only render the grid if at least one section has matches
+  const hasContent = winners.length > 0 || losers.length > 0 || finals.length > 0;
+  
+  if (!hasContent) {
+    return null;
+  }
+  
   return (
     <div className="hidden sm:grid grid-cols-[1fr_auto_1fr] gap-6 relative">
       {/* Left Column: Winners Bracket */}
-      <BracketSection
-        title="Winners Bracket"
-        matches={winners}
-        teams={teams}
-        onEditMatch={onEditMatch}
-        getVerticalSpacing={getVerticalSpacing}
-        getNextMatch={getNextMatch}
-        connectorPaths={winnersConnectorPaths}
-      />
+      {winners.length > 0 ? (
+        <BracketSection
+          title="Winners Bracket"
+          matches={winners}
+          teams={teams}
+          onEditMatch={onEditMatch}
+          getVerticalSpacing={getVerticalSpacing}
+          getNextMatch={getNextMatch}
+          connectorPaths={winnersConnectorPaths}
+        />
+      ) : (
+        <div />  {/* Empty column placeholder to maintain grid layout */}
+      )}
       
       {/* Middle Column: Finals */}
-      <BracketFinalsColumn 
-        matches={finals}
-        teams={teams}
-        onEditMatch={onEditMatch}
-        getNextMatch={getNextMatch}
-      />
+      {finals.length > 0 ? (
+        <BracketFinalsColumn 
+          matches={finals}
+          teams={teams}
+          onEditMatch={onEditMatch}
+          getNextMatch={getNextMatch}
+        />
+      ) : (
+        <div />  {/* Empty column placeholder to maintain grid layout */}
+      )}
       
       {/* Right Column: Losers Bracket */}
-      <BracketSection
-        title="Losers Bracket"
-        matches={losers}
-        teams={teams}
-        onEditMatch={onEditMatch}
-        getVerticalSpacing={getVerticalSpacing}
-        getNextMatch={getNextMatch}
-        connectorPaths={losersConnectorPaths}
-      />
+      {losers.length > 0 ? (
+        <BracketSection
+          title="Losers Bracket"
+          matches={losers}
+          teams={teams}
+          onEditMatch={onEditMatch}
+          getVerticalSpacing={getVerticalSpacing}
+          getNextMatch={getNextMatch}
+          connectorPaths={losersConnectorPaths}
+        />
+      ) : (
+        <div />  {/* Empty column placeholder to maintain grid layout */}
+      )}
       
-      {/* SVG layer for cross-bracket connectors */}
-      <svg 
-        className="absolute inset-0 w-full h-full pointer-events-none z-0"
-        style={{ overflow: 'visible' }}
-      >
-        {crossConnectorPaths.map((path, i) => (
-          <path
-            key={`cross-connector-${i}`}
-            d={path}
-            fill="none"
-            stroke={isLight ? "#9ca3af" : "#6b7280"}
-            strokeWidth="2"
-            strokeDasharray="4"
-            className="transition-colors duration-300"
-          />
-        ))}
-      </svg>
+      {/* SVG layer for cross-bracket connectors - only render if both winners and losers brackets exist */}
+      {winners.length > 0 && losers.length > 0 && (
+        <svg 
+          className="absolute inset-0 w-full h-full pointer-events-none z-0"
+          style={{ overflow: 'visible' }}
+        >
+          {crossConnectorPaths.map((path, i) => (
+            <path
+              key={`cross-connector-${i}`}
+              d={path}
+              fill="none"
+              stroke={isLight ? "#9ca3af" : "#6b7280"}
+              strokeWidth="2"
+              strokeDasharray="4"
+              className="transition-colors duration-300"
+            />
+          ))}
+        </svg>
+      )}
     </div>
   );
 };

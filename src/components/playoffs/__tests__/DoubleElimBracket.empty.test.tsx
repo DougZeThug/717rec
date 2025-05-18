@@ -1,0 +1,97 @@
+
+import { describe, test, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import DoubleElimBracket from "../DoubleElimBracket";
+import { PlayoffBracket } from "@/types";
+
+// Mock the hooks used in the component
+vi.mock("next-themes", () => ({
+  useTheme: () => ({ resolvedTheme: "light" })
+}));
+
+vi.mock("../bracket/hooks/useChampionDisplay", () => ({
+  useChampionDisplay: () => ({ championDisplay: null })
+}));
+
+vi.mock("../bracket/hooks/useBracketConnectors", () => ({
+  useBracketConnectors: () => ({
+    winnersConnectorPaths: [],
+    losersConnectorPaths: [],
+    crossConnectorPaths: [],
+    finalsConnectorPaths: []
+  })
+}));
+
+describe("DoubleElimBracket Empty Rendering", () => {
+  test("should render safely with empty arrays without crashing", () => {
+    // Mock bracket data
+    const emptyBracket: PlayoffBracket = {
+      id: "test-bracket-123",
+      title: "Test Empty Bracket",
+      format: "Double Elimination"
+    };
+
+    // Render with empty arrays for winners, losers, and finals
+    const { container } = render(
+      <DoubleElimBracket
+        winners={[]}
+        losers={[]}
+        finals={[]}
+        bracket={emptyBracket}
+        teams={[]}
+        onEditMatch={() => {}}
+      />
+    );
+
+    // Check that component rendered without crashing
+    expect(container).toBeDefined();
+    
+    // Check that no RoundColumn components were rendered
+    const roundColumns = container.querySelectorAll("[data-testid^='round-column']");
+    expect(roundColumns.length).toBe(0);
+  });
+
+  test("should render only the sections with matches", () => {
+    // Mock bracket data
+    const bracketWithSomeMatches: PlayoffBracket = {
+      id: "test-bracket-123",
+      title: "Test Partial Bracket",
+      format: "Double Elimination"
+    };
+
+    // Create some mock matches for one section only (winners)
+    const mockWinnersMatches = [
+      [
+        {
+          id: "match-1",
+          round: 1,
+          position: 1,
+          matchType: "winners",
+          team1Id: "team-1",
+          team2Id: "team-2",
+          bracket_id: "test-bracket-123"
+        }
+      ]
+    ];
+
+    // Render with one section having matches, others empty
+    const { container } = render(
+      <DoubleElimBracket
+        winners={mockWinnersMatches}
+        losers={[]}
+        finals={[]}
+        bracket={bracketWithSomeMatches}
+        teams={[]}
+        onEditMatch={() => {}}
+      />
+    );
+
+    // Check that component rendered without crashing
+    expect(container).toBeDefined();
+    
+    // We should see the winners bracket title but not the losers or finals
+    expect(screen.getByText("Winners Bracket")).toBeInTheDocument();
+    expect(screen.queryByText("Losers Bracket")).not.toBeInTheDocument();
+    expect(screen.queryByText("Finals")).not.toBeInTheDocument();
+  });
+});

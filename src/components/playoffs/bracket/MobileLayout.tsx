@@ -34,33 +34,41 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 }) => {
   return (
     <div className="block sm:hidden space-y-10">
-      {/* Winners Bracket Section */}
-      <BracketSection
-        title="Winners Bracket"
-        matches={winners}
-        teams={teams}
-        onEditMatch={onEditMatch}
-        getVerticalSpacing={getVerticalSpacing}
-        getNextMatch={getNextMatch}
-        connectorPaths={winnersConnectorPaths}
-      />
+      {/* Winners Bracket Section - only render if there are matches */}
+      {winners.length > 0 && (
+        <BracketSection
+          title="Winners Bracket"
+          matches={winners}
+          teams={teams}
+          onEditMatch={onEditMatch}
+          getVerticalSpacing={getVerticalSpacing}
+          getNextMatch={getNextMatch}
+          connectorPaths={winnersConnectorPaths}
+        />
+      )}
       
-      {/* Divider */}
-      <div className="border-t border-dashed border-gray-300 dark:border-gray-600 my-4"></div>
+      {/* Divider - only show if there are both winners and losers matches */}
+      {winners.length > 0 && losers.length > 0 && (
+        <div className="border-t border-dashed border-gray-300 dark:border-gray-600 my-4"></div>
+      )}
       
-      {/* Losers Bracket Section */}
-      <BracketSection
-        title="Losers Bracket"
-        matches={losers}
-        teams={teams}
-        onEditMatch={onEditMatch}
-        getVerticalSpacing={getVerticalSpacing}
-        getNextMatch={getNextMatch}
-        connectorPaths={losersConnectorPaths}
-      />
+      {/* Losers Bracket Section - only render if there are matches */}
+      {losers.length > 0 && (
+        <BracketSection
+          title="Losers Bracket"
+          matches={losers}
+          teams={teams}
+          onEditMatch={onEditMatch}
+          getVerticalSpacing={getVerticalSpacing}
+          getNextMatch={getNextMatch}
+          connectorPaths={losersConnectorPaths}
+        />
+      )}
       
-      {/* Divider */}
-      <div className="border-t border-dashed border-gray-300 dark:border-gray-600 my-4"></div>
+      {/* Divider - only show if there are both losers and finals matches */}
+      {losers.length > 0 && finals.length > 0 && (
+        <div className="border-t border-dashed border-gray-300 dark:border-gray-600 my-4"></div>
+      )}
       
       {/* Finals Section */}
       {finals.length > 0 && (

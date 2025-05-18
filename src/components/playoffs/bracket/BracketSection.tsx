@@ -38,17 +38,19 @@ const BracketSection: React.FC<BracketSectionProps> = ({
       <h3 className="text-lg font-bold mb-4 text-center">{title}</h3>
       <div className="flex space-x-16 relative">
         {matches.map((roundMatches, roundIndex) => (
-          <RoundColumn
-            key={`${title.toLowerCase()}-${roundIndex}`}
-            round={String(roundIndex + 1)}
-            type={title.toLowerCase().replace(" ", "-") as "winners" | "losers" | "finals"}
-            matches={roundMatches}
-            teams={teams}
-            onEditMatch={onEditMatch}
-            verticalSpacing={getVerticalSpacing(roundIndex)}
-            roundIndex={roundIndex}
-            getNextMatch={getNextMatch}
-          />
+          Array.isArray(roundMatches) && roundMatches.length > 0 ? (
+            <RoundColumn
+              key={`${title.toLowerCase()}-${roundIndex}`}
+              round={String(roundIndex + 1)}
+              type={title.toLowerCase().replace(" ", "-") as "winners" | "losers" | "finals"}
+              matches={roundMatches}
+              teams={teams}
+              onEditMatch={onEditMatch}
+              verticalSpacing={getVerticalSpacing(roundIndex)}
+              roundIndex={roundIndex}
+              getNextMatch={getNextMatch}
+            />
+          ) : null
         ))}
         
         {/* SVG layer for bracket connectors */}
