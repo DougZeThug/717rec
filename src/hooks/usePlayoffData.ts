@@ -1,10 +1,10 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTeamData } from "./useTeamData";
 import { useBracketData } from "./useBracketData";
+import { PlayoffBracket } from "@/types";
 
 export const usePlayoffData = (selectedBracketId: string | null) => {
   const { toast } = useToast();
@@ -21,10 +21,10 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
       
       return data.map(bracket => ({
         id: bracket.id,
-        title: bracket.title,
+        name: bracket.title, // Map title to name for consistency
         division: bracket.divisions?.name || 'Unknown',
         format: bracket.format || 'Single Elimination'
-      }));
+      })) as Partial<PlayoffBracket>[];
     }
   });
   
@@ -71,7 +71,7 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
     return (divisions || []).reduce((acc, division) => {
       acc[division.name] = (allBrackets || []).filter(bracket => bracket.division === division.name);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Partial<PlayoffBracket>[]>);
   }, [allBrackets, divisions]);
 
   const handleBracketCreated = () => {

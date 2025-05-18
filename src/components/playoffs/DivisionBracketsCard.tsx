@@ -3,14 +3,11 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Plus } from "lucide-react";
+import { PlayoffBracket } from "@/types";
 
 interface DivisionBracketsCardProps {
   division: string;
-  brackets: Array<{
-    id: string;
-    title: string;
-    format: string;
-  }>;
+  brackets: Array<Partial<PlayoffBracket>>;
   onCreateBracket: () => void;
   onViewBracket: (bracketId: string) => void;
 }
@@ -40,13 +37,13 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
           brackets.map(bracket => (
             <div key={bracket.id} className="flex items-center justify-between">
               <div className="flex flex-col">
-                <span>{bracket.title}</span>
+                <span>{bracket.name}</span>
                 <span className="text-xs text-gray-500">{bracket.format}</span>
               </div>
               <Button 
                 size="sm" 
                 variant="ghost" 
-                onClick={() => onViewBracket(bracket.id)}
+                onClick={() => onViewBracket(bracket.id!)}
               >
                 View
               </Button>

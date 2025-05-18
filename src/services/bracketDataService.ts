@@ -202,7 +202,9 @@ export const fetchBracketById = async (bracketId: string): Promise<PlayoffBracke
     name: bracketData.title,
     division: bracketData.divisions?.name || "Unknown",
     matches: matches,
-    format: bracketData.format as "Single Elimination" | "Double Elimination" || "Single Elimination",
+    format: (bracketData.format === "Double Elimination" || bracketData.format === "Single Elimination") 
+      ? bracketData.format 
+      : "Single Elimination",
     champion: champion,
     state: bracketState
   };
@@ -225,7 +227,9 @@ export const fetchAllBrackets = async (): Promise<Partial<PlayoffBracket>[]> => 
     id: bracket.id,
     name: bracket.title,
     division: bracket.divisions?.name || "Unknown",
-    format: bracket.format as "Single Elimination" | "Double Elimination",
+    format: (bracket.format === "Double Elimination" || bracket.format === "Single Elimination") 
+      ? bracket.format as "Double Elimination" | "Single Elimination"
+      : "Single Elimination",
     state: bracket.state as "pending" | "underway" | "complete" | undefined
   }));
 };

@@ -9,7 +9,7 @@ import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import { usePlayoffData } from "@/hooks/usePlayoffData";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MatchScoreEditor, QuickScoreEditor } from "@/components/playoffs/match-score-editor";
-import { PlayoffMatch } from "@/types";
+import { PlayoffBracket, PlayoffMatch } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import PlayoffAdminSection from "@/components/playoffs/admin/PlayoffAdminSection";
 import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
