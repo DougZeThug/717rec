@@ -1,3 +1,4 @@
+
 import { nanoid } from "nanoid";
 import { PlayoffMatch } from "../types";
 import { BaseBracketGenerator } from "./BaseBracketGenerator";
@@ -20,13 +21,13 @@ export class PlayoffBracketGenerator extends BaseBracketGenerator {
    */
   generate(): PlayoffMatch[] {
     // Get teams that will be in the main bracket (after potential play-ins)
-    const teamsForBracket = this.handlePlayInMatches();
+    const { advancingTeams, playInMatches } = this.handlePlayInMatches();
     
     // Generate playoff structure
-    const matches: PlayoffMatch[] = [];
+    const matches: PlayoffMatch[] = [...playInMatches];
     
     // Phase 1: Create winners bracket matches
-    this.generateWinnersBracket(matches, teamsForBracket);
+    this.generateWinnersBracket(matches, advancingTeams);
     
     // Phase 2: Create losers bracket matches
     this.generateLosersBracket(matches);
