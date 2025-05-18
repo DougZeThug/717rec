@@ -258,6 +258,7 @@ export type Database = {
           location: string | null
           loser_id: string | null
           match_type: Database["public"]["Enums"]["match_type"] | null
+          metadata: Json | null
           next_loser_match_id: string | null
           next_match_id: string | null
           position: number | null
@@ -280,6 +281,7 @@ export type Database = {
           location?: string | null
           loser_id?: string | null
           match_type?: Database["public"]["Enums"]["match_type"] | null
+          metadata?: Json | null
           next_loser_match_id?: string | null
           next_match_id?: string | null
           position?: number | null
@@ -302,6 +304,7 @@ export type Database = {
           location?: string | null
           loser_id?: string | null
           match_type?: Database["public"]["Enums"]["match_type"] | null
+          metadata?: Json | null
           next_loser_match_id?: string | null
           next_match_id?: string | null
           position?: number | null
