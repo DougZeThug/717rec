@@ -1,15 +1,12 @@
 
-import { IBracketLinker } from "../IBracketLinker";
-import { PlayoffMatch, PlayoffMatchType } from "../../types";
+import { PlayoffMatch, BracketMatch, MatchType } from "../../types";
+import { BaseBracketLinker } from "../BaseBracketLinker";
 
 /**
- * Base abstract class for playoff bracket linkers
- * Provides common functionality for all playoff bracket linkers
+ * Abstract base class for playoff bracket linkers
+ * Provides the foundation for different playoff bracket linking strategies
  */
-export abstract class AbstractPlayoffBracketLinker implements IBracketLinker<PlayoffMatch> {
-  protected bracketId: string;
-  protected matchMap: Record<string, PlayoffMatch>;
-  
+export abstract class AbstractPlayoffBracketLinker extends BaseBracketLinker<PlayoffMatch> {
   /**
    * Create a new AbstractPlayoffBracketLinker
    * @param bracketId The unique identifier for the bracket
@@ -17,72 +14,50 @@ export abstract class AbstractPlayoffBracketLinker implements IBracketLinker<Pla
    */
   constructor(
     bracketId: string,
-    matchMap: Record<string, PlayoffMatch> = {} as Record<string, PlayoffMatch>
+    matchMap: Record<string, PlayoffMatch> = {}
   ) {
-    this.bracketId = bracketId;
-    this.matchMap = matchMap;
+    super(bracketId, matchMap);
   }
   
   /**
-   * Get the map of all matches by their key
-   * @returns Match map
+   * Connect different sections of the bracket
+   * @param matches All matches in the bracket
    */
-  getMatchMap(): Record<string, PlayoffMatch> {
-    return this.matchMap;
+  abstract connectBracketSections(matches: PlayoffMatch[]): void;
+  
+  /**
+   * Link play-in matches to the main bracket
+   * @param matches All bracket matches
+   */
+  abstract linkPlayInMatches(matches: PlayoffMatch[]): void;
+  
+  /**
+   * Link winners bracket matches to both next winners round and losers bracket
+   * @param matches All bracket matches
+   * @param rounds Number of rounds in winners bracket
+   */
+  abstract linkWinnersBracket(matches: PlayoffMatch[], rounds: number): void;
+  
+  /**
+   * Link losers bracket matches to next rounds
+   * @param matches All bracket matches
+   * @param rounds Number of rounds in winners bracket
+   */
+  abstract linkLosersBracket(matches: PlayoffMatch[], rounds: number): void;
+  
+  /**
+   * Adapt a PlayoffMatch to satisfy BaseBracketMatch constraints
+   * @param match The match to adapt
+   * @returns The match with required properties ensured
+   */
+  protected adaptMatchToBaseBracketMatch(match: PlayoffMatch): BracketMatch {
+    return {
+      ...match,
+      team1Id: match.team1Id || null,
+      team2Id: match.team2Id || null,
+      nextWinMatchId: match.nextWinMatchId || null,
+      nextLoseMatchId: match.nextLoseMatchId || null,
+      bracket_id: match.bracket_id || this.bracketId
+    } as BracketMatch;
   }
-  
-  /**
-   * Create a key for a match in the matchMap
-   * @param matchType Type of match
-   * @param round Round number
-   * @param position Position in the round
-   * @returns Unique key for the match
-   */
-  protected createMatchKey(matchType: PlayoffMatchType, round: number, position: number): string {
-    return `${matchType}-${round}-${position}`;
-  }
-  
-  /**
-   * Add a match to the match map
-   * @param match The match to add
-   * @param matchType Type of match
-   * @param round Round number
-   * @param position Position in the round
-   */
-  protected addMatchToMap(match: PlayoffMatch, matchType: PlayoffMatchType, round: number, position: number): void {
-    const key = this.createMatchKey(matchType, round, position);
-    this.matchMap[key] = match;
-  }
-  
-  /**
-   * Get a match from the match map
-   * @param matchType Type of match
-   * @param round Round number
-   * @param position Position in the round
-   * @returns The match or undefined if not found
-   */
-  protected getMatch(matchType: PlayoffMatchType, round: number, position: number): PlayoffMatch | undefined {
-    const key = this.createMatchKey(matchType, round, position);
-    return this.matchMap[key];
-  }
-  
-  /**
-   * Link matches in the bracket to create the tournament flow
-   * @param matches Array of matches to link
-   * @param rounds Number of rounds in the bracket
-   */
-  abstract linkMatches(matches: PlayoffMatch[], rounds: number): void;
-  
-  /**
-   * Generate the finals match(es)
-   * @param matches Current array of matches
-   * @returns Updated array of matches with finals added
-   */
-  abstract generateFinals(matches: PlayoffMatch[]): PlayoffMatch[];
-  
-  /**
-   * Create a reset match for the finals if needed
-   * @returns The newly created reset match
-   */
-  abstract createResetMatch(): PlayoffMatch;
 }

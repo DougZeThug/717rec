@@ -77,7 +77,8 @@ export abstract class BaseBracketLinker<TMatch extends BracketMatch> implements 
       'winners': {},
       'losers': {},
       'finals': {},
-      'play-in': {}
+      'play-in': {},
+      'play-in-2': {}
     };
     
     matches.forEach(match => {

@@ -1,4 +1,3 @@
-
 import { PlayoffMatchType, PlayoffGame, PlayoffMatch } from "../types";
 
 export class DatabaseOperationError extends Error {

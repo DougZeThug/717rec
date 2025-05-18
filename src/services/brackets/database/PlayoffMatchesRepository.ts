@@ -99,8 +99,8 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_score: match.team2_score,
         team1_game_wins: match.team1_game_wins,
         team2_game_wins: match.team2_game_wins,
-        team1_seed: match.team1_seed,
-        team2_seed: match.team2_seed,
+        team1_seed: match.team1_seed || null,
+        team2_seed: match.team2_seed || null,
         winner_id: match.winner_id,
         loser_id: match.loser_id,
         next_win_match_id: match.next_match_id, // Map next_match_id to next_win_match_id
@@ -145,8 +145,8 @@ export class PlayoffMatchesRepository implements IPlayoffMatchesRepository {
         team2_score: data.team2_score,
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
-        team1_seed: data.team1_seed,
-        team2_seed: data.team2_seed,
+        team1_seed: data.team1_seed || null,
+        team2_seed: data.team2_seed || null,
         winner_id: data.winner_id,
         loser_id: data.loser_id,
         next_win_match_id: data.next_match_id, // Map next_match_id to next_win_match_id

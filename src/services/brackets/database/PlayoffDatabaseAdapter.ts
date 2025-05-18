@@ -33,7 +33,7 @@ export class PlayoffDatabaseAdapter {
       next_win_match_id: match.nextWinMatchId,
       next_lose_match_id: match.nextLoseMatchId,
       best_of: match.bestOf || 3,
-      status: 'pending'
+      status: match.status || 'pending'
     }));
 
     await this.facade.savePlayoffMatches(dbMatches);

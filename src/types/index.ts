@@ -119,6 +119,8 @@ export interface PlayoffMatch {
   team2Seed?: number;  // New field for seed
   nextWinMatchId?: string;  // New field for linking
   nextLoseMatchId?: string; // New field for linking
+  bracket_id?: string;  // Added field to match database schema
+  status?: "pending" | "in_progress" | "completed"; // Added status field
 }
 
 export interface PlayoffGame {
