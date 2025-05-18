@@ -22,7 +22,10 @@ describe("MatchCard TBD Rendering", () => {
       nextWinMatchId: "next-match",
       team1Seed: 3,
       team2Seed: 2,
-      bracket_id: "bracket-1"
+      bracket_id: "bracket-1",
+      winnerId: null,
+      bestOf: 3,
+      nextLoseMatchId: null
     };
     
     // Mock a team for the real team ID

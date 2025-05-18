@@ -1,3 +1,4 @@
+
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import { PlayoffDatabaseAdapter } from "../database/PlayoffDatabaseAdapter";
 import { PlayoffMatch } from "../types";
@@ -42,7 +43,9 @@ describe("PlayoffDatabaseAdapter - Placeholder IDs", () => {
         team1Seed: 1,
         team2Seed: 2,
         nextWinMatchId: "match-3",
-        nextLoseMatchId: "match-4"
+        nextLoseMatchId: "match-4",
+        winnerId: null,
+        bestOf: 3
       },
       {
         id: "match-2",
@@ -55,7 +58,9 @@ describe("PlayoffDatabaseAdapter - Placeholder IDs", () => {
         team1Seed: 3,
         team2Seed: 4,
         nextWinMatchId: "match-3",
-        nextLoseMatchId: "match-5"
+        nextLoseMatchId: "match-5",
+        winnerId: null,
+        bestOf: 3
       }
     ];
     
@@ -89,7 +94,10 @@ describe("PlayoffDatabaseAdapter - Placeholder IDs", () => {
         team2Id: undefined, // Undefined
         team1Seed: 1,
         team2Seed: 2,
-        nextWinMatchId: "match-5"
+        nextWinMatchId: "match-5",
+        nextLoseMatchId: null,
+        winnerId: null,
+        bestOf: 3
       }
     ];
     
