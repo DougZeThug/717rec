@@ -28,7 +28,9 @@ describe("DoubleElimBracket Empty Rendering", () => {
     const emptyBracket: PlayoffBracket = {
       id: "test-bracket-123",
       name: "Test Empty Bracket",
-      format: "Double Elimination"
+      format: "Double Elimination",
+      division: "Test Division",
+      matches: []
     };
 
     // Render with empty arrays for winners, losers, and finals
@@ -56,7 +58,9 @@ describe("DoubleElimBracket Empty Rendering", () => {
     const bracketWithSomeMatches: PlayoffBracket = {
       id: "test-bracket-123",
       name: "Test Partial Bracket",
-      format: "Double Elimination"
+      format: "Double Elimination",
+      division: "Test Division",
+      matches: []
     };
 
     // Create some mock matches for one section only (winners)
