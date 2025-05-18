@@ -97,6 +97,8 @@ export interface Ranking {
 }
 
 // Types for playoff brackets
+import { BracketFormat, BracketState } from "@/constants/brackets";
+
 export interface PlayoffMatch {
   id: string;
   round: number;
@@ -134,12 +136,12 @@ export interface PlayoffBracket {
   id: string;
   name: string;
   division: string;
-  format: "Single Elimination" | "Double Elimination";
+  format: BracketFormat;
   matches: PlayoffMatch[];
   champion?: string;
   challongeTournamentId?: string;
   challongeTournamentUrl?: string;
-  state?: "pending" | "underway" | "complete";
+  state?: BracketState;
 }
 
 // Division type

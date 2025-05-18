@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 import { BracketGenerator } from "./brackets/BracketGenerator";
-import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
+import { BRACKET_FORMATS, BRACKET_STATES, BracketFormat } from "@/constants/brackets";
 
 /**
  * Service for bracket-related operations
@@ -13,7 +13,7 @@ export class BracketService {
    */
   static async createBracket(
     name: string,
-    format: "Single Elimination" | "Double Elimination",
+    format: BracketFormat,
     divisionId: string,
     teamIds: string[]
   ): Promise<string> {

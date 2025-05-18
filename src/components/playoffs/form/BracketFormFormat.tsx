@@ -4,6 +4,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { BracketFormValues } from "./BracketFormSchema";
+import { BRACKET_FORMATS } from "@/constants/brackets";
 
 interface BracketFormFormatProps {
   form: UseFormReturn<BracketFormValues>;
@@ -27,8 +28,8 @@ export const BracketFormFormat: React.FC<BracketFormFormatProps> = ({ form }) =>
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="Single Elimination">Single Elimination</SelectItem>
-              <SelectItem value="Double Elimination">Double Elimination</SelectItem>
+              <SelectItem value={BRACKET_FORMATS.SINGLE}>{BRACKET_FORMATS.SINGLE}</SelectItem>
+              <SelectItem value={BRACKET_FORMATS.DOUBLE}>{BRACKET_FORMATS.DOUBLE}</SelectItem>
             </SelectContent>
           </Select>
           <FormMessage />
