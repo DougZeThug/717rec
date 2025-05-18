@@ -8,13 +8,21 @@ import { PlayoffDatabaseFacade } from "./PlayoffDatabaseFacade";
  */
 export class PlayoffDatabaseAdapter {
   private static facade = new PlayoffDatabaseFacade();
+  private static PLACEHOLDER_PREFIX = 'play-in-';
 
   /**
    * Save playoff matches to the database
    */
   static async savePlayoffMatches(matches: PlayoffMatch[]): Promise<void> {
+    // Clean placeholder IDs before saving to database
+    const cleanedMatches = matches.map(match => ({
+      ...match,
+      team1Id: match.team1Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team1Id,
+      team2Id: match.team2Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team2Id,
+    }));
+    
     // Convert application model to database model
-    const dbMatches = matches.map(match => ({
+    const dbMatches = cleanedMatches.map(match => ({
       id: match.id,
       bracket_id: match.bracket_id || null,
       round: match.round,
