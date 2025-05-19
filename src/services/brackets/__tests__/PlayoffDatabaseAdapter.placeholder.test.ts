@@ -2,6 +2,7 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import { PlayoffDatabaseAdapter } from "../database/PlayoffDatabaseAdapter";
 import { PlayoffMatch } from "../types";
+import { setupAdapterTest } from "./helpers/playoffAdapterTestHelpers";
 
 // Mock the PlayoffDatabaseFacade
 vi.mock("../database/PlayoffDatabaseFacade", () => {
@@ -106,5 +107,31 @@ describe("PlayoffDatabaseAdapter - Placeholder IDs", () => {
     const savedMatches = facadeMock.savePlayoffMatches.mock.calls[0][0];
     expect(savedMatches[0].team1_id).toBeNull();
     expect(savedMatches[0].team2_id).toBeUndefined();
+  });
+  
+  test("should handle various placeholder ID patterns", async () => {
+    const matches: PlayoffMatch[] = [
+      {
+        id: "match-4",
+        bracket_id: "bracket-1",
+        round: 3,
+        position: 1,
+        matchType: "winners",
+        team1Id: "play-in-qualifier", // More complex placeholder
+        team2Id: "play-in-something-else", // Another placeholder variant
+        team1Seed: 1,
+        team2Seed: 2,
+        nextWinMatchId: null,
+        nextLoseMatchId: null,
+        winnerId: null,
+        bestOf: 3
+      }
+    ];
+    
+    await PlayoffDatabaseAdapter.savePlayoffMatches(matches);
+    
+    const savedMatches = facadeMock.savePlayoffMatches.mock.calls[0][0];
+    expect(savedMatches[0].team1_id).toBeNull();
+    expect(savedMatches[0].team2_id).toBeNull();
   });
 });

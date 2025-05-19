@@ -1,9 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
-import { PlayoffDatabaseFacade } from '../database/PlayoffDatabaseFacade';
-import { createAppMatch, createDbMatch } from './fixtures/matchFixtures';
-import { DatabasePlayoffMatch } from '../database/types';
+import { createAppMatch, setupAdapterTest } from './helpers/playoffAdapterTestHelpers';
 
 // Mock the PlayoffDatabaseFacade
 vi.mock('../database/PlayoffDatabaseFacade', () => {
@@ -17,29 +15,33 @@ vi.mock('../database/PlayoffDatabaseFacade', () => {
 });
 
 describe('PlayoffDatabaseAdapter - Match Operations', () => {
-  let facade: PlayoffDatabaseFacade;
+  let facade: ReturnType<typeof setupAdapterTest>;
 
   beforeEach(() => {
-    // Get the mocked constructor
-    const FacadeMock = vi.mocked(PlayoffDatabaseFacade);
-    // Clear all mocks
-    FacadeMock.mockClear();
-    // Access the facade instance from the adapter via private property
-    facade = (PlayoffDatabaseAdapter as any).facade;
+    facade = setupAdapterTest();
   });
 
   describe('savePlayoffMatches', () => {
     it('should convert application match to database format and save it', async () => {
       // Arrange
       const appMatch = createAppMatch();
-      const expectedDbMatch = createDbMatch();
       
       // Act
       await PlayoffDatabaseAdapter.savePlayoffMatches([appMatch]);
       
       // Assert
       expect(facade.savePlayoffMatches).toHaveBeenCalledWith([
-        expect.objectContaining(expectedDbMatch)
+        expect.objectContaining({
+          id: '1',
+          bracket_id: 'bracket1',
+          round: 1,
+          position: 1,
+          match_type: 'winners',
+          team1_id: 'team1',
+          team2_id: 'team2',
+          team1_seed: 1,
+          team2_seed: 2,
+        })
       ]);
     });
 
@@ -66,7 +68,7 @@ describe('PlayoffDatabaseAdapter - Match Operations', () => {
     it('should fetch bracket matches from the database', async () => {
       // Arrange
       const bracketId = 'bracket1';
-      const dbMatches: DatabasePlayoffMatch[] = [createDbMatch()];
+      const dbMatches = [createAppMatch()];
       
       vi.mocked(facade.getBracketMatches).mockResolvedValueOnce(dbMatches);
       
@@ -75,9 +77,7 @@ describe('PlayoffDatabaseAdapter - Match Operations', () => {
       
       // Assert
       expect(facade.getBracketMatches).toHaveBeenCalledWith(bracketId);
-      expect(result).toHaveLength(1);
-      expect(result[0].match_type).toBe('winners');
-      expect(result[0].team1_id).toBe('team1');
+      expect(result).toEqual(dbMatches);
     });
   });
 
@@ -87,6 +87,19 @@ describe('PlayoffDatabaseAdapter - Match Operations', () => {
       const nextMatchId = 'next-match';
       const teamId = 'team1';
       const isWinner = true;
+      
+      // Act
+      await PlayoffDatabaseAdapter.advanceTeam(nextMatchId, teamId, isWinner);
+      
+      // Assert
+      expect(facade.advanceTeam).toHaveBeenCalledWith(nextMatchId, teamId, isWinner);
+    });
+    
+    it('should handle advancing a team as a loser', async () => {
+      // Arrange
+      const nextMatchId = 'loser-match';
+      const teamId = 'team2';
+      const isWinner = false;
       
       // Act
       await PlayoffDatabaseAdapter.advanceTeam(nextMatchId, teamId, isWinner);

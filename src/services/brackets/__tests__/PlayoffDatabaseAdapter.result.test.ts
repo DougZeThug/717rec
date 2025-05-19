@@ -1,8 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
-import { PlayoffDatabaseFacade } from '../database/PlayoffDatabaseFacade';
-import { createMatchResult } from './fixtures/matchFixtures';
+import { createMatchResult, setupAdapterTest } from './helpers/playoffAdapterTestHelpers';
 
 // Mock the PlayoffDatabaseFacade
 vi.mock('../database/PlayoffDatabaseFacade', () => {
@@ -14,15 +13,10 @@ vi.mock('../database/PlayoffDatabaseFacade', () => {
 });
 
 describe('PlayoffDatabaseAdapter - Match Result Operations', () => {
-  let facade: PlayoffDatabaseFacade;
+  let facade: ReturnType<typeof setupAdapterTest>;
 
   beforeEach(() => {
-    // Get the mocked constructor
-    const FacadeMock = vi.mocked(PlayoffDatabaseFacade);
-    // Clear all mocks
-    FacadeMock.mockClear();
-    // Access the facade instance from the adapter via private property
-    facade = (PlayoffDatabaseAdapter as any).facade;
+    facade = setupAdapterTest();
   });
 
   describe('recordMatchResult', () => {
@@ -66,6 +60,24 @@ describe('PlayoffDatabaseAdapter - Match Result Operations', () => {
         completed: true,
         games: undefined
       });
+    });
+    
+    it('should handle null scores in match results', async () => {
+      // Arrange
+      const matchResult = createMatchResult({ 
+        team1Score: null,
+        team2Score: null
+      });
+      
+      // Act
+      await PlayoffDatabaseAdapter.recordMatchResult('match1', matchResult);
+      
+      // Assert
+      expect(facade.recordMatchResult).toHaveBeenCalledWith(expect.objectContaining({
+        match_id: 'match1',
+        team1_score: null,
+        team2_score: null,
+      }));
     });
   });
 });

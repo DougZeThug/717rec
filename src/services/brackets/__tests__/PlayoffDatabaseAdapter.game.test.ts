@@ -1,8 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
-import { PlayoffDatabaseFacade } from '../database/PlayoffDatabaseFacade';
-import { createGame } from './fixtures/matchFixtures';
+import { createGame, setupAdapterTest } from './helpers/playoffAdapterTestHelpers';
 
 // Mock the PlayoffDatabaseFacade
 vi.mock('../database/PlayoffDatabaseFacade', () => {
@@ -15,21 +14,27 @@ vi.mock('../database/PlayoffDatabaseFacade', () => {
 });
 
 describe('PlayoffDatabaseAdapter - Game Operations', () => {
-  let facade: PlayoffDatabaseFacade;
+  let facade: ReturnType<typeof setupAdapterTest>;
 
   beforeEach(() => {
-    // Get the mocked constructor
-    const FacadeMock = vi.mocked(PlayoffDatabaseFacade);
-    // Clear all mocks
-    FacadeMock.mockClear();
-    // Access the facade instance from the adapter via private property
-    facade = (PlayoffDatabaseAdapter as any).facade;
+    facade = setupAdapterTest();
   });
 
   describe('savePlayoffGames', () => {
     it('should save playoff games to the database', async () => {
       // Arrange
       const games = [createGame()];
+      
+      // Act
+      await PlayoffDatabaseAdapter.savePlayoffGames(games);
+      
+      // Assert
+      expect(facade.savePlayoffGames).toHaveBeenCalledWith(games);
+    });
+    
+    it('should handle empty games array', async () => {
+      // Arrange
+      const games: any[] = [];
       
       // Act
       await PlayoffDatabaseAdapter.savePlayoffGames(games);
@@ -52,9 +57,23 @@ describe('PlayoffDatabaseAdapter - Game Operations', () => {
       
       // Assert
       expect(facade.getMatchGames).toHaveBeenCalledWith(matchId);
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('1');
-      expect(result[0].team1Score).toBe(21);
+      expect(result).toEqual(games);
+    });
+    
+    it('should handle empty game results', async () => {
+      // Arrange
+      const matchId = 'match1';
+      const games: any[] = [];
+      
+      vi.mocked(facade.getMatchGames).mockResolvedValueOnce(games);
+      
+      // Act
+      const result = await PlayoffDatabaseAdapter.getMatchGames(matchId);
+      
+      // Assert
+      expect(facade.getMatchGames).toHaveBeenCalledWith(matchId);
+      expect(result).toEqual([]);
+      expect(result.length).toBe(0);
     });
   });
 });
