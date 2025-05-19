@@ -23,6 +23,24 @@ export class StageAdapter {
    */
   async insertStage(stage: any): Promise<number> {
     try {
+      // Validate stage data
+      if (!stage || !stage.id || stage.id === 'undefined') {
+        console.error("Invalid stage data - missing ID:", stage);
+        throw new Error("Stage ID is required and must be valid");
+      }
+      
+      if (!stage.name || typeof stage.name !== 'string') {
+        console.error("Invalid stage name:", stage.name);
+        throw new Error("Stage name is required");
+      }
+      
+      if (!stage.type || (stage.type !== 'single_elimination' && stage.type !== 'double_elimination')) {
+        console.error("Invalid stage type:", stage.type);
+        throw new Error("Stage type must be 'single_elimination' or 'double_elimination'");
+      }
+      
+      console.log(`Inserting stage: ${stage.id}, name=${stage.name}, type=${stage.type}`);
+      
       // Convert type to our format
       const format: BracketFormat = stage.type === 'single_elimination' 
         ? 'Single Elimination' 
@@ -35,10 +53,16 @@ export class StageAdapter {
         .eq('id', stage.id)
         .maybeSingle();
       
-      if (checkError) throw checkError;
+      if (checkError) {
+        console.error("Error checking for existing bracket:", checkError);
+        throw checkError;
+      }
       
       // If it exists, we don't need to insert it
-      if (existing) return 0;
+      if (existing) {
+        console.log(`Bracket ${stage.id} already exists, skipping insert`);
+        return 0;
+      }
       
       // Insert the bracket
       const { error } = await supabase
@@ -47,12 +71,15 @@ export class StageAdapter {
           id: stage.id,
           title: stage.name,
           format: format,
-          // tournamentId is not used in our model, we just store stageId
           created_at: new Date().toISOString()
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error inserting stage:", error);
+        throw error;
+      }
       
+      console.log(`Stage ${stage.id} inserted successfully`);
       return 1;
     } catch (error) {
       console.error("Error inserting stage:", error);
@@ -65,13 +92,31 @@ export class StageAdapter {
    */
   async selectStage(filter?: Record<string, any>): Promise<StageRecord[]> {
     try {
+      // Validate filter
+      if (filter?.id === 'undefined' || filter?.tournament_id === 'undefined') {
+        console.error("Invalid filter with 'undefined' string:", filter);
+        throw new Error("Filter contains 'undefined' string value");
+      }
+      
+      console.log("Selecting stages with filter:", filter);
+      
       // Create a base query without chaining methods that cause deep type instantiation
       const baseQuery = supabase.from('brackets');
       
       // First get the raw data with minimal filtering
       let { data, error } = await this.applyFilters(baseQuery, filter);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error selecting stage:", error);
+        throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        console.log("No stages found with filter:", filter);
+        return [];
+      }
+      
+      console.log(`Found ${data.length} stages`);
       
       // Convert to brackets-manager stage format with explicit typing
       return data.map(bracket => ({
@@ -99,24 +144,32 @@ export class StageAdapter {
     let query = baseQuery.select('*');
     
     if (!filter) {
+      console.log("No filter provided for stage query");
       return await query;
     }
     
+    // Debug the filter being applied
+    console.log("Applying filter to stages query:", filter);
+    
     // Handle tournament_id filter specially
-    if (filter.tournament_id) {
+    if (filter.tournament_id && filter.tournament_id !== 'undefined') {
+      console.log(`Filtering stages by tournament_id=${filter.tournament_id}`);
       return await query.eq('id', filter.tournament_id);
     }
     
     // For other filters, build a simple match object
     const simpleFilters: Record<string, any> = {};
     
-    // Add each filter to the object instead of chaining
+    // Add each filter to the object instead of chaining, skipping any undefined values
     Object.entries(filter).forEach(([key, value]) => {
-      simpleFilters[key] = value;
+      if (value !== undefined && value !== 'undefined') {
+        simpleFilters[key] = value;
+      }
     });
     
     // Apply all filters at once if any exist
     if (Object.keys(simpleFilters).length > 0) {
+      console.log(`Applying ${Object.keys(simpleFilters).length} filters:`, simpleFilters);
       return await query.match(simpleFilters);
     }
     
@@ -130,6 +183,19 @@ export class StageAdapter {
    */
   async updateStage(id: string, stage: any): Promise<number> {
     try {
+      // Validate ID
+      if (!id || id === 'undefined') {
+        console.error("Invalid stage ID for update:", id);
+        throw new Error("Valid stage ID is required for update");
+      }
+      
+      if (!stage || !stage.name) {
+        console.error("Invalid stage data for update:", stage);
+        throw new Error("Valid stage data is required for update");
+      }
+      
+      console.log(`Updating stage ${id} with data:`, stage);
+      
       const { error } = await supabase
         .from('brackets')
         .update({
@@ -138,8 +204,12 @@ export class StageAdapter {
         })
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating stage:", error);
+        throw error;
+      }
       
+      console.log(`Stage ${id} updated successfully`);
       return 1;
     } catch (error) {
       console.error("Error updating stage:", error);
@@ -153,9 +223,12 @@ export class StageAdapter {
    */
   async deleteStage(filter?: Record<string, any>): Promise<number> {
     try {
-      if (!filter || !filter.id) {
+      if (!filter || !filter.id || filter.id === 'undefined') {
+        console.error("Invalid or missing ID in filter for stage deletion:", filter);
         throw new Error("Stage ID is required for deletion");
       }
+      
+      console.log(`Deleting stage with ID ${filter.id}`);
       
       const { error, count } = await supabase
         .from('brackets')
@@ -163,8 +236,12 @@ export class StageAdapter {
         .eq('id', filter.id)
         .select('count');
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting stage:", error);
+        throw error;
+      }
       
+      console.log(`Deleted ${count || 0} stages`);
       return count || 0;
     } catch (error) {
       console.error("Error deleting stage:", error);

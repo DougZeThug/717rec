@@ -1,4 +1,3 @@
-
 import { PlayoffDatabaseFacade } from './PlayoffDatabaseFacade';
 import { PlayoffMatch, PlayoffGame } from '../types';
 import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult, BracketCreationParams } from './types';
@@ -16,19 +15,35 @@ export class PlayoffDatabaseAdapter {
    */
   static async createBracket(params: BracketCreationParams): Promise<{ error?: Error }> {
     try {
+      console.log(`Creating bracket in database: id=${params.id}, name=${params.name}, format=${params.format}, divisionId=${params.divisionId || 'none'}`);
+      
+      // Validate required parameters
+      if (!params.id || params.id === 'undefined') {
+        throw new Error('Invalid bracket ID');
+      }
+      
+      if (!params.name || params.name.trim() === '') {
+        throw new Error('Bracket name is required');
+      }
+      
+      // Insert bracket record
       const { error } = await supabase
         .from('brackets')
         .insert({
           id: params.id,
           title: params.name,
           format: params.format,
-          division_id: params.divisionId,
+          division_id: params.divisionId || null, // Ensure null instead of 'undefined'
           created_at: new Date().toISOString(),
           state: 'pending'
         });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating bracket:', error);
+        throw error;
+      }
       
+      console.log(`Bracket ${params.id} created successfully`);
       return {};
     } catch (error) {
       console.error('Error creating bracket:', error);
@@ -40,31 +55,53 @@ export class PlayoffDatabaseAdapter {
    * Save playoff matches to the database
    */
   static async savePlayoffMatches(matches: PlayoffMatch[]): Promise<void> {
+    if (!matches || matches.length === 0) {
+      console.log("No matches to save");
+      return;
+    }
+    
+    console.log(`Saving ${matches.length} playoff matches`);
+    
     // Convert matches to database model
-    const dbMatches = matches.map(match => ({
-      id: match.id,
-      bracket_id: match.bracket_id,
-      round: match.round,
-      position: match.position,
-      match_type: match.matchType,
-      // Replace placeholder IDs with null before saving to database
-      team1_id: match.team1Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team1Id,
-      team2_id: match.team2Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team2Id,
-      team1_score: match.team1Score || null,
-      team2_score: match.team2Score || null,
-      team1_game_wins: match.team1GameWins || null,
-      team2_game_wins: match.team2GameWins || null,
-      team1_seed: match.team1Seed,
-      team2_seed: match.team2Seed,
-      winner_id: match.winnerId || null,
-      loser_id: match.loserId || null,
-      next_win_match_id: match.nextWinMatchId || null,
-      next_lose_match_id: match.nextLoseMatchId || null,
-      best_of: match.bestOf || 3,
-      status: match.status || 'pending'
-    }));
+    const dbMatches = matches.map(match => {
+      // Validate match ID
+      if (!match.id) {
+        console.error("Match is missing ID:", match);
+        throw new Error("Match ID is required");
+      }
+      
+      // Validate bracket_id
+      if (!match.bracket_id || match.bracket_id === 'undefined') {
+        console.error(`Match ${match.id} is missing bracket_id:`, match);
+        throw new Error(`Match ${match.id} is missing bracket_id`);
+      }
+      
+      return {
+        id: match.id,
+        bracket_id: match.bracket_id,
+        round: match.round,
+        position: match.position,
+        match_type: match.matchType,
+        // Replace placeholder IDs with null before saving to database
+        team1_id: match.team1Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team1Id,
+        team2_id: match.team2Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team2Id,
+        team1_score: match.team1Score || null,
+        team2_score: match.team2Score || null,
+        team1_game_wins: match.team1GameWins || null,
+        team2_game_wins: match.team2GameWins || null,
+        team1_seed: match.team1Seed,
+        team2_seed: match.team2Seed,
+        winner_id: match.winnerId || null,
+        loser_id: match.loserId || null,
+        next_win_match_id: match.nextWinMatchId || null,
+        next_lose_match_id: match.nextLoseMatchId || null,
+        best_of: match.bestOf || 3,
+        status: match.status || 'pending'
+      };
+    });
 
     await this.facade.savePlayoffMatches(dbMatches);
+    console.log(`${matches.length} playoff matches saved successfully`);
   }
 
   /**

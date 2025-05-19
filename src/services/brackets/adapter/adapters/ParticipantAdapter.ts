@@ -18,23 +18,41 @@ export class ParticipantAdapter {
    * @returns Number of participants inserted
    */
   async insertParticipants(participants: any[]): Promise<number> {
-    if (!participants || participants.length === 0) return 0;
+    if (!participants || participants.length === 0) {
+      console.log("No participants provided to insert");
+      return 0;
+    }
     
     try {
+      // Filter out invalid participants
+      const validParticipants = participants.filter(p => 
+        p && p.id && typeof p.id === 'string' && p.id !== 'undefined'
+      );
+      
+      if (validParticipants.length === 0) {
+        console.warn("No valid participants to insert");
+        return 0;
+      }
+      
       // Map bracket participants to our team IDs
       // Since we use teams as participants, we don't need to insert new records
       // But we should verify the teams exist
-      const teamIds = participants.map(p => p.id);
+      const teamIds = validParticipants.map(p => p.id);
+      
+      console.log(`Verifying ${teamIds.length} team IDs in database`);
       
       const { data, error } = await supabase
         .from('teams')
         .select('id')
         .in('id', teamIds);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error querying teams:", error);
+        throw error;
+      }
       
       const validTeamIds = data.map(team => team.id);
-      const missingTeams = participants.filter(p => !validTeamIds.includes(p.id));
+      const missingTeams = validParticipants.filter(p => !validTeamIds.includes(p.id));
       
       if (missingTeams.length > 0) {
         console.warn(`Some participant teams don't exist in the database: ${missingTeams.map(t => t.id).join(', ')}`);
@@ -53,13 +71,28 @@ export class ParticipantAdapter {
    */
   async selectParticipants(filter?: Record<string, any>): Promise<ParticipantRecord[]> {
     try {
+      if (!filter) {
+        console.log("No filter provided for selectParticipants");
+        return [];
+      }
+      
       // Create a base query without chaining methods that cause deep type instantiation
       const baseQuery = supabase.from('teams');
       
       // First get the raw data with minimal filtering
       let { data, error } = await this.applyFilters(baseQuery, filter);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error selecting participants:", error);
+        throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        console.log("No participants found with filter:", filter);
+        return [];
+      }
+      
+      console.log(`Found ${data.length} participants`);
       
       // Convert teams to bracket participant format with explicit typing
       return data.map(team => ({
@@ -84,9 +117,22 @@ export class ParticipantAdapter {
     
     // Apply filters in a way that doesn't nest type instantiation
     if (filter) {
+      // Debug the filter being applied
+      console.log("Applying filter to participants query:", filter);
+      
       // Handle id array filter separately
       if (filter.id && Array.isArray(filter.id)) {
-        return await query.in('id', filter.id);
+        // Filter out any invalid IDs
+        const validIds = filter.id.filter((id: any) => 
+          id && typeof id === 'string' && id.trim() !== '' && id !== 'undefined'
+        );
+        
+        if (validIds.length === 0) {
+          console.warn("No valid IDs in filter");
+          return { data: [], error: null };
+        }
+        
+        return await query.in('id', validIds);
       }
       
       // Handle simple equality filters
@@ -94,7 +140,7 @@ export class ParticipantAdapter {
       
       // Build filter object first, avoiding nested method chaining
       Object.entries(filter).forEach(([key, value]) => {
-        if (key !== 'tournament_id') { // Skip tournament_id as it needs special handling
+        if (key !== 'tournament_id' && value !== undefined && value !== 'undefined') {
           simpleFilters[key] = value;
         }
       });
@@ -115,6 +161,11 @@ export class ParticipantAdapter {
    */
   async updateParticipant(id: string, participant: any): Promise<number> {
     try {
+      if (!id || id === 'undefined' || !participant) {
+        console.warn("Invalid ID or participant data for update");
+        return 0;
+      }
+      
       // We don't actually update teams from bracket operations
       // This is a minimal implementation
       console.log(`Would update participant ${id} with:`, participant);

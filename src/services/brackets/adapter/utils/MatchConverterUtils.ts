@@ -7,11 +7,24 @@ export class MatchConverterUtils {
    * Convert a match from brackets-manager format to database format
    */
   convertMatchToDbFormat(match: any): any {
-    return {
+    if (!match || !match.id) {
+      console.error("Invalid match object:", match);
+      throw new Error("Cannot convert invalid match to database format");
+    }
+    
+    // Ensure stage_id exists and is valid
+    if (!match.stage_id || match.stage_id === 'undefined') {
+      console.error("Match is missing stage_id:", match);
+      throw new Error("Match is missing required stage_id");
+    }
+    
+    console.log(`Converting match to DB format: id=${match.id}, stage=${match.stage_id}`);
+    
+    const dbMatch = {
       id: match.id,
       bracket_id: match.stage_id,
-      round_number: match.round,
-      position: match.position,
+      round_number: match.round || 0,
+      position: match.position || 0,
       match_type: this.convertMatchTypeForDB(match.group?.toLowerCase() || 'winners'),
       team1_id: match.opponent1?.id || null,
       team2_id: match.opponent2?.id || null,
@@ -32,12 +45,30 @@ export class MatchConverterUtils {
         team2_seed: match.opponent2?.position || null
       }
     };
+    
+    // Debug log
+    console.log(`Match converted to DB format: ${dbMatch.id}, bracket=${dbMatch.bracket_id}, type=${dbMatch.match_type}`);
+    
+    return dbMatch;
   }
   
   /**
    * Convert a match from database format to brackets-manager format
    */
   convertMatchFromDbFormat(dbMatch: any): any {
+    if (!dbMatch || !dbMatch.id) {
+      console.error("Invalid DB match object:", dbMatch);
+      throw new Error("Cannot convert invalid DB match to brackets-manager format");
+    }
+    
+    // Ensure bracket_id exists and is valid
+    if (!dbMatch.bracket_id || dbMatch.bracket_id === 'undefined') {
+      console.error("DB match is missing bracket_id:", dbMatch);
+      throw new Error("DB match is missing required bracket_id");
+    }
+    
+    console.log(`Converting DB match to brackets-manager format: id=${dbMatch.id}, bracket=${dbMatch.bracket_id}`);
+    
     // Handle opponent1
     const opponent1 = dbMatch.team1_id ? {
       id: dbMatch.team1_id,
@@ -59,7 +90,7 @@ export class MatchConverterUtils {
     // Calculate child_count based on next match links
     const childCount = (dbMatch.next_match_id ? 1 : 0) + (dbMatch.next_loser_match_id ? 1 : 0);
     
-    return {
+    const bracketMatch = {
       id: dbMatch.id,
       stage_id: dbMatch.bracket_id,
       round: dbMatch.round_number,
@@ -73,6 +104,11 @@ export class MatchConverterUtils {
       child_match_id_loser: dbMatch.next_loser_match_id,
       best_of: dbMatch.best_of
     };
+    
+    // Debug log
+    console.log(`DB match converted to brackets-manager format: ${bracketMatch.id}, stage=${bracketMatch.stage_id}`);
+    
+    return bracketMatch;
   }
 
   /**
@@ -80,9 +116,20 @@ export class MatchConverterUtils {
    * Maps play-in and play-in-2 to winners for database storage
    */
   convertMatchTypeForDB(matchType: string): "winners" | "losers" | "finals" {
+    if (!matchType) {
+      console.warn("No match type provided, defaulting to winners");
+      return "winners";
+    }
+    
     if (matchType === "play-in" || matchType === "play-in-2") {
       return "winners";
     }
+    
+    if (matchType !== "winners" && matchType !== "losers" && matchType !== "finals") {
+      console.warn(`Unknown match type: ${matchType}, defaulting to winners`);
+      return "winners";
+    }
+    
     return matchType as "winners" | "losers" | "finals";
   }
   
@@ -91,6 +138,11 @@ export class MatchConverterUtils {
    * For now, this is simple, but can be extended if needed
    */
   convertMatchTypeFromDB(matchType: string): string {
+    if (!matchType) {
+      console.warn("No match type provided from DB, defaulting to winners");
+      return "winners";
+    }
+    
     return matchType;
   }
 }
