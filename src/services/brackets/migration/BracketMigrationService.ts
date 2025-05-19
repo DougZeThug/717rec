@@ -26,9 +26,9 @@ export class BracketMigrationService {
         name: bracket.title,
         division: bracket.division?.name,
         divisionId: bracket.division_id,
-        format: bracket.format,
+        format: bracket.format as any, // Convert string to BracketFormat
         matches: [], // Matches will be fetched separately
-        champion: bracket.champion_id,
+        champion: bracket.wb_champion_id,
         state: bracket.state,
         created_at: bracket.created_at
       }));
@@ -171,7 +171,10 @@ export class BracketMigrationService {
       // Mark the bracket as migrated
       const { error: updateError } = await supabase
         .from('brackets')
-        .update({ migrated: true, migrated_at: new Date().toISOString() })
+        .update({ 
+          migrated: true, 
+          migrated_at: new Date().toISOString() 
+        })
         .eq('id', bracketId);
       
       if (updateError) throw updateError;
@@ -239,7 +242,10 @@ export class BracketMigrationService {
       // Mark as not migrated
       const { error: updateError } = await supabase
         .from('brackets')
-        .update({ migrated: false, migrated_at: null })
+        .update({ 
+          migrated: false, 
+          migrated_at: null 
+        })
         .eq('id', bracketId);
       
       if (updateError) throw updateError;

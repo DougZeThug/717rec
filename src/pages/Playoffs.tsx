@@ -108,6 +108,14 @@ const Playoffs = () => {
   const allBracketsData = allBrackets || [];
   const availableDivisions = divisions?.map(div => div.name) || [];
 
+  // Create typesafe version of bracketsByDivision
+  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
+  if (bracketsByDivision) {
+    Object.keys(bracketsByDivision).forEach(div => {
+      typesafeBracketsByDivision[div] = bracketsByDivision[div] as PlayoffBracket[];
+    });
+  }
+
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
@@ -122,12 +130,12 @@ const Playoffs = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             availableDivisions={availableDivisions}
-            bracketsByDivision={bracketsByDivision}
+            bracketsByDivision={typesafeBracketsByDivision}
             selectedBracketId={selectedBracketId}
             bracket={bracket}
             teams={teams || []}
             bracketLoading={bracketLoading}
-            allBracketsData={allBracketsData}
+            allBracketsData={allBracketsData as PlayoffBracket[]}
             isLoading={isLoading}
             onCreateBracket={handleCreateBracket}
             onViewBracket={setSelectedBracketId}
@@ -141,12 +149,12 @@ const Playoffs = () => {
         {(!bracket || !isAdmin) && (
           <PlayoffView
             availableDivisions={availableDivisions}
-            bracketsByDivision={bracketsByDivision}
+            bracketsByDivision={typesafeBracketsByDivision}
             selectedBracketId={selectedBracketId}
             bracket={bracket}
             teams={teams || []}
             bracketLoading={bracketLoading}
-            allBracketsData={allBracketsData}
+            allBracketsData={allBracketsData as PlayoffBracket[]}
             isLoading={isLoading}
             onCreateBracket={handleCreateBracket}
             onViewBracket={setSelectedBracketId}

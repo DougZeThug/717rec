@@ -5,12 +5,12 @@ import { PlayoffBracket, Team } from "@/types";
 
 interface PlayoffViewProps {
   availableDivisions: string[];
-  bracketsByDivision: Record<string, Partial<PlayoffBracket>[]>;
+  bracketsByDivision: Record<string, PlayoffBracket[]>;
   selectedBracketId: string | null;
   bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
-  allBracketsData: Partial<PlayoffBracket>[];
+  allBracketsData: PlayoffBracket[];
   isLoading: boolean;
   onCreateBracket: () => void;
   onViewBracket: (id: string) => void;
