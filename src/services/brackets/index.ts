@@ -17,3 +17,6 @@ export { fetchAllBrackets, fetchBracketById } from './bracketFetchers';
 
 // Export transformers
 export * from './transformers';
+
+// Export matchGroupers
+export { groupBracketMatchesByType } from './matchGroupers';

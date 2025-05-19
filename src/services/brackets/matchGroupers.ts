@@ -1,52 +1,43 @@
 
-import { PlayoffMatch, PlayoffBracket, BracketMatchesByType } from "./types";
+import { PlayoffMatch } from "@/types";
+import { BracketMatchesByType } from "./types";
 
 /**
- * Group matches by round for display
- * @param matches Array of matches to group
- * @returns Matches grouped by round number
+ * Groups matches by type (winners bracket, losers bracket, finals)
+ * and organizes them by round for easy rendering
  */
-export const groupMatchesByRound = (matches: PlayoffMatch[]): PlayoffMatch[][] => {
-  if (!matches || !matches.length) return [];
+export function groupBracketMatchesByType(bracket: { matches: PlayoffMatch[] }): BracketMatchesByType {
+  // Start with empty arrays for each bracket section
+  const winners: PlayoffMatch[][] = [];
+  const losers: PlayoffMatch[][] = [];
+  const finals: PlayoffMatch[] = [];
   
-  const roundsMap: Record<number, PlayoffMatch[]> = {};
-  
-  // Group matches by round
-  matches.forEach(match => {
-    if (!roundsMap[match.round]) {
-      roundsMap[match.round] = [];
+  // Process each match in the bracket
+  bracket.matches.forEach(match => {
+    // Determine which array to add to based on match type
+    if (match.matchType === 'winners' || match.matchType === 'play-in' || match.matchType === 'play-in-2') {
+      // Add match to winners bracket
+      if (!winners[match.round - 1]) {
+        winners[match.round - 1] = [];
+      }
+      winners[match.round - 1].push(match);
+    } 
+    else if (match.matchType === 'losers') {
+      // Add match to losers bracket
+      if (!losers[match.round - 1]) {
+        losers[match.round - 1] = [];
+      }
+      losers[match.round - 1].push(match);
     }
-    roundsMap[match.round].push(match);
+    else if (match.matchType === 'finals') {
+      // Add match to finals
+      finals.push(match);
+    }
   });
-  
-  // Convert map to array of arrays, sorted by round
-  const rounds = Object.keys(roundsMap)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .map(roundNum => roundsMap[roundNum]);
-  
-  return rounds;
-};
-
-/**
- * Group bracket matches by type (winners, losers, finals)
- * Useful for double elimination brackets
- * @param bracket The playoff bracket
- * @returns Object with matches grouped by type and round
- */
-export const groupBracketMatchesByType = (bracket: PlayoffBracket): BracketMatchesByType => {
-  // First, separate matches by type
-  const winnerMatches = bracket.matches.filter(m => m.matchType === 'winners' || m.matchType === 'play-in');
-  const loserMatches = bracket.matches.filter(m => m.matchType === 'losers');
-  const finalMatches = bracket.matches.filter(m => m.matchType === 'finals');
-  
-  // Then group each type by round
-  const winners = groupMatchesByRound(winnerMatches);
-  const losers = groupMatchesByRound(loserMatches);
   
   return {
     winners,
     losers,
-    finals: finalMatches
+    finals
   };
-};
+}

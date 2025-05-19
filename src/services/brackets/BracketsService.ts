@@ -16,7 +16,6 @@ export async function createDoubleElimStage(
     id: team.id,
     name: team.name,
     position: team.seed || null,
-    // Add other properties like logo if needed
     tournament_id: bracketId
   }));
   
@@ -24,10 +23,10 @@ export async function createDoubleElimStage(
   const stage = {
     id: bracketId,
     name,
-    type: 'double_elimination',
+    type: 'double_elimination' as const,
     seeding: participants.map(p => p.id), // Just the IDs for seeding
     settings: {
-      grandFinal: 'double', // GF reset (loser must win twice)
+      grandFinal: 'double' as const, // GF reset (loser must win twice)
       matchesChildCount: 1, // How many matches a match can have as children
       size: participants.length, // Bracket size
       consolationFinal: false, // 3rd place match
@@ -37,6 +36,7 @@ export async function createDoubleElimStage(
         games: bestOf 
       },
     },
+    tournamentId: bracketId
   };
   
   // First register participants
@@ -65,7 +65,7 @@ export async function createSingleElimStage(
   const stage = {
     id: bracketId,
     name,
-    type: 'single_elimination',
+    type: 'single_elimination' as const,
     seeding: participants.map(p => p.id),
     settings: {
       seedOrdering: ['natural'],
@@ -76,6 +76,7 @@ export async function createSingleElimStage(
         games: bestOf 
       },
     },
+    tournamentId: bracketId
   };
   
   // First register participants

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { bracketManager } from "../BracketsService";
 
@@ -51,10 +52,14 @@ export class MigrationUtils {
       await bracketManager.deleteMatches({ stage_id: bracketId });
       
       // 2. Create the stage
+      const stageType = bracketData.format === 'Double Elimination' 
+        ? 'double_elimination' as const
+        : 'single_elimination' as const;
+        
       const stage = {
         id: bracketId,
         name: bracketData.title,
-        type: bracketData.format === 'Double Elimination' ? 'double_elimination' : 'single_elimination',
+        type: stageType,
         seeding: [],
         settings: {
           size: teamsData.length,
@@ -62,8 +67,8 @@ export class MigrationUtils {
           consolationFinal: false,
           seedOrdering: ['natural'],
           match: { games: 3 }
-        }
-        // Other settings...
+        },
+        tournamentId: bracketId // Added to satisfy InputStage requirement
       };
       
       await bracketManager.createStage(stage);

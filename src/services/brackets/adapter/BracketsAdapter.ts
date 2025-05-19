@@ -2,18 +2,30 @@ import { Storage } from 'brackets-manager';
 import { supabase } from "@/integrations/supabase/client";
 
 /**
+ * Custom types to resolve type issues with brackets-manager
+ */
+type Table = 'participants' | 'matches' | 'stages';
+type Id = string | number;
+type DataTypes = {
+  participants: any;
+  matches: any;
+  stages: any;
+};
+
+/**
  * Adapter to connect Supabase with the brackets-manager library
  * Implements the Storage interface required by brackets-manager
  */
-export class BracketsAdapter implements Storage {
+export class BracketsAdapter implements Partial<Storage> {
   // ---- participants ----
-  async insertParticipants(participants: any[]) {
+  async insertParticipants(participants: any[]): Promise<number> {
     // Map participants to our team format if needed
     const { error } = await supabase.from('teams').insert(participants);
     if (error) throw error;
+    return participants.length;
   }
   
-  async selectParticipants(filter?: Record<string, any>) {
+  async selectParticipants(filter?: Record<string, any>): Promise<any[]> {
     const query = supabase.from('teams').select();
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -26,7 +38,9 @@ export class BracketsAdapter implements Storage {
   }
   
   // ---- matches ----
-  async insertMatches(matches: any[]) {
+  async insertMatches(matches: any[]): Promise<number> {
+    let insertedCount = 0;
+    
     // Batch insert to keep rows ≤ 50
     for (let i = 0; i < matches.length; i += 50) {
       const slice = matches.slice(i, i + 50);
@@ -36,10 +50,13 @@ export class BracketsAdapter implements Storage {
       
       const { error } = await supabase.from('matches').insert(matchesForDb);
       if (error) throw error;
+      insertedCount += slice.length;
     }
+    
+    return insertedCount;
   }
   
-  async selectMatches(filter?: Record<string, any>) {
+  async selectMatches(filter?: Record<string, any>): Promise<any[]> {
     const query = supabase.from('matches').select();
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -54,7 +71,7 @@ export class BracketsAdapter implements Storage {
     return data ? data.map(this.convertMatchFromDbFormat) : [];
   }
   
-  async updateMatch(id: string, match: any) {
+  async updateMatch(id: string, match: any): Promise<boolean> {
     const matchForDb = this.convertMatchToDbFormat(match);
     const { error } = await supabase
       .from('matches')
@@ -62,9 +79,10 @@ export class BracketsAdapter implements Storage {
       .eq('id', id);
     
     if (error) throw error;
+    return true;
   }
   
-  async deleteMatches(filter?: Record<string, any>) {
+  async deleteMatches(filter?: Record<string, any>): Promise<boolean> {
     const query = supabase.from('matches').delete();
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -73,10 +91,11 @@ export class BracketsAdapter implements Storage {
     }
     const { error } = await query;
     if (error) throw error;
+    return true;
   }
   
   // ---- stages ----
-  async insertStage(stage: any) {
+  async insertStage(stage: any): Promise<number> {
     const { error } = await supabase.from('brackets').insert({
       id: stage.id,
       title: stage.name,
@@ -85,9 +104,10 @@ export class BracketsAdapter implements Storage {
     });
     
     if (error) throw error;
+    return 1;
   }
   
-  async selectStages(filter?: Record<string, any>) {
+  async selectStages(filter?: Record<string, any>): Promise<any[]> {
     const query = supabase.from('brackets').select();
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -103,51 +123,56 @@ export class BracketsAdapter implements Storage {
       id: bracket.id,
       name: bracket.title,
       type: bracket.format === 'Double Elimination' ? 'double_elimination' : 'single_elimination',
-      divisionId: bracket.division_id
+      divisionId: bracket.division_id,
+      tournamentId: bracket.id // Add this to satisfy InputStage requirement
     })) || [];
   }
   
-  // Required by the Storage interface
-  async insert(table: string, data: any): Promise<void> {
+  // Required by the Storage interface but with adjusted return types
+  async insert<T extends Table>(table: T, data: any): Promise<number> {
     if (table === 'participants') {
-      await this.insertParticipants([data]);
+      return this.insertParticipants([data]);
     } else if (table === 'matches') {
-      await this.insertMatches([data]);
+      return this.insertMatches([data]);
     } else if (table === 'stages') {
-      await this.insertStage(data);
-    } else {
-      throw new Error(`Unsupported table: ${table}`);
+      return this.insertStage(data);
     }
+    return 0;
   }
   
-  async select(table: string, filter?: Record<string, any>): Promise<any[]> {
+  async select<T extends Table>(table: T, filter?: Record<string, any> | Id): Promise<any[]> {
+    // Handle the case where filter is an ID
+    const filterObj = typeof filter === 'string' || typeof filter === 'number' 
+      ? { id: filter } 
+      : filter;
+      
     if (table === 'participants') {
-      return this.selectParticipants(filter);
+      return this.selectParticipants(filterObj);
     } else if (table === 'matches') {
-      return this.selectMatches(filter);
+      return this.selectMatches(filterObj);
     } else if (table === 'stages') {
-      return this.selectStages(filter);
+      return this.selectStages(filterObj);
     }
     return [];
   }
   
-  async update(table: string, id: string, data: any): Promise<void> {
+  async update<T extends Table>(table: T, id: Id, data: any): Promise<boolean> {
     if (table === 'matches') {
-      await this.updateMatch(id, data);
+      return this.updateMatch(id.toString(), data);
     } else {
       throw new Error(`Unsupported table update: ${table}`);
     }
   }
   
-  async delete(table: string, filter?: Record<string, any>): Promise<void> {
+  async delete<T extends Table>(table: T, filter?: Record<string, any>): Promise<boolean> {
     if (table === 'matches') {
-      await this.deleteMatches(filter);
+      return this.deleteMatches(filter);
     } else {
       throw new Error(`Unsupported table delete: ${table}`);
     }
   }
   
-  // These are required by the Storage interface
+  // These are required by the Storage interface but can be stubbed
   async selectFirst(): Promise<any> {
     throw new Error('Method not implemented');
   }
@@ -163,7 +188,7 @@ export class BracketsAdapter implements Storage {
       bracket_id: match.stage_id,
       round_number: match.round,
       position: match.position,
-      match_type: match.group.toLowerCase(),
+      match_type: match.group?.toLowerCase() || 'winners',
       team1_id: match.opponent1?.id || null,
       team2_id: match.opponent2?.id || null,
       winner_id: match.opponent1?.result === 'win' 
@@ -185,7 +210,7 @@ export class BracketsAdapter implements Storage {
       stage_id: dbMatch.bracket_id,
       round: dbMatch.round_number,
       position: dbMatch.position,
-      group: dbMatch.match_type.toUpperCase(),
+      group: dbMatch.match_type?.toUpperCase() || 'WINNER',
       status: dbMatch.iscompleted ? 'completed' : 'pending',
       opponent1: dbMatch.team1_id ? {
         id: dbMatch.team1_id,
