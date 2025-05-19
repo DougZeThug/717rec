@@ -86,9 +86,16 @@ export class MigrationUtils {
       
       await bracketManager.registerParticipants(participants);
       
-      // 4. Convert and add matches
-      // This is complex and would require mapping from our format to brackets-manager format
-      // ...
+      // 4. Mark as migrated in the database
+      const { error: updateError } = await supabase
+        .from('brackets')
+        .update({ 
+          migrated: true,
+          migrated_at: new Date().toISOString() 
+        })
+        .eq('id', bracketId);
+      
+      if (updateError) throw updateError;
       
       console.log(`Migration completed for bracket ${bracketId}`);
     } catch (error) {

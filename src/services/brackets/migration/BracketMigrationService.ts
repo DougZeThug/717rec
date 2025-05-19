@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { bracketManager } from "../manager/BracketManager";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
@@ -175,6 +176,7 @@ export class BracketMigrationService {
       const { error: updateError } = await supabase
         .from('brackets')
         .update({ 
+          migrated: true,
           migrated_at: new Date().toISOString() 
         })
         .eq('id', bracketId);
@@ -245,6 +247,7 @@ export class BracketMigrationService {
       const { error: updateError } = await supabase
         .from('brackets')
         .update({ 
+          migrated: null,
           migrated_at: null 
         })
         .eq('id', bracketId);

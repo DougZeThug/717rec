@@ -1,7 +1,6 @@
 
 // Supabase Edge Function for Bracket Management
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // CORS headers for browser requests
 const corsHeaders = {
@@ -17,7 +16,7 @@ serve(async (req) => {
   
   try {
     return new Response(JSON.stringify({ 
-      message: "This endpoint is not in use as Challonge integration is disabled"
+      message: "Bracket management service available"
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

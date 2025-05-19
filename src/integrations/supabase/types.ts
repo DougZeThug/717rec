@@ -17,6 +17,8 @@ export type Database = {
           division_id: string | null
           format: string | null
           id: string
+          migrated: boolean | null
+          migrated_at: string | null
           reset_match_needed: boolean | null
           state: string | null
           title: string
@@ -29,6 +31,8 @@ export type Database = {
           division_id?: string | null
           format?: string | null
           id?: string
+          migrated?: boolean | null
+          migrated_at?: string | null
           reset_match_needed?: boolean | null
           state?: string | null
           title: string
@@ -41,6 +45,8 @@ export type Database = {
           division_id?: string | null
           format?: string | null
           id?: string
+          migrated?: boolean | null
+          migrated_at?: string | null
           reset_match_needed?: boolean | null
           state?: string | null
           title?: string
