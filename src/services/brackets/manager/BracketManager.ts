@@ -72,16 +72,20 @@ class BracketManager {
       }
     };
     
-    // Use the stage.id as a parameter rather than in the object
-    await this.manager.create.stage(inputStage, stage.id);
+    // Fix: Based on brackets-manager API, we need to include the ID in the stage object
+    // rather than passing it as a separate parameter
+    await this.manager.create.stage({
+      ...inputStage,
+      id: stage.id
+    });
   }
   
   /**
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // Fix: The correct method name is 'participants' (plural) not 'participant'
-    await this.manager.create.participants(participants);
+    // Fix: The correct method name is likely 'participant' (singular) in brackets-manager
+    await this.manager.create.participant(participants);
   }
   
   /**
