@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { bracketManager } from "../manager/BracketManager";
-import type { SeedOrdering } from 'brackets-model';
+import { SeedOrdering } from "../manager/BracketManager";
 
 /**
  * Utility to migrate existing brackets to the brackets-manager format

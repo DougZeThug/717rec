@@ -1,11 +1,20 @@
 
 import { BracketsManager } from 'brackets-manager';
-import type { SeedOrdering as LibSeedOrdering, InputStage } from 'brackets-model';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFormat } from '@/constants/brackets';
 
-// Re-export the SeedOrdering type from brackets-manager
-export type SeedOrdering = LibSeedOrdering;
+// Define SeedOrdering type locally since we can't find brackets-model
+export type SeedOrdering = 
+  | 'natural'
+  | 'reverse'
+  | 'half_shift'
+  | 'reverse_half_shift'
+  | 'pair_flip'
+  | 'inner_outer'
+  | 'groups.effort_balanced'
+  | 'groups.snake'
+  | 'groups.distance_based'
+  | string;
 
 export interface StageSettings {
   grandFinal?: 'simple' | 'double'; 
@@ -27,6 +36,15 @@ export interface BracketStage {
   settings: StageSettings;
   divisionId?: string;
   tournamentId: string; // Required for InputStage
+}
+
+// Define an input stage type interface
+interface InputStage {
+  id: string;
+  name: string;
+  type: string;
+  seeding: string[];
+  settings: StageSettings;
 }
 
 /**
@@ -63,7 +81,7 @@ class BracketManager {
       settings: {
         ...stage.settings,
         // Ensure seedOrdering is properly cast to the library's type
-        seedOrdering: stage.settings.seedOrdering as LibSeedOrdering[]
+        seedOrdering: stage.settings.seedOrdering as SeedOrdering[]
       }
     };
     
@@ -74,7 +92,7 @@ class BracketManager {
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // Fix: Use correct method name 'participant' instead of 'participants'
+    // Fix: Register each participant individually
     for (const participant of participants) {
       await this.manager.create.participant(participant);
     }
@@ -91,17 +109,18 @@ class BracketManager {
    * Get matches by filter
    */
   async getMatches(filter: Record<string, any>): Promise<any[]> {
-    // Fix: brackets-manager doesn't have get.match method
-    // Using select directly from the adapter
-    return await this.manager.get.matches(filter);
+    // Use direct adapter implementation instead
+    const adapter = this.manager.storage;
+    return await adapter.select('matches', filter);
   }
   
   /**
    * Delete matches by filter
    */
   async deleteMatches(filter: Record<string, any>): Promise<void> {
-    // Fix: brackets-manager doesn't have delete.match method
-    await this.manager.delete.matches(filter);
+    // Use direct adapter implementation instead
+    const adapter = this.manager.storage;
+    await adapter.delete('matches', filter);
   }
 }
 

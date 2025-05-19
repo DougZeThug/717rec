@@ -4,6 +4,7 @@ import { BracketCreationService } from './services/BracketCreationService';
 import { MatchScoreService } from './services/MatchScoreService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
+import { BracketFormat } from '@/constants/brackets';
 
 /** 
  * Create a double-elimination stage (play-ins auto-handled) 
@@ -58,7 +59,7 @@ export async function updateMatchResult(
  * Create a Tournament Bracket 
  */
 export async function createTournamentBracket(
-  bracketFormat: 'Single Elimination' | 'Double Elimination',
+  bracketFormat: BracketFormat,
   name: string,
   divisionId: string,
   teams: Team[]

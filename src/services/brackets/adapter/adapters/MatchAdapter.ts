@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 
@@ -36,17 +37,19 @@ export class MatchAdapter {
     try {
       let query = supabase.from('matches').select();
       
-      // Apply filters if provided
+      // Apply filters individually to avoid deep type instantiation
       if (filter) {
         Object.entries(filter).forEach(([key, value]) => {
           if (key && value !== undefined) {
-            // Create a new query for each filter to avoid deep chaining
             query = query.eq(key, value);
           }
         });
       }
       
-      const { data, error } = await query;
+      // Execute query with explicit typing to break the chain
+      const result = await query;
+      const { data, error } = result;
+      
       if (error) throw error;
       
       // Convert back to brackets-manager format
@@ -85,17 +88,19 @@ export class MatchAdapter {
     try {
       let query = supabase.from('matches').delete();
       
-      // Apply filters if provided
+      // Apply filters individually to avoid deep type instantiation
       if (filter) {
         Object.entries(filter).forEach(([key, value]) => {
           if (key && value !== undefined) {
-            // Create a new query for each filter to avoid deep chaining
             query = query.eq(key, value);
           }
         });
       }
       
-      const { error, count } = await query;
+      // Execute query with explicit typing
+      const result = await query;
+      const { error, count } = result;
+      
       if (error) throw error;
       return count || 0;
     } catch (error) {

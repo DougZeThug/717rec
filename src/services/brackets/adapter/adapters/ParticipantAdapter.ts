@@ -25,15 +25,18 @@ export class ParticipantAdapter {
       
       // Apply filters if provided
       if (filter) {
+        // Apply each filter separately to avoid deep type instantiation
         Object.entries(filter).forEach(([key, value]) => {
           if (key && value !== undefined) {
-            // Create a new query for each filter to avoid deep chaining
             query = query.eq(key, value);
           }
         });
       }
       
-      const { data, error } = await query;
+      // Execute query with explicit typing to break the chain
+      const result = await query;
+      const { data, error } = result;
+      
       if (error) throw error;
       return data || [];
     } catch (error) {

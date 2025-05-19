@@ -28,27 +28,29 @@ export class StageAdapter {
     try {
       let query = supabase.from('brackets').select();
       
-      // Apply filters if provided
+      // Apply filters if provided, avoiding deep chaining
       if (filter) {
         Object.entries(filter).forEach(([key, value]) => {
           if (key && value !== undefined) {
-            // Create a new query for each filter to avoid deep chaining
             query = query.eq(key, value);
           }
         });
       }
       
-      const { data, error } = await query;
+      // Execute query with explicit typing to break the chain
+      const result = await query;
+      const { data, error } = result;
+      
       if (error) throw error;
       
       // Convert our bracket to stage format
-      return data?.map(bracket => ({
+      return (data || []).map(bracket => ({
         id: bracket.id,
         name: bracket.title,
         type: bracket.format === 'Double Elimination' ? 'double_elimination' : 'single_elimination',
         divisionId: bracket.division_id,
         tournamentId: bracket.id // Add this to satisfy InputStage requirement
-      })) || [];
+      }));
     } catch (error) {
       console.error("Error selecting stages:", error);
       throw error;
