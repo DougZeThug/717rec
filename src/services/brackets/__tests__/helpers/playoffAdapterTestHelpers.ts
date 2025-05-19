@@ -14,7 +14,7 @@ export const setupAdapterTest = () => {
   vi.clearAllMocks();
   
   // Access the facade instance directly from the adapter via private property
-  return (PlayoffDatabaseAdapter as any).facade as jest.Mocked<PlayoffDatabaseFacade>;
+  return (PlayoffDatabaseAdapter as any).facade as ReturnType<typeof vi.mocked<PlayoffDatabaseFacade>>;
 };
 
 /**
@@ -73,7 +73,6 @@ export const createDbMatch = (overrides = {}): DatabasePlayoffMatch => ({
  * Creates a sample match result object for testing
  */
 export const createMatchResult = (overrides = {}): MatchResultDTO => ({
-  matchId: 'match1',
   winnerId: 'team1',
   loserId: 'team2',
   team1Score: 2,

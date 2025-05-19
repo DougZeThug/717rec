@@ -2,7 +2,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { PlayoffDatabaseFacade } from '../database/PlayoffDatabaseFacade';
-import { createAppMatch, createGame, createMatchResult } from './helpers/playoffAdapterTestHelpers';
+import { createAppMatch, createDbMatch, createGame, createMatchResult } from './helpers/playoffAdapterTestHelpers';
+import { DatabasePlayoffMatch } from '../database/types';
 
 // Mock the PlayoffDatabaseFacade
 vi.mock('../database/PlayoffDatabaseFacade', () => {
@@ -36,14 +37,24 @@ describe('PlayoffDatabaseAdapter - Integration Tests', () => {
       // Arrange
       const bracketId = 'bracket1';
       const finalMatchId = 'finals-1';
-      const match = createAppMatch({ id: finalMatchId, bracket_id: bracketId });
+      const appMatch = createAppMatch({ id: finalMatchId, bracket_id: bracketId });
+      // Convert the app match to a database match for mock responses
+      const dbMatch = createDbMatch({
+        id: finalMatchId,
+        bracket_id: bracketId,
+        match_type: appMatch.matchType,
+        team1_id: appMatch.team1Id,
+        team2_id: appMatch.team2Id,
+        team1_seed: appMatch.team1Seed,
+        team2_seed: appMatch.team2Seed
+      });
+      
       const games = [
         createGame({ gameNumber: 1, team1Score: 21, team2Score: 18, winnerId: 'team1' }),
         createGame({ gameNumber: 2, team1Score: 18, team2Score: 21, winnerId: 'team2' }),
         createGame({ gameNumber: 3, team1Score: 21, team2Score: 19, winnerId: 'team1' })
       ];
       const result = createMatchResult({
-        matchId: finalMatchId,
         winnerId: 'team1',
         loserId: 'team2',
         team1Score: 2,
@@ -54,11 +65,11 @@ describe('PlayoffDatabaseAdapter - Integration Tests', () => {
       });
       
       // Mock responses
-      vi.mocked(facade.getBracketMatches).mockResolvedValueOnce([match]);
+      vi.mocked(facade.getBracketMatches).mockResolvedValueOnce([dbMatch]);
       vi.mocked(facade.getMatchGames).mockResolvedValueOnce(games);
       
       // Act - Create the matches
-      await PlayoffDatabaseAdapter.savePlayoffMatches([match]);
+      await PlayoffDatabaseAdapter.savePlayoffMatches([appMatch]);
       
       // Act - Save games
       await PlayoffDatabaseAdapter.savePlayoffGames(games);
@@ -70,7 +81,12 @@ describe('PlayoffDatabaseAdapter - Integration Tests', () => {
       await PlayoffDatabaseAdapter.markTournamentComplete(bracketId, 'team1');
       
       // Assert
-      expect(facade.savePlayoffMatches).toHaveBeenCalledWith([expect.objectContaining({ id: finalMatchId })]);
+      expect(facade.savePlayoffMatches).toHaveBeenCalledWith(expect.arrayContaining([
+        expect.objectContaining({ 
+          id: finalMatchId,
+          bracket_id: bracketId
+        })
+      ]));
       expect(facade.savePlayoffGames).toHaveBeenCalledWith(games);
       expect(facade.recordMatchResult).toHaveBeenCalledWith(expect.objectContaining({ 
         match_id: finalMatchId,
