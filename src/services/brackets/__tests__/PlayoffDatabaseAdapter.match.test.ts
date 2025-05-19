@@ -1,7 +1,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
-import { createAppMatch, setupAdapterTest } from './helpers/playoffAdapterTestHelpers';
+import { createAppMatch, createDbMatch, setupAdapterTest } from './helpers/playoffAdapterTestHelpers';
 
 // Mock the PlayoffDatabaseFacade
 vi.mock('../database/PlayoffDatabaseFacade', () => {
@@ -68,7 +68,7 @@ describe('PlayoffDatabaseAdapter - Match Operations', () => {
     it('should fetch bracket matches from the database', async () => {
       // Arrange
       const bracketId = 'bracket1';
-      const dbMatches = [createAppMatch()];
+      const dbMatches = [createDbMatch()]; // Use dbMatch instead of appMatch
       
       vi.mocked(facade.getBracketMatches).mockResolvedValueOnce(dbMatches);
       
