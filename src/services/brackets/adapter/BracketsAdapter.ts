@@ -1,120 +1,108 @@
 
-import { StorageAdapter } from './interfaces/StorageAdapter';
+import { Storage } from 'brackets-model';
+import { MatchAdapter } from './adapters/MatchAdapter';
 import { ParticipantAdapter } from './adapters/ParticipantAdapter';
 import { StageAdapter } from './adapters/StageAdapter';
-import { MatchAdapter } from './adapters/MatchAdapter';
 
 /**
- * Adapter for Supabase storage to work with brackets-manager
- * Implements the StorageAdapter interface
+ * The BracketsAdapter implements the Storage interface from brackets-manager
+ * to bridge between brackets-manager operations and our database
  */
-export class BracketsAdapter implements StorageAdapter {
-  private participantAdapter = new ParticipantAdapter();
-  private stageAdapter = new StageAdapter();
-  // We need to initialize the MatchAdapter if it exists
-  private matchAdapter: any = {};
-
+export class BracketsAdapter implements Storage {
+  private matchAdapter: MatchAdapter;
+  private participantAdapter: ParticipantAdapter;
+  private stageAdapter: StageAdapter;
+  
+  constructor() {
+    this.matchAdapter = new MatchAdapter();
+    this.participantAdapter = new ParticipantAdapter();
+    this.stageAdapter = new StageAdapter();
+  }
+  
   /**
    * Insert data into the appropriate table
    */
-  async insert<T>(table: string, data: T | T[]): Promise<boolean> {
+  async insert(table: string, data: any | any[]): Promise<number> {
     try {
+      // Choose the appropriate adapter based on the table
       switch (table) {
+        case 'match':
+          return this.matchAdapter.insertMatches(Array.isArray(data) ? data : [data]);
         case 'participant':
-          await this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
-          break;
+          return this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
         case 'stage':
-          if (!Array.isArray(data)) {
-            await this.stageAdapter.insertStage(data);
-          } else {
-            for (const stage of data) {
-              await this.stageAdapter.insertStage(stage);
-            }
-          }
-          break;
-        // Add other cases as needed
+          return this.stageAdapter.insertStage(data);
         default:
-          console.warn(`Table ${table} not implemented for insert`);
-          return false;
+          throw new Error(`Unknown table: ${table}`);
       }
-      return true;
     } catch (error) {
       console.error(`Error inserting into ${table}:`, error);
       throw error;
     }
   }
-
+  
   /**
    * Select data from the appropriate table
    */
-  async select<T>(table: string, filter?: Record<string, any>): Promise<T[]> {
+  async select(table: string, filter?: Record<string, any>): Promise<any[]> {
     try {
+      // Choose the appropriate adapter based on the table
       switch (table) {
+        case 'match':
+          return this.matchAdapter.selectMatches(filter);
         case 'participant':
-          return (await this.participantAdapter.selectParticipants(filter)) as unknown as T[];
+          return this.participantAdapter.selectParticipants(filter);
         case 'stage':
-          return (await this.stageAdapter.selectStages(filter)) as unknown as T[];
-        // Handle other tables
+          return this.stageAdapter.selectStage(filter);
         default:
-          console.warn(`Table ${table} not implemented for select`);
-          return [];
+          throw new Error(`Unknown table: ${table}`);
       }
     } catch (error) {
       console.error(`Error selecting from ${table}:`, error);
       throw error;
     }
   }
-
+  
   /**
    * Update data in the appropriate table
    */
-  async update<T>(table: string, id: string, data: T): Promise<boolean> {
+  async update(table: string, id: string, data: any): Promise<number> {
     try {
-      // Implementation for each table's update logic
-      console.warn(`Update for table ${table} not yet implemented`);
-      return true;
+      // Choose the appropriate adapter based on the table
+      switch (table) {
+        case 'match':
+          return this.matchAdapter.updateMatch(id, data);
+        case 'participant':
+          return this.participantAdapter.updateParticipant(id, data);
+        case 'stage':
+          return this.stageAdapter.updateStage(id, data);
+        default:
+          throw new Error(`Unknown table: ${table}`);
+      }
     } catch (error) {
       console.error(`Error updating ${table}:`, error);
       throw error;
     }
   }
-
+  
   /**
    * Delete data from the appropriate table
    */
-  async delete(table: string, filter?: Record<string, any>): Promise<boolean> {
+  async delete(table: string, filter?: Record<string, any>): Promise<number> {
     try {
-      // Implementation for each table's delete logic
-      console.warn(`Delete for table ${table} not yet implemented`);
-      return true;
+      // Choose the appropriate adapter based on the table
+      switch (table) {
+        case 'match':
+          return this.matchAdapter.deleteMatches(filter);
+        case 'participant':
+          return this.participantAdapter.deleteParticipants(filter);
+        case 'stage':
+          return this.stageAdapter.deleteStage(filter);
+        default:
+          throw new Error(`Unknown table: ${table}`);
+      }
     } catch (error) {
       console.error(`Error deleting from ${table}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Select the first item from a table
-   */
-  async selectFirst<T>(table: string): Promise<T | null> {
-    try {
-      const results = await this.select<T>(table);
-      return results.length > 0 ? results[0] : null;
-    } catch (error) {
-      console.error(`Error in selectFirst for ${table}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Select the last item from a table
-   */
-  async selectLast<T>(table: string): Promise<T | null> {
-    try {
-      const results = await this.select<T>(table);
-      return results.length > 0 ? results[results.length - 1] : null;
-    } catch (error) {
-      console.error(`Error in selectLast for ${table}:`, error);
       throw error;
     }
   }

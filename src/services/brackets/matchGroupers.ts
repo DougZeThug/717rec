@@ -1,43 +1,53 @@
 
-import { PlayoffMatch } from "@/types";
+import { PlayoffBracket, PlayoffMatch } from "@/types";
 import { BracketMatchesByType } from "./types";
 
 /**
- * Groups matches by type (winners bracket, losers bracket, finals)
- * and organizes them by round for easy rendering
+ * Group bracket matches by type (winners, losers, finals) and round
  */
-export function groupBracketMatchesByType(bracket: { matches: PlayoffMatch[] }): BracketMatchesByType {
-  // Start with empty arrays for each bracket section
-  const winners: PlayoffMatch[][] = [];
-  const losers: PlayoffMatch[][] = [];
-  const finals: PlayoffMatch[] = [];
+export function groupBracketMatchesByType(bracket: PlayoffBracket): BracketMatchesByType {
+  // Initialize result structure
+  const result: BracketMatchesByType = {
+    winners: [],
+    losers: [],
+    finals: []
+  };
   
-  // Process each match in the bracket
+  // If no matches, return empty structure
+  if (!bracket.matches || bracket.matches.length === 0) {
+    return result;
+  }
+  
+  // Group matches by type and round
   bracket.matches.forEach(match => {
-    // Determine which array to add to based on match type
-    if (match.matchType === 'winners' || match.matchType === 'play-in' || match.matchType === 'play-in-2') {
-      // Add match to winners bracket
-      if (!winners[match.round - 1]) {
-        winners[match.round - 1] = [];
+    if (match.matchType === "winners" || match.matchType === "play-in" || match.matchType === "play-in-2") {
+      // Initialize winners array at this round if needed
+      while (result.winners.length <= match.round) {
+        result.winners.push([]);
       }
-      winners[match.round - 1].push(match);
+      
+      // Add match to the appropriate round
+      result.winners[match.round].push(match);
     } 
-    else if (match.matchType === 'losers') {
-      // Add match to losers bracket
-      if (!losers[match.round - 1]) {
-        losers[match.round - 1] = [];
+    else if (match.matchType === "losers") {
+      // Initialize losers array at this round if needed
+      while (result.losers.length <= match.round) {
+        result.losers.push([]);
       }
-      losers[match.round - 1].push(match);
+      
+      // Add match to the appropriate round
+      result.losers[match.round].push(match);
     }
-    else if (match.matchType === 'finals') {
-      // Add match to finals
-      finals.push(match);
+    else if (match.matchType === "finals") {
+      // Add to finals array (not round-separated)
+      result.finals.push(match);
     }
   });
   
-  return {
-    winners,
-    losers,
-    finals
-  };
+  // Sort matches in each round by position
+  result.winners.forEach(round => round.sort((a, b) => a.position - b.position));
+  result.losers.forEach(round => round.sort((a, b) => a.position - b.position));
+  result.finals.sort((a, b) => (a.round !== b.round) ? a.round - b.round : a.position - b.position);
+  
+  return result;
 }

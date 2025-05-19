@@ -1,15 +1,13 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { Team } from "@/types";
-import { BracketFormat, BRACKET_FORMATS } from "@/constants/brackets";
-import { bracketManager, SeedOrdering } from "../manager/BracketManager";
+import { v4 as uuidv4 } from 'uuid';
+import { bracketManager } from '../manager/BracketManager';
+import { BracketFormat } from '@/constants/brackets';
+import { Team } from '@/types';
+import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 
-/**
- * Service for bracket creation operations
- */
 export class BracketCreationService {
   /**
-   * Create a new bracket
+   * Create a tournament bracket
    */
   static async createBracket(
     format: BracketFormat,
@@ -17,119 +15,27 @@ export class BracketCreationService {
     divisionId: string,
     teamIds: string[]
   ): Promise<string> {
-    try {
-      // Get the teams to include in the bracket
-      const { data: teams, error: teamsError } = await supabase
-        .from('teams')
-        .select('id, name, seed, image_url, logo_url')
-        .in('id', teamIds);
-      
-      if (teamsError) throw teamsError;
-      
-      // Create the tournament bracket using brackets-manager
-      // Only support Single and Double Elimination formats (no Round Robin)
-      if (format !== BRACKET_FORMATS.SINGLE && format !== BRACKET_FORMATS.DOUBLE) {
-        throw new Error(`Unsupported bracket format: ${format}`);
-      }
-      
-      // Generate a unique bracket ID
-      const bracketId = crypto.randomUUID();
-      
-      // Create the bracket record first
-      const { error: bracketError } = await supabase
-        .from('brackets')
-        .insert({
-          id: bracketId,
-          title: name,
-          format: format,
-          division_id: divisionId
-        });
-      
-      if (bracketError) throw bracketError;
-      
-      // Create the tournament structure
-      await this.createTournamentBracket(format, name, bracketId, teams);
-      
-      return bracketId;
-    } catch (error) {
-      console.error("Error creating bracket:", error);
-      throw error;
+    // Generate a unique ID for the bracket
+    const bracketId = uuidv4();
+    
+    // Create bracket record in database
+    const { error } = await PlayoffDatabaseAdapter.createBracket({
+      id: bracketId,
+      name,
+      format,
+      divisionId
+    });
+    
+    if (error) throw new Error(`Failed to create bracket: ${error.message}`);
+    
+    // Create the stage based on the format
+    if (format === 'Single Elimination') {
+      await this.createSingleElimStage(bracketId, name, teamIds);
+    } else {
+      await this.createDoubleElimStage(bracketId, name, teamIds);
     }
-  }
-
-  /**
-   * Create a tournament bracket structure
-   */
-  static async createTournamentBracket(
-    bracketFormat: BracketFormat,
-    name: string,
-    bracketId: string,
-    teams: Team[]
-  ): Promise<string> {
-    try {
-      // Create seeding array from team IDs
-      const seeding = teams.map(team => team.id);
-      
-      // Configure the stage
-      const stageType = bracketFormat === BRACKET_FORMATS.SINGLE
-        ? 'single_elimination' as const
-        : 'double_elimination' as const;
-      
-      // Create the validated seed ordering array with proper typing
-      // Use the SeedOrdering type from BracketManager to ensure compatibility
-      const seedOrdering: SeedOrdering[] = ['natural'];
-      
-      const stage = {
-        id: bracketId,
-        name: name,
-        type: stageType,
-        seeding: seeding,
-        settings: {
-          size: teams.length,
-          matchesChildCount: stageType === 'single_elimination' ? 1 : 2,
-          consolationFinal: false,
-          seedOrdering: seedOrdering,
-          match: { games: 3 }
-        },
-        tournamentId: bracketId // Added to satisfy InputStage requirement
-      };
-      
-      // Create the stage in brackets-manager
-      await bracketManager.createStage(stage);
-      
-      // Register participants
-      const participants = teams.map((team, index) => ({
-        id: team.id,
-        name: team.name,
-        tournament_id: bracketId,
-        position: index + 1 // 1-based index for position
-      }));
-      
-      await bracketManager.registerParticipants(participants);
-      
-      return bracketId;
-    } catch (error) {
-      console.error("Error creating tournament bracket:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create a double elimination stage
-   */
-  static async createDoubleElimStage(
-    bracketId: string,
-    name: string,
-    teams: Team[],
-    bestOf = 3
-  ): Promise<void> {
-    try {
-      // Implementation details...
-      console.log(`Creating double elimination stage: ${name} for bracket ${bracketId}`);
-    } catch (error) {
-      console.error("Error creating double elimination stage:", error);
-      throw error;
-    }
+    
+    return bracketId;
   }
   
   /**
@@ -138,15 +44,86 @@ export class BracketCreationService {
   static async createSingleElimStage(
     bracketId: string,
     name: string,
-    teams: Team[],
-    bestOf = 3
+    teams: Team[] | string[],
+    bestOf: number = 3
   ): Promise<void> {
-    try {
-      // Implementation details...
-      console.log(`Creating single elimination stage: ${name} for bracket ${bracketId}`);
-    } catch (error) {
-      console.error("Error creating single elimination stage:", error);
-      throw error;
-    }
+    // Convert teams to participants if they're not already
+    const participants = Array.isArray(teams) && typeof teams[0] === 'string'
+      ? this.convertTeamIdsToParticipants(teams as string[])
+      : this.convertTeamsToParticipants(teams as Team[]);
+    
+    // Register the participants
+    await bracketManager.registerParticipants(participants);
+    
+    // Create the stage with the brackets-manager
+    await bracketManager.createStage({
+      id: bracketId,
+      name: name,
+      type: 'single_elimination',
+      seeding: participants.map(p => p.name), // Use names instead of IDs for seeding
+      settings: {
+        size: participants.length,
+        seedOrdering: ['natural'],
+        match: { games: bestOf }
+      },
+      tournamentId: bracketId // Use bracketId as tournamentId too
+    });
+  }
+  
+  /**
+   * Create a double elimination stage
+   */
+  static async createDoubleElimStage(
+    bracketId: string,
+    name: string,
+    teams: Team[] | string[],
+    bestOf: number = 3
+  ): Promise<void> {
+    // Convert teams to participants if they're not already
+    const participants = Array.isArray(teams) && typeof teams[0] === 'string'
+      ? this.convertTeamIdsToParticipants(teams as string[])
+      : this.convertTeamsToParticipants(teams as Team[]);
+    
+    // Register the participants
+    await bracketManager.registerParticipants(participants);
+    
+    // Create the stage with the brackets-manager
+    await bracketManager.createStage({
+      id: bracketId,
+      name: name,
+      type: 'double_elimination',
+      seeding: participants.map(p => p.name), // Use names instead of IDs for seeding
+      settings: {
+        size: participants.length,
+        seedOrdering: ['natural'],
+        grandFinal: 'simple',
+        match: { games: bestOf }
+      },
+      tournamentId: bracketId // Use bracketId as tournamentId too
+    });
+  }
+  
+  /**
+   * Convert team IDs to participants format
+   */
+  private static convertTeamIdsToParticipants(teamIds: string[]): any[] {
+    return teamIds.map((teamId, index) => ({
+      id: teamId,
+      tournament_id: null, // Will be set by brackets-manager
+      name: teamId, // Using teamId as name for now
+      position: index + 1
+    }));
+  }
+  
+  /**
+   * Convert Team objects to participants format
+   */
+  private static convertTeamsToParticipants(teams: Team[]): any[] {
+    return teams.map((team, index) => ({
+      id: team.id,
+      tournament_id: null, // Will be set by brackets-manager
+      name: team.name,
+      position: index + 1
+    }));
   }
 }
