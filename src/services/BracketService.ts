@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 import { 
-  bracketsManager, 
+  bracketManager,
   createTournamentBracket, 
   updateMatchResult,
   mapBracketsToAppFormat 
@@ -177,7 +177,7 @@ export class BracketService {
       if (!bracketData) return null;
       
       // Get matches using brackets-manager
-      const matches = await bracketsManager.match.select({ stage_id: bracketId });
+      const matches = await bracketManager.getMatches({ stage_id: bracketId });
       
       // Map to our format
       const organizedMatches = mapBracketsToAppFormat(bracketId, matches);

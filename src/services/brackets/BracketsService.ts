@@ -1,156 +1,8 @@
-import { BracketsManager, Storage, Stage } from 'brackets-manager';
+
+import { bracketManager } from './manager/BracketManager';
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
-
-/** Supabase adapter implementing the Storage interface (minimal subset). */
-export class SupabaseAdapter implements Storage {
-  // ---- participants ----
-  async insertParticipants(participants: any[]) {
-    // Map participants to our team format if needed
-    const { error } = await supabase.from('teams').insert(participants);
-    if (error) throw error;
-  }
-  
-  async selectParticipants(filter?: Record<string, any>) {
-    const query = supabase.from('teams').select();
-    if (filter) {
-      query.match(filter);
-    }
-    const { data, error } = await query;
-    if (error) throw error;
-    return data;
-  }
-  
-  // ---- matches ----
-  async insertMatches(matches: any[]) {
-    // Batch insert to keep rows ≤ 50
-    for (let i = 0; i < matches.length; i += 50) {
-      const slice = matches.slice(i, i + 50);
-      
-      // Convert to our match format
-      const matchesForDb = slice.map(this.convertMatchToDbFormat);
-      
-      const { error } = await supabase.from('matches').insert(matchesForDb);
-      if (error) throw error;
-    }
-  }
-  
-  async selectMatches(filter?: Record<string, any>) {
-    const query = supabase.from('matches').select();
-    if (filter) {
-      query.match(filter);
-    }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    // Convert back to brackets-manager format
-    return data ? data.map(this.convertMatchFromDbFormat) : [];
-  }
-  
-  async updateMatch(id: string, match: any) {
-    const matchForDb = this.convertMatchToDbFormat(match);
-    const { error } = await supabase
-      .from('matches')
-      .update(matchForDb)
-      .eq('id', id);
-    
-    if (error) throw error;
-  }
-  
-  async deleteMatches(filter?: Record<string, any>) {
-    const query = supabase.from('matches').delete();
-    if (filter) {
-      query.match(filter);
-    }
-    const { error } = await query;
-    if (error) throw error;
-  }
-  
-  // ---- stages ----
-  async insertStage(stage: any) {
-    const { error } = await supabase.from('brackets').insert({
-      id: stage.id,
-      title: stage.name,
-      format: stage.type === 'double_elimination' ? 'Double Elimination' : 'Single Elimination',
-      division_id: stage.divisionId || null
-    });
-    
-    if (error) throw error;
-  }
-  
-  async selectStage(filter?: Record<string, any>) {
-    const query = supabase.from('brackets').select();
-    if (filter) {
-      query.match(filter);
-    }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    // Convert our bracket to stage format
-    return data?.map(bracket => ({
-      id: bracket.id,
-      name: bracket.title,
-      type: bracket.format === 'Double Elimination' ? 'double_elimination' : 'single_elimination',
-      divisionId: bracket.division_id
-    })) || [];
-  }
-  
-  // ---- conversion utilities ----
-  private convertMatchToDbFormat(match: any) {
-    return {
-      id: match.id,
-      bracket_id: match.stage_id,
-      round_number: match.round,
-      position: match.position,
-      match_type: match.group.toLowerCase(),
-      team1_id: match.opponent1?.id || null,
-      team2_id: match.opponent2?.id || null,
-      winner_id: match.opponent1?.result === 'win' 
-        ? match.opponent1.id 
-        : (match.opponent2?.result === 'win' ? match.opponent2.id : null),
-      next_match_id: match.child_count > 0 ? match.child_match_id : null,
-      next_loser_match_id: match.child_count > 1 ? match.child_match_id_loser : null,
-      best_of: match.best_of || 3,
-      metadata: {
-        team1_seed: match.opponent1?.position || null,
-        team2_seed: match.opponent2?.position || null
-      }
-    };
-  }
-  
-  private convertMatchFromDbFormat(dbMatch: any) {
-    return {
-      id: dbMatch.id,
-      stage_id: dbMatch.bracket_id,
-      round: dbMatch.round_number,
-      position: dbMatch.position,
-      group: dbMatch.match_type.toUpperCase(),
-      status: dbMatch.iscompleted ? 'completed' : 'pending',
-      opponent1: dbMatch.team1_id ? {
-        id: dbMatch.team1_id,
-        position: dbMatch.metadata?.team1_seed || null,
-        result: dbMatch.team1_id === dbMatch.winner_id ? 'win' : 
-                (dbMatch.winner_id ? 'loss' : null)
-      } : null,
-      opponent2: dbMatch.team2_id ? {
-        id: dbMatch.team2_id,
-        position: dbMatch.metadata?.team2_seed || null,
-        result: dbMatch.team2_id === dbMatch.winner_id ? 'win' : 
-                (dbMatch.winner_id ? 'loss' : null)
-      } : null,
-      child_count: (dbMatch.next_match_id ? 1 : 0) + (dbMatch.next_loser_match_id ? 1 : 0),
-      child_match_id: dbMatch.next_match_id,
-      child_match_id_loser: dbMatch.next_loser_match_id,
-      best_of: dbMatch.best_of
-    };
-  }
-}
-
-/** Singleton BracketsManager backed by Supabase. */
-const storage = new SupabaseAdapter();
-export const bracketsManager = new BracketsManager(storage);
+import { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
 
 /** Create a double-elimination stage (play-ins auto-handled) */
 export async function createDoubleElimStage(
@@ -169,7 +21,7 @@ export async function createDoubleElimStage(
   }));
   
   // Stage definition
-  const stage: Stage = {
+  const stage = {
     id: bracketId,
     name,
     type: 'double_elimination',
@@ -188,10 +40,10 @@ export async function createDoubleElimStage(
   };
   
   // First register participants
-  await bracketsManager.participant.bulkInsert(participants);
+  await bracketManager.registerParticipants(participants);
   
   // Then create the stage with seeding
-  await bracketsManager.create.stage(stage);
+  await bracketManager.createStage(stage);
 }
 
 /** Create a single-elimination stage */
@@ -210,7 +62,7 @@ export async function createSingleElimStage(
   }));
   
   // Stage definition
-  const stage: Stage = {
+  const stage = {
     id: bracketId,
     name,
     type: 'single_elimination',
@@ -227,10 +79,10 @@ export async function createSingleElimStage(
   };
   
   // First register participants
-  await bracketsManager.participant.bulkInsert(participants);
+  await bracketManager.registerParticipants(participants);
   
   // Then create the stage with seeding
-  await bracketsManager.create.stage(stage);
+  await bracketManager.createStage(stage);
 }
 
 /** Update a match result */
@@ -241,7 +93,7 @@ export async function updateMatchResult(
   team2Score: number
 ): Promise<void> {
   // Get the match first
-  const matches = await bracketsManager.match.select({ id: matchId });
+  const matches = await bracketManager.getMatches({ id: matchId });
   if (!matches || matches.length === 0) {
     throw new Error(`Match with ID ${matchId} not found`);
   }
@@ -264,7 +116,7 @@ export async function updateMatchResult(
   };
   
   // Update the match
-  await bracketsManager.match.update(matchId, resultObject);
+  await bracketManager.updateMatchResult(matchId, resultObject);
 }
 
 /** Create a Tournament Bracket */
@@ -296,61 +148,6 @@ export async function createTournamentBracket(
   return bracketId;
 }
 
-/**
- * Map data from brackets-manager format to our app format
- */
-export function mapBracketsToAppFormat(bracketId: string, matches: any[]): any {
-  // Group matches by type and round
-  const winnerMatches: any[][] = [];
-  const loserMatches: any[][] = [];
-  const finalsMatches: any[] = [];
-  
-  matches.forEach(match => {
-    if (match.group === 'WINNER') {
-      if (!winnerMatches[match.round - 1]) {
-        winnerMatches[match.round - 1] = [];
-      }
-      winnerMatches[match.round - 1].push(convertToAppMatch(match, bracketId));
-    } 
-    else if (match.group === 'LOSER') {
-      if (!loserMatches[match.round - 1]) {
-        loserMatches[match.round - 1] = [];
-      }
-      loserMatches[match.round - 1].push(convertToAppMatch(match, bracketId));
-    }
-    else if (match.group === 'FINAL') {
-      finalsMatches.push(convertToAppMatch(match, bracketId));
-    }
-  });
-  
-  return {
-    winners: winnerMatches,
-    losers: loserMatches,
-    finals: finalsMatches
-  };
-}
-
-/**
- * Convert a brackets-manager match to our app format
- */
-function convertToAppMatch(match: any, bracketId: string): any {
-  return {
-    id: match.id,
-    round: match.round,
-    position: match.position,
-    matchType: match.group.toLowerCase(),
-    team1Id: match.opponent1?.id || null,
-    team2Id: match.opponent2?.id || null,
-    team1Seed: match.opponent1?.position || null,
-    team2Seed: match.opponent2?.position || null,
-    team1Score: match.opponent1?.score || null,
-    team2Score: match.opponent2?.score || null,
-    winnerId: match.opponent1?.result === 'win' 
-      ? match.opponent1.id 
-      : (match.opponent2?.result === 'win' ? match.opponent2.id : null),
-    nextWinMatchId: match.child_match_id || null,
-    nextLoseMatchId: match.child_match_id_loser || null,
-    bestOf: match.best_of || 3,
-    bracket_id: bracketId
-  };
-}
+// Export for re-use
+export { bracketManager };
+export { mapBracketsToAppFormat };

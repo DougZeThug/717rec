@@ -1,12 +1,19 @@
 
 // Export all public functions and types
 export * from './types';
-export * from './matchGroupers';
-export * from './bracketFormatters';
-// Export bracketFetchers but without re-exporting groupBracketMatchesByType 
-// which is already exported from matchGroupers
-export { fetchAllBrackets, fetchBracketById } from './bracketFetchers';
-export * from './BracketGenerator';
+export { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
+export { bracketManager } from './BracketsService';
 
-// Re-export transformers
+// Export bracket creation and update functions
+export {
+  createTournamentBracket,
+  createSingleElimStage,
+  createDoubleElimStage,
+  updateMatchResult
+} from './BracketsService';
+
+// Export bracketFetchers
+export { fetchAllBrackets, fetchBracketById } from './bracketFetchers';
+
+// Export transformers
 export * from './transformers';
