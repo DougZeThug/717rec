@@ -31,6 +31,20 @@ export class MatchScoreService {
         throw new Error("Cannot update match score: one or both teams are missing");
       }
       
+      // Validate game counts against best-of setting
+      const bestOf = match.best_of || 3;
+      const totalGameWins = team1GameWins + team2GameWins;
+      
+      if (totalGameWins > bestOf) {
+        throw new Error(`Total game wins (${totalGameWins}) exceeds the best-of ${bestOf} setting`);
+      }
+      
+      // Make sure scores match the winner
+      if ((team1Score > team2Score && team1GameWins <= team2GameWins) || 
+          (team2Score > team1Score && team2GameWins <= team1GameWins)) {
+        throw new Error("Match score doesn't align with game wins");
+      }
+      
       // Determine the winner
       const winnerId = team1Score > team2Score ? team1Id : team2Id;
       const loserId = winnerId === team1Id ? team2Id : team1Id;
@@ -80,6 +94,11 @@ export class MatchScoreService {
         team2GameWins,
         games: playoffGames
       });
+      
+      // Log the result for debugging purposes
+      console.log(`Match ${matchId} updated with result: Team ${winnerId} (${team1Id === winnerId ? 'team1' : 'team2'}) 
+        defeated Team ${loserId} (${team1Id === loserId ? 'team1' : 'team2'}) with scores 
+        ${team1Score}-${team2Score} (games: ${team1GameWins}-${team2GameWins})`);
     } catch (error) {
       console.error("Error updating match score:", error);
       throw error;
