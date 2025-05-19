@@ -24,10 +24,14 @@ export class StageAdapter {
    * Select stages from the database
    */
   async selectStages(filter?: Record<string, any>): Promise<any[]> {
-    const query = supabase.from('brackets').select();
+    let query = supabase.from('brackets').select();
+    
+    // Apply filters if provided
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
+        if (query) {
+          query = query.eq(key, value);
+        }
       });
     }
     

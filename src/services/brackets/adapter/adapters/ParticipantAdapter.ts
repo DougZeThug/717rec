@@ -19,12 +19,17 @@ export class ParticipantAdapter {
    * Select participants from the database
    */
   async selectParticipants(filter?: Record<string, any>): Promise<any[]> {
-    const query = supabase.from('teams').select();
+    let query = supabase.from('teams').select();
+    
+    // Apply filters if provided
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
+        if (query) {
+          query = query.eq(key, value);
+        }
       });
     }
+    
     const { data, error } = await query;
     if (error) throw error;
     return data || [];

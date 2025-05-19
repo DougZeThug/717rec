@@ -1,8 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
+import { bracketManager } from "./brackets/manager/BracketManager";
 import { 
-  bracketManager,
   createTournamentBracket, 
   updateMatchResult,
   mapBracketsToAppFormat 

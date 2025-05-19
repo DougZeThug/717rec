@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket } from "@/types";
-import { BRACKET_STATES } from "@/constants/brackets";
+import { BRACKET_STATES, BracketFormat } from "@/constants/brackets";
 import { bracketManager } from "./manager/BracketManager";
 import { mapBracketsToAppFormat } from "./utils/BracketConversionUtils";
 
@@ -21,7 +21,7 @@ export async function fetchAllBrackets(): Promise<PlayoffBracket[]> {
       id: bracket.id,
       name: bracket.title,
       division: bracket.division?.name || '',
-      format: bracket.format,
+      format: bracket.format as BracketFormat, // Cast to proper type
       matches: [], // Matches are loaded separately on demand
       state: bracket.state || BRACKET_STATES.PENDING
     }));
@@ -64,7 +64,7 @@ export async function fetchBracketById(bracketId: string): Promise<PlayoffBracke
       id: bracketData.id,
       name: bracketData.title,
       division: bracketData.division?.name || '',
-      format: bracketData.format,
+      format: bracketData.format as BracketFormat, // Cast to proper type
       matches: allMatches,
       state: BRACKET_STATES.PENDING
     };

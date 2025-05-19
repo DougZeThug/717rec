@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 
@@ -32,10 +33,14 @@ export class MatchAdapter {
    * Select matches from the database
    */
   async selectMatches(filter?: Record<string, any>): Promise<any[]> {
-    const query = supabase.from('matches').select();
+    let query = supabase.from('matches').select();
+    
+    // Apply filters if provided
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
+        if (query) {
+          query = query.eq(key, value);
+        }
       });
     }
     
@@ -64,12 +69,17 @@ export class MatchAdapter {
    * Delete matches from the database
    */
   async deleteMatches(filter?: Record<string, any>): Promise<boolean> {
-    const query = supabase.from('matches').delete();
+    let query = supabase.from('matches').delete();
+    
+    // Apply filters if provided
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
+        if (query) {
+          query = query.eq(key, value);
+        }
       });
     }
+    
     const { error } = await query;
     if (error) throw error;
     return true;

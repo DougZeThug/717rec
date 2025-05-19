@@ -21,18 +21,27 @@ export class BracketsAdapter implements StorageAdapter {
   
   /**
    * Insert data into the specified table
+   * Returns boolean instead of number to match brackets-manager interface
    */
-  async insert(table: string, data: any): Promise<number> {
+  async insert(table: string, data: any): Promise<boolean> {
+    let insertedCount = 0;
+    
     switch (table) {
       case 'participants':
-        return this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
+        insertedCount = await this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
+        break;
       case 'matches':
-        return this.matchAdapter.insertMatches(Array.isArray(data) ? data : [data]);
+        insertedCount = await this.matchAdapter.insertMatches(Array.isArray(data) ? data : [data]);
+        break;
       case 'stages':
-        return this.stageAdapter.insertStage(data);
+        insertedCount = await this.stageAdapter.insertStage(data);
+        break;
       default:
         throw new Error(`Table not supported: ${table}`);
     }
+    
+    // Return true if any records were inserted
+    return insertedCount > 0;
   }
   
   /**

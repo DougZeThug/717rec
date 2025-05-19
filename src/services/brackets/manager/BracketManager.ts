@@ -4,13 +4,15 @@ import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFormat } from '@/constants/brackets';
 
 // Types from brackets-manager
+export type SeedOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_shift' | 'random' | 'inner_outer';
+
 export interface StageSettings {
   grandFinal?: 'simple' | 'double'; 
   matchesChildCount?: number;
   size?: number;
   consolationFinal?: boolean;
   skipFirstRound?: boolean;
-  seedOrdering?: string[];
+  seedOrdering?: SeedOrdering[];
   match?: { 
     games: number 
   };
@@ -50,14 +52,22 @@ class BracketManager {
    * Create a stage (bracket)
    */
   async createStage(stage: BracketStage): Promise<void> {
-    await this.manager.create.stage(stage);
+    // Ensure seedOrdering is properly typed
+    const mappedStage = {
+      ...stage,
+      settings: {
+        ...stage.settings,
+        seedOrdering: stage.settings.seedOrdering as any
+      }
+    };
+    await this.manager.create.stage(mappedStage);
   }
   
   /**
    * Register multiple participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    await this.manager.create.participant(participants);
+    await this.manager.create.participants(participants);
   }
   
   /**
@@ -71,14 +81,14 @@ class BracketManager {
    * Get matches by filter
    */
   async getMatches(filter: Record<string, any>): Promise<any[]> {
-    return await this.manager.get.match(filter);
+    return await this.manager.get.matches(filter);
   }
   
   /**
    * Delete matches by filter
    */
   async deleteMatches(filter: Record<string, any>): Promise<void> {
-    await this.manager.delete.match(filter);
+    await this.manager.delete.matches(filter);
   }
 }
 

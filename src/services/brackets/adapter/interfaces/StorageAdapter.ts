@@ -4,7 +4,7 @@
  */
 export interface StorageAdapter {
   // CRUD operations
-  insert(table: string, data: any): Promise<number>;
+  insert(table: string, data: any): Promise<boolean>;
   select(table: string, filter?: Record<string, any> | string): Promise<any[]>;
   update(table: string, id: string, data: any): Promise<boolean>;
   delete(table: string, filter?: Record<string, any>): Promise<boolean>;
