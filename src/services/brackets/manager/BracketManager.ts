@@ -2,18 +2,11 @@
 import { BracketsManager } from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFormat } from '@/constants/brackets';
+// Import the SeedOrdering type directly from brackets-manager to ensure compatibility
+import { SeedOrdering as BracketsSeedOrdering } from 'brackets-model';
 
-// Define the allowed seed ordering values as a string literal union
-export type SeedOrdering = 
-  | 'natural'
-  | 'reverse'
-  | 'half_shift'
-  | 'reverse_half_shift'
-  | 'pair_flip'
-  | 'inner_outer'
-  | 'groups.effort_balanced'
-  | 'groups.snake'
-  | 'groups.distance_based';
+// Define our own type alias that matches the brackets-manager type
+export type SeedOrdering = BracketsSeedOrdering;
 
 export interface StageSettings {
   grandFinal?: 'simple' | 'double'; 
@@ -63,8 +56,8 @@ class BracketManager {
    */
   async createStage(stage: BracketStage): Promise<void> {
     // Ensure seedOrdering is properly typed for brackets-manager
-    // Use as assertion to handle the seedOrdering type
-    const seedOrderings = (stage.settings.seedOrdering || []) as SeedOrdering[];
+    // Use proper typing to match brackets-manager expectations
+    const seedOrderings = (stage.settings.seedOrdering || []) as BracketsSeedOrdering[];
     
     await this.manager.create.stage({
       id: stage.id,
@@ -84,7 +77,8 @@ class BracketManager {
    */
   async registerParticipants(participants: any[]): Promise<void> {
     // Fix: Use the correct method for registering participants
-    await this.manager.create.participants(participants);
+    // In brackets-manager, it's create.participant not create.participants
+    await this.manager.create.participant(participants);
   }
   
   /**
@@ -98,19 +92,20 @@ class BracketManager {
    * Get matches by filter
    */
   async getMatches(filter: Record<string, any>): Promise<any[]> {
-    // Use the adapter directly with proper typing
+    // Use the adapter directly with proper typing for the table name
+    // Cast the table name to satisfy type requirements
     const adapter = this.manager.storage;
-    // Cast to ensure type compatibility
-    return await adapter.select('matches', filter) as unknown as any[];
+    return await adapter.select('match', filter) as unknown as any[];
   }
   
   /**
    * Delete matches by filter
    */
   async deleteMatches(filter: Record<string, any>): Promise<void> {
-    // Use the adapter directly to avoid type issues
+    // Use the adapter directly with proper typing for the table name
     const adapter = this.manager.storage;
-    await adapter.delete('matches', filter);
+    // Cast the table name to satisfy type requirements
+    await adapter.delete('match', filter);
   }
 }
 

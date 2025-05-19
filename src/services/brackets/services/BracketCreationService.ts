@@ -1,8 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
-import { BracketFormat } from "@/constants/brackets";
-import { bracketManager } from "../manager/BracketManager";
+import { BracketFormat, BRACKET_FORMATS } from "@/constants/brackets";
+import { bracketManager, SeedOrdering } from "../manager/BracketManager";
 
 /**
  * Service for bracket creation operations
@@ -12,8 +12,8 @@ export class BracketCreationService {
    * Create a new bracket
    */
   static async createBracket(
-    name: string,
     format: BracketFormat,
+    name: string,
     divisionId: string,
     teamIds: string[]
   ): Promise<string> {
@@ -28,7 +28,7 @@ export class BracketCreationService {
       
       // Create the tournament bracket using brackets-manager
       // Only support Single and Double Elimination formats (no Round Robin)
-      if (format !== 'Single Elimination' && format !== 'Double Elimination') {
+      if (format !== BRACKET_FORMATS.SINGLE && format !== BRACKET_FORMATS.DOUBLE) {
         throw new Error(`Unsupported bracket format: ${format}`);
       }
       
@@ -71,9 +71,13 @@ export class BracketCreationService {
       const seeding = teams.map(team => team.id);
       
       // Configure the stage
-      const stageType = bracketFormat === 'Single Elimination' 
+      const stageType = bracketFormat === BRACKET_FORMATS.SINGLE
         ? 'single_elimination' as const
         : 'double_elimination' as const;
+      
+      // Create the validated seed ordering array with proper typing
+      // Use the SeedOrdering type from BracketManager to ensure compatibility
+      const seedOrdering: SeedOrdering[] = ['natural'];
       
       const stage = {
         id: bracketId,
@@ -84,7 +88,7 @@ export class BracketCreationService {
           size: teams.length,
           matchesChildCount: stageType === 'single_elimination' ? 1 : 2,
           consolationFinal: false,
-          seedOrdering: ['natural'],
+          seedOrdering: seedOrdering,
           match: { games: 3 }
         },
         tournamentId: bracketId // Added to satisfy InputStage requirement

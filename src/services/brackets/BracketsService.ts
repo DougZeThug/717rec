@@ -64,7 +64,7 @@ export async function createTournamentBracket(
   divisionId: string,
   teams: Team[]
 ): Promise<string> {
-  // Fix: Ensure bracketFormat is a valid BracketFormat
+  // Fix: Ensure bracketFormat is a valid BracketFormat by passing it directly
   const format: BracketFormat = Object.values(BRACKET_FORMATS).includes(bracketFormat as any) 
     ? bracketFormat 
     : BRACKET_FORMATS.SINGLE;
