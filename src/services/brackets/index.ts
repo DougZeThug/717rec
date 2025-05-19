@@ -2,7 +2,7 @@
 // Export all public functions and types
 export * from './types';
 export { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
-export { bracketManager } from './BracketsService';
+export { bracketManager } from './manager/BracketManager';
 
 // Export bracket creation and update functions
 export {

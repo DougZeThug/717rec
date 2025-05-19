@@ -34,8 +34,7 @@ class BracketManager {
   
   constructor() {
     const adapter = new BracketsAdapter();
-    // Cast to any to bypass type checking for now
-    this.manager = new BracketsManager(adapter as any);
+    this.manager = new BracketsManager(adapter);
   }
   
   /**
@@ -56,14 +55,14 @@ class BracketManager {
       stage.tournamentId = stage.id;
     }
     
-    await this.manager.create.stage(stage as any);
+    await this.manager.create.stage(stage);
   }
   
   /**
    * Register multiple participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    await this.manager.create.participants(participants);
+    await this.manager.create.participant(participants);
   }
   
   /**
@@ -77,14 +76,14 @@ class BracketManager {
    * Get matches by filter
    */
   async getMatches(filter: Record<string, any>): Promise<any[]> {
-    return await this.manager.select.matches(filter);
+    return await this.manager.get.matches(filter);
   }
   
   /**
    * Delete matches by filter
    */
   async deleteMatches(filter: Record<string, any>): Promise<void> {
-    await this.manager.delete.matches(filter);
+    await this.manager.delete.match(filter);
   }
 }
 

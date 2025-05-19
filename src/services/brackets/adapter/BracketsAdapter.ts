@@ -2,21 +2,10 @@ import { Storage } from 'brackets-manager';
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Custom types to resolve type issues with brackets-manager
- */
-type Table = 'participants' | 'matches' | 'stages';
-type Id = string | number;
-type DataTypes = {
-  participants: any;
-  matches: any;
-  stages: any;
-};
-
-/**
  * Adapter to connect Supabase with the brackets-manager library
  * Implements the Storage interface required by brackets-manager
  */
-export class BracketsAdapter implements Partial<Storage> {
+export class BracketsAdapter {
   // ---- participants ----
   async insertParticipants(participants: any[]): Promise<number> {
     // Map participants to our team format if needed
@@ -128,23 +117,21 @@ export class BracketsAdapter implements Partial<Storage> {
     })) || [];
   }
   
-  // Required by the Storage interface but with adjusted return types
-  async insert<T extends Table>(table: T, data: any): Promise<number> {
+  // Simplified interface methods to avoid excessive type instantiation
+  async insert(table: 'participants' | 'matches' | 'stages', data: any): Promise<number> {
     if (table === 'participants') {
-      return this.insertParticipants([data]);
+      return this.insertParticipants(Array.isArray(data) ? data : [data]);
     } else if (table === 'matches') {
-      return this.insertMatches([data]);
+      return this.insertMatches(Array.isArray(data) ? data : [data]);
     } else if (table === 'stages') {
       return this.insertStage(data);
     }
     return 0;
   }
   
-  async select<T extends Table>(table: T, filter?: Record<string, any> | Id): Promise<any[]> {
+  async select(table: 'participants' | 'matches' | 'stages', filter?: Record<string, any> | string): Promise<any[]> {
     // Handle the case where filter is an ID
-    const filterObj = typeof filter === 'string' || typeof filter === 'number' 
-      ? { id: filter } 
-      : filter;
+    const filterObj = typeof filter === 'string' ? { id: filter } : filter;
       
     if (table === 'participants') {
       return this.selectParticipants(filterObj);
@@ -156,15 +143,15 @@ export class BracketsAdapter implements Partial<Storage> {
     return [];
   }
   
-  async update<T extends Table>(table: T, id: Id, data: any): Promise<boolean> {
+  async update(table: 'participants' | 'matches' | 'stages', id: string, data: any): Promise<boolean> {
     if (table === 'matches') {
-      return this.updateMatch(id.toString(), data);
+      return this.updateMatch(id, data);
     } else {
       throw new Error(`Unsupported table update: ${table}`);
     }
   }
   
-  async delete<T extends Table>(table: T, filter?: Record<string, any>): Promise<boolean> {
+  async delete(table: 'participants' | 'matches' | 'stages', filter?: Record<string, any>): Promise<boolean> {
     if (table === 'matches') {
       return this.deleteMatches(filter);
     } else {
@@ -172,7 +159,7 @@ export class BracketsAdapter implements Partial<Storage> {
     }
   }
   
-  // These are required by the Storage interface but can be stubbed
+  // Simplified stub methods to satisfy the interface
   async selectFirst(): Promise<any> {
     throw new Error('Method not implemented');
   }
