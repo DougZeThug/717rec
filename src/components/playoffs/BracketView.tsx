@@ -1,6 +1,6 @@
 
 import React, { useMemo, useState } from "react";
-import type { PlayoffBracket, Team } from "@/types";
+import type { PlayoffBracket, Team, PlayoffMatch } from "@/types";
 import RoundColumn from "./RoundColumn";
 import { getBracketConnectorPaths, getVerticalSpacing, getNextMatch } from "./BracketUtils";
 import { cn } from "@/lib/utils";
@@ -75,8 +75,8 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
   // Calculate bracket connector paths
   const connectorPaths = useMemo(() => {
     if (!bracket?.matches || rounds.length === 0) return [];
-    return getBracketConnectorPaths(bracket.matches, rounds);
-  }, [bracket?.matches, rounds]);
+    return getBracketConnectorPaths(bracket.matches);
+  }, [bracket?.matches]);
   
   // Find the champion if the bracket is complete
   const champion = useMemo(() => {
@@ -85,6 +85,12 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
     // Find the team with the champion ID
     return teams.find(team => team.id === bracket.champion) || null;
   }, [bracket?.matches, bracket.champion, teams]);
+
+  // Function to get next match for a given match
+  const getNextMatchForRound = (match: PlayoffMatch) => {
+    if (!bracket?.matches) return null;
+    return getNextMatch(match, bracket.matches);
+  };
   
   if (!bracket || !bracket.matches) {
     return (
@@ -102,14 +108,17 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
           ? "bg-gradient-to-br from-white to-blue-50/10" 
           : "bg-gradient-to-br from-gray-900/80 to-gray-800/80"
       )}>
-        {rounds.map((round) => (
+        {rounds.map((round, index) => (
           <RoundColumn
             key={`round-${round}`}
             round={String(round)}
+            type="winners"
             matches={matchesByRound[round]}
             teams={teams}
             onEditMatch={onEditMatch}
             verticalSpacing={getVerticalSpacing(roundSpacing[round])}
+            roundIndex={index}
+            getNextMatch={getNextMatchForRound}
           />
         ))}
         
@@ -135,7 +144,6 @@ const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }
       {champion && showChampion && (
         <ChampionDisplay
           champion={champion}
-          isVisible={showChampion}
           onClose={() => setShowChampion(false)}
         />
       )}
