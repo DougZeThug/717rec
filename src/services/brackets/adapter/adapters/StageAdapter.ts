@@ -65,22 +65,11 @@ export class StageAdapter {
    */
   async selectStage(filter?: Record<string, any>): Promise<StageRecord[]> {
     try {
-      // Use a more explicit query type to avoid deep instantiation
-      let query = supabase.from('brackets').select('*');
+      // Create a base query without chaining methods that cause deep type instantiation
+      const baseQuery = supabase.from('brackets');
       
-      // Apply filters with explicit handling
-      if (filter) {
-        if (filter.tournament_id) {
-          query = query.eq('id', filter.tournament_id);
-        } else {
-          // Handle each filter separately to avoid complex type issues
-          Object.entries(filter).forEach(([key, value]) => {
-            query = query.eq(key, value);
-          });
-        }
-      }
-      
-      const { data, error } = await query;
+      // First get the raw data with minimal filtering
+      let { data, error } = await this.applyFilters(baseQuery, filter);
       
       if (error) throw error;
       
@@ -99,6 +88,40 @@ export class StageAdapter {
       console.error("Error selecting stage:", error);
       throw error;
     }
+  }
+  
+  /**
+   * Apply filters to query without causing deep type instantiation
+   * Helper method to simplify the query building process
+   */
+  private async applyFilters(baseQuery: any, filter?: Record<string, any>) {
+    // Start with a simple select
+    let query = baseQuery.select('*');
+    
+    if (!filter) {
+      return await query;
+    }
+    
+    // Handle tournament_id filter specially
+    if (filter.tournament_id) {
+      return await query.eq('id', filter.tournament_id);
+    }
+    
+    // For other filters, build a simple match object
+    const simpleFilters: Record<string, any> = {};
+    
+    // Add each filter to the object instead of chaining
+    Object.entries(filter).forEach(([key, value]) => {
+      simpleFilters[key] = value;
+    });
+    
+    // Apply all filters at once if any exist
+    if (Object.keys(simpleFilters).length > 0) {
+      return await query.match(simpleFilters);
+    }
+    
+    // Return the base query if no filters applied
+    return await query;
   }
   
   /**
