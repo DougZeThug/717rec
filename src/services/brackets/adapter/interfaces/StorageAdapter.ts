@@ -10,6 +10,6 @@ export interface StorageAdapter {
   delete(table: string, filter?: Record<string, any>): Promise<boolean>;
   
   // Optional operations
-  selectFirst?(): Promise<any>;
-  selectLast?(): Promise<any>;
+  selectFirst?(table: string): Promise<any>;
+  selectLast?(table: string): Promise<any>;
 }

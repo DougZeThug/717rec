@@ -28,7 +28,8 @@ export class ParticipantAdapter {
         // Apply each filter separately to avoid deep type instantiation
         Object.entries(filter).forEach(([key, value]) => {
           if (key && value !== undefined) {
-            query = query.eq(key, value);
+            // Explicit type assertion to break the chain
+            (query as any) = query.eq(key, value);
           }
         });
       }

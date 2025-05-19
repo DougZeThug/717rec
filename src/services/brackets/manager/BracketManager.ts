@@ -38,15 +38,6 @@ export interface BracketStage {
   tournamentId: string; // Required for InputStage
 }
 
-// Define an input stage type interface
-interface InputStage {
-  id: string;
-  name: string;
-  type: string;
-  seeding: string[];
-  settings: StageSettings;
-}
-
 /**
  * Type-safe wrapper for BracketsManager 
  */
@@ -72,30 +63,25 @@ class BracketManager {
    * Create a stage (bracket)
    */
   async createStage(stage: BracketStage): Promise<void> {
-    // Create a new InputStage object that matches the library's expectations
-    const inputStage: InputStage = {
+    await this.manager.create.stage({
       id: stage.id,
       name: stage.name,
       type: stage.type,
+      tournamentId: stage.tournamentId,
       seeding: stage.seeding,
       settings: {
         ...stage.settings,
-        // Ensure seedOrdering is properly cast to the library's type
         seedOrdering: stage.settings.seedOrdering as SeedOrdering[]
       }
-    };
-    
-    await this.manager.create.stage(inputStage);
+    });
   }
   
   /**
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // Fix: Register each participant individually
-    for (const participant of participants) {
-      await this.manager.create.participant(participant);
-    }
+    // Fix: Register participants using the correct method name
+    await this.manager.create.participants(participants);
   }
   
   /**

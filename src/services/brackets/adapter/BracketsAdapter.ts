@@ -118,13 +118,20 @@ export class BracketsAdapter implements StorageAdapter {
     }
   }
   
-  // Stub methods required by brackets-manager library
-  async selectFirst(): Promise<any> {
-    throw new Error('Method not implemented');
+  /**
+   * Get the first record from a table
+   */
+  async selectFirst(table: string): Promise<any> {
+    const results = await this.select(table);
+    return results.length > 0 ? results[0] : null;
   }
   
-  async selectLast(): Promise<any> {
-    throw new Error('Method not implemented');
+  /**
+   * Get the last record from a table
+   */
+  async selectLast(table: string): Promise<any> {
+    const results = await this.select(table);
+    return results.length > 0 ? results[results.length - 1] : null;
   }
   
   // Convenience methods for direct access
