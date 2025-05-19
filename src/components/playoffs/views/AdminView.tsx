@@ -1,25 +1,27 @@
 
 import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PlayoffAdminSection from "@/components/playoffs/admin/PlayoffAdminSection";
-import PlayoffPageContent from "@/components/playoffs/PlayoffPageContent";
 import { PlayoffBracket, Team } from "@/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BracketList from "../BracketList";
+import BracketView from "../BracketView";
+import TeamDivisionTable from "../TeamDivisionTable";
+import MigrationTab from "../admin/MigrationTab";
 
 interface AdminViewProps {
   activeTab: string;
-  setActiveTab: (value: string) => void;
+  setActiveTab: (tab: string) => void;
   availableDivisions: string[];
-  bracketsByDivision: Record<string, Partial<PlayoffBracket>[]>;
+  bracketsByDivision: Record<string, PlayoffBracket[]>;
   selectedBracketId: string | null;
-  bracket: PlayoffBracket;
+  bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
-  allBracketsData: Partial<PlayoffBracket>[];
+  allBracketsData: PlayoffBracket[];
   isLoading: boolean;
   onCreateBracket: () => void;
   onViewBracket: (id: string) => void;
   onEditBracket: () => void;
-  onEditMatch: (matchId: string) => void;
+  onEditMatch: (matchId: string, quickEdit?: boolean) => void;
   onDeleteBracket?: (id: string, name: string) => void;
 }
 
@@ -41,36 +43,43 @@ const AdminView: React.FC<AdminViewProps> = ({
   onDeleteBracket
 }) => {
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="my-4">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
       <TabsList>
-        <TabsTrigger value="view">Bracket View</TabsTrigger>
-        <TabsTrigger value="admin">Admin</TabsTrigger>
+        <TabsTrigger value="brackets">Brackets</TabsTrigger>
+        <TabsTrigger value="teams">Teams</TabsTrigger>
+        <TabsTrigger value="migration">Migration</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="view" className="pt-2">
-        <PlayoffPageContent
-          availableDivisions={availableDivisions}
-          bracketsByDivision={bracketsByDivision}
-          selectedBracketId={selectedBracketId}
-          bracket={bracket}
+      <TabsContent value="brackets" className="space-y-6">
+        {!selectedBracketId || !bracket ? (
+          <BracketList 
+            divisions={availableDivisions}
+            bracketsByDivision={bracketsByDivision}
+            onCreateBracket={onCreateBracket}
+            onViewBracket={onViewBracket}
+            onEditBracket={onEditBracket}
+            onDeleteBracket={onDeleteBracket}
+            isLoading={isLoading}
+          />
+        ) : (
+          <BracketView 
+            bracket={bracket} 
+            teams={teams}
+            onEditMatch={onEditMatch}
+          />
+        )}
+      </TabsContent>
+      
+      <TabsContent value="teams">
+        <TeamDivisionTable 
+          divisions={availableDivisions} 
           teams={teams}
-          bracketLoading={bracketLoading}
-          allBracketsData={allBracketsData}
           isLoading={isLoading}
-          onCreateBracket={onCreateBracket}
-          onViewBracket={onViewBracket}
-          onEditBracket={onEditBracket}
-          onEditMatch={onEditMatch}
-          onDeleteBracket={onDeleteBracket}
         />
       </TabsContent>
       
-      <TabsContent value="admin" className="pt-2">
-        <PlayoffAdminSection
-          bracket={bracket}
-          teams={teams}
-          onEditMatch={onEditMatch}
-        />
+      <TabsContent value="migration">
+        <MigrationTab />
       </TabsContent>
     </Tabs>
   );
