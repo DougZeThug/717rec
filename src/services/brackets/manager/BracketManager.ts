@@ -73,20 +73,21 @@ class BracketManager {
     };
     
     // According to brackets-manager API, we need to pass the stage directly
-    // The InputStage type doesn't have an id property, so we need to cast it
-    await this.manager.create.stage({
+    // Cast to any to bypass TypeScript's type checking
+    await (this.manager.create as any).stage({
       ...inputStage,
       id: stage.id
-    } as any);
+    });
   }
   
   /**
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // After checking the brackets-manager API, the correct method is likely 'participant' (singular)
-    // Cast to any to avoid type errors
-    await this.manager.create.participant(participants as any);
+    // Use manager.storage directly to insert participants
+    // This bypasses the type issues with the create API
+    const adapter = this.manager.storage;
+    await adapter.insert('participant', participants);
   }
   
   /**
