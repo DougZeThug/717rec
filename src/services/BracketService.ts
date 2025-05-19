@@ -1,7 +1,12 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
-import { BracketGenerator } from "./brackets/BracketGenerator";
+import { 
+  bracketsManager, 
+  createTournamentBracket, 
+  updateMatchResult,
+  mapBracketsToAppFormat 
+} from "./brackets/BracketsService";
 import { BRACKET_FORMATS, BRACKET_STATES, BracketFormat } from "@/constants/brackets";
 
 /**
@@ -18,22 +23,6 @@ export class BracketService {
     teamIds: string[]
   ): Promise<string> {
     try {
-      // Create the bracket in the database
-      const { data: bracketData, error: bracketError } = await supabase
-        .from('brackets')
-        .insert({
-          title: name,
-          format,
-          division_id: divisionId,
-          state: BRACKET_STATES.PENDING
-        })
-        .select('id')
-        .single();
-      
-      if (bracketError) throw bracketError;
-      
-      const bracketId = bracketData.id;
-      
       // Get the teams to include in the bracket
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
@@ -42,36 +31,13 @@ export class BracketService {
       
       if (teamsError) throw teamsError;
       
-      // Map the teams to the expected format
-      const bracketTeams: Team[] = teams.map(team => ({
-        id: team.id,
-        name: team.name,
-        seed: team.seed,
-        imageUrl: team.image_url,
-        logoUrl: team.logo_url
-      }));
-      
-      // Generate bracket matches
-      let matches: PlayoffMatch[];
-      
-      if (format === BRACKET_FORMATS.SINGLE) {
-        // Add bestOf property to ensure type compatibility
-        const singleEliminationMatches = BracketGenerator.generateSingleEliminationBracket(bracketId, bracketTeams);
-        matches = singleEliminationMatches.map(match => ({
-          ...match,
-          bestOf: 3 // Default to best of 3
-        })) as PlayoffMatch[];
-      } else {
-        // Add bestOf property to ensure type compatibility
-        const doubleEliminationMatches = BracketGenerator.generateDoubleEliminationBracket(bracketId, bracketTeams);
-        matches = doubleEliminationMatches.map(match => ({
-          ...match,
-          bestOf: 3 // Default to best of 3
-        })) as PlayoffMatch[];
-      }
-      
-      // Save the matches to the database
-      await BracketGenerator.savePlayoffMatches(matches);
+      // Create the tournament bracket using brackets-manager
+      const bracketId = await createTournamentBracket(
+        format, 
+        name, 
+        divisionId, 
+        teams
+      );
       
       return bracketId;
     } catch (error) {
@@ -87,7 +53,7 @@ export class BracketService {
     try {
       // Delete the matches first (due to foreign key constraint)
       const { error: matchesError } = await supabase
-        .from('matches') // Changed from 'playoff_matches' to 'matches'
+        .from('matches')
         .delete()
         .eq('bracket_id', bracketId);
       
@@ -95,7 +61,7 @@ export class BracketService {
       
       // Then delete the bracket
       const { error: bracketError } = await supabase
-        .from('brackets') // Changed from 'playoff_brackets' to 'brackets'
+        .from('brackets')
         .delete()
         .eq('id', bracketId);
       
@@ -119,9 +85,9 @@ export class BracketService {
   ): Promise<void> {
     try {
       const { error } = await supabase
-        .from('brackets') // Changed from 'playoff_brackets' to 'brackets'
+        .from('brackets')
         .update({
-          title: updates.name, // Changed to 'title' from 'name' to match the column name
+          title: updates.name,
           format: updates.format,
           division_id: updates.divisionId
         })
@@ -147,26 +113,86 @@ export class BracketService {
   ): Promise<void> {
     try {
       // Determine the winner based on game wins
-      const winnerId = team1GameWins > team2GameWins ? "team1" : "team2";
+      const winnerId = team1GameWins > team2GameWins 
+        ? await this.getTeamIdByPosition(matchId, 1)
+        : await this.getTeamIdByPosition(matchId, 2);
       
-      // For now, just update the match score
-      // In a real implementation, we would create game records and handle advancement logic
-      const { error } = await supabase
-        .from('matches') // Changed from 'playoff_matches' to 'matches'
-        .update({
-          team1_score: team1Score,
-          team2_score: team2Score,
-          team1_game_wins: team1GameWins,
-          team2_game_wins: team2GameWins,
-          winner_id: winnerId
-        })
-        .eq('id', matchId);
+      if (!winnerId) {
+        throw new Error("Could not determine winner - team IDs not found");
+      }
       
-      if (error) throw error;
+      // Update match using brackets-manager
+      await updateMatchResult(matchId, winnerId, team1Score, team2Score);
       
-      // TODO: Handle match advancement logic here
+      // Additionally store game-by-game results if needed
+      if (games && games.length > 0) {
+        for (let i = 0; i < games.length; i++) {
+          await supabase.from('games').insert({
+            match_id: matchId,
+            game_number: i + 1,
+            team1_score: games[i].team1Score,
+            team2_score: games[i].team2Score
+          });
+        }
+      }
     } catch (error) {
       console.error("Error updating match score:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Helper method to get team ID by position in a match
+   */
+  private static async getTeamIdByPosition(matchId: string, position: 1 | 2): Promise<string | null> {
+    const { data } = await supabase
+      .from('matches')
+      .select(position === 1 ? 'team1_id' : 'team2_id')
+      .eq('id', matchId)
+      .single();
+    
+    return data ? (position === 1 ? data.team1_id : data.team2_id) : null;
+  }
+  
+  /**
+   * Get bracket details including matches
+   */
+  static async getBracketDetails(bracketId: string): Promise<PlayoffBracket | null> {
+    try {
+      // Get bracket info
+      const { data: bracketData, error: bracketError } = await supabase
+        .from('brackets')
+        .select('id, title, format, division_id, division:divisions(name)')
+        .eq('id', bracketId)
+        .single();
+      
+      if (bracketError) throw bracketError;
+      
+      if (!bracketData) return null;
+      
+      // Get matches using brackets-manager
+      const matches = await bracketsManager.match.select({ stage_id: bracketId });
+      
+      // Map to our format
+      const organizedMatches = mapBracketsToAppFormat(bracketId, matches);
+      
+      // Flatten for the PlayoffBracket interface
+      const allMatches = [
+        ...(organizedMatches.winners.flat() || []),
+        ...(organizedMatches.losers.flat() || []), 
+        ...(organizedMatches.finals || [])
+      ];
+      
+      return {
+        id: bracketData.id,
+        name: bracketData.title,
+        division: bracketData.division?.name || '',
+        format: bracketData.format as BracketFormat,
+        matches: allMatches as PlayoffMatch[],
+        state: BRACKET_STATES.PENDING
+      };
+    } catch (error) {
+      console.error("Error fetching bracket details:", error);
       throw error;
     }
   }
