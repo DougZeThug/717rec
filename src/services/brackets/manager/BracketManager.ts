@@ -23,7 +23,7 @@ export interface BracketStage {
   seeding: string[];
   settings: StageSettings;
   divisionId?: string;
-  tournamentId?: string; // Added to satisfy InputStage requirement
+  tournamentId: string; // Required for InputStage
 }
 
 /**
@@ -50,11 +50,6 @@ class BracketManager {
    * Create a stage (bracket)
    */
   async createStage(stage: BracketStage): Promise<void> {
-    // Ensure tournamentId is set
-    if (!stage.tournamentId) {
-      stage.tournamentId = stage.id;
-    }
-    
     await this.manager.create.stage(stage);
   }
   
@@ -69,14 +64,14 @@ class BracketManager {
    * Update a match result
    */
   async updateMatchResult(matchId: string, result: any): Promise<void> {
-    await this.manager.update.match(matchId, result);
+    await this.manager.update.match({id: matchId, ...result});
   }
   
   /**
    * Get matches by filter
    */
   async getMatches(filter: Record<string, any>): Promise<any[]> {
-    return await this.manager.get.matches(filter);
+    return await this.manager.get.match(filter);
   }
   
   /**

@@ -1,165 +1,84 @@
-import { Storage } from 'brackets-manager';
-import { supabase } from "@/integrations/supabase/client";
+
+import { ParticipantAdapter } from './adapters/ParticipantAdapter';
+import { MatchAdapter } from './adapters/MatchAdapter';
+import { StageAdapter } from './adapters/StageAdapter';
+import { StorageAdapter } from './interfaces/StorageAdapter';
 
 /**
  * Adapter to connect Supabase with the brackets-manager library
- * Implements the Storage interface required by brackets-manager
+ * Implements the interface required by brackets-manager
  */
-export class BracketsAdapter {
-  // ---- participants ----
-  async insertParticipants(participants: any[]): Promise<number> {
-    // Map participants to our team format if needed
-    const { error } = await supabase.from('teams').insert(participants);
-    if (error) throw error;
-    return participants.length;
+export class BracketsAdapter implements StorageAdapter {
+  private participantAdapter: ParticipantAdapter;
+  private matchAdapter: MatchAdapter;
+  private stageAdapter: StageAdapter;
+  
+  constructor() {
+    this.participantAdapter = new ParticipantAdapter();
+    this.matchAdapter = new MatchAdapter();
+    this.stageAdapter = new StageAdapter();
   }
   
-  async selectParticipants(filter?: Record<string, any>): Promise<any[]> {
-    const query = supabase.from('teams').select();
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
-      });
+  /**
+   * Insert data into the specified table
+   */
+  async insert(table: string, data: any): Promise<number> {
+    switch (table) {
+      case 'participants':
+        return this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
+      case 'matches':
+        return this.matchAdapter.insertMatches(Array.isArray(data) ? data : [data]);
+      case 'stages':
+        return this.stageAdapter.insertStage(data);
+      default:
+        throw new Error(`Table not supported: ${table}`);
     }
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
   }
   
-  // ---- matches ----
-  async insertMatches(matches: any[]): Promise<number> {
-    let insertedCount = 0;
-    
-    // Batch insert to keep rows ≤ 50
-    for (let i = 0; i < matches.length; i += 50) {
-      const slice = matches.slice(i, i + 50);
-      
-      // Convert to our match format
-      const matchesForDb = slice.map(this.convertMatchToDbFormat);
-      
-      const { error } = await supabase.from('matches').insert(matchesForDb);
-      if (error) throw error;
-      insertedCount += slice.length;
-    }
-    
-    return insertedCount;
-  }
-  
-  async selectMatches(filter?: Record<string, any>): Promise<any[]> {
-    const query = supabase.from('matches').select();
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
-      });
-    }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    // Convert back to brackets-manager format
-    return data ? data.map(this.convertMatchFromDbFormat) : [];
-  }
-  
-  async updateMatch(id: string, match: any): Promise<boolean> {
-    const matchForDb = this.convertMatchToDbFormat(match);
-    const { error } = await supabase
-      .from('matches')
-      .update(matchForDb)
-      .eq('id', id);
-    
-    if (error) throw error;
-    return true;
-  }
-  
-  async deleteMatches(filter?: Record<string, any>): Promise<boolean> {
-    const query = supabase.from('matches').delete();
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
-      });
-    }
-    const { error } = await query;
-    if (error) throw error;
-    return true;
-  }
-  
-  // ---- stages ----
-  async insertStage(stage: any): Promise<number> {
-    const { error } = await supabase.from('brackets').insert({
-      id: stage.id,
-      title: stage.name,
-      format: stage.type === 'double_elimination' ? 'Double Elimination' : 'Single Elimination',
-      division_id: stage.divisionId || null
-    });
-    
-    if (error) throw error;
-    return 1;
-  }
-  
-  async selectStages(filter?: Record<string, any>): Promise<any[]> {
-    const query = supabase.from('brackets').select();
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        query.eq(key, value);
-      });
-    }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    // Convert our bracket to stage format
-    return data?.map(bracket => ({
-      id: bracket.id,
-      name: bracket.title,
-      type: bracket.format === 'Double Elimination' ? 'double_elimination' : 'single_elimination',
-      divisionId: bracket.division_id,
-      tournamentId: bracket.id // Add this to satisfy InputStage requirement
-    })) || [];
-  }
-  
-  // Simplified interface methods to avoid excessive type instantiation
-  async insert(table: 'participants' | 'matches' | 'stages', data: any): Promise<number> {
-    if (table === 'participants') {
-      return this.insertParticipants(Array.isArray(data) ? data : [data]);
-    } else if (table === 'matches') {
-      return this.insertMatches(Array.isArray(data) ? data : [data]);
-    } else if (table === 'stages') {
-      return this.insertStage(data);
-    }
-    return 0;
-  }
-  
-  async select(table: 'participants' | 'matches' | 'stages', filter?: Record<string, any> | string): Promise<any[]> {
+  /**
+   * Select data from the specified table
+   */
+  async select(table: string, filter?: Record<string, any> | string): Promise<any[]> {
     // Handle the case where filter is an ID
     const filterObj = typeof filter === 'string' ? { id: filter } : filter;
       
-    if (table === 'participants') {
-      return this.selectParticipants(filterObj);
-    } else if (table === 'matches') {
-      return this.selectMatches(filterObj);
-    } else if (table === 'stages') {
-      return this.selectStages(filterObj);
-    }
-    return [];
-  }
-  
-  async update(table: 'participants' | 'matches' | 'stages', id: string, data: any): Promise<boolean> {
-    if (table === 'matches') {
-      return this.updateMatch(id, data);
-    } else {
-      throw new Error(`Unsupported table update: ${table}`);
+    switch (table) {
+      case 'participants':
+        return this.participantAdapter.selectParticipants(filterObj);
+      case 'matches':
+        return this.matchAdapter.selectMatches(filterObj);
+      case 'stages':
+        return this.stageAdapter.selectStages(filterObj);
+      default:
+        throw new Error(`Table not supported: ${table}`);
     }
   }
   
-  async delete(table: 'participants' | 'matches' | 'stages', filter?: Record<string, any>): Promise<boolean> {
-    if (table === 'matches') {
-      return this.deleteMatches(filter);
-    } else {
-      throw new Error(`Unsupported table delete: ${table}`);
+  /**
+   * Update data in the specified table
+   */
+  async update(table: string, id: string, data: any): Promise<boolean> {
+    switch (table) {
+      case 'matches':
+        return this.matchAdapter.updateMatch(id, data);
+      default:
+        throw new Error(`Unsupported table update: ${table}`);
     }
   }
   
-  // Simplified stub methods to satisfy the interface
+  /**
+   * Delete data from the specified table
+   */
+  async delete(table: string, filter?: Record<string, any>): Promise<boolean> {
+    switch (table) {
+      case 'matches':
+        return this.matchAdapter.deleteMatches(filter);
+      default:
+        throw new Error(`Unsupported table delete: ${table}`);
+    }
+  }
+  
+  // Stub methods required by brackets-manager library
   async selectFirst(): Promise<any> {
     throw new Error('Method not implemented');
   }
@@ -168,53 +87,36 @@ export class BracketsAdapter {
     throw new Error('Method not implemented');
   }
   
-  // ---- conversion utilities ----
-  private convertMatchToDbFormat(match: any) {
-    return {
-      id: match.id,
-      bracket_id: match.stage_id,
-      round_number: match.round,
-      position: match.position,
-      match_type: match.group?.toLowerCase() || 'winners',
-      team1_id: match.opponent1?.id || null,
-      team2_id: match.opponent2?.id || null,
-      winner_id: match.opponent1?.result === 'win' 
-        ? match.opponent1.id 
-        : (match.opponent2?.result === 'win' ? match.opponent2.id : null),
-      next_match_id: match.child_count > 0 ? match.child_match_id : null,
-      next_loser_match_id: match.child_count > 1 ? match.child_match_id_loser : null,
-      best_of: match.best_of || 3,
-      metadata: {
-        team1_seed: match.opponent1?.position || null,
-        team2_seed: match.opponent2?.position || null
-      }
-    };
+  // Convenience methods for direct access
+  insertParticipants(participants: any[]): Promise<number> {
+    return this.participantAdapter.insertParticipants(participants);
   }
   
-  private convertMatchFromDbFormat(dbMatch: any) {
-    return {
-      id: dbMatch.id,
-      stage_id: dbMatch.bracket_id,
-      round: dbMatch.round_number,
-      position: dbMatch.position,
-      group: dbMatch.match_type?.toUpperCase() || 'WINNER',
-      status: dbMatch.iscompleted ? 'completed' : 'pending',
-      opponent1: dbMatch.team1_id ? {
-        id: dbMatch.team1_id,
-        position: dbMatch.metadata?.team1_seed || null,
-        result: dbMatch.team1_id === dbMatch.winner_id ? 'win' : 
-                (dbMatch.winner_id ? 'loss' : null)
-      } : null,
-      opponent2: dbMatch.team2_id ? {
-        id: dbMatch.team2_id,
-        position: dbMatch.metadata?.team2_seed || null,
-        result: dbMatch.team2_id === dbMatch.winner_id ? 'win' : 
-                (dbMatch.winner_id ? 'loss' : null)
-      } : null,
-      child_count: (dbMatch.next_match_id ? 1 : 0) + (dbMatch.next_loser_match_id ? 1 : 0),
-      child_match_id: dbMatch.next_match_id,
-      child_match_id_loser: dbMatch.next_loser_match_id,
-      best_of: dbMatch.best_of
-    };
+  selectParticipants(filter?: Record<string, any>): Promise<any[]> {
+    return this.participantAdapter.selectParticipants(filter);
+  }
+  
+  insertMatches(matches: any[]): Promise<number> {
+    return this.matchAdapter.insertMatches(matches);
+  }
+  
+  selectMatches(filter?: Record<string, any>): Promise<any[]> {
+    return this.matchAdapter.selectMatches(filter);
+  }
+  
+  updateMatch(id: string, match: any): Promise<boolean> {
+    return this.matchAdapter.updateMatch(id, match);
+  }
+  
+  deleteMatches(filter?: Record<string, any>): Promise<boolean> {
+    return this.matchAdapter.deleteMatches(filter);
+  }
+  
+  insertStage(stage: any): Promise<number> {
+    return this.stageAdapter.insertStage(stage);
+  }
+  
+  selectStages(filter?: Record<string, any>): Promise<any[]> {
+    return this.stageAdapter.selectStages(filter);
   }
 }
