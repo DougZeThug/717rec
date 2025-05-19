@@ -4,7 +4,7 @@ import { BracketCreationService } from './services/BracketCreationService';
 import { MatchScoreService } from './services/MatchScoreService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
-import { BracketFormat } from '@/constants/brackets';
+import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
 
 /** 
  * Create a double-elimination stage (play-ins auto-handled) 
@@ -64,8 +64,11 @@ export async function createTournamentBracket(
   divisionId: string,
   teams: Team[]
 ): Promise<string> {
-  // Fix: Convert string format to BracketFormat when needed
-  const format = bracketFormat as BracketFormat;
+  // Fix: Ensure bracketFormat is a valid BracketFormat
+  const format: BracketFormat = Object.values(BRACKET_FORMATS).includes(bracketFormat as any) 
+    ? bracketFormat 
+    : BRACKET_FORMATS.SINGLE;
+    
   return BracketCreationService.createBracket(
     format,
     name, 

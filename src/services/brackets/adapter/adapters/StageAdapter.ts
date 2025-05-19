@@ -26,22 +26,28 @@ export class StageAdapter {
    */
   async selectStages(filter?: Record<string, any>): Promise<any[]> {
     try {
-      // Execute a simple select query
-      let query = supabase.from('brackets');
+      // Start with base query
+      const query = supabase.from('brackets');
       
-      // Apply filters separately to avoid deep chaining
+      // Apply filters if provided
+      let finalQuery = query;
       if (filter) {
-        for (const key of Object.keys(filter)) {
+        // Cast to any to avoid deep type instantiation
+        const queryBuilder = query as any;
+        
+        // Apply each filter safely
+        Object.keys(filter).forEach(key => {
           const value = filter[key];
           if (key && value !== undefined) {
-            // Use explicit type assertion to break the chain
-            query = query.eq(key, value) as any;
+            queryBuilder.eq(key, value);
           }
-        }
+        });
+        
+        finalQuery = queryBuilder;
       }
       
       // Execute query
-      const { data, error } = await query.select();
+      const { data, error } = await finalQuery.select();
       
       if (error) throw error;
       

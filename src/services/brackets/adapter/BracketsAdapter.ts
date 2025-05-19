@@ -23,19 +23,20 @@ export class BracketsAdapter implements StorageAdapter {
    * Insert data into the specified table
    * Return boolean for compatibility with brackets-manager
    */
-  async insert(table: string, data: any): Promise<boolean> {
+  async insert<T>(table: string, data: T | T[]): Promise<boolean> {
     try {
       let insertedCount = 0;
+      const dataArray = Array.isArray(data) ? data : [data];
       
       switch (table) {
         case 'participants':
-          insertedCount = await this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
+          insertedCount = await this.participantAdapter.insertParticipants(dataArray);
           break;
         case 'matches':
-          insertedCount = await this.matchAdapter.insertMatches(Array.isArray(data) ? data : [data]);
+          insertedCount = await this.matchAdapter.insertMatches(dataArray);
           break;
         case 'stages':
-          insertedCount = await this.stageAdapter.insertStage(data);
+          insertedCount = await this.stageAdapter.insertStage(dataArray[0]);
           break;
         default:
           throw new Error(`Table not supported: ${table}`);
@@ -51,18 +52,18 @@ export class BracketsAdapter implements StorageAdapter {
   /**
    * Select data from the specified table
    */
-  async select(table: string, filter?: Record<string, any> | string): Promise<any[]> {
+  async select<T>(table: string, filter?: Record<string, any> | string): Promise<T[]> {
     try {
       // Handle the case where filter is an ID
       const filterObj = typeof filter === 'string' ? { id: filter } : filter;
         
       switch (table) {
         case 'participants':
-          return this.participantAdapter.selectParticipants(filterObj);
+          return this.participantAdapter.selectParticipants(filterObj) as unknown as T[];
         case 'matches':
-          return this.matchAdapter.selectMatches(filterObj);
+          return this.matchAdapter.selectMatches(filterObj) as unknown as T[];
         case 'stages':
-          return this.stageAdapter.selectStages(filterObj);
+          return this.stageAdapter.selectStages(filterObj) as unknown as T[];
         default:
           throw new Error(`Table not supported: ${table}`);
       }
@@ -76,7 +77,7 @@ export class BracketsAdapter implements StorageAdapter {
    * Update data in the specified table
    * Return boolean for compatibility with brackets-manager
    */
-  async update(table: string, id: string, data: any): Promise<boolean> {
+  async update<T>(table: string, id: string, data: T): Promise<boolean> {
     try {
       let updatedCount = 0;
       
@@ -121,16 +122,16 @@ export class BracketsAdapter implements StorageAdapter {
   /**
    * Get the first record from a table
    */
-  async selectFirst(table: string): Promise<any> {
-    const results = await this.select(table);
+  async selectFirst<T>(table: string): Promise<T | null> {
+    const results = await this.select<T>(table);
     return results.length > 0 ? results[0] : null;
   }
   
   /**
    * Get the last record from a table
    */
-  async selectLast(table: string): Promise<any> {
-    const results = await this.select(table);
+  async selectLast<T>(table: string): Promise<T | null> {
+    const results = await this.select<T>(table);
     return results.length > 0 ? results[results.length - 1] : null;
   }
   

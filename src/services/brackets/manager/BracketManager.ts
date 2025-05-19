@@ -3,7 +3,7 @@ import { BracketsManager } from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFormat } from '@/constants/brackets';
 
-// Define SeedOrdering type locally since we can't find brackets-model
+// Define the allowed seed ordering values as a string literal union
 export type SeedOrdering = 
   | 'natural'
   | 'reverse'
@@ -13,8 +13,7 @@ export type SeedOrdering =
   | 'inner_outer'
   | 'groups.effort_balanced'
   | 'groups.snake'
-  | 'groups.distance_based'
-  | string;
+  | 'groups.distance_based';
 
 export interface StageSettings {
   grandFinal?: 'simple' | 'double'; 
@@ -64,7 +63,8 @@ class BracketManager {
    */
   async createStage(stage: BracketStage): Promise<void> {
     // Ensure seedOrdering is properly typed for brackets-manager
-    const seedOrderingArray = stage.settings.seedOrdering as SeedOrdering[];
+    // Use as assertion to handle the seedOrdering type
+    const seedOrderings = (stage.settings.seedOrdering || []) as SeedOrdering[];
     
     await this.manager.create.stage({
       id: stage.id,
@@ -74,7 +74,7 @@ class BracketManager {
       seeding: stage.seeding,
       settings: {
         ...stage.settings,
-        seedOrdering: seedOrderingArray
+        seedOrdering: seedOrderings
       }
     });
   }
@@ -83,8 +83,8 @@ class BracketManager {
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // Fix: Use the correct method name for registering participants
-    await this.manager.create.participant(participants);
+    // Fix: Use the correct method for registering participants
+    await this.manager.create.participants(participants);
   }
   
   /**
@@ -100,8 +100,8 @@ class BracketManager {
   async getMatches(filter: Record<string, any>): Promise<any[]> {
     // Use the adapter directly with proper typing
     const adapter = this.manager.storage;
-    // Use the adapter's select method with correct typing
-    return await adapter.select('matches', filter) as any[];
+    // Cast to ensure type compatibility
+    return await adapter.select('matches', filter) as unknown as any[];
   }
   
   /**

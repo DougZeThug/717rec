@@ -35,22 +35,28 @@ export class MatchAdapter {
    */
   async selectMatches(filter?: Record<string, any>): Promise<any[]> {
     try {
-      // Create a simple query
-      let query = supabase.from('matches');
+      // Create base query
+      const query = supabase.from('matches');
       
-      // Apply filters separately to avoid deep type instantiation
+      // Apply filters if provided
+      let finalQuery = query;
       if (filter) {
-        for (const key of Object.keys(filter)) {
+        // Cast to any to avoid deep type instantiation
+        const queryBuilder = query as any;
+        
+        // Apply each filter separately
+        Object.keys(filter).forEach(key => {
           const value = filter[key];
           if (key && value !== undefined) {
-            // Use explicit type assertion to avoid deep chain
-            query = query.eq(key, value) as any;
+            queryBuilder.eq(key, value);
           }
-        }
+        });
+        
+        finalQuery = queryBuilder;
       }
       
       // Execute the final query
-      const { data, error } = await query.select();
+      const { data, error } = await finalQuery.select();
       
       if (error) throw error;
       
@@ -88,20 +94,25 @@ export class MatchAdapter {
    */
   async deleteMatches(filter?: Record<string, any>): Promise<number> {
     try {
-      let query = supabase.from('matches').delete();
+      const query = supabase.from('matches').delete();
       
       // Apply filters separately
+      let finalQuery = query;
       if (filter) {
-        for (const key of Object.keys(filter)) {
+        // Cast to any to avoid deep type instantiation
+        const queryBuilder = query as any;
+        
+        Object.keys(filter).forEach(key => {
           const value = filter[key];
           if (key && value !== undefined) {
-            // Use explicit type assertion to avoid deep chain
-            query = query.eq(key, value) as any;
+            queryBuilder.eq(key, value);
           }
-        }
+        });
+        
+        finalQuery = queryBuilder;
       }
       
-      const { error, count } = await query;
+      const { error, count } = await finalQuery;
       
       if (error) throw error;
       return count || 0;

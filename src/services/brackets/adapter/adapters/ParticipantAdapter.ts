@@ -21,22 +21,28 @@ export class ParticipantAdapter {
    */
   async selectParticipants(filter?: Record<string, any>): Promise<any[]> {
     try {
-      // Use separate query builder to avoid deep instantiation
-      let query = supabase.from('teams');
+      // Create base query
+      const query = supabase.from('teams');
       
-      // Apply each filter individually to avoid deep instantiation
+      // Apply filters if provided
+      let finalQuery = query;
       if (filter) {
+        // Explicitly type as any to break the deep instantiation chain
+        const queryBuilder = query as any;
+        
+        // Apply each filter with proper typing
         Object.keys(filter).forEach((key) => {
           const value = filter[key];
           if (key && value !== undefined) {
-            // Use type assertion to break the chain
-            query = query.eq(key, value) as any;
+            queryBuilder.eq(key, value);
           }
         });
+        
+        finalQuery = queryBuilder;
       }
       
       // Execute the query
-      const { data, error } = await query.select();
+      const { data, error } = await finalQuery.select();
       
       if (error) throw error;
       return data || [];
