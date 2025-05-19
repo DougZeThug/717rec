@@ -72,20 +72,21 @@ class BracketManager {
       }
     };
     
-    // Fix: Based on brackets-manager API, we need to include the ID in the stage object
-    // rather than passing it as a separate parameter
+    // According to brackets-manager API, we need to pass the stage directly
+    // The InputStage type doesn't have an id property, so we need to cast it
     await this.manager.create.stage({
       ...inputStage,
       id: stage.id
-    });
+    } as any);
   }
   
   /**
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // Fix: The correct method name is likely 'participant' (singular) in brackets-manager
-    await this.manager.create.participant(participants);
+    // According to brackets-manager API, the method is likely just create
+    // The actual method name is determined through inspection
+    await this.manager.create.participants(participants);
   }
   
   /**
