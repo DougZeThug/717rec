@@ -1,9 +1,8 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { bracketManager } from "../manager/BracketManager";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 import { mapBracketsToAppFormat } from "../utils/BracketConversionUtils";
-import { BRACKET_FORMATS } from "@/constants/brackets";
+import { BRACKET_FORMATS, BracketState } from "@/constants/brackets";
 
 /**
  * Service for migrating brackets from old format to new format
@@ -29,7 +28,7 @@ export class BracketMigrationService {
         format: bracket.format as any, // Convert string to BracketFormat
         matches: [], // Matches will be fetched separately
         champion: bracket.wb_champion_id,
-        state: bracket.state,
+        state: bracket.state as BracketState, // Cast to BracketState
         created_at: bracket.created_at
       }));
     } catch (error) {
@@ -51,27 +50,31 @@ export class BracketMigrationService {
       if (error) throw error;
       
       // Convert to PlayoffMatch format
-      return matches.map(match => ({
-        id: match.id,
-        round: match.round_number,
-        position: match.position,
-        team1Id: match.team1_id,
-        team2Id: match.team2_id,
-        winnerId: match.winner_id,
-        loserId: match.loser_id,
-        team1Score: match.team1_score,
-        team2Score: match.team2_score,
-        team1GameWins: match.team1_game_wins,
-        team2GameWins: match.team2_game_wins,
-        matchType: match.match_type,
-        bestOf: match.best_of || 3,
-        team1Seed: match.metadata?.team1_seed || null,
-        team2Seed: match.metadata?.team2_seed || null,
-        nextWinMatchId: match.next_match_id,
-        nextLoseMatchId: match.next_loser_match_id,
-        bracket_id: match.bracket_id,
-        status: match.iscompleted ? 'completed' : 'pending'
-      }));
+      return matches.map(match => {
+        const metadata = match.metadata as Record<string, any> || {};
+        
+        return {
+          id: match.id,
+          round: match.round_number,
+          position: match.position,
+          team1Id: match.team1_id,
+          team2Id: match.team2_id,
+          winnerId: match.winner_id,
+          loserId: match.loser_id,
+          team1Score: match.team1_score,
+          team2Score: match.team2_score,
+          team1GameWins: match.team1_game_wins,
+          team2GameWins: match.team2_game_wins,
+          matchType: match.match_type,
+          bestOf: match.best_of || 3,
+          team1Seed: metadata.team1_seed || null,
+          team2Seed: metadata.team2_seed || null,
+          nextWinMatchId: match.next_match_id,
+          nextLoseMatchId: match.next_loser_match_id,
+          bracket_id: match.bracket_id,
+          status: match.iscompleted ? 'completed' : 'pending'
+        };
+      });
     } catch (error) {
       console.error('Error getting matches for bracket:', error);
       throw error;
@@ -172,7 +175,6 @@ export class BracketMigrationService {
       const { error: updateError } = await supabase
         .from('brackets')
         .update({ 
-          migrated: true, 
           migrated_at: new Date().toISOString() 
         })
         .eq('id', bracketId);
@@ -243,7 +245,6 @@ export class BracketMigrationService {
       const { error: updateError } = await supabase
         .from('brackets')
         .update({ 
-          migrated: false, 
           migrated_at: null 
         })
         .eq('id', bracketId);

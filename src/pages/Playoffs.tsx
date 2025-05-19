@@ -1,4 +1,3 @@
-
 import React from "react";
 import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import { usePlayoffData } from "@/hooks/usePlayoffData";
@@ -11,6 +10,7 @@ import AdminView from "@/components/playoffs/views/AdminView";
 import PlayoffView from "@/components/playoffs/views/PlayoffView";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
 import PlayoffDialogs from "@/components/playoffs/dialogs/PlayoffDialogs";
+import { PlayoffBracket } from "@/types";
 
 const Playoffs = () => {
   // Set up state using custom hooks

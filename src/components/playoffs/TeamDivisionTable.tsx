@@ -86,8 +86,8 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({
                   <TableRow key={team.id}>
                     <TableCell className="flex items-center gap-2">
                       <TeamLogo
-                        src={team.logoUrl || team.imageUrl}
-                        alt={team.name}
+                        imageUrl={team.logoUrl || team.imageUrl}
+                        teamName={team.name}
                         className="h-6 w-6"
                       />
                       <span className="font-medium">{team.name}</span>

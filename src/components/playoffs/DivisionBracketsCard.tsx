@@ -8,8 +8,10 @@ import { PlayoffBracket } from "@/types";
 interface DivisionBracketsCardProps {
   division: string;
   brackets: Array<Partial<PlayoffBracket>>;
-  onCreateBracket: () => void;
   onViewBracket: (bracketId: string) => void;
+  onCreateBracket?: () => void;
+  onEditBracket?: () => void;
+  onDeleteBracket?: (id: string, name: string) => void;
 }
 
 const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
@@ -17,6 +19,8 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   brackets,
   onCreateBracket,
   onViewBracket,
+  onEditBracket,
+  onDeleteBracket,
 }) => {
   return (
     <Card key={division}>
@@ -35,18 +39,30 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
       <CardContent>
         {brackets.length > 0 ? (
           brackets.map(bracket => (
-            <div key={bracket.id} className="flex items-center justify-between">
+            <div key={bracket.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
               <div className="flex flex-col">
-                <span>{bracket.name}</span>
+                <span className="font-medium">{bracket.name}</span>
                 <span className="text-xs text-gray-500">{bracket.format}</span>
               </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={() => onViewBracket(bracket.id!)}
-              >
-                View
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={() => onViewBracket(bracket.id!)}
+                >
+                  View
+                </Button>
+                {onDeleteBracket && (
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => onDeleteBracket(bracket.id!, bracket.name!)}
+                  >
+                    Delete
+                  </Button>
+                )}
+              </div>
             </div>
           ))
         ) : (
