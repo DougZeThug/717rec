@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { PlayoffDatabaseFacade } from '../database/PlayoffDatabaseFacade';
@@ -123,9 +122,9 @@ describe('PlayoffDatabaseAdapter', () => {
     // Assert
     expect(facade.getBracketMatches).toHaveBeenCalledWith(bracketId);
     expect(result).toHaveLength(1);
-    expect(result[0].matchType).toBe('winners');
-    expect(result[0].team1Id).toBe('team1');
-    expect(result[0].team2Id).toBe('team2');
+    expect(result[0].match_type).toBe('winners');
+    expect(result[0].team1_id).toBe('team1');
+    expect(result[0].team2_id).toBe('team2');
   });
 
   it('should call facade.savePlayoffGames when savePlayoffGames is called', async () => {
@@ -164,11 +163,11 @@ describe('PlayoffDatabaseAdapter', () => {
       }]
     };
     
-    // Act
-    await PlayoffDatabaseAdapter.recordMatchResult(matchResult);
+    // Act - Fix: Pass matchId as a separate argument
+    await PlayoffDatabaseAdapter.recordMatchResult('match1', matchResult);
     
     // Assert
-    expect(facade.recordMatchResult).toHaveBeenCalledWith(matchResult);
+    expect(facade.recordMatchResult).toHaveBeenCalledWith('match1', matchResult);
   });
 
   it('should call facade.markTournamentComplete when markTournamentComplete is called', async () => {
