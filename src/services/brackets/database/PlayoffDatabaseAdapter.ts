@@ -1,7 +1,7 @@
 
 import { PlayoffDatabaseFacade } from './PlayoffDatabaseFacade';
 import { PlayoffMatch, PlayoffGame } from '../types';
-import { DatabasePlayoffMatch, MatchResultDTO } from './types';
+import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from './types';
 
 /**
  * Adapter to convert between application model and database model
@@ -66,7 +66,20 @@ export class PlayoffDatabaseAdapter {
    * Record match result in the database
    */
   static async recordMatchResult(matchId: string, result: MatchResultDTO): Promise<void> {
-    await this.facade.recordMatchResult(matchId, result);
+    // Convert to DatabaseMatchResult format expected by the facade
+    const dbResult: DatabaseMatchResult = {
+      match_id: matchId,
+      winner_id: result.winnerId,
+      loser_id: result.loserId,
+      team1_score: result.team1Score,
+      team2_score: result.team2Score,
+      team1_game_wins: result.team1GameWins,
+      team2_game_wins: result.team2GameWins,
+      completed: true,
+      games: result.games
+    };
+    
+    await this.facade.recordMatchResult(dbResult);
   }
 
   /**
