@@ -57,7 +57,7 @@ class BracketManager {
       ...stage,
       settings: {
         ...stage.settings,
-        seedOrdering: stage.settings.seedOrdering as any
+        seedOrdering: stage.settings.seedOrdering as SeedOrdering[]
       }
     };
     await this.manager.create.stage(mappedStage);
@@ -67,7 +67,7 @@ class BracketManager {
    * Register multiple participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    await this.manager.create.participants(participants);
+    await this.manager.create.participant(participants);
   }
   
   /**
@@ -81,14 +81,14 @@ class BracketManager {
    * Get matches by filter
    */
   async getMatches(filter: Record<string, any>): Promise<any[]> {
-    return await this.manager.get.matches(filter);
+    return await this.manager.get.match(filter);
   }
   
   /**
    * Delete matches by filter
    */
   async deleteMatches(filter: Record<string, any>): Promise<void> {
-    await this.manager.delete.matches(filter);
+    await this.manager.delete.match(filter);
   }
 }
 

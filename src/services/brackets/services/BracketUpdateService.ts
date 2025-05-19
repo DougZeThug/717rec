@@ -1,0 +1,36 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { BracketFormat } from "@/constants/brackets";
+
+/**
+ * Service for bracket update operations
+ */
+export class BracketUpdateService {
+  /**
+   * Update a bracket's basic information
+   */
+  static async updateBracket(
+    bracketId: string,
+    updates: {
+      name?: string;
+      format?: BracketFormat;
+      divisionId?: string;
+    }
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('brackets')
+        .update({
+          title: updates.name,
+          format: updates.format,
+          division_id: updates.divisionId
+        })
+        .eq('id', bracketId);
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error updating bracket:", error);
+      throw error;
+    }
+  }
+}

@@ -10,6 +10,7 @@ export class MatchAdapter {
   
   /**
    * Insert matches into the database
+   * @returns Number of matches inserted
    */
   async insertMatches(matches: any[]): Promise<number> {
     let insertedCount = 0;
@@ -35,11 +36,12 @@ export class MatchAdapter {
   async selectMatches(filter?: Record<string, any>): Promise<any[]> {
     let query = supabase.from('matches').select();
     
-    // Apply filters if provided
+    // Apply filters if provided, but prevent excessive type chaining
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        if (query) {
-          query = query.eq(key, value);
+        if (query && key && value !== undefined) {
+          // Type assertion to fix deep instantiation
+          query = query.eq(key, value) as any;
         }
       });
     }
@@ -53,8 +55,9 @@ export class MatchAdapter {
   
   /**
    * Update a match in the database
+   * @returns Number of matches updated (1 or 0)
    */
-  async updateMatch(id: string, match: any): Promise<boolean> {
+  async updateMatch(id: string, match: any): Promise<number> {
     const matchForDb = this.converter.convertMatchToDbFormat(match);
     const { error } = await supabase
       .from('matches')
@@ -62,26 +65,28 @@ export class MatchAdapter {
       .eq('id', id);
     
     if (error) throw error;
-    return true;
+    return 1; // Successfully updated 1 match
   }
   
   /**
    * Delete matches from the database
+   * @returns Number of matches deleted
    */
-  async deleteMatches(filter?: Record<string, any>): Promise<boolean> {
+  async deleteMatches(filter?: Record<string, any>): Promise<number> {
     let query = supabase.from('matches').delete();
     
-    // Apply filters if provided
+    // Apply filters if provided, but prevent excessive type chaining
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        if (query) {
-          query = query.eq(key, value);
+        if (query && key && value !== undefined) {
+          // Type assertion to fix deep instantiation
+          query = query.eq(key, value) as any;
         }
       });
     }
     
-    const { error } = await query;
+    const { error, count } = await query;
     if (error) throw error;
-    return true;
+    return count || 0;
   }
 }

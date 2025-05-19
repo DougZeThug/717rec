@@ -21,9 +21,9 @@ export class BracketsAdapter implements StorageAdapter {
   
   /**
    * Insert data into the specified table
-   * Returns boolean instead of number to match brackets-manager interface
+   * Return number of inserted records to match brackets-manager interface
    */
-  async insert(table: string, data: any): Promise<boolean> {
+  async insert(table: string, data: any): Promise<number> {
     let insertedCount = 0;
     
     switch (table) {
@@ -40,8 +40,7 @@ export class BracketsAdapter implements StorageAdapter {
         throw new Error(`Table not supported: ${table}`);
     }
     
-    // Return true if any records were inserted
-    return insertedCount > 0;
+    return insertedCount;
   }
   
   /**
@@ -65,8 +64,9 @@ export class BracketsAdapter implements StorageAdapter {
   
   /**
    * Update data in the specified table
+   * Return number of updated records to match brackets-manager interface
    */
-  async update(table: string, id: string, data: any): Promise<boolean> {
+  async update(table: string, id: string, data: any): Promise<number> {
     switch (table) {
       case 'matches':
         return this.matchAdapter.updateMatch(id, data);
@@ -77,8 +77,9 @@ export class BracketsAdapter implements StorageAdapter {
   
   /**
    * Delete data from the specified table
+   * Return number of deleted records to match brackets-manager interface
    */
-  async delete(table: string, filter?: Record<string, any>): Promise<boolean> {
+  async delete(table: string, filter?: Record<string, any>): Promise<number> {
     switch (table) {
       case 'matches':
         return this.matchAdapter.deleteMatches(filter);
@@ -113,11 +114,11 @@ export class BracketsAdapter implements StorageAdapter {
     return this.matchAdapter.selectMatches(filter);
   }
   
-  updateMatch(id: string, match: any): Promise<boolean> {
+  updateMatch(id: string, match: any): Promise<number> {
     return this.matchAdapter.updateMatch(id, match);
   }
   
-  deleteMatches(filter?: Record<string, any>): Promise<boolean> {
+  deleteMatches(filter?: Record<string, any>): Promise<number> {
     return this.matchAdapter.deleteMatches(filter);
   }
   

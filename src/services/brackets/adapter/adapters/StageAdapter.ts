@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 export class StageAdapter {
   /**
    * Insert a stage into the database
+   * @returns Number of stages inserted
    */
   async insertStage(stage: any): Promise<number> {
     const { error } = await supabase.from('brackets').insert({
@@ -17,7 +18,7 @@ export class StageAdapter {
     });
     
     if (error) throw error;
-    return 1;
+    return 1; // Always insert one stage
   }
   
   /**
@@ -26,11 +27,12 @@ export class StageAdapter {
   async selectStages(filter?: Record<string, any>): Promise<any[]> {
     let query = supabase.from('brackets').select();
     
-    // Apply filters if provided
+    // Apply filters if provided, but prevent excessive type chaining
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        if (query) {
-          query = query.eq(key, value);
+        if (query && key && value !== undefined) {
+          // Type assertion to fix deep instantiation
+          query = query.eq(key, value) as any;
         }
       });
     }

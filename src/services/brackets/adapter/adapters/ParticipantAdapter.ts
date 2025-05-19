@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 export class ParticipantAdapter {
   /**
    * Insert participants into the database
+   * @returns Number of participants inserted
    */
   async insertParticipants(participants: any[]): Promise<number> {
     // Map participants to our team format if needed
@@ -21,11 +22,12 @@ export class ParticipantAdapter {
   async selectParticipants(filter?: Record<string, any>): Promise<any[]> {
     let query = supabase.from('teams').select();
     
-    // Apply filters if provided
+    // Apply filters if provided, but prevent excessive type chaining
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
-        if (query) {
-          query = query.eq(key, value);
+        if (query && key && value !== undefined) {
+          // Type assertion to fix deep instantiation
+          query = query.eq(key, value) as any;
         }
       });
     }
