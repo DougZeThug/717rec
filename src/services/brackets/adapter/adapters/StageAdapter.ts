@@ -25,28 +25,33 @@ export class StageAdapter {
    * Select stages from the database
    */
   async selectStages(filter?: Record<string, any>): Promise<any[]> {
-    let query = supabase.from('brackets').select();
-    
-    // Apply filters if provided, but prevent excessive type chaining
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        if (query && key && value !== undefined) {
-          // Type assertion to fix deep instantiation
-          query = query.eq(key, value) as any;
-        }
-      });
+    try {
+      let query = supabase.from('brackets').select();
+      
+      // Apply filters if provided
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (key && value !== undefined) {
+            // Create a new query for each filter to avoid deep chaining
+            query = query.eq(key, value);
+          }
+        });
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      // Convert our bracket to stage format
+      return data?.map(bracket => ({
+        id: bracket.id,
+        name: bracket.title,
+        type: bracket.format === 'Double Elimination' ? 'double_elimination' : 'single_elimination',
+        divisionId: bracket.division_id,
+        tournamentId: bracket.id // Add this to satisfy InputStage requirement
+      })) || [];
+    } catch (error) {
+      console.error("Error selecting stages:", error);
+      throw error;
     }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    // Convert our bracket to stage format
-    return data?.map(bracket => ({
-      id: bracket.id,
-      name: bracket.title,
-      type: bracket.format === 'Double Elimination' ? 'double_elimination' : 'single_elimination',
-      divisionId: bracket.division_id,
-      tournamentId: bracket.id // Add this to satisfy InputStage requirement
-    })) || [];
   }
 }

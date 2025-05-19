@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 
@@ -34,23 +33,28 @@ export class MatchAdapter {
    * Select matches from the database
    */
   async selectMatches(filter?: Record<string, any>): Promise<any[]> {
-    let query = supabase.from('matches').select();
-    
-    // Apply filters if provided, but prevent excessive type chaining
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        if (query && key && value !== undefined) {
-          // Type assertion to fix deep instantiation
-          query = query.eq(key, value) as any;
-        }
-      });
+    try {
+      let query = supabase.from('matches').select();
+      
+      // Apply filters if provided
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (key && value !== undefined) {
+            // Create a new query for each filter to avoid deep chaining
+            query = query.eq(key, value);
+          }
+        });
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      // Convert back to brackets-manager format
+      return data ? data.map(match => this.converter.convertMatchFromDbFormat(match)) : [];
+    } catch (error) {
+      console.error("Error selecting matches:", error);
+      throw error;
     }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    // Convert back to brackets-manager format
-    return data ? data.map(match => this.converter.convertMatchFromDbFormat(match)) : [];
   }
   
   /**
@@ -58,14 +62,19 @@ export class MatchAdapter {
    * @returns Number of matches updated (1 or 0)
    */
   async updateMatch(id: string, match: any): Promise<number> {
-    const matchForDb = this.converter.convertMatchToDbFormat(match);
-    const { error } = await supabase
-      .from('matches')
-      .update(matchForDb)
-      .eq('id', id);
-    
-    if (error) throw error;
-    return 1; // Successfully updated 1 match
+    try {
+      const matchForDb = this.converter.convertMatchToDbFormat(match);
+      const { error } = await supabase
+        .from('matches')
+        .update(matchForDb)
+        .eq('id', id);
+      
+      if (error) throw error;
+      return 1; // Successfully updated 1 match
+    } catch (error) {
+      console.error("Error updating match:", error);
+      throw error;
+    }
   }
   
   /**
@@ -73,20 +82,25 @@ export class MatchAdapter {
    * @returns Number of matches deleted
    */
   async deleteMatches(filter?: Record<string, any>): Promise<number> {
-    let query = supabase.from('matches').delete();
-    
-    // Apply filters if provided, but prevent excessive type chaining
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        if (query && key && value !== undefined) {
-          // Type assertion to fix deep instantiation
-          query = query.eq(key, value) as any;
-        }
-      });
+    try {
+      let query = supabase.from('matches').delete();
+      
+      // Apply filters if provided
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (key && value !== undefined) {
+            // Create a new query for each filter to avoid deep chaining
+            query = query.eq(key, value);
+          }
+        });
+      }
+      
+      const { error, count } = await query;
+      if (error) throw error;
+      return count || 0;
+    } catch (error) {
+      console.error("Error deleting matches:", error);
+      throw error;
     }
-    
-    const { error, count } = await query;
-    if (error) throw error;
-    return count || 0;
   }
 }

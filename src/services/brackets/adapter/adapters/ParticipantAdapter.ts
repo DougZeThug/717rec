@@ -20,20 +20,25 @@ export class ParticipantAdapter {
    * Select participants from the database
    */
   async selectParticipants(filter?: Record<string, any>): Promise<any[]> {
-    let query = supabase.from('teams').select();
-    
-    // Apply filters if provided, but prevent excessive type chaining
-    if (filter) {
-      Object.entries(filter).forEach(([key, value]) => {
-        if (query && key && value !== undefined) {
-          // Type assertion to fix deep instantiation
-          query = query.eq(key, value) as any;
-        }
-      });
+    try {
+      let query = supabase.from('teams').select();
+      
+      // Apply filters if provided
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (key && value !== undefined) {
+            // Create a new query for each filter to avoid deep chaining
+            query = query.eq(key, value);
+          }
+        });
+      }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error selecting participants:", error);
+      throw error;
     }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
   }
 }

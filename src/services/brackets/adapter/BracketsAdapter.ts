@@ -21,70 +21,100 @@ export class BracketsAdapter implements StorageAdapter {
   
   /**
    * Insert data into the specified table
-   * Return number of inserted records to match brackets-manager interface
+   * Return boolean for compatibility with brackets-manager
    */
-  async insert(table: string, data: any): Promise<number> {
-    let insertedCount = 0;
-    
-    switch (table) {
-      case 'participants':
-        insertedCount = await this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
-        break;
-      case 'matches':
-        insertedCount = await this.matchAdapter.insertMatches(Array.isArray(data) ? data : [data]);
-        break;
-      case 'stages':
-        insertedCount = await this.stageAdapter.insertStage(data);
-        break;
-      default:
-        throw new Error(`Table not supported: ${table}`);
+  async insert(table: string, data: any): Promise<boolean> {
+    try {
+      let insertedCount = 0;
+      
+      switch (table) {
+        case 'participants':
+          insertedCount = await this.participantAdapter.insertParticipants(Array.isArray(data) ? data : [data]);
+          break;
+        case 'matches':
+          insertedCount = await this.matchAdapter.insertMatches(Array.isArray(data) ? data : [data]);
+          break;
+        case 'stages':
+          insertedCount = await this.stageAdapter.insertStage(data);
+          break;
+        default:
+          throw new Error(`Table not supported: ${table}`);
+      }
+      
+      return insertedCount > 0; // Convert to boolean for brackets-manager compatibility
+    } catch (error) {
+      console.error(`Error inserting into ${table}:`, error);
+      throw error;
     }
-    
-    return insertedCount;
   }
   
   /**
    * Select data from the specified table
    */
   async select(table: string, filter?: Record<string, any> | string): Promise<any[]> {
-    // Handle the case where filter is an ID
-    const filterObj = typeof filter === 'string' ? { id: filter } : filter;
-      
-    switch (table) {
-      case 'participants':
-        return this.participantAdapter.selectParticipants(filterObj);
-      case 'matches':
-        return this.matchAdapter.selectMatches(filterObj);
-      case 'stages':
-        return this.stageAdapter.selectStages(filterObj);
-      default:
-        throw new Error(`Table not supported: ${table}`);
+    try {
+      // Handle the case where filter is an ID
+      const filterObj = typeof filter === 'string' ? { id: filter } : filter;
+        
+      switch (table) {
+        case 'participants':
+          return this.participantAdapter.selectParticipants(filterObj);
+        case 'matches':
+          return this.matchAdapter.selectMatches(filterObj);
+        case 'stages':
+          return this.stageAdapter.selectStages(filterObj);
+        default:
+          throw new Error(`Table not supported: ${table}`);
+      }
+    } catch (error) {
+      console.error(`Error selecting from ${table}:`, error);
+      throw error;
     }
   }
   
   /**
    * Update data in the specified table
-   * Return number of updated records to match brackets-manager interface
+   * Return boolean for compatibility with brackets-manager
    */
-  async update(table: string, id: string, data: any): Promise<number> {
-    switch (table) {
-      case 'matches':
-        return this.matchAdapter.updateMatch(id, data);
-      default:
-        throw new Error(`Unsupported table update: ${table}`);
+  async update(table: string, id: string, data: any): Promise<boolean> {
+    try {
+      let updatedCount = 0;
+      
+      switch (table) {
+        case 'matches':
+          updatedCount = await this.matchAdapter.updateMatch(id, data);
+          break;
+        default:
+          throw new Error(`Unsupported table update: ${table}`);
+      }
+      
+      return updatedCount > 0; // Convert to boolean for brackets-manager compatibility
+    } catch (error) {
+      console.error(`Error updating ${table}:`, error);
+      throw error;
     }
   }
   
   /**
    * Delete data from the specified table
-   * Return number of deleted records to match brackets-manager interface
+   * Return boolean for compatibility with brackets-manager
    */
-  async delete(table: string, filter?: Record<string, any>): Promise<number> {
-    switch (table) {
-      case 'matches':
-        return this.matchAdapter.deleteMatches(filter);
-      default:
-        throw new Error(`Unsupported table delete: ${table}`);
+  async delete(table: string, filter?: Record<string, any>): Promise<boolean> {
+    try {
+      let deletedCount = 0;
+      
+      switch (table) {
+        case 'matches':
+          deletedCount = await this.matchAdapter.deleteMatches(filter);
+          break;
+        default:
+          throw new Error(`Unsupported table delete: ${table}`);
+      }
+      
+      return deletedCount > 0; // Convert to boolean for brackets-manager compatibility
+    } catch (error) {
+      console.error(`Error deleting from ${table}:`, error);
+      throw error;
     }
   }
   

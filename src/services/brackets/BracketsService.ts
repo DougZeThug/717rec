@@ -1,7 +1,7 @@
 
 import { bracketManager } from './manager/BracketManager';
-import { bracketCreationService } from './services/BracketCreationService';
-import { matchResultService } from './services/MatchResultService';
+import { BracketCreationService } from './services/BracketCreationService';
+import { MatchScoreService } from './services/MatchScoreService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
 
@@ -14,7 +14,7 @@ export async function createDoubleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  return bracketCreationService.createDoubleElimStage(bracketId, name, teams, bestOf);
+  return BracketCreationService.createDoubleElimStage(bracketId, name, teams, bestOf);
 }
 
 /** 
@@ -26,7 +26,7 @@ export async function createSingleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  return bracketCreationService.createSingleElimStage(bracketId, name, teams, bestOf);
+  return BracketCreationService.createSingleElimStage(bracketId, name, teams, bestOf);
 }
 
 /** 
@@ -38,7 +38,20 @@ export async function updateMatchResult(
   team1Score: number,
   team2Score: number
 ): Promise<void> {
-  return matchResultService.updateMatchResult(matchId, winnerId, team1Score, team2Score);
+  // Create empty games array since we're using a simplified approach
+  const games: { team1Score: number; team2Score: number }[] = [];
+  // Assuming team1 is the winner for game stats
+  const team1GameWins = winnerId === matchId.split('-')[0] ? 1 : 0;
+  const team2GameWins = 1 - team1GameWins;
+  
+  return MatchScoreService.updateMatchScore(
+    matchId, 
+    team1Score, 
+    team2Score, 
+    games, 
+    team1GameWins, 
+    team2GameWins
+  );
 }
 
 /** 
@@ -50,7 +63,7 @@ export async function createTournamentBracket(
   divisionId: string,
   teams: Team[]
 ): Promise<string> {
-  return bracketCreationService.createTournamentBracket(bracketFormat, name, divisionId, teams);
+  return BracketCreationService.createBracket(bracketFormat, name, divisionId, teams.map(t => t.id));
 }
 
 // Export for re-use

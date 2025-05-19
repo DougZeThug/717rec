@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { bracketManager } from "../BracketsService";
+import { bracketManager } from "../manager/BracketManager";
+import type { SeedOrdering } from 'brackets-model';
 
 /**
  * Utility to migrate existing brackets to the brackets-manager format
@@ -55,6 +56,8 @@ export class MigrationUtils {
       const stageType = bracketData.format === 'Double Elimination' 
         ? 'double_elimination' as const
         : 'single_elimination' as const;
+
+      const seedOrdering: SeedOrdering[] = ['natural'];
         
       const stage = {
         id: bracketId,
@@ -65,7 +68,7 @@ export class MigrationUtils {
           size: teamsData.length,
           matchesChildCount: 1,
           consolationFinal: false,
-          seedOrdering: ['natural'],
+          seedOrdering: seedOrdering,
           match: { games: 3 }
         },
         tournamentId: bracketId // Added to satisfy InputStage requirement
