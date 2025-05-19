@@ -20,7 +20,8 @@ export async function fetchAllBrackets(): Promise<Partial<PlayoffBracket>[]> {
       id: bracket.id,
       name: bracket.title,
       format: convertToBracketFormat(bracket.format),
-      createdAt: bracket.created_at,
+      // Using created_at instead of createdAt to match PlayoffBracket type
+      created_at: bracket.created_at,
       divisionId: bracket.division_id
     }));
   } catch (error) {
@@ -119,7 +120,8 @@ export async function fetchBracketById(bracketId: string): Promise<PlayoffBracke
       id: bracket.id,
       name: bracket.title,
       format: convertToBracketFormat(bracket.format),
-      createdAt: bracket.created_at,
+      // Using created_at instead of createdAt to match PlayoffBracket type
+      created_at: bracket.created_at,
       divisionId: bracket.division_id,
       state: convertToBracketState(bracket.state),
       matches: playoffMatches

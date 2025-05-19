@@ -135,13 +135,15 @@ export interface PlayoffGame {
 export interface PlayoffBracket {
   id: string;
   name: string;
-  division: string;
+  division?: string;
+  divisionId?: string;
   format: BracketFormat;
   matches: PlayoffMatch[];
   champion?: string;
   challongeTournamentId?: string;
   challongeTournamentUrl?: string;
   state?: BracketState;
+  created_at?: string; // Added this field to match what's used in bracketFetchers.ts
 }
 
 // Division type

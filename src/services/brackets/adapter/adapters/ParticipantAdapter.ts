@@ -53,27 +53,28 @@ export class ParticipantAdapter {
    */
   async selectParticipants(filter?: Record<string, any>): Promise<ParticipantRecord[]> {
     try {
+      // Define an explicit query type to avoid deep type instantiation
       let query = supabase.from('teams').select('*');
       
       // Apply filters if provided
       if (filter) {
-        Object.entries(filter).forEach(([key, value]) => {
-          if (key === 'tournament_id') {
-            // Map tournament_id to bracket_id using a different query
-            // This would require a lookup table, but for now we can skip
-          } else if (key === 'id' && Array.isArray(value)) {
-            query = query.in(key, value);
-          } else {
-            query = query.eq(key, value);
-          }
-        });
+        if (filter.id && Array.isArray(filter.id)) {
+          query = query.in('id', filter.id);
+        } else {
+          // Apply simple equality filters
+          Object.entries(filter).forEach(([key, value]) => {
+            if (key !== 'tournament_id') { // Skip tournament_id as it needs special handling
+              query = query.eq(key, value);
+            }
+          });
+        }
       }
       
       const { data, error } = await query;
       
       if (error) throw error;
       
-      // Convert teams to bracket participant format
+      // Convert teams to bracket participant format with explicit typing
       return data.map(team => ({
         id: team.id,
         name: team.name,

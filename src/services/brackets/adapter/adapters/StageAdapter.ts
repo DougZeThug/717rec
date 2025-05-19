@@ -65,20 +65,17 @@ export class StageAdapter {
    */
   async selectStage(filter?: Record<string, any>): Promise<StageRecord[]> {
     try {
+      // Use a more explicit query type to avoid deep instantiation
       let query = supabase.from('brackets').select('*');
       
-      // Apply filters if provided
+      // Apply filters with explicit handling
       if (filter) {
         if (filter.tournament_id) {
-          // In our case, tournament_id === stage_id
           query = query.eq('id', filter.tournament_id);
         } else {
+          // Handle each filter separately to avoid complex type issues
           Object.entries(filter).forEach(([key, value]) => {
-            if (key === 'tournament_id') {
-              query = query.eq('id', value);
-            } else {
-              query = query.eq(key, value);
-            }
+            query = query.eq(key, value);
           });
         }
       }
@@ -87,7 +84,7 @@ export class StageAdapter {
       
       if (error) throw error;
       
-      // Convert to brackets-manager stage format
+      // Convert to brackets-manager stage format with explicit typing
       return data.map(bracket => ({
         id: bracket.id,
         name: bracket.title,
