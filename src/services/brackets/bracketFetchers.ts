@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch } from "./types";
 import { BracketService } from "@/services/BracketService";
+import { BracketFormat } from "@/constants/brackets";
 
 /**
  * Fetch a bracket by ID
@@ -61,7 +62,7 @@ export async function fetchAllBrackets(): Promise<Partial<PlayoffBracket>[]> {
     return data.map(item => ({
       id: item.id,
       name: item.title,
-      format: item.format,
+      format: item.format as BracketFormat,
       division: item.divisions?.name || ''
     }));
   } catch (error) {

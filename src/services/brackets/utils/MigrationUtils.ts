@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { BracketsManager } from "brackets-manager";
+import { BracketsManager } from 'brackets-manager';
 import { SupabaseAdapter } from "../BracketsService";
 
 /**

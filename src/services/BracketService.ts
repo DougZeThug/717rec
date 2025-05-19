@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 import { 
@@ -32,6 +31,11 @@ export class BracketService {
       if (teamsError) throw teamsError;
       
       // Create the tournament bracket using brackets-manager
+      // Only support Single and Double Elimination formats (no Round Robin)
+      if (format !== BRACKET_FORMATS.SINGLE && format !== BRACKET_FORMATS.DOUBLE) {
+        throw new Error(`Unsupported bracket format: ${format}`);
+      }
+      
       const bracketId = await createTournamentBracket(
         format, 
         name, 

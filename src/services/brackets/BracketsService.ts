@@ -1,3 +1,4 @@
+
 import { BracketsManager, Storage, Stage } from 'brackets-manager';
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
@@ -48,7 +49,7 @@ export class SupabaseAdapter implements Storage {
     return data ? data.map(this.convertMatchFromDbFormat) : [];
   }
   
-  async updateMatch(id: string | number, match: any) {
+  async updateMatch(id: string, match: any) {
     const matchForDb = this.convertMatchToDbFormat(match);
     const { error } = await supabase
       .from('matches')

@@ -3,7 +3,9 @@
 export * from './types';
 export * from './matchGroupers';
 export * from './bracketFormatters';
-export * from './bracketFetchers';
+// Export bracketFetchers but without re-exporting groupBracketMatchesByType 
+// which is already exported from matchGroupers
+export { fetchAllBrackets, fetchBracketById } from './bracketFetchers';
 export * from './BracketGenerator';
 
 // Re-export transformers
