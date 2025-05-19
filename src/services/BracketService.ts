@@ -21,7 +21,7 @@ export class BracketService {
     divisionId: string,
     teamIds: string[]
   ): Promise<string> {
-    return BracketCreationService.createBracket(name, format, divisionId, teamIds);
+    return BracketCreationService.createBracket(format, name, divisionId, teamIds);
   }
 
   /**

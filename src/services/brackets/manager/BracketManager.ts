@@ -2,8 +2,8 @@
 import { BracketsManager } from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFormat } from '@/constants/brackets';
-// Import the SeedOrdering type directly from brackets-manager to ensure compatibility
-import { SeedOrdering as BracketsSeedOrdering } from 'brackets-model';
+// Import proper types from brackets-model
+import { SeedOrdering as BracketsSeedOrdering, InputStage } from 'brackets-model';
 
 // Define our own type alias that matches the brackets-manager type
 export type SeedOrdering = BracketsSeedOrdering;
@@ -59,8 +59,9 @@ class BracketManager {
     // Use proper typing to match brackets-manager expectations
     const seedOrderings = (stage.settings.seedOrdering || []) as BracketsSeedOrdering[];
     
-    await this.manager.create.stage({
-      id: stage.id,
+    // Create InputStage object compatible with brackets-manager
+    // Remove the id property when converting to InputStage
+    const inputStage: InputStage = {
       name: stage.name,
       type: stage.type,
       tournamentId: stage.tournamentId,
@@ -69,16 +70,18 @@ class BracketManager {
         ...stage.settings,
         seedOrdering: seedOrderings
       }
-    });
+    };
+    
+    // Use the stage.id as a parameter rather than in the object
+    await this.manager.create.stage(inputStage, stage.id);
   }
   
   /**
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // Fix: Use the correct method for registering participants
-    // In brackets-manager, it's create.participant not create.participants
-    await this.manager.create.participant(participants);
+    // Fix: The correct method name is 'participants' (plural) not 'participant'
+    await this.manager.create.participants(participants);
   }
   
   /**
