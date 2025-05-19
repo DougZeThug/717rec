@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 import { 
@@ -37,7 +38,7 @@ export class BracketService {
       }
       
       const bracketId = await createTournamentBracket(
-        format, 
+        format === BRACKET_FORMATS.SINGLE ? 'Single Elimination' : 'Double Elimination', 
         name, 
         divisionId, 
         teams
@@ -117,9 +118,23 @@ export class BracketService {
   ): Promise<void> {
     try {
       // Determine the winner based on game wins
-      const winnerId = team1GameWins > team2GameWins 
-        ? await this.getTeamIdByPosition(matchId, 1)
-        : await this.getTeamIdByPosition(matchId, 2);
+      let winnerId: string | null = null;
+      
+      // Get the match first to identify team IDs
+      const { data: matchData } = await supabase
+        .from('matches')
+        .select('team1_id, team2_id')
+        .eq('id', matchId)
+        .single();
+      
+      if (!matchData) {
+        throw new Error("Match not found");
+      }
+      
+      // Now we can safely determine the winner
+      winnerId = team1GameWins > team2GameWins 
+        ? matchData.team1_id
+        : matchData.team2_id;
       
       if (!winnerId) {
         throw new Error("Could not determine winner - team IDs not found");
@@ -143,19 +158,6 @@ export class BracketService {
       console.error("Error updating match score:", error);
       throw error;
     }
-  }
-  
-  /**
-   * Helper method to get team ID by position in a match
-   */
-  private static async getTeamIdByPosition(matchId: string, position: 1 | 2): Promise<string | null> {
-    const { data } = await supabase
-      .from('matches')
-      .select(position === 1 ? 'team1_id' : 'team2_id')
-      .eq('id', matchId)
-      .single();
-    
-    return data ? (position === 1 ? data.team1_id : data.team2_id) : null;
   }
   
   /**

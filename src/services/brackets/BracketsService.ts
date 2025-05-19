@@ -1,4 +1,3 @@
-
 import { BracketsManager, Storage, Stage } from 'brackets-manager';
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";

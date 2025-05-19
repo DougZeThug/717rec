@@ -1,7 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BracketsManager } from 'brackets-manager';
-import { SupabaseAdapter } from "../BracketsService";
+import { SupabaseAdapter, createBracketsManager } from "../BracketsService";
 
 /**
  * Utility to migrate existing brackets to the brackets-manager format
@@ -48,11 +47,10 @@ export class MigrationUtils {
       if (teamsError) throw teamsError;
       
       // Now use brackets-manager to recreate the bracket
-      const storage = new SupabaseAdapter();
-      const bManager = new BracketsManager(storage);
+      const bManager = createBracketsManager();
       
       // 1. First we'll need to remove any existing data for this bracketId in the brackets-manager format
-      await storage.deleteMatches({ stage_id: bracketId });
+      await bManager.match.delete({ stage_id: bracketId });
       
       // 2. Create the stage
       const stage = {
@@ -62,7 +60,7 @@ export class MigrationUtils {
         // Other settings...
       };
       
-      await storage.insertStage(stage);
+      await bManager.create.stage(stage);
       
       // 3. Add participants/teams
       const participants = teamsData.map(team => ({
