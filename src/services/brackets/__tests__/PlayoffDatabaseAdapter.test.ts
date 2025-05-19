@@ -1,3 +1,4 @@
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { PlayoffDatabaseFacade } from '../database/PlayoffDatabaseFacade';
@@ -153,6 +154,8 @@ describe('PlayoffDatabaseAdapter', () => {
       loserId: 'team2',
       team1Score: 2,
       team2Score: 1,
+      team1GameWins: 2, // Added missing required property
+      team2GameWins: 1, // Added missing required property
       games: [{ 
         id: '1', 
         matchId: 'match1', 
@@ -163,7 +166,7 @@ describe('PlayoffDatabaseAdapter', () => {
       }]
     };
     
-    // Act - Fix: Pass matchId as a separate argument
+    // Act - Pass matchId as a separate argument
     await PlayoffDatabaseAdapter.recordMatchResult('match1', matchResult);
     
     // Assert
