@@ -21,10 +21,14 @@ export class WinnersBracketLinker {
   }
   
   /**
-   * Generate all matches in the winners bracket
+   * Generate winners bracket matches
    */
   generateMatches(): void {
     const numRounds = Math.log2(this.calculateBracketSize(this.teams.length));
+    
+    // First round matches
+    const firstRoundTeams = [...this.teams];
+    const numFirstRoundMatches = Math.pow(2, numRounds - 1);
     
     // Create all rounds in the winners bracket
     for (let round = 1; round <= numRounds; round++) {
@@ -49,14 +53,20 @@ export class WinnersBracketLinker {
         // Set first round teams based on seeding
         if (round === 1) {
           const teamIndex = (position - 1) * 2;
-          if (teamIndex < this.teams.length) {
-            match.team1Id = this.teams[teamIndex].id;
-            match.team1Seed = this.teams[teamIndex].seed;
+          if (teamIndex < firstRoundTeams.length) {
+            // Don't set a placeholder ID, either use real team ID or leave null
+            if (!firstRoundTeams[teamIndex].id.startsWith('play-in-')) {
+              match.team1Id = firstRoundTeams[teamIndex].id;
+              match.team1Seed = firstRoundTeams[teamIndex].seed;
+            }
           }
           
-          if (teamIndex + 1 < this.teams.length) {
-            match.team2Id = this.teams[teamIndex + 1].id;
-            match.team2Seed = this.teams[teamIndex + 1].seed;
+          if (teamIndex + 1 < firstRoundTeams.length) {
+            // Don't set a placeholder ID, either use real team ID or leave null
+            if (!firstRoundTeams[teamIndex + 1].id.startsWith('play-in-')) {
+              match.team2Id = firstRoundTeams[teamIndex + 1].id;
+              match.team2Seed = firstRoundTeams[teamIndex + 1].seed;
+            }
           }
         }
         
@@ -66,15 +76,15 @@ export class WinnersBracketLinker {
       }
     }
     
-    // Now link all matches
+    // Link matches
     this.linkMatches(numRounds);
   }
   
   /**
-   * Link winners and losers to their next matches
+   * Link winners to next round and losers to losers bracket
    */
   private linkMatches(numRounds: number): void {
-    for (let round = 1; round < numRounds; round++) {
+    for (let round = 1; round <= numRounds; round++) {
       const matchesInRound = Math.pow(2, numRounds - round);
       
       for (let position = 1; position <= matchesInRound; position++) {
@@ -82,23 +92,27 @@ export class WinnersBracketLinker {
         const currentMatch = this.matchMap[currentKey];
         
         // Link winners to next round
-        const nextPosition = Math.ceil(position / 2);
-        const nextKey = `winners-${round+1}-${nextPosition}`;
-        currentMatch.nextWinMatchId = this.matchMap[nextKey]?.id || null;
+        if (round < numRounds) {
+          const nextPosition = Math.ceil(position / 2);
+          const nextKey = `winners-${round+1}-${nextPosition}`;
+          
+          if (this.matchMap[nextKey]) {
+            currentMatch.nextWinMatchId = this.matchMap[nextKey].id;
+          }
+        }
         
         // Link losers to losers bracket (except finals)
-        const loserRound = round;
-        const loserPosition = position;
-        const loserKey = `losers-${loserRound}-${loserPosition}`;
-        if (this.matchMap[loserKey]) {
-          currentMatch.nextLoseMatchId = this.matchMap[loserKey].id;
+        if (round < numRounds) {
+          // The losers bracket linker is now responsible for this connection
+          // We'll let it handle linking to the appropriate losers round
+          // Leave nextLoseMatchId as null for now
         }
       }
     }
   }
   
   /**
-   * Calculate the next power of 2 for bracket size
+   * Calculate the appropriate bracket size (power of 2)
    */
   private calculateBracketSize(teamCount: number): number {
     let power = 1;
