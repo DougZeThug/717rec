@@ -2,6 +2,17 @@
 import { supabase } from "@/integrations/supabase/client";
 import { BracketFormat } from '@/constants/brackets';
 
+type StageRecord = {
+  id: string;
+  name: string;
+  tournament_id: string;
+  type: 'single_elimination' | 'double_elimination';
+  settings: {
+    size: number;
+    grandFinal?: 'simple';
+  };
+};
+
 /**
  * Adapter to manage stages (brackets) in the database
  */
@@ -52,7 +63,7 @@ export class StageAdapter {
   /**
    * Select stages from the database
    */
-  async selectStage(filter?: Record<string, any>): Promise<any[]> {
+  async selectStage(filter?: Record<string, any>): Promise<StageRecord[]> {
     try {
       let query = supabase.from('brackets').select('*');
       

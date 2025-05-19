@@ -2,6 +2,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from 'uuid';
 
+type ParticipantRecord = {
+  id: string;
+  name: string;
+  tournament_id: string | null;
+  position: number | null;
+};
+
 /**
  * Adapter to handle participants (teams) in the database
  */
@@ -44,7 +51,7 @@ export class ParticipantAdapter {
   /**
    * Select participants from the database
    */
-  async selectParticipants(filter?: Record<string, any>): Promise<any[]> {
+  async selectParticipants(filter?: Record<string, any>): Promise<ParticipantRecord[]> {
     try {
       let query = supabase.from('teams').select('*');
       

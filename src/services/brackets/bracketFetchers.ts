@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PlayoffBracket, PlayoffMatch } from "@/types";
 import { bracketManager } from './manager/BracketManager';
 import { DatabasePlayoffMatch } from './database/types';
+import { BracketFormat, BracketState, BRACKET_FORMATS, BRACKET_STATES } from '@/constants/brackets';
 
 /**
  * Fetch all brackets
@@ -18,7 +19,7 @@ export async function fetchAllBrackets(): Promise<Partial<PlayoffBracket>[]> {
     return brackets.map(bracket => ({
       id: bracket.id,
       name: bracket.title,
-      format: bracket.format,
+      format: convertToBracketFormat(bracket.format),
       createdAt: bracket.created_at,
       divisionId: bracket.division_id
     }));
@@ -26,6 +27,25 @@ export async function fetchAllBrackets(): Promise<Partial<PlayoffBracket>[]> {
     console.error("Error fetching all brackets:", error);
     throw error;
   }
+}
+
+/**
+ * Convert string format to BracketFormat enum
+ */
+function convertToBracketFormat(format: string): BracketFormat {
+  if (format === 'Single Elimination') return BRACKET_FORMATS.SINGLE;
+  if (format === 'Double Elimination') return BRACKET_FORMATS.DOUBLE;
+  return BRACKET_FORMATS.SINGLE; // Default
+}
+
+/**
+ * Convert string state to BracketState enum
+ */
+function convertToBracketState(state: string | null): BracketState {
+  if (state === 'pending') return BRACKET_STATES.PENDING;
+  if (state === 'underway') return BRACKET_STATES.UNDERWAY;
+  if (state === 'complete') return BRACKET_STATES.COMPLETE;
+  return BRACKET_STATES.PENDING; // Default
 }
 
 /**
@@ -98,10 +118,10 @@ export async function fetchBracketById(bracketId: string): Promise<PlayoffBracke
     return {
       id: bracket.id,
       name: bracket.title,
-      format: bracket.format,
+      format: convertToBracketFormat(bracket.format),
       createdAt: bracket.created_at,
       divisionId: bracket.division_id,
-      state: bracket.state,
+      state: convertToBracketState(bracket.state),
       matches: playoffMatches
     };
   } catch (error) {

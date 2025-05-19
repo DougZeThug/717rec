@@ -51,7 +51,7 @@ export interface DatabasePlayoffMatch {
   next_win_match_id: string | null;
   next_lose_match_id: string | null;
   best_of: number;
-  status: string;
+  status: "pending" | "in_progress" | "completed";
 }
 
 /**
@@ -77,4 +77,45 @@ export interface IPlayoffMatchesRepository {
   updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
   getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
   getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
+}
+
+/**
+ * Interface for playoff games repository
+ */
+export interface IPlayoffGamesRepository {
+  saveGames(games: PlayoffGame[]): Promise<void>;
+  getMatchGames(matchId: string): Promise<PlayoffGame[]>;
+}
+
+/**
+ * Interface for bracket repository
+ */
+export interface IBracketRepository {
+  markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void>;
+  setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void>;
+  markTournamentComplete(bracketId: string, championId: string): Promise<void>;
+  getBracketState(bracketId: string): Promise<any>;
+}
+
+/**
+ * Interface for team advancement service
+ */
+export interface ITeamAdvancementService {
+  advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void>;
+  handleGrandFinalsReset(
+    bracketId: string, 
+    winnersBracketChampionId: string,
+    losersBracketChampionId: string,
+    gf1WinnerId: string
+  ): Promise<string>;
+}
+
+/**
+ * Interface for bracket creation 
+ */
+export interface BracketCreationParams {
+  id: string;
+  name: string;
+  format: any; // Use the BracketFormat type from constants
+  divisionId: string;
 }

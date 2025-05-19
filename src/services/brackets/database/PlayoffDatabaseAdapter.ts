@@ -1,7 +1,7 @@
-
 import { PlayoffDatabaseFacade } from './PlayoffDatabaseFacade';
 import { PlayoffMatch, PlayoffGame } from '../types';
-import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from './types';
+import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult, BracketCreationParams } from './types';
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Adapter to convert between application model and database model
@@ -9,6 +9,31 @@ import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult } from './typ
 export class PlayoffDatabaseAdapter {
   private static facade = new PlayoffDatabaseFacade();
   private static PLACEHOLDER_PREFIX = 'play-in-';
+
+  /**
+   * Create a new bracket in the database
+   */
+  static async createBracket(params: BracketCreationParams): Promise<{ error?: Error }> {
+    try {
+      const { error } = await supabase
+        .from('brackets')
+        .insert({
+          id: params.id,
+          title: params.name,
+          format: params.format,
+          division_id: params.divisionId,
+          created_at: new Date().toISOString(),
+          state: 'pending'
+        });
+      
+      if (error) throw error;
+      
+      return {};
+    } catch (error) {
+      console.error('Error creating bracket:', error);
+      return { error: error as Error };
+    }
+  }
 
   /**
    * Save playoff matches to the database

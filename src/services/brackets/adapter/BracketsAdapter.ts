@@ -1,5 +1,5 @@
 
-import { Storage } from 'brackets-model';
+import { StorageAdapter } from './interfaces/StorageAdapter';
 import { MatchAdapter } from './adapters/MatchAdapter';
 import { ParticipantAdapter } from './adapters/ParticipantAdapter';
 import { StageAdapter } from './adapters/StageAdapter';
@@ -8,7 +8,7 @@ import { StageAdapter } from './adapters/StageAdapter';
  * The BracketsAdapter implements the Storage interface from brackets-manager
  * to bridge between brackets-manager operations and our database
  */
-export class BracketsAdapter implements Storage {
+export class BracketsAdapter implements StorageAdapter {
   private matchAdapter: MatchAdapter;
   private participantAdapter: ParticipantAdapter;
   private stageAdapter: StageAdapter;

@@ -4,12 +4,8 @@
  */
 export interface StorageAdapter {
   // CRUD operations with correct return types that match brackets-manager expectations
-  insert<T>(table: string, data: T | T[]): Promise<boolean>; // Return boolean for brackets-manager compatibility
-  select<T>(table: string, filter?: Record<string, any>): Promise<T[]>;
-  update<T>(table: string, id: string, data: T): Promise<boolean>;
-  delete(table: string, filter?: Record<string, any>): Promise<boolean>;
-  
-  // Optional operations
-  selectFirst?<T>(table: string): Promise<T | null>;
-  selectLast?<T>(table: string): Promise<T | null>;
+  insert(table: string, data: any | any[]): Promise<number>; // Return number for brackets-manager compatibility
+  select(table: string, filter?: Record<string, any>): Promise<any[]>;
+  update(table: string, id: string, data: any): Promise<number>;
+  delete(table: string, filter?: Record<string, any>): Promise<number>;
 }

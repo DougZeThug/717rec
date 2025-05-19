@@ -46,7 +46,7 @@ export class ResetMatchService {
       loser_id: null,
       next_win_match_id: null, // No next match for reset
       next_lose_match_id: null,
-      status: "pending"
+      status: "pending" // Using valid string literal type
     };
 
     // Save the reset match to the database
