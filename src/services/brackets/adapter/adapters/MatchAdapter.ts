@@ -35,21 +35,22 @@ export class MatchAdapter {
    */
   async selectMatches(filter?: Record<string, any>): Promise<any[]> {
     try {
-      let query = supabase.from('matches').select();
+      // Create a simple query
+      let query = supabase.from('matches');
       
-      // Apply filters individually to avoid deep type instantiation
+      // Apply filters separately to avoid deep type instantiation
       if (filter) {
-        Object.entries(filter).forEach(([key, value]) => {
+        for (const key of Object.keys(filter)) {
+          const value = filter[key];
           if (key && value !== undefined) {
-            // Explicit type assertion to break the chain
-            (query as any) = query.eq(key, value);
+            // Use explicit type assertion to avoid deep chain
+            query = query.eq(key, value) as any;
           }
-        });
+        }
       }
       
-      // Execute query with explicit typing to break the chain
-      const result = await query;
-      const { data, error } = result;
+      // Execute the final query
+      const { data, error } = await query.select();
       
       if (error) throw error;
       
@@ -89,19 +90,18 @@ export class MatchAdapter {
     try {
       let query = supabase.from('matches').delete();
       
-      // Apply filters individually to avoid deep type instantiation
+      // Apply filters separately
       if (filter) {
-        Object.entries(filter).forEach(([key, value]) => {
+        for (const key of Object.keys(filter)) {
+          const value = filter[key];
           if (key && value !== undefined) {
-            // Explicit type assertion to break the chain
-            (query as any) = query.eq(key, value);
+            // Use explicit type assertion to avoid deep chain
+            query = query.eq(key, value) as any;
           }
-        });
+        }
       }
       
-      // Execute query with explicit typing
-      const result = await query;
-      const { error, count } = result;
+      const { error, count } = await query;
       
       if (error) throw error;
       return count || 0;

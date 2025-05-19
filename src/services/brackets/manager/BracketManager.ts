@@ -63,6 +63,9 @@ class BracketManager {
    * Create a stage (bracket)
    */
   async createStage(stage: BracketStage): Promise<void> {
+    // Ensure seedOrdering is properly typed for brackets-manager
+    const seedOrderingArray = stage.settings.seedOrdering as SeedOrdering[];
+    
     await this.manager.create.stage({
       id: stage.id,
       name: stage.name,
@@ -71,7 +74,7 @@ class BracketManager {
       seeding: stage.seeding,
       settings: {
         ...stage.settings,
-        seedOrdering: stage.settings.seedOrdering as SeedOrdering[]
+        seedOrdering: seedOrderingArray
       }
     });
   }
@@ -80,8 +83,8 @@ class BracketManager {
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // Fix: Register participants using the correct method name
-    await this.manager.create.participants(participants);
+    // Fix: Use the correct method name for registering participants
+    await this.manager.create.participant(participants);
   }
   
   /**
@@ -95,16 +98,17 @@ class BracketManager {
    * Get matches by filter
    */
   async getMatches(filter: Record<string, any>): Promise<any[]> {
-    // Use direct adapter implementation instead
+    // Use the adapter directly with proper typing
     const adapter = this.manager.storage;
-    return await adapter.select('matches', filter);
+    // Use the adapter's select method with correct typing
+    return await adapter.select('matches', filter) as any[];
   }
   
   /**
    * Delete matches by filter
    */
   async deleteMatches(filter: Record<string, any>): Promise<void> {
-    // Use direct adapter implementation instead
+    // Use the adapter directly to avoid type issues
     const adapter = this.manager.storage;
     await adapter.delete('matches', filter);
   }

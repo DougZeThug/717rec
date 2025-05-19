@@ -65,8 +65,9 @@ export async function createTournamentBracket(
   teams: Team[]
 ): Promise<string> {
   // Fix: Convert string format to BracketFormat when needed
+  const format = bracketFormat as BracketFormat;
   return BracketCreationService.createBracket(
-    bracketFormat,
+    format,
     name, 
     divisionId, 
     teams.map(t => t.id)
