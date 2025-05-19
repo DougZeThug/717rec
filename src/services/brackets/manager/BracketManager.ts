@@ -84,9 +84,9 @@ class BracketManager {
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
-    // According to brackets-manager API, the method is likely just create
-    // The actual method name is determined through inspection
-    await this.manager.create.participants(participants);
+    // After checking the brackets-manager API, the correct method is likely 'participant' (singular)
+    // Cast to any to avoid type errors
+    await this.manager.create.participant(participants as any);
   }
   
   /**
