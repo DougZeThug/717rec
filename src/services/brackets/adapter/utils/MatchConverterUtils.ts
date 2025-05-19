@@ -26,16 +26,16 @@ export class MatchConverterUtils {
       round_number: match.round || 0,
       position: match.position || 0,
       match_type: this.convertMatchTypeForDB(match.group?.toLowerCase() || 'winners'),
-      team1_id: match.opponent1?.id || null,
-      team2_id: match.opponent2?.id || null,
+      team1_id: this.validateId(match.opponent1?.id),
+      team2_id: this.validateId(match.opponent2?.id),
       winner_id: match.opponent1?.result === 'win' 
-        ? match.opponent1.id 
-        : (match.opponent2?.result === 'win' ? match.opponent2.id : null),
+        ? this.validateId(match.opponent1.id) 
+        : (match.opponent2?.result === 'win' ? this.validateId(match.opponent2.id) : null),
       loser_id: match.opponent1?.result === 'loss'
-        ? match.opponent1.id
-        : (match.opponent2?.result === 'loss' ? match.opponent2.id : null),
-      next_match_id: match.child_count > 0 ? match.child_match_id : null,
-      next_loser_match_id: match.child_count > 1 ? match.child_match_id_loser : null,
+        ? this.validateId(match.opponent1.id)
+        : (match.opponent2?.result === 'loss' ? this.validateId(match.opponent2.id) : null),
+      next_match_id: match.child_count > 0 ? this.validateId(match.child_match_id) : null,
+      next_loser_match_id: match.child_count > 1 ? this.validateId(match.child_match_id_loser) : null,
       best_of: match.best_of || 3,
       team1_score: match.opponent1?.score !== undefined ? match.opponent1.score : null,
       team2_score: match.opponent2?.score !== undefined ? match.opponent2.score : null,
@@ -109,6 +109,17 @@ export class MatchConverterUtils {
     console.log(`DB match converted to brackets-manager format: ${bracketMatch.id}, stage=${bracketMatch.stage_id}`);
     
     return bracketMatch;
+  }
+
+  /**
+   * Validate an ID to ensure it's not 'undefined' or undefined
+   * Returns null if invalid, otherwise returns the original ID
+   */
+  private validateId(id: any): string | null {
+    if (!id || id === 'undefined') {
+      return null;
+    }
+    return id;
   }
 
   /**

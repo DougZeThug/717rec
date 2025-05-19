@@ -23,6 +23,12 @@ export class BracketCreationService {
         throw new Error('Bracket name is required');
       }
       
+      // Add explicit divisionId validation
+      if (!divisionId) {
+        console.error('divisionId missing');
+        throw new Error('divisionId missing');
+      }
+      
       if (teamIds.length === 0) {
         throw new Error('At least one team is required');
       }

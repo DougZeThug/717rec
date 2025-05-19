@@ -46,7 +46,11 @@ const BracketForm: React.FC<BracketFormProps> = ({
         />
         <BracketFormFormat form={form} />
         <BracketFormTeams form={form} teams={filteredTeams} />
-        <BracketFormActions isSubmitting={isSubmitting} onCancel={onCancel} />
+        <BracketFormActions 
+          isSubmitting={isSubmitting} 
+          onCancel={onCancel} 
+          form={form} // Pass form to BracketFormActions
+        />
       </form>
     </Form>
   );
