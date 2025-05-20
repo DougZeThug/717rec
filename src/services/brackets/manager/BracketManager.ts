@@ -12,29 +12,20 @@ const bracketsAdapter = new BracketsAdapter();
 // This extends the adapter with the original method signatures
 const adapterWithLegacySupport = {
   // Standard interface methods
-  insert: (data: any[]) => bracketsAdapter.insert(data),
+  insert: (data: any[]): Promise<boolean> => bracketsAdapter.insert(data),
   select: (filter?: any) => bracketsAdapter.select(filter),
   update: (id: string, data: any) => bracketsAdapter.update(id, data),
   delete: (filter?: any) => bracketsAdapter.delete(filter),
   
   // Legacy table-based methods used by brackets-manager
-  insertInto: (table: string, data: any) => bracketsAdapter.insertIntoTable(table, data),
+  insertInto: (table: string, data: any): Promise<boolean> => bracketsAdapter.insertIntoTable(table, data),
   selectFrom: (table: string, filter?: any) => bracketsAdapter.selectFromTable(table, filter),
   updateIn: (table: string, id: string, data: any) => bracketsAdapter.updateInTable(table, id, data),
   deleteFrom: (table: string, filter?: any) => bracketsAdapter.deleteFromTable(table, filter)
 };
 
-// Fix for the return type issue - wrap adapter to return boolean for insert operations
-const adapterWithCorrectReturnTypes = {
-  ...adapterWithLegacySupport,
-  insert: async (data: any[]): Promise<boolean> => {
-    const result = await bracketsAdapter.insert(data);
-    return result > 0;
-  }
-};
-
 // Create the brackets manager instance
-const baseManager = new BracketsManagerModule.BracketsManager(adapterWithCorrectReturnTypes);
+const baseManager = new BracketsManagerModule.BracketsManager(adapterWithLegacySupport);
 
 // Create a facade that adds missing functionality and standardizes the interface
 export const bracketManager = {
@@ -42,10 +33,10 @@ export const bracketManager = {
   ...baseManager,
   
   // Add methods that match our expected API
-  getMatches: (filter?: any) => baseManager.select('match', filter),
+  getMatches: (filter?: any) => baseManager.select.match(filter),
   
   updateMatchResult: async (matchId: string, resultData: any) => {
-    return baseManager.update('match', matchId, resultData);
+    return baseManager.update.match(matchId, resultData);
   },
   
   createStage: async (stageData: any) => {
@@ -59,7 +50,7 @@ export const bracketManager = {
   },
   
   deleteMatches: async (filter?: any) => {
-    return baseManager.delete('match', filter);
+    return baseManager.delete.match(filter);
   },
   
   // Helper utility functions
