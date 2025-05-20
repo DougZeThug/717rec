@@ -1,3 +1,4 @@
+
 import * as BracketsManagerModule from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFilter, MatchFilter } from '../adapter/types/AdapterTypes';
@@ -7,17 +8,17 @@ export type SeedOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_
 
 /**
  * Interface that matches what brackets-manager expects
- * Note: CrudInterface expects insert to return Promise<boolean>
+ * Note: CrudInterface expects insert to return Promise<number>
  */
 interface BracketsManagerAdapter {
   // Standard methods with return types matching what brackets-manager expects
-  insert(data: any[]): Promise<boolean>; // Use boolean as expected by brackets-manager
+  insert(data: any[]): Promise<number>; // Changed from boolean to number to match CrudInterface
   select(filter?: any): Promise<any[]>;
   update(id: string, data: any): Promise<number>;
   delete(filter?: any): Promise<number>;
   
   // Legacy table-based methods
-  insertInto(table: string, data: any): Promise<boolean>; // Use boolean as expected by brackets-manager
+  insertInto(table: string, data: any): Promise<number>; // Changed from boolean to number
   selectFrom(table: string, filter?: any): Promise<any[]>;
   updateIn(table: string, id: string, data: any): Promise<number>;
   deleteFrom(table: string, filter?: any): Promise<number>;
@@ -29,13 +30,14 @@ const bracketsAdapter = new BracketsAdapter();
 // Create an adapter bridge that converts our return types to what brackets-manager expects
 const adapterWithLegacySupport: BracketsManagerAdapter = {
   // Standard interface methods with proper return types
-  insert: async (data: any[]): Promise<boolean> => {
-    // We need to return a boolean as expected by brackets-manager
+  insert: async (data: any[]): Promise<number> => {
+    // We need to return a number as expected by brackets-manager
     try {
-      return await bracketsAdapter.insert(data);
+      const success = await bracketsAdapter.insert(data);
+      return success ? data.length : 0; // Return number of inserted records on success, 0 on failure
     } catch (error) {
       console.error("Error in insert operation:", error);
-      return false;
+      return 0;
     }
   },
   select: (filter?: BracketFilter) => bracketsAdapter.select(filter),
@@ -43,14 +45,15 @@ const adapterWithLegacySupport: BracketsManagerAdapter = {
   delete: (filter?: BracketFilter) => bracketsAdapter.delete(filter),
   
   // Legacy table-based methods with proper return types
-  insertInto: async (table: string, data: any): Promise<boolean> => {
-    // We need to return a boolean as expected by brackets-manager
+  insertInto: async (table: string, data: any): Promise<number> => {
+    // We need to return a number as expected by brackets-manager
     try {
       const dataArray = Array.isArray(data) ? data : [data];
-      return await bracketsAdapter.insertIntoTable(table, dataArray);
+      const success = await bracketsAdapter.insertIntoTable(table, dataArray);
+      return success ? dataArray.length : 0; // Return number of inserted records on success, 0 on failure
     } catch (error) {
       console.error(`Error in insertIntoTable (${table}):`, error);
-      return false;
+      return 0;
     }
   },
   selectFrom: (table: string, filter?: BracketFilter) => bracketsAdapter.selectFromTable(table, filter),

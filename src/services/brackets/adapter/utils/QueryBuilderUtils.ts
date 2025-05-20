@@ -3,13 +3,13 @@ import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
 
 // Define Supabase's valid table names to match the database schema
-type DatabaseTableName = 'matches' | 'participants' | 'brackets';
+type ValidTableName = 'matches' | 'participants' | 'brackets';
 
 /**
  * Maps between brackets-manager table names and actual database table names
  * @private
  */
-const mapTableName = (bracketsManagerTable: string): DatabaseTableName => {
+const mapTableName = (bracketsManagerTable: string): ValidTableName => {
   // Map brackets-manager table names to our database tables
   switch (bracketsManagerTable) {
     case 'match': return 'matches';
@@ -18,7 +18,7 @@ const mapTableName = (bracketsManagerTable: string): DatabaseTableName => {
     default: 
       // For other tables, return the original name if it's a valid database table
       if (['matches', 'participants', 'brackets'].includes(bracketsManagerTable)) {
-        return bracketsManagerTable as DatabaseTableName;
+        return bracketsManagerTable as ValidTableName;
       }
       // Fallback to matches if unknown table (shouldn't happen in practice)
       console.warn(`Unknown table name: ${bracketsManagerTable}, falling back to 'matches'`);
