@@ -1,3 +1,4 @@
+
 import * as BracketsManagerModule from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFilter, MatchFilter } from '../adapter/types/AdapterTypes';
@@ -7,17 +8,17 @@ export type SeedOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_
 
 /**
  * Interface that matches what brackets-manager expects
- * Note: CrudInterface expects insert to return Promise<number>
+ * Note: In brackets-manager, CrudInterface expects insert to return Promise<number>
  */
 interface BracketsManagerAdapter {
   // Standard methods with return types matching what brackets-manager expects
-  insert(data: any[]): Promise<number>; // Return number of inserted records as expected by CrudInterface
+  insert(data: any[]): Promise<number>; // Returns number of inserted records
   select(filter?: any): Promise<any[]>;
   update(id: string, data: any): Promise<number>;
   delete(filter?: any): Promise<number>;
   
   // Legacy table-based methods
-  insertInto(table: string, data: any): Promise<number>; // Return number of inserted records
+  insertInto(table: string, data: any): Promise<number>; // Returns number of inserted records
   selectFrom(table: string, filter?: any): Promise<any[]>;
   updateIn(table: string, id: string, data: any): Promise<number>;
   deleteFrom(table: string, filter?: any): Promise<number>;
@@ -27,7 +28,6 @@ interface BracketsManagerAdapter {
 const bracketsAdapter = new BracketsAdapter();
 
 // Create an adapter bridge that connects our adapter to brackets-manager
-// No need for type conversions as both now use the same return types
 const adapterWithLegacySupport: BracketsManagerAdapter = {
   // Standard interface methods
   insert: (data: any[]) => bracketsAdapter.insert(data),

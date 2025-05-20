@@ -13,6 +13,7 @@ import {
 } from './types/AdapterTypes';
 import { AdapterOperationError } from './errors/AdapterErrors';
 import { filterUtils } from './utils/FilterUtils';
+import { TableNameMapper } from './interfaces/TableNameMapper';
 
 /**
  * The BracketsAdapter implements the Storage interface from brackets-manager
@@ -34,19 +35,27 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
    * Set the current table for operations
    * @private
    */
-  private setTable(table: string): BracketTable {
-    switch(table) {
+  private setTable(tableName: string): BracketTable {
+    if (!TableNameMapper.isValidTable(tableName)) {
+      throw new AdapterOperationError('setTable', `Invalid table name: ${tableName}`);
+    }
+    
+    // Convert table name to BracketTable enum
+    switch(tableName) {
       case 'match':
+      case 'matches':
         this.currentTable = BracketTable.Match;
         break;
       case 'participant':
+      case 'participants':
         this.currentTable = BracketTable.Participant;
         break;
       case 'stage':
+      case 'brackets':
         this.currentTable = BracketTable.Stage;
         break;
       default:
-        throw new AdapterOperationError('setTable', `Unknown table: ${table}`);
+        throw new AdapterOperationError('setTable', `Unknown table: ${tableName}`);
     }
     return this.currentTable;
   }
@@ -59,40 +68,39 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
   async insert(data: any[]): Promise<number> {
     if (!data || data.length === 0) {
       console.warn('Insert called with empty data');
-      return 0; // No data to insert, 0 records inserted
+      return 0;
     }
     
-    // If data includes a table property, use that to set the current table
-    if (data[0] && 'table' in data[0]) {
-      this.setTable(data[0].table as string);
-      // Remove the table property from each item
-      data = data.map(({ table, ...rest }) => rest);
-    }
-
     try {
+      // If data includes a table property, use that to set the current table
+      if (data[0] && 'table' in data[0]) {
+        this.setTable(data[0].table as string);
+        // Remove the table property from each item
+        data = data.map(({ table, ...rest }) => rest);
+      }
+
       // Choose the appropriate adapter based on the current table
-      let insertCount = 0;
-      
       switch (this.currentTable) {
         case BracketTable.Match:
-          insertCount = await this.matchAdapter.insertMatches(data);
-          break;
+          return await this.matchAdapter.insertMatches(data);
+        
         case BracketTable.Participant:
-          insertCount = await this.participantAdapter.insertParticipants(data);
-          break;
+          return await this.participantAdapter.insertParticipants(data);
+        
         case BracketTable.Stage:
           // Stage adapter expects a single item
-          insertCount = await this.stageAdapter.insertStage(data[0]);
-          break;
+          return await this.stageAdapter.insertStage(data[0]);
+        
         default:
           throw new AdapterOperationError('insert', `Unknown table: ${this.currentTable}`);
       }
-      
-      // Return count of inserted records as expected by brackets-manager
-      return insertCount;
     } catch (error) {
       console.error(`Error inserting into ${this.currentTable}:`, error);
-      return 0; // Return 0 on error (no records inserted)
+      throw new AdapterOperationError(
+        'insert',
+        `Failed to insert records into ${this.currentTable}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
   
@@ -101,14 +109,17 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
    * It sets the table and forwards the call to the standard insert method
    * @returns Number of records successfully inserted
    */
-  async insertIntoTable(table: string, data: any | any[]): Promise<number> {
+  async insertIntoTable(table: string, data: any[]): Promise<number> {
     try {
       this.setTable(table);
-      const dataArray = Array.isArray(data) ? data : [data];
-      return this.insert(dataArray);
+      return this.insert(data);
     } catch (error) {
       console.error(`Error in insertIntoTable (${table}):`, error);
-      return 0; // Return 0 on error (no records inserted)
+      throw new AdapterOperationError(
+        'insertIntoTable',
+        `Failed to insert records into table ${table}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
   
@@ -118,31 +129,38 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
    * @returns Array of records
    */
   async select(filter?: BracketFilter): Promise<BracketRecord[]> {
-    // If filter includes a table property, use that to set the current table
-    if (filter && 'table' in filter) {
-      this.setTable(filter.table as string);
-      // Remove the table property to avoid passing it to the adapter
-      const { table, ...restFilter } = filter;
-      filter = restFilter as BracketFilter;
-    }
-    
     try {
+      // If filter includes a table property, use that to set the current table
+      if (filter && 'table' in filter) {
+        this.setTable(filter.table as string);
+        // Remove the table property to avoid passing it to the adapter
+        const { table, ...restFilter } = filter;
+        filter = restFilter as BracketFilter;
+      }
+      
       // Choose the appropriate adapter based on the current table
       switch (this.currentTable) {
         case BracketTable.Match:
           return this.matchAdapter.selectMatches(filter as MatchFilter);
+        
         case BracketTable.Participant:
           return this.participantAdapter.selectParticipants(filter as ParticipantFilter);
+        
         case BracketTable.Stage:
           // Convert to a safe StageFilter to avoid type issues
           const stageFilter = filterUtils.toStageFilter(filter);
           return this.stageAdapter.selectStage(stageFilter);
+        
         default:
           throw new AdapterOperationError('select', `Unknown table: ${this.currentTable}`);
       }
     } catch (error) {
       console.error(`Error selecting from ${this.currentTable}:`, error);
-      return [];
+      throw new AdapterOperationError(
+        'select',
+        `Failed to select records from ${this.currentTable}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
 
@@ -156,7 +174,11 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       return this.select({...filter, table});
     } catch (error) {
       console.error(`Error in selectFromTable (${table}):`, error);
-      return [];
+      throw new AdapterOperationError(
+        'selectFromTable',
+        `Failed to select records from table ${table}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
   
@@ -167,29 +189,36 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
    * @returns Number of records updated
    */
   async update(id: string, data: any): Promise<number> {
-    // If data includes a table property, use that to set the current table
-    if (data && 'table' in data) {
-      this.setTable(data.table as string);
-      // Remove the table property to avoid passing it to the adapter
-      const { table, ...restData } = data;
-      data = restData;
-    }
-    
     try {
+      // If data includes a table property, use that to set the current table
+      if (data && 'table' in data) {
+        this.setTable(data.table as string);
+        // Remove the table property to avoid passing it to the adapter
+        const { table, ...restData } = data;
+        data = restData;
+      }
+      
       // Choose the appropriate adapter based on the current table
       switch (this.currentTable) {
         case BracketTable.Match:
           return this.matchAdapter.updateMatch(id, data);
+        
         case BracketTable.Participant:
           return this.participantAdapter.updateParticipant(id, data);
+        
         case BracketTable.Stage:
           return this.stageAdapter.updateStage(id, data);
+        
         default:
           throw new AdapterOperationError('update', `Unknown table: ${this.currentTable}`);
       }
     } catch (error) {
       console.error(`Error updating ${this.currentTable}:`, error);
-      return 0;
+      throw new AdapterOperationError(
+        'update',
+        `Failed to update record in ${this.currentTable}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
   
@@ -203,7 +232,11 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       return this.update(id, {...data, table});
     } catch (error) {
       console.error(`Error in updateInTable (${table}):`, error);
-      return 0;
+      throw new AdapterOperationError(
+        'updateInTable',
+        `Failed to update record in table ${table}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
   
@@ -213,31 +246,38 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
    * @returns Number of records deleted
    */
   async delete(filter?: BracketFilter): Promise<number> {
-    // If filter includes a table property, use that to set the current table
-    if (filter && 'table' in filter) {
-      this.setTable(filter.table as string);
-      // Remove the table property to avoid passing it to the adapter
-      const { table, ...restFilter } = filter;
-      filter = restFilter as BracketFilter;
-    }
-    
     try {
+      // If filter includes a table property, use that to set the current table
+      if (filter && 'table' in filter) {
+        this.setTable(filter.table as string);
+        // Remove the table property to avoid passing it to the adapter
+        const { table, ...restFilter } = filter;
+        filter = restFilter as BracketFilter;
+      }
+      
       // Choose the appropriate adapter based on the current table
       switch (this.currentTable) {
         case BracketTable.Match:
           return this.matchAdapter.deleteMatches(filter as MatchFilter);
+        
         case BracketTable.Participant:
           return this.participantAdapter.deleteParticipants(filter as ParticipantFilter);
+        
         case BracketTable.Stage:
           // Convert to a safe StageFilter to avoid type issues
           const stageFilter = filterUtils.toStageFilter(filter);
           return this.stageAdapter.deleteStage(stageFilter);
+        
         default:
           throw new AdapterOperationError('delete', `Unknown table: ${this.currentTable}`);
       }
     } catch (error) {
       console.error(`Error deleting from ${this.currentTable}:`, error);
-      return 0;
+      throw new AdapterOperationError(
+        'delete',
+        `Failed to delete records from ${this.currentTable}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
   
@@ -251,7 +291,11 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       return this.delete({...filter, table});
     } catch (error) {
       console.error(`Error in deleteFromTable (${table}):`, error);
-      return 0;
+      throw new AdapterOperationError(
+        'deleteFromTable',
+        `Failed to delete records from table ${table}: ${error instanceof Error ? error.message : String(error)}`,
+        error
+      );
     }
   }
 }

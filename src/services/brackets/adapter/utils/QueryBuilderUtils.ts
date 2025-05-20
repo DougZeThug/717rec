@@ -1,30 +1,6 @@
-
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
-
-// Define Supabase's valid table names to match the database schema
-type ValidTableName = 'matches' | 'participants' | 'brackets';
-
-/**
- * Maps between brackets-manager table names and actual database table names
- * @private
- */
-const mapTableName = (bracketsManagerTable: string): ValidTableName => {
-  // Map brackets-manager table names to our database tables
-  switch (bracketsManagerTable) {
-    case 'match': return 'matches';
-    case 'participant': return 'participants';
-    case 'stage': return 'brackets';
-    default: 
-      // For other tables, return the original name if it's a valid database table
-      if (['matches', 'participants', 'brackets'].includes(bracketsManagerTable)) {
-        return bracketsManagerTable as ValidTableName;
-      }
-      // Fallback to matches if unknown table (shouldn't happen in practice)
-      console.warn(`Unknown table name: ${bracketsManagerTable}, falling back to 'matches'`);
-      return 'matches';
-  }
-};
+import { TableNameMapper } from '../interfaces/TableNameMapper';
 
 /**
  * Generic query builder utilities for database operations
@@ -70,7 +46,7 @@ export class QueryBuilderUtils {
    */
   static async executeDelete(table: string, filter?: BaseFilter): Promise<number> {
     // Map the table name to the actual database table
-    const dbTable = mapTableName(table);
+    const dbTable = TableNameMapper.toDbTableName(table);
     
     // Create the query using the mapped table name
     let query = supabase.from(dbTable).delete();
@@ -91,7 +67,7 @@ export class QueryBuilderUtils {
     if (!data?.length) return 0;
     
     // Map the table name to the actual database table
-    const dbTable = mapTableName(table);
+    const dbTable = TableNameMapper.toDbTableName(table);
     
     let insertedCount = 0;
     
@@ -113,7 +89,7 @@ export class QueryBuilderUtils {
    */
   static async executeUpdate(table: string, id: string, data: any): Promise<number> {
     // Map the table name to the actual database table
-    const dbTable = mapTableName(table);
+    const dbTable = TableNameMapper.toDbTableName(table);
     
     const { error } = await supabase
       .from(dbTable)
