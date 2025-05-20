@@ -1,3 +1,4 @@
+
 import { BaseFilter } from '../interfaces/StorageAdapter';
 
 /**
@@ -14,6 +15,9 @@ export interface MatchFilter extends BaseFilter {
 // Re-export BaseFilter for convenience - using export type to fix TS1205 error
 export type { BaseFilter } from '../interfaces/StorageAdapter';
 
+/**
+ * Types for the Match adapter
+ */
 export interface MatchRecord {
   id: string;
   stage_id: string;

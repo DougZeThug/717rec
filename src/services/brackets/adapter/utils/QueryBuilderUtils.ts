@@ -2,8 +2,29 @@
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
 
-// Define a type for valid table names in our database
-type ValidTableName = 'matches' | 'participants' | 'stages' | 'brackets';
+// Define Supabase's valid table names to match the database schema
+type DatabaseTableName = 'matches' | 'participants' | 'brackets';
+
+/**
+ * Maps between brackets-manager table names and actual database table names
+ * @private
+ */
+const mapTableName = (bracketsManagerTable: string): DatabaseTableName => {
+  // Map brackets-manager table names to our database tables
+  switch (bracketsManagerTable) {
+    case 'match': return 'matches';
+    case 'participant': return 'participants';
+    case 'stage': return 'brackets';
+    default: 
+      // For other tables, return the original name if it's a valid database table
+      if (['matches', 'participants', 'brackets'].includes(bracketsManagerTable)) {
+        return bracketsManagerTable as DatabaseTableName;
+      }
+      // Fallback to matches if unknown table (shouldn't happen in practice)
+      console.warn(`Unknown table name: ${bracketsManagerTable}, falling back to 'matches'`);
+      return 'matches';
+  }
+};
 
 /**
  * Generic query builder utilities for database operations
@@ -47,9 +68,12 @@ export class QueryBuilderUtils {
    * Execute a batch delete operation with filtering
    * @returns Number of records deleted
    */
-  static async executeDelete(table: ValidTableName, filter?: BaseFilter): Promise<number> {
-    // Type assertion to satisfy TypeScript, since we're validating the table name
-    let query = supabase.from(table).delete();
+  static async executeDelete(table: string, filter?: BaseFilter): Promise<number> {
+    // Map the table name to the actual database table
+    const dbTable = mapTableName(table);
+    
+    // Create the query using the mapped table name
+    let query = supabase.from(dbTable).delete();
     
     query = this.applyCommonFilters(query, filter);
     
@@ -63,16 +87,18 @@ export class QueryBuilderUtils {
    * Execute a batch insert operation
    * @returns Number of records inserted
    */
-  static async executeBatchInsert(table: ValidTableName, data: any[]): Promise<number> {
+  static async executeBatchInsert(table: string, data: any[]): Promise<number> {
     if (!data?.length) return 0;
+    
+    // Map the table name to the actual database table
+    const dbTable = mapTableName(table);
     
     let insertedCount = 0;
     
     // Batch insert to keep rows ≤ 50 for optimal performance
     for (let i = 0; i < data.length; i += 50) {
       const batch = data.slice(i, i + 50);
-      // Type assertion to satisfy TypeScript
-      const { error } = await supabase.from(table).insert(batch);
+      const { error } = await supabase.from(dbTable).insert(batch);
       
       if (error) throw error;
       insertedCount += batch.length;
@@ -85,10 +111,12 @@ export class QueryBuilderUtils {
    * Execute a single record update
    * @returns Number of records updated (1 or 0)
    */
-  static async executeUpdate(table: ValidTableName, id: string, data: any): Promise<number> {
-    // Type assertion to satisfy TypeScript
+  static async executeUpdate(table: string, id: string, data: any): Promise<number> {
+    // Map the table name to the actual database table
+    const dbTable = mapTableName(table);
+    
     const { error } = await supabase
-      .from(table)
+      .from(dbTable)
       .update(data)
       .eq('id', id);
     
