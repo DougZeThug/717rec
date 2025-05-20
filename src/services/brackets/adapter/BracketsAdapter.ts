@@ -4,17 +4,20 @@ import { MatchAdapter, MatchFilter } from './adapters/MatchAdapter';
 import { ParticipantAdapter, ParticipantFilter } from './adapters/ParticipantAdapter';
 import { StageAdapter, StageFilter } from './adapters/StageAdapter';
 
-type FilterMap = {
-  match: MatchFilter;
-  participant: ParticipantFilter;
-  stage: StageFilter;
-}
+// Define a union type for all possible data record types
+type BracketRecord = any;
+
+// Define a union type for all possible filter types
+type BracketFilter = MatchFilter | ParticipantFilter | StageFilter | BaseFilter;
+
+// Define a union type for all possible insert data types
+type BracketInsertData = any;
 
 /**
  * The BracketsAdapter implements the Storage interface from brackets-manager
  * to bridge between brackets-manager operations and our database
  */
-export class BracketsAdapter implements StorageAdapter {
+export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFilter, BracketInsertData> {
   private matchAdapter: MatchAdapter;
   private participantAdapter: ParticipantAdapter;
   private stageAdapter: StageAdapter;
