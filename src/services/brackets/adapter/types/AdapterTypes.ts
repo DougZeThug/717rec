@@ -9,6 +9,7 @@ export interface MatchFilter extends BaseFilter {
   round?: number;
   group_id?: string;
   status?: string;
+  bracket_id?: string;
 }
 
 export interface MatchRecord {
@@ -64,6 +65,7 @@ export interface StageRecord {
  */
 export interface ParticipantFilter extends BaseFilter {
   tournament_id?: string;
+  bracket_id?: string;
 }
 
 export interface ParticipantRecord {

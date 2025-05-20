@@ -7,6 +7,7 @@ export interface BaseFilter {
   limit?: number;
   offset?: number;
   order?: string;
+  table?: string;
   [key: string]: any;
 }
 

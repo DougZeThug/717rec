@@ -1,6 +1,7 @@
 
 import * as BracketsManagerModule from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
+import { BracketFilter, MatchFilter } from '../adapter/types/AdapterTypes';
 
 // Define types for Bracket Manager
 export type SeedOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_shift' | string;
@@ -13,15 +14,15 @@ const bracketsAdapter = new BracketsAdapter();
 const adapterWithLegacySupport = {
   // Standard interface methods
   insert: (data: any[]): Promise<boolean> => bracketsAdapter.insert(data),
-  select: (filter?: any) => bracketsAdapter.select(filter),
+  select: (filter?: BracketFilter) => bracketsAdapter.select(filter),
   update: (id: string, data: any) => bracketsAdapter.update(id, data),
-  delete: (filter?: any) => bracketsAdapter.delete(filter),
+  delete: (filter?: BracketFilter) => bracketsAdapter.delete(filter),
   
   // Legacy table-based methods used by brackets-manager
   insertInto: (table: string, data: any): Promise<boolean> => bracketsAdapter.insertIntoTable(table, data),
-  selectFrom: (table: string, filter?: any) => bracketsAdapter.selectFromTable(table, filter),
+  selectFrom: (table: string, filter?: BracketFilter) => bracketsAdapter.selectFromTable(table, filter),
   updateIn: (table: string, id: string, data: any) => bracketsAdapter.updateInTable(table, id, data),
-  deleteFrom: (table: string, filter?: any) => bracketsAdapter.deleteFromTable(table, filter)
+  deleteFrom: (table: string, filter?: BracketFilter) => bracketsAdapter.deleteFromTable(table, filter)
 };
 
 // Create the brackets manager instance
@@ -33,7 +34,7 @@ export const bracketManager = {
   ...baseManager,
   
   // Add methods that match our expected API
-  getMatches: (filter?: any) => baseManager.select.match(filter),
+  getMatches: (filter?: MatchFilter) => baseManager.select.match(filter),
   
   updateMatchResult: async (matchId: string, resultData: any) => {
     return baseManager.update.match(matchId, resultData);
@@ -49,7 +50,7 @@ export const bracketManager = {
     return baseManager.create.participant(participants);
   },
   
-  deleteMatches: async (filter?: any) => {
+  deleteMatches: async (filter?: MatchFilter) => {
     return baseManager.delete.match(filter);
   },
   
