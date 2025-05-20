@@ -32,6 +32,14 @@ interface GetParticipantsResponse {
 }
 
 /**
+ * Interface for RPC function responses
+ */
+interface RpcResponse {
+  data: any;
+  error: any | null;
+}
+
+/**
  * Adapter to handle participants (teams) in the database
  * Provides methods to insert, select, update and delete participants
  */
@@ -152,8 +160,9 @@ export class ParticipantAdapter {
       
       if (participant.position !== undefined && typeof participant.position === 'number') {
         try {
-          const { error } = await this.updateTeamSeed(id, participant.position);
-          return error ? 0 : 1;
+          // Fix: Store result of updateTeamSeed as a boolean
+          const success = await this.updateTeamSeed(id, participant.position);
+          return success ? 1 : 0;
         } catch (error) {
           console.error("Error updating participant:", error);
           return 0;
@@ -221,8 +230,9 @@ export class ParticipantAdapter {
   
   /**
    * Helper method to call the get_participants RPC function
+   * Fix: Define the proper return type for RPC call
    */
-  private async getParticipantsViaRPC(tournamentId: string) {
+  private async getParticipantsViaRPC(tournamentId: string): Promise<RpcResponse> {
     return await supabase.rpc(
       'get_participants',
       { p_tournament_id: tournamentId }
@@ -231,8 +241,13 @@ export class ParticipantAdapter {
   
   /**
    * Helper method to get participants from teams table as fallback
+   * Fix: Made filter parameter more specific to avoid recursive type issue
    */
-  private async getParticipantsFromTeams(filter: Record<string, any>): Promise<ParticipantRecord[]> {
+  private async getParticipantsFromTeams(filter: {
+    id?: string[] | string;
+    tournament_id?: string;
+    [key: string]: any;
+  }): Promise<ParticipantRecord[]> {
     // Create a base query
     let query = supabase.from('teams').select('*');
     
@@ -250,6 +265,9 @@ export class ParticipantAdapter {
       }
       
       query = query.in('id', validIds);
+    } else if (filter.id && typeof filter.id === 'string') {
+      // Handle single id filter
+      query = query.eq('id', filter.id);
     }
     
     // Handle tournament_id filter by looking up teams in that bracket
@@ -266,7 +284,7 @@ export class ParticipantAdapter {
     const simpleFilters: Record<string, any> = {};
     
     Object.entries(filter).forEach(([key, value]) => {
-      if (value !== undefined && value !== 'undefined') {
+      if (value !== undefined && value !== 'undefined' && key !== 'id') {
         simpleFilters[key] = value;
       }
     });
