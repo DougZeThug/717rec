@@ -1,4 +1,3 @@
-
 import { BaseFilter } from '../interfaces/StorageAdapter';
 
 /**
@@ -11,6 +10,9 @@ export interface MatchFilter extends BaseFilter {
   status?: string;
   bracket_id?: string;
 }
+
+// Re-export BaseFilter for convenience
+export { BaseFilter } from '../interfaces/StorageAdapter';
 
 export interface MatchRecord {
   id: string;

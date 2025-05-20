@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 import { BaseFilter } from '../interfaces/StorageAdapter';
+import { AdapterOperationError } from '../errors/AdapterErrors';
 
 /**
  * Match type enum for database compatibility
@@ -21,6 +21,14 @@ export interface MatchFilter extends BaseFilter {
 }
 
 /**
+ * Response from a batch insert operation
+ */
+interface BatchInsertResponse {
+  count: number;
+  error: Error | null;
+}
+
+/**
  * Adapter to manage matches in the database
  */
 export class MatchAdapter {
@@ -31,21 +39,41 @@ export class MatchAdapter {
    * @returns Number of matches inserted
    */
   async insertMatches(matches: any[]): Promise<number> {
-    let insertedCount = 0;
-    
-    // Batch insert to keep rows ≤ 50
-    for (let i = 0; i < matches.length; i += 50) {
-      const slice = matches.slice(i, i + 50);
-      
-      // Convert to our match format
-      const matchesForDb = slice.map(match => this.converter.convertMatchToDbFormat(match));
-      
-      const { error } = await supabase.from('matches').insert(matchesForDb);
-      if (error) throw error;
-      insertedCount += slice.length;
+    if (!matches?.length) {
+      return 0;
     }
+
+    try {
+      let insertedCount = 0;
+      
+      // Batch insert to keep rows ≤ 50
+      for (let i = 0; i < matches.length; i += 50) {
+        const result = await this.insertMatchBatch(matches.slice(i, i + 50));
+        if (result.error) throw result.error;
+        insertedCount += result.count;
+      }
+      
+      return insertedCount;
+    } catch (error) {
+      console.error("Error inserting matches:", error);
+      throw new AdapterOperationError('insertMatches', `Failed to insert matches: ${error instanceof Error ? error.message : String(error)}`, error);
+    }
+  }
+
+  /**
+   * Insert a batch of matches (up to 50)
+   * @private
+   */
+  private async insertMatchBatch(matchBatch: any[]): Promise<BatchInsertResponse> {
+    // Convert to our match format
+    const matchesForDb = matchBatch.map(match => this.converter.convertMatchToDbFormat(match));
     
-    return insertedCount;
+    const { error, count } = await supabase.from('matches').insert(matchesForDb).select('count');
+    
+    return {
+      count: count || matchBatch.length,
+      error
+    };
   }
   
   /**
@@ -62,7 +90,7 @@ export class MatchAdapter {
       return queryResult.data ? queryResult.data.map(match => this.converter.convertMatchFromDbFormat(match)) : [];
     } catch (error) {
       console.error("Error selecting matches:", error);
-      throw error;
+      throw new AdapterOperationError('selectMatches', `Failed to select matches: ${error instanceof Error ? error.message : String(error)}`, error);
     }
   }
   
@@ -75,36 +103,46 @@ export class MatchAdapter {
     let query = supabase.from('matches').select('*');
     
     if (filter) {
-      // Apply filters if provided
-      if (filter.id) {
-        if (Array.isArray(filter.id)) {
-          query = query.in('id', filter.id);
-        } else {
-          query = query.eq('id', filter.id);
-        }
-      }
-      
-      if (filter.bracket_id) {
-        query = query.eq('bracket_id', filter.bracket_id);
-      }
-      
-      if (filter.round_number !== undefined) {
-        query = query.eq('round_number', filter.round_number);
-      }
-      
-      if (filter.position !== undefined) {
-        query = query.eq('position', filter.position);
-      }
-      
-      if (filter.match_type) {
-        // Ensure we use a valid match type by casting to the enum type
-        const validMatchType = filter.match_type as MatchTypeEnum;
-        query = query.eq('match_type', validMatchType);
-      }
+      query = this.applyMatchFilters(query, filter);
     }
     
     // Execute the query and return the result
     return await query;
+  }
+
+  /**
+   * Apply filters to a match query
+   * @private
+   */
+  private applyMatchFilters(query: any, filter: MatchFilter) {
+    // Apply filters if provided
+    if (filter.id) {
+      if (Array.isArray(filter.id)) {
+        query = query.in('id', filter.id);
+      } else {
+        query = query.eq('id', filter.id);
+      }
+    }
+    
+    if (filter.bracket_id) {
+      query = query.eq('bracket_id', filter.bracket_id);
+    }
+    
+    if (filter.round_number !== undefined) {
+      query = query.eq('round_number', filter.round_number);
+    }
+    
+    if (filter.position !== undefined) {
+      query = query.eq('position', filter.position);
+    }
+    
+    if (filter.match_type) {
+      // Ensure we use a valid match type by casting to the enum type
+      const validMatchType = filter.match_type as MatchTypeEnum;
+      query = query.eq('match_type', validMatchType);
+    }
+
+    return query;
   }
   
   /**
@@ -123,7 +161,7 @@ export class MatchAdapter {
       return 1; // Successfully updated 1 match
     } catch (error) {
       console.error("Error updating match:", error);
-      throw error;
+      throw new AdapterOperationError('updateMatch', `Failed to update match: ${error instanceof Error ? error.message : String(error)}`, error);
     }
   }
   
@@ -136,37 +174,7 @@ export class MatchAdapter {
       const query = supabase.from('matches').delete();
       
       // Apply specific filters
-      let finalQuery = query;
-      
-      if (filter) {
-        // Handle id specifically
-        if (filter.id) {
-          if (Array.isArray(filter.id)) {
-            finalQuery = finalQuery.in('id', filter.id);
-          } else {
-            finalQuery = finalQuery.eq('id', filter.id);
-          }
-        }
-        
-        // Handle other specific fields
-        if (filter.bracket_id) {
-          finalQuery = finalQuery.eq('bracket_id', filter.bracket_id);
-        }
-        
-        if (filter.round_number !== undefined) {
-          finalQuery = finalQuery.eq('round_number', filter.round_number);
-        }
-        
-        if (filter.position !== undefined) {
-          finalQuery = finalQuery.eq('position', filter.position);
-        }
-        
-        if (filter.match_type) {
-          // Ensure we use a valid match type by casting to the enum type
-          const validMatchType = filter.match_type as MatchTypeEnum;
-          finalQuery = finalQuery.eq('match_type', validMatchType);
-        }
-      }
+      let finalQuery = filter ? this.applyMatchFilters(query, filter) : query;
       
       const { error, count } = await finalQuery.select('count');
       
@@ -174,7 +182,7 @@ export class MatchAdapter {
       return count || 0;
     } catch (error) {
       console.error("Error deleting matches:", error);
-      throw error;
+      throw new AdapterOperationError('deleteMatches', `Failed to delete matches: ${error instanceof Error ? error.message : String(error)}`, error);
     }
   }
 }

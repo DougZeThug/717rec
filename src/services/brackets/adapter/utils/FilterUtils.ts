@@ -1,5 +1,6 @@
 
-import { BaseFilter, StageFilter } from '../types/AdapterTypes';
+import { BaseFilter } from '../interfaces/StorageAdapter';
+import { StageFilter } from '../types/AdapterTypes';
 
 /**
  * Utility functions for working with filters
