@@ -57,7 +57,7 @@ class BracketManager {
   async createStage(stage: BracketStage): Promise<void> {
     // Ensure seedOrdering is properly typed for brackets-manager
     // Use proper typing to match brackets-manager expectations
-    const seedOrderings = (stage.settings.seedOrdering || []) as BracketsSeedOrdering[];
+    const seedOrderings = (stage.settings.seedOrdering || ['natural']) as BracketsSeedOrdering[];
     
     // Create InputStage object compatible with brackets-manager
     // Remove the id property when converting to InputStage
@@ -72,6 +72,14 @@ class BracketManager {
       }
     };
     
+    console.log(`Creating stage with settings:`, {
+      id: stage.id,
+      name: stage.name,
+      type: stage.type,
+      tournamentId: stage.tournamentId,
+      seedOrderings
+    });
+    
     // According to brackets-manager API, we need to pass the stage directly
     // Cast to any to bypass TypeScript's type checking
     await (this.manager.create as any).stage({
@@ -84,6 +92,18 @@ class BracketManager {
    * Register participants (teams)
    */
   async registerParticipants(participants: any[]): Promise<void> {
+    console.log(`Registering ${participants.length} participants`);
+    
+    if (!participants || participants.length === 0) {
+      console.warn("No participants to register");
+      return;
+    }
+    
+    // Log participant information for debugging
+    participants.forEach((p, i) => {
+      console.log(`Participant ${i+1}: id=${p.id}, name=${p.name || 'Unnamed'}, tournament_id=${p.tournament_id || 'None'}`);
+    });
+    
     // Use manager.storage directly to insert participants
     // This bypasses the type issues with the create API
     const adapter = this.manager.storage;

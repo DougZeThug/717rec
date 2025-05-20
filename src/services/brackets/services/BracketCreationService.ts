@@ -35,12 +35,13 @@ export class BracketCreationService {
       
       // Validate that no team IDs are undefined
       if (teamIds.some(id => !id || id === 'undefined')) {
-        console.error('One or more teams missing IDs');
+        console.error('One or more teams missing IDs:', teamIds.filter(id => !id || id === 'undefined'));
         throw new Error('One or more teams missing IDs');
       }
       
       // Filter out any invalid team IDs
       const validTeamIds = teamIds.filter(id => id && typeof id === 'string' && id.trim() !== '' && id !== 'undefined');
+      console.log(`Valid team IDs: ${validTeamIds.length}`, validTeamIds);
       
       if (validTeamIds.length === 0) {
         throw new Error('No valid team IDs provided');

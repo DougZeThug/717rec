@@ -62,7 +62,10 @@ export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
     }
     
     if (divisionId) {
-      const divisionTeams = teams.filter(team => team.division_id === divisionId || team.division === divisionId);
+      // Fix: Explicitly check for both division_id and division fields
+      const divisionTeams = teams.filter(team => 
+        team.division_id === divisionId || team.division === divisionId
+      );
       console.log(`Filtered teams for division ${divisionId}:`, divisionTeams);
       setFilteredTeams(divisionTeams);
       

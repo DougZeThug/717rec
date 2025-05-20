@@ -58,6 +58,46 @@ export class ParticipantAdapter {
         console.warn(`Some participant teams don't exist in the database: ${missingTeams.map(t => t.id).join(', ')}`);
       }
       
+      // Also insert into participants table (for the new database schema)
+      try {
+        for (const participant of validParticipants) {
+          // Check if participant with this bracket_id and team_id already exists
+          const { data: existingParticipant, error: checkError } = await supabase
+            .from('participants')
+            .select('*')
+            .eq('bracket_id', participant.tournament_id)
+            .eq('team_id', participant.id)
+            .maybeSingle();
+            
+          if (checkError) {
+            console.warn("Error checking existing participant:", checkError);
+            // Continue with next participant
+            continue;
+          }
+          
+          // Only insert if doesn't exist yet
+          if (!existingParticipant) {
+            const { error: insertError } = await supabase
+              .from('participants')
+              .insert({
+                bracket_id: participant.tournament_id,
+                team_id: participant.id,
+                position: participant.position || 0
+              });
+              
+            if (insertError) {
+              // If the table doesn't exist yet, just log and continue
+              // This is for backwards compatibility
+              console.warn("Error inserting into participants table:", insertError);
+            }
+          }
+        }
+      } catch (participantError) {
+        // If the participants table doesn't exist yet, just log and continue
+        console.warn("Could not insert into participants table - it may not exist yet:", participantError);
+        // Don't throw error to maintain backward compatibility
+      }
+      
       // Return number of valid participants
       return validTeamIds.length;
     } catch (error) {

@@ -87,7 +87,9 @@ export class BracketMigrationService {
    */
   static async getTeamsForBracket(bracketId: string): Promise<Team[]> {
     try {
-      // First get all match IDs for the bracket
+      console.log(`Getting teams for bracket ${bracketId}`);
+      
+      // First try to get teams from matches
       const { data: matches, error: matchesError } = await supabase
         .from('matches')
         .select('team1_id, team2_id')
@@ -102,6 +104,35 @@ export class BracketMigrationService {
         if (match.team2_id) teamIds.add(match.team2_id);
       });
       
+      // If no teams found in matches, try to get from the division
+      if (teamIds.size === 0) {
+        console.log(`No teams found in matches for bracket ${bracketId}, trying to get from division`);
+        const { data: bracketData, error: bracketError } = await supabase
+          .from('brackets')
+          .select('division_id')
+          .eq('id', bracketId)
+          .single();
+        
+        if (bracketError) throw bracketError;
+        
+        if (bracketData.division_id) {
+          const { data: divisionTeams, error: divisionError } = await supabase
+            .from('teams')
+            .select('*')
+            .eq('division_id', bracketData.division_id);
+          
+          if (divisionError) throw divisionError;
+          
+          console.log(`Found ${divisionTeams.length} teams from division ${bracketData.division_id}`);
+          return divisionTeams;
+        }
+      }
+      
+      if (teamIds.size === 0) {
+        console.log('No teams found for bracket, returning empty array');
+        return [];
+      }
+      
       // Get teams data
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
@@ -110,6 +141,7 @@ export class BracketMigrationService {
       
       if (teamsError) throw teamsError;
       
+      console.log(`Found ${teams.length} teams for bracket ${bracketId}`);
       return teams;
     } catch (error) {
       console.error('Error getting teams for bracket:', error);
@@ -149,6 +181,7 @@ export class BracketMigrationService {
       const teams = await this.getTeamsForBracket(bracketId);
       
       if (teams.length === 0) {
+        console.error(`No teams found for bracket ${bracketId}`);
         return {
           success: false,
           message: 'No teams found for this bracket',
@@ -179,10 +212,11 @@ export class BracketMigrationService {
       });
       
       // Register teams (participants)
-      const participants = teams.map(team => ({
+      const participants = teams.map((team, index) => ({
         id: team.id,
         name: team.name,
-        tournament_id: bracketId
+        tournament_id: bracketId,
+        position: index + 1 // Add position information
       }));
       
       console.log(`Registering ${participants.length} participants`);
