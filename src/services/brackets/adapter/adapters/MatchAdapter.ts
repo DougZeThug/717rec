@@ -4,6 +4,11 @@ import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 import { BaseFilter } from '../interfaces/StorageAdapter';
 
 /**
+ * Match type enum for database compatibility
+ */
+export type MatchTypeEnum = "winners" | "losers" | "finals";
+
+/**
  * Filter type for match queries
  * Explicitly defining filter object properties to avoid recursive typing
  */
@@ -12,8 +17,7 @@ export interface MatchFilter extends BaseFilter {
   bracket_id?: string;
   round_number?: number;
   position?: number;
-  match_type?: string;
-  // Removed the [key: string]: any to prevent excessive type instantiation
+  match_type?: MatchTypeEnum;
 }
 
 /**
@@ -49,60 +53,58 @@ export class MatchAdapter {
    */
   async selectMatches(filter?: MatchFilter): Promise<any[]> {
     try {
-      // Create base query
-      const query = supabase.from('matches');
+      // Build and execute query with proper type handling
+      const queryResult = await this.buildMatchQuery(filter);
       
-      // Apply filters if provided
-      let finalQuery = query;
-      if (filter) {
-        // Build query with specific filters
-        let queryBuilder = query.select();
-        
-        // Handle id specifically
-        if (filter.id) {
-          if (Array.isArray(filter.id)) {
-            queryBuilder = queryBuilder.in('id', filter.id);
-          } else {
-            queryBuilder = queryBuilder.eq('id', filter.id);
-          }
-        }
-        
-        // Handle bracket_id
-        if (filter.bracket_id) {
-          queryBuilder = queryBuilder.eq('bracket_id', filter.bracket_id);
-        }
-        
-        // Handle round_number
-        if (filter.round_number !== undefined) {
-          queryBuilder = queryBuilder.eq('round_number', filter.round_number);
-        }
-        
-        // Handle position
-        if (filter.position !== undefined) {
-          queryBuilder = queryBuilder.eq('position', filter.position);
-        }
-        
-        // Handle match_type
-        if (filter.match_type) {
-          queryBuilder = queryBuilder.eq('match_type', filter.match_type);
-        }
-        
-        finalQuery = queryBuilder;
-      } else {
-        finalQuery = query.select();
-      }
-      
-      // Execute the final query
-      const { data, error } = await finalQuery;
-      
-      if (error) throw error;
+      if (queryResult.error) throw queryResult.error;
       
       // Convert back to brackets-manager format
-      return data ? data.map(match => this.converter.convertMatchFromDbFormat(match)) : [];
+      return queryResult.data ? queryResult.data.map(match => this.converter.convertMatchFromDbFormat(match)) : [];
     } catch (error) {
       console.error("Error selecting matches:", error);
       throw error;
     }
+  }
+  
+  /**
+   * Build a query for matches based on filter conditions
+   * @private
+   */
+  private async buildMatchQuery(filter?: MatchFilter) {
+    // Create base query that returns all columns from matches table
+    let query = supabase.from('matches').select('*');
+    
+    if (filter) {
+      // Apply filters if provided
+      if (filter.id) {
+        if (Array.isArray(filter.id)) {
+          query = query.in('id', filter.id);
+        } else {
+          query = query.eq('id', filter.id);
+        }
+      }
+      
+      if (filter.bracket_id) {
+        query = query.eq('bracket_id', filter.bracket_id);
+      }
+      
+      if (filter.round_number !== undefined) {
+        query = query.eq('round_number', filter.round_number);
+      }
+      
+      if (filter.position !== undefined) {
+        query = query.eq('position', filter.position);
+      }
+      
+      if (filter.match_type) {
+        // Ensure we use a valid match type by casting to the enum type
+        const validMatchType = filter.match_type as MatchTypeEnum;
+        query = query.eq('match_type', validMatchType);
+      }
+    }
+    
+    // Execute the query and return the result
+    return await query;
   }
   
   /**
@@ -160,11 +162,13 @@ export class MatchAdapter {
         }
         
         if (filter.match_type) {
-          finalQuery = finalQuery.eq('match_type', filter.match_type);
+          // Ensure we use a valid match type by casting to the enum type
+          const validMatchType = filter.match_type as MatchTypeEnum;
+          finalQuery = finalQuery.eq('match_type', validMatchType);
         }
       }
       
-      const { error, count } = await finalQuery;
+      const { error, count } = await finalQuery.select('count');
       
       if (error) throw error;
       return count || 0;

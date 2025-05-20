@@ -5,7 +5,7 @@
  */
 export interface BaseFilter {
   id?: string | string[];
-  // Removing [key: string]: any to prevent excessive type instantiation
+  // Specific properties will be defined in extended interfaces
 }
 
 /**
