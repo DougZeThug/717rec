@@ -545,6 +545,70 @@ export type Database = {
           },
         ]
       }
+      participants: {
+        Row: {
+          bracket_id: string
+          id: string
+          position: number
+          team_id: string
+        }
+        Insert: {
+          bracket_id: string
+          id?: string
+          position: number
+          team_id: string
+        }
+        Update: {
+          bracket_id?: string
+          id?: string
+          position?: number
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_bracket_id_fkey"
+            columns: ["bracket_id"]
+            isOneToOne: false
+            referencedRelation: "brackets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "participants_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+        ]
+      }
       playoff_games: {
         Row: {
           created_at: string | null
@@ -1328,9 +1392,26 @@ export type Database = {
       }
     }
     Functions: {
+      get_participants: {
+        Args: { p_tournament_id: string }
+        Returns: {
+          id: string
+          name: string
+          tournament_id: string
+          team_position: number
+        }[]
+      }
       get_team_division_weight: {
         Args: { team_id: string }
         Returns: number
+      }
+      insert_participant: {
+        Args: {
+          p_bracket_id: string
+          p_team_id: string
+          p_team_position: number
+        }
+        Returns: undefined
       }
       update_team_stats: {
         Args:

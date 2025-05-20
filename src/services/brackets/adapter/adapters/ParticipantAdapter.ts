@@ -64,6 +64,7 @@ export class ParticipantAdapter {
       }
       
       // Try to insert into participants table using raw query to avoid TypeScript errors
+      let insertCount = 0;
       try {
         for (const participant of validParticipants) {
           // Skip participants with missing tournament_id
@@ -72,15 +73,19 @@ export class ParticipantAdapter {
             continue;
           }
           
-          // Use RPC call instead of direct table access to avoid TypeScript errors
-          const { error: insertError } = await supabase.rpc('insert_participant', {
-            p_bracket_id: participant.tournament_id,
-            p_team_id: participant.id,
-            p_position: participant.position || 0
-          }).single();
+          // Use custom RPC call for inserting participant
+          const { error: insertError } = await supabase.rpc(
+            'insert_participant',
+            {
+              p_bracket_id: participant.tournament_id,
+              p_team_id: participant.id,
+              p_team_position: participant.position || 0
+            }
+          );
               
           if (insertError) {
             // Fall back to raw SQL if RPC doesn't exist yet
+            console.warn("Error inserting participant:", insertError);
             const { error: rawError } = await supabase.from('teams')
               .update({ seed: participant.position || 0 })
               .eq('id', participant.id);
@@ -89,7 +94,10 @@ export class ParticipantAdapter {
               console.warn("Error updating team seed:", rawError);
             } else {
               console.log(`Updated seed for team ${participant.id} to ${participant.position || 0}`);
+              insertCount++;
             }
+          } else {
+            insertCount++;
           }
         }
       } catch (participantError) {
@@ -104,13 +112,15 @@ export class ParticipantAdapter {
               
             if (seedError) {
               console.warn(`Error updating seed for team ${participant.id}:`, seedError);
+            } else {
+              insertCount++;
             }
           }
         }
       }
       
-      // Return number of valid participants
-      return validTeamIds.length;
+      // Return number of valid participants inserted
+      return insertCount;
     } catch (error) {
       console.error("Error inserting participants:", error);
       throw error;
@@ -130,13 +140,14 @@ export class ParticipantAdapter {
       // Try to query from the new participants table first using raw SQL
       try {
         // Use RPC call to get participants
-        const { data: participantsData, error: participantsError } = await supabase.rpc('get_participants', {
-          p_tournament_id: filter.tournament_id
-        });
+        const { data, error } = await supabase.rpc(
+          'get_participants',
+          { p_tournament_id: filter.tournament_id }
+        );
         
-        if (!participantsError && participantsData && participantsData.length > 0) {
-          console.log(`Found ${participantsData.length} participants from participants table`);
-          return participantsData;
+        if (!error && data) {
+          console.log(`Found ${data.length} participants from participants table`);
+          return data as ParticipantRecord[];
         }
       } catch (err) {
         console.warn("Participants table or function may not exist yet, falling back to teams:", err);

@@ -2,6 +2,8 @@
 import { bracketManager } from '../manager/BracketManager';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { v4 as uuidv4 } from 'uuid';
+import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
+import { Team } from "@/types";
 
 export class BracketCreationService {
   /**
@@ -13,7 +15,7 @@ export class BracketCreationService {
    * @returns Bracket ID
    */
   static async createBracket(
-    format: string,
+    format: BracketFormat,
     name: string,
     divisionId: string,
     teamIds: string[]
@@ -74,5 +76,33 @@ export class BracketCreationService {
     });
     
     return bracketId;
+  }
+  
+  /**
+   * Create a single-elimination stage
+   */
+  static async createSingleElimStage(
+    bracketId: string,
+    name: string,
+    teams: Team[],
+    bestOf = 3
+  ): Promise<void> {
+    console.log(`Creating single elimination stage for bracket ${bracketId}`);
+    // Implementation would go here
+    throw new Error("Method not implemented yet");
+  }
+  
+  /**
+   * Create a double-elimination stage
+   */
+  static async createDoubleElimStage(
+    bracketId: string,
+    name: string,
+    teams: Team[],
+    bestOf = 3
+  ): Promise<void> {
+    console.log(`Creating double elimination stage for bracket ${bracketId}`);
+    // Implementation would go here
+    throw new Error("Method not implemented yet");
   }
 }
