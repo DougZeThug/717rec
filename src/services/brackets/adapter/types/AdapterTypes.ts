@@ -41,6 +41,8 @@ export interface MatchRecord {
  */
 export interface StageFilter extends BaseFilter {
   tournament_id?: string;
+  // Ensuring this only accepts string, not string[] to match StageAdapter.ts
+  id?: string; 
 }
 
 export interface StageRecord {

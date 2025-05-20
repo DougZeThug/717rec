@@ -153,7 +153,12 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         case BracketTable.Participant:
           return this.participantAdapter.selectParticipants(filter as ParticipantFilter);
         case BracketTable.Stage:
-          return this.stageAdapter.selectStage(filter as StageFilter);
+          // Safely cast the filter to avoid the string[] issue
+          const stageFilter: StageFilter = filter ? {
+            ...filter,
+            id: filter.id && Array.isArray(filter.id) ? filter.id[0] : filter.id
+          } : {};
+          return this.stageAdapter.selectStage(stageFilter);
         default:
           throw new AdapterOperationError('select', `Unknown table: ${this.currentTable}`);
       }
@@ -246,7 +251,12 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         case BracketTable.Participant:
           return this.participantAdapter.deleteParticipants(filter as ParticipantFilter);
         case BracketTable.Stage:
-          return this.stageAdapter.deleteStage(filter as StageFilter);
+          // Safely cast the filter to avoid the string[] issue
+          const stageFilter: StageFilter = filter ? {
+            ...filter,
+            id: filter.id && Array.isArray(filter.id) ? filter.id[0] : filter.id
+          } : {};
+          return this.stageAdapter.deleteStage(stageFilter);
         default:
           throw new AdapterOperationError('delete', `Unknown table: ${this.currentTable}`);
       }
