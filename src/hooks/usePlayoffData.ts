@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,24 +11,7 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
   const { toast } = useToast();
   const { data: teams, isLoading: teamsLoading } = useTeamData();
 
-  const { data: allBrackets, isLoading: bracketsLoading, refetch: refetchBrackets } = useQuery({
-    queryKey: ['brackets'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('brackets')
-        .select('*, divisions(name)');
-      
-      if (error) throw error;
-      
-      return data.map(bracket => ({
-        id: bracket.id,
-        name: bracket.title, // Map title to name for consistency
-        division: bracket.divisions?.name || 'Unknown',
-        format: bracket.format || 'Single Elimination'
-      })) as Partial<PlayoffBracket>[];
-    }
-  });
-  
+  // Improved divisions query - fetch first to ensure we have division data
   const { data: divisions, isLoading: divisionsLoading } = useQuery({
     queryKey: ['divisions'],
     queryFn: async () => {
@@ -37,6 +21,7 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
       
       if (error) throw error;
       
+      console.log("Fetched divisions:", data);
       return data.map(div => ({
         id: div.id,
         name: div.name
@@ -44,34 +29,107 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
     }
   });
   
+  // Enhanced brackets query with better division mapping
+  const { data: allBrackets, isLoading: bracketsLoading, refetch: refetchBrackets } = useQuery({
+    queryKey: ['brackets', divisions],
+    queryFn: async () => {
+      console.log("Fetching brackets with divisions:", divisions);
+      
+      const { data, error } = await supabase
+        .from('brackets')
+        .select('*, divisions(id, name)');
+      
+      if (error) throw error;
+      
+      // Enhanced mapping with better division handling
+      return data.map(bracket => {
+        // Find division name from our divisions data
+        const divisionName = bracket.division_id && divisions 
+          ? divisions.find(d => d.id === bracket.division_id)?.name || 'Unknown'
+          : 'Unknown';
+        
+        return {
+          id: bracket.id,
+          name: bracket.title,
+          divisionId: bracket.division_id,
+          division: divisionName,
+          format: bracket.format || 'Single Elimination'
+        };
+      }) as Partial<PlayoffBracket>[];
+    },
+    enabled: !!divisions // Only run after divisions are loaded
+  });
+  
   const { bracket, isLoading: bracketLoading } = useBracketData(selectedBracketId || undefined);
 
+  // Improved team grouping by division
   const teamsByDivision = useMemo(() => {
-    if (!teams) return {};
+    if (!teams || !divisions) return {};
     
-    const grouped = teams.reduce((acc, team) => {
-      const division = team.divisionName || "Unassigned";
-      if (!acc[division]) {
-        acc[division] = [];
+    // Initialize with all known divisions
+    const grouped: Record<string, any[]> = {};
+    divisions.forEach(div => {
+      grouped[div.name] = [];
+    });
+    
+    // Add "Unassigned" category
+    grouped["Unassigned"] = [];
+    
+    // Sort teams into appropriate divisions
+    teams.forEach(team => {
+      if (!team.division && !team.divisionName) {
+        grouped["Unassigned"].push(team);
+      } else {
+        // Find division name from ID if needed
+        const divisionId = team.division || team.division_id;
+        let divisionName = team.divisionName;
+        
+        if (!divisionName && divisionId) {
+          const division = divisions.find(d => d.id === divisionId);
+          divisionName = division ? division.name : "Unknown";
+        }
+        
+        if (divisionName) {
+          if (!grouped[divisionName]) {
+            grouped[divisionName] = [];
+          }
+          grouped[divisionName].push(team);
+        } else {
+          grouped["Unassigned"].push(team);
+        }
       }
-      acc[division].push(team);
-      return acc;
-    }, {} as Record<string, any[]>);
+    });
     
+    // Sort teams alphabetically within each division
     Object.keys(grouped).forEach(division => {
       grouped[division].sort((a, b) => a.name.localeCompare(b.name));
     });
     
+    console.log("Teams grouped by division:", grouped);
     return grouped;
-  }, [teams]);
+  }, [teams, divisions]);
 
+  // Improved bracket grouping by division
   const bracketsByDivision = useMemo(() => {
     if (!allBrackets || !divisions) return {};
     
-    return (divisions || []).reduce((acc, division) => {
-      acc[division.name] = (allBrackets || []).filter(bracket => bracket.division === division.name);
-      return acc;
-    }, {} as Record<string, Partial<PlayoffBracket>[]>);
+    const grouped: Record<string, Partial<PlayoffBracket>[]> = {};
+    divisions.forEach(division => {
+      grouped[division.name] = [];
+    });
+    
+    // Group brackets by division name (not ID)
+    (allBrackets || []).forEach(bracket => {
+      if (bracket.division) {
+        if (!grouped[bracket.division]) {
+          grouped[bracket.division] = [];
+        }
+        grouped[bracket.division].push(bracket);
+      }
+    });
+    
+    console.log("Brackets grouped by division:", grouped);
+    return grouped;
   }, [allBrackets, divisions]);
 
   const handleBracketCreated = () => {
@@ -80,19 +138,32 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
 
   const handleTeamDivisionChange = async (teamId: string, newDivisionName: string) => {
     try {
-      const { data: divisionData } = await supabase
-        .from('divisions')
-        .select('id')
-        .eq('name', newDivisionName)
-        .single();
+      // Handle the case when assigning to "Unassigned"
+      if (newDivisionName === "Unassigned") {
+        const { error } = await supabase
+          .from('teams')
+          .update({ division_id: null })
+          .eq('id', teamId);
+          
+        if (error) throw error;
+        
+        toast({
+          title: "Division Updated",
+          description: `Team has been removed from all divisions.`,
+        });
+        return;
+      }
       
-      if (!divisionData) {
+      // Find the division ID from the name
+      const division = divisions?.find(div => div.name === newDivisionName);
+      if (!division) {
         throw new Error('Division not found');
       }
       
+      // Update the team with the correct division ID
       const { error } = await supabase
         .from('teams')
-        .update({ division_id: divisionData.id })
+        .update({ division_id: division.id })
         .eq('id', teamId);
         
       if (error) throw error;

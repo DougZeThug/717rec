@@ -9,10 +9,12 @@ import { BracketFormDivision } from "./form/BracketFormDivision";
 import { BracketFormFormat } from "./form/BracketFormFormat";
 import { BracketFormTeams } from "./form/BracketFormTeams";
 import { BracketFormActions } from "./form/BracketFormActions";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface BracketFormProps {
-  divisions: { id: string; name: string }[] | undefined; // Make divisions possibly undefined
-  teams: Team[] | undefined; // Make teams possibly undefined
+  divisions: { id: string; name: string }[] | undefined;
+  teams: Team[] | undefined;
   isSubmitting: boolean;
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
   onCancel: () => void;
@@ -27,13 +29,28 @@ const BracketForm: React.FC<BracketFormProps> = ({
 }) => {
   // Add validation for divisions
   const validDivisions = Array.isArray(divisions) ? divisions : [];
+  const validTeams = Array.isArray(teams) ? teams : [];
   
   const {
     form,
     filteredTeams,
     handleDivisionChange,
     handleSubmit
-  } = useBracketForm({ teams, onSubmit });
+  } = useBracketForm({ teams: validTeams, onSubmit });
+  
+  // Show warning if no divisions are available
+  if (validDivisions.length === 0) {
+    return (
+      <Alert variant="warning" className="my-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No Divisions Available</AlertTitle>
+        <AlertDescription>
+          You need to create at least one division before creating a bracket. 
+          Divisions will be created automatically if none exist in the database.
+        </AlertDescription>
+      </Alert>
+    );
+  }
   
   return (
     <Form {...form}>
@@ -49,7 +66,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
         <BracketFormActions 
           isSubmitting={isSubmitting} 
           onCancel={onCancel} 
-          form={form} // Pass form to BracketFormActions
+          form={form}
         />
       </form>
     </Form>

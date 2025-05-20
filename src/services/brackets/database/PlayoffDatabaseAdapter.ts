@@ -27,6 +27,11 @@ export class PlayoffDatabaseAdapter {
         throw new Error('Bracket name is required');
       }
       
+      // Validate division ID
+      if (!params.divisionId || params.divisionId === 'undefined') {
+        throw new Error('Division ID is required');
+      }
+      
       // Insert bracket record
       const { error } = await supabase
         .from('brackets')
@@ -34,7 +39,7 @@ export class PlayoffDatabaseAdapter {
           id: params.id,
           title: params.name,
           format: params.format,
-          division_id: params.divisionId ?? null, // Ensure null instead of 'undefined'
+          division_id: params.divisionId, // Ensure this is a valid value
           created_at: new Date().toISOString(),
           state: 'pending'
         });
@@ -44,7 +49,7 @@ export class PlayoffDatabaseAdapter {
         throw error;
       }
       
-      console.log(`Bracket ${params.id} created successfully`);
+      console.log(`Bracket ${params.id} created successfully with division_id: ${params.divisionId}`);
       return {};
     } catch (error) {
       console.error('Error creating bracket:', error);

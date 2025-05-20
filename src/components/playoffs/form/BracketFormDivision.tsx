@@ -4,10 +4,11 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { BracketFormValues } from "./BracketFormSchema";
+import { AlertCircle } from "lucide-react";
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<BracketFormValues>;
-  divisions: { id: string; name: string }[] | undefined; // Make divisions possibly undefined
+  divisions: { id: string; name: string }[] | undefined;
   onDivisionChange: (divisionId: string) => void;
 }
 
@@ -21,34 +22,43 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ form, 
       name="divisionId"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Division</FormLabel>
-          <Select
-            onValueChange={(value) => {
-              field.onChange(value);
-              onDivisionChange(value);
-            }}
-            defaultValue={field.value}
-          >
-            <FormControl>
+          <FormLabel>Division<span className="text-red-500">*</span></FormLabel>
+          <FormControl>
+            <Select
+              onValueChange={(value) => {
+                console.log("Division selected:", value);
+                field.onChange(value);
+                onDivisionChange(value);
+              }}
+              defaultValue={field.value}
+              value={field.value}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select Division" />
               </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              {validDivisions.length > 0 ? (
-                validDivisions.map((division) => (
-                  <SelectItem key={division.id} value={division.id}>
-                    {division.name}
+              <SelectContent>
+                {validDivisions.length > 0 ? (
+                  validDivisions.map((division) => (
+                    <SelectItem key={division.id} value={division.id}>
+                      {division.name || division.id}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-divisions" disabled>
+                    No divisions available
                   </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="no-divisions" disabled>
-                  No divisions available
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-          <FormMessage />
+                )}
+              </SelectContent>
+            </Select>
+          </FormControl>
+          <FormMessage>
+            {!field.value && (
+              <div className="flex items-center gap-1 text-xs text-amber-500">
+                <AlertCircle size={12} />
+                <span>Division is required</span>
+              </div>
+            )}
+          </FormMessage>
         </FormItem>
       )}
     />

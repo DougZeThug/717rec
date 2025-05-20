@@ -1,53 +1,55 @@
 
-// Mock for the supabase client
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
-export const insertedRows: Record<string, any[]> = {};
+// For tracking inserted values
+export let insertedRows: Record<string, any[]> = {};
 
-export const supabase = {
-  from: (table: string) => ({
-    insert: (data: any) => {
-      // Store the inserted data for later inspection
-      if (!insertedRows[table]) {
-        insertedRows[table] = [];
-      }
-      
-      // Handle both single object and array cases
-      const rowsToInsert = Array.isArray(data) ? data : [data];
-      insertedRows[table].push(...rowsToInsert);
-      
-      console.log(`Mock: Inserted ${rowsToInsert.length} rows into ${table}`);
-      
-      return {
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockReturnThis(),
-        then: jest.fn().mockImplementation(cb => {
-          cb({ data: rowsToInsert, error: null });
-          return {
-            catch: jest.fn()
-          };
-        }),
-        error: null
-      };
-    }
-  }),
-  storage: {
-    // Add storage methods if needed
-  },
-  auth: {
-    // Add auth methods if needed
-  }
+// Helper to check if string is a valid UUID
+export const isValidUUID = (str: string) => {
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidPattern.test(str);
 };
 
-// Helper function to check if a string is a valid UUID v4
-export function isValidUUID(str: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-}
+// Reset the insertedRows between tests
+export const resetInsertedRows = () => {
+  insertedRows = {};
+};
 
-// Reset the insertedRows for fresh tests
-export function resetInsertedRows(): void {
-  Object.keys(insertedRows).forEach(key => {
-    delete insertedRows[key];
-  });
-}
+// Mock Supabase client
+export const supabase = {
+  from: (tableName: string) => ({
+    select: (query?: string) => ({
+      eq: (column: string, value: any) => ({
+        single: () => Promise.resolve({ data: null, error: null }),
+        then: (callback: Function) => Promise.resolve({ data: [], error: null }).then(callback)
+      }),
+      then: (callback: Function) => Promise.resolve({ data: [], error: null }).then(callback)
+    }),
+    insert: (data: any | any[]) => {
+      // Track the inserted rows for verification
+      const rows = Array.isArray(data) ? data : [data];
+      
+      if (!insertedRows[tableName]) {
+        insertedRows[tableName] = [];
+      }
+      
+      console.log(`Mock inserting into ${tableName}:`, rows);
+      
+      // Add the rows to our tracking object
+      insertedRows[tableName].push(...rows);
+      
+      return Promise.resolve({ data: rows, error: null });
+    },
+    update: (data: any) => ({
+      eq: (column: string, value: any) => Promise.resolve({ data, error: null }),
+      match: (criteria: Record<string, any>) => Promise.resolve({ data, error: null })
+    })
+  })
+};
+
+// Mock UUID for consistent testing
+vi.mock('uuid', () => ({
+  v4: vi.fn().mockImplementation(() => 
+    '00000000-0000-0000-0000-000000000000'
+  )
+}));
