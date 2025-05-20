@@ -40,6 +40,19 @@ interface RpcResponse {
 }
 
 /**
+ * Filter type for participant queries
+ * Explicitly defining filter object properties to avoid recursive typing
+ */
+interface ParticipantFilter {
+  id?: string[] | string;
+  tournament_id?: string;
+  bracket_id?: string;
+  team_id?: string;
+  position?: number;
+  [key: string]: any; // Allow additional properties
+}
+
+/**
  * Adapter to handle participants (teams) in the database
  * Provides methods to insert, select, update and delete participants
  */
@@ -108,7 +121,7 @@ export class ParticipantAdapter {
    * @param filter Filter criteria for selecting participants
    * @returns Array of participant records
    */
-  async selectParticipants(filter?: Record<string, any>): Promise<ParticipantRecord[]> {
+  async selectParticipants(filter?: ParticipantFilter): Promise<ParticipantRecord[]> {
     try {
       if (!filter) {
         console.log("No filter provided for selectParticipants");
@@ -230,7 +243,6 @@ export class ParticipantAdapter {
   
   /**
    * Helper method to call the get_participants RPC function
-   * Fix: Define the proper return type for RPC call
    */
   private async getParticipantsViaRPC(tournamentId: string): Promise<RpcResponse> {
     return await supabase.rpc(
@@ -241,13 +253,8 @@ export class ParticipantAdapter {
   
   /**
    * Helper method to get participants from teams table as fallback
-   * Fix: Made filter parameter more specific to avoid recursive type issue
    */
-  private async getParticipantsFromTeams(filter: {
-    id?: string[] | string;
-    tournament_id?: string;
-    [key: string]: any;
-  }): Promise<ParticipantRecord[]> {
+  private async getParticipantsFromTeams(filter: ParticipantFilter): Promise<ParticipantRecord[]> {
     // Create a base query
     let query = supabase.from('teams').select('*');
     
