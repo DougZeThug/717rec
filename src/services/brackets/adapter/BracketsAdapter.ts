@@ -1,8 +1,14 @@
 
-import { StorageAdapter } from './interfaces/StorageAdapter';
-import { MatchAdapter } from './adapters/MatchAdapter';
-import { ParticipantAdapter } from './adapters/ParticipantAdapter';
-import { StageAdapter } from './adapters/StageAdapter';
+import { StorageAdapter, BaseFilter } from './interfaces/StorageAdapter';
+import { MatchAdapter, MatchFilter } from './adapters/MatchAdapter';
+import { ParticipantAdapter, ParticipantFilter } from './adapters/ParticipantAdapter';
+import { StageAdapter, StageFilter } from './adapters/StageAdapter';
+
+type FilterMap = {
+  match: MatchFilter;
+  participant: ParticipantFilter;
+  stage: StageFilter;
+}
 
 /**
  * The BracketsAdapter implements the Storage interface from brackets-manager
@@ -44,16 +50,16 @@ export class BracketsAdapter implements StorageAdapter {
   /**
    * Select data from the appropriate table
    */
-  async select(table: string, filter?: Record<string, any>): Promise<any[]> {
+  async select(table: string, filter?: BaseFilter): Promise<any[]> {
     try {
       // Choose the appropriate adapter based on the table
       switch (table) {
         case 'match':
-          return this.matchAdapter.selectMatches(filter);
+          return this.matchAdapter.selectMatches(filter as MatchFilter);
         case 'participant':
-          return this.participantAdapter.selectParticipants(filter);
+          return this.participantAdapter.selectParticipants(filter as ParticipantFilter);
         case 'stage':
-          return this.stageAdapter.selectStage(filter);
+          return this.stageAdapter.selectStage(filter as StageFilter);
         default:
           throw new Error(`Unknown table: ${table}`);
       }
@@ -88,16 +94,16 @@ export class BracketsAdapter implements StorageAdapter {
   /**
    * Delete data from the appropriate table
    */
-  async delete(table: string, filter?: Record<string, any>): Promise<number> {
+  async delete(table: string, filter?: BaseFilter): Promise<number> {
     try {
       // Choose the appropriate adapter based on the table
       switch (table) {
         case 'match':
-          return this.matchAdapter.deleteMatches(filter);
+          return this.matchAdapter.deleteMatches(filter as MatchFilter);
         case 'participant':
-          return this.participantAdapter.deleteParticipants(filter);
+          return this.participantAdapter.deleteParticipants(filter as ParticipantFilter);
         case 'stage':
-          return this.stageAdapter.deleteStage(filter);
+          return this.stageAdapter.deleteStage(filter as StageFilter);
         default:
           throw new Error(`Unknown table: ${table}`);
       }

@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from 'uuid';
+import { BaseFilter } from '../interfaces/StorageAdapter';
 
 /**
  * Record type representing a participant in the database
@@ -40,16 +41,14 @@ interface RpcResponse {
 }
 
 /**
- * Filter type for participant queries
- * Explicitly defining filter object properties to avoid recursive typing
+ * Filter type for participant queries with specific properties to avoid recursive typing
  */
-interface ParticipantFilter {
-  id?: string[] | string;
+export interface ParticipantFilter extends BaseFilter {
   tournament_id?: string;
   bracket_id?: string;
   team_id?: string;
   position?: number;
-  [key: string]: any; // Allow additional properties
+  // Remove the [key: string]: any which causes excessive type instantiation
 }
 
 /**
@@ -281,25 +280,19 @@ export class ParticipantAdapter {
     if (filter.tournament_id) {
       // Try to match by bracket_id
       query = query.eq('bracket_id', filter.tournament_id);
-      
-      // Remove tournament_id from simple filters since we handled it
-      const { tournament_id, ...otherFilters } = filter;
-      filter = otherFilters;
     }
     
-    // Handle other simple filters
-    const simpleFilters: Record<string, any> = {};
-    
-    Object.entries(filter).forEach(([key, value]) => {
-      if (value !== undefined && value !== 'undefined' && key !== 'id') {
-        simpleFilters[key] = value;
-      }
-    });
-    
-    if (Object.keys(simpleFilters).length > 0) {
-      query = query.match(simpleFilters);
+    // Handle team_id filter
+    if (filter.team_id) {
+      query = query.eq('id', filter.team_id);
     }
     
+    // Handle position/seed filter
+    if (filter.position !== undefined) {
+      query = query.eq('seed', filter.position);
+    }
+    
+    // Execute the query
     const { data, error } = await query;
     
     if (error) {

@@ -1,18 +1,19 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
+import { BaseFilter } from '../interfaces/StorageAdapter';
 
 /**
  * Filter type for match queries
  * Explicitly defining filter object properties to avoid recursive typing
  */
-interface MatchFilter {
+export interface MatchFilter extends BaseFilter {
   id?: string | string[];
   bracket_id?: string;
   round_number?: number;
   position?: number;
   match_type?: string;
-  [key: string]: any; // Allow additional properties but with controlled depth
+  // Removed the [key: string]: any to prevent excessive type instantiation
 }
 
 /**
@@ -54,22 +55,45 @@ export class MatchAdapter {
       // Apply filters if provided
       let finalQuery = query;
       if (filter) {
-        // Cast to any to avoid deep type instantiation
-        const queryBuilder = query as any;
+        // Build query with specific filters
+        let queryBuilder = query.select();
         
-        // Apply each filter separately
-        Object.keys(filter).forEach(key => {
-          const value = filter[key];
-          if (key && value !== undefined) {
-            queryBuilder.eq(key, value);
+        // Handle id specifically
+        if (filter.id) {
+          if (Array.isArray(filter.id)) {
+            queryBuilder = queryBuilder.in('id', filter.id);
+          } else {
+            queryBuilder = queryBuilder.eq('id', filter.id);
           }
-        });
+        }
+        
+        // Handle bracket_id
+        if (filter.bracket_id) {
+          queryBuilder = queryBuilder.eq('bracket_id', filter.bracket_id);
+        }
+        
+        // Handle round_number
+        if (filter.round_number !== undefined) {
+          queryBuilder = queryBuilder.eq('round_number', filter.round_number);
+        }
+        
+        // Handle position
+        if (filter.position !== undefined) {
+          queryBuilder = queryBuilder.eq('position', filter.position);
+        }
+        
+        // Handle match_type
+        if (filter.match_type) {
+          queryBuilder = queryBuilder.eq('match_type', filter.match_type);
+        }
         
         finalQuery = queryBuilder;
+      } else {
+        finalQuery = query.select();
       }
       
       // Execute the final query
-      const { data, error } = await finalQuery.select();
+      const { data, error } = await finalQuery;
       
       if (error) throw error;
       
@@ -109,20 +133,35 @@ export class MatchAdapter {
     try {
       const query = supabase.from('matches').delete();
       
-      // Apply filters separately
+      // Apply specific filters
       let finalQuery = query;
+      
       if (filter) {
-        // Cast to any to avoid deep type instantiation
-        const queryBuilder = query as any;
-        
-        Object.keys(filter).forEach(key => {
-          const value = filter[key];
-          if (key && value !== undefined) {
-            queryBuilder.eq(key, value);
+        // Handle id specifically
+        if (filter.id) {
+          if (Array.isArray(filter.id)) {
+            finalQuery = finalQuery.in('id', filter.id);
+          } else {
+            finalQuery = finalQuery.eq('id', filter.id);
           }
-        });
+        }
         
-        finalQuery = queryBuilder;
+        // Handle other specific fields
+        if (filter.bracket_id) {
+          finalQuery = finalQuery.eq('bracket_id', filter.bracket_id);
+        }
+        
+        if (filter.round_number !== undefined) {
+          finalQuery = finalQuery.eq('round_number', filter.round_number);
+        }
+        
+        if (filter.position !== undefined) {
+          finalQuery = finalQuery.eq('position', filter.position);
+        }
+        
+        if (filter.match_type) {
+          finalQuery = finalQuery.eq('match_type', filter.match_type);
+        }
       }
       
       const { error, count } = await finalQuery;

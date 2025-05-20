@@ -1,17 +1,18 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { BracketFormat } from '@/constants/brackets';
+import { BaseFilter } from '../interfaces/StorageAdapter';
 
 /**
  * Filter type for stage queries
  * Explicitly defining filter object properties to avoid recursive typing
  */
-interface StageFilter {
+export interface StageFilter extends BaseFilter {
   id?: string;
   tournament_id?: string;
   name?: string;
   type?: string;
-  [key: string]: any; // Allow additional properties but with controlled depth
+  // Removed the [key: string]: any to prevent excessive type instantiation
 }
 
 type StageRecord = {
@@ -179,23 +180,26 @@ export class StageAdapter {
       return await query.eq('id', filter.tournament_id);
     }
     
-    // For other filters, build a simple match object
-    const simpleFilters: Record<string, any> = {};
-    
-    // Add each filter to the object instead of chaining, skipping any undefined values
-    Object.entries(filter).forEach(([key, value]) => {
-      if (value !== undefined && value !== 'undefined') {
-        simpleFilters[key] = value;
-      }
-    });
-    
-    // Apply all filters at once if any exist
-    if (Object.keys(simpleFilters).length > 0) {
-      console.log(`Applying ${Object.keys(simpleFilters).length} filters:`, simpleFilters);
-      return await query.match(simpleFilters);
+    // For other specific filters
+    if (filter.id && filter.id !== 'undefined') {
+      query = query.eq('id', filter.id);
     }
     
-    // Return the base query if no filters applied
+    if (filter.name && filter.name !== 'undefined') {
+      query = query.eq('title', filter.name);
+    }
+    
+    if (filter.type && filter.type !== 'undefined') {
+      const format = filter.type === 'single_elimination' 
+        ? 'Single Elimination' 
+        : filter.type === 'double_elimination'
+          ? 'Double Elimination'
+          : filter.type;
+      
+      query = query.eq('format', format);
+    }
+    
+    // Return the query with applied filters
     return await query;
   }
   
