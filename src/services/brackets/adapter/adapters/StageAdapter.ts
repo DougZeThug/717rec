@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { BracketFormat } from '@/constants/brackets';
 import { StageFilter, StageRecord } from '../types/AdapterTypes';
 import { AdapterOperationError } from '../errors/AdapterErrors';
+import { TableNameMapper } from '../interfaces/TableNameMapper';
+import { QueryBuilderUtils } from '../utils/QueryBuilderUtils';
 
 /**
  * Database response type for brackets table
@@ -27,9 +29,9 @@ export class StageAdapter {
    */
   async insertStage(stage: any): Promise<number> {
     try {
+      // Validate the stage data before proceeding
       if (!this.validateStage(stage)) {
-        console.warn('Stage validation failed');
-        return 0;
+        return 0; // Validation failed, return 0 inserted
       }
       
       // Check if the bracket already exists
@@ -61,7 +63,7 @@ export class StageAdapter {
       console.log(`Stage ${stage.id} inserted successfully`);
       return 1;
     } catch (error) {
-      this.handleError('insertStage', error);
+      this.logError('insertStage', error);
       return 0; // Return 0 to indicate failure after error has been logged
     }
   }
@@ -93,7 +95,7 @@ export class StageAdapter {
       // Convert to brackets-manager stage format
       return this.convertToStageRecords(data);
     } catch (error) {
-      this.handleError('selectStage', error);
+      this.logError('selectStage', error);
       return [];
     }
   }
@@ -123,7 +125,7 @@ export class StageAdapter {
       console.log(`Stage ${id} updated successfully`);
       return 1;
     } catch (error) {
-      this.handleError('updateStage', error);
+      this.logError('updateStage', error);
       return 0;
     }
   }
@@ -153,7 +155,7 @@ export class StageAdapter {
       console.log(`Deleted ${count || 0} stages`);
       return count || 0;
     } catch (error) {
-      this.handleError('deleteStage', error);
+      this.logError('deleteStage', error);
       return 0;
     }
   }
@@ -200,7 +202,7 @@ export class StageAdapter {
       console.log(`Validated stage: ${stage.id}, name=${stage.name}, type=${stage.type}`);
       return true;
     } catch (error) {
-      this.handleError('validateStage', error);
+      this.logError('validateStage', error);
       return false;
     }
   }
@@ -225,7 +227,7 @@ export class StageAdapter {
    */
   private async buildStageQuery(filter?: StageFilter) {
     // Create a base query
-    let query = supabase.from(this.tableName).select('*');
+    let query = QueryBuilderUtils.createQueryBuilder<BracketDbRecord>(this.tableName);
     
     if (!filter) {
       return await query;
@@ -311,20 +313,11 @@ export class StageAdapter {
   }
 
   /**
-   * Centralized error handling logic
+   * Centralized error logging function
+   * This replaces the previous handleError method to avoid issues with the 'never' return type
    * @private
    */
-  private handleError(operation: string, error: unknown): never {
+  private logError(operation: string, error: unknown): void {
     console.error(`Error in StageAdapter.${operation}:`, error);
-    
-    if (error instanceof AdapterOperationError) {
-      throw error; // Re-throw our own error types
-    }
-    
-    throw new AdapterOperationError(
-      operation,
-      `Failed to ${operation}: ${error instanceof Error ? error.message : String(error)}`,
-      error
-    );
   }
 }

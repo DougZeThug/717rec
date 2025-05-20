@@ -17,7 +17,7 @@ export class QueryBuilderUtils {
    * Apply common filters to a query
    * Handles standard fields like id, limit, offset, order
    */
-  static applyCommonFilters(query: any, filter?: BaseFilter): any {
+  static applyCommonFilters<T>(query: PostgrestQueryBuilder<any, any, T>, filter?: BaseFilter): PostgrestQueryBuilder<any, any, T> {
     if (!filter) return query;
     
     // Handle ID filtering (single or array)
@@ -112,7 +112,7 @@ export class QueryBuilderUtils {
    * @param tableName The table name to query
    * @returns A PostgrestQueryBuilder instance
    */
-  static createQueryBuilder(tableName: string): PostgrestQueryBuilder<any, any, any> {
+  static createQueryBuilder<T = any>(tableName: string): PostgrestQueryBuilder<any, any, T> {
     const dbTable = TableNameMapper.toDbTableName(tableName) as KnownTableName;
     return supabase.from(dbTable);
   }

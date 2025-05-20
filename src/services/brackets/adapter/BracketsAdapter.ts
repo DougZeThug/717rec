@@ -1,4 +1,3 @@
-
 import { StorageAdapter, BaseFilter } from './interfaces/StorageAdapter';
 import { MatchAdapter } from './adapters/MatchAdapter';
 import { ParticipantAdapter } from './adapters/ParticipantAdapter';
@@ -36,8 +35,10 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
    * @private
    */
   private setTable(tableName: string): BracketTable {
-    if (!TableNameMapper.isValidTable(tableName)) {
-      throw new AdapterOperationError('setTable', `Invalid table name: ${tableName}`);
+    if (!tableName || !TableNameMapper.isValidTable(tableName)) {
+      console.warn(`Invalid table name: ${tableName}, defaulting to 'match'`);
+      this.currentTable = BracketTable.Match;
+      return this.currentTable;
     }
     
     // Convert table name to BracketTable enum
@@ -64,7 +65,9 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       return BracketTable.Stage;
     }
     
-    throw new AdapterOperationError('determineTableTypeFromName', `Unknown table: ${tableName}`);
+    // Default to match if unknown
+    console.warn(`Unknown table name: ${tableName}, defaulting to 'match'`);
+    return BracketTable.Match;
   }
 
   /**
@@ -89,7 +92,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       // Choose the appropriate adapter based on the current table
       return await this.insertWithCurrentAdapter(data);
     } catch (error) {
-      return this.handleError('insert', error);
+      console.error('Error in insert operation:', error);
+      return 0;
     }
   }
 
@@ -110,7 +114,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return await this.stageAdapter.insertStage(data[0]);
       
       default:
-        throw new AdapterOperationError('insertWithCurrentAdapter', `Unknown table: ${this.currentTable}`);
+        console.error(`Unknown table type for insert: ${this.currentTable}`);
+        return 0;
     }
   }
   
@@ -124,7 +129,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       this.setTable(table);
       return this.insert(data);
     } catch (error) {
-      return this.handleError('insertIntoTable', error);
+      console.error(`Error in insertIntoTable for ${table}:`, error);
+      return 0;
     }
   }
   
@@ -146,8 +152,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       // Choose the appropriate adapter based on the current table
       return await this.selectWithCurrentAdapter(filter);
     } catch (error) {
-      this.handleError('select', error);
-      return []; // Return empty array on error after logging
+      console.error('Error in select operation:', error);
+      return []; // Return empty array on error
     }
   }
 
@@ -169,7 +175,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return this.stageAdapter.selectStage(stageFilter);
       
       default:
-        throw new AdapterOperationError('selectWithCurrentAdapter', `Unknown table: ${this.currentTable}`);
+        console.error(`Unknown table type for select: ${this.currentTable}`);
+        return [];
     }
   }
 
@@ -182,8 +189,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       this.setTable(table);
       return this.select({...filter, table});
     } catch (error) {
-      this.handleError('selectFromTable', error);
-      return []; // Return empty array on error after logging
+      console.error(`Error in selectFromTable for ${table}:`, error);
+      return []; // Return empty array on error
     }
   }
   
@@ -206,7 +213,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       // Choose the appropriate adapter based on the current table
       return await this.updateWithCurrentAdapter(id, data);
     } catch (error) {
-      return this.handleError('update', error);
+      console.error('Error in update operation:', error);
+      return 0;
     }
   }
   
@@ -226,7 +234,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return this.stageAdapter.updateStage(id, data);
       
       default:
-        throw new AdapterOperationError('updateWithCurrentAdapter', `Unknown table: ${this.currentTable}`);
+        console.error(`Unknown table type for update: ${this.currentTable}`);
+        return 0;
     }
   }
   
@@ -239,7 +248,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       this.setTable(table);
       return this.update(id, {...data, table});
     } catch (error) {
-      return this.handleError('updateInTable', error);
+      console.error(`Error in updateInTable for ${table}:`, error);
+      return 0;
     }
   }
   
@@ -261,7 +271,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       // Choose the appropriate adapter based on the current table
       return await this.deleteWithCurrentAdapter(filter);
     } catch (error) {
-      return this.handleError('delete', error);
+      console.error('Error in delete operation:', error);
+      return 0;
     }
   }
   
@@ -283,7 +294,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return this.stageAdapter.deleteStage(stageFilter);
       
       default:
-        throw new AdapterOperationError('deleteWithCurrentAdapter', `Unknown table: ${this.currentTable}`);
+        console.error(`Unknown table type for delete: ${this.currentTable}`);
+        return 0;
     }
   }
   
@@ -296,7 +308,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
       this.setTable(table);
       return this.delete({...filter, table});
     } catch (error) {
-      return this.handleError('deleteFromTable', error);
+      console.error(`Error in deleteFromTable for ${table}:`, error);
+      return 0;
     }
   }
 

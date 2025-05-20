@@ -10,18 +10,36 @@ export class TableNameMapper {
     'stage': 'brackets',
   };
   
+  // Reverse mapping for lookups from database to logical name
+  private static readonly REVERSE_MAP: Record<string, string> = {
+    'matches': 'match',
+    'participants': 'participant',
+    'brackets': 'stage',
+  };
+  
+  // Valid table names for validation
+  private static readonly VALID_TABLES: string[] = [
+    'match', 'participant', 'stage',
+    'matches', 'participants', 'brackets'
+  ];
+  
   /**
    * Convert a logical table name to the actual database table name
    * @param logicalName The logical table name used in brackets-manager
    * @returns The actual database table name
    */
   public static toDbTableName(logicalName: string): string {
+    if (!logicalName) {
+      console.warn('Empty table name provided, falling back to "matches"');
+      return 'matches';
+    }
+    
     const normalizedName = logicalName.toLowerCase();
     const tableName = this.TABLE_MAP[normalizedName] || normalizedName;
     
     // Validate the table name for security
-    if (!['matches', 'participants', 'brackets'].includes(tableName)) {
-      console.warn(`Unknown table name: ${logicalName}, falling back to 'matches'`);
+    if (!this.isValidTable(tableName)) {
+      console.warn(`Invalid table name: ${logicalName}, falling back to 'matches'`);
       return 'matches';
     }
     
@@ -34,12 +52,10 @@ export class TableNameMapper {
    * @returns The logical table name
    */
   public static toLogicalName(dbName: string): string {
+    if (!dbName) return 'match'; // Default to match if empty
+    
     const normalizedName = dbName.toLowerCase();
-    const entries = Object.entries(this.TABLE_MAP);
-    for (const [logical, db] of entries) {
-      if (db === normalizedName) return logical;
-    }
-    return normalizedName;
+    return this.REVERSE_MAP[normalizedName] || normalizedName;
   }
   
   /**
@@ -48,7 +64,8 @@ export class TableNameMapper {
    * @returns true if valid, false otherwise
    */
   public static isValidTable(tableName: string): boolean {
+    if (!tableName) return false;
     const normalizedName = tableName.toLowerCase();
-    return ['match', 'participant', 'stage', 'matches', 'participants', 'brackets'].includes(normalizedName);
+    return this.VALID_TABLES.includes(normalizedName);
   }
 }

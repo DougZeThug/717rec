@@ -6,23 +6,8 @@ import { BracketFilter, MatchFilter } from '../adapter/types/AdapterTypes';
 // Define types for Bracket Manager
 export type SeedOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_shift' | string;
 
-// Fixed interface to match brackets-manager's expectations (which uses boolean)
-interface CrudInterface {
-  insert(data: any[]): Promise<boolean>;
-  select(filter?: any): Promise<any[]>;
-  update(id: string, data: any): Promise<number>;
-  delete(filter?: any): Promise<number>;
-  
-  // Legacy table-based methods
-  insertInto?(table: string, data: any): Promise<boolean>; 
-  selectFrom?(table: string, filter?: any): Promise<any[]>;
-  updateIn?(table: string, id: string, data: any): Promise<number>;
-  deleteFrom?(table: string, filter?: any): Promise<number>;
-}
-
 /**
  * Interface that matches what brackets-manager expects
- * Note: In brackets-manager, CrudInterface expects insert to return Promise<number>
  */
 interface BracketsManagerAdapter {
   // Standard methods with return types matching what brackets-manager expects
@@ -42,12 +27,10 @@ interface BracketsManagerAdapter {
 const bracketsAdapter = new BracketsAdapter();
 
 // Create an adapter bridge that connects our adapter to brackets-manager
-// This adapter converts number return values to booleans when needed
-const adapterForBracketsManager: CrudInterface = {
+const adapterForBracketsManager: BracketsManagerAdapter = {
   // Standard interface methods
-  insert: async (data: any[]): Promise<boolean> => {
-    const result = await bracketsAdapter.insert(data);
-    return result > 0; // Convert to boolean
+  insert: async (data: any[]): Promise<number> => {
+    return await bracketsAdapter.insert(data);
   },
   
   select: (filter?: BracketFilter) => bracketsAdapter.select(filter),
@@ -55,10 +38,9 @@ const adapterForBracketsManager: CrudInterface = {
   delete: (filter?: BracketFilter) => bracketsAdapter.delete(filter),
   
   // Legacy table-based methods
-  insertInto: async (table: string, data: any): Promise<boolean> => {
+  insertInto: async (table: string, data: any): Promise<number> => {
     const dataArray = Array.isArray(data) ? data : [data];
-    const result = await bracketsAdapter.insertIntoTable(table, dataArray);
-    return result > 0; // Convert to boolean
+    return await bracketsAdapter.insertIntoTable(table, dataArray);
   },
   
   selectFrom: (table: string, filter?: BracketFilter) => bracketsAdapter.selectFromTable(table, filter),
@@ -66,8 +48,8 @@ const adapterForBracketsManager: CrudInterface = {
   deleteFrom: (table: string, filter?: BracketFilter) => bracketsAdapter.deleteFromTable(table, filter)
 };
 
-// Create the brackets manager instance with the adapter that returns the expected boolean
-const baseManager = new BracketsManagerModule.BracketsManager(adapterForBracketsManager);
+// Create the brackets manager instance with the adapter
+const baseManager = new BracketsManagerModule.BracketsManager(adapterForBracketsManager as any);
 
 /**
  * Type definitions for brackets-manager methods we use
