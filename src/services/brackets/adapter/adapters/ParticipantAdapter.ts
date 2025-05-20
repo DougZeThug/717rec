@@ -29,6 +29,7 @@ export interface ParticipantInsertData {
   bracket_id: string;
   team_id: string;
   position: number;
+  name?: string; // Add name field to match the updated schema
 }
 
 /**
@@ -56,15 +57,21 @@ export class ParticipantAdapter {
         return 0;
       }
       
-      console.log(`Inserting ${validParticipants.length} participants`);
-      const { error } = await supabase.from('participants').insert(validParticipants);
+      // Add name for each participant if not provided
+      const participantsWithName = validParticipants.map(p => ({
+        ...p,
+        name: p.name || p.team_id // Default to team_id if name is not provided
+      }));
+      
+      console.log(`Inserting ${participantsWithName.length} participants`);
+      const { error } = await supabase.from('participants').insert(participantsWithName);
       
       if (error) {
         console.error("Error inserting participants:", error);
         throw new Error(`Participant insert failed: ${error.message}`);
       }
       
-      return validParticipants.length;
+      return participantsWithName.length;
     } catch (error) {
       console.error("Error inserting participants:", error);
       throw error;
@@ -83,6 +90,7 @@ export class ParticipantAdapter {
         team_id,
         bracket_id,
         position,
+        name,
         teams:team_id (name)
       `);
       
@@ -124,7 +132,7 @@ export class ParticipantAdapter {
       // Transform the result to match expected format
       return data ? data.map(p => ({
         id: p.team_id,
-        name: p.teams?.name || `Team ${p.position}`,
+        name: p.name || p.teams?.name || `Team ${p.position}`, // Prioritize participant name
         tournament_id: p.bracket_id,
         position: p.position
       })) : [];
@@ -143,7 +151,8 @@ export class ParticipantAdapter {
       const { error } = await supabase
         .from('participants')
         .update({
-          position: data.position
+          position: data.position,
+          name: data.name // Include name in updates if available
         })
         .eq('team_id', id)
         .eq('bracket_id', data.tournament_id || data.bracket_id);
@@ -223,6 +232,7 @@ export const ParticipantAdapterStatic = {
       bracket_id: bracketId,
       team_id: teamId,
       position: i + 1,
+      name: teamId // Use team_id as default name
     }));
     
     const { error } = await supabase.from('participants').insert(rows);
