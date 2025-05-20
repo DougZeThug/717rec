@@ -16,7 +16,8 @@ export class TableNameMapper {
    * @returns The actual database table name
    */
   public static toDbTableName(logicalName: string): string {
-    const tableName = this.TABLE_MAP[logicalName] || logicalName;
+    const normalizedName = logicalName.toLowerCase();
+    const tableName = this.TABLE_MAP[normalizedName] || normalizedName;
     
     // Validate the table name for security
     if (!['matches', 'participants', 'brackets'].includes(tableName)) {
@@ -33,11 +34,12 @@ export class TableNameMapper {
    * @returns The logical table name
    */
   public static toLogicalName(dbName: string): string {
+    const normalizedName = dbName.toLowerCase();
     const entries = Object.entries(this.TABLE_MAP);
     for (const [logical, db] of entries) {
-      if (db === dbName) return logical;
+      if (db === normalizedName) return logical;
     }
-    return dbName;
+    return normalizedName;
   }
   
   /**
@@ -46,6 +48,7 @@ export class TableNameMapper {
    * @returns true if valid, false otherwise
    */
   public static isValidTable(tableName: string): boolean {
-    return ['match', 'participant', 'stage', 'matches', 'participants', 'brackets'].includes(tableName);
+    const normalizedName = tableName.toLowerCase();
+    return ['match', 'participant', 'stage', 'matches', 'participants', 'brackets'].includes(normalizedName);
   }
 }

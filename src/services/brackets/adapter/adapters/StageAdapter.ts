@@ -19,16 +19,19 @@ interface BracketDbRecord {
  * Adapter to manage stages (brackets) in the database
  */
 export class StageAdapter {
+  private readonly tableName = 'brackets';
+
   /**
    * Insert a stage into the database
    * @returns Number of stages inserted (1 or 0)
    */
   async insertStage(stage: any): Promise<number> {
-    if (!this.validateStage(stage)) {
-      return 0;
-    }
-    
     try {
+      if (!this.validateStage(stage)) {
+        console.warn('Stage validation failed');
+        return 0;
+      }
+      
       // Check if the bracket already exists
       const { data: existing } = await this.getBracketById(stage.id);
       
@@ -39,13 +42,11 @@ export class StageAdapter {
       }
       
       // Convert type to our format
-      const format: BracketFormat = stage.type === 'single_elimination' 
-        ? 'Single Elimination' 
-        : 'Double Elimination';
+      const format: BracketFormat = this.convertTypeToFormat(stage.type);
       
       // Insert the bracket
       const { error } = await supabase
-        .from('brackets')
+        .from(this.tableName)
         .insert({
           id: stage.id,
           title: stage.name,
@@ -54,18 +55,14 @@ export class StageAdapter {
         });
       
       if (error) {
-        console.error("Error inserting stage:", error);
         throw new AdapterOperationError('insertStage', error.message, error);
       }
       
       console.log(`Stage ${stage.id} inserted successfully`);
       return 1;
     } catch (error) {
-      console.error("Error inserting stage:", error);
-      if (error instanceof AdapterOperationError) {
-        throw error;
-      }
-      throw new AdapterOperationError('insertStage', 'Failed to insert stage', error);
+      this.handleError('insertStage', error);
+      return 0; // Return 0 to indicate failure after error has been logged
     }
   }
   
@@ -83,7 +80,6 @@ export class StageAdapter {
       const { data, error } = await this.buildStageQuery(filter);
       
       if (error) {
-        console.error("Error selecting stage:", error);
         throw new AdapterOperationError('selectStage', error.message, error);
       }
       
@@ -97,11 +93,8 @@ export class StageAdapter {
       // Convert to brackets-manager stage format
       return this.convertToStageRecords(data);
     } catch (error) {
-      console.error("Error selecting stage:", error);
-      if (error instanceof AdapterOperationError) {
-        throw error;
-      }
-      throw new AdapterOperationError('selectStage', 'Failed to select stage', error);
+      this.handleError('selectStage', error);
+      return [];
     }
   }
   
@@ -110,35 +103,28 @@ export class StageAdapter {
    * @returns Number of stages updated (1 or 0)
    */
   async updateStage(id: string, stage: any): Promise<number> {
-    if (!id || id === 'undefined' || !stage || !stage.name) {
-      console.error("Invalid stage data for update:", { id, stage });
-      throw new AdapterOperationError('updateStage', 'Valid stage ID and data required for update');
-    }
-    
     try {
+      this.validateUpdateParams(id, stage);
+      
       console.log(`Updating stage ${id} with data:`, stage);
       
       const { error } = await supabase
-        .from('brackets')
+        .from(this.tableName)
         .update({
           title: stage.name,
-          format: stage.type === 'single_elimination' ? 'Single Elimination' : 'Double Elimination'
+          format: this.convertTypeToFormat(stage.type)
         })
         .eq('id', id);
       
       if (error) {
-        console.error("Error updating stage:", error);
         throw new AdapterOperationError('updateStage', error.message, error);
       }
       
       console.log(`Stage ${id} updated successfully`);
       return 1;
     } catch (error) {
-      console.error("Error updating stage:", error);
-      if (error instanceof AdapterOperationError) {
-        throw error;
-      }
-      throw new AdapterOperationError('updateStage', 'Failed to update stage', error);
+      this.handleError('updateStage', error);
+      return 0;
     }
   }
   
@@ -147,33 +133,28 @@ export class StageAdapter {
    * @returns Number of stages deleted
    */
   async deleteStage(filter?: StageFilter): Promise<number> {
-    if (!filter?.id) {
-      console.error("Invalid or missing ID in filter for stage deletion:", filter);
-      throw new AdapterOperationError('deleteStage', 'Stage ID is required for deletion');
-    }
-    
     try {
+      if (!filter?.id) {
+        throw new AdapterOperationError('deleteStage', 'Stage ID is required for deletion');
+      }
+      
       console.log(`Deleting stage with ID ${filter.id}`);
       
       const { error, count } = await supabase
-        .from('brackets')
+        .from(this.tableName)
         .delete()
         .eq('id', filter.id)
         .select('count');
       
       if (error) {
-        console.error("Error deleting stage:", error);
         throw new AdapterOperationError('deleteStage', error.message, error);
       }
       
       console.log(`Deleted ${count || 0} stages`);
       return count || 0;
     } catch (error) {
-      console.error("Error deleting stage:", error);
-      if (error instanceof AdapterOperationError) {
-        throw error;
-      }
-      throw new AdapterOperationError('deleteStage', 'Failed to delete stage', error);
+      this.handleError('deleteStage', error);
+      return 0;
     }
   }
 
@@ -195,31 +176,47 @@ export class StageAdapter {
    * @private
    */
   private validateStage(stage: any): boolean {
-    if (!stage || !stage.id || stage.id === 'undefined') {
-      console.error("Invalid stage data - missing ID:", stage);
-      throw new AdapterOperationError('validateStage', 'Stage ID is required and must be valid');
-    }
-    
-    if (!stage.name || typeof stage.name !== 'string') {
-      console.error("Invalid stage name:", stage.name);
-      throw new AdapterOperationError('validateStage', 'Stage name is required');
-    }
-    
-    if (!stage.type || (stage.type !== 'single_elimination' && stage.type !== 'double_elimination')) {
-      console.error("Invalid stage type:", stage.type);
-      throw new AdapterOperationError('validateStage', "Stage type must be 'single_elimination' or 'double_elimination'");
-    }
+    try {
+      if (!stage || !stage.id || stage.id === 'undefined') {
+        throw new AdapterOperationError('validateStage', 'Stage ID is required and must be valid');
+      }
+      
+      if (!stage.name || typeof stage.name !== 'string') {
+        throw new AdapterOperationError('validateStage', 'Stage name is required');
+      }
+      
+      if (!stage.type || (stage.type !== 'single_elimination' && stage.type !== 'double_elimination')) {
+        throw new AdapterOperationError('validateStage', "Stage type must be 'single_elimination' or 'double_elimination'");
+      }
 
-    // Validate settings
-    if (!stage.settings || !stage.settings.seedOrdering || !Array.isArray(stage.settings.seedOrdering)) {
-      console.warn("Missing or invalid seedOrdering in settings:", stage.settings);
-      // Default to ['natural'] if missing
-      if (!stage.settings) stage.settings = {};
-      stage.settings.seedOrdering = ['natural'];
+      // Validate settings
+      if (!stage.settings || !stage.settings.seedOrdering || !Array.isArray(stage.settings.seedOrdering)) {
+        console.warn("Missing or invalid seedOrdering in settings:", stage.settings);
+        // Default to ['natural'] if missing
+        if (!stage.settings) stage.settings = {};
+        stage.settings.seedOrdering = ['natural'];
+      }
+      
+      console.log(`Validated stage: ${stage.id}, name=${stage.name}, type=${stage.type}`);
+      return true;
+    } catch (error) {
+      this.handleError('validateStage', error);
+      return false;
+    }
+  }
+
+  /**
+   * Helper method to validate update parameters
+   * @private
+   */
+  private validateUpdateParams(id: string, stage: any): void {
+    if (!id || id === 'undefined') {
+      throw new AdapterOperationError('updateStage', 'Valid stage ID is required for update');
     }
     
-    console.log(`Validated stage: ${stage.id}, name=${stage.name}, type=${stage.type}`);
-    return true;
+    if (!stage || !stage.name) {
+      throw new AdapterOperationError('updateStage', 'Stage data with name is required for update');
+    }
   }
 
   /**
@@ -228,7 +225,7 @@ export class StageAdapter {
    */
   private async buildStageQuery(filter?: StageFilter) {
     // Create a base query
-    let query = supabase.from('brackets').select('*');
+    let query = supabase.from(this.tableName).select('*');
     
     if (!filter) {
       return await query;
@@ -263,7 +260,7 @@ export class StageAdapter {
    */
   private async getBracketById(id: string) {
     return await supabase
-      .from('brackets')
+      .from(this.tableName)
       .select('id')
       .eq('id', id)
       .maybeSingle();
@@ -299,11 +296,35 @@ export class StageAdapter {
    * Helper to convert type to format
    * @private
    */
-  private getFormatFromType(type: string): string {
+  private getFormatFromType(type: string): BracketFormat {
     return type === 'single_elimination' 
       ? 'Single Elimination' 
-      : type === 'double_elimination'
-        ? 'Double Elimination'
-        : type;
+      : 'Double Elimination';
+  }
+
+  /**
+   * Convert internal type representation to our format
+   * @private
+   */
+  private convertTypeToFormat(type: string): BracketFormat {
+    return this.getFormatFromType(type);
+  }
+
+  /**
+   * Centralized error handling logic
+   * @private
+   */
+  private handleError(operation: string, error: unknown): never {
+    console.error(`Error in StageAdapter.${operation}:`, error);
+    
+    if (error instanceof AdapterOperationError) {
+      throw error; // Re-throw our own error types
+    }
+    
+    throw new AdapterOperationError(
+      operation,
+      `Failed to ${operation}: ${error instanceof Error ? error.message : String(error)}`,
+      error
+    );
   }
 }

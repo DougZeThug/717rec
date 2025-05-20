@@ -1,6 +1,13 @@
+
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
 import { TableNameMapper } from '../interfaces/TableNameMapper';
+import { PostgrestQueryBuilder } from '@supabase/supabase-js';
+
+/**
+ * Known table names in our database for type safety
+ */
+export type KnownTableName = 'matches' | 'participants' | 'brackets';
 
 /**
  * Generic query builder utilities for database operations
@@ -46,7 +53,7 @@ export class QueryBuilderUtils {
    */
   static async executeDelete(table: string, filter?: BaseFilter): Promise<number> {
     // Map the table name to the actual database table
-    const dbTable = TableNameMapper.toDbTableName(table);
+    const dbTable = TableNameMapper.toDbTableName(table) as KnownTableName;
     
     // Create the query using the mapped table name
     let query = supabase.from(dbTable).delete();
@@ -67,7 +74,7 @@ export class QueryBuilderUtils {
     if (!data?.length) return 0;
     
     // Map the table name to the actual database table
-    const dbTable = TableNameMapper.toDbTableName(table);
+    const dbTable = TableNameMapper.toDbTableName(table) as KnownTableName;
     
     let insertedCount = 0;
     
@@ -89,7 +96,7 @@ export class QueryBuilderUtils {
    */
   static async executeUpdate(table: string, id: string, data: any): Promise<number> {
     // Map the table name to the actual database table
-    const dbTable = TableNameMapper.toDbTableName(table);
+    const dbTable = TableNameMapper.toDbTableName(table) as KnownTableName;
     
     const { error } = await supabase
       .from(dbTable)
@@ -98,5 +105,15 @@ export class QueryBuilderUtils {
     
     if (error) throw error;
     return 1; // Successfully updated 1 record
+  }
+
+  /**
+   * Create a typed query builder for a specified table
+   * @param tableName The table name to query
+   * @returns A PostgrestQueryBuilder instance
+   */
+  static createQueryBuilder(tableName: string): PostgrestQueryBuilder<any, any, any> {
+    const dbTable = TableNameMapper.toDbTableName(tableName) as KnownTableName;
+    return supabase.from(dbTable);
   }
 }
