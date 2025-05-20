@@ -129,6 +129,8 @@ export class BracketMigrationService {
     };
   }> {
     try {
+      console.log(`Starting migration for bracket ${bracketId}`);
+      
       // Get bracket data
       const bracket = await this.getBracketsForMigration()
         .then(brackets => brackets.find(b => b.id === bracketId));
@@ -146,6 +148,16 @@ export class BracketMigrationService {
       bracket.matches = matches;
       const teams = await this.getTeamsForBracket(bracketId);
       
+      if (teams.length === 0) {
+        return {
+          success: false,
+          message: 'No teams found for this bracket',
+          validation: { matches: 0, teams: 0 }
+        };
+      }
+      
+      console.log(`Migrating bracket: ${bracket.name} with ${teams.length} teams and ${matches.length} matches`);
+      
       // Create stage in brackets-manager
       const stageType = bracket.format === BRACKET_FORMATS.DOUBLE ? 'double_elimination' : 'single_elimination';
       const seeding = teams.map(team => team.id);
@@ -158,6 +170,7 @@ export class BracketMigrationService {
         seeding: seeding,
         settings: {
           grandFinal: 'double',
+          seedOrdering: ['natural'], // Added this required parameter
           matchesChildCount: 0,
           size: teams.length
         },
@@ -169,7 +182,10 @@ export class BracketMigrationService {
       const participants = teams.map(team => ({
         id: team.id,
         name: team.name,
+        tournament_id: bracketId
       }));
+      
+      console.log(`Registering ${participants.length} participants`);
       await bracketManager.registerParticipants(participants);
       
       // Mark the bracket as migrated

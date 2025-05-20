@@ -107,7 +107,7 @@ export class BracketCreationService {
         seeding: participants.map(p => p.id), // Use IDs for seeding instead of names
         settings: {
           size: participants.length,
-          seedOrdering: ['natural'],
+          seedOrdering: ['natural'], // Ensures we have a seed ordering method
           match: { games: bestOf }
         },
         tournamentId: bracketId // Use bracketId as tournamentId too
@@ -155,7 +155,7 @@ export class BracketCreationService {
         seeding: participants.map(p => p.id), // Use IDs for seeding instead of names
         settings: {
           size: participants.length,
-          seedOrdering: ['natural'],
+          seedOrdering: ['natural'], // Ensures we have a seed ordering method
           grandFinal: 'simple',
           match: { games: bestOf }
         },

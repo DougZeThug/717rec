@@ -1,98 +1,95 @@
 
-import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 import { bracketFormSchema, BracketFormValues } from "./BracketFormSchema";
 import { Team } from "@/types";
+import { useToast } from "@/hooks/use-toast";
 
-export function useBracketForm({ 
-  teams, 
-  onSubmit 
-}: { 
-  teams: Team[] | undefined; // Make teams possibly undefined for better type safety
+interface UseBracketFormProps {
+  teams: Team[];
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
-}) {
-  const [teamsByDivision, setTeamsByDivision] = useState<Record<string, Team[]>>({});
-  const [selectedDivision, setSelectedDivision] = useState<string>("");
+}
+
+export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
+  const { toast } = useToast();
+  const [filteredTeams, setFilteredTeams] = useState<Team[]>(teams || []);
   
-  // Initialize the form
+  // Initialize form with zod schema validation
   const form = useForm<BracketFormValues>({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
       title: "",
       divisionId: "",
-      format: "Double Elimination",
-      teams: [],
-    },
+      format: "Single Elimination",
+      teams: []
+    }
   });
-  
-  // Group teams by division with validation
+
+  // Update teams list whenever `teams` prop changes
   useEffect(() => {
-    // Ensure teams is an array before processing
-    const safeTeams = Array.isArray(teams) ? teams : [];
-    
-    // Debug teams data
-    console.log("BracketForm - All teams:", safeTeams.length);
-    
-    const grouped = safeTeams.reduce((acc, team) => {
-      // Validate team object and required properties
-      if (!team || !team.id || !team.name) {
-        console.warn("Skipping invalid team:", team);
-        return acc;
-      }
-      
-      // Use division_id consistently
-      const divisionId = team.division_id || team.division || null;
-      
-      if (divisionId) {
-        if (!acc[divisionId]) {
-          acc[divisionId] = [];
-        }
-        acc[divisionId].push(team);
-      } else {
-        // Handle teams without division
-        if (!acc['unassigned']) {
-          acc['unassigned'] = [];
-        }
-        acc['unassigned'].push(team);
-        console.log(`Team without division: ${team.name} (${team.id})`);
-      }
-      return acc;
-    }, {} as Record<string, Team[]>);
-    
-    console.log("BracketForm - Teams grouped by division:", Object.keys(grouped).map(divId => ({
-      divisionId: divId,
-      teamCount: grouped[divId].length,
-      teamNames: grouped[divId].map(t => t.name)
-    })));
-    
-    setTeamsByDivision(grouped);
+    if (teams) {
+      setFilteredTeams(teams);
+    }
   }, [teams]);
   
-  // Handle division change
+  // Filter teams by selected division
   const handleDivisionChange = (divisionId: string) => {
-    console.log("BracketForm - Division selected:", divisionId);
-    setSelectedDivision(divisionId);
-    form.setValue("divisionId", divisionId);
-    form.setValue("teams", []);
+    if (!divisionId || teams.length === 0) {
+      setFilteredTeams([]);
+      return;
+    }
+    
+    if (divisionId) {
+      const divisionTeams = teams.filter(team => team.division_id === divisionId || team.division === divisionId);
+      console.log(`Filtered teams for division ${divisionId}:`, divisionTeams);
+      setFilteredTeams(divisionTeams);
+      
+      // Clear previously selected teams when division changes
+      form.setValue('teams', []);
+    }
   };
   
-  // Get filtered teams based on selected division
-  const filteredTeams = selectedDivision && teamsByDivision[selectedDivision] 
-    ? teamsByDivision[selectedDivision] 
-    : [];
+  // Handle form submission with improved error handling
+  const handleSubmit = form.handleSubmit(async (data) => {
+    try {
+      console.log("Form submission data:", data);
+      
+      // Additional validation
+      if (!data.divisionId || data.divisionId === 'undefined') {
+        toast({
+          variant: "destructive", 
+          title: "Division Required", 
+          description: "Please select a valid division"
+        });
+        return;
+      }
+      
+      if (!data.teams || data.teams.length < 2) {
+        toast({
+          variant: "destructive", 
+          title: "Teams Required", 
+          description: "Please select at least 2 teams"
+        });
+        return;
+      }
+      
+      // Submit the form data
+      await onSubmit(data);
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast({
+        variant: "destructive",
+        title: "Bracket Creation Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred"
+      });
+    }
+  });
   
-  // Debug filtered teams
-  console.log("BracketForm - Filtered teams for division", selectedDivision, ":", filteredTeams.map(t => t.name));
-
-  const handleSubmit = form.handleSubmit(onSubmit);
-
   return {
     form,
-    teamsByDivision,
-    selectedDivision,
     filteredTeams,
     handleDivisionChange,
     handleSubmit
   };
-}
+};

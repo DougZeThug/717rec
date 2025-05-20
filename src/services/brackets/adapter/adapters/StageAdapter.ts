@@ -10,6 +10,7 @@ type StageRecord = {
   settings: {
     size: number;
     grandFinal?: 'simple';
+    seedOrdering: string[]; // Added seedOrdering as required
   };
 };
 
@@ -37,6 +38,14 @@ export class StageAdapter {
       if (!stage.type || (stage.type !== 'single_elimination' && stage.type !== 'double_elimination')) {
         console.error("Invalid stage type:", stage.type);
         throw new Error("Stage type must be 'single_elimination' or 'double_elimination'");
+      }
+
+      // Validate settings
+      if (!stage.settings || !stage.settings.seedOrdering || !Array.isArray(stage.settings.seedOrdering)) {
+        console.error("Missing or invalid seedOrdering in settings:", stage.settings);
+        // Default to ['natural'] if missing
+        if (!stage.settings) stage.settings = {};
+        stage.settings.seedOrdering = ['natural'];
       }
       
       console.log(`Inserting stage: ${stage.id}, name=${stage.name}, type=${stage.type}`);
