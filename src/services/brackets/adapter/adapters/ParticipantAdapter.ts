@@ -70,6 +70,144 @@ export class ParticipantAdapter {
       throw error;
     }
   }
+  
+  /**
+   * Select participants from the database
+   * @returns Array of participant records
+   */
+  async selectParticipants(filter?: ParticipantFilter): Promise<any[]> {
+    try {
+      // Build query with proper filter handling
+      let query = supabase.from('participants').select(`
+        id,
+        team_id,
+        bracket_id,
+        position,
+        teams:team_id (name)
+      `);
+      
+      if (filter) {
+        // Apply filters if provided
+        if (filter.id) {
+          if (Array.isArray(filter.id)) {
+            query = query.in('id', filter.id);
+          } else {
+            query = query.eq('id', filter.id);
+          }
+        }
+        
+        if (filter.bracket_id) {
+          query = query.eq('bracket_id', filter.bracket_id);
+        }
+        
+        if (filter.tournament_id) {
+          query = query.eq('bracket_id', filter.tournament_id); // Map tournament_id to bracket_id
+        }
+        
+        if (filter.team_id) {
+          query = query.eq('team_id', filter.team_id);
+        }
+        
+        if (filter.position !== undefined) {
+          query = query.eq('position', filter.position);
+        }
+      }
+      
+      // Execute query and handle response
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Error selecting participants:", error);
+        throw error;
+      }
+      
+      // Transform the result to match expected format
+      return data ? data.map(p => ({
+        id: p.team_id,
+        name: p.teams?.name || `Team ${p.position}`,
+        tournament_id: p.bracket_id,
+        position: p.position
+      })) : [];
+    } catch (error) {
+      console.error("Error selecting participants:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Update a participant in the database
+   * @returns Number of participants updated (1 or 0)
+   */
+  async updateParticipant(id: string, data: any): Promise<number> {
+    try {
+      const { error } = await supabase
+        .from('participants')
+        .update({
+          position: data.position
+        })
+        .eq('team_id', id)
+        .eq('bracket_id', data.tournament_id || data.bracket_id);
+      
+      if (error) {
+        console.error("Error updating participant:", error);
+        throw error;
+      }
+      
+      return 1; // Return 1 for successful update
+    } catch (error) {
+      console.error("Error updating participant:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Delete participants from the database
+   * @returns Number of participants deleted
+   */
+  async deleteParticipants(filter?: ParticipantFilter): Promise<number> {
+    try {
+      let query = supabase.from('participants').delete();
+      
+      if (filter) {
+        // Apply filters if provided
+        if (filter.id) {
+          if (Array.isArray(filter.id)) {
+            query = query.in('team_id', filter.id); // Map id to team_id
+          } else {
+            query = query.eq('team_id', filter.id); // Map id to team_id
+          }
+        }
+        
+        if (filter.bracket_id) {
+          query = query.eq('bracket_id', filter.bracket_id);
+        }
+        
+        if (filter.tournament_id) {
+          query = query.eq('bracket_id', filter.tournament_id); // Map tournament_id to bracket_id
+        }
+        
+        if (filter.team_id) {
+          query = query.eq('team_id', filter.team_id);
+        }
+        
+        if (filter.position !== undefined) {
+          query = query.eq('position', filter.position);
+        }
+      }
+      
+      const { error, count } = await query.select('count');
+      
+      if (error) {
+        console.error("Error deleting participants:", error);
+        throw error;
+      }
+      
+      return count || 0;
+    } catch (error) {
+      console.error("Error deleting participants:", error);
+      throw error;
+    }
+  }
 }
 
 /**
