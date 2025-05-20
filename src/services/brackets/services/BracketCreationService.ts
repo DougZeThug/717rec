@@ -4,6 +4,7 @@ import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { v4 as uuidv4 } from 'uuid';
 import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
 import { Team } from "@/types";
+import { ParticipantAdapterStatic as ParticipantAdapter } from '../adapter/adapters/ParticipantAdapter';
 
 export class BracketCreationService {
   /**
@@ -49,6 +50,9 @@ export class BracketCreationService {
       console.error('Failed to create bracket:', createResult.error);
       throw new Error(`Failed to create bracket: ${createResult.error.message}`);
     }
+    
+    // Insert participants for the bracket
+    await ParticipantAdapter.insert(bracketId, validTeamIds);
     
     // Register teams as participants
     const participants = validTeamIds.map((teamId, index) => ({
