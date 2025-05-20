@@ -7,8 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   ParticipantFilter, 
   ParticipantInsertData, 
-  ParticipantOperationError 
+  ParticipantOperationError,
+  ParticipantOperationResult
 } from '../types/ParticipantTypes';
+import { validateParticipantBatch } from '../utils/ParticipantValidationUtils';
 
 /**
  * Service for modifying participants in the database
@@ -25,10 +27,8 @@ export class ParticipantMutationService {
     }
     
     try {
-      // Filter out invalid participants
-      const validParticipants = participants.filter(p => 
-        p && p.team_id && typeof p.team_id === 'string' && p.team_id !== 'undefined'
-      );
+      // Validate all participants
+      const validParticipants = validateParticipantBatch(participants);
       
       if (validParticipants.length === 0) {
         console.warn("No valid participants to insert");
@@ -42,15 +42,19 @@ export class ParticipantMutationService {
       }));
       
       console.log(`Inserting ${participantsWithName.length} participants`);
-      const { error } = await supabase.from('participants').insert(participantsWithName);
+      const { error, data } = await supabase.from('participants').insert(participantsWithName)
+        .select('id'); // Select IDs to count inserted rows
       
       if (error) {
         console.error("Error inserting participants:", error);
         throw new ParticipantOperationError(`Participant insert failed: ${error.message}`, error);
       }
       
-      return participantsWithName.length;
+      return data?.length || participantsWithName.length;
     } catch (error) {
+      if (error instanceof ParticipantOperationError) {
+        throw error; // Re-throw our own error types
+      }
       console.error("Error inserting participants:", error);
       throw new ParticipantOperationError(`Failed to insert participants: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -62,9 +66,16 @@ export class ParticipantMutationService {
    */
   async updateParticipant(id: string, data: { position?: number; name?: string; tournament_id?: string; bracket_id?: string }): Promise<number> {
     try {
+      if (!id) {
+        throw new ParticipantOperationError('Team ID is required for update');
+      }
+      
       const updateData: any = {};
       
       if (data.position !== undefined) {
+        if (isNaN(data.position) || data.position < 0) {
+          throw new ParticipantOperationError('Position must be a non-negative number');
+        }
         updateData.position = data.position;
       }
       
@@ -77,19 +88,28 @@ export class ParticipantMutationService {
         return 0;
       }
       
-      const { error } = await supabase
+      const bracketId = data.tournament_id || data.bracket_id;
+      if (!bracketId) {
+        throw new ParticipantOperationError('Tournament or bracket ID is required for update');
+      }
+      
+      const { error, count } = await supabase
         .from('participants')
         .update(updateData)
         .eq('team_id', id)
-        .eq('bracket_id', data.tournament_id || data.bracket_id);
+        .eq('bracket_id', bracketId)
+        .select('count');
       
       if (error) {
         console.error("Error updating participant:", error);
         throw new ParticipantOperationError(`Failed to update participant: ${error.message}`, error);
       }
       
-      return 1; // Return 1 for successful update
+      return count || 0;
     } catch (error) {
+      if (error instanceof ParticipantOperationError) {
+        throw error;
+      }
       console.error("Error updating participant:", error);
       throw new ParticipantOperationError(`Failed to update participant: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -139,6 +159,9 @@ export class ParticipantMutationService {
       
       return count || 0;
     } catch (error) {
+      if (error instanceof ParticipantOperationError) {
+        throw error;
+      }
       console.error("Error deleting participants:", error);
       throw new ParticipantOperationError(`Failed to delete participants: ${error instanceof Error ? error.message : String(error)}`);
     }

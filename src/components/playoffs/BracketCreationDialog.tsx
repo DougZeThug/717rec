@@ -6,6 +6,7 @@ import BracketForm, { BracketFormValues } from "./BracketForm";
 import { BracketService } from "@/services/BracketService";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { ParticipantOperationError } from "@/services/brackets/adapter/types/ParticipantTypes";
 
 interface BracketCreationDialogProps {
   open: boolean;
@@ -32,10 +33,36 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       setIsSubmitting(true);
       console.log("Creating bracket with data:", data);
       
-      // Log validation data
-      if (!data.title) console.warn("Missing title in form submission");
-      if (!data.divisionId) console.warn("Missing divisionId in form submission");
-      if (!data.teams.length) console.warn("No teams selected in form submission");
+      // Validate required fields
+      if (!data.title) {
+        toast({
+          title: "Missing Title",
+          description: "Please provide a title for the bracket",
+          variant: "destructive"
+        });
+        console.warn("Missing title in form submission");
+        return;
+      }
+      
+      if (!data.divisionId) {
+        toast({
+          title: "Missing Division",
+          description: "Please select a division for the bracket",
+          variant: "destructive"
+        });
+        console.warn("Missing divisionId in form submission");
+        return;
+      }
+      
+      if (!data.teams.length) {
+        toast({
+          title: "No Teams Selected",
+          description: "Please select teams for the bracket",
+          variant: "destructive"
+        });
+        console.warn("No teams selected in form submission");
+        return;
+      }
       
       const bracketId = await BracketService.createBracket(
         data.title,
@@ -58,16 +85,27 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       navigate(`/playoffs?bracketId=${bracketId}`);
     } catch (error: any) {
       console.error("Error creating bracket:", error);
+      
+      let errorMessage = "Unknown error occurred";
+      let errorDetails = undefined;
+      
+      if (error instanceof ParticipantOperationError) {
+        errorMessage = `Participant error: ${error.message}`;
+        errorDetails = error.details;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: `Bracket creation failed – ${error?.message || 'unknown error'}`,
+        description: `Bracket creation failed – ${errorMessage}`,
         variant: "destructive"
       });
       
       // Add additional toast with details if they exist
-      if (error && 'details' in error) {
+      if (errorDetails) {
         toast({
-          description: error.details as string,
+          description: JSON.stringify(errorDetails),
           variant: "destructive"
         });
       }

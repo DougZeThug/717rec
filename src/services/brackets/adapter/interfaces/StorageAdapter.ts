@@ -1,20 +1,36 @@
 
 /**
- * Generic filter type for database queries
- * Base type that specific adapters can extend
+ * Base interface for filters used in storage adapter queries
  */
 export interface BaseFilter {
   id?: string | string[];
-  // Specific properties will be defined in extended interfaces
+  limit?: number;
+  offset?: number;
+  order?: string;
+  [key: string]: any;
 }
 
 /**
- * Interface for storage adapters that conform to brackets-manager expectations
+ * Base interface for storage adapters
  */
-export interface StorageAdapter {
-  // CRUD operations with correct return types that match brackets-manager expectations
-  insert(table: string, data: any | any[]): Promise<number>; // Return number for brackets-manager compatibility
-  select(table: string, filter?: BaseFilter): Promise<any[]>;
-  update(table: string, id: string, data: any): Promise<number>;
-  delete(table: string, filter?: BaseFilter): Promise<number>;
+export interface StorageAdapter<T, F extends BaseFilter, I> {
+  /**
+   * Select records from the storage
+   */
+  select(filter?: F): Promise<T[]>;
+  
+  /**
+   * Insert records into the storage
+   */
+  insert(data: I[]): Promise<number>;
+  
+  /**
+   * Update records in the storage
+   */
+  update(id: string, data: Partial<I>): Promise<number>;
+  
+  /**
+   * Delete records from the storage
+   */
+  delete(filter?: F): Promise<number>;
 }

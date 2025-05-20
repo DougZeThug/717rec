@@ -1,10 +1,9 @@
-
 import { bracketManager } from '../manager/BracketManager';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { v4 as uuidv4 } from 'uuid';
 import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
 import { Team } from "@/types";
-import { ParticipantAdapterStatic as ParticipantAdapter } from '../adapter/adapters/ParticipantAdapter';
+import { ParticipantAdapter } from '../adapter/adapters/ParticipantAdapter';
 
 export class BracketCreationService {
   /**
@@ -36,50 +35,68 @@ export class BracketCreationService {
     const bracketId = uuidv4();
     console.log(`Creating bracket with ID ${bracketId}, format: ${format}, teams: ${validTeamIds.length}`);
     
-    // Create the bracket record
-    const bracket = {
-      id: bracketId,
-      name,
-      format,
-      divisionId
-    };
-    
-    const createResult = await PlayoffDatabaseAdapter.createBracket(bracket);
-    
-    if (createResult.error) {
-      console.error('Failed to create bracket:', createResult.error);
-      throw new Error(`Failed to create bracket: ${createResult.error.message}`);
+    try {
+      // Create the bracket record
+      const bracket = {
+        id: bracketId,
+        name,
+        format,
+        divisionId
+      };
+      
+      const createResult = await PlayoffDatabaseAdapter.createBracket(bracket);
+      
+      if (createResult.error) {
+        console.error('Failed to create bracket:', createResult.error);
+        throw new Error(`Failed to create bracket: ${createResult.error.message}`);
+      }
+      
+      // Insert participants for the bracket
+      const participantAdapter = new ParticipantAdapter();
+      const participantInsertData = validTeamIds.map((teamId, index) => ({
+        bracket_id: bracketId,
+        team_id: teamId,
+        position: index + 1,
+        name: teamId // Use team ID as default name if one is not provided
+      }));
+      
+      console.log(`Inserting ${participantInsertData.length} participants`);
+      const insertCount = await participantAdapter.insertParticipants(participantInsertData);
+      
+      if (insertCount !== validTeamIds.length) {
+        console.warn(`Expected to insert ${validTeamIds.length} participants but inserted ${insertCount}`);
+      }
+      
+      // Register teams as participants
+      const participants = validTeamIds.map((teamId, index) => ({
+        id: teamId,
+        name: `Team ${index + 1}`, // Use placeholder names
+        tournament_id: bracketId,
+        position: index + 1, // 1-based position for seeding
+      }));
+      
+      console.log(`Registering ${participants.length} participants`);
+      await bracketManager.registerParticipants(participants);
+      
+      // Create the stage (bracket structure)
+      const stageId = uuidv4();
+      await bracketManager.createStage({
+        id: stageId,
+        name: `${format} Bracket`,
+        type: bracketManager.formatToStageType(format),
+        seeding: validTeamIds,
+        settings: {
+          seedOrdering: ['natural'] // Use natural seeding order
+        },
+        tournamentId: bracketId,
+        divisionId
+      });
+      
+      return bracketId;
+    } catch (error: any) {
+      console.error('Error in bracket creation process:', error);
+      throw new Error(`Bracket creation failed: ${error.message || 'Unknown error'}`);
     }
-    
-    // Insert participants for the bracket
-    await ParticipantAdapter.insert(bracketId, validTeamIds);
-    
-    // Register teams as participants
-    const participants = validTeamIds.map((teamId, index) => ({
-      id: teamId,
-      name: `Team ${index + 1}`, // Use placeholder names
-      tournament_id: bracketId,
-      position: index + 1, // 1-based position for seeding
-    }));
-    
-    console.log(`Registering ${participants.length} participants`);
-    await bracketManager.registerParticipants(participants);
-    
-    // Create the stage (bracket structure)
-    const stageId = uuidv4();
-    await bracketManager.createStage({
-      id: stageId,
-      name: `${format} Bracket`,
-      type: bracketManager.formatToStageType(format),
-      seeding: validTeamIds,
-      settings: {
-        seedOrdering: ['natural'] // Use natural seeding order
-      },
-      tournamentId: bracketId,
-      divisionId
-    });
-    
-    return bracketId;
   }
   
   /**

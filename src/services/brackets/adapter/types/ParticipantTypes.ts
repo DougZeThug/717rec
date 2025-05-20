@@ -16,7 +16,7 @@ export interface ParticipantFilter extends BaseFilter {
 }
 
 /**
- * Record type representing a participant in the database
+ * Record type representing a participant in the application
  */
 export interface ParticipantRecord {
   id: string;
@@ -50,11 +50,31 @@ export interface ParticipantInsertData {
 }
 
 /**
+ * Result of participant operations
+ */
+export interface ParticipantOperationResult {
+  success: boolean;
+  count: number;
+  message?: string;
+  details?: any;
+}
+
+/**
  * Error thrown when participant operations fail
  */
 export class ParticipantOperationError extends Error {
   constructor(message: string, public readonly details?: any) {
     super(message);
     this.name = 'ParticipantOperationError';
+  }
+}
+
+/**
+ * Error thrown when validation fails
+ */
+export class ParticipantValidationError extends ParticipantOperationError {
+  constructor(message: string, public readonly validationDetails?: any) {
+    super(message, validationDetails);
+    this.name = 'ParticipantValidationError';
   }
 }

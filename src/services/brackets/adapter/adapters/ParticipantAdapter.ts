@@ -5,7 +5,10 @@ import {
   ParticipantInsertData
 } from '../types/ParticipantTypes';
 import { ParticipantQueryService } from '../services/ParticipantQueryService';
-import { ParticipantMutationService } from '../services/ParticipantMutationService';
+import { 
+  ParticipantMutationService,
+  ParticipantMutationServiceStatic
+} from '../services/ParticipantMutationService';
 
 /**
  * Adapter to handle participants (teams) in the database
