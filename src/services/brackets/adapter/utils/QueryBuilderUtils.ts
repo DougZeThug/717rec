@@ -2,7 +2,7 @@
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
 import { TableNameMapper } from '../interfaces/TableNameMapper';
-import { PostgrestQueryBuilder } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Known table names in our database for type safety
@@ -17,7 +17,7 @@ export class QueryBuilderUtils {
    * Apply common filters to a query
    * Handles standard fields like id, limit, offset, order
    */
-  static applyCommonFilters<T>(query: PostgrestQueryBuilder<any, any, T>, filter?: BaseFilter): PostgrestQueryBuilder<any, any, T> {
+  static applyCommonFilters<T>(query: any, filter?: BaseFilter): any {
     if (!filter) return query;
     
     // Handle ID filtering (single or array)
@@ -110,9 +110,9 @@ export class QueryBuilderUtils {
   /**
    * Create a typed query builder for a specified table
    * @param tableName The table name to query
-   * @returns A PostgrestQueryBuilder instance
+   * @returns A query builder instance
    */
-  static createQueryBuilder<T = any>(tableName: string): PostgrestQueryBuilder<any, any, T> {
+  static createQueryBuilder<T = any>(tableName: string): any {
     const dbTable = TableNameMapper.toDbTableName(tableName) as KnownTableName;
     return supabase.from(dbTable);
   }
