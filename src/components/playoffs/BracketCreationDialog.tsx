@@ -56,7 +56,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       // Close dialog and navigate to new bracket
       onOpenChange(false);
       navigate(`/playoffs?bracketId=${bracketId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating bracket:", error);
       toast({
         title: "Error",

@@ -84,15 +84,28 @@ export class ParticipantAdapter {
    */
   async selectParticipants(filter?: ParticipantFilter): Promise<any[]> {
     try {
-      // Build query with proper filter handling
+      // Try to build a query that will work whether the name column exists or not
       let query = supabase.from('participants').select(`
         id,
         team_id,
         bracket_id,
         position,
-        name,
         teams:team_id (name)
       `);
+      
+      // Add name column to the query if it exists in the database
+      try {
+        query = supabase.from('participants').select(`
+          id,
+          team_id,
+          bracket_id,
+          position,
+          name,
+          teams:team_id (name)
+        `);
+      } catch (e) {
+        console.warn("'name' column might not exist yet, continuing with basic query");
+      }
       
       if (filter) {
         // Apply filters if provided
@@ -125,6 +138,12 @@ export class ParticipantAdapter {
       const { data, error } = await query;
       
       if (error) {
+        // Special handling for missing column errors
+        if (error.message?.includes("column 'name' does not exist")) {
+          console.warn("'name' column does not exist, falling back to basic participant data");
+          return this.selectParticipantsWithoutName(filter);
+        }
+        
         console.error("Error selecting participants:", error);
         throw error;
       }
@@ -132,12 +151,81 @@ export class ParticipantAdapter {
       // Transform the result to match expected format
       return data ? data.map(p => ({
         id: p.team_id,
-        name: p.name || p.teams?.name || `Team ${p.position}`, // Prioritize participant name
+        // Use participant name if available, fall back to team name or position
+        name: p.name || p.teams?.name || `Team ${p.position}`, 
         tournament_id: p.bracket_id,
         position: p.position
       })) : [];
     } catch (error) {
       console.error("Error selecting participants:", error);
+      
+      // Try fallback if something went wrong with the name column
+      if (String(error).includes("column 'name'") || 
+          String(error).includes("does not exist")) {
+        console.warn("Falling back to basic participant data");
+        return this.selectParticipantsWithoutName(filter);
+      }
+      
+      throw error;
+    }
+  }
+  
+  /**
+   * Fallback method to select participants without relying on the name column
+   * Used during schema transition period
+   */
+  private async selectParticipantsWithoutName(filter?: ParticipantFilter): Promise<any[]> {
+    try {
+      let query = supabase.from('participants').select(`
+        id,
+        team_id,
+        bracket_id,
+        position,
+        teams:team_id (name)
+      `);
+      
+      if (filter) {
+        // Apply same filters as the main method
+        if (filter.id) {
+          if (Array.isArray(filter.id)) {
+            query = query.in('id', filter.id);
+          } else {
+            query = query.eq('id', filter.id);
+          }
+        }
+        
+        if (filter.bracket_id) {
+          query = query.eq('bracket_id', filter.bracket_id);
+        }
+        
+        if (filter.tournament_id) {
+          query = query.eq('bracket_id', filter.tournament_id);
+        }
+        
+        if (filter.team_id) {
+          query = query.eq('team_id', filter.team_id);
+        }
+        
+        if (filter.position !== undefined) {
+          query = query.eq('position', filter.position);
+        }
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Error in fallback participant selection:", error);
+        throw error;
+      }
+      
+      return data ? data.map(p => ({
+        id: p.team_id,
+        name: p.teams?.name || `Team ${p.position}`,
+        tournament_id: p.bracket_id,
+        position: p.position
+      })) : [];
+    } catch (error) {
+      console.error("Error in fallback participant selection:", error);
       throw error;
     }
   }
@@ -148,12 +236,18 @@ export class ParticipantAdapter {
    */
   async updateParticipant(id: string, data: any): Promise<number> {
     try {
+      const updateData: any = {
+        position: data.position
+      };
+      
+      // Only include name in update if it's provided
+      if (data.name) {
+        updateData.name = data.name;
+      }
+      
       const { error } = await supabase
         .from('participants')
-        .update({
-          position: data.position,
-          name: data.name // Include name in updates if available
-        })
+        .update(updateData)
         .eq('team_id', id)
         .eq('bracket_id', data.tournament_id || data.bracket_id);
       
