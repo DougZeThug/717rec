@@ -38,11 +38,15 @@ export interface MatchRecord {
 
 /**
  * Types for the Stage adapter
+ * 
+ * Important: StageFilter.id is a single string, not an array of strings
+ * This addresses the type mismatch with StageAdapter implementation
  */
-export interface StageFilter extends BaseFilter {
+export interface StageFilter extends Omit<BaseFilter, 'id'> {
   tournament_id?: string;
-  // Ensuring this only accepts string, not string[] to match StageAdapter.ts
-  id?: string; 
+  id?: string; // Specifically a string, not an array
+  name?: string;
+  type?: string;
 }
 
 export interface StageRecord {

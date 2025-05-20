@@ -9,30 +9,10 @@ import {
   BracketTable,
   MatchFilter,
   ParticipantFilter,
-  StageFilter,
-  StageRecord,
-  MatchRecord,
-  ParticipantRecord
+  StageFilter
 } from './types/AdapterTypes';
-
-/**
- * Result of adapter operations
- */
-interface AdapterOperationResult {
-  success: boolean;
-  count: number;
-  error?: Error;
-}
-
-/**
- * Error thrown when adapter operations fail
- */
-class AdapterOperationError extends Error {
-  constructor(operation: string, message: string, public readonly details?: any) {
-    super(`${operation} operation failed: ${message}`);
-    this.name = 'AdapterOperationError';
-  }
-}
+import { AdapterOperationError } from './errors/AdapterErrors';
+import { filterUtils } from './utils/FilterUtils';
 
 /**
  * The BracketsAdapter implements the Storage interface from brackets-manager
@@ -153,11 +133,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         case BracketTable.Participant:
           return this.participantAdapter.selectParticipants(filter as ParticipantFilter);
         case BracketTable.Stage:
-          // Safely cast the filter to avoid the string[] issue
-          const stageFilter: StageFilter = filter ? {
-            ...filter,
-            id: filter.id && Array.isArray(filter.id) ? filter.id[0] : filter.id
-          } : {};
+          // Convert to a safe StageFilter to avoid type issues
+          const stageFilter = filterUtils.toStageFilter(filter);
           return this.stageAdapter.selectStage(stageFilter);
         default:
           throw new AdapterOperationError('select', `Unknown table: ${this.currentTable}`);
@@ -251,11 +228,8 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         case BracketTable.Participant:
           return this.participantAdapter.deleteParticipants(filter as ParticipantFilter);
         case BracketTable.Stage:
-          // Safely cast the filter to avoid the string[] issue
-          const stageFilter: StageFilter = filter ? {
-            ...filter,
-            id: filter.id && Array.isArray(filter.id) ? filter.id[0] : filter.id
-          } : {};
+          // Convert to a safe StageFilter to avoid type issues
+          const stageFilter = filterUtils.toStageFilter(filter);
           return this.stageAdapter.deleteStage(stageFilter);
         default:
           throw new AdapterOperationError('delete', `Unknown table: ${this.currentTable}`);

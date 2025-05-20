@@ -8,7 +8,6 @@ export type SeedOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_
 
 /**
  * Interface that matches what brackets-manager expects
- * Note: brackets-manager expects methods with different return types than our adapter
  */
 interface BracketsManagerAdapter {
   insert(data: any[]): Promise<number>; // Expects number of records inserted

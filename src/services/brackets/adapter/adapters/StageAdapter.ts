@@ -1,32 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { BracketFormat } from '@/constants/brackets';
-import { BaseFilter } from '../interfaces/StorageAdapter';
-
-/**
- * Filter type for stage queries with specific properties
- */
-export interface StageFilter extends BaseFilter {
-  id?: string;
-  tournament_id?: string;
-  name?: string;
-  type?: string;
-}
-
-/**
- * Stage record type with strongly typed properties
- */
-interface StageRecord {
-  id: string;
-  name: string;
-  tournament_id: string;
-  type: 'single_elimination' | 'double_elimination';
-  settings: {
-    size: number;
-    grandFinal?: 'simple';
-    seedOrdering: string[];
-  };
-}
+import { StageFilter, StageRecord } from '../types/AdapterTypes';
+import { AdapterOperationError } from '../errors/AdapterErrors';
 
 /**
  * Database response type for brackets table
@@ -79,14 +55,17 @@ export class StageAdapter {
       
       if (error) {
         console.error("Error inserting stage:", error);
-        throw error;
+        throw new AdapterOperationError('insertStage', error.message, error);
       }
       
       console.log(`Stage ${stage.id} inserted successfully`);
       return 1;
     } catch (error) {
       console.error("Error inserting stage:", error);
-      throw error;
+      if (error instanceof AdapterOperationError) {
+        throw error;
+      }
+      throw new AdapterOperationError('insertStage', 'Failed to insert stage', error);
     }
   }
   
@@ -105,7 +84,7 @@ export class StageAdapter {
       
       if (error) {
         console.error("Error selecting stage:", error);
-        throw error;
+        throw new AdapterOperationError('selectStage', error.message, error);
       }
       
       if (!data || data.length === 0) {
@@ -119,7 +98,10 @@ export class StageAdapter {
       return this.convertToStageRecords(data);
     } catch (error) {
       console.error("Error selecting stage:", error);
-      throw error;
+      if (error instanceof AdapterOperationError) {
+        throw error;
+      }
+      throw new AdapterOperationError('selectStage', 'Failed to select stage', error);
     }
   }
   
@@ -130,7 +112,7 @@ export class StageAdapter {
   async updateStage(id: string, stage: any): Promise<number> {
     if (!id || id === 'undefined' || !stage || !stage.name) {
       console.error("Invalid stage data for update:", { id, stage });
-      throw new Error("Valid stage ID and data required for update");
+      throw new AdapterOperationError('updateStage', 'Valid stage ID and data required for update');
     }
     
     try {
@@ -146,14 +128,17 @@ export class StageAdapter {
       
       if (error) {
         console.error("Error updating stage:", error);
-        throw error;
+        throw new AdapterOperationError('updateStage', error.message, error);
       }
       
       console.log(`Stage ${id} updated successfully`);
       return 1;
     } catch (error) {
       console.error("Error updating stage:", error);
-      throw error;
+      if (error instanceof AdapterOperationError) {
+        throw error;
+      }
+      throw new AdapterOperationError('updateStage', 'Failed to update stage', error);
     }
   }
   
@@ -164,7 +149,7 @@ export class StageAdapter {
   async deleteStage(filter?: StageFilter): Promise<number> {
     if (!filter?.id) {
       console.error("Invalid or missing ID in filter for stage deletion:", filter);
-      throw new Error("Stage ID is required for deletion");
+      throw new AdapterOperationError('deleteStage', 'Stage ID is required for deletion');
     }
     
     try {
@@ -178,14 +163,17 @@ export class StageAdapter {
       
       if (error) {
         console.error("Error deleting stage:", error);
-        throw error;
+        throw new AdapterOperationError('deleteStage', error.message, error);
       }
       
       console.log(`Deleted ${count || 0} stages`);
       return count || 0;
     } catch (error) {
       console.error("Error deleting stage:", error);
-      throw error;
+      if (error instanceof AdapterOperationError) {
+        throw error;
+      }
+      throw new AdapterOperationError('deleteStage', 'Failed to delete stage', error);
     }
   }
 
@@ -209,17 +197,17 @@ export class StageAdapter {
   private validateStage(stage: any): boolean {
     if (!stage || !stage.id || stage.id === 'undefined') {
       console.error("Invalid stage data - missing ID:", stage);
-      throw new Error("Stage ID is required and must be valid");
+      throw new AdapterOperationError('validateStage', 'Stage ID is required and must be valid');
     }
     
     if (!stage.name || typeof stage.name !== 'string') {
       console.error("Invalid stage name:", stage.name);
-      throw new Error("Stage name is required");
+      throw new AdapterOperationError('validateStage', 'Stage name is required');
     }
     
     if (!stage.type || (stage.type !== 'single_elimination' && stage.type !== 'double_elimination')) {
       console.error("Invalid stage type:", stage.type);
-      throw new Error("Stage type must be 'single_elimination' or 'double_elimination'");
+      throw new AdapterOperationError('validateStage', "Stage type must be 'single_elimination' or 'double_elimination'");
     }
 
     // Validate settings
