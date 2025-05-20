@@ -17,7 +17,7 @@ describe('useBracketForm', () => {
     vi.clearAllMocks();
   });
 
-  it('initializes with empty filtered teams', () => {
+  it('initializes with empty filtered teams and no selected division', () => {
     const { result } = renderHook(() => useBracketForm({ 
       teams: mockTeams, 
       onSubmit: mockOnSubmit 
@@ -52,9 +52,8 @@ describe('useBracketForm', () => {
     expect(result.current.form.getValues()).toEqual({
       title: "",
       divisionId: "",
-      format: "Double Elimination",
+      format: "Single Elimination",
       teams: [],
-      useChallonge: true,
     });
   });
 

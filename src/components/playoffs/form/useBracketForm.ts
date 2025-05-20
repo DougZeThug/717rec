@@ -1,7 +1,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { bracketFormSchema, BracketFormValues } from "./BracketFormSchema";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +13,8 @@ interface UseBracketFormProps {
 
 export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
   const { toast } = useToast();
-  const [filteredTeams, setFilteredTeams] = useState<Team[]>(teams || []);
+  const [filteredTeams, setFilteredTeams] = useState<Team[]>([]);
+  const [selectedDivision, setSelectedDivision] = useState<string>("");
   
   // Initialize form with zod schema validation
   const form = useForm<BracketFormValues>({
@@ -26,15 +27,35 @@ export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
     }
   });
 
+  // Group teams by division for easier filtering and display
+  const teamsByDivision = useMemo(() => {
+    const grouped: Record<string, Team[]> = {};
+    
+    if (teams && teams.length > 0) {
+      teams.forEach(team => {
+        const divId = team.division_id || team.division || "";
+        if (!grouped[divId]) {
+          grouped[divId] = [];
+        }
+        grouped[divId].push(team);
+      });
+    }
+    
+    return grouped;
+  }, [teams]);
+  
   // Update teams list whenever `teams` prop changes
   useEffect(() => {
-    if (teams) {
-      setFilteredTeams(teams);
+    if (teams && selectedDivision) {
+      handleDivisionChange(selectedDivision);
     }
   }, [teams]);
   
   // Filter teams by selected division
   const handleDivisionChange = (divisionId: string) => {
+    setSelectedDivision(divisionId);
+    form.setValue('divisionId', divisionId);
+    
     if (!divisionId || teams.length === 0) {
       setFilteredTeams([]);
       return;
@@ -89,6 +110,8 @@ export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
   return {
     form,
     filteredTeams,
+    selectedDivision,
+    teamsByDivision,
     handleDivisionChange,
     handleSubmit
   };
