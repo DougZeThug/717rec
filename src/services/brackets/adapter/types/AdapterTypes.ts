@@ -11,8 +11,8 @@ export interface MatchFilter extends BaseFilter {
   bracket_id?: string;
 }
 
-// Re-export BaseFilter for convenience
-export { BaseFilter } from '../interfaces/StorageAdapter';
+// Re-export BaseFilter for convenience - using export type to fix TS1205 error
+export type { BaseFilter } from '../interfaces/StorageAdapter';
 
 export interface MatchRecord {
   id: string;

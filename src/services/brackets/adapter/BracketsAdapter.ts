@@ -1,4 +1,3 @@
-
 import { StorageAdapter, BaseFilter } from './interfaces/StorageAdapter';
 import { MatchAdapter } from './adapters/MatchAdapter';
 import { ParticipantAdapter } from './adapters/ParticipantAdapter';

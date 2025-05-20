@@ -1,5 +1,9 @@
+
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
+
+// Define a type for valid table names in our database
+type ValidTableName = 'matches' | 'participants' | 'stages' | 'brackets';
 
 /**
  * Generic query builder utilities for database operations
@@ -43,7 +47,8 @@ export class QueryBuilderUtils {
    * Execute a batch delete operation with filtering
    * @returns Number of records deleted
    */
-  static async executeDelete(table: string, filter?: BaseFilter): Promise<number> {
+  static async executeDelete(table: ValidTableName, filter?: BaseFilter): Promise<number> {
+    // Type assertion to satisfy TypeScript, since we're validating the table name
     let query = supabase.from(table).delete();
     
     query = this.applyCommonFilters(query, filter);
@@ -58,7 +63,7 @@ export class QueryBuilderUtils {
    * Execute a batch insert operation
    * @returns Number of records inserted
    */
-  static async executeBatchInsert(table: string, data: any[]): Promise<number> {
+  static async executeBatchInsert(table: ValidTableName, data: any[]): Promise<number> {
     if (!data?.length) return 0;
     
     let insertedCount = 0;
@@ -66,6 +71,7 @@ export class QueryBuilderUtils {
     // Batch insert to keep rows ≤ 50 for optimal performance
     for (let i = 0; i < data.length; i += 50) {
       const batch = data.slice(i, i + 50);
+      // Type assertion to satisfy TypeScript
       const { error } = await supabase.from(table).insert(batch);
       
       if (error) throw error;
@@ -79,7 +85,8 @@ export class QueryBuilderUtils {
    * Execute a single record update
    * @returns Number of records updated (1 or 0)
    */
-  static async executeUpdate(table: string, id: string, data: any): Promise<number> {
+  static async executeUpdate(table: ValidTableName, id: string, data: any): Promise<number> {
+    // Type assertion to satisfy TypeScript
     const { error } = await supabase
       .from(table)
       .update(data)
