@@ -1,3 +1,4 @@
+
 import { PlayoffDatabaseFacade } from './PlayoffDatabaseFacade';
 import { PlayoffMatch, PlayoffGame } from '../types';
 import { DatabasePlayoffMatch, MatchResultDTO, DatabaseMatchResult, BracketCreationParams } from './types';
@@ -33,7 +34,7 @@ export class PlayoffDatabaseAdapter {
           id: params.id,
           title: params.name,
           format: params.format,
-          division_id: params.divisionId || null, // Ensure null instead of 'undefined'
+          division_id: params.divisionId ?? null, // Ensure null instead of 'undefined'
           created_at: new Date().toISOString(),
           state: 'pending'
         });
@@ -83,20 +84,20 @@ export class PlayoffDatabaseAdapter {
         position: match.position,
         match_type: match.matchType,
         // Replace placeholder IDs with null before saving to database
-        team1_id: match.team1Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team1Id,
-        team2_id: match.team2Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : match.team2Id,
-        team1_score: match.team1Score || null,
-        team2_score: match.team2Score || null,
-        team1_game_wins: match.team1GameWins || null,
-        team2_game_wins: match.team2GameWins || null,
-        team1_seed: match.team1Seed,
-        team2_seed: match.team2Seed,
-        winner_id: match.winnerId || null,
-        loser_id: match.loserId || null,
-        next_win_match_id: match.nextWinMatchId || null,
-        next_lose_match_id: match.nextLoseMatchId || null,
-        best_of: match.bestOf || 3,
-        status: match.status || 'pending'
+        team1_id: match.team1Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : (match.team1Id ?? null),
+        team2_id: match.team2Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : (match.team2Id ?? null),
+        team1_score: match.team1Score ?? null,
+        team2_score: match.team2Score ?? null,
+        team1_game_wins: match.team1GameWins ?? null,
+        team2_game_wins: match.team2GameWins ?? null,
+        team1_seed: match.team1Seed ?? null,
+        team2_seed: match.team2Seed ?? null,
+        winner_id: match.winnerId ?? null,
+        loser_id: match.loserId ?? null,
+        next_win_match_id: match.nextWinMatchId ?? null,
+        next_lose_match_id: match.nextLoseMatchId ?? null,
+        best_of: match.bestOf ?? 3,
+        status: match.status ?? 'pending'
       };
     });
 
