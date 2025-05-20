@@ -4,6 +4,14 @@
  */
 export class MatchConverterUtils {
   /**
+   * Guard against literal "undefined" strings and other invalid values
+   * @private
+   */
+  private nil(id?: string | null): string | null {
+    return !id || id === "undefined" ? null : id;
+  }
+
+  /**
    * Convert a match from brackets-manager format to database format
    */
   convertMatchToDbFormat(match: any): any {
@@ -34,8 +42,8 @@ export class MatchConverterUtils {
       loser_id: match.opponent1?.result === 'loss'
         ? this.validateId(match.opponent1.id)
         : (match.opponent2?.result === 'loss' ? this.validateId(match.opponent2.id) : null),
-      next_match_id: match.child_count > 0 ? this.validateId(match.child_match_id) : null,
-      next_loser_match_id: match.child_count > 1 ? this.validateId(match.child_match_id_loser) : null,
+      next_match_id: this.nil(match.child_match_id),
+      next_loser_match_id: this.nil(match.child_match_id_loser),
       best_of: match.best_of || 3,
       team1_score: match.opponent1?.score !== undefined ? match.opponent1.score : null,
       team2_score: match.opponent2?.score !== undefined ? match.opponent2.score : null,
