@@ -1,266 +1,46 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { BaseFilter } from '../interfaces/StorageAdapter';
-
-/**
- * Filter type for participant queries with specific properties
- */
-export interface ParticipantFilter extends BaseFilter {
-  tournament_id?: string;
-  bracket_id?: string;
-  team_id?: string;
-  position?: number;
-}
-
-/**
- * Record type representing a participant in the database
- */
-export interface ParticipantRecord {
-  id: string;
-  name: string;
-  tournament_id: string | null;
-  position: number | null;
-}
-
-/**
- * Data needed to insert a participant into the database
- */
-export interface ParticipantInsertData {
-  bracket_id: string;
-  team_id: string;
-  position: number;
-  name?: string; // Add name field to match the updated schema
-}
+import { 
+  ParticipantFilter,
+  ParticipantRecord,
+  ParticipantInsertData
+} from '../types/ParticipantTypes';
+import { ParticipantQueryService } from '../services/ParticipantQueryService';
+import { ParticipantMutationService } from '../services/ParticipantMutationService';
 
 /**
  * Adapter to handle participants (teams) in the database
  */
 export class ParticipantAdapter {
+  private queryService: ParticipantQueryService;
+  private mutationService: ParticipantMutationService;
+  
+  constructor() {
+    this.queryService = new ParticipantQueryService();
+    this.mutationService = new ParticipantMutationService();
+  }
+
   /**
    * Insert participants into the database
    * @returns Number of participants successfully inserted
    */
   async insertParticipants(participants: ParticipantInsertData[]): Promise<number> {
-    if (!participants || participants.length === 0) {
-      console.log("No participants provided to insert");
-      return 0;
-    }
-    
-    try {
-      // Filter out invalid participants
-      const validParticipants = participants.filter(p => 
-        p && p.team_id && typeof p.team_id === 'string' && p.team_id !== 'undefined'
-      );
-      
-      if (validParticipants.length === 0) {
-        console.warn("No valid participants to insert");
-        return 0;
-      }
-      
-      // Add name for each participant if not provided
-      const participantsWithName = validParticipants.map(p => ({
-        ...p,
-        name: p.name || p.team_id // Default to team_id if name is not provided
-      }));
-      
-      console.log(`Inserting ${participantsWithName.length} participants`);
-      const { error } = await supabase.from('participants').insert(participantsWithName);
-      
-      if (error) {
-        console.error("Error inserting participants:", error);
-        throw new Error(`Participant insert failed: ${error.message}`);
-      }
-      
-      return participantsWithName.length;
-    } catch (error) {
-      console.error("Error inserting participants:", error);
-      throw error;
-    }
+    return this.mutationService.insertParticipants(participants);
   }
   
   /**
    * Select participants from the database
    * @returns Array of participant records
    */
-  async selectParticipants(filter?: ParticipantFilter): Promise<any[]> {
-    try {
-      // Try to build a query that will work whether the name column exists or not
-      let query = supabase.from('participants').select(`
-        id,
-        team_id,
-        bracket_id,
-        position,
-        teams:team_id (name)
-      `);
-      
-      // Add name column to the query if it exists in the database
-      try {
-        query = supabase.from('participants').select(`
-          id,
-          team_id,
-          bracket_id,
-          position,
-          name,
-          teams:team_id (name)
-        `);
-      } catch (e) {
-        console.warn("'name' column might not exist yet, continuing with basic query");
-      }
-      
-      if (filter) {
-        // Apply filters if provided
-        if (filter.id) {
-          if (Array.isArray(filter.id)) {
-            query = query.in('id', filter.id);
-          } else {
-            query = query.eq('id', filter.id);
-          }
-        }
-        
-        if (filter.bracket_id) {
-          query = query.eq('bracket_id', filter.bracket_id);
-        }
-        
-        if (filter.tournament_id) {
-          query = query.eq('bracket_id', filter.tournament_id); // Map tournament_id to bracket_id
-        }
-        
-        if (filter.team_id) {
-          query = query.eq('team_id', filter.team_id);
-        }
-        
-        if (filter.position !== undefined) {
-          query = query.eq('position', filter.position);
-        }
-      }
-      
-      // Execute query and handle response
-      const { data, error } = await query;
-      
-      if (error) {
-        // Special handling for missing column errors
-        if (error.message?.includes("column 'name' does not exist")) {
-          console.warn("'name' column does not exist, falling back to basic participant data");
-          return this.selectParticipantsWithoutName(filter);
-        }
-        
-        console.error("Error selecting participants:", error);
-        throw error;
-      }
-      
-      // Transform the result to match expected format
-      return data ? data.map(p => ({
-        id: p.team_id,
-        // Use participant name if available, fall back to team name or position
-        name: p.name || p.teams?.name || `Team ${p.position}`, 
-        tournament_id: p.bracket_id,
-        position: p.position
-      })) : [];
-    } catch (error) {
-      console.error("Error selecting participants:", error);
-      
-      // Try fallback if something went wrong with the name column
-      if (String(error).includes("column 'name'") || 
-          String(error).includes("does not exist")) {
-        console.warn("Falling back to basic participant data");
-        return this.selectParticipantsWithoutName(filter);
-      }
-      
-      throw error;
-    }
+  async selectParticipants(filter?: ParticipantFilter): Promise<ParticipantRecord[]> {
+    return this.queryService.selectParticipants(filter);
   }
-  
-  /**
-   * Fallback method to select participants without relying on the name column
-   * Used during schema transition period
-   */
-  private async selectParticipantsWithoutName(filter?: ParticipantFilter): Promise<any[]> {
-    try {
-      let query = supabase.from('participants').select(`
-        id,
-        team_id,
-        bracket_id,
-        position,
-        teams:team_id (name)
-      `);
-      
-      if (filter) {
-        // Apply same filters as the main method
-        if (filter.id) {
-          if (Array.isArray(filter.id)) {
-            query = query.in('id', filter.id);
-          } else {
-            query = query.eq('id', filter.id);
-          }
-        }
-        
-        if (filter.bracket_id) {
-          query = query.eq('bracket_id', filter.bracket_id);
-        }
-        
-        if (filter.tournament_id) {
-          query = query.eq('bracket_id', filter.tournament_id);
-        }
-        
-        if (filter.team_id) {
-          query = query.eq('team_id', filter.team_id);
-        }
-        
-        if (filter.position !== undefined) {
-          query = query.eq('position', filter.position);
-        }
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error("Error in fallback participant selection:", error);
-        throw error;
-      }
-      
-      return data ? data.map(p => ({
-        id: p.team_id,
-        name: p.teams?.name || `Team ${p.position}`,
-        tournament_id: p.bracket_id,
-        position: p.position
-      })) : [];
-    } catch (error) {
-      console.error("Error in fallback participant selection:", error);
-      throw error;
-    }
-  }
-  
+
   /**
    * Update a participant in the database
    * @returns Number of participants updated (1 or 0)
    */
   async updateParticipant(id: string, data: any): Promise<number> {
-    try {
-      const updateData: any = {
-        position: data.position
-      };
-      
-      // Only include name in update if it's provided
-      if (data.name) {
-        updateData.name = data.name;
-      }
-      
-      const { error } = await supabase
-        .from('participants')
-        .update(updateData)
-        .eq('team_id', id)
-        .eq('bracket_id', data.tournament_id || data.bracket_id);
-      
-      if (error) {
-        console.error("Error updating participant:", error);
-        throw error;
-      }
-      
-      return 1; // Return 1 for successful update
-    } catch (error) {
-      console.error("Error updating participant:", error);
-      throw error;
-    }
+    return this.mutationService.updateParticipant(id, data);
   }
   
   /**
@@ -268,48 +48,7 @@ export class ParticipantAdapter {
    * @returns Number of participants deleted
    */
   async deleteParticipants(filter?: ParticipantFilter): Promise<number> {
-    try {
-      let query = supabase.from('participants').delete();
-      
-      if (filter) {
-        // Apply filters if provided
-        if (filter.id) {
-          if (Array.isArray(filter.id)) {
-            query = query.in('team_id', filter.id); // Map id to team_id
-          } else {
-            query = query.eq('team_id', filter.id); // Map id to team_id
-          }
-        }
-        
-        if (filter.bracket_id) {
-          query = query.eq('bracket_id', filter.bracket_id);
-        }
-        
-        if (filter.tournament_id) {
-          query = query.eq('bracket_id', filter.tournament_id); // Map tournament_id to bracket_id
-        }
-        
-        if (filter.team_id) {
-          query = query.eq('team_id', filter.team_id);
-        }
-        
-        if (filter.position !== undefined) {
-          query = query.eq('position', filter.position);
-        }
-      }
-      
-      const { error, count } = await query.select('count');
-      
-      if (error) {
-        console.error("Error deleting participants:", error);
-        throw error;
-      }
-      
-      return count || 0;
-    } catch (error) {
-      console.error("Error deleting participants:", error);
-      throw error;
-    }
+    return this.mutationService.deleteParticipants(filter);
   }
 }
 
@@ -318,19 +57,13 @@ export class ParticipantAdapter {
  */
 export const ParticipantAdapterStatic = {
   async insert(bracketId: string, teamIds: string[]): Promise<number> {
-    if (!bracketId || !teamIds || teamIds.length === 0) {
-      return 0;
-    }
-    
-    const rows = teamIds.map((teamId, i) => ({
-      bracket_id: bracketId,
-      team_id: teamId,
-      position: i + 1,
-      name: teamId // Use team_id as default name
-    }));
-    
-    const { error } = await supabase.from('participants').insert(rows);
-    if (error) throw new Error(`Participant insert failed: ${error.message}`);
-    return rows.length;
+    return ParticipantMutationServiceStatic.insert(bracketId, teamIds);
   },
 };
+
+// Re-export types for convenience
+export type { 
+  ParticipantFilter,
+  ParticipantRecord,
+  ParticipantInsertData
+} from '../types/ParticipantTypes';

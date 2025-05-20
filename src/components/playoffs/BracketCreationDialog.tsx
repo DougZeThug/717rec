@@ -10,8 +10,8 @@ import { useNavigate } from "react-router-dom";
 interface BracketCreationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  divisions: { id: string; name: string }[] | undefined; // Make divisions possibly undefined
-  teams: Team[] | undefined; // Make teams possibly undefined
+  divisions: { id: string; name: string }[] | undefined;
+  teams: Team[] | undefined;
   onBracketCreated?: (bracketId: string) => void;
 }
 

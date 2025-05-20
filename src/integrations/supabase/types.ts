@@ -549,18 +549,21 @@ export type Database = {
         Row: {
           bracket_id: string
           id: string
+          name: string | null
           position: number
           team_id: string
         }
         Insert: {
           bracket_id: string
           id?: string
+          name?: string | null
           position: number
           team_id: string
         }
         Update: {
           bracket_id?: string
           id?: string
+          name?: string | null
           position?: number
           team_id?: string
         }
