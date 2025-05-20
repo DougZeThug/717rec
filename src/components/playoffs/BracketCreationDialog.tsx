@@ -60,9 +60,17 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       console.error("Error creating bracket:", error);
       toast({
         title: "Error",
-        description: "Failed to create bracket. Please try again.",
+        description: `Bracket creation failed – ${error?.message || 'unknown error'}`,
         variant: "destructive"
       });
+      
+      // Add additional toast with details if they exist
+      if (error && 'details' in error) {
+        toast({
+          description: error.details as string,
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
