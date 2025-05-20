@@ -194,7 +194,7 @@ export class ParticipantAdapter {
    * @param filter Filter criteria for deleting participants
    * @returns Number of participants deleted
    */
-  async deleteParticipants(filter?: Record<string, any>): Promise<number> {
+  async deleteParticipants(filter?: ParticipantFilter): Promise<number> {
     try {
       // We don't delete teams from bracket operations
       // Just log the attempt

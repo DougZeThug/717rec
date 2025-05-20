@@ -2,6 +2,18 @@
 import { supabase } from "@/integrations/supabase/client";
 import { BracketFormat } from '@/constants/brackets';
 
+/**
+ * Filter type for stage queries
+ * Explicitly defining filter object properties to avoid recursive typing
+ */
+interface StageFilter {
+  id?: string;
+  tournament_id?: string;
+  name?: string;
+  type?: string;
+  [key: string]: any; // Allow additional properties but with controlled depth
+}
+
 type StageRecord = {
   id: string;
   name: string;
@@ -99,7 +111,7 @@ export class StageAdapter {
   /**
    * Select stages from the database
    */
-  async selectStage(filter?: Record<string, any>): Promise<StageRecord[]> {
+  async selectStage(filter?: StageFilter): Promise<StageRecord[]> {
     try {
       // Validate filter
       if (filter?.id === 'undefined' || filter?.tournament_id === 'undefined') {
@@ -135,7 +147,8 @@ export class StageAdapter {
         type: bracket.format === 'Single Elimination' ? 'single_elimination' : 'double_elimination',
         settings: {
           size: 0, // Would need to count participants
-          grandFinal: 'simple'
+          grandFinal: 'simple',
+          seedOrdering: ['natural'] // Default seed ordering
         }
       }));
     } catch (error) {
@@ -148,7 +161,7 @@ export class StageAdapter {
    * Apply filters to query without causing deep type instantiation
    * Helper method to simplify the query building process
    */
-  private async applyFilters(baseQuery: any, filter?: Record<string, any>) {
+  private async applyFilters(baseQuery: any, filter?: StageFilter) {
     // Start with a simple select
     let query = baseQuery.select('*');
     
@@ -230,7 +243,7 @@ export class StageAdapter {
    * Delete a stage from the database
    * @returns Number of stages deleted
    */
-  async deleteStage(filter?: Record<string, any>): Promise<number> {
+  async deleteStage(filter?: StageFilter): Promise<number> {
     try {
       if (!filter || !filter.id || filter.id === 'undefined') {
         console.error("Invalid or missing ID in filter for stage deletion:", filter);

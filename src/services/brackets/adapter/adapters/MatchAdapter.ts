@@ -3,6 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 
 /**
+ * Filter type for match queries
+ * Explicitly defining filter object properties to avoid recursive typing
+ */
+interface MatchFilter {
+  id?: string | string[];
+  bracket_id?: string;
+  round_number?: number;
+  position?: number;
+  match_type?: string;
+  [key: string]: any; // Allow additional properties but with controlled depth
+}
+
+/**
  * Adapter to manage matches in the database
  */
 export class MatchAdapter {
@@ -33,7 +46,7 @@ export class MatchAdapter {
   /**
    * Select matches from the database
    */
-  async selectMatches(filter?: Record<string, any>): Promise<any[]> {
+  async selectMatches(filter?: MatchFilter): Promise<any[]> {
     try {
       // Create base query
       const query = supabase.from('matches');
@@ -92,7 +105,7 @@ export class MatchAdapter {
    * Delete matches from the database
    * @returns Number of matches deleted
    */
-  async deleteMatches(filter?: Record<string, any>): Promise<number> {
+  async deleteMatches(filter?: MatchFilter): Promise<number> {
     try {
       const query = supabase.from('matches').delete();
       
