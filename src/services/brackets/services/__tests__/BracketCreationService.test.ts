@@ -10,6 +10,7 @@ vi.mock('../../manager/BracketManager', () => ({
   bracketManager: {
     registerParticipants: vi.fn().mockResolvedValue(undefined),
     createStage: vi.fn().mockResolvedValue(undefined),
+    formatToStageType: vi.fn().mockReturnValue('single_elimination'),
   }
 }));
 

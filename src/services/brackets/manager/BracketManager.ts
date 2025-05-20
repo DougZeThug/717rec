@@ -1,4 +1,3 @@
-
 import { BracketsManager } from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFormat } from '@/constants/brackets';

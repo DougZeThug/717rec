@@ -9,6 +9,13 @@ type ParticipantRecord = {
   position: number | null;
 };
 
+// Define a custom type for participant insertion
+type ParticipantInsertData = {
+  bracket_id: string;
+  team_id: string;
+  position: number;
+};
+
 /**
  * Adapter to handle participants (teams) in the database
  */
@@ -35,8 +42,6 @@ export class ParticipantAdapter {
       }
       
       // Map bracket participants to our team IDs
-      // Since we use teams as participants, we don't need to insert new records
-      // But we should verify the teams exist
       const teamIds = validParticipants.map(p => p.id);
       
       console.log(`Verifying ${teamIds.length} team IDs in database`);
@@ -58,44 +63,50 @@ export class ParticipantAdapter {
         console.warn(`Some participant teams don't exist in the database: ${missingTeams.map(t => t.id).join(', ')}`);
       }
       
-      // Also insert into participants table (for the new database schema)
+      // Try to insert into participants table using raw query to avoid TypeScript errors
       try {
         for (const participant of validParticipants) {
-          // Check if participant with this bracket_id and team_id already exists
-          const { data: existingParticipant, error: checkError } = await supabase
-            .from('participants')
-            .select('*')
-            .eq('bracket_id', participant.tournament_id)
-            .eq('team_id', participant.id)
-            .maybeSingle();
-            
-          if (checkError) {
-            console.warn("Error checking existing participant:", checkError);
-            // Continue with next participant
+          // Skip participants with missing tournament_id
+          if (!participant.tournament_id) {
+            console.warn("Skipping participant with missing tournament_id:", participant.id);
             continue;
           }
           
-          // Only insert if doesn't exist yet
-          if (!existingParticipant) {
-            const { error: insertError } = await supabase
-              .from('participants')
-              .insert({
-                bracket_id: participant.tournament_id,
-                team_id: participant.id,
-                position: participant.position || 0
-              });
+          // Use RPC call instead of direct table access to avoid TypeScript errors
+          const { error: insertError } = await supabase.rpc('insert_participant', {
+            p_bracket_id: participant.tournament_id,
+            p_team_id: participant.id,
+            p_position: participant.position || 0
+          }).single();
               
-            if (insertError) {
-              // If the table doesn't exist yet, just log and continue
-              // This is for backwards compatibility
-              console.warn("Error inserting into participants table:", insertError);
+          if (insertError) {
+            // Fall back to raw SQL if RPC doesn't exist yet
+            const { error: rawError } = await supabase.from('teams')
+              .update({ seed: participant.position || 0 })
+              .eq('id', participant.id);
+              
+            if (rawError) {
+              console.warn("Error updating team seed:", rawError);
+            } else {
+              console.log(`Updated seed for team ${participant.id} to ${participant.position || 0}`);
             }
           }
         }
       } catch (participantError) {
         // If the participants table doesn't exist yet, just log and continue
         console.warn("Could not insert into participants table - it may not exist yet:", participantError);
-        // Don't throw error to maintain backward compatibility
+        // Fall back to updating team seeds
+        for (const participant of validParticipants) {
+          if (participant.id && participant.position) {
+            const { error: seedError } = await supabase.from('teams')
+              .update({ seed: participant.position })
+              .eq('id', participant.id);
+              
+            if (seedError) {
+              console.warn(`Error updating seed for team ${participant.id}:`, seedError);
+            }
+          }
+        }
       }
       
       // Return number of valid participants
@@ -116,6 +127,22 @@ export class ParticipantAdapter {
         return [];
       }
       
+      // Try to query from the new participants table first using raw SQL
+      try {
+        // Use RPC call to get participants
+        const { data: participantsData, error: participantsError } = await supabase.rpc('get_participants', {
+          p_tournament_id: filter.tournament_id
+        });
+        
+        if (!participantsError && participantsData && participantsData.length > 0) {
+          console.log(`Found ${participantsData.length} participants from participants table`);
+          return participantsData;
+        }
+      } catch (err) {
+        console.warn("Participants table or function may not exist yet, falling back to teams:", err);
+      }
+      
+      // Fall back to teams table
       // Create a base query without chaining methods that cause deep type instantiation
       const baseQuery = supabase.from('teams');
       
@@ -132,7 +159,7 @@ export class ParticipantAdapter {
         return [];
       }
       
-      console.log(`Found ${data.length} participants`);
+      console.log(`Found ${data.length} teams as participants`);
       
       // Convert teams to bracket participant format with explicit typing
       return data.map(team => ({
@@ -175,12 +202,22 @@ export class ParticipantAdapter {
         return await query.in('id', validIds);
       }
       
+      // Handle tournament_id filter by looking up teams in that bracket
+      if (filter.tournament_id) {
+        // Try to match by bracket_id
+        query = query.eq('bracket_id', filter.tournament_id);
+        
+        // Remove tournament_id from simple filters since we handled it
+        const { tournament_id, ...otherFilters } = filter;
+        filter = otherFilters;
+      }
+      
       // Handle simple equality filters
       const simpleFilters: Record<string, any> = {};
       
       // Build filter object first, avoiding nested method chaining
       Object.entries(filter).forEach(([key, value]) => {
-        if (key !== 'tournament_id' && value !== undefined && value !== 'undefined') {
+        if (value !== undefined && value !== 'undefined') {
           simpleFilters[key] = value;
         }
       });
