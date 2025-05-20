@@ -23,9 +23,9 @@ export interface StorageAdapter<T, F extends BaseFilter, I> {
   
   /**
    * Insert records into the storage
-   * Returns a boolean indicating success
+   * Returns a number indicating the count of inserted records
    */
-  insert(data: I[]): Promise<boolean>;
+  insert(data: I[]): Promise<number>;
   
   /**
    * Update records in the storage
@@ -45,7 +45,7 @@ export interface StorageAdapter<T, F extends BaseFilter, I> {
   /**
    * Legacy method for table-based operations
    */
-  insertInto?(table: string, data: I | I[]): Promise<boolean>;
+  insertInto?(table: string, data: I | I[]): Promise<number>;
   
   /**
    * Legacy method for table-based operations

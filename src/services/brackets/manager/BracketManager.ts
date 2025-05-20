@@ -1,4 +1,3 @@
-
 import * as BracketsManagerModule from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
 import { BracketFilter, MatchFilter } from '../adapter/types/AdapterTypes';
@@ -27,34 +26,19 @@ interface BracketsManagerAdapter {
 // Create a shared instance of BracketsAdapter
 const bracketsAdapter = new BracketsAdapter();
 
-// Create an adapter bridge that converts our return types to what brackets-manager expects
+// Create an adapter bridge that connects our adapter to brackets-manager
+// No need for type conversions as both now use the same return types
 const adapterWithLegacySupport: BracketsManagerAdapter = {
-  // Standard interface methods with proper return types
-  insert: async (data: any[]): Promise<number> => {
-    // We need to return a number as expected by brackets-manager's CrudInterface
-    try {
-      const success = await bracketsAdapter.insert(data);
-      return success ? data.length : 0; // Return number of inserted records on success, 0 on failure
-    } catch (error) {
-      console.error("Error in insert operation:", error);
-      return 0;
-    }
-  },
+  // Standard interface methods
+  insert: (data: any[]) => bracketsAdapter.insert(data),
   select: (filter?: BracketFilter) => bracketsAdapter.select(filter),
   update: (id: string, data: any) => bracketsAdapter.update(id, data),
   delete: (filter?: BracketFilter) => bracketsAdapter.delete(filter),
   
-  // Legacy table-based methods with proper return types
-  insertInto: async (table: string, data: any): Promise<number> => {
-    // We need to return a number as expected by brackets-manager's CrudInterface
-    try {
-      const dataArray = Array.isArray(data) ? data : [data];
-      const success = await bracketsAdapter.insertIntoTable(table, dataArray);
-      return success ? dataArray.length : 0; // Return number of inserted records on success, 0 on failure
-    } catch (error) {
-      console.error(`Error in insertIntoTable (${table}):`, error);
-      return 0;
-    }
+  // Legacy table-based methods
+  insertInto: (table: string, data: any) => {
+    const dataArray = Array.isArray(data) ? data : [data];
+    return bracketsAdapter.insertIntoTable(table, dataArray);
   },
   selectFrom: (table: string, filter?: BracketFilter) => bracketsAdapter.selectFromTable(table, filter),
   updateIn: (table: string, id: string, data: any) => bracketsAdapter.updateInTable(table, id, data),

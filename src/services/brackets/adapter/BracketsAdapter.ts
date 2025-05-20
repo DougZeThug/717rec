@@ -1,3 +1,4 @@
+
 import { StorageAdapter, BaseFilter } from './interfaces/StorageAdapter';
 import { MatchAdapter } from './adapters/MatchAdapter';
 import { ParticipantAdapter } from './adapters/ParticipantAdapter';
@@ -53,12 +54,12 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
   /**
    * Insert data into the database
    * @param data Array of data to insert
-   * @returns Boolean indicating success
+   * @returns Number of records successfully inserted
    */
-  async insert(data: any[]): Promise<boolean> {
+  async insert(data: any[]): Promise<number> {
     if (!data || data.length === 0) {
       console.warn('Insert called with empty data');
-      return true; // No data to insert is considered success
+      return 0; // No data to insert, 0 records inserted
     }
     
     // If data includes a table property, use that to set the current table
@@ -87,26 +88,27 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
           throw new AdapterOperationError('insert', `Unknown table: ${this.currentTable}`);
       }
       
-      // Return success boolean as expected by brackets-manager
-      return insertCount > 0;
+      // Return count of inserted records as expected by brackets-manager
+      return insertCount;
     } catch (error) {
       console.error(`Error inserting into ${this.currentTable}:`, error);
-      return false; // Return false on error
+      return 0; // Return 0 on error (no records inserted)
     }
   }
   
   /**
    * This is a bridge method to support the original table-based API
    * It sets the table and forwards the call to the standard insert method
+   * @returns Number of records successfully inserted
    */
-  async insertIntoTable(table: string, data: any | any[]): Promise<boolean> {
+  async insertIntoTable(table: string, data: any | any[]): Promise<number> {
     try {
       this.setTable(table);
       const dataArray = Array.isArray(data) ? data : [data];
       return this.insert(dataArray);
     } catch (error) {
       console.error(`Error in insertIntoTable (${table}):`, error);
-      return false;
+      return 0; // Return 0 on error (no records inserted)
     }
   }
   
