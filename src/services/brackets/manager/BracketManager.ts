@@ -24,7 +24,48 @@ const adapterWithLegacySupport = {
   deleteFrom: (table: string, filter?: any) => bracketsAdapter.deleteFromTable(table, filter)
 };
 
-// Create a manager instance using the adapter
-// Fixed: Use the correct way to create a bracket manager instance
-export const bracketManager = new BracketsManagerModule.BracketsManager(adapterWithLegacySupport);
+// Fix for the return type issue - wrap adapter to return boolean for insert operations
+const adapterWithCorrectReturnTypes = {
+  ...adapterWithLegacySupport,
+  insert: async (data: any[]): Promise<boolean> => {
+    const result = await bracketsAdapter.insert(data);
+    return result > 0;
+  }
+};
 
+// Create the brackets manager instance
+const baseManager = new BracketsManagerModule.BracketsManager(adapterWithCorrectReturnTypes);
+
+// Create a facade that adds missing functionality and standardizes the interface
+export const bracketManager = {
+  // Pass-through methods from the base manager
+  ...baseManager,
+  
+  // Add methods that match our expected API
+  getMatches: (filter?: any) => baseManager.select('match', filter),
+  
+  updateMatchResult: async (matchId: string, resultData: any) => {
+    return baseManager.update('match', matchId, resultData);
+  },
+  
+  createStage: async (stageData: any) => {
+    // Create stage requires special processing
+    return baseManager.create.stage(stageData);
+  },
+  
+  registerParticipants: async (participants: any[]) => {
+    // Register participants requires special processing
+    return baseManager.create.participant(participants);
+  },
+  
+  deleteMatches: async (filter?: any) => {
+    return baseManager.delete('match', filter);
+  },
+  
+  // Helper utility functions
+  formatToStageType: (format: string): string => {
+    return format === 'Double Elimination' 
+      ? 'double_elimination' 
+      : 'single_elimination';
+  }
+};
