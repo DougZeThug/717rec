@@ -1,6 +1,9 @@
 
-import BracketsManager from 'brackets-manager';
+import * as BracketsManagerModule from 'brackets-manager';
 import { BracketsAdapter } from '../adapter/BracketsAdapter';
+
+// Define types for Bracket Manager
+export type SeedOrdering = 'natural' | 'reverse' | 'half_shift' | 'reverse_half_shift' | string;
 
 // Create a shared instance of BracketsAdapter
 const bracketsAdapter = new BracketsAdapter();
@@ -22,4 +25,6 @@ const adapterWithLegacySupport = {
 };
 
 // Create a manager instance using the adapter
-export const bracketManager = new BracketsManager(adapterWithLegacySupport);
+// Fixed: Use the correct way to create a bracket manager instance
+export const bracketManager = new BracketsManagerModule.BracketsManager(adapterWithLegacySupport);
+
