@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { BracketService, fetchBracketById, groupBracketMatchesByType, updateMatchResult } from "@/services/BracketService";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
 import { BracketMatchesByType } from "@/services/brackets/types";
-import { PlayoffBracket, PlayoffViewModel, Team } from "@/types";
+import { PlayoffBracket, PlayoffViewModel, Team } from "@/types/playoffs";
 
 /**
  * Unified hook for playoff bracket data and management
@@ -24,7 +24,22 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
         .select('*');
         
       if (error) throw error;
-      return data as Team[];
+      
+      // Map the database teams to the PlayoffViewModel Team type
+      return (data || []).map(team => ({
+        id: team.id,
+        name: team.name,
+        logo_url: team.logo_url,
+        image_url: team.image_url,
+        division_id: team.division_id,
+        created_at: team.created_at,
+        wins: team.wins || 0,
+        losses: team.losses || 0,
+        game_wins: team.game_wins,
+        game_losses: team.game_losses,
+        seed: team.seed,
+        players: team.players
+      })) as Team[];
     }
   });
   

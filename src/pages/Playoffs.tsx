@@ -1,4 +1,3 @@
-
 import React from "react";
 import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +5,7 @@ import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
 import { usePlayoffState } from "@/hooks/playoffs/usePlayoffState";
 import { usePlayoffEditMatch } from "@/hooks/playoffs/usePlayoffEditMatch";
 import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
+import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
 import AdminView from "@/components/playoffs/views/AdminView";
 import PlayoffView from "@/components/playoffs/views/PlayoffView";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
@@ -29,7 +29,7 @@ const Playoffs = () => {
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
 
-  // Use our unified view model hook
+  // Use our unified view model hook for the selected bracket
   const {
     bracket,
     isLoading: bracketLoading,
@@ -50,7 +50,7 @@ const Playoffs = () => {
     handleBracketCreated,
     handleTeamDivisionChange,
     refetchBrackets
-  } = usePlayoffViewModel(); // Using the same hook without bracketId for overview data
+  } = usePlayoffData(); // Using the compatibility layer
   
   // Subscribe to real-time updates for the selected bracket
   const { realtimeEnabled, lastUpdatedMatch } = usePlayoffRealtime(selectedBracketId);

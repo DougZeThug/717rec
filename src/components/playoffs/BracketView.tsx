@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { blueAmber } from "@/styles/design-system";
 import ChampionDisplay from "./celebration/ChampionDisplay";
-import { usePlayoffBracketData, BracketMatchesByType } from "@/hooks/usePlayoffBracketData";
+import { usePlayoffBracketData, BracketMatchesByType } from "@/hooks/usePlayoffViewModel.compat";
 import DoubleElimBracket from "./DoubleElimBracket";
 import { BRACKET_FORMATS } from "@/constants/brackets";
 
