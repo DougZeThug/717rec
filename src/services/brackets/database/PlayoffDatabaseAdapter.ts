@@ -39,7 +39,7 @@ export class PlayoffDatabaseAdapter {
           id: params.id,
           title: params.name,
           format: params.format,
-          division_id: params.divisionId, // Ensure this is a valid value
+          division_id: params.divisionId,
           created_at: new Date().toISOString(),
           state: 'pending'
         });
@@ -264,8 +264,10 @@ export class PlayoffDatabaseAdapter {
   }
 }
 
-// Complete adapter interface for brackets-manager compatibility
-// This implements the CrudInterface required by BracketsManager
+/**
+ * Complete adapter interface for brackets-manager compatibility
+ * This implements the CrudInterface required by BracketsManager
+ */
 export const adapter = {
   // Create methods
   create: {
@@ -279,7 +281,11 @@ export const adapter = {
     participant: PlayoffDatabaseAdapter.selectParticipants,
   },
   
-  // Required CrudInterface methods
+  /**
+   * Insert method implemented to match CrudInterface
+   * @param data Array of data items to insert
+   * @returns Number of records inserted (or 0 on error)
+   */
   insert: async (data: any[]): Promise<number> => {
     try {
       // Determine the type of data and delegate to appropriate create function
@@ -309,7 +315,12 @@ export const adapter = {
     }
   },
   
-  // Update method implementation
+  /**
+   * Update method implementation to match CrudInterface
+   * @param id Item ID to update 
+   * @param data Object with data to update
+   * @returns Number of records updated (1 for success, 0 on error)
+   */
   update: async (id: string, data: any): Promise<number> => {
     try {
       console.log('Update operation called with ID:', id, 'and data:', data);
@@ -361,7 +372,11 @@ export const adapter = {
     }
   },
   
-  // Delete method implementation
+  /**
+   * Delete method implementation to match CrudInterface
+   * @param filter Filter criteria for records to delete
+   * @returns Number of records deleted (or 0 on error)
+   */
   delete: async (filter?: any): Promise<number> => {
     try {
       console.log('Delete operation called with filter:', filter);
@@ -385,7 +400,7 @@ export const adapter = {
         }
         
         // Return count of deleted rows if available, or 1 to indicate success
-        return count || 1;
+        return count ?? 1;
       }
       
       console.warn('Delete operation not fully implemented for filter:', filter);

@@ -19,10 +19,10 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): Promise<BracketMatch[]> {
-    // Using the brackets-manager library to get matches
+    // Using the bracketManager to get matches
     console.log(`Generating single elimination bracket with ${teams.length} teams`);
     
-    // Correct API usage for brackets-manager
+    // Correct API usage for bracketManager
     const matches = await bracketManager.getMatches({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
@@ -37,10 +37,10 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): Promise<BracketMatch[]> {
-    // Using the brackets-manager library to get matches
+    // Using the bracketManager to get matches
     console.log(`Generating double elimination bracket with ${teams.length} teams`);
     
-    // Correct API usage for brackets-manager
+    // Correct API usage for bracketManager
     const matches = await bracketManager.getMatches({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
@@ -55,10 +55,10 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): Promise<PlayoffMatch[]> {
-    // Using the brackets-manager library to get matches
+    // Using the bracketManager to get matches
     console.log(`Generating playoff bracket with ${teams.length} teams`);
     
-    // Correct API usage for brackets-manager
+    // Correct API usage for bracketManager
     const matches = await bracketManager.getMatches({ tournament_id: bracketId });
     return matches as PlayoffMatch[];
   }
