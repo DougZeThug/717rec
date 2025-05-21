@@ -50,7 +50,7 @@ export async function updateMatchScore(
     // Format match data for brackets-manager
     const matchData = {
       id: matchId,
-      status: "completed" as Status,
+      status: Status.Completed,
       opponent1: {
         id: team1Id,
         score: team1Score,
