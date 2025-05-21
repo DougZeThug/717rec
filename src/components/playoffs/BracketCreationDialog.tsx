@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Team } from "@/types";
@@ -66,8 +65,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       }
       
       const bracketId = await BracketService.createBracket(
-        data.title,
         data.format as BracketFormat,
+        data.title,
         data.divisionId,
         data.teams
       );

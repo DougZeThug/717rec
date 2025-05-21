@@ -13,7 +13,7 @@ import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicato
 import PlayoffDialogs from "@/components/playoffs/dialogs/PlayoffDialogs";
 import { PlayoffBracket } from "@/types";
 import { toRuntime as mapMatch } from "@/services/brackets/database/MatchMapper";
-import { BRACKET_FORMATS, BracketFormat, BRACKET_STATES } from "@/constants/brackets";
+import { BRACKET_FORMATS, BracketFormat, BRACKET_STATES, BracketState } from "@/constants/brackets";
 
 const Playoffs = () => {
   // Set up state using custom hooks
@@ -56,7 +56,7 @@ const Playoffs = () => {
         ...b,
         matches: b.matches?.map(mapMatch) || [],
         id: b.id || crypto.randomUUID(), // ensure id exists
-        state: b.state || "pending",     // ensure state exists
+        state: (b.state || BRACKET_STATES.PENDING) as BracketState, // ensure state exists with correct type
         format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat // ensure format exists
       }));
     });
@@ -67,7 +67,7 @@ const Playoffs = () => {
     ...rawBracket,
     matches: rawBracket.matches?.map(mapMatch) || [],
     id: rawBracket.id || crypto.randomUUID(), // ensure id exists
-    state: rawBracket.state || "pending",     // ensure state exists
+    state: (rawBracket.state || BRACKET_STATES.PENDING) as BracketState, // ensure state exists
     format: (rawBracket.format || BRACKET_FORMATS.DOUBLE) as BracketFormat // ensure format exists
   } : null;
   
@@ -135,7 +135,7 @@ const Playoffs = () => {
     ...b,
     matches: b.matches?.map(mapMatch) || [],
     id: b.id || crypto.randomUUID(), // ensure id exists
-    state: b.state || "pending",      // ensure state exists
+    state: (b.state || BRACKET_STATES.PENDING) as BracketState, // ensure state exists with correct type
     format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat // ensure format exists
   })) || [];
   const availableDivisions = divisions?.map(div => div.name) || [];
