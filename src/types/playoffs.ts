@@ -54,7 +54,7 @@ export interface PlayoffMatch {
  */
 export interface PlayoffBracket {
   id: string;
-  name: string;
+  name?: string;
   division?: string;
   divisionId?: string;
   format: BracketFormat;
