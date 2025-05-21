@@ -1,11 +1,9 @@
 
-// Re-export all database-related classes for easier imports
-export * from './BracketRepository';
-export * from './MatchResultService';
-export * from './PlayoffDatabaseAdapter';
-export * from './PlayoffDatabaseFacade';
-export * from './PlayoffGamesRepository';
-export * from './PlayoffMatchesRepository';
-export * from './ResetMatchService';
-export * from './TeamAdvancementService';
-export * from './types';
+import { BracketsManagerAdapter } from "./adapters/BracketsManagerAdapter";
+import { BracketDatabaseService } from "./services/BracketDatabaseService";
+
+// Create and export the service
+export const bracketDatabaseService = new BracketDatabaseService();
+
+// Create and export the adapter for BracketsManager
+export const bracketsManagerAdapter = new BracketsManagerAdapter();

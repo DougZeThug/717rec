@@ -3,7 +3,10 @@
  * Singleton export of the bracket manager instance
  */
 import { BracketsManager } from 'brackets-manager';
-import { adapter } from './database/PlayoffDatabaseAdapter';
+import { BracketsAdapter } from './adapter/BracketsAdapter';
+
+// Create a proper adapter instance that matches the CrudInterface expected by BracketsManager
+const adapter = new BracketsAdapter();
 
 // Create an instance of BracketsManager with our custom adapter
 // The adapter implements the CrudInterface required by BracketsManager
