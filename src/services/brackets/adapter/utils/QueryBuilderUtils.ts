@@ -3,6 +3,7 @@ import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
 import { TableNameMapper, ValidTableName, isValidTable, isValidView } from '../interfaces/TableNameMapper';
 import { Database } from "@/integrations/supabase/types";
+import { PostgrestFilterBuilder, PostgrestQueryBuilder } from '@supabase/postgrest-js';
 
 /**
  * Type for valid database table names
@@ -13,6 +14,22 @@ export type DatabaseTableName = keyof Database['public']['Tables'];
  * Type for valid database view names
  */
 export type DatabaseViewName = keyof Database['public']['Views'];
+
+/**
+ * Type to represent the PostgrestQueryBuilder we get from Supabase
+ * This is a simplified version that lets us handle the common operations
+ */
+type GenericQueryBuilder = {
+  select: (columns?: string) => PostgrestFilterBuilder<any, any, any>;
+  insert: (values: any, options?: any) => Promise<{ data: any; error: any; count?: number }>;
+  update: (values: any, options?: any) => PostgrestFilterBuilder<any, any, any>;
+  delete: () => PostgrestFilterBuilder<any, any, any>;
+  eq: (column: string, value: any) => PostgrestFilterBuilder<any, any, any>;
+  in: (column: string, values: any[]) => PostgrestFilterBuilder<any, any, any>;
+  order: (column: string, options?: { ascending?: boolean }) => PostgrestFilterBuilder<any, any, any>;
+  limit: (count: number) => PostgrestFilterBuilder<any, any, any>;
+  offset: (count: number) => PostgrestFilterBuilder<any, any, any>;
+};
 
 /**
  * Create a type-safe query builder for a specific table
@@ -32,21 +49,21 @@ function createViewQueryBuilder<T extends DatabaseViewName>(viewName: T) {
  * Safely creates a Supabase query builder for a table or view
  * Handles type casting and validation
  */
-function createSafeQueryBuilder(tableName: string) {
+function createSafeQueryBuilder(tableName: string): GenericQueryBuilder {
   const mappedName = TableNameMapper.toDbTableName(tableName);
   
   console.log(`[QueryBuilderUtils] Creating query builder for: ${mappedName} (original: ${tableName})`);
   
   if (isValidTable(mappedName)) {
     // It's a valid table, use the typed table query builder
-    return createTableQueryBuilder(mappedName);
+    return createTableQueryBuilder(mappedName) as unknown as GenericQueryBuilder;
   } else if (isValidView(mappedName)) {
     // It's a valid view, use the typed view query builder
-    return createViewQueryBuilder(mappedName);
+    return createViewQueryBuilder(mappedName) as unknown as GenericQueryBuilder;
   } else {
     // Fallback to a safe default
     console.warn(`[QueryBuilderUtils] Invalid table/view name: ${mappedName}, falling back to "matches"`);
-    return createTableQueryBuilder('matches');
+    return createTableQueryBuilder('matches') as unknown as GenericQueryBuilder;
   }
 }
 
@@ -134,11 +151,12 @@ export class QueryBuilderUtils {
         
         // Use the safe query builder to create the query
         const queryBuilder = createSafeQueryBuilder(table);
-        const { error } = await queryBuilder.insert(batch);
+        // Use explicit async/await with type assertion to resolve TypeScript error
+        const result = await queryBuilder.insert(batch);
         
-        if (error) {
-          console.error(`[QueryBuilderUtils] Error executing insert:`, error);
-          throw error;
+        if (result.error) {
+          console.error(`[QueryBuilderUtils] Error executing insert:`, result.error);
+          throw result.error;
         }
         
         insertedCount += batch.length;
@@ -160,15 +178,13 @@ export class QueryBuilderUtils {
     try {
       console.log(`[QueryBuilderUtils] Updating table: ${table}, id: ${id}`);
       
-      // Use the safe query builder to create the query
+      // Use the safe query builder to create the query and explicit await
       const queryBuilder = createSafeQueryBuilder(table);
-      const { error } = await queryBuilder
-        .update(data)
-        .eq('id', id);
+      const result = await queryBuilder.update(data).eq('id', id);
       
-      if (error) {
-        console.error(`[QueryBuilderUtils] Error executing update:`, error);
-        throw error;
+      if (result.error) {
+        console.error(`[QueryBuilderUtils] Error executing update:`, result.error);
+        throw result.error;
       }
       
       console.log(`[QueryBuilderUtils] Successfully updated record ${id}`);

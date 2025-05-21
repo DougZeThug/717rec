@@ -38,9 +38,9 @@ export class StageAdapter {
       
       // Use the QueryBuilderUtils to safely create a query
       const queryBuilder = QueryBuilderUtils.createQueryBuilder(this.logicalTableName);
-      const { error } = await queryBuilder.insert([stageData]);
+      const result = await queryBuilder.insert([stageData]);
 
-      if (error) throw error;
+      if (result.error) throw result.error;
       console.log(`[StageAdapter] Successfully inserted stage record`);
       return 1; // Successfully inserted 1 record
     } catch (error) {
