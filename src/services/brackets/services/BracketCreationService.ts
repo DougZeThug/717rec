@@ -1,10 +1,34 @@
 
-import { bracketManager } from '../manager/BracketManager';
+import { manager } from '../BracketsManagerInstance';
 import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { v4 as uuidv4 } from 'uuid';
 import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
 import { Team } from "@/types";
-import { ParticipantAdapter } from '../adapter/adapters/ParticipantAdapter';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+/**
+ * Helper function to fetch team names from their IDs
+ */
+async function fetchTeamNames(teamIds: string[]) {
+  const { data, error } = await supabase
+    .from('teams')
+    .select('id, name')
+    .in('id', teamIds);
+  if (error) throw new Error(`team lookup – ${error.message}`);
+  const map = new Map(data.map(t => [t.id, t.name!]));
+  return teamIds.map(id => ({ id, name: map.get(id) ?? id }));
+}
+
+/**
+ * Helper function to pad an array to the next power of 2 size
+ * Fills remaining slots with null values for BYEs
+ */
+function padToPowerOfTwo<T>(arr: T[]): (T|null)[] {
+  let size = 1; 
+  while (size < arr.length) size <<= 1;
+  return [...arr, ...Array(size - arr.length).fill(null)];
+}
 
 export class BracketCreationService {
   /**
@@ -52,46 +76,42 @@ export class BracketCreationService {
         throw new Error(`Failed to create bracket: ${createResult.error.message}`);
       }
       
-      // Insert participants for the bracket
-      const participantAdapter = new ParticipantAdapter();
-      const participantInsertData = validTeamIds.map((teamId, index) => ({
-        bracket_id: bracketId,
-        team_id: teamId,
-        position: index + 1,
-        name: teamId // Use team ID as default name if one is not provided
-      }));
+      // Fetch team names
+      const teams = await fetchTeamNames(validTeamIds);
       
-      console.log(`Inserting ${participantInsertData.length} participants`);
-      const insertCount = await participantAdapter.insertParticipants(participantInsertData);
+      // Let brackets-manager insert participants
+      await manager.registerParticipants(
+        teams.map((t, i) => ({
+          id: t.id,
+          name: t.name,
+          tournament_id: bracketId,
+          position: i + 1,
+        }))
+      );
       
-      if (insertCount !== validTeamIds.length) {
-        console.warn(`Expected to insert ${validTeamIds.length} participants but inserted ${insertCount}`);
+      // Build seeding array (names only, BYEs = null)
+      const seeding = padToPowerOfTwo(teams.map(t => t.name));
+      
+      try {
+        // Create the stage (bracket structure)
+        const stageId = uuidv4();
+        await manager.createStage({
+          id: stageId,
+          name: `${format} Bracket`,
+          type: manager.formatToStageType(format),
+          seeding: seeding,
+          settings: {
+            seedOrdering: ['natural'], // Use natural seeding order
+            grandFinal: 'double'       // For double elimination
+          },
+          tournamentId: bracketId,
+          divisionId
+        });
+      } catch (err: any) {
+        const errorMessage = `Bracket failed – ${err?.message ?? 'unknown'}`;
+        toast.error(errorMessage);
+        throw err;  // Re-throw for logs
       }
-      
-      // Register teams as participants
-      const participants = validTeamIds.map((teamId, index) => ({
-        id: teamId,
-        name: `Team ${index + 1}`, // Use placeholder names
-        tournament_id: bracketId,
-        position: index + 1, // 1-based position for seeding
-      }));
-      
-      console.log(`Registering ${participants.length} participants`);
-      await bracketManager.registerParticipants(participants);
-      
-      // Create the stage (bracket structure)
-      const stageId = uuidv4();
-      await bracketManager.createStage({
-        id: stageId,
-        name: `${format} Bracket`,
-        type: bracketManager.formatToStageType(format),
-        seeding: validTeamIds,
-        settings: {
-          seedOrdering: ['natural'] // Use natural seeding order
-        },
-        tournamentId: bracketId,
-        divisionId
-      });
       
       return bracketId;
     } catch (error: any) {
