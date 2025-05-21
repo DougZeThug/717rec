@@ -123,32 +123,4 @@ export class BracketCreationService {
       throw new Error(`Bracket creation failed: ${error.message || 'Unknown error'}`);
     }
   }
-  
-  /**
-   * Create a single-elimination stage
-   */
-  static async createSingleElimStage(
-    bracketId: string,
-    name: string,
-    teams: Team[],
-    bestOf = 3
-  ): Promise<void> {
-    console.log(`Creating single elimination stage for bracket ${bracketId}`);
-    // Implementation would go here
-    throw new Error("Method not implemented yet");
-  }
-  
-  /**
-   * Create a double-elimination stage
-   */
-  static async createDoubleElimStage(
-    bracketId: string,
-    name: string,
-    teams: Team[],
-    bestOf = 3
-  ): Promise<void> {
-    console.log(`Creating double elimination stage for bracket ${bracketId}`);
-    // Implementation would go here
-    throw new Error("Method not implemented yet");
-  }
 }

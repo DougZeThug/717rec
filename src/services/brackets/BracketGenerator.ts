@@ -13,15 +13,17 @@ export class BracketGenerator {
    * Generate a single elimination bracket
    * @param bracketId ID of the bracket
    * @param teams Teams to include in the bracket
-   * @returns The matches for the bracket
+   * @returns Promise resolving to the matches for the bracket
    */
-  static generateSingleEliminationBracket(
+  static async generateSingleEliminationBracket(
     bracketId: string,
     teams: Team[]
-  ): BracketMatch[] {
+  ): Promise<BracketMatch[]> {
     // Using the brackets-manager library to generate and get matches
     console.log(`Generating single elimination bracket with ${teams.length} teams`);
-    const matches = manager.getMatches(bracketId);
+    
+    // The manager.getMatches returns a Promise, so we need to await it
+    const matches = await manager.getMatches({ tournamentId: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -29,15 +31,17 @@ export class BracketGenerator {
    * Generate a double elimination bracket
    * @param bracketId ID of the bracket
    * @param teams Teams to include in the bracket
-   * @returns The matches for the bracket
+   * @returns Promise resolving to the matches for the bracket
    */
-  static generateDoubleEliminationBracket(
+  static async generateDoubleEliminationBracket(
     bracketId: string,
     teams: Team[]
-  ): BracketMatch[] {
+  ): Promise<BracketMatch[]> {
     // Using the brackets-manager library to generate and get matches
     console.log(`Generating double elimination bracket with ${teams.length} teams`);
-    const matches = manager.getMatches(bracketId);
+    
+    // The manager.getMatches returns a Promise, so we need to await it
+    const matches = await manager.getMatches({ tournamentId: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -45,15 +49,17 @@ export class BracketGenerator {
    * Generate a playoff bracket with true double elimination
    * @param bracketId ID of the bracket
    * @param teams Teams to include in the bracket
-   * @returns The matches for the bracket
+   * @returns Promise resolving to the matches for the bracket
    */
-  static generatePlayoffBracket(
+  static async generatePlayoffBracket(
     bracketId: string,
     teams: Team[]
-  ): PlayoffMatch[] {
+  ): Promise<PlayoffMatch[]> {
     // Using the brackets-manager library to generate and get matches
     console.log(`Generating playoff bracket with ${teams.length} teams`);
-    const matches = manager.getMatches(bracketId);
+    
+    // The manager.getMatches returns a Promise, so we need to await it
+    const matches = await manager.getMatches({ tournamentId: bracketId });
     return matches as PlayoffMatch[];
   }
 
