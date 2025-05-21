@@ -1,830 +1,270 @@
-
-import { Team, Match, PlayoffBracket, Ranking, PlayoffGame } from "../types";
-
-export const mockTeams: Team[] = [
+export const mockBrackets = [
   {
-    id: "1",
-    name: "Hole Burners",
-    logoUrl: "https://via.placeholder.com/150?text=Hole+Burners",
-    players: [
-      "Player 1",
-      "Player 2"
+    id: "bracket-1",
+    name: "Division A Playoffs",
+    format: "double_elimination",
+    division: "Division A",
+    state: "in_progress",
+    matches: [
+      {
+        id: "match-1",
+        round: 1,
+        position: 1,
+        team1Id: "team-1",
+        team2Id: "team-2",
+        winnerId: "team-1",
+        team1Score: 16,
+        team2Score: 8,
+        matchType: "winners",
+        bestOf: 1,
+        bracket_id: "bracket-1",
+      },
+      {
+        id: "match-2",
+        round: 1,
+        position: 2,
+        team1Id: "team-3",
+        team2Id: "team-4",
+        winnerId: "team-3",
+        team1Score: 16,
+        team2Score: 12,
+        matchType: "winners",
+        bestOf: 1,
+        bracket_id: "bracket-1",
+      },
+      {
+        id: "match-3",
+        round: 2,
+        position: 1,
+        team1Id: "team-1",
+        team2Id: "team-3",
+        winnerId: "team-1",
+        team1Score: 16,
+        team2Score: 14,
+        matchType: "winners",
+        bestOf: 1,
+        bracket_id: "bracket-1",
+      },
+      {
+        id: "match-4",
+        round: 1,
+        position: 1,
+        team1Id: "team-2",
+        team2Id: "team-4",
+        winnerId: "team-2",
+        team1Score: 16,
+        team2Score: 10,
+        matchType: "losers",
+        bestOf: 1,
+        bracket_id: "bracket-1",
+      },
+      {
+        id: "match-5",
+        round: 2,
+        position: 1,
+        team1Id: "team-2",
+        team2Id: "team-3",
+        winnerId: "team-2",
+        team1Score: 16,
+        team2Score: 7,
+        matchType: "losers",
+        bestOf: 1,
+        bracket_id: "bracket-1",
+      },
+      {
+        id: "match-6",
+        round: 3,
+        position: 1,
+        team1Id: "team-1",
+        team2Id: "team-2",
+        winnerId: "team-1",
+        team1Score: 16,
+        team2Score: 13,
+        matchType: "finals",
+        bestOf: 1,
+        bracket_id: "bracket-1",
+      },
     ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 3, 15).toISOString(),
-    division: "Recreational",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
   },
   {
-    id: "2",
-    name: "Here for the Fireball",
-    logoUrl: "https://via.placeholder.com/150?text=Here+for+the+Fireball",
-    players: [
-      "Player 1",
-      "Player 2"
+    id: "bracket-2",
+    name: "Division B Playoffs",
+    format: "double_elimination",
+    division: "Division B",
+    state: "in_progress",
+    matches: [
+      {
+        id: "match-7",
+        round: 1,
+        position: 1,
+        team1Id: "team-5",
+        team2Id: "team-6",
+        winnerId: "team-5",
+        team1Score: 16,
+        team2Score: 9,
+        matchType: "winners",
+        bestOf: 1,
+        bracket_id: "bracket-2",
+      },
+      {
+        id: "match-8",
+        round: 1,
+        position: 2,
+        team1Id: "team-7",
+        team2Id: "team-8",
+        winnerId: "team-7",
+        team1Score: 16,
+        team2Score: 11,
+        matchType: "winners",
+        bestOf: 1,
+        bracket_id: "bracket-2",
+      },
+      {
+        id: "match-9",
+        round: 2,
+        position: 1,
+        team1Id: "team-5",
+        team2Id: "team-7",
+        winnerId: "team-5",
+        team1Score: 16,
+        team2Score: 15,
+        matchType: "winners",
+        bestOf: 1,
+        bracket_id: "bracket-2",
+      },
+      {
+        id: "match-10",
+        round: 1,
+        position: 1,
+        team1Id: "team-6",
+        team2Id: "team-8",
+        winnerId: "team-6",
+        team1Score: 16,
+        team2Score: 10,
+        matchType: "losers",
+        bestOf: 1,
+        bracket_id: "bracket-2",
+      },
+      {
+        id: "match-11",
+        round: 2,
+        position: 1,
+        team1Id: "team-6",
+        team2Id: "team-7",
+        winnerId: "team-6",
+        team1Score: 16,
+        team2Score: 13,
+        matchType: "losers",
+        bestOf: 1,
+        bracket_id: "bracket-2",
+      },
+      {
+        id: "match-12",
+        round: 3,
+        position: 1,
+        team1Id: "team-5",
+        team2Id: "team-6",
+        winnerId: "team-5",
+        team1Score: 16,
+        team2Score: 14,
+        matchType: "finals",
+        bestOf: 1,
+        bracket_id: "bracket-2",
+      },
     ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 2).toISOString(),
-    division: "Recreational",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
   },
-  {
-    id: "3",
-    name: "F*** I don't know",
-    logoUrl: "https://via.placeholder.com/150?text=Team+3",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 3, 28).toISOString(),
-    division: "Recreational",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "4",
-    name: "The Undigestibles",
-    logoUrl: "https://via.placeholder.com/150?text=The+Undigestibles",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 10).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "5",
-    name: "Zoo Pals",
-    logoUrl: "https://via.placeholder.com/150?text=Zoo+Pals",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 3, 20).toISOString(),
-    division: "Recreational",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "6",
-    name: "Double Trouble",
-    logoUrl: "https://via.placeholder.com/150?text=Double+Trouble",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 3, 25).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "7",
-    name: "Pepperoni Cheesers",
-    logoUrl: "https://via.placeholder.com/150?text=Pepperoni+Cheesers",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 5).toISOString(),
-    division: "Intermediate",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "8",
-    name: "3 Amigos",
-    logoUrl: "https://via.placeholder.com/150?text=3+Amigos",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 8).toISOString(),
-    division: "Intermediate",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "9",
-    name: "Came from Dicks",
-    logoUrl: "https://via.placeholder.com/150?text=Came+from+Dicks",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 12).toISOString(),
-    division: "Intermediate",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "10",
-    name: "Believers",
-    logoUrl: "https://via.placeholder.com/150?text=Believers",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 15).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "11",
-    name: "Corn 2 Be Wild",
-    logoUrl: "https://via.placeholder.com/150?text=Corn+2+Be+Wild",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 18).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "12",
-    name: "Mailmen",
-    logoUrl: "https://via.placeholder.com/150?text=Mailmen",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 20).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "13",
-    name: "Cuzzo's Clinic",
-    logoUrl: "https://via.placeholder.com/150?text=Cuzzos+Clinic",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 22).toISOString(),
-    division: "Intermediate",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "14",
-    name: "Buttery Nips",
-    logoUrl: "https://via.placeholder.com/150?text=Buttery+Nips",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 25).toISOString(),
-    division: "Intermediate",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "15",
-    name: "Happy Valley Hole Hunters",
-    logoUrl: "https://via.placeholder.com/150?text=Happy+Valley+Hole+Hunters",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 4, 28).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "16",
-    name: "Off Dogs",
-    logoUrl: "https://via.placeholder.com/150?text=Off+Dogs",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 5, 1).toISOString(),
-    division: "Recreational",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "17",
-    name: "On a Mission",
-    logoUrl: "https://via.placeholder.com/150?text=On+a+Mission",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 5, 3).toISOString(),
-    division: "Recreational",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "18",
-    name: "Hole Violators",
-    logoUrl: "https://via.placeholder.com/150?text=Hole+Violators",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 5, 5).toISOString(),
-    division: "Intermediate",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "19",
-    name: "Seize the Maize",
-    logoUrl: "https://via.placeholder.com/150?text=Seize+the+Maize",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 5, 8).toISOString(),
-    division: "Intermediate",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "20",
-    name: "Wrong Hole",
-    logoUrl: "https://via.placeholder.com/150?text=Wrong+Hole",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 5, 10).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "21",
-    name: "Shut Your Cornhole",
-    logoUrl: "https://via.placeholder.com/150?text=Shut+Your+Cornhole",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 5, 12).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  },
-  {
-    id: "22",
-    name: "Jager Bombers",
-    logoUrl: "https://via.placeholder.com/150?text=Jager+Bombers",
-    players: [
-      "Player 1",
-      "Player 2"
-    ],
-    wins: 0,
-    losses: 0,
-    created_at: new Date(2023, 5, 15).toISOString(),
-    division: "Competitive",
-    sos: 0.5,
-    power_score: 0,
-    win_percentage: 0,
-    game_win_percentage: 0,
-    game_wins: 0,
-    game_losses: 0
-  }
 ];
 
-export const mockMatches: Match[] = [
+export const mockTeams = [
   {
-    id: "m1",
-    team1Id: "1",
-    team2Id: "2",
-    team1Score: 21,
-    team2Score: 15,
-    date: new Date(2023, 5, 15, 18, 0).toISOString(),
-    location: "Community Park",
-    iscompleted: true,
-    winnerId: "1",
-    loserId: "2"
+    id: "team-1",
+    name: "Alpha Squadron",
+    division: "Division A",
+    division_id: "division-a",
+    wins: 10,
+    losses: 2,
+    powerScore: 88,
+    logo_url: "https://placekitten.com/200/200",
   },
   {
-    id: "m2",
-    team1Id: "3",
-    team2Id: "4",
-    team1Score: 19,
-    team2Score: 21,
-    date: new Date(2023, 5, 15, 19, 30).toISOString(),
-    location: "Community Park",
-    iscompleted: true,
-    winnerId: "4",
-    loserId: "3"
+    id: "team-2",
+    name: "Beta Brigade",
+    division: "Division A",
+    division_id: "division-a",
+    wins: 8,
+    losses: 4,
+    powerScore: 82,
+    logo_url: "https://placekitten.com/201/201",
   },
   {
-    id: "m3",
-    team1Id: "5",
-    team2Id: "6",
-    team1Score: 12,
-    team2Score: 21,
-    date: new Date(2023, 5, 16, 18, 0).toISOString(),
-    location: "Riverside Grounds",
-    iscompleted: true,
-    winnerId: "6",
-    loserId: "5"
+    id: "team-3",
+    name: "Gamma Guardians",
+    division: "Division A",
+    division_id: "division-a",
+    wins: 6,
+    losses: 6,
+    powerScore: 76,
+    logo_url: "https://placekitten.com/202/202",
   },
   {
-    id: "m4",
-    team1Id: "7",
-    team2Id: "8",
-    team1Score: 21,
-    team2Score: 14,
-    date: new Date(2023, 5, 16, 19, 30).toISOString(),
-    location: "Riverside Grounds",
-    iscompleted: true,
-    winnerId: "7",
-    loserId: "8"
+    id: "team-4",
+    name: "Delta Destroyers",
+    division: "Division A",
+    division_id: "division-a",
+    wins: 4,
+    losses: 8,
+    powerScore: 70,
+    logo_url: "https://placekitten.com/203/203",
   },
   {
-    id: "m5",
-    team1Id: "1",
-    team2Id: "4",
-    date: new Date(2023, 6, 1, 18, 0).toISOString(),
-    location: "Community Park",
-    iscompleted: false
+    id: "team-5",
+    name: "Echo Enforcers",
+    division: "Division B",
+    division_id: "division-b",
+    wins: 9,
+    losses: 3,
+    powerScore: 85,
+    logo_url: "https://placekitten.com/204/204",
   },
   {
-    id: "m6",
-    team1Id: "6",
-    team2Id: "7",
-    date: new Date(2023, 6, 1, 19, 30).toISOString(),
-    location: "Community Park",
-    iscompleted: false
+    id: "team-6",
+    name: "Foxtrot Force",
+    division: "Division B",
+    division_id: "division-b",
+    wins: 7,
+    losses: 5,
+    powerScore: 79,
+    logo_url: "https://placekitten.com/205/205",
   },
   {
-    id: "m7",
-    team1Id: "2",
-    team2Id: "3",
-    date: new Date(2023, 6, 2, 18, 0).toISOString(),
-    location: "Riverside Grounds",
-    iscompleted: false
+    id: "team-7",
+    name: "Golf Generals",
+    division: "Division B",
+    division_id: "division-b",
+    wins: 5,
+    losses: 7,
+    powerScore: 73,
+    logo_url: "https://placekitten.com/206/206",
   },
   {
-    id: "m8",
-    team1Id: "5",
-    team2Id: "8",
-    date: new Date(2023, 6, 2, 19, 30).toISOString(),
-    location: "Riverside Grounds",
-    iscompleted: false
-  }
+    id: "team-8",
+    name: "Hotel Hawks",
+    division: "Division B",
+    division_id: "division-b",
+    wins: 3,
+    losses: 9,
+    powerScore: 67,
+    logo_url: "https://placekitten.com/207/207",
+  },
 ];
 
-const createBestOf3Games = (team1Id: string, team2Id: string, winningTeamId: string): PlayoffGame[] => {
-  if (winningTeamId === team1Id) {
-    return [
-      {
-        id: `game-${Math.random().toString(36).substr(2, 9)}`,
-        team1Score: 21,
-        team2Score: 15,
-        winner: team1Id
-      },
-      {
-        id: `game-${Math.random().toString(36).substr(2, 9)}`,
-        team1Score: 18,
-        team2Score: 21,
-        winner: team2Id
-      },
-      {
-        id: `game-${Math.random().toString(36).substr(2, 9)}`,
-        team1Score: 21,
-        team2Score: 17,
-        winner: team1Id
-      }
-    ];
-  } else {
-    return [
-      {
-        id: `game-${Math.random().toString(36).substr(2, 9)}`,
-        team1Score: 18,
-        team2Score: 21,
-        winner: team2Id
-      },
-      {
-        id: `game-${Math.random().toString(36).substr(2, 9)}`,
-        team1Score: 21,
-        team2Score: 15,
-        winner: team1Id
-      },
-      {
-        id: `game-${Math.random().toString(36).substr(2, 9)}`,
-        team1Score: 17,
-        team2Score: 21,
-        winner: team2Id
-      }
-    ];
-  }
-};
-
-export const mockPlayoffBracket: PlayoffBracket = {
-  id: "pb1",
-  name: "Summer 2023 Playoffs",
-  division: "Recreational",
-  format: "Double Elimination",
-  matches: [
-    // Winners Round 1
-    {
-      id: "pm1",
-      round: 1,
-      position: 1,
-      team1Id: "1",
-      team2Id: "2",
-      winnerId: "1",
-      loserId: "2",
-      team1Score: 2,
-      team2Score: 1,
-      matchType: "winners",
-      bestOf: 3,
-      games: createBestOf3Games("1", "2", "1"),
-      team1Seed: 1,
-      team2Seed: 8,
-      nextWinMatchId: "pm3",
-      nextLoseMatchId: "pm4",
-      bracket_id: "pb1",
-      status: "completed"
-    },
-    {
-      id: "pm2",
-      round: 1,
-      position: 2,
-      team1Id: "3",
-      team2Id: "5",
-      winnerId: "3",
-      loserId: "5",
-      team1Score: 2,
-      team2Score: 0,
-      matchType: "winners",
-      bestOf: 3,
-      games: [
-        {
-          id: "game-1a",
-          team1Score: 21,
-          team2Score: 15,
-          winner: "3"
-        },
-        {
-          id: "game-1b",
-          team1Score: 21,
-          team2Score: 18,
-          winner: "3"
-        }
-      ],
-      team1Seed: 4,
-      team2Seed: 5,
-      nextWinMatchId: "pm3",
-      nextLoseMatchId: "pm4",
-      bracket_id: "pb1",
-      status: "completed"
-    },
-    
-    // Winners Round 2
-    {
-      id: "pm3",
-      round: 2,
-      position: 1,
-      team1Id: "1",
-      team2Id: "3",
-      winnerId: "1",
-      loserId: "3",
-      team1Score: 2,
-      team2Score: 1,
-      matchType: "winners",
-      bestOf: 3,
-      games: createBestOf3Games("1", "3", "1"),
-      team1Seed: 1,
-      team2Seed: 4,
-      nextWinMatchId: "pm6",
-      nextLoseMatchId: "pm5",
-      bracket_id: "pb1",
-      status: "completed"
-    },
-    
-    // Losers Round 1
-    {
-      id: "pm4",
-      round: 1,
-      position: 3,
-      team1Id: "2",
-      team2Id: "5",
-      winnerId: "2",
-      loserId: "5",
-      team1Score: 2,
-      team2Score: 0,
-      matchType: "losers",
-      bestOf: 3,
-      games: [
-        {
-          id: "game-2a",
-          team1Score: 21,
-          team2Score: 14,
-          winner: "2"
-        },
-        {
-          id: "game-2b",
-          team1Score: 21,
-          team2Score: 19,
-          winner: "2"
-        }
-      ],
-      team1Seed: 8,
-      team2Seed: 5,
-      nextWinMatchId: "pm5",
-      nextLoseMatchId: null,
-      bracket_id: "pb1",
-      status: "completed"
-    },
-    
-    // Losers Round 2
-    {
-      id: "pm5",
-      round: 2,
-      position: 2,
-      team1Id: "2",
-      team2Id: "3",
-      winnerId: "2",
-      loserId: "3",
-      team1Score: 2,
-      team2Score: 1,
-      matchType: "losers",
-      bestOf: 3,
-      games: createBestOf3Games("2", "3", "2"),
-      team1Seed: 8,
-      team2Seed: 4,
-      nextWinMatchId: "pm6",
-      nextLoseMatchId: null,
-      bracket_id: "pb1",
-      status: "completed"
-    },
-    
-    // Finals
-    {
-      id: "pm6",
-      round: 3,
-      position: 1,
-      team1Id: "1",
-      team2Id: "2",
-      winnerId: "1",
-      loserId: "2",
-      team1Score: 2,
-      team2Score: 0,
-      matchType: "finals",
-      bestOf: 3,
-      games: [
-        {
-          id: "game-3a",
-          team1Score: 21,
-          team2Score: 15,
-          winner: "1"
-        },
-        {
-          id: "game-3b",
-          team1Score: 21,
-          team2Score: 19,
-          winner: "1"
-        }
-      ],
-      team1Seed: 1,
-      team2Seed: 8,
-      nextWinMatchId: null,
-      nextLoseMatchId: null,
-      bracket_id: "pb1",
-      status: "completed"
-    }
-  ],
-  champion: "1"
-};
-
-export const mockIntermediatePlayoffBracket: PlayoffBracket = {
-  id: "pb2",
-  name: "Summer 2023 Intermediate Playoffs",
-  division: "Intermediate",
-  format: "Double Elimination",
-  matches: [
-    // Just one example match
-    {
-      id: "pm-int1",
-      round: 1,
-      position: 1,
-      team1Id: "7",
-      team2Id: "8",
-      winnerId: "7",
-      loserId: "8",
-      team1Score: 2,
-      team2Score: 1,
-      matchType: "winners",
-      bestOf: 3,
-      games: createBestOf3Games("7", "8", "7"),
-      team1Seed: 2,
-      team2Seed: 7,
-      nextWinMatchId: null,
-      nextLoseMatchId: null,
-      bracket_id: "pb2",
-      status: "completed"
-    }
-  ],
-  champion: "7"
-};
-
-export const mockCompetitivePlayoffBracket: PlayoffBracket = {
-  id: "pb3",
-  name: "Summer 2023 Competitive Playoffs",
-  division: "Competitive",
-  format: "Double Elimination",
-  matches: [
-    // Just one example match
-    {
-      id: "pm-comp1",
-      round: 1,
-      position: 1,
-      team1Id: "4",
-      team2Id: "6",
-      winnerId: "4",
-      loserId: "6",
-      team1Score: 2,
-      team2Score: 0,
-      matchType: "winners",
-      bestOf: 3,
-      games: [
-        {
-          id: "game-comp1a",
-          team1Score: 21,
-          team2Score: 15,
-          winner: "4"
-        },
-        {
-          id: "game-comp1b",
-          team1Score: 21,
-          team2Score: 18,
-          winner: "4"
-        }
-      ],
-      team1Seed: 3,
-      team2Seed: 6,
-      nextWinMatchId: null,
-      nextLoseMatchId: null,
-      bracket_id: "pb3",
-      status: "completed"
-    }
-  ],
-  champion: "4"
-};
-
-export const mockRankings: Ranking[] = mockTeams.map(team => {
-  const winPercentage = team.wins + team.losses > 0 
-    ? Number((team.wins / (team.wins + team.losses)).toFixed(3)) 
-    : 0;
-  
-  return {
-    teamId: team.id,
-    teamName: team.name,
-    logoUrl: team.logoUrl,
-    imageUrl: team.imageUrl,
-    wins: team.wins,
-    losses: team.losses,
-    winPercentage,
-    divisionName: team.division || null,
-    sos: Number((Math.random() * 0.5 + 0.5).toFixed(3)), // Random SOS between 0.5 and 1.0
-    streak: Math.random() > 0.5 ? `W${Math.floor(Math.random() * 5) + 1}` : `L${Math.floor(Math.random() * 3) + 1}`,
-    headToHead: {}, // Empty head-to-head records
-    gamesWon: Math.floor(Math.random() * 10) + 1,
-    gamesLost: Math.floor(Math.random() * 5) + 1,
-    gameWinPercentage: Math.random(),
-    powerScore: Math.floor(Math.random() * 100),
-    closeMatchLosses: Math.floor(Math.random() * 3)
-  };
-}).sort((a, b) => b.winPercentage - a.winPercentage || b.sos - a.sos);
+export const mockDivisions = [
+  {
+    id: "division-a",
+    name: "Division A",
+  },
+  {
+    id: "division-b",
+    name: "Division B",
+  },
+];

@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { BracketService } from "@/BracketService";
+import { BracketService } from "@/services/BracketService";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
 
 export const usePlayoffBracketManagement = (

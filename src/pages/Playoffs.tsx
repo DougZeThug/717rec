@@ -1,4 +1,3 @@
-
 import React from "react";
 import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import { usePlayoffData } from "@/hooks/usePlayoffData";
@@ -47,10 +46,25 @@ const Playoffs = () => {
     refetchBrackets
   } = usePlayoffData(selectedBracketId);
   
+  // Create typesafe version of bracketsByDivision
+  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
+  if (bracketsByDivision) {
+    Object.keys(bracketsByDivision).forEach(div => {
+      typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
+        ...b,
+        matches: b.matches?.map(mapMatch) || [],
+        id: b.id || crypto.randomUUID(), // ensure id exists
+        state: b.state || "pending"      // ensure state exists
+      }));
+    });
+  }
+
   // Convert raw bracket data to the expected format
   const bracket = rawBracket ? {
     ...rawBracket,
-    matches: rawBracket.matches?.map(mapMatch) || []
+    matches: rawBracket.matches?.map(mapMatch) || [],
+    id: rawBracket.id || crypto.randomUUID(), // ensure id exists
+    state: rawBracket.state || "pending"      // ensure state exists
   } : null;
   
   // Set up bracket management
@@ -115,20 +129,11 @@ const Playoffs = () => {
   const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
   const allBracketsData = allBrackets?.map(b => ({
     ...b,
-    matches: b.matches?.map(mapMatch) || []
+    matches: b.matches?.map(mapMatch) || [],
+    id: b.id || crypto.randomUUID(), // ensure id exists
+    state: b.state || "pending"      // ensure state exists
   })) || [];
   const availableDivisions = divisions?.map(div => div.name) || [];
-
-  // Create typesafe version of bracketsByDivision
-  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
-  if (bracketsByDivision) {
-    Object.keys(bracketsByDivision).forEach(div => {
-      typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
-        ...b,
-        matches: b.matches?.map(mapMatch) || []
-      }));
-    });
-  }
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">

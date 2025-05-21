@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { PlayoffMatch } from "@/types";
-import { fetchBracketById, groupBracketMatchesByType } from "@/BracketService";
+import { fetchBracketById, groupBracketMatchesByType } from "@/services/BracketService";
 import { BracketMatchesByType } from "@/services/brackets/types";
 import { toRuntime as mapMatch } from "@/services/brackets/database/MatchMapper";
 
