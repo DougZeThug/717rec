@@ -10,5 +10,5 @@ import { CrudInterface } from 'brackets-manager/dist/types';
 const adapter = new BracketsManagerAdapter();
 
 // Create an instance of BracketsManager with our adapter
-// The adapter implements the CrudInterface required by BracketsManager
-export const manager = new BracketsManager(adapter as unknown as CrudInterface);
+// The adapter fully implements the CrudInterface required by BracketsManager
+export const manager = new BracketsManager(adapter);

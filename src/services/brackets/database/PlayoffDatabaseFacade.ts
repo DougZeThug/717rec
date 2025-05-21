@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffGame } from "../types";
 import { DatabaseBracketState, DatabasePlayoffMatch, MatchResultDTO } from "./types/DatabaseTypes";
@@ -26,7 +27,7 @@ export class PlayoffDatabaseFacade {
         isComplete: data.state === 'completed',
         winnersBracketChampionId: data.wb_champion_id,
         losersBracketChampionId: null, // Not stored in the database yet
-        championId: data.state === 'completed' ? data.winner_id : null
+        championId: data.state === 'completed' ? data.wb_champion_id : null
       };
     } catch (error) {
       console.error('Error getting bracket state:', error);
@@ -66,8 +67,8 @@ export class PlayoffDatabaseFacade {
         team2_score: match.team2_score,
         team1_seed: match.team1_seed,
         team2_seed: match.team2_seed,
-        team1_game_wins: match.team1_game_wins,
-        team2_game_wins: match.team2_game_wins,
+        team1_game_wins: match.team1_game_wins || 0,
+        team2_game_wins: match.team2_game_wins || 0,
         winner_id: match.winner_id,
         loser_id: match.loser_id,
         next_win_match_id: match.next_win_match_id,

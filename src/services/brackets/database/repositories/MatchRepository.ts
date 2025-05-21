@@ -28,9 +28,9 @@ export class MatchRepository extends BaseRepository implements IPlayoffMatchesRe
   /**
    * Save multiple playoff matches to the database
    */
-  async saveMatches(matches: DatabasePlayoffMatch[]): Promise<void> {
+  async saveMatches(matches: DatabasePlayoffMatch[]): Promise<number> {
     try {
-      if (!matches || matches.length === 0) return;
+      if (!matches || matches.length === 0) return 0;
 
       // We need to make sure match_type is a valid enum value for the database
       // and map needed fields to the database schema
@@ -64,6 +64,8 @@ export class MatchRepository extends BaseRepository implements IPlayoffMatchesRe
         .insert(preparedMatches);
       
       if (error) throw new DatabaseOperationError('saveMatches', 'Failed to save matches', error);
+      
+      return matches.length;
     } catch (error) {
       console.error('Error saving playoff matches:', error);
       throw error instanceof DatabaseOperationError 

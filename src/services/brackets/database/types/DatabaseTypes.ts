@@ -26,6 +26,16 @@ export interface IMatchRepository {
 }
 
 /**
+ * Interface for playoff matches repository
+ */
+export interface IPlayoffMatchesRepository {
+  saveMatches(matches: DatabasePlayoffMatch[]): Promise<number>;
+  updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
+  getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
+  getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
+}
+
+/**
  * Interface for game repository operations
  */
 export interface IPlayoffGamesRepository {

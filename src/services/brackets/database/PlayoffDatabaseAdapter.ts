@@ -164,7 +164,7 @@ export class PlayoffDatabaseAdapter {
   /**
    * Create reset match
    */
-  static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch> {
+  static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<AppPlayoffMatch> {
     return PlayoffDatabaseAdapter.service.createResetMatch(bracketId, team1Id, team2Id);
   }
 

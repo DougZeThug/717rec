@@ -1,14 +1,16 @@
 
 /**
- * This adapter implements the CrudInterface required by BracketsManager
+ * Adapter that implements the CrudInterface for BracketsManager
+ * This adapter conforms to the exact interface expected by BracketsManager
  */
-import { BracketDatabaseService } from "../services/BracketDatabaseService";
+import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
 import { CrudInterface } from "brackets-manager/dist/types";
 import { DataTypes, Id, OmitId, Table } from "brackets-manager/dist/types/storage";
-import { PlayoffMatchType } from "../../../types";
+import { PlayoffMatchType } from "../../types";
 
 /**
  * Adapter that implements the CrudInterface for BracketsManager
+ * This adapter conforms to the exact interface expected by BracketsManager
  */
 export class BracketsManagerAdapter implements CrudInterface {
   private service: BracketDatabaseService;
@@ -19,12 +21,12 @@ export class BracketsManagerAdapter implements CrudInterface {
   
   /**
    * Insert records into a specific table
+   * Implementation to match CrudInterface
    */
   async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean> {
     try {
       const isArray = Array.isArray(value);
       const dataArray = isArray ? value : [value];
-      let count = 0;
       
       // Match table name to operation
       switch (table) {
@@ -40,10 +42,11 @@ export class BracketsManagerAdapter implements CrudInterface {
             winnerId: null,
             loserId: null
           }));
-          count = await this.service.savePlayoffMatches(matches);
-          return count > 0;
+          const result = await this.service.savePlayoffMatches(matches);
+          return result > 0;
           
         case 'participant':
+          let count = 0;
           for (const participant of dataArray) {
             await this.service.createParticipant({
               id: participant.id,
@@ -66,7 +69,7 @@ export class BracketsManagerAdapter implements CrudInterface {
   }
   
   /**
-   * Select records from a table
+   * Select records from a table - implement all function signatures from CrudInterface
    */
   async select<T extends Table>(table: T): Promise<DataTypes[T][]>;
   async select<T extends Table>(table: T, id: Id): Promise<DataTypes[T]>;
@@ -78,7 +81,7 @@ export class BracketsManagerAdapter implements CrudInterface {
         const id = idOrFilter;
         switch (table) {
           case 'match':
-            // Return empty result for now
+            // Not implemented yet, return empty result
             return {} as DataTypes[T];
           default:
             console.warn(`Select by ID not implemented for table ${table}`);
@@ -187,7 +190,7 @@ export class BracketsManagerAdapter implements CrudInterface {
   async delete<T extends Table>(table: T, filter?: Partial<DataTypes[T]>): Promise<boolean> {
     try {
       console.log(`Delete operation called for table ${table} with filter:`, filter);
-      // Not fully implemented yet
+      // Not implemented yet
       return false;
     } catch (error) {
       console.error(`Error in delete for table ${table}:`, error);
