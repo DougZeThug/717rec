@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffGame } from "@/types/playoffs";
 import { DatabaseBracketState, DatabasePlayoffMatch, MatchResultDTO } from "./types/DatabaseTypes";
@@ -74,7 +75,7 @@ export class PlayoffDatabaseFacade {
         next_win_match_id: match.next_win_match_id,
         next_lose_match_id: match.next_lose_match_id,
         best_of: match.best_of || 3,
-        status: match.status || 'pending'
+        status: (match.status as "pending" | "in_progress" | "completed") || 'pending'
       }));
     } catch (error) {
       console.error('Error getting bracket matches:', error);

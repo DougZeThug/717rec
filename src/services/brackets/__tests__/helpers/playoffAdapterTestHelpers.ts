@@ -1,3 +1,4 @@
+
 import { PlayoffDatabaseFacade } from "../../database/PlayoffDatabaseFacade";
 import { PlayoffGame, PlayoffMatch } from "../../types";
 import { DatabaseBracketState, DatabasePlayoffMatch, MatchResultDTO } from "../../database/types/DatabaseTypes";
@@ -103,6 +104,7 @@ export function createGame(overrides?: Partial<PlayoffGame>): PlayoffGame {
  */
 export function createMatchResult(overrides?: Partial<MatchResultDTO>): MatchResultDTO {
   return {
+    matchId: 'match1',
     winnerId: 'team1',
     loserId: 'team2',
     team1Score: 2,

@@ -1,6 +1,7 @@
 
 import { PlayoffMatch as AppPlayoffMatch, PlayoffBracket, Team } from "@/types";
 import { BRACKET_STATES } from "@/constants/brackets";
+import { PlayoffGame, PlayoffMatchType } from "@/types/playoffs";
 
 // Interface for grouping matches by type (winners, losers, finals)
 export interface BracketMatchesByType {
@@ -44,8 +45,7 @@ export interface BracketMatch extends BaseBracketMatch {
 }
 
 // Types for match types in brackets
-export type MatchType = "winners" | "losers" | "finals" | "play-in" | "play-in-2";
-export type PlayoffMatchType = "winners" | "losers" | "finals" | "play-in" | "play-in-2";
+export type MatchType = PlayoffMatchType;
 
 // Team with seeding information
 export interface SeedTeam {
@@ -72,17 +72,6 @@ export interface MatchResult {
   team1GameWins?: number;
   team2GameWins?: number;
   games?: PlayoffGame[];
-}
-
-// Game within a match
-export interface PlayoffGame {
-  id: string;
-  matchId?: string;
-  gameNumber?: number;
-  team1Score: number;
-  team2Score: number;
-  winnerId?: string;
-  winner?: string;
 }
 
 // Database bracket state information

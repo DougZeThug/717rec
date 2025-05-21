@@ -74,7 +74,16 @@ export class BracketsManagerAdapter implements CrudInterface {
             bracket_id: match.stage_id,
             winner_id: null,
             loser_id: null,
-            best_of: match.best_of || 3 // Ensure bestOf has a default value
+            best_of: match.best_of || 3, // Ensure bestOf has a default value
+            team1_score: null,
+            team2_score: null,
+            team1_game_wins: null,
+            team2_game_wins: null,
+            team1_seed: null,
+            team2_seed: null,
+            next_win_match_id: null,
+            next_lose_match_id: null,
+            status: 'pending' as const
           };
           
           const matchResult = await supabase
@@ -84,7 +93,7 @@ export class BracketsManagerAdapter implements CrudInterface {
             .single();
           
           if (matchResult.error) throw matchResult.error;
-          return matchResult.data.id;
+          return matchResult.data.id as string;
           
         case 'participant':
           const participant = dataArray[0]; // Use first entry in case of array
@@ -105,7 +114,7 @@ export class BracketsManagerAdapter implements CrudInterface {
             .single();
           
           if (participantResult.error) throw participantResult.error;
-          return participantResult.data.id;
+          return participantResult.data.id as string;
           
         case 'stage':
           const stage = dataArray[0]; // Use first entry in case of array
@@ -122,7 +131,7 @@ export class BracketsManagerAdapter implements CrudInterface {
             .single();
           
           if (stageResult.error) throw stageResult.error;
-          return stageResult.data.id;
+          return stageResult.data.id as string;
           
         default:
           console.warn(`Insert operation not implemented for table ${table}`);

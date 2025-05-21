@@ -80,3 +80,68 @@ export interface IPlayoffMatchesRepository {
   getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
   getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
 }
+
+/**
+ * Interface for playoff games repository
+ */
+export interface IPlayoffGamesRepository {
+  saveGames(games: PlayoffGame[]): Promise<void>;
+  getMatchGames(matchId: string): Promise<PlayoffGame[]>;
+}
+
+/**
+ * Interface for team advancement service
+ */
+export interface ITeamAdvancementService {
+  advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void>;
+}
+
+/**
+ * Interface for bracket repository
+ */
+export interface IBracketRepository {
+  markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void>;
+  setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void>;
+  markTournamentComplete(bracketId: string, championId: string): Promise<void>;
+  getBracketState(bracketId: string): Promise<DatabaseBracketState>;
+}
+
+/**
+ * Interface for participant repository
+ */
+export interface IParticipantRepository {
+  createParticipant(participant: ParticipantData): Promise<string>;
+  selectParticipants(filters?: ParticipantFilter): Promise<ParticipantData[]>;
+}
+
+/**
+ * Database bracket state information
+ */
+export interface DatabaseBracketState {
+  isWinnersBracketComplete: boolean;
+  isLosersBracketComplete: boolean;
+  isResetMatchNeeded: boolean;
+  isComplete: boolean;
+  winnersBracketChampionId: string | null;
+  losersBracketChampionId: string | null;
+  championId: string | null;
+}
+
+/**
+ * Participant data interface
+ */
+export interface ParticipantData {
+  id: string;
+  tournament_id: string;
+  name: string;
+  position?: number;
+  seeding?: number;
+}
+
+/**
+ * Filter for participant queries
+ */
+export interface ParticipantFilter {
+  tournament_id?: string;
+  name?: string;
+}

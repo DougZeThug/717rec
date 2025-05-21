@@ -52,7 +52,7 @@ export class MatchRepository {
         throw error;
       }
       
-      return toRuntime(data);
+      return toRuntime(data as DatabasePlayoffMatch);
     } catch (error) {
       console.error('Error getting match:', error);
       return null;
