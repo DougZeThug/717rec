@@ -1,10 +1,12 @@
 
+import { Database } from "@/integrations/supabase/types";
+
 /**
  * Maps between logical table names used in brackets-manager and actual database table names
  */
 export class TableNameMapper {
   // Define Supabase's valid table names to match the database schema
-  private static readonly TABLE_MAP: Record<string, string> = {
+  private static readonly TABLE_MAP: Record<string, keyof Database['public']['Tables'] | keyof Database['public']['Views']> = {
     'match': 'matches',
     'participant': 'participants',
     'stage': 'brackets',
@@ -18,27 +20,27 @@ export class TableNameMapper {
   };
   
   // Valid table names for validation
-  private static readonly VALID_TABLES: string[] = [
+  private static readonly VALID_TABLES = [
     'match', 'participant', 'stage',
     'matches', 'participants', 'brackets'
-  ];
+  ] as const;
   
   /**
    * Convert a logical table name to the actual database table name
    * @param logicalName The logical table name used in brackets-manager
    * @returns The actual database table name
    */
-  public static toDbTableName(logicalName: string): string {
+  public static toDbTableName(logicalName: string): keyof Database['public']['Tables'] | keyof Database['public']['Views'] {
     if (!logicalName) {
       console.warn('Empty table name provided, falling back to "matches"');
       return 'matches';
     }
     
     const normalizedName = logicalName.toLowerCase();
-    const tableName = this.TABLE_MAP[normalizedName] || normalizedName;
+    const tableName = this.TABLE_MAP[normalizedName] || normalizedName as keyof Database['public']['Tables'] | keyof Database['public']['Views'];
     
     // Validate the table name for security
-    if (!this.isValidTable(tableName)) {
+    if (!this.isValidTable(tableName as string)) {
       console.warn(`Invalid table name: ${logicalName}, falling back to 'matches'`);
       return 'matches';
     }
@@ -66,6 +68,6 @@ export class TableNameMapper {
   public static isValidTable(tableName: string): boolean {
     if (!tableName) return false;
     const normalizedName = tableName.toLowerCase();
-    return this.VALID_TABLES.includes(normalizedName);
+    return this.VALID_TABLES.includes(normalizedName as any);
   }
 }

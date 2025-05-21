@@ -4,16 +4,22 @@ import { StageFilter, StageRecord } from '../types/AdapterTypes';
 import { AdapterOperationError } from '../errors/AdapterErrors';
 import { QueryBuilderUtils } from '../utils/QueryBuilderUtils';
 import { TableNameMapper } from '../interfaces/TableNameMapper';
+import { Database } from "@/integrations/supabase/types";
+
+/**
+ * Represents a database bracket record
+ */
+type BracketDbRecord = Database['public']['Tables']['brackets']['Row'];
 
 /**
  * StageAdapter handles operations related to tournament stages (brackets)
  */
 export class StageAdapter {
   private tableName = 'stage';
-  private dbTableName: string;
+  private dbTableName: keyof Database['public']['Tables'] | keyof Database['public']['Views'];
 
   constructor() {
-    this.dbTableName = TableNameMapper.toDbTableName(this.tableName);
+    this.dbTableName = TableNameMapper.toDbTableName(this.tableName) as keyof Database['public']['Tables'] | keyof Database['public']['Views'];
   }
 
   /**
@@ -28,7 +34,7 @@ export class StageAdapter {
       }
 
       const { error } = await supabase
-        .from(this.dbTableName)
+        .from(this.dbTableName as 'brackets')
         .insert([stageData]);
 
       if (error) throw error;
@@ -45,7 +51,7 @@ export class StageAdapter {
    */
   async selectStage(filter?: StageFilter): Promise<StageRecord[]> {
     try {
-      let query = supabase.from(this.dbTableName).select('*');
+      let query = supabase.from(this.dbTableName as 'brackets').select('*');
       
       // Apply common filters (id, limit, offset, order)
       query = QueryBuilderUtils.applyCommonFilters(query, filter);
@@ -59,12 +65,19 @@ export class StageAdapter {
         if (filter.type !== undefined) {
           query = query.eq('format', filter.type);
         }
+        
+        // Filter by tournament_id if provided
+        if (filter.tournament_id !== undefined) {
+          query = query.eq('id', filter.tournament_id);
+        }
       }
       
       const { data, error } = await query;
       
       if (error) throw error;
-      return data || [];
+      
+      // Transform database records to StageRecord format
+      return (data || []).map(this.transformDbRecordToStageRecord);
     } catch (error) {
       return this.handleError('selectStage', error);
     }
@@ -100,6 +113,27 @@ export class StageAdapter {
     } catch (error) {
       return this.handleError('deleteStage', error);
     }
+  }
+
+  /**
+   * Transform database record to StageRecord format
+   * @private
+   */
+  private transformDbRecordToStageRecord(dbRecord: BracketDbRecord): StageRecord {
+    return {
+      id: dbRecord.id,
+      name: dbRecord.title,
+      tournament_id: dbRecord.id, // In our implementation, stage id is the same as tournament id
+      type: dbRecord.format || 'single_elimination',
+      settings: {
+        // Add default settings
+        seedOrdering: [],
+        size: 0,
+        matchesChildCount: 0,
+        consolationFinal: false,
+        grandFinal: 'none',
+      }
+    };
   }
 
   /**
