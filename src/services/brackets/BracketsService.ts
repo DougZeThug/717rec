@@ -1,5 +1,5 @@
 
-import { bracketManager } from './BracketsManagerInstance';
+import { manager as bracketManager } from './BracketsManagerInstance';
 import { BracketCreationService } from './services/BracketCreationService';
 import { MatchScoreService } from './services/MatchScoreService';
 import { Team } from "@/types";
