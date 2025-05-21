@@ -1,6 +1,6 @@
 
 // Types for playoff brackets
-import { BracketFormat, BracketState } from "@/constants/brackets";
+import { BracketFormat } from "@/constants/brackets";
 
 /**
  * Match type for playoff operations
@@ -144,3 +144,6 @@ export type BracketMatchesByType = {
   finals: any[];
   playIn?: any[][];
 };
+
+// Explicitly export BracketState from constants
+export type { BracketState } from "@/constants/brackets";
