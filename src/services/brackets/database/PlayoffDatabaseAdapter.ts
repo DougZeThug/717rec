@@ -192,4 +192,91 @@ export class PlayoffDatabaseAdapter {
   static async getBracketState(bracketId: string): Promise<any> {
     return await this.facade.getBracketState(bracketId);
   }
+
+  /**
+   * Create a participant
+   */
+  static async createParticipant(participant: {
+    id: string;
+    tournament_id: string;
+    name: string;
+    position?: number;
+    seeding?: number;
+  }): Promise<string> {
+    const { error } = await supabase
+      .from('participants')
+      .insert({
+        id: participant.id,
+        tournament_id: participant.tournament_id,
+        bracket_id: participant.tournament_id, // bracket_id is the same as tournament_id
+        team_id: participant.id, // Use id as team_id for compatibility
+        name: participant.name,
+        seeding: participant.seeding ?? null,
+        position: participant.position ?? null,
+      });
+      
+    if (error) {
+      console.error('Error creating participant:', error);
+      throw new Error(`Failed to create participant: ${error.message}`);
+    }
+    
+    return participant.id;
+  }
+
+  /**
+   * Select participants based on filters
+   */
+  static async selectParticipants(filters?: {
+    tournament_id?: string;
+    name?: string;
+  }): Promise<Array<{
+    id: string;
+    name: string;
+    tournament_id: string;
+    position?: number;
+    seeding?: number;
+  }>> {
+    let query = supabase.from('participants').select('*');
+    
+    if (filters?.tournament_id) {
+      query = query.eq('tournament_id', filters.tournament_id);
+    }
+    
+    if (filters?.name) {
+      query = query.eq('name', filters.name);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error selecting participants:', error);
+      throw new Error(`Failed to select participants: ${error.message}`);
+    }
+    
+    // Convert from DB format to application format
+    return (data || []).map(p => ({
+      id: p.id,
+      name: p.name || '',
+      tournament_id: p.tournament_id || p.bracket_id,
+      position: p.position,
+      seeding: p.seeding
+    }));
+  }
 }
+
+// Add adapter interface for brackets-manager compatibility
+export const create = {
+  match: PlayoffDatabaseAdapter.savePlayoffMatches,
+  participant: PlayoffDatabaseAdapter.createParticipant,
+};
+
+export const select = {
+  match: PlayoffDatabaseAdapter.getBracketMatches,
+  participant: PlayoffDatabaseAdapter.selectParticipants,
+};
+
+// Export a unified adapter interface
+export const adapter = {
+  create,
+  select,
+};

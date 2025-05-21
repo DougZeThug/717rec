@@ -2,7 +2,8 @@
 /**
  * Singleton export of the bracket manager instance
  */
-import { bracketManager } from './manager/BracketManager';
+import { BracketsManager } from 'brackets-manager';
+import { adapter } from './database/PlayoffDatabaseAdapter';
 
-// Export the existing bracketManager as a named export 'manager'
-export const manager = bracketManager;
+// Create an instance of BracketsManager with our custom adapter
+export const manager = new BracketsManager(adapter);
