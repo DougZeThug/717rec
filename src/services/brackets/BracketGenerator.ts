@@ -3,7 +3,7 @@ import { Team } from "@/types";
 import { BracketMatch, PlayoffMatch } from "./types";
 import { DatabaseAdapter } from "./database/DatabaseAdapter";
 import { PlayoffDatabaseAdapter } from "./database/PlayoffDatabaseAdapter";
-import { manager } from './BracketsManagerInstance';
+import { bracketManager } from './manager/BracketManager'; 
 
 /**
  * Main facade class for generating tournament brackets
@@ -23,7 +23,7 @@ export class BracketGenerator {
     console.log(`Generating single elimination bracket with ${teams.length} teams`);
     
     // Correct API usage for brackets-manager
-    const matches = await manager.getMatches({ tournament_id: bracketId });
+    const matches = await bracketManager.getMatches({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -41,7 +41,7 @@ export class BracketGenerator {
     console.log(`Generating double elimination bracket with ${teams.length} teams`);
     
     // Correct API usage for brackets-manager
-    const matches = await manager.getMatches({ tournament_id: bracketId });
+    const matches = await bracketManager.getMatches({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -59,7 +59,7 @@ export class BracketGenerator {
     console.log(`Generating playoff bracket with ${teams.length} teams`);
     
     // Correct API usage for brackets-manager
-    const matches = await manager.getMatches({ tournament_id: bracketId });
+    const matches = await bracketManager.getMatches({ tournament_id: bracketId });
     return matches as PlayoffMatch[];
   }
 
