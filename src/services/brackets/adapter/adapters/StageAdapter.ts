@@ -83,10 +83,13 @@ export class StageAdapter {
       
       if (error) throw error;
       
-      console.log(`[StageAdapter] Found ${data?.length || 0} stage records`);
+      // Fix for TypeScript error: ensure data is an array before accessing length and map
+      const recordsArray = Array.isArray(data) ? data : [];
       
-      // Transform database records to StageRecord format
-      return (data || []).map(this.transformDbRecordToStageRecord);
+      console.log(`[StageAdapter] Found ${recordsArray.length} stage records`);
+      
+      // Transform database records to StageRecord format - safely handling the array
+      return recordsArray.map(record => this.transformDbRecordToStageRecord(record as BracketDbRecord));
     } catch (error) {
       return this.handleError('selectStage', error);
     }

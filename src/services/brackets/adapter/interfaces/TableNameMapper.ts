@@ -12,54 +12,109 @@ export type DatabaseViews = keyof Database['public']['Views'];
  */
 export type ValidTableName = DatabaseTables | DatabaseViews;
 
-// Centralized repository of table names to avoid duplication
-const VALID_TABLES = new Set<string>([
-  'brackets', 'matches', 'participants', 'teams',
-  'debug_match_updates', 'divisions', 'games',
-  'match_comments', 'match_reactions', 'message_reactions',
-  'messages', 'playoff_games', 'playoff_matches',
-  'profiles', 'season_stats', 'team_memberships',
-  'team_stats', 'team_timeslots'
-]);
+/**
+ * Centralized repository of table and view names to avoid duplication
+ */
+export class DbTableRegistry {
+  // Table names from the database schema
+  static readonly TABLES: ReadonlySet<string> = new Set<string>([
+    'brackets', 'matches', 'participants', 'teams',
+    'debug_match_updates', 'divisions', 'games',
+    'match_comments', 'match_reactions', 'message_reactions',
+    'messages', 'playoff_games', 'playoff_matches',
+    'profiles', 'season_stats', 'team_memberships',
+    'team_stats', 'team_timeslots'
+  ]);
 
-const VALID_VIEWS = new Set<string>([
-  'v_team_details', 'v_team_game_totals', 
-  'v_team_match_stats', 'v_team_power_scores', 
-  'v_team_sos', 'v_team_strength_of_schedule'
-]);
+  // View names from the database schema
+  static readonly VIEWS: ReadonlySet<string> = new Set<string>([
+    'v_team_details', 'v_team_game_totals', 
+    'v_team_match_stats', 'v_team_power_scores', 
+    'v_team_sos', 'v_team_strength_of_schedule'
+  ]);
+  
+  // Logical to database table name mappings for brackets-manager compatibility
+  static readonly LOGICAL_TO_DB_MAP: ReadonlyMap<string, string> = new Map<string, string>([
+    ['match', 'matches'],
+    ['participant', 'participants'],
+    ['stage', 'brackets']
+  ]);
+  
+  // Database to logical name mappings (reverse of the above)
+  static readonly DB_TO_LOGICAL_MAP: ReadonlyMap<string, string> = new Map<string, string>([
+    ['matches', 'match'],
+    ['participants', 'participant'],
+    ['brackets', 'stage']
+  ]);
+  
+  /**
+   * Check if a name is in the tables registry
+   */
+  static isTable(name: string): boolean {
+    return this.TABLES.has(name.toLowerCase());
+  }
+  
+  /**
+   * Check if a name is in the views registry
+   */
+  static isView(name: string): boolean {
+    return this.VIEWS.has(name.toLowerCase());
+  }
+  
+  /**
+   * Get the DB table name from a logical name
+   */
+  static getDbName(logicalName: string): string | undefined {
+    return this.LOGICAL_TO_DB_MAP.get(logicalName.toLowerCase());
+  }
+  
+  /**
+   * Get the logical name from a DB table name
+   */
+  static getLogicalName(dbName: string): string | undefined {
+    return this.DB_TO_LOGICAL_MAP.get(dbName.toLowerCase());
+  }
+  
+  /**
+   * Check if a logical name has a mapping to a DB name
+   */
+  static hasMapping(logicalName: string): boolean {
+    return this.LOGICAL_TO_DB_MAP.has(logicalName.toLowerCase());
+  }
+  
+  /**
+   * Return all valid table names as an array
+   */
+  static getTableNames(): string[] {
+    return Array.from(this.TABLES);
+  }
+  
+  /**
+   * Return all valid view names as an array
+   */
+  static getViewNames(): string[] {
+    return Array.from(this.VIEWS);
+  }
+}
 
 /**
  * Type guard to check if a name is a valid table
  */
 export function isValidTable(name: string): name is DatabaseTables {
-  return VALID_TABLES.has(name);
+  return DbTableRegistry.isTable(name);
 }
 
 /**
  * Type guard to check if a name is a valid view
  */
 export function isValidView(name: string): name is DatabaseViews {
-  return VALID_VIEWS.has(name);
+  return DbTableRegistry.isView(name);
 }
 
 /**
  * Maps between logical table names used in brackets-manager and actual database table names
  */
 export class TableNameMapper {
-  // Define Supabase's valid table names to match the database schema
-  private static readonly LOGICAL_TO_DB_MAP: Record<string, string> = {
-    'match': 'matches',
-    'participant': 'participants',
-    'stage': 'brackets',
-  };
-  
-  // Reverse mapping for lookups from database to logical name
-  private static readonly DB_TO_LOGICAL_MAP: Record<string, string> = {
-    'matches': 'match',
-    'participants': 'participant',
-    'brackets': 'stage',
-  };
-  
   /**
    * Check if a table name is valid in our system
    * @param tableName Table name to validate
@@ -69,9 +124,9 @@ export class TableNameMapper {
     if (!tableName) return false;
     
     const normalizedName = tableName.toLowerCase();
-    return VALID_TABLES.has(normalizedName) || 
-           VALID_VIEWS.has(normalizedName) || 
-           normalizedName in this.LOGICAL_TO_DB_MAP;
+    return DbTableRegistry.isTable(normalizedName) || 
+           DbTableRegistry.isView(normalizedName) || 
+           DbTableRegistry.hasMapping(normalizedName);
   }
   
   /**
@@ -88,9 +143,8 @@ export class TableNameMapper {
     const normalizedName = logicalName.toLowerCase();
     
     // Check if we have a direct mapping for this name
-    if (normalizedName in this.LOGICAL_TO_DB_MAP) {
-      const mappedName = this.LOGICAL_TO_DB_MAP[normalizedName];
-      
+    const mappedName = DbTableRegistry.getDbName(normalizedName);
+    if (mappedName) {
       // Verify the mapped name is valid
       if (isValidTable(mappedName)) {
         return mappedName;
@@ -118,7 +172,8 @@ export class TableNameMapper {
     if (!dbName) return 'match'; // Default to match if empty
     
     const normalizedName = dbName.toLowerCase();
-    return this.DB_TO_LOGICAL_MAP[normalizedName] || normalizedName;
+    const logicalName = DbTableRegistry.getLogicalName(normalizedName);
+    return logicalName || normalizedName;
   }
   
   /**
@@ -126,7 +181,7 @@ export class TableNameMapper {
    * @returns Array of valid table names
    */
   public static getValidTableNames(): string[] {
-    return Array.from(VALID_TABLES);
+    return DbTableRegistry.getTableNames();
   }
   
   /**
@@ -134,7 +189,7 @@ export class TableNameMapper {
    * @returns Array of valid view names
    */
   public static getValidViewNames(): string[] {
-    return Array.from(VALID_VIEWS);
+    return DbTableRegistry.getViewNames();
   }
   
   /**
@@ -144,6 +199,6 @@ export class TableNameMapper {
    */
   public static hasMapping(logicalName: string): boolean {
     if (!logicalName) return false;
-    return logicalName.toLowerCase() in this.LOGICAL_TO_DB_MAP;
+    return DbTableRegistry.hasMapping(logicalName.toLowerCase());
   }
 }

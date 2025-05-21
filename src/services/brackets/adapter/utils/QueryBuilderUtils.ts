@@ -240,7 +240,7 @@ export class QueryBuilderUtils {
    * Execute a select query with filtering and error handling
    * @returns Query result with data and error properties
    */
-  static async executeSelect<T = any>(table: string, filter?: BaseFilter): Promise<QueryResult<T[]>> {
+  static async executeSelect<T = any[]>(table: string, filter?: BaseFilter): Promise<QueryResult<T[]>> {
     try {
       console.log(`[QueryBuilderUtils] Selecting from table: ${table}`);
       
@@ -254,10 +254,14 @@ export class QueryBuilderUtils {
       
       const result = await query;
       
+      // Fix for the TypeScript error with the length property
+      const dataArray = Array.isArray(result.data) ? result.data : [];
+      const count = dataArray.length;
+      
       return {
-        data: result.data as T[],
+        data: dataArray as unknown as T[],
         error: result.error,
-        count: result.data?.length || 0
+        count
       };
     } catch (error) {
       console.error(`[QueryBuilderUtils] Failed to select from table ${table}:`, error);
