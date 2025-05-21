@@ -18,4 +18,6 @@ export const BRACKET_STATES = {
   COMPLETED: 'completed',
 } as const;
 
-export type BracketState = typeof BRACKET_STATES[keyof typeof BRACKET_STATES];
+// Use the BracketState type from types/playoffs.ts
+// This is now used for compatibility
+export type { BracketState } from '@/types/playoffs';

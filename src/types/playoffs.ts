@@ -1,4 +1,7 @@
 
+/** Round-level progress of an entire bracket */
+export type BracketState = 'pending' | 'in_progress' | 'completed';
+
 // Types for playoff brackets
 import { BracketFormat } from "@/constants/brackets";
 
@@ -145,5 +148,5 @@ export type BracketMatchesByType = {
   playIn?: any[][];
 };
 
-// Explicitly export BracketState from constants
-export type { BracketState } from "@/constants/brackets";
+// Remove the old export since we've defined BracketState at the top
+// export type { BracketState } from "@/constants/brackets";

@@ -3,9 +3,7 @@ import { manager } from './BracketsManagerInstance';
 import { PlayoffMatch, PlayoffGame } from '@/types/playoffs';
 import { BracketService } from '../BracketService';
 import { supabase } from '@/integrations/supabase/client';
-
-// Import the Status type from brackets-model, or define it if not accessible
-type Status = "pending" | "ready" | "running" | "completed" | "archived";
+import { Status } from 'brackets-model';   // same enum used by brackets-manager
 
 /**
  * Updates a match score and advances winners through the bracket
@@ -52,7 +50,7 @@ export async function updateMatchScore(
     // Format match data for brackets-manager
     const matchData = {
       id: matchId,
-      status: "completed" as unknown as Status,
+      status: "completed" as Status,
       opponent1: {
         id: team1Id,
         score: team1Score,
