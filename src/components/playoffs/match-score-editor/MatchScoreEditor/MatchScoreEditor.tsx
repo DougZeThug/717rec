@@ -69,7 +69,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       const team2Score = match.team2Id === winnerId ? 1 : 0;
       
       // Pass the game win counts and game details to onSave (only 6 arguments as expected)
-      await onSave(match.id, winnerId, team1Score, team2Score, team1Wins, team2Wins);
+      await onSave(match.id, winnerId, Number(team1Score), Number(team2Score), team1Wins, team2Wins);
       onCancel();
     } catch (error) {
       console.error("Error saving match scores:", error);
