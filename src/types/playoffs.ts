@@ -60,7 +60,7 @@ export interface PlayoffBracket {
   /** double_elimination | single_elimination etc.  
       Old payloads are raw strings, so make it flexible. */
   format?: BracketFormat | string;
-  /** Until the UI maps DB rows → PlayoffMatch, accept any[] */
+  /** raw DB rows or mapped PlayoffMatch objects – loosen until UI refactor */
   matches: any[];
   champion?: string;
   challongeTournamentId?: string;

@@ -16,7 +16,7 @@ export const getBracketById   = async () => null;   // TODO real impl
 export const listBrackets     = async () => [];     // TODO real impl
 export const scoreMatch       = async () => ({ ok: true });
 
-/** Named export so components can do `import { BracketService } ...` */
+/** lightweight barrel – satisfies `import { BracketService } …` */
 export const BracketService = {
   createBracket,
   getBracketById,
