@@ -1,5 +1,4 @@
 
-// legacy-shims.d.ts
 import { PlayoffMatch, PlayoffMatchType as MatchType } from '@/types/playoffs';
 
 /** ---- hard aliases ---- */
