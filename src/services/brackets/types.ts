@@ -6,6 +6,7 @@ export interface BracketMatchesByType {
   winners: any[][];
   losers: any[][];
   finals: any[];
+  playIn?: any[][];
 }
 
 /**

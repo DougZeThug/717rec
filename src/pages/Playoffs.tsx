@@ -50,7 +50,7 @@ const Playoffs = () => {
     handleBracketCreated,
     handleTeamDivisionChange,
     refetchBrackets
-  } = usePlayoffData(); // Keep this for now - will need to integrate later
+  } = usePlayoffViewModel(); // Using the same hook without bracketId for overview data
   
   // Subscribe to real-time updates for the selected bracket
   const { realtimeEnabled, lastUpdatedMatch } = usePlayoffRealtime(selectedBracketId);

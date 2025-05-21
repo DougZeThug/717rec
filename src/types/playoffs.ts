@@ -120,3 +120,27 @@ export interface PlayoffViewModel {
   ) => Promise<void>;
 }
 
+/* ─────────────────────────────────────────
+   Temporary domain stubs – refine later
+   ───────────────────────────────────────── */
+export interface Team {
+  id: string;
+  name: string;
+  logo_url?: string;
+  image_url?: string;
+  division_id?: string;
+  created_at?: string;
+  wins: number;
+  losses: number;
+  game_wins?: number;
+  game_losses?: number;
+  seed?: number;
+  players?: string[];
+}
+
+export type BracketMatchesByType = {
+  winners: any[][];
+  losers: any[][];
+  finals: any[];
+  playIn?: any[][];
+};
