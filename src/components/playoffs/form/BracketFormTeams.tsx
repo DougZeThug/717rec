@@ -1,6 +1,6 @@
 
 import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
 import { UseFormReturn } from "react-hook-form";
 import { BracketFormValues } from "./BracketFormSchema";
@@ -13,8 +13,15 @@ interface BracketFormTeamsProps {
 }
 
 export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams }) => {
+  // Minimum team requirement
+  const minTeams = 2;
+  
   // Verify teams is properly defined
   const validTeams = Array.isArray(teams) ? teams : [];
+  
+  // Get current selection to show count
+  const selectedTeams = form.watch('teams') || [];
+  const teamCount = selectedTeams.length;
 
   return (
     <FormField
@@ -22,7 +29,10 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
       name="teams"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Select Teams (Max 16)</FormLabel>
+          <FormLabel>Select Teams (Min {minTeams}, Max 16)</FormLabel>
+          <FormDescription className="text-xs">
+            Selected {teamCount} of 16 maximum teams
+          </FormDescription>
           <FormControl>
             <Card className="p-2 max-h-64 overflow-y-auto">
               <TeamSelectionList
@@ -36,6 +46,11 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
             </Card>
           </FormControl>
           <FormMessage />
+          {teamCount > 0 && teamCount < minTeams && (
+            <p className="text-xs text-amber-500 mt-1">
+              Please select at least {minTeams} teams to create a bracket
+            </p>
+          )}
         </FormItem>
       )}
     />

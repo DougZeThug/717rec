@@ -1,9 +1,9 @@
 
 import { Team } from "@/types";
 import { BracketMatch, PlayoffMatch } from "./types";
-import { BracketFactory } from "./BracketFactory";
 import { DatabaseAdapter } from "./database/DatabaseAdapter";
 import { PlayoffDatabaseAdapter } from "./database/PlayoffDatabaseAdapter";
+import { manager } from './BracketsManagerInstance';
 
 /**
  * Main facade class for generating tournament brackets
@@ -19,8 +19,10 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): BracketMatch[] {
-    const generator = BracketFactory.createGenerator('single-elimination', bracketId, teams);
-    return generator.generate() as BracketMatch[];
+    // Using the brackets-manager library to generate and get matches
+    console.log(`Generating single elimination bracket with ${teams.length} teams`);
+    const matches = manager.getMatches(bracketId);
+    return matches as BracketMatch[];
   }
 
   /**
@@ -33,8 +35,10 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): BracketMatch[] {
-    const generator = BracketFactory.createGenerator('double-elimination', bracketId, teams);
-    return generator.generate() as BracketMatch[];
+    // Using the brackets-manager library to generate and get matches
+    console.log(`Generating double elimination bracket with ${teams.length} teams`);
+    const matches = manager.getMatches(bracketId);
+    return matches as BracketMatch[];
   }
 
   /**
@@ -47,8 +51,10 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): PlayoffMatch[] {
-    const generator = BracketFactory.createGenerator('playoff', bracketId, teams);
-    return generator.generate() as PlayoffMatch[];
+    // Using the brackets-manager library to generate and get matches
+    console.log(`Generating playoff bracket with ${teams.length} teams`);
+    const matches = manager.getMatches(bracketId);
+    return matches as PlayoffMatch[];
   }
 
   /**
