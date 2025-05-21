@@ -12,31 +12,34 @@ export type DatabaseViews = keyof Database['public']['Views'];
  */
 export type ValidTableName = DatabaseTables | DatabaseViews;
 
+// Centralized repository of table names to avoid duplication
+const VALID_TABLES = new Set<string>([
+  'brackets', 'matches', 'participants', 'teams',
+  'debug_match_updates', 'divisions', 'games',
+  'match_comments', 'match_reactions', 'message_reactions',
+  'messages', 'playoff_games', 'playoff_matches',
+  'profiles', 'season_stats', 'team_memberships',
+  'team_stats', 'team_timeslots'
+]);
+
+const VALID_VIEWS = new Set<string>([
+  'v_team_details', 'v_team_game_totals', 
+  'v_team_match_stats', 'v_team_power_scores', 
+  'v_team_sos', 'v_team_strength_of_schedule'
+]);
+
 /**
  * Type guard to check if a name is a valid table
  */
 export function isValidTable(name: string): name is DatabaseTables {
-  const validTables: string[] = [
-    'brackets', 'matches', 'participants', 'teams',
-    'debug_match_updates', 'divisions', 'games',
-    'match_comments', 'match_reactions', 'message_reactions',
-    'messages', 'playoff_games', 'playoff_matches',
-    'profiles', 'season_stats', 'team_memberships',
-    'team_stats', 'team_timeslots'
-  ];
-  return validTables.includes(name);
+  return VALID_TABLES.has(name);
 }
 
 /**
  * Type guard to check if a name is a valid view
  */
 export function isValidView(name: string): name is DatabaseViews {
-  const validViews: string[] = [
-    'v_team_details', 'v_team_game_totals', 
-    'v_team_match_stats', 'v_team_power_scores', 
-    'v_team_sos', 'v_team_strength_of_schedule'
-  ];
-  return validViews.includes(name);
+  return VALID_VIEWS.has(name);
 }
 
 /**
@@ -44,24 +47,32 @@ export function isValidView(name: string): name is DatabaseViews {
  */
 export class TableNameMapper {
   // Define Supabase's valid table names to match the database schema
-  private static readonly TABLE_MAP: Record<string, string> = {
+  private static readonly LOGICAL_TO_DB_MAP: Record<string, string> = {
     'match': 'matches',
     'participant': 'participants',
     'stage': 'brackets',
   };
   
   // Reverse mapping for lookups from database to logical name
-  private static readonly REVERSE_MAP: Record<string, string> = {
+  private static readonly DB_TO_LOGICAL_MAP: Record<string, string> = {
     'matches': 'match',
     'participants': 'participant',
     'brackets': 'stage',
   };
   
-  // Valid table names for validation
-  private static readonly VALID_TABLES = new Set<string>([
-    'match', 'participant', 'stage',
-    'matches', 'participants', 'brackets'
-  ]);
+  /**
+   * Check if a table name is valid in our system
+   * @param tableName Table name to validate
+   * @returns true if valid, false otherwise
+   */
+  public static isValidTable(tableName: string): boolean {
+    if (!tableName) return false;
+    
+    const normalizedName = tableName.toLowerCase();
+    return VALID_TABLES.has(normalizedName) || 
+           VALID_VIEWS.has(normalizedName) || 
+           normalizedName in this.LOGICAL_TO_DB_MAP;
+  }
   
   /**
    * Convert a logical table name to the actual database table name
@@ -77,10 +88,10 @@ export class TableNameMapper {
     const normalizedName = logicalName.toLowerCase();
     
     // Check if we have a direct mapping for this name
-    if (normalizedName in this.TABLE_MAP) {
-      const mappedName = this.TABLE_MAP[normalizedName];
+    if (normalizedName in this.LOGICAL_TO_DB_MAP) {
+      const mappedName = this.LOGICAL_TO_DB_MAP[normalizedName];
       
-      // Ensure the mapped name is valid
+      // Verify the mapped name is valid
       if (isValidTable(mappedName)) {
         return mappedName;
       }
@@ -107,17 +118,32 @@ export class TableNameMapper {
     if (!dbName) return 'match'; // Default to match if empty
     
     const normalizedName = dbName.toLowerCase();
-    return this.REVERSE_MAP[normalizedName] || normalizedName;
+    return this.DB_TO_LOGICAL_MAP[normalizedName] || normalizedName;
   }
   
   /**
-   * Check if a table name is valid
-   * @param tableName Table name to validate
-   * @returns true if valid, false otherwise
+   * Get all valid table names
+   * @returns Array of valid table names
    */
-  public static isValidTable(tableName: string): boolean {
-    if (!tableName) return false;
-    const normalizedName = tableName.toLowerCase();
-    return this.VALID_TABLES.has(normalizedName);
+  public static getValidTableNames(): string[] {
+    return Array.from(VALID_TABLES);
+  }
+  
+  /**
+   * Get all valid view names
+   * @returns Array of valid view names
+   */
+  public static getValidViewNames(): string[] {
+    return Array.from(VALID_VIEWS);
+  }
+  
+  /**
+   * Check if a logical name has a mapping to a database table
+   * @param logicalName The logical name to check
+   * @returns True if a mapping exists
+   */
+  public static hasMapping(logicalName: string): boolean {
+    if (!logicalName) return false;
+    return logicalName.toLowerCase() in this.LOGICAL_TO_DB_MAP;
   }
 }
