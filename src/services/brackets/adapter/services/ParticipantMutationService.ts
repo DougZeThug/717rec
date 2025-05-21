@@ -35,14 +35,15 @@ export class ParticipantMutationService {
         return 0;
       }
       
-      // Add name for each participant if not provided
-      const participantsWithName = validParticipants.map(p => ({
+      // Add name and tournament_id for each participant if not provided
+      const enrichedParticipants = validParticipants.map(p => ({
         ...p,
-        name: p.name || p.team_id // Default to team_id if name is not provided
+        name: p.name || p.team_id, // Default to team_id if name is not provided
+        tournament_id: p.tournament_id || p.bracket_id // Use bracket_id as tournament_id if not provided
       }));
       
-      console.log(`Inserting ${participantsWithName.length} participants`);
-      const { error, data } = await supabase.from('participants').insert(participantsWithName)
+      console.log(`Inserting ${enrichedParticipants.length} participants`);
+      const { error, data } = await supabase.from('participants').insert(enrichedParticipants)
         .select('id'); // Select IDs to count inserted rows
       
       if (error) {
@@ -50,7 +51,7 @@ export class ParticipantMutationService {
         throw new ParticipantOperationError(`Participant insert failed: ${error.message}`, error);
       }
       
-      return data?.length || participantsWithName.length;
+      return data?.length || enrichedParticipants.length;
     } catch (error) {
       if (error instanceof ParticipantOperationError) {
         throw error; // Re-throw our own error types
@@ -181,9 +182,11 @@ export const ParticipantMutationServiceStatic = {
     
     const rows = teamIds.map((teamId, i) => ({
       bracket_id: bracketId,
+      tournament_id: bracketId, // Set tournament_id to bracket_id for compatibility with brackets-manager
       team_id: teamId,
       position: i + 1,
-      name: teamId // Use team_id as default name
+      name: teamId, // Use team_id as default name
+      seeding: i + 1 // Set default seeding based on position
     }));
     
     return service.insertParticipants(rows);

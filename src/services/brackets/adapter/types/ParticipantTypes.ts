@@ -13,6 +13,7 @@ export interface ParticipantFilter extends BaseFilter {
   bracket_id?: string;
   team_id?: string;
   position?: number;
+  seeding?: number;
 }
 
 /**
@@ -23,6 +24,7 @@ export interface ParticipantRecord {
   name: string;
   tournament_id: string | null;
   position: number | null;
+  seeding?: number | null;
 }
 
 /**
@@ -32,7 +34,9 @@ export interface ParticipantDbRecord {
   id: string;
   team_id: string;
   bracket_id: string;
+  tournament_id?: string;
   position: number;
+  seeding?: number;
   name?: string;
   teams?: {
     name: string;
@@ -44,8 +48,10 @@ export interface ParticipantDbRecord {
  */
 export interface ParticipantInsertData {
   bracket_id: string;
+  tournament_id?: string;
   team_id: string;
   position: number;
+  seeding?: number;
   name?: string;
 }
 

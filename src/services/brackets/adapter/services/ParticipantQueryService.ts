@@ -26,7 +26,9 @@ export class ParticipantQueryService {
         id,
         team_id,
         bracket_id,
+        tournament_id,
         position,
+        seeding,
         name,
         teams:team_id (name)
       `);
@@ -69,7 +71,8 @@ export class ParticipantQueryService {
     }
     
     if (filter.tournament_id) {
-      query = query.eq('bracket_id', filter.tournament_id); // Map tournament_id to bracket_id
+      // Try to match on tournament_id first, fall back to bracket_id for compatibility
+      query = query.or(`tournament_id.eq.${filter.tournament_id},bracket_id.eq.${filter.tournament_id}`);
     }
     
     if (filter.team_id) {
@@ -78,6 +81,10 @@ export class ParticipantQueryService {
     
     if (filter.position !== undefined) {
       query = query.eq('position', filter.position);
+    }
+    
+    if (filter.seeding !== undefined) {
+      query = query.eq('seeding', filter.seeding);
     }
   }
 }

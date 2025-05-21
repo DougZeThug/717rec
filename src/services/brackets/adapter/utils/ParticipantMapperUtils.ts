@@ -16,8 +16,9 @@ export function mapParticipantDbToRecord(dbRecord: ParticipantDbRecord): Partici
     id: dbRecord.team_id,
     // Use participant name if available, fall back to team name or position
     name: dbRecord.name || dbRecord.teams?.name || `Team ${dbRecord.position}`,
-    tournament_id: dbRecord.bracket_id,
-    position: dbRecord.position
+    tournament_id: dbRecord.tournament_id || dbRecord.bracket_id,
+    position: dbRecord.position,
+    seeding: dbRecord.seeding
   };
 }
 
