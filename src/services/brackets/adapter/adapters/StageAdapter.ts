@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StageFilter, StageRecord } from '../types/AdapterTypes';
 import { AdapterOperationError } from '../errors/AdapterErrors';
 import { QueryBuilderUtils } from '../utils/QueryBuilderUtils';
-import { TableNameMapper } from '../interfaces/TableNameMapper';
+import { TableNameMapper, ValidTableName } from '../interfaces/TableNameMapper';
 import { Database } from "@/integrations/supabase/types";
 
 /**
@@ -15,11 +15,13 @@ type BracketDbRecord = Database['public']['Tables']['brackets']['Row'];
  * StageAdapter handles operations related to tournament stages (brackets)
  */
 export class StageAdapter {
-  private tableName = 'stage';
-  private dbTableName: keyof Database['public']['Tables'] | keyof Database['public']['Views'];
+  private logicalTableName = 'stage';
+  private dbTableName: ValidTableName;
 
   constructor() {
-    this.dbTableName = TableNameMapper.toDbTableName(this.tableName) as keyof Database['public']['Tables'] | keyof Database['public']['Views'];
+    // Ensure we have the correct table name mapping
+    this.dbTableName = TableNameMapper.toDbTableName(this.logicalTableName);
+    console.log(`[StageAdapter] Initialized with logical table name: ${this.logicalTableName}, mapped to DB table: ${this.dbTableName}`);
   }
 
   /**
@@ -33,11 +35,14 @@ export class StageAdapter {
         throw new Error('Invalid stage data provided');
       }
 
+      console.log(`[StageAdapter] Inserting stage record into table: ${this.dbTableName}`);
+      
       const { error } = await supabase
-        .from(this.dbTableName as 'brackets')
+        .from(this.dbTableName)
         .insert([stageData]);
 
       if (error) throw error;
+      console.log(`[StageAdapter] Successfully inserted stage record`);
       return 1; // Successfully inserted 1 record
     } catch (error) {
       return this.handleError('insertStage', error);
@@ -51,7 +56,9 @@ export class StageAdapter {
    */
   async selectStage(filter?: StageFilter): Promise<StageRecord[]> {
     try {
-      let query = supabase.from(this.dbTableName as 'brackets').select('*');
+      console.log(`[StageAdapter] Selecting stage records from table: ${this.dbTableName}`);
+      
+      let query = supabase.from(this.dbTableName).select('*');
       
       // Apply common filters (id, limit, offset, order)
       query = QueryBuilderUtils.applyCommonFilters(query, filter);
@@ -76,6 +83,8 @@ export class StageAdapter {
       
       if (error) throw error;
       
+      console.log(`[StageAdapter] Found ${data?.length || 0} stage records`);
+      
       // Transform database records to StageRecord format
       return (data || []).map(this.transformDbRecordToStageRecord);
     } catch (error) {
@@ -96,7 +105,8 @@ export class StageAdapter {
         throw new Error('Invalid stage data provided for update');
       }
       
-      return await QueryBuilderUtils.executeUpdate(this.tableName, id, data);
+      console.log(`[StageAdapter] Updating stage record with ID: ${id}`);
+      return await QueryBuilderUtils.executeUpdate(this.logicalTableName, id, data);
     } catch (error) {
       return this.handleError('updateStage', error);
     }
@@ -109,7 +119,8 @@ export class StageAdapter {
    */
   async deleteStage(filter?: StageFilter): Promise<number> {
     try {
-      return await QueryBuilderUtils.executeDelete(this.tableName, filter);
+      console.log(`[StageAdapter] Deleting stage records`);
+      return await QueryBuilderUtils.executeDelete(this.logicalTableName, filter);
     } catch (error) {
       return this.handleError('deleteStage', error);
     }
@@ -141,7 +152,7 @@ export class StageAdapter {
    * @private
    */
   private handleError(operation: string, error: unknown): never {
-    console.error(`Error in StageAdapter.${operation}:`, error);
+    console.error(`[StageAdapter] Error in ${operation}:`, error);
     
     if (error instanceof AdapterOperationError) {
       throw error; // Re-throw adapter errors
