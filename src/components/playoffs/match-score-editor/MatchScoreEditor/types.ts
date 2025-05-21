@@ -6,11 +6,10 @@ export interface MatchScoreEditorProps {
   teams: Team[];
   onSave: (
     matchId: string,
-    team1Score: number,
-    team2Score: number,
-    games: { team1Score: number; team2Score: number }[],
-    team1GameWins: number,
-    team2GameWins: number
+    games: GameData[],
+    team1GameWins: number, 
+    team2GameWins: number,
+    winnerId: string
   ) => Promise<void>;
   onCancel: () => void;
 }

@@ -64,15 +64,9 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
         return;
       }
       
-      // Set match score to 1-0 (winner-loser format)
-      const team1Score = match.team1Id === winnerId ? 1 : 0;
-      const team2Score = match.team2Id === winnerId ? 1 : 0;
-      
-      // Pass the game win counts and details to onSave with updated parameter order
       await onSave(
         match.id,
-        Number(team1Score),
-        Number(team2Score),
+        games,               // array of { team1Score, team2Score }
         team1Wins,
         team2Wins,
         winnerId
