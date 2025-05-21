@@ -94,7 +94,9 @@ export async function updateMatchResult(
   matchId: string,
   winnerId: string,
   team1Score: number,
-  team2Score: number
+  team2Score: number,
+  team1GameWins: number = 0,
+  team2GameWins: number = 0
 ): Promise<void> {
   try {
     // Import manager directly to avoid circular dependency
@@ -223,5 +225,7 @@ export const BracketService = {
   createBracket: BracketCreationService.createBracket,
   deleteBracket,
   listBrackets,
-  getBracketById
+  getBracketById,
+  supabase // Export supabase to be used by our hooks
 };
+

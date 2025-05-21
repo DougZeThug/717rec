@@ -1,19 +1,17 @@
 
 import React from "react";
 import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
-import { usePlayoffData } from "@/hooks/usePlayoffData";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
 import { usePlayoffState } from "@/hooks/playoffs/usePlayoffState";
 import { usePlayoffEditMatch } from "@/hooks/playoffs/usePlayoffEditMatch";
-import { usePlayoffBracketManagement } from "@/hooks/playoffs/usePlayoffBracketManagement";
+import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
 import AdminView from "@/components/playoffs/views/AdminView";
 import PlayoffView from "@/components/playoffs/views/PlayoffView";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
 import PlayoffDialogs from "@/components/playoffs/dialogs/PlayoffDialogs";
 import { PlayoffBracket } from "@/types";
-import { toRuntime as mapMatch } from "@/services/brackets/database/MatchMapper";
-import { BRACKET_FORMATS, BracketFormat, BRACKET_STATES, BracketState } from "@/constants/brackets";
+import { BracketFormat, BRACKET_FORMATS, BRACKET_STATES, BracketState } from "@/constants/brackets";
 
 const Playoffs = () => {
   // Set up state using custom hooks
@@ -30,63 +28,53 @@ const Playoffs = () => {
 
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
-  
-  // Fetch playoff data
+
+  // Use our unified view model hook
   const {
+    bracket,
+    isLoading: bracketLoading,
     teams,
     teamsLoading,
-    allBrackets,
+    bracketMatchesByType,
+    deleteBracket
+  } = usePlayoffViewModel(selectedBracketId);
+  
+  // Setup for divisions and brackets lists (separate from single bracket view)
+  const {
+    brackets: allBrackets,
     bracketsLoading,
     divisions,
     divisionsLoading,
-    bracket: rawBracket,
-    bracketLoading,
     teamsByDivision,
     bracketsByDivision,
     handleBracketCreated,
     handleTeamDivisionChange,
     refetchBrackets
-  } = usePlayoffData(selectedBracketId);
-  
-  // Create typesafe version of bracketsByDivision
-  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
-  if (bracketsByDivision) {
-    Object.keys(bracketsByDivision).forEach(div => {
-      typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
-        ...b,
-        matches: b.matches?.map(mapMatch) || [],
-        id: b.id || crypto.randomUUID(), // ensure id exists
-        state: (b.state || BRACKET_STATES.PENDING) as BracketState, // ensure state exists with correct type
-        format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat // ensure format exists
-      }));
-    });
-  }
-
-  // Convert raw bracket data to the expected format
-  const bracket = rawBracket ? {
-    ...rawBracket,
-    matches: rawBracket.matches?.map(mapMatch) || [],
-    id: rawBracket.id || crypto.randomUUID(), // ensure id exists
-    state: (rawBracket.state || BRACKET_STATES.PENDING) as BracketState, // ensure state exists
-    format: (rawBracket.format || BRACKET_FORMATS.DOUBLE) as BracketFormat // ensure format exists
-  } : null;
-  
-  // Set up bracket management
-  const { confirmDeleteBracket } = usePlayoffBracketManagement(
-    refetchBrackets,
-    selectedBracketId,
-    setSelectedBracketId
-  );
+  } = usePlayoffData(); // Keep this for now - will need to integrate later
   
   // Subscribe to real-time updates for the selected bracket
   const { realtimeEnabled, lastUpdatedMatch } = usePlayoffRealtime(selectedBracketId);
   
   // Refetch bracket data when we receive a real-time update
   React.useEffect(() => {
-    if (lastUpdatedMatch) {
+    if (lastUpdatedMatch && selectedBracketId) {
       refetchBrackets();
     }
-  }, [lastUpdatedMatch, refetchBrackets]);
+  }, [lastUpdatedMatch, refetchBrackets, selectedBracketId]);
+
+  // Create typesafe version of bracketsByDivision
+  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
+  if (bracketsByDivision) {
+    Object.keys(bracketsByDivision).forEach(div => {
+      typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
+        ...b,
+        matches: b.matches || [],
+        id: b.id || crypto.randomUUID(), 
+        state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
+        format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
+      }));
+    });
+  }
 
   // Event handlers
   const handleCreateBracket = () => {
@@ -103,12 +91,18 @@ const Playoffs = () => {
   
   const handleConfirmDeleteBracket = async () => {
     if (!deletingBracket) return;
-    await confirmDeleteBracket(
+    
+    await deleteBracket(
       deletingBracket.id,
       deletingBracket.name,
-      isDeleting,
-      setIsDeleting
     );
+    
+    // Reset selected bracket if we're deleting the current one
+    if (selectedBracketId === deletingBracket.id) {
+      setSelectedBracketId(null);
+    }
+    
+    setDeletingBracket(null);
   };
   
   const handleSaveScore = async (
@@ -133,10 +127,10 @@ const Playoffs = () => {
   const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
   const allBracketsData = allBrackets?.map(b => ({
     ...b,
-    matches: b.matches?.map(mapMatch) || [],
-    id: b.id || crypto.randomUUID(), // ensure id exists
-    state: (b.state || BRACKET_STATES.PENDING) as BracketState, // ensure state exists with correct type
-    format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat // ensure format exists
+    matches: b.matches || [],
+    id: b.id || crypto.randomUUID(),
+    state: (b.state || BRACKET_STATES.PENDING) as BracketState,
+    format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
   })) || [];
   const availableDivisions = divisions?.map(div => div.name) || [];
 

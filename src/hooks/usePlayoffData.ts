@@ -3,13 +3,9 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useTeamData } from "./useTeamData";
-import { useBracketData } from "./useBracketData";
-import { PlayoffBracket } from "@/types";
 
-export const usePlayoffData = (selectedBracketId: string | null) => {
+export const usePlayoffData = () => {
   const { toast } = useToast();
-  const { data: teams, isLoading: teamsLoading } = useTeamData();
 
   // Improved divisions query - fetch first to ensure we have division data
   const { data: divisions, isLoading: divisionsLoading } = useQuery({
@@ -55,12 +51,23 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
           division: divisionName,
           format: bracket.format || 'Single Elimination'
         };
-      }) as Partial<PlayoffBracket>[];
+      });
     },
     enabled: !!divisions // Only run after divisions are loaded
   });
-  
-  const { bracket, isLoading: bracketLoading } = useBracketData(selectedBracketId || undefined);
+
+  // Query for teams
+  const { data: teams, isLoading: teamsLoading } = useQuery({
+    queryKey: ['teams'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('*');
+        
+      if (error) throw error;
+      return data;
+    }
+  });
 
   // Improved team grouping by division
   const teamsByDivision = useMemo(() => {
@@ -105,7 +112,6 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
       grouped[division].sort((a, b) => a.name.localeCompare(b.name));
     });
     
-    console.log("Teams grouped by division:", grouped);
     return grouped;
   }, [teams, divisions]);
 
@@ -113,7 +119,7 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
   const bracketsByDivision = useMemo(() => {
     if (!allBrackets || !divisions) return {};
     
-    const grouped: Record<string, Partial<PlayoffBracket>[]> = {};
+    const grouped: Record<string, any[]> = {};
     divisions.forEach(division => {
       grouped[division.name] = [];
     });
@@ -128,7 +134,6 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
       }
     });
     
-    console.log("Brackets grouped by division:", grouped);
     return grouped;
   }, [allBrackets, divisions]);
 
@@ -189,8 +194,6 @@ export const usePlayoffData = (selectedBracketId: string | null) => {
     bracketsLoading,
     divisions,
     divisionsLoading,
-    bracket,
-    bracketLoading,
     teamsByDivision,
     bracketsByDivision,
     handleBracketCreated,

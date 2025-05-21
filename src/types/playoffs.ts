@@ -92,3 +92,31 @@ export interface MatchResult {
   team2GameWins?: number;
   games?: PlayoffGame[];
 }
+
+/**
+ * View model interface for playoff brackets
+ */
+export interface PlayoffViewModel {
+  // Bracket data
+  bracket: PlayoffBracket | null;
+  isLoading: boolean;
+  error: Error | null;
+  bracketMatchesByType: BracketMatchesByType | null;
+  
+  // Teams data
+  teams: Team[];
+  teamsLoading: boolean;
+  
+  // Actions
+  refetch: () => Promise<unknown>;
+  deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
+  updateMatchResult: (
+    matchId: string, 
+    winnerId: string, 
+    team1Score: number, 
+    team2Score: number,
+    team1GameWins?: number,
+    team2GameWins?: number
+  ) => Promise<void>;
+}
+
