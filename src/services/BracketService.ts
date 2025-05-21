@@ -1,4 +1,3 @@
-
 /**
  * Transitional shim: re-exports the only runtime call sites still
  * referenced by BracketCreationDialog and usePlayoffBracketManagement.
@@ -172,12 +171,12 @@ export function groupBracketMatchesByType(bracket: any) {
       winners[round] = winners[round] || [];
       winners[round].push(match);
     } 
-    else if (match.matchType === "losers" || match.matchType === "losers") {
+    else if (match.matchType === "losers" || matchType === "losers") {
       // Ensure the round array exists
       losers[round] = losers[round] || [];
       losers[round].push(match);
     } 
-    else if (match.matchType === "finals" || match.matchType === "finals") {
+    else if (match.matchType === "finals" || matchType === "finals") {
       finals.push(match);
     }
   });
