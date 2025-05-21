@@ -1,5 +1,5 @@
 
-import { PlayoffGame, PlayoffMatchType } from "@/types/playoffs";
+import { PlayoffGame, PlayoffMatchType } from "@/types/playoffs-compat";
 
 /**
  * Database representation of a playoff match

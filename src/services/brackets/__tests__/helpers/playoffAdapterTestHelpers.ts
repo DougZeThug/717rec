@@ -1,7 +1,7 @@
 
 import { PlayoffDatabaseFacade } from "../../database/PlayoffDatabaseFacade";
-import { PlayoffGame, PlayoffMatch } from "../../types";
-import { DatabaseBracketState, DatabasePlayoffMatch, MatchResultDTO } from "../../database/types/DatabaseTypes";
+import { PlayoffGame, PlayoffMatch, PlayoffMatchType } from "@/types";
+import { DatabaseBracketState, MatchResultDTO } from "../../database/types/DatabaseTypes";
 import { vi } from "vitest";
 
 /**
