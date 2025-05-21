@@ -26,7 +26,7 @@ export const listBrackets = async () => {
   
   return data.map(bracketDto => {
     const matchesDto = bracketDto.matches || [];
-    return BracketMapper.bracketDtoToDomain(bracketDto as BracketDto, matchesDto as MatchDto[]);
+    return BracketMapper.bracketDtoToDomain(bracketDto as BracketDto, matchesDto);
   });
 };
 
@@ -40,7 +40,7 @@ export const getBracketById = async (id: string) => {
   
   return BracketMapper.bracketDtoToDomain(
     data as BracketDto, 
-    (data.matches || []) as MatchDto[]
+    (data.matches || [])
   );
 };
 

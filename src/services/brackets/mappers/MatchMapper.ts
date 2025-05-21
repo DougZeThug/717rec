@@ -25,7 +25,7 @@ export const matchDtoToDomain = (matchDto: MatchDto): PlayoffMatch => {
     team2Seed: matchDto.metadata?.team2_seed || null,
     nextWinMatchId: matchDto.next_win_match_id || matchDto.next_match_id || null,
     nextLoseMatchId: matchDto.next_lose_match_id || matchDto.next_loser_match_id || null,
-    status: matchDto.status || 'pending'
+    status: (matchDto.status || 'pending') as 'pending' | 'in_progress' | 'completed'
   };
 };
 
