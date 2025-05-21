@@ -1,13 +1,32 @@
 
-import { BracketCreationService } from './services/BracketCreationService';
+/**
+ * Transitional shim: re-exports the only runtime call sites still
+ * referenced by BracketCreationDialog and usePlayoffBracketManagement.
+ * Once those components are refactored you can delete this file and
+ * import BracketCreationService directly.
+ */
+
+import { BracketCreationService } from '@/services/brackets/services/BracketCreationService';
 import { Team } from "@/types";
-import { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
+import { mapBracketsToAppFormat } from './services/brackets/utils/BracketConversionUtils';
 import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
 
 export const createBracket = BracketCreationService.createBracket;
+export const getBracketById   = async () => null;   // TODO real impl
+export const listBrackets     = async () => [];     // TODO real impl
+export const scoreMatch       = async () => ({ ok: true });
 
-// TODO: UI uses this; replace with real impl if needed. For now noop.
-export const scoreMatch = async () => ({ ok: true });
+/** Named export so components can do `import { BracketService } ...` */
+export const BracketService = {
+  createBracket,
+  getBracketById,
+  listBrackets,
+  scoreMatch,
+  deleteBracket: async (bracketId: string) => {
+    console.log(`Would delete bracket ${bracketId} - not implemented yet`);
+    return true;
+  }
+} as const;
 
 /** 
  * Create a double-elimination stage (play-ins auto-handled) 
@@ -58,7 +77,7 @@ export async function updateMatchResult(
 ): Promise<void> {
   try {
     // Import manager directly to avoid circular dependency
-    const { manager } = await import('./BracketsManagerInstance');
+    const { manager } = await import('./services/brackets/BracketsManagerInstance');
     
     // Create match data for brackets-manager
     const matchData = {

@@ -11,6 +11,7 @@ import PlayoffView from "@/components/playoffs/views/PlayoffView";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
 import PlayoffDialogs from "@/components/playoffs/dialogs/PlayoffDialogs";
 import { PlayoffBracket } from "@/types";
+import { toRuntime as mapMatch } from "@/services/brackets/database/MatchMapper";
 
 const Playoffs = () => {
   // Set up state using custom hooks
@@ -36,7 +37,7 @@ const Playoffs = () => {
     bracketsLoading,
     divisions,
     divisionsLoading,
-    bracket,
+    bracket: rawBracket,
     bracketLoading,
     teamsByDivision,
     bracketsByDivision,
@@ -44,6 +45,12 @@ const Playoffs = () => {
     handleTeamDivisionChange,
     refetchBrackets
   } = usePlayoffData(selectedBracketId);
+  
+  // Convert raw bracket data to the expected format
+  const bracket = rawBracket ? {
+    ...rawBracket,
+    matches: rawBracket.matches?.map(mapMatch) || []
+  } : null;
   
   // Set up bracket management
   const { confirmDeleteBracket } = usePlayoffBracketManagement(
@@ -105,14 +112,20 @@ const Playoffs = () => {
   };
 
   const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
-  const allBracketsData = allBrackets || [];
+  const allBracketsData = allBrackets?.map(b => ({
+    ...b,
+    matches: b.matches?.map(mapMatch) || []
+  })) || [];
   const availableDivisions = divisions?.map(div => div.name) || [];
 
   // Create typesafe version of bracketsByDivision
   const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
   if (bracketsByDivision) {
     Object.keys(bracketsByDivision).forEach(div => {
-      typesafeBracketsByDivision[div] = bracketsByDivision[div] as PlayoffBracket[];
+      typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
+        ...b,
+        matches: b.matches?.map(mapMatch) || []
+      }));
     });
   }
 

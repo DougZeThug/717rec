@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { PlayoffBracket, Team } from "@/types";
 import { useTeamData } from "./useTeamData";
-import { fetchBracketById } from "@/services/brackets";
+import { fetchBracketById } from "@/BracketService";
 import { toRuntime as mapMatch } from "@/services/brackets/database/MatchMapper";
 
 export const useBracketData = (bracketId?: string) => {
