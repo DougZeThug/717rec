@@ -1,9 +1,11 @@
+
 /**
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
  */
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
-import { PlayoffMatchType } from "../types";
+import { PlayoffMatchType } from "@/types/playoffs";
+import { toRow, toRuntime } from "../database/mappers/MatchMapper";
 
 // Define types to match brackets-manager's expectations
 interface Id {

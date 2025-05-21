@@ -1,5 +1,5 @@
 
-import { PlayoffGame, PlayoffMatchType } from "../../types";
+import { PlayoffGame, PlayoffMatchType } from "@/types/playoffs";
 
 /**
  * Error thrown for database operations
@@ -101,7 +101,7 @@ export interface MatchResultDTO {
 }
 
 /**
- * Match from the database
+ * Match from the database - using snake_case for database fields
  */
 export interface DatabasePlayoffMatch {
   id: string;
@@ -155,33 +155,6 @@ export interface ParticipantData {
 export interface ParticipantFilter {
   tournament_id?: string;
   name?: string;
-}
-
-/**
- * Playoff Match type for database operations
- * This is separate from the PlayoffMatch type in /types
- * to avoid circular dependencies
- */
-export interface PlayoffMatch {
-  id: string;
-  bracket_id?: string;
-  round: number;
-  position: number;
-  matchType: PlayoffMatchType;
-  team1Id: string | null;
-  team2Id: string | null;
-  team1Score?: number | null;
-  team2Score?: number | null;
-  team1Seed?: number | null;
-  team2Seed?: number | null;
-  team1GameWins?: number | null;
-  team2GameWins?: number | null;
-  winnerId: string | null; // Required, not optional
-  loserId?: string | null;
-  nextWinMatchId?: string | null;
-  nextLoseMatchId?: string | null;
-  bestOf: number; // Required, not optional
-  status?: string;
 }
 
 /**

@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffGame } from "../types";
+import { PlayoffGame } from "@/types/playoffs";
 import { DatabaseBracketState, DatabasePlayoffMatch, MatchResultDTO } from "./types/DatabaseTypes";
+import { toRow, toRuntime } from "./mappers/MatchMapper";
 
 /**
  * Facade for database operations related to playoffs

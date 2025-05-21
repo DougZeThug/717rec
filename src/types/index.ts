@@ -1,3 +1,4 @@
+
 // Team related types
 export interface Team {
   id: string;
@@ -44,8 +45,8 @@ export interface Match {
   team1_game_wins?: number;
   team2_game_wins?: number;
   created_at?: string;
-  status?: "postponed" | "canceled" | null; // Added status property
-  timeSlot?: string | null; // Added timeSlot property
+  status?: "postponed" | "canceled" | null;
+  timeSlot?: string | null;
   team1Details?: {
     team_id: string;
     name: string;
@@ -96,55 +97,8 @@ export interface Ranking {
   divisionRank?: number;
 }
 
-// Types for playoff brackets
-import { BracketFormat, BracketState } from "@/constants/brackets";
-
-export interface PlayoffMatch {
-  id: string;
-  round: number;
-  position: number;
-  team1Id: string | null; // Changed from optional to nullable to satisfy BaseBracketMatch
-  team2Id: string | null; // Changed from optional to nullable to satisfy BaseBracketMatch
-  winnerId: string | null; // Changed from optional to nullable
-  loserId?: string | null;
-  team1Score?: number | null;
-  team2Score?: number | null;
-  team1GameWins?: number | null;
-  team2GameWins?: number | null;
-  matchType: "winners" | "losers" | "finals" | "play-in" | "play-in-2";
-  bestOf: number;
-  games?: PlayoffGame[];
-  team1ChallongeId?: number;
-  team2ChallongeId?: number;
-  challongeMatchId?: string;
-  team1Seed: number | null;  // Changed from optional to nullable to satisfy BracketMatch
-  team2Seed: number | null;  // Changed from optional to nullable to satisfy BracketMatch
-  nextWinMatchId: string | null;  // Changed from optional to nullable
-  nextLoseMatchId: string | null; // Changed from optional to nullable
-  bracket_id: string;  // Changed from optional to required
-  status?: "pending" | "in_progress" | "completed"; // Status field kept optional
-}
-
-export interface PlayoffGame {
-  id: string;
-  team1Score: number;
-  team2Score: number;
-  winner: string;
-}
-
-export interface PlayoffBracket {
-  id: string;
-  name: string;
-  division?: string;
-  divisionId?: string;
-  format: BracketFormat;
-  matches: PlayoffMatch[];
-  champion?: string;
-  challongeTournamentId?: string;
-  challongeTournamentUrl?: string;
-  state?: BracketState;
-  created_at?: string; // Added this field to match what's used in bracketFetchers.ts
-}
+// Types for playoff brackets - Export from the new centralized file
+export * from './playoffs';
 
 // Division type
 export interface Division {
