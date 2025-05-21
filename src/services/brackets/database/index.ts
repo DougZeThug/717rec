@@ -1,6 +1,6 @@
 
 import { BracketDatabaseService } from "./services/BracketDatabaseService";
-import { BracketsManagerAdapter } from "./adapters/BracketsManagerAdapter";
+import { BracketsManagerAdapter } from "../adapter/BracketsManagerAdapter";
 
 // Create and export the service
 export const bracketDatabaseService = new BracketDatabaseService();

@@ -1,4 +1,3 @@
-
 import { PlayoffMatch as AppPlayoffMatch, PlayoffGame } from '../types';
 import { DatabaseMatchResult, MatchResultDTO } from './types/DatabaseTypes';
 import { BracketDatabaseService } from './services/BracketDatabaseService';
@@ -41,7 +40,7 @@ export class PlayoffDatabaseAdapter {
       team2_score: match.team2Score,
       team1_game_wins: match.team1GameWins,
       team2_game_wins: match.team2GameWins,
-      winner_id: match.winnerId,
+      winner_id: match.winnerId || null, // Ensure winnerId is never undefined
       loser_id: match.loserId,
       next_win_match_id: match.nextWinMatchId,
       next_lose_match_id: match.nextLoseMatchId,
@@ -68,7 +67,7 @@ export class PlayoffDatabaseAdapter {
       team2Seed: dbMatch.team2_seed,
       team1GameWins: dbMatch.team1_game_wins,
       team2GameWins: dbMatch.team2_game_wins,
-      winnerId: dbMatch.winner_id || null,
+      winnerId: dbMatch.winner_id || null, // Ensure winnerId is never undefined
       loserId: dbMatch.loser_id || null,
       nextWinMatchId: dbMatch.next_win_match_id,
       nextLoseMatchId: dbMatch.next_lose_match_id,
@@ -207,5 +206,5 @@ export class PlayoffDatabaseAdapter {
 
 // Import and export the new adapter for brackets-manager compatibility
 // to avoid circular dependency
-import { BracketsManagerAdapter } from './adapters/BracketsManagerAdapter';
+import { BracketsManagerAdapter } from '../adapter/BracketsManagerAdapter';
 export const adapter = new BracketsManagerAdapter();

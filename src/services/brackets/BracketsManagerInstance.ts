@@ -4,7 +4,6 @@
  */
 import { BracketsManager } from 'brackets-manager';
 import { BracketsManagerAdapter } from './adapter/BracketsManagerAdapter';
-import { CrudInterface } from 'brackets-manager/dist/types';
 
 // Create an instance of our custom adapter that implements CrudInterface
 const adapter = new BracketsManagerAdapter();

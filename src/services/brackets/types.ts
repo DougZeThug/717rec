@@ -22,8 +22,8 @@ export interface BaseBracketMatch {
   position: number;
   matchType: MatchType;
   team1Id: string | null;
-  team2Id: null | string;
-  winnerId: string | null;
+  team2Id: string | null;
+  winnerId: string | null; // Make this non-optional to align with PlayoffMatch
   nextWinMatchId?: string | null;
   nextLoseMatchId?: string | null;
   bracket_id?: string;
@@ -37,10 +37,10 @@ export interface BracketMatch extends BaseBracketMatch {
   nextLoseMatchId: string | null;
   bracket_id: string;
   loserId?: string | null;
-  bestOf?: number; // Added bestOf to make compatible with PlayoffMatch
-  team1Score?: number | null; // Add team1Score
-  team2Score?: number | null; // Add team2Score
-  status?: string | null; // Add status
+  bestOf?: number;
+  team1Score?: number | null;
+  team2Score?: number | null;
+  status?: string | null;
 }
 
 // Types for match types in brackets

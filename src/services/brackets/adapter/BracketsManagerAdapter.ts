@@ -1,3 +1,4 @@
+
 /**
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
