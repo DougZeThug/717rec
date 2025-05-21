@@ -1,4 +1,3 @@
-
 /**
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
@@ -6,7 +5,7 @@
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
 import { CrudInterface } from "brackets-manager/dist/types";
 import { DataTypes, Id, OmitId, Table } from "brackets-manager/dist/types/storage";
-import { PlayoffMatchType } from "../../types";
+import { PlayoffMatchType } from "../types";
 
 /**
  * Adapter that implements the CrudInterface for BracketsManager
@@ -23,7 +22,7 @@ export class BracketsManagerAdapter implements CrudInterface {
    * Insert records into a specific table
    * Implementation to match CrudInterface
    */
-  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean> {
+  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number> {
     try {
       const isArray = Array.isArray(value);
       const dataArray = isArray ? value : [value];
@@ -43,7 +42,7 @@ export class BracketsManagerAdapter implements CrudInterface {
             loserId: null
           }));
           const result = await this.service.savePlayoffMatches(matches);
-          return result > 0;
+          return result;
           
         case 'participant':
           let count = 0;
@@ -56,15 +55,15 @@ export class BracketsManagerAdapter implements CrudInterface {
             });
             count++;
           }
-          return count > 0;
+          return count;
           
         default:
           console.warn(`Insert operation not implemented for table ${table}`);
-          return false;
+          return 0;
       }
     } catch (error) {
       console.error(`Error in insert for table ${table}:`, error);
-      return false;
+      return 0;
     }
   }
   

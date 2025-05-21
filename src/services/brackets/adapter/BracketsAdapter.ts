@@ -1,8 +1,6 @@
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
 import { BracketFilter, BracketRecord, BracketTable } from "./types/AdapterTypes";
 import { PlayoffMatch, PlayoffMatchType } from "../types";
-import { CrudInterface } from "brackets-manager/dist/types";
-import { Table } from "brackets-manager/dist/types/storage";
 
 /**
  * Adapter implementation for BracketsManager
