@@ -17,8 +17,8 @@ export class BracketTestRunner {
     const bracketId = "test-bracket-" + Date.now();
     const teams = this.generateTestTeams(8);
     
-    // Generate a bracket
-    const matches = BracketGenerator.generatePlayoffBracket(bracketId, teams);
+    // Generate a bracket - now using await since it returns a Promise
+    const matches = await BracketGenerator.generatePlayoffBracket(bracketId, teams);
     
     // Create tester
     const tester = new BracketScenarioTester(matches, teams);

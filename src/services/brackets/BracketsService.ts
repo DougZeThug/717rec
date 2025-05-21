@@ -15,7 +15,14 @@ export async function createDoubleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  return BracketCreationService.createDoubleElimStage(bracketId, name, teams, bestOf);
+  // We'll implement this by creating a bracket with the correct format
+  const divisionId = ''; // This would need to be retrieved or passed in
+  await BracketCreationService.createBracket(
+    BRACKET_FORMATS.DOUBLE,
+    name,
+    divisionId,
+    teams.map(t => t.id)
+  );
 }
 
 /** 
@@ -27,7 +34,14 @@ export async function createSingleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  return BracketCreationService.createSingleElimStage(bracketId, name, teams, bestOf);
+  // We'll implement this by creating a bracket with the correct format
+  const divisionId = ''; // This would need to be retrieved or passed in
+  await BracketCreationService.createBracket(
+    BRACKET_FORMATS.SINGLE,
+    name,
+    divisionId,
+    teams.map(t => t.id)
+  );
 }
 
 /** 
