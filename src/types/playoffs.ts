@@ -1,4 +1,3 @@
-
 // Types for playoff brackets
 import { BracketFormat, BracketState } from "@/constants/brackets";
 
