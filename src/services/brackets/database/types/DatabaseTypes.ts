@@ -68,3 +68,6 @@ export interface DatabaseBracketState {
   losersBracketChampionId: string | null;
   championId: string | null;
 }
+
+// Re-export legacy types for backward compatibility
+export { DatabaseOperationError, IParticipantRepository, ParticipantData, ParticipantFilter } from '@/types/legacy-shims';

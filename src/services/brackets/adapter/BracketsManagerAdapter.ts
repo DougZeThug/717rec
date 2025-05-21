@@ -4,8 +4,7 @@
  * This adapter conforms to the exact interface expected by BracketsManager
  */
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
-import { PlayoffMatchType } from "@/types/playoffs-compat";
-import { toRow, toRuntime } from "../database/mappers/MatchMapper";
+import { PlayoffMatch, PlayoffMatchType } from "@/types/playoffs";
 import { supabase } from "@/integrations/supabase/client";
 
 // Define types to match brackets-manager's expectations
@@ -26,6 +25,49 @@ type Table = keyof DataTypes;
 
 // Define OmitId type to match brackets-manager's expectations
 type OmitId<T> = Omit<T, 'id'>;
+
+/**
+ * Mapper functions for converting between camelCase and snake_case
+ */
+const toRow = (m: PlayoffMatch) => ({
+  id: m.id,
+  bracket_id: m.bracket_id,
+  round_number: m.round,
+  position: m.position,
+  match_type: m.matchType,
+  team1_id: m.team1Id,
+  team2_id: m.team2Id,
+  team1_score: m.team1Score,
+  team2_score: m.team2Score,
+  team1_game_wins: m.team1GameWins,
+  team2_game_wins: m.team2GameWins,
+  winner_id: m.winnerId,
+  loser_id: m.loserId,
+  next_match_id: m.nextWinMatchId,
+  next_loser_match_id: m.nextLoseMatchId,
+  best_of: m.bestOf || 3,
+  iscompleted: m.status === 'completed'
+});
+
+const toRuntime = (r: any): Partial<PlayoffMatch> => ({
+  id: r.id,
+  bracket_id: r.bracket_id,
+  round: r.round_number,
+  position: r.position,
+  matchType: r.match_type,
+  team1Id: r.team1_id,
+  team2Id: r.team2_id,
+  team1Score: r.team1_score,
+  team2Score: r.team2_score,
+  team1GameWins: r.team1_game_wins,
+  team2GameWins: r.team2_game_wins,
+  winnerId: r.winner_id,
+  loserId: r.loser_id,
+  nextWinMatchId: r.next_match_id,
+  nextLoseMatchId: r.next_loser_match_id,
+  bestOf: r.best_of,
+  status: r.iscompleted ? 'completed' : 'pending'
+});
 
 /**
  * Interface that matches brackets-manager's CrudInterface
@@ -63,27 +105,23 @@ export class BracketsManagerAdapter implements CrudInterface {
       // Match table name to operation
       switch (table) {
         case 'match':
-          const match = dataArray[0]; // Use first entry in case of array
+          const match = dataArray[0] as any; // Use first entry in case of array
           const matchData = {
             id: match.id || undefined,
-            round: match.round,
-            position: match.position,
+            round_number: match.round || 1,
+            position: match.position || 0,
             match_type: match.group_id ? 'losers' as PlayoffMatchType : 'winners' as PlayoffMatchType,
             team1_id: match.opponent1?.id || null,
             team2_id: match.opponent2?.id || null,
             bracket_id: match.stage_id,
             winner_id: null,
             loser_id: null,
-            best_of: match.best_of || 3, // Ensure bestOf has a default value
+            best_of: match.best_of || 3,
             team1_score: null,
             team2_score: null,
             team1_game_wins: null,
             team2_game_wins: null,
-            team1_seed: null,
-            team2_seed: null,
-            next_win_match_id: null,
-            next_lose_match_id: null,
-            status: 'pending' as const
+            iscompleted: false
           };
           
           const matchResult = await supabase
@@ -96,7 +134,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           return matchResult.data.id as string;
           
         case 'participant':
-          const participant = dataArray[0]; // Use first entry in case of array
+          const participant = dataArray[0] as any; // Use first entry in case of array
           // Fix: Add required bracket_id and team_id fields
           const participantData = {
             bracket_id: participant.tournament_id, // Use tournament_id as bracket_id
@@ -117,7 +155,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           return participantResult.data.id as string;
           
         case 'stage':
-          const stage = dataArray[0]; // Use first entry in case of array
+          const stage = dataArray[0] as any; // Use first entry in case of array
           const stageData = {
             id: stage.id, // Assuming bracket ID is provided
             title: stage.name,
@@ -176,18 +214,18 @@ export class BracketsManagerAdapter implements CrudInterface {
             return matches.map(match => ({
               id: match.id,
               stage_id: match.bracket_id || '',
-              group_id: match.match_type === 'losers' ? 'loser_bracket' : undefined,
+              group_id: match.matchType === 'losers' ? 'loser_bracket' : undefined,
               round: match.round,
               position: match.position,
-              opponent1: match.team1_id ? {
-                id: match.team1_id,
+              opponent1: match.team1Id ? {
+                id: match.team1Id,
                 position: 1,
-                score: match.team1_score || 0
+                score: match.team1Score || 0
               } : undefined,
-              opponent2: match.team2_id ? {
-                id: match.team2_id,
+              opponent2: match.team2Id ? {
+                id: match.team2Id,
                 position: 2,
-                score: match.team2_score || 0
+                score: match.team2Score || 0
               } : undefined,
               status: match.status as any
             })) as unknown as DataTypes[T][];
