@@ -1,8 +1,8 @@
-
 import { describe, test, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import DoubleElimBracket from "../DoubleElimBracket";
 import { PlayoffBracket } from "@/types";
+import { BRACKET_FORMATS } from "@/constants/brackets";
 
 // Mock the hooks used in the component
 vi.mock("next-themes", () => ({
@@ -28,7 +28,7 @@ describe("DoubleElimBracket Empty Rendering", () => {
     const emptyBracket: PlayoffBracket = {
       id: "test-bracket-123",
       name: "Test Empty Bracket",
-      format: "double_elimination",
+      format: BRACKET_FORMATS.DOUBLE,
       division: "Test Division",
       matches: [],
       state: "pending"
@@ -59,7 +59,7 @@ describe("DoubleElimBracket Empty Rendering", () => {
     const bracketWithSomeMatches: PlayoffBracket = {
       id: "test-bracket-123",
       name: "Test Partial Bracket",
-      format: "double_elimination",
+      format: BRACKET_FORMATS.DOUBLE,
       division: "Test Division",
       matches: [],
       state: "pending"

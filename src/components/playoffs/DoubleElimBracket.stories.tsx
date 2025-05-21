@@ -1,5 +1,6 @@
+
 import React from "react";
-import { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react";
 import DoubleElimBracket from "./DoubleElimBracket";
 import { PlayoffBracket } from "@/types";
 import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";

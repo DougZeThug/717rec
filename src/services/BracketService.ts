@@ -1,4 +1,3 @@
-
 /**
  * Transitional shim: re-exports the only runtime call sites still
  * referenced by BracketCreationDialog and usePlayoffBracketManagement.
@@ -11,7 +10,10 @@ import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
 import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
 
-export const createBracket = BracketCreationService.createBracket;
+export const BracketService = {
+  createBracket: BracketCreationService.createBracket,
+  deleteBracket: BracketCreationService.deleteBracket
+};
 
 // TODO: UI uses this; replace with real impl if needed. For now noop.
 export const scoreMatch = async () => ({ ok: true });
