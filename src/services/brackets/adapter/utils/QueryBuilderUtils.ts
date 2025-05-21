@@ -15,6 +15,20 @@ export type DatabaseTableName = keyof Database['public']['Tables'];
 export type DatabaseViewName = keyof Database['public']['Views'];
 
 /**
+ * Create a type-safe query builder for a specific table
+ */
+function createTableQueryBuilder<T extends DatabaseTableName>(tableName: T) {
+  return supabase.from(tableName);
+}
+
+/**
+ * Create a type-safe query builder for a specific view
+ */
+function createViewQueryBuilder<T extends DatabaseViewName>(viewName: T) {
+  return supabase.from(viewName);
+}
+
+/**
  * Safely creates a Supabase query builder for a table or view
  * Handles type casting and validation
  */
@@ -24,15 +38,15 @@ function createSafeQueryBuilder(tableName: string) {
   console.log(`[QueryBuilderUtils] Creating query builder for: ${mappedName} (original: ${tableName})`);
   
   if (isValidTable(mappedName)) {
-    // It's a valid table
-    return supabase.from(mappedName);
+    // It's a valid table, use the typed table query builder
+    return createTableQueryBuilder(mappedName);
   } else if (isValidView(mappedName)) {
-    // It's a valid view
-    return supabase.from(mappedName);
+    // It's a valid view, use the typed view query builder
+    return createViewQueryBuilder(mappedName);
   } else {
     // Fallback to a safe default
     console.warn(`[QueryBuilderUtils] Invalid table/view name: ${mappedName}, falling back to "matches"`);
-    return supabase.from('matches');
+    return createTableQueryBuilder('matches');
   }
 }
 
@@ -117,7 +131,10 @@ export class QueryBuilderUtils {
       // Batch insert to keep rows ≤ 50 for optimal performance
       for (let i = 0; i < data.length; i += 50) {
         const batch = data.slice(i, i + 50);
-        const { error } = await createSafeQueryBuilder(table).insert(batch);
+        
+        // Use the safe query builder to create the query
+        const queryBuilder = createSafeQueryBuilder(table);
+        const { error } = await queryBuilder.insert(batch);
         
         if (error) {
           console.error(`[QueryBuilderUtils] Error executing insert:`, error);
@@ -143,7 +160,9 @@ export class QueryBuilderUtils {
     try {
       console.log(`[QueryBuilderUtils] Updating table: ${table}, id: ${id}`);
       
-      const { error } = await createSafeQueryBuilder(table)
+      // Use the safe query builder to create the query
+      const queryBuilder = createSafeQueryBuilder(table);
+      const { error } = await queryBuilder
         .update(data)
         .eq('id', id);
       

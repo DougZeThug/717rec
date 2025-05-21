@@ -4,11 +4,11 @@ import { Database } from "@/integrations/supabase/types";
 /**
  * Types for valid tables and views in the database
  */
-type DatabaseTables = keyof Database['public']['Tables'];
-type DatabaseViews = keyof Database['public']['Views'];
+export type DatabaseTables = keyof Database['public']['Tables'];
+export type DatabaseViews = keyof Database['public']['Views'];
 
 /**
- * Valid table or view name that can be used in database operations
+ * Union type representing all valid database table or view names
  */
 export type ValidTableName = DatabaseTables | DatabaseViews;
 
@@ -89,7 +89,7 @@ export class TableNameMapper {
     }
     
     // If no mapping exists, check if the name itself is valid
-    if (this.isValidTable(normalizedName) && isValidTable(normalizedName)) {
+    if (this.isValidTable(normalizedName) && (isValidTable(normalizedName) || isValidView(normalizedName))) {
       return normalizedName as ValidTableName;
     }
     

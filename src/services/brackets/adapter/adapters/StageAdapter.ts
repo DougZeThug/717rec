@@ -1,5 +1,4 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { StageFilter, StageRecord } from '../types/AdapterTypes';
 import { AdapterOperationError } from '../errors/AdapterErrors';
 import { QueryBuilderUtils } from '../utils/QueryBuilderUtils';
@@ -20,7 +19,7 @@ export class StageAdapter {
 
   constructor() {
     // Ensure we have the correct table name mapping
-    this.dbTableName = TableNameMapper.toDbTableName(this.logicalTableName);
+    this.dbTableName = TableNameMapper.toDbTableName(this.logicalTableName) as string;
     console.log(`[StageAdapter] Initialized with logical table name: ${this.logicalTableName}, mapped to DB table: ${this.dbTableName}`);
   }
 
@@ -38,8 +37,8 @@ export class StageAdapter {
       console.log(`[StageAdapter] Inserting stage record into table: ${this.dbTableName}`);
       
       // Use the QueryBuilderUtils to safely create a query
-      const { error } = await QueryBuilderUtils.createQueryBuilder(this.logicalTableName)
-        .insert([stageData]);
+      const queryBuilder = QueryBuilderUtils.createQueryBuilder(this.logicalTableName);
+      const { error } = await queryBuilder.insert([stageData]);
 
       if (error) throw error;
       console.log(`[StageAdapter] Successfully inserted stage record`);
