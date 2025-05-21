@@ -280,16 +280,16 @@ export const adapter = {
   },
   
   // Required CrudInterface methods
-  insert: async (data: any[]): Promise<number> => {
+  insert: async (data: any[]): Promise<boolean> => {
     // Determine the type of data and delegate to appropriate create function
-    if (data.length === 0) return 0;
+    if (data.length === 0) return true;
     
     const sample = data[0];
     
     // Insert matches
     if ('opponent1' in sample || 'round' in sample) {
       await PlayoffDatabaseAdapter.savePlayoffMatches(data as any);
-      return data.length;
+      return true;
     }
     
     // Insert participants
@@ -297,15 +297,15 @@ export const adapter = {
       for (const item of data) {
         await PlayoffDatabaseAdapter.createParticipant(item);
       }
-      return data.length;
+      return true;
     }
     
     console.warn('Unrecognized data type in adapter insert:', sample);
-    return 0;
+    return false;
   },
   
   // Update method implementation
-  update: async (id: string, data: any): Promise<number> => {
+  update: async (id: string, data: any): Promise<boolean> => {
     console.log('Update operation called with ID:', id, 'and data:', data);
     
     // For participants
@@ -319,7 +319,7 @@ export const adapter = {
         console.error('Error updating participant:', error);
         throw error;
       }
-      return 1;
+      return true;
     }
     
     // For matches
@@ -344,19 +344,37 @@ export const adapter = {
         console.error('Error updating match:', error);
         throw error;
       }
-      return 1;
+      return true;
     }
     
     console.warn('Unrecognized data type in adapter update:', data);
-    return 0;
+    return false;
   },
   
   // Delete method implementation
-  delete: async (filter?: any): Promise<number> => {
+  delete: async (filter?: any): Promise<boolean> => {
     console.log('Delete operation called with filter:', filter);
     
-    // Since we don't have a general delete operation yet, log it and return 0
-    console.warn('Delete operation not fully implemented yet');
-    return 0;
+    if (!filter) {
+      console.warn('No filter provided for delete operation');
+      return false;
+    }
+    
+    if (filter.tournament_id) {
+      // Delete matches by tournament_id
+      const { error } = await supabase
+        .from('playoff_matches')
+        .delete()
+        .eq('bracket_id', filter.tournament_id);
+      
+      if (error) {
+        console.error('Error deleting matches:', error);
+        throw error;
+      }
+      return true;
+    }
+    
+    console.warn('Delete operation not fully implemented for filter:', filter);
+    return false;
   }
 };
