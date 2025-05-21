@@ -22,8 +22,8 @@ export class BracketGenerator {
     // Using the brackets-manager library to get matches
     console.log(`Generating single elimination bracket with ${teams.length} teams`);
     
-    // Correct API usage for brackets-manager
-    const matches = await manager.get.matches({ tournament_id: bracketId });
+    // Using manager.get.match instead of manager.get.matches
+    const matches = await manager.get.match({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -40,8 +40,8 @@ export class BracketGenerator {
     // Using the brackets-manager library to get matches
     console.log(`Generating double elimination bracket with ${teams.length} teams`);
     
-    // Correct API usage for brackets-manager
-    const matches = await manager.get.matches({ tournament_id: bracketId });
+    // Using manager.get.match instead of manager.get.matches
+    const matches = await manager.get.match({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -58,8 +58,8 @@ export class BracketGenerator {
     // Using the brackets-manager library to get matches
     console.log(`Generating playoff bracket with ${teams.length} teams`);
     
-    // Correct API usage for brackets-manager
-    const matches = await manager.get.matches({ tournament_id: bracketId });
+    // Using manager.get.match instead of manager.get.matches
+    const matches = await manager.get.match({ tournament_id: bracketId });
     return matches as PlayoffMatch[];
   }
 
