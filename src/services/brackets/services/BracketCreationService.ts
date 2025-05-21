@@ -8,28 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 /**
- * Helper function to fetch team names from their IDs
+ * Create a new bracket
+ * @param format 'Single Elimination' or 'Double Elimination'
+ * @param name Bracket name
+ * @param divisionId Division ID
+ * @param teamIds Array of team IDs
+ * @returns Bracket ID
  */
-async function fetchTeamNames(teamIds: string[]) {
-  const { data, error } = await supabase
-    .from('teams')
-    .select('id, name')
-    .in('id', teamIds);
-  if (error) throw new Error(`team lookup – ${error.message}`);
-  const map = new Map(data.map(t => [t.id, t.name!]));
-  return teamIds.map(id => ({ id, name: map.get(id) ?? id }));
-}
-
-/**
- * Helper function to pad an array to the next power of 2 size
- * Fills remaining slots with null values for BYEs
- */
-function padToPowerOfTwo<T>(arr: T[]): (T|null)[] {
-  let size = 1; 
-  while (size < arr.length) size <<= 1;
-  return [...arr, ...Array(size - arr.length).fill(null)];
-}
-
 export class BracketCreationService {
   /**
    * Create a new bracket
@@ -76,36 +61,38 @@ export class BracketCreationService {
         throw new Error(`Failed to create bracket: ${createResult.error.message}`);
       }
       
-      // Fetch team names
-      const teams = await fetchTeamNames(validTeamIds);
+      // --------------------------------------------
+      // Build seeding array & create the stage
+      // --------------------------------------------
       
-      // Let brackets-manager insert participants
-      await manager.registerParticipants(
-        teams.map((t, i) => ({
-          id: t.id,
-          name: t.name,
-          tournament_id: bracketId,
-          position: i + 1,
-        }))
-      );
+      // Helper function to fetch team names from their IDs
+      async function fetchTeamNames(ids: string[]) {
+        const { data, error } = await supabase
+          .from('teams')
+          .select('id, name')
+          .in('id', ids);
+        if (error) throw new Error(`team lookup – ${error.message}`);
+        const map = new Map(data.map(t => [t.id, t.name!]));
+        return ids.map(id => map.get(id) ?? id); // fallback to id text
+      }
       
-      // Build seeding array (names only, BYEs = null)
-      const seeding = padToPowerOfTwo(teams.map(t => t.name));
+      // Pad to next power-of-2 (BYEs = null)
+      function pad<T>(arr: T[]): (T | null)[] {
+        let size = 1;
+        while (size < arr.length) size <<= 1;
+        return [...arr, ...Array(size - arr.length).fill(null)];
+      }
+      
+      const teamNames = await fetchTeamNames(validTeamIds);
+      const seeding = pad(teamNames);
       
       try {
-        // Create the stage (bracket structure)
-        const stageId = uuidv4();
-        await manager.createStage({
-          id: stageId,
-          name: `${format} Bracket`,
-          type: manager.formatToStageType(format),
-          seeding: seeding,
-          settings: {
-            seedOrdering: ['natural'], // Use natural seeding order
-            grandFinal: 'double'       // For double elimination
-          },
-          tournamentId: bracketId,
-          divisionId
+        await manager.create({
+          name: bracket.name,
+          tournamentId: bracket.id,   // equals our brackets table PK
+          type: format === BRACKET_FORMATS.DOUBLE ? 'double_elimination' : 'single_elimination',
+          seeding,
+          settings: { grandFinal: 'double' }, // LB champ must win twice
         });
       } catch (err: any) {
         const errorMessage = `Bracket failed – ${err?.message ?? 'unknown'}`;
