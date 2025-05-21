@@ -1,7 +1,7 @@
 
 import { PlayoffMatch } from '@/types/playoffs';
 
-export { PlayoffMatch } from '@/types/playoffs';
+export type { PlayoffMatch } from '@/types/playoffs';
 
 /** DEPRECATED – use PlayoffMatch */
 export type PlayoffMatchType = "winners" | "losers" | "finals" | "play-in" | "play-in-2";

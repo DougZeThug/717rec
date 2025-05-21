@@ -1,19 +1,12 @@
 
 import { manager } from '../BracketsManagerInstance';
-import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
 import { v4 as uuidv4 } from 'uuid';
 import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
-import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 /**
- * Create a new bracket
- * @param format 'Single Elimination' or 'Double Elimination'
- * @param name Bracket name
- * @param divisionId Division ID
- * @param teamIds Array of team IDs
- * @returns Bracket ID
+ * Service for creating brackets
  */
 export class BracketCreationService {
   /**
@@ -46,19 +39,21 @@ export class BracketCreationService {
     console.log(`Creating bracket with ID ${bracketId}, format: ${format}, teams: ${validTeamIds.length}`);
     
     try {
-      // Create the bracket record
+      // Create the bracket record directly
       const bracket = {
         id: bracketId,
-        name,
+        title: name,
         format,
-        divisionId
+        division_id: divisionId
       };
       
-      const createResult = await PlayoffDatabaseAdapter.createBracket(bracket);
+      const { error } = await supabase
+        .from('brackets')
+        .insert(bracket);
       
-      if (createResult.error) {
-        console.error('Failed to create bracket:', createResult.error);
-        throw new Error(`Failed to create bracket: ${createResult.error.message}`);
+      if (error) {
+        console.error('Failed to create bracket:', error);
+        throw new Error(`Failed to create bracket: ${error.message}`);
       }
       
       // --------------------------------------------
@@ -88,7 +83,7 @@ export class BracketCreationService {
       
       try {
         await manager.create({
-          name: bracket.name,
+          name: bracket.title,
           tournamentId: bracket.id,   // equals our brackets table PK
           type: format === BRACKET_FORMATS.DOUBLE ? 'double_elimination' : 'single_elimination',
           seeding,

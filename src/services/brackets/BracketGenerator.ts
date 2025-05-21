@@ -1,8 +1,6 @@
 
 import { Team } from "@/types";
-import { BracketMatch, PlayoffMatch } from "./types";
-import { DatabaseAdapter } from "./database/DatabaseAdapter";
-import { PlayoffDatabaseAdapter } from "./database/PlayoffDatabaseAdapter";
+import { BracketMatch, PlayoffMatch } from "@/types/playoffs";
 import { bracketManager } from './manager/BracketManager'; 
 
 /**
@@ -68,7 +66,8 @@ export class BracketGenerator {
    * @param matches Matches to save
    */
   static async saveBracketMatches(matches: BracketMatch[]): Promise<void> {
-    await DatabaseAdapter.saveBracketMatches(matches);
+    // This functionality is now handled by brackets-manager
+    console.log("saveBracketMatches is deprecated - brackets-manager handles saving");
   }
 
   /**
@@ -76,7 +75,8 @@ export class BracketGenerator {
    * @param matches Matches to save
    */
   static async savePlayoffMatches(matches: PlayoffMatch[]): Promise<void> {
-    await PlayoffDatabaseAdapter.savePlayoffMatches(matches);
+    // This functionality is now handled by brackets-manager
+    console.log("savePlayoffMatches is deprecated - brackets-manager handles saving");
   }
   
   /**
@@ -88,6 +88,7 @@ export class BracketGenerator {
     team1Score: number,
     team2Score: number
   ): Promise<void> {
-    await DatabaseAdapter.updateMatchResult(matchId, winnerId!, team1Score, team2Score);
+    // This functionality is now handled by brackets-manager
+    console.log("updateMatchResult is deprecated - use bracketManager.updateMatchResult");
   }
 }

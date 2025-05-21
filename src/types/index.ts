@@ -99,8 +99,6 @@ export interface Ranking {
 
 // Types for playoff brackets - Export from the new centralized file
 export * from './playoffs';
-export * from './playoffs-compat';
-export * from './legacy-shims';
 
 // Division type
 export interface Division {

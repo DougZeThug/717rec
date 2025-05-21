@@ -4,8 +4,7 @@
  * This adapter conforms to the exact interface expected by BracketsManager
  */
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffMatchType } from "@/types/legacy-shims";
-import { PlayoffMatch } from "@/types/playoffs";
+import { PlayoffMatch, PlayoffMatchType } from "@/types/playoffs";
 
 // Define types to match brackets-manager's expectations
 interface Id {
@@ -185,7 +184,7 @@ export class BracketsManagerAdapter implements CrudInterface {
     try {
       // Handle single ID lookup
       if (typeof idOrFilter === 'number' || typeof idOrFilter === 'string') {
-        const id = idOrFilter;
+        const id = idOrFilter.toString(); // Convert number to string if needed
         switch (table) {
           case 'match':
             // Not implemented yet, return empty result
@@ -264,6 +263,8 @@ export class BracketsManagerAdapter implements CrudInterface {
    */
   async update<T extends Table>(table: T, id: string | number, value: Partial<DataTypes[T]>): Promise<number> {
     try {
+      const idStr = id.toString(); // Convert to string if it's a number
+      
       switch (table) {
         case 'match':
           if ('opponent1' in value || 'opponent2' in value || 'status' in value) {
@@ -286,7 +287,7 @@ export class BracketsManagerAdapter implements CrudInterface {
               const { error } = await supabase
                 .from('playoff_matches')
                 .update(updateData)
-                .eq('id', id);
+                .eq('id', idStr);
               
               if (error) throw error;
               return 1; // Return number of updated records

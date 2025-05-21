@@ -1,5 +1,5 @@
 
-import { MatchType, PlayoffMatchType } from "../types";
+import { PlayoffMatchType } from "@/types/playoffs";
 
 /**
  * Type adapter for converting between different match type systems
@@ -10,11 +10,11 @@ export class MatchTypeAdapter {
    * @param matchType The playoff match type to convert
    * @returns Standard match type
    */
-  static toStandardMatchType(matchType: PlayoffMatchType): MatchType {
+  static toStandardMatchType(matchType: PlayoffMatchType): PlayoffMatchType {
     if (matchType === "play-in-2") {
       return "play-in";
     }
-    return matchType as MatchType;
+    return matchType;
   }
 
   /**
@@ -22,8 +22,8 @@ export class MatchTypeAdapter {
    * @param matchType The standard match type to convert
    * @returns Playoff match type
    */
-  static toPlayoffMatchType(matchType: MatchType): PlayoffMatchType {
-    return matchType as PlayoffMatchType;
+  static toPlayoffMatchType(matchType: PlayoffMatchType): PlayoffMatchType {
+    return matchType;
   }
 
   /**
@@ -32,8 +32,8 @@ export class MatchTypeAdapter {
    * @returns True if the match type is valid in both systems
    */
   static isCompatibleMatchType(matchType: string): boolean {
-    const standardTypes: MatchType[] = ["winners", "losers", "finals", "play-in"];
-    return standardTypes.includes(matchType as MatchType);
+    const standardTypes: PlayoffMatchType[] = ["winners", "losers", "finals", "play-in"];
+    return standardTypes.includes(matchType as PlayoffMatchType);
   }
   
   /**

@@ -1,9 +1,12 @@
 
 import { bracketManager } from '../manager/BracketManager';
-import { PlayoffDatabaseAdapter } from '../database/PlayoffDatabaseAdapter';
-import { MatchResult } from '@/hooks/matches/types/matchSubmissionTypes';
 import { v4 as uuidv4 } from 'uuid';
+import { supabase } from "@/integrations/supabase/client";
+import type { PlayoffGame } from "@/types/playoffs";
 
+/**
+ * Service for updating match scores
+ */
 export class MatchScoreService {
   /**
    * Update a match score
@@ -50,7 +53,7 @@ export class MatchScoreService {
       const loserId = winnerId === team1Id ? team2Id : team1Id;
       
       // Convert games to PlayoffGame format
-      const playoffGames = games.map((game, index) => ({
+      const playoffGames: PlayoffGame[] = games.map((game, index) => ({
         id: uuidv4(),
         matchId,
         gameNumber: index + 1,
@@ -58,16 +61,6 @@ export class MatchScoreService {
         team2Score: game.team2Score,
         winnerId: game.team1Score > game.team2Score ? team1Id : team2Id
       }));
-      
-      // Create a match result object
-      const matchResult: MatchResult = {
-        matchId,
-        winnerId,
-        loserId,
-        team1Score,
-        team2Score,
-        games: playoffGames
-      };
       
       // Update in brackets-manager
       await bracketManager.updateMatchResult(matchId, {
@@ -84,16 +77,39 @@ export class MatchScoreService {
         status: 'completed'
       });
       
-      // Update in our database
-      await PlayoffDatabaseAdapter.recordMatchResult(matchId, {
-        winnerId,
-        loserId,
-        team1Score,
-        team2Score,
-        team1GameWins,
-        team2GameWins,
-        games: playoffGames
-      });
+      // Update in our database directly
+      const { error } = await supabase
+        .from('playoff_matches')
+        .update({
+          team1_score: team1Score,
+          team2_score: team2Score,
+          team1_game_wins: team1GameWins,
+          team2_game_wins: team2GameWins,
+          winner_id: winnerId,
+          loser_id: loserId,
+          status: 'completed'
+        })
+        .eq('id', matchId);
+      
+      if (error) {
+        throw new Error(`Failed to update match in database: ${error.message}`);
+      }
+      
+      // Insert the games
+      const { error: gamesError } = await supabase
+        .from('playoff_games')
+        .insert(playoffGames.map(game => ({
+          id: game.id,
+          match_id: game.matchId,
+          game_number: game.gameNumber,
+          team1_score: game.team1Score,
+          team2_score: game.team2Score,
+          winner_id: game.winnerId
+        })));
+      
+      if (gamesError) {
+        throw new Error(`Failed to insert games: ${gamesError.message}`);
+      }
       
       // Log the result for debugging purposes
       console.log(`Match ${matchId} updated with result: Team ${winnerId} (${team1Id === winnerId ? 'team1' : 'team2'}) 
