@@ -5,7 +5,7 @@
  */
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
 import { CrudInterface } from "brackets-manager/dist/types";
-import { DataTypes, Id, OmitId, Table } from "brackets-manager/dist/types/storage";
+import { Id, OmitId, Table } from "brackets-manager/dist/types/storage";
 import { PlayoffMatchType } from "../types";
 
 /**
@@ -23,7 +23,7 @@ export class BracketsManagerAdapter implements CrudInterface {
    * Insert records into a specific table
    * Implementation to match CrudInterface
    */
-  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number> {
+  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean> {
     try {
       const isArray = Array.isArray(value);
       const dataArray = isArray ? value : [value];
@@ -42,8 +42,8 @@ export class BracketsManagerAdapter implements CrudInterface {
             winnerId: null,
             loserId: null
           }));
-          const result = await this.service.savePlayoffMatches(matches);
-          return result;
+          await this.service.savePlayoffMatches(matches);
+          return true;
           
         case 'participant':
           let count = 0;
@@ -56,15 +56,15 @@ export class BracketsManagerAdapter implements CrudInterface {
             });
             count++;
           }
-          return count;
+          return count > 0;
           
         default:
           console.warn(`Insert operation not implemented for table ${table}`);
-          return 0;
+          return false;
       }
     } catch (error) {
       console.error(`Error in insert for table ${table}:`, error);
-      return 0;
+      return false;
     }
   }
   
@@ -197,4 +197,62 @@ export class BracketsManagerAdapter implements CrudInterface {
       return false;
     }
   }
+}
+
+// Add DataTypes interface for the brackets-manager library
+interface DataTypes {
+  stage: {
+    id: string;
+    name: string;
+    tournament_id: string;
+    type: string;
+    number?: number;
+  };
+  group: {
+    id: string;
+    stage_id: string;
+    name?: string;
+    number?: number;
+  };
+  round: {
+    id: string;
+    stage_id: string;
+    group_id?: string;
+    number: number;
+  };
+  match: {
+    id: string;
+    stage_id: string;
+    group_id?: string;
+    round_id?: string;
+    round?: number;
+    position: number;
+    status?: 'pending' | 'ready' | 'completed' | 'archived';
+    opponent1?: {
+      id?: string;
+      position?: number;
+      score?: number;
+      result?: 'win' | 'loss' | 'draw';
+    };
+    opponent2?: {
+      id?: string;
+      position?: number;
+      score?: number;
+      result?: 'win' | 'loss' | 'draw';
+    };
+    child_count?: number;
+  };
+  participant: {
+    id: string;
+    tournament_id: string;
+    name: string;
+    tournament?: string;
+    position?: number;
+  };
+  seeding: {
+    id: string;
+    tournament_id: string;
+    position: number;
+    participant_id: string;
+  };
 }

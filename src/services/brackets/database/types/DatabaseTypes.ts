@@ -176,7 +176,7 @@ export interface PlayoffMatch {
   team2Seed?: number | null;
   team1GameWins?: number | null;
   team2GameWins?: number | null;
-  winnerId?: string | null;
+  winnerId: string | null; // Making this required, not optional
   loserId?: string | null;
   nextWinMatchId?: string | null;
   nextLoseMatchId?: string | null;
