@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PlayoffBracket, Team } from "@/types";
 import { useTeamData } from "./useTeamData";
 import { fetchBracketById } from "@/services/BracketService";
-import { toRuntime as mapMatch } from "@/services/brackets/database/MatchMapper";
+import { PlayoffMatch } from "@/types/playoffs";
 
 export const useBracketData = (bracketId?: string) => {
   // Use the shared team data hook to get teams
@@ -17,12 +17,6 @@ export const useBracketData = (bracketId?: string) => {
       
       // Fetch the bracket data
       const rawBracket = await fetchBracketById(bracketId);
-      
-      // Map the matches to the expected format
-      if (rawBracket && rawBracket.matches) {
-        rawBracket.matches = rawBracket.matches.map(mapMatch);
-      }
-      
       return rawBracket;
     },
     enabled: !!bracketId

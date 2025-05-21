@@ -9,14 +9,55 @@
 import { BracketCreationService } from '@/services/brackets/services/BracketCreationService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
-import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
+import { BracketFormat, BRACKET_FORMATS, BracketState } from '@/constants/brackets';
+import { PlayoffMatch } from '@/types/playoffs';
+import { toRuntime } from '@/services/brackets/database/MatchMapper';
+import { supabase } from '@/integrations/supabase/client';
 
 export const BracketService = {
-  createBracket: BracketCreationService.createBracket
+  createBracket: BracketCreationService.createBracket,
+  deleteBracket,
+  listBrackets,
+  getBracketById
 };
 
 // TODO: UI uses this; replace with real impl if needed. For now noop.
 export const scoreMatch = async () => ({ ok: true });
+
+export const listBrackets = async () => {
+  const { data, error } = await supabase
+    .from('brackets')
+    .select('*, matches(*)');
+  if (error) throw new Error(error.message);
+  return data.map(b => ({
+    id: b.id,
+    name: b.name,
+    format: (b.format ?? 'double_elimination') as BracketFormat,
+    state:  (b.state  ?? 'pending') as BracketState,
+    matches: (b.matches ?? []).map(toRuntime),
+  }));
+};
+
+export const getBracketById = async (id: string) => {
+  const { data, error } = await supabase
+    .from('brackets')
+    .select('*, matches(*)')
+    .eq('id', id)
+    .single();
+  if (error) throw new Error(error.message);
+  return {
+    id: data.id,
+    name: data.name,
+    format: (data.format ?? 'double_elimination') as BracketFormat,
+    state:  (data.state  ?? 'pending') as BracketState,
+    matches: (data.matches ?? []).map(toRuntime),
+  };
+};
+
+export const deleteBracket = async (id: string) => {
+  const { error } = await supabase.from('brackets').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+};
 
 /** 
  * Create a double-elimination stage (play-ins auto-handled) 
@@ -177,10 +218,10 @@ export async function fetchBracketById(bracketId: string) {
       
     if (matchesError) throw matchesError;
     
-    // Combine data
+    // Combine data and map matches to the correct format
     return {
       ...bracket,
-      matches: matches || []
+      matches: (matches || []).map(toRuntime)
     };
   } catch (error) {
     console.error('Error fetching bracket:', error);
