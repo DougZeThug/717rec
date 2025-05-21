@@ -4,9 +4,39 @@
  * This adapter conforms to the exact interface expected by BracketsManager
  */
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
-import { CrudInterface } from "brackets-manager/dist/types";
-import { Id, OmitId, Table } from "brackets-manager/dist/types/storage";
 import { PlayoffMatchType } from "../types";
+
+// Define types to match brackets-manager's expectations
+interface Id {
+  id: string | number;
+}
+
+// Define the DataTypes interface that matches brackets-manager's expectations
+interface DataTypes {
+  match: any;
+  participant: any;
+  stage: any;
+  [key: string]: any;
+}
+
+// Define Table type to match brackets-manager's expectations
+type Table = keyof DataTypes;
+
+// Define OmitId type to match brackets-manager's expectations
+type OmitId<T> = Omit<T, 'id'>;
+
+/**
+ * Interface that matches brackets-manager's CrudInterface
+ */
+interface CrudInterface {
+  insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number>;
+  select<T extends Table>(table: T): Promise<DataTypes[T][]>;
+  select<T extends Table>(table: T, id: string | number): Promise<DataTypes[T]>;
+  select<T extends Table>(table: T, filter: Partial<DataTypes[T]>): Promise<DataTypes[T][]>;
+  update<T extends Table>(table: T, id: string | number, value: Partial<DataTypes[T]>): Promise<number>;
+  delete<T extends Table>(table: T): Promise<number>;
+  delete<T extends Table>(table: T, filter: Partial<DataTypes[T]>): Promise<number>;
+}
 
 /**
  * Adapter that implements the CrudInterface for BracketsManager
@@ -23,7 +53,7 @@ export class BracketsManagerAdapter implements CrudInterface {
    * Insert records into a specific table
    * Implementation to match CrudInterface
    */
-  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean> {
+  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number> {
     try {
       const isArray = Array.isArray(value);
       const dataArray = isArray ? value : [value];
@@ -40,10 +70,11 @@ export class BracketsManagerAdapter implements CrudInterface {
             team2Id: match.opponent2?.id || null,
             bracket_id: match.stage_id,
             winnerId: null,
-            loserId: null
+            loserId: null,
+            bestOf: match.best_of || 3 // Ensure bestOf has a default value
           }));
           await this.service.savePlayoffMatches(matches);
-          return true;
+          return matches.length; // Return number of inserted matches
           
         case 'participant':
           let count = 0;
@@ -56,15 +87,15 @@ export class BracketsManagerAdapter implements CrudInterface {
             });
             count++;
           }
-          return count > 0;
+          return count;
           
         default:
           console.warn(`Insert operation not implemented for table ${table}`);
-          return false;
+          return 0;
       }
     } catch (error) {
       console.error(`Error in insert for table ${table}:`, error);
-      return false;
+      return 0;
     }
   }
   
@@ -72,9 +103,9 @@ export class BracketsManagerAdapter implements CrudInterface {
    * Select records from a table - implement all function signatures from CrudInterface
    */
   async select<T extends Table>(table: T): Promise<DataTypes[T][]>;
-  async select<T extends Table>(table: T, id: Id): Promise<DataTypes[T]>;
+  async select<T extends Table>(table: T, id: string | number): Promise<DataTypes[T]>;
   async select<T extends Table>(table: T, filter: Partial<DataTypes[T]>): Promise<DataTypes[T][]>;
-  async select<T extends Table>(table: T, idOrFilter?: Id | Partial<DataTypes[T]>): Promise<DataTypes[T] | DataTypes[T][]> {
+  async select<T extends Table>(table: T, idOrFilter?: string | number | Partial<DataTypes[T]>): Promise<DataTypes[T] | DataTypes[T][]> {
     try {
       // Handle single ID lookup
       if (typeof idOrFilter === 'number' || typeof idOrFilter === 'string') {
@@ -101,18 +132,18 @@ export class BracketsManagerAdapter implements CrudInterface {
             return matches.map(match => ({
               id: match.id,
               stage_id: match.bracket_id || '',
-              group_id: match.matchType === 'losers' ? 'loser_bracket' : undefined,
+              group_id: match.match_type === 'losers' ? 'loser_bracket' : undefined,
               round: match.round,
               position: match.position,
-              opponent1: match.team1Id ? {
-                id: match.team1Id,
+              opponent1: match.team1_id ? {
+                id: match.team1_id,
                 position: 1,
-                score: match.team1Score || 0
+                score: match.team1_score || 0
               } : undefined,
-              opponent2: match.team2Id ? {
-                id: match.team2Id,
+              opponent2: match.team2_id ? {
+                id: match.team2_id,
                 position: 2,
-                score: match.team2Score || 0
+                score: match.team2_score || 0
               } : undefined,
               status: match.status as any
             })) as unknown as DataTypes[T][];
@@ -144,7 +175,7 @@ export class BracketsManagerAdapter implements CrudInterface {
   /**
    * Update a record in a table
    */
-  async update<T extends Table>(table: T, id: Id, value: Partial<DataTypes[T]>): Promise<boolean> {
+  async update<T extends Table>(table: T, id: string | number, value: Partial<DataTypes[T]>): Promise<number> {
     try {
       switch (table) {
         case 'match':
@@ -167,92 +198,34 @@ export class BracketsManagerAdapter implements CrudInterface {
                 team2_game_wins: 0, // Default value
                 completed: data.status === 'completed'
               });
-              return true;
+              return 1; // Return number of updated records
             }
           }
-          return false;
+          return 0;
           
         default:
           console.warn(`Update operation not implemented for table ${table}`);
-          return false;
+          return 0;
       }
     } catch (error) {
       console.error(`Error in update for table ${table}:`, error);
-      return false;
+      return 0;
     }
   }
   
   /**
    * Delete records from a table
    */
-  async delete<T extends Table>(table: T): Promise<boolean>;
-  async delete<T extends Table>(table: T, filter: Partial<DataTypes[T]>): Promise<boolean>;
-  async delete<T extends Table>(table: T, filter?: Partial<DataTypes[T]>): Promise<boolean> {
+  async delete<T extends Table>(table: T): Promise<number>;
+  async delete<T extends Table>(table: T, filter: Partial<DataTypes[T]>): Promise<number>;
+  async delete<T extends Table>(table: T, filter?: Partial<DataTypes[T]>): Promise<number> {
     try {
       console.log(`Delete operation called for table ${table} with filter:`, filter);
       // Not implemented yet
-      return false;
+      return 0; // Return number of deleted records
     } catch (error) {
       console.error(`Error in delete for table ${table}:`, error);
-      return false;
+      return 0;
     }
   }
-}
-
-// Add DataTypes interface for the brackets-manager library
-interface DataTypes {
-  stage: {
-    id: string;
-    name: string;
-    tournament_id: string;
-    type: string;
-    number?: number;
-  };
-  group: {
-    id: string;
-    stage_id: string;
-    name?: string;
-    number?: number;
-  };
-  round: {
-    id: string;
-    stage_id: string;
-    group_id?: string;
-    number: number;
-  };
-  match: {
-    id: string;
-    stage_id: string;
-    group_id?: string;
-    round_id?: string;
-    round?: number;
-    position: number;
-    status?: 'pending' | 'ready' | 'completed' | 'archived';
-    opponent1?: {
-      id?: string;
-      position?: number;
-      score?: number;
-      result?: 'win' | 'loss' | 'draw';
-    };
-    opponent2?: {
-      id?: string;
-      position?: number;
-      score?: number;
-      result?: 'win' | 'loss' | 'draw';
-    };
-    child_count?: number;
-  };
-  participant: {
-    id: string;
-    tournament_id: string;
-    name: string;
-    tournament?: string;
-    position?: number;
-  };
-  seeding: {
-    id: string;
-    tournament_id: string;
-    position: number;
-    participant_id: string;
-  };
 }

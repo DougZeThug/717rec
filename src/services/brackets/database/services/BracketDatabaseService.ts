@@ -281,13 +281,14 @@ export class BracketDatabaseService {
     const resetMatch: PlayoffMatch = {
       id: nanoid(),
       bracket_id: bracketId,
-      round: 0, // Special round for reset match
-      position: 0, // Special position for reset match
-      matchType: 'finals',
-      team1Id,
-      team2Id,
+      round: 0,
+      position: 0,
+      matchType: "finals" as PlayoffMatchType,
+      team1Id: team1Id,
+      team2Id: team2Id,
       bestOf: 3,
-      status: 'pending'
+      status: "pending",
+      winnerId: null
     };
     
     await this.savePlayoffMatches([resetMatch]);

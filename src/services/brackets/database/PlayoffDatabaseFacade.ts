@@ -67,8 +67,8 @@ export class PlayoffDatabaseFacade {
         team2_score: match.team2_score,
         team1_seed: match.team1_seed,
         team2_seed: match.team2_seed,
-        team1_game_wins: match.team1_game_wins || 0,
-        team2_game_wins: match.team2_game_wins || 0,
+        team1_game_wins: match.team1_game_wins || 0, // Add default value and ensure property exists
+        team2_game_wins: match.team2_game_wins || 0, // Add default value and ensure property exists
         winner_id: match.winner_id,
         loser_id: match.loser_id,
         next_win_match_id: match.next_win_match_id,

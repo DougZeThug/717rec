@@ -180,7 +180,7 @@ export interface PlayoffMatch {
   loserId?: string | null;
   nextWinMatchId?: string | null;
   nextLoseMatchId?: string | null;
-  bestOf?: number;
+  bestOf: number; // Making this required, not optional
   status?: string;
 }
 

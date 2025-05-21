@@ -1,3 +1,4 @@
+
 import { PlayoffMatch as AppPlayoffMatch, PlayoffGame } from '../types';
 import { DatabaseMatchResult, MatchResultDTO } from './types/DatabaseTypes';
 import { BracketDatabaseService } from './services/BracketDatabaseService';
@@ -44,7 +45,7 @@ export class PlayoffDatabaseAdapter {
       loser_id: match.loserId,
       next_win_match_id: match.nextWinMatchId,
       next_lose_match_id: match.nextLoseMatchId,
-      best_of: match.bestOf,
+      best_of: match.bestOf || 3, // Ensure bestOf has a default value
       status: match.status
     };
   }
@@ -67,11 +68,11 @@ export class PlayoffDatabaseAdapter {
       team2Seed: dbMatch.team2_seed,
       team1GameWins: dbMatch.team1_game_wins,
       team2GameWins: dbMatch.team2_game_wins,
-      winnerId: dbMatch.winner_id, // winnerId is now required
+      winnerId: dbMatch.winner_id || null, // Ensure winnerId is always defined
       loserId: dbMatch.loser_id || null,
       nextWinMatchId: dbMatch.next_win_match_id,
       nextLoseMatchId: dbMatch.next_lose_match_id,
-      bestOf: dbMatch.best_of,
+      bestOf: dbMatch.best_of || 3, // Ensure bestOf is always defined with a default
       status: dbMatch.status
     };
   }
@@ -161,7 +162,15 @@ export class PlayoffDatabaseAdapter {
    * Create reset match
    */
   static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<AppPlayoffMatch> {
-    return PlayoffDatabaseAdapter.service.createResetMatch(bracketId, team1Id, team2Id);
+    const result = await PlayoffDatabaseAdapter.service.createResetMatch(bracketId, team1Id, team2Id);
+    // Ensure the result has all required fields for AppPlayoffMatch
+    if (!result.winnerId) {
+      result.winnerId = null; // Ensure winnerId is set
+    }
+    if (!result.bestOf) {
+      result.bestOf = 3; // Ensure bestOf has a default value
+    }
+    return result;
   }
 
   /**
