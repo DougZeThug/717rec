@@ -26,4 +26,6 @@ export interface ParticipantFilter {
 export interface StageFilter {
   id?: string;
   tournament_id?: string;
+  name?: string;
+  type?: string;
 }

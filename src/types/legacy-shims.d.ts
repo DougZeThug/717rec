@@ -46,3 +46,9 @@ export interface ParticipantFilter {
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* ---- extra aliases for old Stage/Match filters ---- */
+export type BracketMatch = PlayoffMatch;
+export type StageRecord = any;
+export type StageFilter = any;
+export type MatchFilter = any;
