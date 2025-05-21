@@ -3,9 +3,9 @@
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
  */
-import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
-import { PlayoffMatch, PlayoffMatchType } from "@/types/playoffs";
 import { supabase } from "@/integrations/supabase/client";
+import { PlayoffMatchType } from "@/types/legacy-shims";
+import { PlayoffMatch } from "@/types/playoffs";
 
 // Define types to match brackets-manager's expectations
 interface Id {
@@ -32,7 +32,7 @@ type OmitId<T> = Omit<T, 'id'>;
 const toRow = (m: PlayoffMatch) => ({
   id: m.id,
   bracket_id: m.bracket_id,
-  round_number: m.round,
+  round: m.round,
   position: m.position,
   match_type: m.matchType,
   team1_id: m.team1Id,
@@ -43,16 +43,17 @@ const toRow = (m: PlayoffMatch) => ({
   team2_game_wins: m.team2GameWins,
   winner_id: m.winnerId,
   loser_id: m.loserId,
-  next_match_id: m.nextWinMatchId,
-  next_loser_match_id: m.nextLoseMatchId,
+  next_win_match_id: m.nextWinMatchId,
+  next_lose_match_id: m.nextLoseMatchId,
   best_of: m.bestOf || 3,
+  status: m.status,
   iscompleted: m.status === 'completed'
 });
 
 const toRuntime = (r: any): Partial<PlayoffMatch> => ({
   id: r.id,
   bracket_id: r.bracket_id,
-  round: r.round_number,
+  round: r.round,
   position: r.position,
   matchType: r.match_type,
   team1Id: r.team1_id,
@@ -63,8 +64,8 @@ const toRuntime = (r: any): Partial<PlayoffMatch> => ({
   team2GameWins: r.team2_game_wins,
   winnerId: r.winner_id,
   loserId: r.loser_id,
-  nextWinMatchId: r.next_match_id,
-  nextLoseMatchId: r.next_loser_match_id,
+  nextWinMatchId: r.next_win_match_id,
+  nextLoseMatchId: r.next_lose_match_id,
   bestOf: r.best_of,
   status: r.iscompleted ? 'completed' : 'pending'
 });
@@ -87,12 +88,6 @@ interface CrudInterface {
  * This adapter conforms to the exact interface expected by BracketsManager
  */
 export class BracketsManagerAdapter implements CrudInterface {
-  private service: BracketDatabaseService;
-  
-  constructor() {
-    this.service = new BracketDatabaseService();
-  }
-  
   /**
    * Insert records into a specific table
    * Implementation to match CrudInterface
@@ -108,7 +103,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           const match = dataArray[0] as any; // Use first entry in case of array
           const matchData = {
             id: match.id || undefined,
-            round_number: match.round || 1,
+            round: match.round || 1,
             position: match.position || 0,
             match_type: match.group_id ? 'losers' as PlayoffMatchType : 'winners' as PlayoffMatchType,
             team1_id: match.opponent1?.id || null,
@@ -121,7 +116,7 @@ export class BracketsManagerAdapter implements CrudInterface {
             team2_score: null,
             team1_game_wins: null,
             team2_game_wins: null,
-            iscompleted: false
+            status: 'pending'
           };
           
           const matchResult = await supabase
@@ -135,7 +130,6 @@ export class BracketsManagerAdapter implements CrudInterface {
           
         case 'participant':
           const participant = dataArray[0] as any; // Use first entry in case of array
-          // Fix: Add required bracket_id and team_id fields
           const participantData = {
             bracket_id: participant.tournament_id, // Use tournament_id as bracket_id
             team_id: participant.id || '', // Required field
@@ -209,23 +203,28 @@ export class BracketsManagerAdapter implements CrudInterface {
         case 'match':
           const tournamentId = filter && 'stage_id' in filter ? filter.stage_id : undefined;
           if (tournamentId) {
-            const matches = await this.service.getBracketMatches(tournamentId as string);
+            const { data, error } = await supabase
+              .from('playoff_matches')
+              .select('*')
+              .eq('bracket_id', tournamentId as string);
             
-            return matches.map(match => ({
+            if (error) throw error;
+            
+            return data.map(match => ({
               id: match.id,
               stage_id: match.bracket_id || '',
-              group_id: match.matchType === 'losers' ? 'loser_bracket' : undefined,
+              group_id: match.match_type === 'losers' ? 'loser_bracket' : undefined,
               round: match.round,
               position: match.position,
-              opponent1: match.team1Id ? {
-                id: match.team1Id,
+              opponent1: match.team1_id ? {
+                id: match.team1_id,
                 position: 1,
-                score: match.team1Score || 0
+                score: match.team1_score || 0
               } : undefined,
-              opponent2: match.team2Id ? {
-                id: match.team2Id,
+              opponent2: match.team2_id ? {
+                id: match.team2_id,
                 position: 2,
-                score: match.team2Score || 0
+                score: match.team2_score || 0
               } : undefined,
               status: match.status as any
             })) as unknown as DataTypes[T][];
@@ -241,7 +240,13 @@ export class BracketsManagerAdapter implements CrudInterface {
             filterObj.name = filter.name as string;
           }
           
-          const participants = await this.service.selectParticipants(filterObj);
+          const { data: participants, error } = await supabase
+            .from('participants')
+            .select('*')
+            .eq('tournament_id', filterObj.tournament_id || '')
+            .ilike('name', filterObj.name ? `%${filterObj.name}%` : '%');
+          
+          if (error) throw error;
           return participants as unknown as DataTypes[T][];
           
         default:
@@ -270,16 +275,20 @@ export class BracketsManagerAdapter implements CrudInterface {
                           data.opponent2?.result === 'loss' ? data.opponent2.id : null;
             
             if (winnerId && loserId) {
-              await this.service.recordMatchResult({
-                matchId: id as string,
-                winnerId: winnerId,
-                loserId: loserId,
-                team1Score: data.opponent1?.score || 0,
-                team2Score: data.opponent2?.score || 0,
-                team1GameWins: 0, // Default value
-                team2GameWins: 0, // Default value
-                completed: data.status === 'completed'
-              });
+              const updateData = {
+                winner_id: winnerId,
+                loser_id: loserId,
+                team1_score: data.opponent1?.score || 0,
+                team2_score: data.opponent2?.score || 0,
+                status: data.status || 'completed'
+              };
+              
+              const { error } = await supabase
+                .from('playoff_matches')
+                .update(updateData)
+                .eq('id', id);
+              
+              if (error) throw error;
               return 1; // Return number of updated records
             }
           }
@@ -303,7 +312,6 @@ export class BracketsManagerAdapter implements CrudInterface {
   async delete<T extends Table>(table: T, filter?: Partial<DataTypes[T]>): Promise<number> {
     try {
       console.log(`Delete operation called for table ${table} with filter:`, filter);
-      // Not implemented yet
       return 0; // Return number of deleted records
     } catch (error) {
       console.error(`Error in delete for table ${table}:`, error);
