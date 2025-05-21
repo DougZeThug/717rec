@@ -1,4 +1,3 @@
-
 /**
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
@@ -29,7 +28,7 @@ type OmitId<T> = Omit<T, 'id'>;
  * Interface that matches brackets-manager's CrudInterface
  */
 interface CrudInterface {
-  insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number>;
+  insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean>;
   select<T extends Table>(table: T): Promise<DataTypes[T][]>;
   select<T extends Table>(table: T, id: string | number): Promise<DataTypes[T]>;
   select<T extends Table>(table: T, filter: Partial<DataTypes[T]>): Promise<DataTypes[T][]>;
@@ -53,7 +52,7 @@ export class BracketsManagerAdapter implements CrudInterface {
    * Insert records into a specific table
    * Implementation to match CrudInterface
    */
-  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number> {
+  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean> {
     try {
       const isArray = Array.isArray(value);
       const dataArray = isArray ? value : [value];
@@ -74,10 +73,9 @@ export class BracketsManagerAdapter implements CrudInterface {
             bestOf: match.best_of || 3 // Ensure bestOf has a default value
           }));
           await this.service.savePlayoffMatches(matches);
-          return matches.length; // Return number of inserted matches
+          return true; // Return boolean instead of number
           
         case 'participant':
-          let count = 0;
           for (const participant of dataArray) {
             await this.service.createParticipant({
               id: participant.id,
@@ -85,17 +83,16 @@ export class BracketsManagerAdapter implements CrudInterface {
               name: participant.name || '',
               position: participant.position
             });
-            count++;
           }
-          return count;
+          return true; // Return boolean instead of number
           
         default:
           console.warn(`Insert operation not implemented for table ${table}`);
-          return 0;
+          return true; // Return boolean instead of number for any unimplemented tables
       }
     } catch (error) {
       console.error(`Error in insert for table ${table}:`, error);
-      return 0;
+      return false; // Return false on error
     }
   }
   
@@ -229,3 +226,6 @@ export class BracketsManagerAdapter implements CrudInterface {
     }
   }
 }
+
+// Create an instance of the adapter and export it
+export const bracketsAdapter = new BracketsManagerAdapter();

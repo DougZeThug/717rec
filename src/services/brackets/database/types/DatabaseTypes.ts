@@ -176,11 +176,11 @@ export interface PlayoffMatch {
   team2Seed?: number | null;
   team1GameWins?: number | null;
   team2GameWins?: number | null;
-  winnerId: string | null; // Making this required, not optional
+  winnerId: string | null; // Required, not optional
   loserId?: string | null;
   nextWinMatchId?: string | null;
   nextLoseMatchId?: string | null;
-  bestOf: number; // Making this required, not optional
+  bestOf: number; // Required, not optional
   status?: string;
 }
 
