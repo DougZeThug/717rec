@@ -1,6 +1,5 @@
 import { StorageAdapter, BaseFilter } from './interfaces/StorageAdapter';
 import { MatchAdapter } from './adapters/MatchAdapter';
-import { ParticipantAdapter } from './adapters/ParticipantAdapter';
 import { StageAdapter } from './adapters/StageAdapter';
 import { 
   BracketRecord, 
@@ -13,6 +12,8 @@ import {
 import { AdapterOperationError } from './errors/AdapterErrors';
 import { filterUtils } from './utils/FilterUtils';
 import { TableNameMapper } from './interfaces/TableNameMapper';
+import { ParticipantQueryService } from './services/ParticipantQueryService';
+import { ParticipantMutationService } from './services/ParticipantMutationService';
 
 /**
  * The BracketsAdapter implements the Storage interface from brackets-manager
@@ -20,13 +21,15 @@ import { TableNameMapper } from './interfaces/TableNameMapper';
  */
 export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFilter, any> {
   private matchAdapter: MatchAdapter;
-  private participantAdapter: ParticipantAdapter;
+  private participantQueryService: ParticipantQueryService;
+  private participantMutationService: ParticipantMutationService;
   private stageAdapter: StageAdapter;
   private currentTable: BracketTable = BracketTable.Match;
   
   constructor() {
     this.matchAdapter = new MatchAdapter();
-    this.participantAdapter = new ParticipantAdapter();
+    this.participantQueryService = new ParticipantQueryService();
+    this.participantMutationService = new ParticipantMutationService();
     this.stageAdapter = new StageAdapter();
   }
 
@@ -107,7 +110,7 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return await this.matchAdapter.insertMatches(data);
       
       case BracketTable.Participant:
-        return await this.participantAdapter.insertParticipants(data);
+        return await this.participantMutationService.insertParticipants(data);
       
       case BracketTable.Stage:
         // Stage adapter expects a single item
@@ -167,7 +170,7 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return this.matchAdapter.selectMatches(filter as MatchFilter);
       
       case BracketTable.Participant:
-        return this.participantAdapter.selectParticipants(filter as ParticipantFilter);
+        return this.participantQueryService.selectParticipants(filter as ParticipantFilter);
       
       case BracketTable.Stage:
         // Convert to a safe StageFilter to avoid type issues
@@ -228,7 +231,7 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return this.matchAdapter.updateMatch(id, data);
       
       case BracketTable.Participant:
-        return this.participantAdapter.updateParticipant(id, data);
+        return this.participantMutationService.updateParticipant(id, data);
       
       case BracketTable.Stage:
         return this.stageAdapter.updateStage(id, data);
@@ -286,7 +289,7 @@ export class BracketsAdapter implements StorageAdapter<BracketRecord, BracketFil
         return this.matchAdapter.deleteMatches(filter as MatchFilter);
       
       case BracketTable.Participant:
-        return this.participantAdapter.deleteParticipants(filter as ParticipantFilter);
+        return this.participantMutationService.deleteParticipants(filter as ParticipantFilter);
       
       case BracketTable.Stage:
         // Convert to a safe StageFilter to avoid type issues

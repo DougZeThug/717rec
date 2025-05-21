@@ -109,7 +109,11 @@ export class BracketCreationService {
         });
       } catch (err: any) {
         const errorMessage = `Bracket failed – ${err?.message ?? 'unknown'}`;
-        toast.error(errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Bracket Creation Error",
+          description: errorMessage
+        });
         throw err;  // Re-throw for logs
       }
       
