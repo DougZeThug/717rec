@@ -1,12 +1,40 @@
+
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
-import { TableNameMapper, ValidTableName } from '../interfaces/TableNameMapper';
+import { TableNameMapper, ValidTableName, isValidTable, isValidView } from '../interfaces/TableNameMapper';
 import { Database } from "@/integrations/supabase/types";
 
 /**
  * Type for valid database table names
  */
 export type DatabaseTableName = keyof Database['public']['Tables'];
+
+/**
+ * Type for valid database view names
+ */
+export type DatabaseViewName = keyof Database['public']['Views'];
+
+/**
+ * Safely creates a Supabase query builder for a table or view
+ * Handles type casting and validation
+ */
+function createSafeQueryBuilder(tableName: string) {
+  const mappedName = TableNameMapper.toDbTableName(tableName);
+  
+  console.log(`[QueryBuilderUtils] Creating query builder for: ${mappedName} (original: ${tableName})`);
+  
+  if (isValidTable(mappedName)) {
+    // It's a valid table
+    return supabase.from(mappedName);
+  } else if (isValidView(mappedName)) {
+    // It's a valid view
+    return supabase.from(mappedName);
+  } else {
+    // Fallback to a safe default
+    console.warn(`[QueryBuilderUtils] Invalid table/view name: ${mappedName}, falling back to "matches"`);
+    return supabase.from('matches');
+  }
+}
 
 /**
  * Generic query builder utilities for database operations
@@ -52,23 +80,21 @@ export class QueryBuilderUtils {
    */
   static async executeDelete(table: string, filter?: BaseFilter): Promise<number> {
     try {
-      // Map the table name to the actual database table
-      const dbTable = TableNameMapper.toDbTableName(table);
-      console.log(`[QueryBuilderUtils] Deleting from table: ${dbTable} (original: ${table})`);
+      console.log(`[QueryBuilderUtils] Deleting from table: ${table}`);
       
-      // Create the query using the mapped table name
-      let query = supabase.from(dbTable).delete();
+      // Create the query using the safe query builder
+      let query = createSafeQueryBuilder(table).delete();
       
       query = this.applyCommonFilters(query, filter);
       
       const { error, count } = await query.select('count');
       
       if (error) {
-        console.error(`[QueryBuilderUtils] Error executing delete on table ${dbTable}:`, error);
+        console.error(`[QueryBuilderUtils] Error executing delete:`, error);
         throw error;
       }
       
-      console.log(`[QueryBuilderUtils] Successfully deleted ${count || 0} records from ${dbTable}`);
+      console.log(`[QueryBuilderUtils] Successfully deleted ${count || 0} records`);
       return count || 0;
     } catch (error) {
       console.error(`[QueryBuilderUtils] Failed to delete from table ${table}:`, error);
@@ -84,26 +110,24 @@ export class QueryBuilderUtils {
     if (!data?.length) return 0;
     
     try {
-      // Map the table name to the actual database table
-      const dbTable = TableNameMapper.toDbTableName(table);
-      console.log(`[QueryBuilderUtils] Inserting into table: ${dbTable} (original: ${table}), records: ${data.length}`);
+      console.log(`[QueryBuilderUtils] Inserting into table: ${table}, records: ${data.length}`);
       
       let insertedCount = 0;
       
       // Batch insert to keep rows ≤ 50 for optimal performance
       for (let i = 0; i < data.length; i += 50) {
         const batch = data.slice(i, i + 50);
-        const { error } = await supabase.from(dbTable).insert(batch);
+        const { error } = await createSafeQueryBuilder(table).insert(batch);
         
         if (error) {
-          console.error(`[QueryBuilderUtils] Error executing insert on table ${dbTable}:`, error);
+          console.error(`[QueryBuilderUtils] Error executing insert:`, error);
           throw error;
         }
         
         insertedCount += batch.length;
       }
       
-      console.log(`[QueryBuilderUtils] Successfully inserted ${insertedCount} records into ${dbTable}`);
+      console.log(`[QueryBuilderUtils] Successfully inserted ${insertedCount} records`);
       return insertedCount;
     } catch (error) {
       console.error(`[QueryBuilderUtils] Failed to insert into table ${table}:`, error);
@@ -117,21 +141,18 @@ export class QueryBuilderUtils {
    */
   static async executeUpdate(table: string, id: string, data: any): Promise<number> {
     try {
-      // Map the table name to the actual database table
-      const dbTable = TableNameMapper.toDbTableName(table);
-      console.log(`[QueryBuilderUtils] Updating table: ${dbTable} (original: ${table}), id: ${id}`);
+      console.log(`[QueryBuilderUtils] Updating table: ${table}, id: ${id}`);
       
-      const { error } = await supabase
-        .from(dbTable)
+      const { error } = await createSafeQueryBuilder(table)
         .update(data)
         .eq('id', id);
       
       if (error) {
-        console.error(`[QueryBuilderUtils] Error executing update on table ${dbTable}:`, error);
+        console.error(`[QueryBuilderUtils] Error executing update:`, error);
         throw error;
       }
       
-      console.log(`[QueryBuilderUtils] Successfully updated record ${id} in ${dbTable}`);
+      console.log(`[QueryBuilderUtils] Successfully updated record ${id}`);
       return 1; // Successfully updated 1 record
     } catch (error) {
       console.error(`[QueryBuilderUtils] Failed to update table ${table}:`, error);
@@ -145,8 +166,6 @@ export class QueryBuilderUtils {
    * @returns A query builder instance
    */
   static createQueryBuilder<T = any>(tableName: string): any {
-    const dbTable = TableNameMapper.toDbTableName(tableName);
-    console.log(`[QueryBuilderUtils] Creating query builder for table: ${dbTable} (original: ${tableName})`);
-    return supabase.from(dbTable);
+    return createSafeQueryBuilder(tableName);
   }
 }

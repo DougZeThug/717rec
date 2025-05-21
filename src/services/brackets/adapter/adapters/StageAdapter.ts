@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StageFilter, StageRecord } from '../types/AdapterTypes';
 import { AdapterOperationError } from '../errors/AdapterErrors';
 import { QueryBuilderUtils } from '../utils/QueryBuilderUtils';
-import { TableNameMapper, ValidTableName } from '../interfaces/TableNameMapper';
+import { TableNameMapper } from '../interfaces/TableNameMapper';
 import { Database } from "@/integrations/supabase/types";
 
 /**
@@ -16,7 +16,7 @@ type BracketDbRecord = Database['public']['Tables']['brackets']['Row'];
  */
 export class StageAdapter {
   private logicalTableName = 'stage';
-  private dbTableName: ValidTableName;
+  private dbTableName: string;
 
   constructor() {
     // Ensure we have the correct table name mapping
@@ -37,8 +37,8 @@ export class StageAdapter {
 
       console.log(`[StageAdapter] Inserting stage record into table: ${this.dbTableName}`);
       
-      const { error } = await supabase
-        .from(this.dbTableName)
+      // Use the QueryBuilderUtils to safely create a query
+      const { error } = await QueryBuilderUtils.createQueryBuilder(this.logicalTableName)
         .insert([stageData]);
 
       if (error) throw error;
@@ -58,7 +58,8 @@ export class StageAdapter {
     try {
       console.log(`[StageAdapter] Selecting stage records from table: ${this.dbTableName}`);
       
-      let query = supabase.from(this.dbTableName).select('*');
+      // Use the QueryBuilderUtils to safely create a query
+      let query = QueryBuilderUtils.createQueryBuilder(this.logicalTableName).select('*');
       
       // Apply common filters (id, limit, offset, order)
       query = QueryBuilderUtils.applyCommonFilters(query, filter);

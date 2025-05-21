@@ -2,16 +2,49 @@
 import { Database } from "@/integrations/supabase/types";
 
 /**
- * Valid table types that can be used in database operations
+ * Types for valid tables and views in the database
  */
-export type ValidTableName = keyof Database['public']['Tables'] | keyof Database['public']['Views'];
+type DatabaseTables = keyof Database['public']['Tables'];
+type DatabaseViews = keyof Database['public']['Views'];
+
+/**
+ * Valid table or view name that can be used in database operations
+ */
+export type ValidTableName = DatabaseTables | DatabaseViews;
+
+/**
+ * Type guard to check if a name is a valid table
+ */
+export function isValidTable(name: string): name is DatabaseTables {
+  const validTables: string[] = [
+    'brackets', 'matches', 'participants', 'teams',
+    'debug_match_updates', 'divisions', 'games',
+    'match_comments', 'match_reactions', 'message_reactions',
+    'messages', 'playoff_games', 'playoff_matches',
+    'profiles', 'season_stats', 'team_memberships',
+    'team_stats', 'team_timeslots'
+  ];
+  return validTables.includes(name);
+}
+
+/**
+ * Type guard to check if a name is a valid view
+ */
+export function isValidView(name: string): name is DatabaseViews {
+  const validViews: string[] = [
+    'v_team_details', 'v_team_game_totals', 
+    'v_team_match_stats', 'v_team_power_scores', 
+    'v_team_sos', 'v_team_strength_of_schedule'
+  ];
+  return validViews.includes(name);
+}
 
 /**
  * Maps between logical table names used in brackets-manager and actual database table names
  */
 export class TableNameMapper {
   // Define Supabase's valid table names to match the database schema
-  private static readonly TABLE_MAP: Record<string, ValidTableName> = {
+  private static readonly TABLE_MAP: Record<string, string> = {
     'match': 'matches',
     'participant': 'participants',
     'stage': 'brackets',
@@ -45,11 +78,18 @@ export class TableNameMapper {
     
     // Check if we have a direct mapping for this name
     if (normalizedName in this.TABLE_MAP) {
-      return this.TABLE_MAP[normalizedName];
+      const mappedName = this.TABLE_MAP[normalizedName];
+      
+      // Ensure the mapped name is valid
+      if (isValidTable(mappedName)) {
+        return mappedName;
+      }
+      console.warn(`[TableNameMapper] Invalid mapped table name: "${mappedName}" for "${logicalName}", falling back to "matches"`);
+      return 'matches';
     }
     
     // If no mapping exists, check if the name itself is valid
-    if (this.isValidTable(normalizedName)) {
+    if (this.isValidTable(normalizedName) && isValidTable(normalizedName)) {
       return normalizedName as ValidTableName;
     }
     
