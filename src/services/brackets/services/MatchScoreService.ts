@@ -20,7 +20,6 @@ export class MatchScoreService {
       : matchId.split('-')[1]; // team2Id is second part of matchId
       
     // Create a simplified match update structure for brackets-manager
-    // This will need to be expanded with proper opponent data
     const matchData = {
       id: matchId,
       status: "completed",

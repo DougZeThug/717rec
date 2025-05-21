@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BracketList from "../BracketList";
 import BracketView from "../BracketView";
 import TeamDivisionTable from "../TeamDivisionTable";
-import MigrationTab from "../admin/MigrationTab";
 
 interface AdminViewProps {
   activeTab: string;
@@ -47,7 +46,6 @@ const AdminView: React.FC<AdminViewProps> = ({
       <TabsList>
         <TabsTrigger value="brackets">Brackets</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
-        <TabsTrigger value="migration">Migration</TabsTrigger>
       </TabsList>
       
       <TabsContent value="brackets" className="space-y-6">
@@ -76,10 +74,6 @@ const AdminView: React.FC<AdminViewProps> = ({
           teams={teams}
           isLoading={isLoading}
         />
-      </TabsContent>
-      
-      <TabsContent value="migration">
-        <MigrationTab />
       </TabsContent>
     </Tabs>
   );
