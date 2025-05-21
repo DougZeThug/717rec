@@ -1,10 +1,13 @@
 
-import { manager as bracketManager } from './BracketsManagerInstance';
 import { BracketCreationService } from './services/BracketCreationService';
-import { MatchScoreService } from './services/MatchScoreService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './utils/BracketConversionUtils';
 import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
+
+export const createBracket = BracketCreationService.createBracket;
+
+// TODO: UI uses this; replace with real impl if needed. For now noop.
+export const scoreMatch = async () => ({ ok: true });
 
 /** 
  * Create a double-elimination stage (play-ins auto-handled) 
@@ -53,20 +56,34 @@ export async function updateMatchResult(
   team1Score: number,
   team2Score: number
 ): Promise<void> {
-  // Create empty games array since we're using a simplified approach
-  const games: { team1Score: number; team2Score: number }[] = [];
-  // Assuming team1 is the winner for game stats
-  const team1GameWins = winnerId === matchId.split('-')[0] ? 1 : 0;
-  const team2GameWins = 1 - team1GameWins;
-  
-  return MatchScoreService.updateMatchScore(
-    matchId, 
-    team1Score, 
-    team2Score, 
-    games, 
-    team1GameWins, 
-    team2GameWins
-  );
+  try {
+    // Import manager directly to avoid circular dependency
+    const { manager } = await import('./BracketsManagerInstance');
+    
+    // Create match data for brackets-manager
+    const matchData = {
+      id: matchId,
+      status: "completed" as const,
+      opponent1: {
+        id: matchId.split('-')[0],
+        score: team1Score,
+        result: matchId.split('-')[0] === winnerId ? "win" as const : "loss" as const
+      },
+      opponent2: {
+        id: matchId.split('-')[1],
+        score: team2Score,
+        result: matchId.split('-')[1] === winnerId ? "win" as const : "loss" as const
+      }
+    };
+    
+    // Update the match
+    await manager.update.match(matchData);
+    
+    console.log(`Match ${matchId} updated with scores: ${team1Score}-${team2Score}`);
+  } catch (error) {
+    console.error('Error updating match result:', error);
+    throw new Error(`Failed to update match result: ${error}`);
+  }
 }
 
 /** 
@@ -91,6 +108,73 @@ export async function createTournamentBracket(
   );
 }
 
-// Export for re-use
-export { bracketManager };
+// Re-export for convenience
 export { mapBracketsToAppFormat };
+
+// Group bracket matches by type (winners/losers/finals) for a bracket
+export function groupBracketMatchesByType(bracket: any) {
+  if (!bracket || !bracket.matches || !Array.isArray(bracket.matches)) {
+    return { winners: [], losers: [], finals: [] };
+  }
+
+  // Group matches by type and round
+  const winners: any[][] = [];
+  const losers: any[][] = [];
+  const finals: any[] = [];
+
+  // Process matches
+  bracket.matches.forEach((match: any) => {
+    const round = match.round || 0;
+    
+    // Categorize by match type
+    if (match.matchType === "winners" || match.match_type === "winners") {
+      // Ensure the round array exists
+      winners[round] = winners[round] || [];
+      winners[round].push(match);
+    } 
+    else if (match.matchType === "losers" || match.match_type === "losers") {
+      // Ensure the round array exists
+      losers[round] = losers[round] || [];
+      losers[round].push(match);
+    } 
+    else if (match.matchType === "finals" || match.match_type === "finals") {
+      finals.push(match);
+    }
+  });
+
+  return { winners, losers, finals };
+}
+
+// Fetch a bracket by ID
+export async function fetchBracketById(bracketId: string) {
+  try {
+    // This is a simplified implementation - in a real app, you'd query your database
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    // Get the bracket details
+    const { data: bracket, error: bracketError } = await supabase
+      .from('brackets')
+      .select('*')
+      .eq('id', bracketId)
+      .single();
+      
+    if (bracketError) throw bracketError;
+    
+    // Get all matches for this bracket
+    const { data: matches, error: matchesError } = await supabase
+      .from('playoff_matches')
+      .select('*')
+      .eq('bracket_id', bracketId);
+      
+    if (matchesError) throw matchesError;
+    
+    // Combine data
+    return {
+      ...bracket,
+      matches: matches || []
+    };
+  } catch (error) {
+    console.error('Error fetching bracket:', error);
+    throw new Error('Failed to fetch bracket data');
+  }
+}

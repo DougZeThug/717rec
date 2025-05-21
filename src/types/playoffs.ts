@@ -57,7 +57,9 @@ export interface PlayoffBracket {
   name?: string;
   division?: string;
   divisionId?: string;
-  format: BracketFormat;
+  /** double_elimination | single_elimination etc.  
+      Old payloads are raw strings, so make it flexible. */
+  format?: BracketFormat | string;
   matches: PlayoffMatch[];
   champion?: string;
   challongeTournamentId?: string;

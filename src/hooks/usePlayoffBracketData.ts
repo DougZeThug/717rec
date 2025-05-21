@@ -1,7 +1,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { PlayoffMatch } from "@/types";
-import { fetchBracketById, groupBracketMatchesByType, BracketMatchesByType } from "@/services/brackets";
+import { fetchBracketById, groupBracketMatchesByType } from "@/services/brackets/BracketsService";
+import { BracketMatchesByType } from "@/services/brackets/types";
 
 /**
  * Hook to fetch and organize bracket data by match type and round
