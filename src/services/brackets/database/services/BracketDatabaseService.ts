@@ -1,4 +1,4 @@
-
+import { supabase } from "@/integrations/supabase/client";
 import { PlayoffGame } from "../../types";
 import { MatchRepository } from "../repositories/MatchRepository";
 import { GameRepository } from "../repositories/GameRepository";

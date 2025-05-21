@@ -1,14 +1,113 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffGame } from "../types";
-import { DatabaseMatchResult, DatabasePlayoffMatch } from "./types/DatabaseTypes";
+import { DatabaseBracketState, DatabasePlayoffMatch, MatchResultDTO } from "./types/DatabaseTypes";
 
 /**
- * Legacy database facade class
- * This class is kept for backward compatibility
- * New code should use the modular services directly
+ * Facade for database operations related to playoffs
  */
 export class PlayoffDatabaseFacade {
+  /**
+   * Get bracket state information
+   */
+  async getBracketState(bracketId: string): Promise<DatabaseBracketState> {
+    try {
+      const { data, error } = await supabase
+        .from('brackets')
+        .select('*')
+        .eq('id', bracketId)
+        .single();
+      
+      if (error) throw error;
+      
+      return {
+        isWinnersBracketComplete: !!data.wb_champion_id,
+        isLosersBracketComplete: false, // Not stored in the database yet
+        isResetMatchNeeded: data.reset_match_needed || false,
+        isComplete: data.state === 'completed',
+        winnersBracketChampionId: data.wb_champion_id,
+        losersBracketChampionId: null, // Not stored in the database yet
+        championId: data.state === 'completed' ? data.winner_id : null
+      };
+    } catch (error) {
+      console.error('Error getting bracket state:', error);
+      return {
+        isWinnersBracketComplete: false,
+        isLosersBracketComplete: false,
+        isResetMatchNeeded: false,
+        isComplete: false,
+        winnersBracketChampionId: null,
+        losersBracketChampionId: null,
+        championId: null
+      };
+    }
+  }
+
+  /**
+   * Get all matches for a bracket
+   */
+  async getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]> {
+    try {
+      const { data, error } = await supabase
+        .from('playoff_matches')
+        .select('*')
+        .eq('bracket_id', bracketId);
+      
+      if (error) throw error;
+      
+      return data.map(match => ({
+        id: match.id,
+        bracket_id: match.bracket_id,
+        round: match.round,
+        position: match.position,
+        match_type: match.match_type,
+        team1_id: match.team1_id,
+        team2_id: match.team2_id,
+        team1_score: match.team1_score,
+        team2_score: match.team2_score,
+        team1_seed: match.team1_seed,
+        team2_seed: match.team2_seed,
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins,
+        winner_id: match.winner_id,
+        loser_id: match.loser_id,
+        next_win_match_id: match.next_win_match_id,
+        next_lose_match_id: match.next_lose_match_id,
+        best_of: match.best_of || 3,
+        status: match.status || 'pending'
+      }));
+    } catch (error) {
+      console.error('Error getting bracket matches:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get games for a match
+   */
+  async getMatchGames(matchId: string): Promise<PlayoffGame[]> {
+    try {
+      const { data, error } = await supabase
+        .from('playoff_games')
+        .select('*')
+        .eq('match_id', matchId)
+        .order('game_number', { ascending: true });
+      
+      if (error) throw error;
+      
+      return data.map(game => ({
+        id: game.id,
+        matchId: game.match_id,
+        gameNumber: game.game_number,
+        team1Score: game.team1_score,
+        team2Score: game.team2_score,
+        winnerId: game.winner_id
+      }));
+    } catch (error) {
+      console.error('Error getting match games:', error);
+      return [];
+    }
+  }
+
   /**
    * Save playoff matches
    * @deprecated Use BracketDatabaseService instead
@@ -24,27 +123,6 @@ export class PlayoffDatabaseFacade {
   }
 
   /**
-   * Get bracket matches
-   * @deprecated Use BracketDatabaseService instead
-   */
-  async getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]> {
-    try {
-      const { data, error } = await supabase
-        .from('playoff_matches')
-        .select('*')
-        .eq('bracket_id', bracketId)
-        .order('round', { ascending: true })
-        .order('position', { ascending: true });
-      
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error getting bracket matches:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Save playoff games
    * @deprecated Use BracketDatabaseService instead
    */
@@ -54,20 +132,10 @@ export class PlayoffDatabaseFacade {
   }
 
   /**
-   * Get match games
-   * @deprecated Use BracketDatabaseService instead
-   */
-  async getMatchGames(matchId: string): Promise<PlayoffGame[]> {
-    // Implementation kept for backward compatibility
-    // Would delegate to GameRepository in real usage
-    return [];
-  }
-
-  /**
    * Record match result
    * @deprecated Use BracketDatabaseService instead
    */
-  async recordMatchResult(result: DatabaseMatchResult): Promise<void> {
+  async recordMatchResult(result: MatchResultDTO): Promise<void> {
     // Implementation kept for backward compatibility
     // Would delegate to MatchRepository in real usage
   }
@@ -115,16 +183,6 @@ export class PlayoffDatabaseFacade {
   async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<any> {
     // Implementation kept for backward compatibility
     // Would delegate to MatchRepository in real usage
-    return {};
-  }
-
-  /**
-   * Get bracket state
-   * @deprecated Use BracketDatabaseService instead
-   */
-  async getBracketState(bracketId: string): Promise<any> {
-    // Implementation kept for backward compatibility
-    // Would delegate to BracketRepository in real usage
     return {};
   }
 }

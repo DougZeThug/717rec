@@ -1,7 +1,6 @@
-
 import { PlayoffDatabaseFacade } from "../../database/PlayoffDatabaseFacade";
 import { PlayoffGame, PlayoffMatch } from "../../types";
-import { DatabasePlayoffMatch, MatchResultDTO } from "../../database/types/DatabaseTypes";
+import { DatabaseBracketState, DatabasePlayoffMatch, MatchResultDTO } from "../../database/types/DatabaseTypes";
 import { vi } from "vitest";
 
 /**
@@ -10,6 +9,22 @@ import { vi } from "vitest";
 export function setupAdapterTest() {
   const facade = vi.mocked(PlayoffDatabaseFacade).mock.instances[0];
   return facade;
+}
+
+/**
+ * Create a database bracket state object for testing
+ */
+export function createBracketState(overrides?: Partial<DatabaseBracketState>): DatabaseBracketState {
+  return {
+    isWinnersBracketComplete: false,
+    isLosersBracketComplete: false,
+    isResetMatchNeeded: false,
+    isComplete: false,
+    winnersBracketChampionId: null,
+    losersBracketChampionId: null,
+    championId: null,
+    ...overrides
+  };
 }
 
 /**
@@ -30,6 +45,12 @@ export function createAppMatch(overrides?: Partial<PlayoffMatch>): PlayoffMatch 
     nextLoseMatchId: 'next-lose',
     bestOf: 3,
     status: 'pending',
+    winnerId: null,
+    loserId: null,
+    team1Score: null,
+    team2Score: null,
+    team1GameWins: null,
+    team2GameWins: null,
     ...overrides
   };
 }

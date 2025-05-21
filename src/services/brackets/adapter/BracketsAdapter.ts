@@ -1,6 +1,8 @@
-
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
 import { BracketFilter, BracketRecord, BracketTable } from "./types/AdapterTypes";
+import { PlayoffMatch, PlayoffMatchType } from "../types";
+import { CrudInterface } from "brackets-manager/dist/types";
+import { Table } from "brackets-manager/dist/types/storage";
 
 /**
  * Adapter implementation for BracketsManager
@@ -31,11 +33,13 @@ export class BracketsAdapter {
           id: match.id,
           round: match.round,
           position: match.position,
-          matchType: match.group_id ? 'losers' : 'winners',
+          matchType: match.group_id ? 'losers' as PlayoffMatchType : 'winners' as PlayoffMatchType,
           team1Id: match.opponent1?.id || null,
           team2Id: match.opponent2?.id || null,
-          bracket_id: match.stage_id
-        }));
+          bracket_id: match.stage_id,
+          winnerId: null,
+          loserId: null
+        }) as PlayoffMatch);
         
         const result = await this.service.savePlayoffMatches(matches);
         return result;
@@ -75,7 +79,9 @@ export class BracketsAdapter {
       
       // Participants
       if ('tournament_id' in filter) {
-        return this.service.selectParticipants(filter) as unknown as BracketRecord[];
+        return this.service.selectParticipants({
+          tournament_id: filter.tournament_id
+        }) as unknown as BracketRecord[];
       }
       
       // Matches
@@ -170,7 +176,7 @@ export class BracketsAdapter {
       // In a real implementation, we would delete the records
       return 1; // Indicate success
     } catch (error) {
-      console.error('Error in adapter delete method:', error);
+      console.error('Error in delete method:', error);
       return 0;
     }
   }

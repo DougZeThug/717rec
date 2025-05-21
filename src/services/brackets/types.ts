@@ -1,19 +1,19 @@
 
-import { PlayoffMatch, PlayoffBracket, Team } from "@/types";
+import { PlayoffMatch as AppPlayoffMatch, PlayoffBracket, Team } from "@/types";
 import { BRACKET_STATES } from "@/constants/brackets";
 
 // Interface for grouping matches by type (winners, losers, finals)
 export interface BracketMatchesByType {
-  winners: PlayoffMatch[][];
-  losers: PlayoffMatch[][];
-  finals: PlayoffMatch[];
+  winners: AppPlayoffMatch[][];
+  losers: AppPlayoffMatch[][];
+  finals: AppPlayoffMatch[];
 }
 
 // Bracket state types
 export type BracketState = typeof BRACKET_STATES[keyof typeof BRACKET_STATES];
 
 // Re-export these types from @/types so they're available through our service
-export type { PlayoffMatch, PlayoffBracket, Team };
+export type { AppPlayoffMatch as PlayoffMatch, PlayoffBracket, Team };
 
 // Basic match type for brackets
 export interface BaseBracketMatch {

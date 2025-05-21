@@ -13,8 +13,8 @@ export class ParticipantRepository extends BaseRepository implements IParticipan
    * @returns ID of the created participant
    */
   async createParticipant(participant: ParticipantData): Promise<string> {
-    await this.executeOperation('createParticipant', () =>
-      supabase
+    try {
+      const { error } = await supabase
         .from('participants')
         .insert({
           id: participant.id,
@@ -24,10 +24,14 @@ export class ParticipantRepository extends BaseRepository implements IParticipan
           name: participant.name,
           seeding: participant.seeding ?? null,
           position: participant.position ?? null,
-        })
-    );
-    
-    return participant.id;
+        });
+      
+      if (error) throw error;
+      return participant.id;
+    } catch (error) {
+      console.error('Error creating participant:', error);
+      throw error;
+    }
   }
 
   /**
@@ -36,30 +40,35 @@ export class ParticipantRepository extends BaseRepository implements IParticipan
    * @returns Array of participants
    */
   async selectParticipants(filters?: ParticipantFilter): Promise<ParticipantData[]> {
-    let query = supabase.from('participants').select('*');
-    
-    if (filters?.tournament_id) {
-      query = query.eq('tournament_id', filters.tournament_id);
-    }
-    
-    if (filters?.name) {
-      query = query.eq('name', filters.name);
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
+    try {
+      let query = supabase.from('participants').select('*');
+      
+      if (filters?.tournament_id) {
+        query = query.eq('tournament_id', filters.tournament_id);
+      }
+      
+      if (filters?.name) {
+        query = query.eq('name', filters.name);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error('Error selecting participants:', error);
+        throw new Error(`Failed to select participants: ${error.message}`);
+      }
+      
+      // Convert from DB format to application format
+      return (data || []).map(p => ({
+        id: p.id,
+        name: p.name || '',
+        tournament_id: p.tournament_id || p.bracket_id,
+        position: p.position,
+        seeding: p.seeding
+      }));
+    } catch (error) {
       console.error('Error selecting participants:', error);
-      throw new Error(`Failed to select participants: ${error.message}`);
+      return [];
     }
-    
-    // Convert from DB format to application format
-    return (data || []).map(p => ({
-      id: p.id,
-      name: p.name || '',
-      tournament_id: p.tournament_id || p.bracket_id,
-      position: p.position,
-      seeding: p.seeding
-    }));
   }
 }

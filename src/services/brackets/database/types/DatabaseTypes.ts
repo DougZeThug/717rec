@@ -19,15 +19,17 @@ export class DatabaseOperationError extends Error {
  * Interface for match repository operations
  */
 export interface IMatchRepository {
-  saveMatches(matches: PlayoffMatch[]): Promise<number>;
-  getMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
+  saveMatches(matches: DatabasePlayoffMatch[]): Promise<number>;
+  getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
+  getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
+  updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
 }
 
 /**
  * Interface for game repository operations
  */
-export interface IGameRepository {
-  saveGames(games: PlayoffGame[]): Promise<number>;
+export interface IPlayoffGamesRepository {
+  saveGames(games: PlayoffGame[]): Promise<void>;
   getMatchGames(matchId: string): Promise<PlayoffGame[]>;
 }
 
@@ -146,39 +148,9 @@ export interface ParticipantFilter {
 }
 
 /**
- * Interface for playoff matches repository
- */
-export interface IPlayoffMatchesRepository {
-  saveMatches(matches: DatabasePlayoffMatch[]): Promise<void>;
-  updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
-  getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
-  getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
-}
-
-/**
- * Interface for playoff games repository
- */
-export interface IPlayoffGamesRepository {
-  saveGames(games: PlayoffGame[]): Promise<void>;
-  getMatchGames(matchId: string): Promise<PlayoffGame[]>;
-}
-
-/**
- * Interface for team advancement service
- */
-export interface ITeamAdvancementService {
-  advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void>;
-  handleGrandFinalsReset(
-    bracketId: string, 
-    winnersBracketChampionId: string,
-    losersBracketChampionId: string,
-    gf1WinnerId: string
-  ): Promise<string>;
-}
-
-/**
- * Playoff Match type for application use
- * Represents a match in the playoff bracket
+ * Playoff Match type for database operations
+ * This is separate from the PlayoffMatch type in /types
+ * to avoid circular dependencies
  */
 export interface PlayoffMatch {
   id: string;
@@ -200,4 +172,17 @@ export interface PlayoffMatch {
   nextLoseMatchId?: string | null;
   bestOf?: number;
   status?: string;
+}
+
+/**
+ * Interface for team advancement service
+ */
+export interface ITeamAdvancementService {
+  advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void>;
+  handleGrandFinalsReset(
+    bracketId: string, 
+    winnersBracketChampionId: string,
+    losersBracketChampionId: string,
+    gf1WinnerId: string
+  ): Promise<string>;
 }

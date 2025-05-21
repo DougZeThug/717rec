@@ -3,12 +3,12 @@
  * Singleton export of the bracket manager instance
  */
 import { BracketsManager } from 'brackets-manager';
-import { BracketsAdapter } from './adapter/BracketsAdapter';
+import { BracketsManagerAdapter } from './adapter/BracketsManagerAdapter';
 import { CrudInterface } from 'brackets-manager/dist/types';
 
-// Create a proper adapter instance that matches the CrudInterface expected by BracketsManager
-const adapter = new BracketsAdapter() as CrudInterface;
+// Create an instance of our custom adapter that implements CrudInterface
+const adapter = new BracketsManagerAdapter();
 
-// Create an instance of BracketsManager with our custom adapter
+// Create an instance of BracketsManager with our adapter
 // The adapter implements the CrudInterface required by BracketsManager
-export const manager = new BracketsManager(adapter);
+export const manager = new BracketsManager(adapter as unknown as CrudInterface);
