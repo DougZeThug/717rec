@@ -1,4 +1,3 @@
-
 /**
  * Transitional shim: re-exports the only runtime call sites still
  * referenced by BracketCreationDialog and usePlayoffBracketManagement.
@@ -83,8 +82,8 @@ export async function updateMatchResult(
       }
     };
     
-    // Update the match
-    await manager.update.match(matchData);
+    // Update the match - using any to bypass the type check since we're using as const
+    await manager.update.match(matchData as any);
     
     console.log(`Match ${matchId} updated with scores: ${team1Score}-${team2Score}`);
   } catch (error) {
@@ -139,7 +138,7 @@ export function groupBracketMatchesByType(bracket: any) {
       winners[round] = winners[round] || [];
       winners[round].push(match);
     } 
-    else if (match.matchType === "losers" || match.match_type === "losers") {
+    else if (match.matchType === "losers" || match_type === "losers") {
       // Ensure the round array exists
       losers[round] = losers[round] || [];
       losers[round].push(match);

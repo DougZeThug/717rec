@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Team } from "@/types";
@@ -7,6 +6,7 @@ import { BracketService } from "@/BracketService";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ParticipantOperationError } from "@/services/brackets/adapter/types/ParticipantTypes";
+import { BracketFormat } from "@/constants/brackets";
 
 interface BracketCreationDialogProps {
   open: boolean;
@@ -66,7 +66,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       
       const bracketId = await BracketService.createBracket(
         data.title,
-        data.format,
+        data.format as BracketFormat,
         data.divisionId,
         data.teams
       );

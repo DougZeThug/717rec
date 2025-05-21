@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { bracketFormSchema, BracketFormValues } from "./BracketFormSchema";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { BRACKET_FORMATS } from "@/constants/brackets";
 
 interface UseBracketFormProps {
   teams: Team[];
@@ -22,7 +23,7 @@ export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
     defaultValues: {
       title: "",
       divisionId: "",
-      format: "Single Elimination",
+      format: BRACKET_FORMATS.SINGLE,
       teams: []
     }
   });

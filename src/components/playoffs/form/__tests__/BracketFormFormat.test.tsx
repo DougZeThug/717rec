@@ -8,12 +8,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BracketFormFormat } from '../BracketFormFormat';
 import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
+import { BRACKET_FORMATS } from "@/constants/brackets";
 
 const TestWrapper = () => {
   const form = useForm<BracketFormValues>({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
-      format: "Double Elimination",
+      format: BRACKET_FORMATS.DOUBLE,
     },
   });
 
@@ -42,8 +43,8 @@ describe('BracketFormFormat', () => {
     
     await user.click(selectTrigger);
     
-    const singleElimination = screen.getByText('Single Elimination');
-    const doubleElimination = screen.getByText('Double Elimination');
+    const singleElimination = screen.getByText(BRACKET_FORMATS.SINGLE);
+    const doubleElimination = screen.getByText(BRACKET_FORMATS.DOUBLE);
     
     expect(singleElimination).toBeInTheDocument();
     expect(doubleElimination).toBeInTheDocument();
@@ -52,7 +53,7 @@ describe('BracketFormFormat', () => {
   it('has Double Elimination selected by default', () => {
     render(<TestWrapper />);
     
-    const selectTrigger = screen.getByText('Double Elimination');
+    const selectTrigger = screen.getByText(BRACKET_FORMATS.DOUBLE);
     expect(selectTrigger).toBeInTheDocument();
   });
 });

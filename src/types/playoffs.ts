@@ -57,14 +57,12 @@ export interface PlayoffBracket {
   name?: string;
   division?: string;
   divisionId?: string;
-  /** double_elimination | single_elimination etc.  
-      Old payloads are raw strings, so make it flexible. */
-  format?: BracketFormat | string;
+  format: BracketFormat;
   /** raw DB rows or mapped PlayoffMatch objects – loosen until UI refactor */
   matches: any[];
   champion?: string;
   /* challonge columns removed */
-  state?: BracketState;
+  state: BracketState;
   created_at?: string;
 }
 
