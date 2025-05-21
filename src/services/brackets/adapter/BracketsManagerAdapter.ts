@@ -4,7 +4,7 @@
  * This adapter conforms to the exact interface expected by BracketsManager
  */
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
-import { PlayoffMatchType } from "@/types/playoffs";
+import { PlayoffMatchType } from "@/types/playoffs-compat";
 import { toRow, toRuntime } from "../database/mappers/MatchMapper";
 import { supabase } from "@/integrations/supabase/client";
 
