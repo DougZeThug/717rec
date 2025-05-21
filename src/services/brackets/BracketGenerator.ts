@@ -19,11 +19,11 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): Promise<BracketMatch[]> {
-    // Using the brackets-manager library to generate and get matches
+    // Using the brackets-manager library to get matches
     console.log(`Generating single elimination bracket with ${teams.length} teams`);
     
-    // The manager.getMatches returns a Promise, so we need to await it
-    const matches = await manager.getMatches({ tournamentId: bracketId });
+    // Using manager.get.match instead of manager.getMatches
+    const matches = await manager.get.match({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -37,11 +37,11 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): Promise<BracketMatch[]> {
-    // Using the brackets-manager library to generate and get matches
+    // Using the brackets-manager library to get matches
     console.log(`Generating double elimination bracket with ${teams.length} teams`);
     
-    // The manager.getMatches returns a Promise, so we need to await it
-    const matches = await manager.getMatches({ tournamentId: bracketId });
+    // Using manager.get.match instead of manager.getMatches
+    const matches = await manager.get.match({ tournament_id: bracketId });
     return matches as BracketMatch[];
   }
 
@@ -55,11 +55,11 @@ export class BracketGenerator {
     bracketId: string,
     teams: Team[]
   ): Promise<PlayoffMatch[]> {
-    // Using the brackets-manager library to generate and get matches
+    // Using the brackets-manager library to get matches
     console.log(`Generating playoff bracket with ${teams.length} teams`);
     
-    // The manager.getMatches returns a Promise, so we need to await it
-    const matches = await manager.getMatches({ tournamentId: bracketId });
+    // Using manager.get.match instead of manager.getMatches
+    const matches = await manager.get.match({ tournament_id: bracketId });
     return matches as PlayoffMatch[];
   }
 

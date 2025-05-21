@@ -264,19 +264,99 @@ export class PlayoffDatabaseAdapter {
   }
 }
 
-// Add adapter interface for brackets-manager compatibility
-export const create = {
-  match: PlayoffDatabaseAdapter.savePlayoffMatches,
-  participant: PlayoffDatabaseAdapter.createParticipant,
-};
-
-export const select = {
-  match: PlayoffDatabaseAdapter.getBracketMatches,
-  participant: PlayoffDatabaseAdapter.selectParticipants,
-};
-
-// Export a unified adapter interface
+// Complete adapter interface for brackets-manager compatibility
+// This implements the CrudInterface required by BracketsManager
 export const adapter = {
-  create,
-  select,
+  // Create methods
+  create: {
+    match: PlayoffDatabaseAdapter.savePlayoffMatches,
+    participant: PlayoffDatabaseAdapter.createParticipant,
+  },
+  
+  // Select methods
+  select: {
+    match: PlayoffDatabaseAdapter.getBracketMatches,
+    participant: PlayoffDatabaseAdapter.selectParticipants,
+  },
+  
+  // Required CrudInterface methods
+  insert: async (data: any[]): Promise<number> => {
+    // Determine the type of data and delegate to appropriate create function
+    if (data.length === 0) return 0;
+    
+    const sample = data[0];
+    
+    // Insert matches
+    if ('opponent1' in sample || 'round' in sample) {
+      await PlayoffDatabaseAdapter.savePlayoffMatches(data as any);
+      return data.length;
+    }
+    
+    // Insert participants
+    if ('tournament_id' in sample && 'name' in sample) {
+      for (const item of data) {
+        await PlayoffDatabaseAdapter.createParticipant(item);
+      }
+      return data.length;
+    }
+    
+    console.warn('Unrecognized data type in adapter insert:', sample);
+    return 0;
+  },
+  
+  // Update method implementation
+  update: async (id: string, data: any): Promise<number> => {
+    console.log('Update operation called with ID:', id, 'and data:', data);
+    
+    // For participants
+    if ('name' in data || 'tournament_id' in data) {
+      const { error } = await supabase
+        .from('participants')
+        .update(data)
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error updating participant:', error);
+        throw error;
+      }
+      return 1;
+    }
+    
+    // For matches
+    if ('opponent1' in data || 'opponent2' in data || 'status' in data) {
+      // Map from brackets-manager format to our database format
+      const matchData: any = {};
+      
+      if ('opponent1' in data) matchData.team1_id = data.opponent1?.id || null;
+      if ('opponent2' in data) matchData.team2_id = data.opponent2?.id || null;
+      if ('status' in data) matchData.status = data.status;
+      if ('result' in data && data.result) {
+        matchData.team1_score = data.result[0];
+        matchData.team2_score = data.result[1];
+      }
+      
+      const { error } = await supabase
+        .from('playoff_matches')
+        .update(matchData)
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error updating match:', error);
+        throw error;
+      }
+      return 1;
+    }
+    
+    console.warn('Unrecognized data type in adapter update:', data);
+    return 0;
+  },
+  
+  // Delete method implementation
+  delete: async (filter?: any): Promise<number> => {
+    console.log('Delete operation called with filter:', filter);
+    
+    // Since we don't have a general delete operation yet, log it and return 0
+    console.warn('Delete operation not fully implemented yet');
+    return 0;
+  }
 };
