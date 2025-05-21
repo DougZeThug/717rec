@@ -56,11 +56,20 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       setIsSubmitting(true);
       const { team1Wins, team2Wins } = calculateTotalScore();
       
-      const team1Score = team1Wins > team2Wins ? 1 : 0;
-      const team2Score = team2Wins > team1Wins ? 1 : 0;
+      // Determine winner based on who has more game wins
+      const winnerId = team1Wins > team2Wins ? match.team1Id : match.team2Id;
       
-      // Pass the game win counts to onSave
-      await onSave(match.id, team1Score, team2Score, games, team1Wins, team2Wins);
+      if (!winnerId) {
+        setValidationError("Unable to determine match winner");
+        return;
+      }
+      
+      // Set match score to 1-0 (winner-loser format)
+      const team1Score = match.team1Id === winnerId ? 1 : 0;
+      const team2Score = match.team2Id === winnerId ? 1 : 0;
+      
+      // Pass the game win counts and game details to onSave
+      await onSave(match.id, winnerId, team1Score, team2Score, games, team1Wins, team2Wins);
       onCancel();
     } catch (error) {
       console.error("Error saving match scores:", error);

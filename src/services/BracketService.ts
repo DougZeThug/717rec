@@ -1,4 +1,3 @@
-
 /**
  * Transitional shim: re-exports the only runtime call sites still
  * referenced by BracketCreationDialog and usePlayoffBracketManagement.
@@ -10,10 +9,18 @@ import { BracketCreationService } from '@/services/brackets/services/BracketCrea
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
 import { BracketFormat, BRACKET_FORMATS, BracketState } from '@/constants/brackets';
-import { PlayoffMatch } from '@/types/playoffs';
+import { PlayoffMatch, PlayoffGame } from '@/types/playoffs';
 import { supabase } from '@/integrations/supabase/client';
 import { BracketMapper } from './brackets/mappers/BracketMapper';
 import { BracketDto, MatchDto } from '@/types/supabase.generated';
+import { updateMatchScore } from './brackets/updateMatchScore';
+import { computeBracketState } from './brackets/computeBracketState';
+
+// Export new score update function
+export { updateMatchScore };
+
+// Export bracket state helper
+export { computeBracketState };
 
 // TODO: UI uses this; replace with real impl if needed. For now noop.
 export const scoreMatch = async () => ({ ok: true });
@@ -96,30 +103,20 @@ export async function updateMatchResult(
   team1Score: number,
   team2Score: number,
   team1GameWins: number = 0,
-  team2GameWins: number = 0
+  team2GameWins: number = 0,
+  games?: PlayoffGame[]
 ): Promise<void> {
   try {
-    // Import manager directly to avoid circular dependency
-    const { manager } = await import('./brackets/BracketsManagerInstance');
-    
-    // Create match data for brackets-manager
-    const matchData = {
-      id: matchId,
-      status: "completed" as const,
-      opponent1: {
-        id: matchId.split('-')[0],
-        score: team1Score,
-        result: matchId.split('-')[0] === winnerId ? "win" as const : "loss" as const
-      },
-      opponent2: {
-        id: matchId.split('-')[1],
-        score: team2Score,
-        result: matchId.split('-')[1] === winnerId ? "win" as const : "loss" as const
-      }
-    };
-    
-    // Update the match - using any to bypass the type check since we're using as const
-    await manager.update.match(matchData as any);
+    // Use the new updateMatchScore implementation
+    await updateMatchScore(
+      matchId,
+      winnerId, 
+      team1Score,
+      team2Score,
+      team1GameWins,
+      team2GameWins,
+      games
+    );
     
     console.log(`Match ${matchId} updated with scores: ${team1Score}-${team2Score}`);
   } catch (error) {
@@ -226,6 +223,7 @@ export const BracketService = {
   deleteBracket,
   listBrackets,
   getBracketById,
+  updateMatchScore,
+  computeBracketState,
   supabase // Export supabase to be used by our hooks
 };
-

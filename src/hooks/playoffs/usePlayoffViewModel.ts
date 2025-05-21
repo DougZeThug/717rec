@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { BracketService, fetchBracketById, groupBracketMatchesByType, updateMatchResult } from "@/services/BracketService";
+import { BracketService, fetchBracketById, groupBracketMatchesByType, updateMatchResult, computeBracketState } from "@/services/BracketService";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
 import { BracketMatchesByType } from "@/services/brackets/types";
-import { PlayoffBracket, PlayoffViewModel, Team } from "@/types/playoffs";
+import { PlayoffBracket, PlayoffViewModel, Team, PlayoffGame, BracketState } from "@/types/playoffs";
+import { BRACKET_STATES } from '@/constants/brackets';
 
 /**
  * Unified hook for playoff bracket data and management
@@ -50,6 +51,22 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       if (!bracketId) return null;
       
       const bracket = await fetchBracketById(bracketId);
+      
+      // Calculate and update the bracket state if needed
+      if (bracket) {
+        const calculatedState = computeBracketState(bracket);
+        if (bracket.state !== calculatedState) {
+          // Update the bracket state in the database
+          await BracketService.supabase
+            .from('brackets')
+            .update({ state: calculatedState })
+            .eq('id', bracketId);
+          
+          // Update the local state
+          bracket.state = calculatedState;
+        }
+      }
+      
       return bracket;
     },
     enabled: !!bracketId
@@ -100,7 +117,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     team1Score: number, 
     team2Score: number,
     team1GameWins?: number,
-    team2GameWins?: number
+    team2GameWins?: number,
+    games?: PlayoffGame[]
   ) => {
     try {
       await updateMatchResult(
@@ -109,7 +127,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
         team1Score,
         team2Score,
         team1GameWins,
-        team2GameWins
+        team2GameWins,
+        games
       );
       
       // Refetch bracket data after updating match

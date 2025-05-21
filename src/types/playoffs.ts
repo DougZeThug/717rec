@@ -1,3 +1,4 @@
+
 // Types for playoff brackets
 import { BracketFormat, BracketState } from "@/constants/brackets";
 
@@ -60,7 +61,6 @@ export interface PlayoffBracket {
   /** raw DB rows or mapped PlayoffMatch objects – loosen until UI refactor */
   matches: PlayoffMatch[];
   champion?: string;
-  /* challonge columns removed */
   state: BracketState;
   created_at?: string;
 }
@@ -115,7 +115,8 @@ export interface PlayoffViewModel {
     team1Score: number, 
     team2Score: number,
     team1GameWins?: number,
-    team2GameWins?: number
+    team2GameWins?: number,
+    games?: PlayoffGame[]
   ) => Promise<void>;
 }
 
