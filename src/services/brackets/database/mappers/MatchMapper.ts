@@ -1,6 +1,6 @@
 
 import { DatabasePlayoffMatch } from '../types/DatabaseTypes';
-import { PlayoffMatch } from '@/types';
+import { PlayoffMatch } from '@/types/playoffs';
 
 /**
  * Convert database row to runtime type
@@ -24,7 +24,7 @@ export const toRuntime = (r: DatabasePlayoffMatch): PlayoffMatch => ({
   nextWinMatchId: r.next_win_match_id,
   nextLoseMatchId: r.next_lose_match_id,
   bestOf: r.best_of || 3,
-  status: r.status
+  status: (r.status as "pending" | "in_progress" | "completed") || "pending"
 });
 
 /**

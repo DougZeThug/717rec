@@ -1,10 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
-import { PlayoffGame, PlayoffMatchType } from "../../types";
-import { MatchRepository } from "../repositories/MatchRepository";
-import { GameRepository } from "../repositories/GameRepository";
-import { BracketRepository } from "../repositories/BracketRepository";
-import { BracketCreationParams, DatabaseBracketState, DatabaseMatchResult, DatabasePlayoffMatch, PlayoffMatch } from "../types/DatabaseTypes";
-import { nanoid } from "nanoid";
+import { supabase } from '@/integrations/supabase/client';
+import { DatabasePlayoffMatch, MatchResultDTO } from '../types/DatabaseTypes';
+import { PlayoffGame } from '@/types/playoffs';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Service that provides a unified interface for bracket database operations
@@ -120,7 +117,7 @@ export class BracketDatabaseService {
   /**
    * Record a match result
    */
-  async recordMatchResult(result: DatabaseMatchResult): Promise<void> {
+  async recordMatchResult(result: MatchResultDTO): Promise<void> {
     const { match_id, winner_id, loser_id, team1_score, team2_score, team1_game_wins, team2_game_wins, games } = result;
     
     // Update the match with the result
@@ -139,7 +136,7 @@ export class BracketDatabaseService {
       const gamesWithMatchId = games.map(game => ({
         ...game,
         matchId: match_id,
-        id: game.id || nanoid()
+        id: game.id || uuidv4()
       }));
       
       await this.savePlayoffGames(gamesWithMatchId);
@@ -279,7 +276,7 @@ export class BracketDatabaseService {
    */
   async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch> {
     const resetMatch: PlayoffMatch = {
-      id: nanoid(),
+      id: uuidv4(),
       bracket_id: bracketId,
       round: 0,
       position: 0,

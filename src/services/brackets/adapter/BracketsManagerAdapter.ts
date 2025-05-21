@@ -6,6 +6,7 @@
 import { BracketDatabaseService } from "../database/services/BracketDatabaseService";
 import { PlayoffMatchType } from "@/types/playoffs";
 import { toRow, toRuntime } from "../database/mappers/MatchMapper";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define types to match brackets-manager's expectations
 interface Id {
@@ -30,7 +31,7 @@ type OmitId<T> = Omit<T, 'id'>;
  * Interface that matches brackets-manager's CrudInterface
  */
 interface CrudInterface {
-  insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean>;
+  insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number | string>;
   select<T extends Table>(table: T): Promise<DataTypes[T][]>;
   select<T extends Table>(table: T, id: string | number): Promise<DataTypes[T]>;
   select<T extends Table>(table: T, filter: Partial<DataTypes[T]>): Promise<DataTypes[T][]>;
@@ -54,7 +55,7 @@ export class BracketsManagerAdapter implements CrudInterface {
    * Insert records into a specific table
    * Implementation to match CrudInterface
    */
-  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<boolean> {
+  async insert<T extends Table>(table: T, value: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number | string> {
     try {
       const isArray = Array.isArray(value);
       const dataArray = isArray ? value : [value];
@@ -62,39 +63,71 @@ export class BracketsManagerAdapter implements CrudInterface {
       // Match table name to operation
       switch (table) {
         case 'match':
-          const matches = dataArray.map((match: any) => ({
+          const match = dataArray[0]; // Use first entry in case of array
+          const matchData = {
             id: match.id || undefined,
             round: match.round,
             position: match.position,
-            matchType: match.group_id ? 'losers' as PlayoffMatchType : 'winners' as PlayoffMatchType,
-            team1Id: match.opponent1?.id || null,
-            team2Id: match.opponent2?.id || null,
+            match_type: match.group_id ? 'losers' as PlayoffMatchType : 'winners' as PlayoffMatchType,
+            team1_id: match.opponent1?.id || null,
+            team2_id: match.opponent2?.id || null,
             bracket_id: match.stage_id,
-            winnerId: null,
-            loserId: null,
-            bestOf: match.best_of || 3 // Ensure bestOf has a default value
-          }));
-          await this.service.savePlayoffMatches(matches);
-          return true; // Return boolean instead of number
+            winner_id: null,
+            loser_id: null,
+            best_of: match.best_of || 3 // Ensure bestOf has a default value
+          };
+          
+          const matchResult = await supabase
+            .from('playoff_matches')
+            .insert(matchData)
+            .select('id')
+            .single();
+          
+          if (matchResult.error) throw matchResult.error;
+          return matchResult.data.id;
           
         case 'participant':
-          for (const participant of dataArray) {
-            await this.service.createParticipant({
-              id: participant.id,
-              tournament_id: participant.tournament_id,
-              name: participant.name || '',
-              position: participant.position
-            });
-          }
-          return true; // Return boolean instead of number
+          const participant = dataArray[0]; // Use first entry in case of array
+          const participantData = {
+            tournament_id: participant.tournament_id,
+            name: participant.name || '',
+            position: participant.position,
+            seeding: participant.seeding ?? null
+          };
+          
+          const participantResult = await supabase
+            .from('participants')
+            .insert(participantData)
+            .select('id')
+            .single();
+          
+          if (participantResult.error) throw participantResult.error;
+          return participantResult.data.id;
+          
+        case 'stage':
+          const stage = dataArray[0]; // Use first entry in case of array
+          const stageData = {
+            id: stage.id, // Assuming bracket ID is provided
+            title: stage.name,
+            format: stage.type || 'single_elimination'
+          };
+          
+          const stageResult = await supabase
+            .from('brackets')
+            .insert(stageData)
+            .select('id')
+            .single();
+          
+          if (stageResult.error) throw stageResult.error;
+          return stageResult.data.id;
           
         default:
           console.warn(`Insert operation not implemented for table ${table}`);
-          return true; // Return boolean instead of number for any unimplemented tables
+          throw new Error(`Insert operation not implemented for table ${table}`);
       }
     } catch (error) {
       console.error(`Error in insert for table ${table}:`, error);
-      return false; // Return false on error
+      throw error;
     }
   }
   
