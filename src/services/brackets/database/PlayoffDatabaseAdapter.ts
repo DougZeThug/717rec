@@ -1,4 +1,3 @@
-
 import { PlayoffMatch, PlayoffGame, PlayoffMatchType } from '@/types/playoffs';
 import { DatabaseMatchResult, MatchResultDTO } from './types/DatabaseTypes';
 import { BracketDatabaseService } from './services/BracketDatabaseService';
@@ -45,7 +44,7 @@ export class PlayoffDatabaseAdapter {
       return dbMatch;
     });
     
-    await PlayoffDatabaseAdapter.service.savePlayoffMatches(dbMatches);
+    await PlayoffDatabaseAdapter.service.savePlayoffMatches(matches);
   }
 
   /**
@@ -53,8 +52,7 @@ export class PlayoffDatabaseAdapter {
    */
   static async getBracketMatches(bracketId: string): Promise<PlayoffMatch[]> {
     const dbMatches = await PlayoffDatabaseAdapter.service.getBracketMatches(bracketId);
-    // Convert database types to app types using our mapper
-    return dbMatches.map(dbMatch => toRuntime(dbMatch));
+    return dbMatches;
   }
 
   /**
@@ -72,20 +70,7 @@ export class PlayoffDatabaseAdapter {
   }
 
   static async recordMatchResult(matchId: string, result: MatchResultDTO): Promise<void> {
-    // Convert to DatabaseMatchResult format expected by the service
-    const dbResult: DatabaseMatchResult = {
-      match_id: matchId,
-      winner_id: result.winnerId,
-      loser_id: result.loserId,
-      team1_score: result.team1Score,
-      team2_score: result.team2Score,
-      team1_game_wins: result.team1GameWins || 0,
-      team2_game_wins: result.team2GameWins || 0,
-      completed: result.completed || true,
-      games: result.games
-    };
-    
-    await PlayoffDatabaseAdapter.service.recordMatchResult(dbResult);
+    await PlayoffDatabaseAdapter.service.recordMatchResult(result);
   }
 
   /**
@@ -121,18 +106,7 @@ export class PlayoffDatabaseAdapter {
    */
   static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch> {
     const result = await PlayoffDatabaseAdapter.service.createResetMatch(bracketId, team1Id, team2Id);
-    // Convert database type to app type and ensure all required fields are present
-    const match = toRuntime(result);
-    
-    if (!match.winnerId) {
-      match.winnerId = null; // Ensure winnerId is set
-    }
-    
-    if (!match.bestOf) {
-      match.bestOf = 3; // Ensure bestOf has a default value
-    }
-    
-    return match;
+    return result;
   }
 
   /**

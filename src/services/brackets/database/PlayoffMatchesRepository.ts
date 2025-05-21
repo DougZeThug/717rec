@@ -1,7 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffGame, PlayoffMatchType } from "../types";
+import { PlayoffGame, PlayoffMatchType } from "@/types/playoffs-compat";
 import { DatabaseOperationError, DatabasePlayoffMatch, IPlayoffMatchesRepository, MatchResultDTO } from "./types";
+import { toRuntime } from "./mappers/MatchMapper";
 
 /**
  * Repository implementation for playoff matches
