@@ -59,7 +59,7 @@ export interface PlayoffBracket {
   divisionId?: string;
   format: BracketFormat;
   /** raw DB rows or mapped PlayoffMatch objects – loosen until UI refactor */
-  matches: any[];
+  matches: PlayoffMatch[];
   champion?: string;
   /* challonge columns removed */
   state: BracketState;

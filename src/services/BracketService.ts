@@ -11,8 +11,9 @@ import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
 import { BracketFormat, BRACKET_FORMATS, BracketState } from '@/constants/brackets';
 import { PlayoffMatch } from '@/types/playoffs';
-import { toRuntime } from '@/services/brackets/database/MatchMapper';
 import { supabase } from '@/integrations/supabase/client';
+import { BracketMapper } from './brackets/mappers/BracketMapper';
+import { BracketDto, MatchDto } from '@/types/supabase.generated';
 
 // TODO: UI uses this; replace with real impl if needed. For now noop.
 export const scoreMatch = async () => ({ ok: true });
@@ -22,13 +23,11 @@ export const listBrackets = async () => {
     .from('brackets')
     .select('*, matches(*)');
   if (error) throw new Error(error.message);
-  return data.map(b => ({
-    id: b.id,
-    name: b.title, // Map from database 'title' field to 'name' expected by UI
-    format: (b.format ?? 'double_elimination') as BracketFormat,
-    state: (b.state ?? 'pending') as BracketState,
-    matches: (b.matches ?? []).map(toRuntime),
-  }));
+  
+  return data.map(bracketDto => {
+    const matchesDto = bracketDto.matches || [];
+    return BracketMapper.bracketDtoToDomain(bracketDto as BracketDto, matchesDto as MatchDto[]);
+  });
 };
 
 export const getBracketById = async (id: string) => {
@@ -38,13 +37,11 @@ export const getBracketById = async (id: string) => {
     .eq('id', id)
     .single();
   if (error) throw new Error(error.message);
-  return {
-    id: data.id,
-    name: data.title, // Map from database 'title' field to 'name' expected by UI
-    format: (data.format ?? 'double_elimination') as BracketFormat,
-    state: (data.state ?? 'pending') as BracketState,
-    matches: (data.matches ?? []).map(toRuntime),
-  };
+  
+  return BracketMapper.bracketDtoToDomain(
+    data as BracketDto, 
+    (data.matches || []) as MatchDto[]
+  );
 };
 
 export const deleteBracket = async (id: string) => {
@@ -191,9 +188,6 @@ export function groupBracketMatchesByType(bracket: any) {
 // Fetch a bracket by ID
 export async function fetchBracketById(bracketId: string) {
   try {
-    // This is a simplified implementation - in a real app, you'd query your database
-    const { supabase } = await import('@/integrations/supabase/client');
-    
     // Get the bracket details
     const { data: bracket, error: bracketError } = await supabase
       .from('brackets')
@@ -211,12 +205,11 @@ export async function fetchBracketById(bracketId: string) {
       
     if (matchesError) throw matchesError;
     
-    // Combine data and map matches to the correct format
-    return {
-      ...bracket,
-      name: bracket.title, // Map from database 'title' field to 'name' expected by UI
-      matches: (matches || []).map(toRuntime)
-    };
+    // Use our mapper to convert DTO to domain model
+    return BracketMapper.bracketDtoToDomain(
+      bracket as BracketDto, 
+      matches as MatchDto[]
+    );
   } catch (error) {
     console.error('Error fetching bracket:', error);
     throw new Error('Failed to fetch bracket data');
