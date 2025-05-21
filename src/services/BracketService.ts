@@ -1,3 +1,4 @@
+
 /**
  * Transitional shim: re-exports the only runtime call sites still
  * referenced by BracketCreationDialog and usePlayoffBracketManagement.
@@ -171,12 +172,12 @@ export function groupBracketMatchesByType(bracket: any) {
       winners[round] = winners[round] || [];
       winners[round].push(match);
     } 
-    else if (match.matchType === "losers" || matchType === "losers") {
+    else if (match.matchType === "losers" || match.match_type === "losers") {
       // Ensure the round array exists
       losers[round] = losers[round] || [];
       losers[round].push(match);
     } 
-    else if (match.matchType === "finals" || matchType === "finals") {
+    else if (match.matchType === "finals" || match.match_type === "finals") {
       finals.push(match);
     }
   });
@@ -207,7 +208,7 @@ export async function fetchBracketById(bracketId: string) {
     // Use our mapper to convert DTO to domain model
     return BracketMapper.bracketDtoToDomain(
       bracket as BracketDto, 
-      matches as MatchDto[]
+      (matches || [])
     );
   } catch (error) {
     console.error('Error fetching bracket:', error);
