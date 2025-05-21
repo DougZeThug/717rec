@@ -551,21 +551,27 @@ export type Database = {
           id: string
           name: string | null
           position: number
+          seeding: number | null
           team_id: string
+          tournament_id: string | null
         }
         Insert: {
           bracket_id: string
           id?: string
           name?: string | null
           position: number
+          seeding?: number | null
           team_id: string
+          tournament_id?: string | null
         }
         Update: {
           bracket_id?: string
           id?: string
           name?: string | null
           position?: number
+          seeding?: number | null
           team_id?: string
+          tournament_id?: string | null
         }
         Relationships: [
           {

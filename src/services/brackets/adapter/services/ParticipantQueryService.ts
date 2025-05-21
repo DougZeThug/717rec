@@ -21,7 +21,7 @@ export class ParticipantQueryService {
    */
   async selectParticipants(filter?: ParticipantFilter): Promise<ParticipantRecord[]> {
     try {
-      // Build query with all necessary fields including name
+      // Build query with all necessary fields including name and tournament_id
       let query = supabase.from('participants').select(`
         id,
         team_id,
@@ -71,8 +71,8 @@ export class ParticipantQueryService {
     }
     
     if (filter.tournament_id) {
-      // Try to match on tournament_id first, fall back to bracket_id for compatibility
-      query = query.or(`tournament_id.eq.${filter.tournament_id},bracket_id.eq.${filter.tournament_id}`);
+      // Try to match on tournament_id directly
+      query = query.eq('tournament_id', filter.tournament_id);
     }
     
     if (filter.team_id) {

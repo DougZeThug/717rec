@@ -65,7 +65,7 @@ export class ParticipantMutationService {
    * Update a participant in the database
    * @returns Number of participants updated (1 or 0)
    */
-  async updateParticipant(id: string, data: { position?: number; name?: string; tournament_id?: string; bracket_id?: string }): Promise<number> {
+  async updateParticipant(id: string, data: { position?: number; name?: string; tournament_id?: string; bracket_id?: string; seeding?: number }): Promise<number> {
     try {
       if (!id) {
         throw new ParticipantOperationError('Team ID is required for update');
@@ -84,22 +84,32 @@ export class ParticipantMutationService {
         updateData.name = data.name;
       }
       
+      if (data.seeding !== undefined) {
+        updateData.seeding = data.seeding;
+      }
+      
       if (Object.keys(updateData).length === 0) {
         console.warn("No data provided for participant update");
         return 0;
       }
       
-      const bracketId = data.tournament_id || data.bracket_id;
-      if (!bracketId) {
+      // Use tournament_id if provided, otherwise use bracket_id
+      const tournamentId = data.tournament_id;
+      const bracketId = data.bracket_id;
+      
+      if (!tournamentId && !bracketId) {
         throw new ParticipantOperationError('Tournament or bracket ID is required for update');
       }
       
-      const { error, count } = await supabase
-        .from('participants')
-        .update(updateData)
-        .eq('team_id', id)
-        .eq('bracket_id', bracketId)
-        .select('count');
+      let query = supabase.from('participants').update(updateData).eq('team_id', id);
+      
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId);
+      } else if (bracketId) {
+        query = query.eq('bracket_id', bracketId);
+      }
+      
+      const { error, count } = await query.select('count');
       
       if (error) {
         console.error("Error updating participant:", error);
@@ -139,7 +149,7 @@ export class ParticipantMutationService {
         }
         
         if (filter.tournament_id) {
-          query = query.eq('bracket_id', filter.tournament_id); // Map tournament_id to bracket_id
+          query = query.eq('tournament_id', filter.tournament_id);
         }
         
         if (filter.team_id) {
@@ -148,6 +158,10 @@ export class ParticipantMutationService {
         
         if (filter.position !== undefined) {
           query = query.eq('position', filter.position);
+        }
+        
+        if (filter.seeding !== undefined) {
+          query = query.eq('seeding', filter.seeding);
         }
       }
       
