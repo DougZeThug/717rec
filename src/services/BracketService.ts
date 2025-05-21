@@ -14,13 +14,6 @@ import { PlayoffMatch } from '@/types/playoffs';
 import { toRuntime } from '@/services/brackets/database/MatchMapper';
 import { supabase } from '@/integrations/supabase/client';
 
-export const BracketService = {
-  createBracket: BracketCreationService.createBracket,
-  deleteBracket,
-  listBrackets,
-  getBracketById
-};
-
 // TODO: UI uses this; replace with real impl if needed. For now noop.
 export const scoreMatch = async () => ({ ok: true });
 
@@ -31,9 +24,9 @@ export const listBrackets = async () => {
   if (error) throw new Error(error.message);
   return data.map(b => ({
     id: b.id,
-    name: b.name,
+    name: b.title, // Map from database 'title' field to 'name' expected by UI
     format: (b.format ?? 'double_elimination') as BracketFormat,
-    state:  (b.state  ?? 'pending') as BracketState,
+    state: (b.state ?? 'pending') as BracketState,
     matches: (b.matches ?? []).map(toRuntime),
   }));
 };
@@ -47,9 +40,9 @@ export const getBracketById = async (id: string) => {
   if (error) throw new Error(error.message);
   return {
     id: data.id,
-    name: data.name,
+    name: data.title, // Map from database 'title' field to 'name' expected by UI
     format: (data.format ?? 'double_elimination') as BracketFormat,
-    state:  (data.state  ?? 'pending') as BracketState,
+    state: (data.state ?? 'pending') as BracketState,
     matches: (data.matches ?? []).map(toRuntime),
   };
 };
@@ -221,6 +214,7 @@ export async function fetchBracketById(bracketId: string) {
     // Combine data and map matches to the correct format
     return {
       ...bracket,
+      name: bracket.title, // Map from database 'title' field to 'name' expected by UI
       matches: (matches || []).map(toRuntime)
     };
   } catch (error) {
@@ -228,3 +222,13 @@ export async function fetchBracketById(bracketId: string) {
     throw new Error('Failed to fetch bracket data');
   }
 }
+
+// ——————————————————————————————————————————————
+// Export barrel (declared AFTER all helpers)
+// ——————————————————————————————————————————————
+export const BracketService = {
+  createBracket: BracketCreationService.createBracket,
+  deleteBracket,
+  listBrackets,
+  getBracketById
+};
