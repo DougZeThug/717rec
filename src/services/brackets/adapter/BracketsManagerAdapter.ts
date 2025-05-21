@@ -88,10 +88,13 @@ export class BracketsManagerAdapter implements CrudInterface {
           
         case 'participant':
           const participant = dataArray[0]; // Use first entry in case of array
+          // Fix: Add required bracket_id and team_id fields
           const participantData = {
+            bracket_id: participant.tournament_id, // Use tournament_id as bracket_id
+            team_id: participant.id || '', // Required field
             tournament_id: participant.tournament_id,
             name: participant.name || '',
-            position: participant.position,
+            position: participant.position || 0,
             seeding: participant.seeding ?? null
           };
           
@@ -221,13 +224,13 @@ export class BracketsManagerAdapter implements CrudInterface {
             
             if (winnerId && loserId) {
               await this.service.recordMatchResult({
-                match_id: id as string,
-                winner_id: winnerId,
-                loser_id: loserId,
-                team1_score: data.opponent1?.score || 0,
-                team2_score: data.opponent2?.score || 0,
-                team1_game_wins: 0, // Default value
-                team2_game_wins: 0, // Default value
+                matchId: id as string,
+                winnerId: winnerId,
+                loserId: loserId,
+                team1Score: data.opponent1?.score || 0,
+                team2Score: data.opponent2?.score || 0,
+                team1GameWins: 0, // Default value
+                team2GameWins: 0, // Default value
                 completed: data.status === 'completed'
               });
               return 1; // Return number of updated records

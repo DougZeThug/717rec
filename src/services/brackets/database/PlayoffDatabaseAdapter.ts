@@ -79,8 +79,8 @@ export class PlayoffDatabaseAdapter {
       loser_id: result.loserId,
       team1_score: result.team1Score,
       team2_score: result.team2Score,
-      team1_game_wins: result.team1GameWins,
-      team2_game_wins: result.team2GameWins,
+      team1_game_wins: result.team1GameWins || 0,
+      team2_game_wins: result.team2GameWins || 0,
       completed: true,
       games: result.games
     };
