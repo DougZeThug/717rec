@@ -2,20 +2,19 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffGame } from "../../types";
 import { BaseRepository } from "./BaseRepository";
-import { DatabaseOperationError, IGameRepository } from "../types/DatabaseTypes";
+import { DatabaseOperationError, IPlayoffGamesRepository } from "../types/DatabaseTypes";
 import { nanoid } from "nanoid";
 
 /**
  * Repository for playoff games
  */
-export class GameRepository extends BaseRepository implements IGameRepository {
+export class GameRepository extends BaseRepository implements IPlayoffGamesRepository {
   /**
    * Save playoff games to the database
    * @param games Games to save
-   * @returns Number of games saved
    */
-  async saveGames(games: PlayoffGame[]): Promise<number> {
-    if (!games || games.length === 0) return 0;
+  async saveGames(games: PlayoffGame[]): Promise<void> {
+    if (!games || games.length === 0) return;
 
     try {
       const dbGames = games.map(game => ({
@@ -27,12 +26,14 @@ export class GameRepository extends BaseRepository implements IGameRepository {
         winner_id: game.winnerId
       }));
 
-      return await this.executeOperation('saveGames', () => 
-        supabase.from('playoff_games').insert(dbGames)
-      );
+      const { error } = await supabase.from('playoff_games').insert(dbGames);
+      
+      if (error) throw new DatabaseOperationError('saveGames', `Failed to save playoff games: ${error.message}`, error);
     } catch (error) {
       console.error('Error saving playoff games:', error);
-      return 0;
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('saveGames', `Failed to save playoff games`, error as Error);
     }
   }
 
@@ -43,13 +44,13 @@ export class GameRepository extends BaseRepository implements IGameRepository {
    */
   async getMatchGames(matchId: string): Promise<PlayoffGame[]> {
     try {
-      const data = await this.executeQuery<any[]>('getMatchGames', () =>
-        supabase
-          .from('playoff_games')
-          .select('*')
-          .eq('match_id', matchId)
-          .order('game_number', { ascending: true })
-      );
+      const { data, error } = await supabase
+        .from('playoff_games')
+        .select('*')
+        .eq('match_id', matchId)
+        .order('game_number', { ascending: true });
+      
+      if (error) throw new DatabaseOperationError('getMatchGames', `Failed to get match games: ${error.message}`, error);
       
       return data.map(game => ({
         id: game.id,
@@ -61,7 +62,9 @@ export class GameRepository extends BaseRepository implements IGameRepository {
       }));
     } catch (error) {
       console.error(`Error getting games for match ${matchId}:`, error);
-      return [];
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('getMatchGames', `Failed to get games for match ${matchId}`, error as Error);
     }
   }
 }

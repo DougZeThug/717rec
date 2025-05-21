@@ -1,10 +1,12 @@
 
 import { BracketDatabaseService } from "../services/BracketDatabaseService";
+import { CrudInterface } from "brackets-manager/dist/types";
 
 /**
  * Adapter that implements the CrudInterface for BracketsManager
+ * This adapter conforms to the exact interface expected by BracketsManager
  */
-export class BracketsManagerAdapter {
+export class BracketsManagerAdapter implements CrudInterface {
   private service: BracketDatabaseService;
   
   constructor() {
@@ -12,15 +14,18 @@ export class BracketsManagerAdapter {
   }
   
   /**
-   * Required adapter properties
+   * Required adapter methods for CrudInterface
    */
   readonly create = {
     match: async (matches: any[]) => {
       const result = await this.service.savePlayoffMatches(matches);
-      return result; // Number of matches saved
+      // BracketsManager expects a boolean return value
+      return result > 0;
     },
     participant: async (participant: any) => {
-      return this.service.createParticipant(participant);
+      const result = await this.service.createParticipant(participant);
+      // BracketsManager expects a boolean return value
+      return !!result;
     }
   };
   
@@ -39,34 +44,34 @@ export class BracketsManagerAdapter {
   /**
    * Insert records
    * @param data Array of data to insert
-   * @returns Number of records inserted
+   * @returns Boolean indicating success
    */
-  async insert(data: any[]): Promise<number> {
+  async insert(data: any[]): Promise<boolean> {
     try {
-      if (!data || data.length === 0) return 0;
+      if (!data || data.length === 0) return false;
       
       const sample = data[0];
       
       // Insert matches
       if ('opponent1' in sample || 'round' in sample) {
         const result = await this.service.savePlayoffMatches(data);
-        return result;
+        return result > 0;
       }
       
       // Insert participants
       if ('tournament_id' in sample && 'name' in sample) {
-        let count = 0;
+        let success = true;
         for (const item of data) {
-          await this.service.createParticipant(item);
-          count++;
+          const result = await this.service.createParticipant(item);
+          if (!result) success = false;
         }
-        return count;
+        return success;
       }
       
-      return 0;
+      return false;
     } catch (error) {
       console.error('Error in insert method:', error);
-      return 0;
+      return false;
     }
   }
   
@@ -74,16 +79,16 @@ export class BracketsManagerAdapter {
    * Update a record
    * @param id Record ID
    * @param data Update data
-   * @returns Number of records updated
+   * @returns Boolean indicating success
    */
-  async update(id: string, data: any): Promise<number> {
+  async update(id: string, data: any): Promise<boolean> {
     try {
       console.log('Update operation called with ID:', id, 'and data:', data);
       
       // For participants
       if ('name' in data || 'tournament_id' in data) {
         // In a real implementation, we would update the participant
-        return 1; // Indicate success
+        return true; // Indicate success
       }
       
       // For matches
@@ -102,36 +107,36 @@ export class BracketsManagerAdapter {
         }
         
         // In a real implementation, we would update the match
-        return 1; // Indicate success
+        return true; // Indicate success
       }
       
       console.warn('Unrecognized data type in adapter update:', data);
-      return 0;
+      return false;
     } catch (error) {
       console.error('Error in update method:', error);
-      return 0;
+      return false;
     }
   }
   
   /**
    * Delete records
    * @param filter Filter criteria
-   * @returns Number of records deleted
+   * @returns Boolean indicating success
    */
-  async delete(filter?: any): Promise<number> {
+  async delete(filter?: any): Promise<boolean> {
     try {
       console.log('Delete operation called with filter:', filter);
       
       if (!filter) {
         console.warn('No filter provided for delete operation');
-        return 0;
+        return false;
       }
       
       // In a real implementation, we would delete the records
-      return 1; // Indicate success
+      return true; // Indicate success
     } catch (error) {
       console.error('Error in delete method:', error);
-      return 0;
+      return false;
     }
   }
 }

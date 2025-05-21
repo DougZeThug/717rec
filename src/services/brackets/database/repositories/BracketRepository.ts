@@ -1,12 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { BaseRepository } from "./BaseRepository";
-import { BracketCreationParams, DatabaseBracketState, DatabaseOperationError, IBracketRepository } from "../types/DatabaseTypes";
+import { DatabaseBracketState, BracketCreationParams, DatabaseOperationError, IBracketRepository } from "../types/DatabaseTypes";
 
 /**
  * Repository for bracket-related operations
  */
-export class BracketRepository extends BaseRepository implements IBracketRepository {
+export class BracketRepository implements IBracketRepository {
   /**
    * Create a new bracket in the database
    * @param params Bracket creation parameters
@@ -30,18 +29,18 @@ export class BracketRepository extends BaseRepository implements IBracketReposit
         throw new Error('Division ID is required');
       }
       
-      await this.executeOperation('createBracket', () =>
-        supabase
-          .from('brackets')
-          .insert({
-            id: params.id,
-            title: params.name,
-            format: params.format,
-            division_id: params.divisionId,
-            created_at: new Date().toISOString(),
-            state: 'pending'
-          })
-      );
+      const { error } = await supabase
+        .from('brackets')
+        .insert({
+          id: params.id,
+          title: params.name,
+          format: params.format,
+          division_id: params.divisionId,
+          created_at: new Date().toISOString(),
+          state: 'pending'
+        });
+      
+      if (error) throw new DatabaseOperationError('createBracket', `Failed to create bracket: ${error.message}`, error);
       
       console.log(`Bracket ${params.id} created successfully with division_id: ${params.divisionId}`);
       return {};
@@ -57,12 +56,19 @@ export class BracketRepository extends BaseRepository implements IBracketReposit
    * @param teamId Team ID
    */
   async markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void> {
-    await this.executeOperation('markWinnersBracketChampion', () =>
-      supabase
+    try {
+      const { error } = await supabase
         .from('brackets')
         .update({ wb_champion_id: teamId })
-        .eq('id', bracketId)
-    );
+        .eq('id', bracketId);
+      
+      if (error) throw new DatabaseOperationError('markWinnersBracketChampion', `Failed to mark winners bracket champion for bracket ${bracketId}`, error);
+    } catch (error) {
+      console.error(`Error marking winners bracket champion for bracket ${bracketId}:`, error);
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('markWinnersBracketChampion', `Failed to mark winners bracket champion for bracket ${bracketId}`, error as Error);
+    }
   }
 
   /**
@@ -71,12 +77,19 @@ export class BracketRepository extends BaseRepository implements IBracketReposit
    * @param needed Whether a reset match is needed
    */
   async setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void> {
-    await this.executeOperation('setResetMatchNeeded', () =>
-      supabase
+    try {
+      const { error } = await supabase
         .from('brackets')
         .update({ reset_match_needed: needed })
-        .eq('id', bracketId)
-    );
+        .eq('id', bracketId);
+      
+      if (error) throw new DatabaseOperationError('setResetMatchNeeded', `Failed to set reset match needed for bracket ${bracketId}`, error);
+    } catch (error) {
+      console.error(`Error setting reset match needed for bracket ${bracketId}:`, error);
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('setResetMatchNeeded', `Failed to set reset match needed for bracket ${bracketId}`, error as Error);
+    }
   }
 
   /**
@@ -85,15 +98,22 @@ export class BracketRepository extends BaseRepository implements IBracketReposit
    * @param championId Champion team ID
    */
   async markTournamentComplete(bracketId: string, championId: string): Promise<void> {
-    await this.executeOperation('markTournamentComplete', () =>
-      supabase
+    try {
+      const { error } = await supabase
         .from('brackets')
         .update({
           wb_champion_id: championId,
           state: 'complete'
         })
-        .eq('id', bracketId)
-    );
+        .eq('id', bracketId);
+      
+      if (error) throw new DatabaseOperationError('markTournamentComplete', `Failed to mark tournament complete for bracket ${bracketId}`, error);
+    } catch (error) {
+      console.error(`Error marking tournament complete for bracket ${bracketId}:`, error);
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('markTournamentComplete', `Failed to mark tournament complete for bracket ${bracketId}`, error as Error);
+    }
   }
   
   /**
@@ -103,16 +123,16 @@ export class BracketRepository extends BaseRepository implements IBracketReposit
    */
   async getBracketState(bracketId: string): Promise<DatabaseBracketState> {
     try {
-      const data = await this.executeQuery('getBracketState', () =>
-        supabase
-          .from('brackets')
-          .select('wb_champion_id, reset_match_needed, state')
-          .eq('id', bracketId)
-          .single()
-      );
+      const { data, error } = await supabase
+        .from('brackets')
+        .select('wb_champion_id, reset_match_needed, state')
+        .eq('id', bracketId)
+        .single();
+      
+      if (error) throw new DatabaseOperationError('getBracketState', `Failed to get bracket state for bracket ${bracketId}`, error);
       
       // Convert the database representation to our application model
-      return {
+      const bracketState: DatabaseBracketState = {
         isWinnersBracketComplete: !!data.wb_champion_id,
         isLosersBracketComplete: false, // No column for this in the schema
         isResetMatchNeeded: !!data.reset_match_needed,
@@ -121,6 +141,8 @@ export class BracketRepository extends BaseRepository implements IBracketReposit
         losersBracketChampionId: null, // No column for this in the schema
         championId: data.wb_champion_id // Using wb_champion_id as the champion
       };
+      
+      return bracketState;
     } catch (error) {
       console.error(`Error getting bracket state for bracket ${bracketId}:`, error);
       throw error instanceof DatabaseOperationError 

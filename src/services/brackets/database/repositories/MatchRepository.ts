@@ -1,175 +1,206 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { PlayoffMatch } from "../../types";
+import { PlayoffGame, PlayoffMatchType } from "../../types";
 import { BaseRepository } from "./BaseRepository";
-import { DatabaseOperationError, DatabasePlayoffMatch, IMatchRepository } from "../types/DatabaseTypes";
-import { nanoid } from "nanoid";
+import { DatabaseOperationError, DatabasePlayoffMatch, IPlayoffMatchesRepository, MatchResultDTO } from "../types/DatabaseTypes";
 
 /**
- * Repository for match operations
+ * Repository for playoff matches
  */
-export class MatchRepository extends BaseRepository implements IMatchRepository {
-  private static PLACEHOLDER_PREFIX = 'play-in-';
+export class MatchRepository extends BaseRepository implements IPlayoffMatchesRepository {
+  /**
+   * Convert match type for database compatibility
+   */
+  private convertMatchTypeForDB(matchType: PlayoffMatchType): "winners" | "losers" | "finals" {
+    if (matchType === "play-in" || matchType === "play-in-2") {
+      return "winners";
+    }
+    return matchType as "winners" | "losers" | "finals";
+  }
 
   /**
-   * Save playoff matches to the database
-   * @param matches Matches to save
-   * @returns Number of matches saved
+   * Check if a metadata object has the expected team seed properties
    */
-  async saveMatches(matches: PlayoffMatch[]): Promise<number> {
-    if (!matches || matches.length === 0) {
-      console.log("No matches to save");
-      return 0;
-    }
-    
-    console.log(`Saving ${matches.length} playoff matches`);
-    
-    // Convert matches to database model
-    const dbMatches = matches.map(match => {
-      // Validate match ID
-      if (!match.id) {
-        console.error("Match is missing ID:", match);
-        throw new Error("Match ID is required");
-      }
-      
-      // Validate bracket_id
-      if (!match.bracket_id || match.bracket_id === 'undefined') {
-        console.error(`Match ${match.id} is missing bracket_id:`, match);
-        throw new Error(`Match ${match.id} is missing bracket_id`);
-      }
-      
-      return {
+  private isTeamSeedMetadata(metadata: any): metadata is { team1_seed: number | null; team2_seed: number | null } {
+    return metadata && typeof metadata === 'object';
+  }
+
+  /**
+   * Save multiple playoff matches to the database
+   */
+  async saveMatches(matches: DatabasePlayoffMatch[]): Promise<void> {
+    try {
+      if (!matches || matches.length === 0) return;
+
+      // We need to make sure match_type is a valid enum value for the database
+      // and map needed fields to the database schema
+      const preparedMatches = matches.map(match => ({
         id: match.id,
-        bracket_id: match.bracket_id,
-        round: match.round,
+        round_number: match.round,
         position: match.position,
-        match_type: match.matchType,
-        // Replace placeholder IDs with null before saving to database
-        team1_id: match.team1Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : (match.team1Id ?? null),
-        team2_id: match.team2Id?.startsWith(this.PLACEHOLDER_PREFIX) ? null : (match.team2Id ?? null),
-        team1_score: match.team1Score ?? null,
-        team2_score: match.team2Score ?? null,
-        team1_game_wins: match.team1GameWins ?? null,
-        team2_game_wins: match.team2GameWins ?? null,
-        team1_seed: match.team1Seed ?? null,
-        team2_seed: match.team2Seed ?? null,
-        winner_id: match.winnerId ?? null,
-        loser_id: match.loserId ?? null,
-        next_win_match_id: match.nextWinMatchId ?? null,
-        next_lose_match_id: match.nextLoseMatchId ?? null,
-        best_of: match.bestOf ?? 3,
-        status: match.status ?? 'pending'
-      };
-    });
+        match_type: this.convertMatchTypeForDB(match.match_type),
+        team1_id: match.team1_id,
+        team2_id: match.team2_id,
+        next_match_id: match.next_win_match_id,
+        next_loser_match_id: match.next_lose_match_id,
+        winner_id: match.winner_id,
+        loser_id: match.loser_id,
+        bracket_id: match.bracket_id,
+        team1_score: match.team1_score,
+        team2_score: match.team2_score,
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins,
+        best_of: match.best_of,
+        iscompleted: match.status === 'completed',
+        // Store team seeds in the metadata field
+        metadata: {
+          team1_seed: match.team1_seed,
+          team2_seed: match.team2_seed
+        }
+      }));
 
-    return await this.executeOperation('saveMatches', () => 
-      supabase.from('playoff_matches').insert(dbMatches)
-    );
-  }
-
-  /**
-   * Get bracket matches from the database
-   * @param bracketId Bracket ID
-   * @returns Array of database matches
-   */
-  async getMatches(bracketId: string): Promise<DatabasePlayoffMatch[]> {
-    return await this.executeQuery<DatabasePlayoffMatch[]>('getMatches', () =>
-      supabase
-        .from('playoff_matches')
-        .select('*')
-        .eq('bracket_id', bracketId)
-        .order('round', { ascending: true })
-        .order('position', { ascending: true })
-    );
-  }
-
-  /**
-   * Create a reset match in the database
-   * @param bracketId Bracket ID
-   * @param team1Id First team ID
-   * @param team2Id Second team ID
-   * @returns Created match
-   */
-  async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch> {
-    const newMatch: Partial<DatabasePlayoffMatch> = {
-      id: nanoid(),
-      bracket_id: bracketId,
-      round: 999, // Special round number for reset match
-      position: 1,
-      match_type: 'finals',
-      team1_id: team1Id,
-      team2_id: team2Id,
-      status: 'pending',
-      best_of: 3
-    };
-
-    await this.executeOperation('createResetMatch', () =>
-      supabase.from('playoff_matches').insert([newMatch])
-    );
-
-    // Convert database match to application model
-    return {
-      id: newMatch.id!,
-      bracket_id: bracketId,
-      round: 999,
-      position: 1,
-      matchType: 'finals',
-      team1Id: team1Id,
-      team2Id: team2Id,
-      status: 'pending',
-      bestOf: 3
-    };
-  }
-  
-  /**
-   * Record a match result in the database
-   * @param matchId Match ID
-   * @param result Match result data
-   * @returns Number of matches updated (1 for success, 0 for failure)
-   */
-  async recordMatchResult(matchId: string, result: DatabaseMatchResult): Promise<number> {
-    const updateData = {
-      winner_id: result.winner_id,
-      loser_id: result.loser_id,
-      team1_score: result.team1_score,
-      team2_score: result.team2_score,
-      team1_game_wins: result.team1_game_wins,
-      team2_game_wins: result.team2_game_wins,
-      status: 'completed'
-    };
-    
-    return this.executeOperation('recordMatchResult', () =>
-      supabase.from('playoff_matches').update(updateData).eq('id', matchId)
-    );
-  }
-  
-  /**
-   * Advance a team to the next match
-   * @param nextMatchId Next match ID
-   * @param teamId Team ID to advance
-   * @param isWinner Whether the team is advancing as a winner
-   * @returns Number of matches updated (1 for success, 0 for failure)
-   */
-  async advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<number> {
-    // First, get the match to determine placement
-    const { data: nextMatch, error } = await supabase
-      .from('playoff_matches')
-      .select('team1_id, team2_id')
-      .eq('id', nextMatchId)
-      .single();
-    
-    if (error) {
-      console.error(`Error getting next match ${nextMatchId}:`, error);
-      return 0;
+      const { error } = await supabase
+        .from('matches')
+        .insert(preparedMatches);
+      
+      if (error) throw new DatabaseOperationError('saveMatches', 'Failed to save matches', error);
+    } catch (error) {
+      console.error('Error saving playoff matches:', error);
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('saveMatches', 'Unexpected error', error as Error);
     }
-    
-    // Determine whether to place in team1 or team2 slot
-    const updateData = !nextMatch.team1_id
-      ? { team1_id: teamId }
-      : { team2_id: teamId };
-    
-    return this.executeOperation('advanceTeam', () => 
-      supabase.from('playoff_matches').update(updateData).eq('id', nextMatchId)
-    );
+  }
+
+  /**
+   * Update a match with the result and mark it as completed
+   */
+  async updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('matches')
+        .update({
+          winner_id: result.winnerId,
+          loser_id: result.loserId,
+          team1_score: result.team1Score,
+          team2_score: result.team2Score,
+          team1_game_wins: result.team1GameWins,
+          team2_game_wins: result.team2GameWins,
+          iscompleted: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', matchId);
+      
+      if (error) {
+        throw new DatabaseOperationError('updateMatchResult', `Failed to update match ${matchId} with result`, error);
+      }
+    } catch (error) {
+      console.error('Error updating match result:', error);
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('updateMatchResult', `Failed to update match ${matchId} with result`, error as Error);
+    }
+  }
+
+  /**
+   * Get all matches for a specific bracket
+   */
+  async getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]> {
+    try {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('bracket_id', bracketId);
+      
+      if (error) throw new DatabaseOperationError('getBracketMatches', 'Failed to get bracket matches', error);
+      
+      // Map database columns to expected DatabasePlayoffMatch format
+      return data.map(match => {
+        // Extract team seeds from metadata or use defaults
+        const metadata = match.metadata || {};
+        const team1Seed = this.isTeamSeedMetadata(metadata) ? metadata.team1_seed : null;
+        const team2Seed = this.isTeamSeedMetadata(metadata) ? metadata.team2_seed : null;
+        
+        return {
+          id: match.id,
+          bracket_id: match.bracket_id,
+          round: match.round_number,
+          position: match.position,
+          match_type: match.match_type,
+          team1_id: match.team1_id,
+          team2_id: match.team2_id,
+          team1_score: match.team1_score,
+          team2_score: match.team2_score,
+          team1_game_wins: match.team1_game_wins,
+          team2_game_wins: match.team2_game_wins,
+          // Get team seeds from metadata or default to null
+          team1_seed: team1Seed,
+          team2_seed: team2Seed,
+          winner_id: match.winner_id,
+          loser_id: match.loser_id,
+          next_win_match_id: match.next_match_id,
+          next_lose_match_id: match.next_loser_match_id,
+          best_of: match.best_of || 3,
+          status: match.iscompleted ? 'completed' : 'pending'
+        };
+      }) as DatabasePlayoffMatch[];
+    } catch (error) {
+      console.error('Error getting bracket matches:', error);
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('getBracketMatches', `Failed to get matches for bracket ${bracketId}`, error as Error);
+    }
+  }
+
+  /**
+   * Get a single match by ID
+   */
+  async getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null> {
+    try {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('*')
+        .eq('id', matchId)
+        .single();
+      
+      if (error) {
+        if (error.code === 'PGRST116') return null; // No rows returned
+        throw new DatabaseOperationError('getMatchById', `Failed to get match ${matchId}`, error);
+      }
+      
+      // Extract team seeds from metadata with proper typechecking
+      const metadata = data.metadata || {};
+      const team1Seed = this.isTeamSeedMetadata(metadata) ? metadata.team1_seed : null;
+      const team2Seed = this.isTeamSeedMetadata(metadata) ? metadata.team2_seed : null;
+      
+      // Map database columns to expected DatabasePlayoffMatch format
+      return {
+        id: data.id,
+        bracket_id: data.bracket_id,
+        round: data.round_number,
+        position: data.position,
+        match_type: data.match_type,
+        team1_id: data.team1_id,
+        team2_id: data.team2_id,
+        team1_score: data.team1_score,
+        team2_score: data.team2_score,
+        team1_game_wins: data.team1_game_wins,
+        team2_game_wins: data.team2_game_wins,
+        // Get team seeds from metadata or default to null
+        team1_seed: team1Seed,
+        team2_seed: team2Seed,
+        winner_id: data.winner_id,
+        loser_id: data.loser_id,
+        next_win_match_id: data.next_match_id,
+        next_lose_match_id: data.next_loser_match_id,
+        best_of: data.best_of || 3,
+        status: data.iscompleted ? 'completed' : 'pending'
+      } as DatabasePlayoffMatch;
+    } catch (error) {
+      console.error(`Error getting match ${matchId}:`, error);
+      throw error instanceof DatabaseOperationError 
+        ? error 
+        : new DatabaseOperationError('getMatchById', `Failed to get match ${matchId}`, error as Error);
+    }
   }
 }

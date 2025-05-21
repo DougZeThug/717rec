@@ -1,14 +1,14 @@
 
-import { PlayoffDatabaseFacade } from './PlayoffDatabaseFacade';
 import { PlayoffMatch, PlayoffGame } from '../types';
 import { DatabaseMatchResult, MatchResultDTO } from './types/DatabaseTypes';
-import { bracketDatabaseService } from './index';
+import { BracketDatabaseService } from './services/BracketDatabaseService';
 
 /**
- * Adapter to convert between application model and database model
- * This is a facade that delegates to the new modular implementation
+ * Adapter for database operations on playoffs
+ * Delegates to the BracketDatabaseService for actual operations
  */
 export class PlayoffDatabaseAdapter {
+  private static readonly service = new BracketDatabaseService();
   private static PLACEHOLDER_PREFIX = 'play-in-';
 
   /**
@@ -20,35 +20,42 @@ export class PlayoffDatabaseAdapter {
     format: string;
     divisionId?: string;
   }): Promise<{ error?: Error }> {
-    return bracketDatabaseService.createBracket(params);
+    return PlayoffDatabaseAdapter.service.createBracket(params);
   }
 
   /**
    * Save playoff matches to the database
    */
   static async savePlayoffMatches(matches: PlayoffMatch[]): Promise<void> {
-    await bracketDatabaseService.savePlayoffMatches(matches);
+    // Check for placeholder IDs that need to be set to null for the database
+    const processedMatches = matches.map(match => ({
+      ...match,
+      team1Id: match.team1Id?.startsWith(PlayoffDatabaseAdapter.PLACEHOLDER_PREFIX) ? null : match.team1Id,
+      team2Id: match.team2Id?.startsWith(PlayoffDatabaseAdapter.PLACEHOLDER_PREFIX) ? null : match.team2Id
+    }));
+    
+    await PlayoffDatabaseAdapter.service.savePlayoffMatches(processedMatches);
   }
 
   /**
    * Get bracket matches from the database
    */
-  static async getBracketMatches(bracketId: string): Promise<any[]> {
-    return bracketDatabaseService.getBracketMatches(bracketId);
+  static async getBracketMatches(bracketId: string): Promise<PlayoffMatch[]> {
+    return PlayoffDatabaseAdapter.service.getBracketMatches(bracketId);
   }
 
   /**
    * Save playoff games to the database
    */
   static async savePlayoffGames(games: PlayoffGame[]): Promise<void> {
-    await bracketDatabaseService.savePlayoffGames(games);
+    await PlayoffDatabaseAdapter.service.savePlayoffGames(games);
   }
 
   /**
    * Get match games from the database
    */
   static async getMatchGames(matchId: string): Promise<PlayoffGame[]> {
-    return bracketDatabaseService.getMatchGames(matchId);
+    return PlayoffDatabaseAdapter.service.getMatchGames(matchId);
   }
 
   /**
@@ -68,49 +75,49 @@ export class PlayoffDatabaseAdapter {
       games: result.games
     };
     
-    await bracketDatabaseService.recordMatchResult(dbResult);
+    await PlayoffDatabaseAdapter.service.recordMatchResult(dbResult);
   }
 
   /**
    * Advance team to the next match
    */
   static async advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void> {
-    await bracketDatabaseService.advanceTeam(nextMatchId, teamId, isWinner);
+    await PlayoffDatabaseAdapter.service.advanceTeam(nextMatchId, teamId, isWinner);
   }
 
   /**
    * Mark winners bracket champion
    */
   static async markWinnersBracketChampion(bracketId: string, teamId: string): Promise<void> {
-    await bracketDatabaseService.markWinnersBracketChampion(bracketId, teamId);
+    await PlayoffDatabaseAdapter.service.markWinnersBracketChampion(bracketId, teamId);
   }
 
   /**
    * Set reset match needed
    */
   static async setResetMatchNeeded(bracketId: string, needed: boolean): Promise<void> {
-    await bracketDatabaseService.setResetMatchNeeded(bracketId, needed);
+    await PlayoffDatabaseAdapter.service.setResetMatchNeeded(bracketId, needed);
   }
 
   /**
    * Mark tournament complete
    */
   static async markTournamentComplete(bracketId: string, championId: string): Promise<void> {
-    await bracketDatabaseService.markTournamentComplete(bracketId, championId);
+    await PlayoffDatabaseAdapter.service.markTournamentComplete(bracketId, championId);
   }
 
   /**
    * Create reset match
    */
   static async createResetMatch(bracketId: string, team1Id: string, team2Id: string): Promise<PlayoffMatch> {
-    return bracketDatabaseService.createResetMatch(bracketId, team1Id, team2Id);
+    return PlayoffDatabaseAdapter.service.createResetMatch(bracketId, team1Id, team2Id);
   }
 
   /**
    * Get bracket state
    */
   static async getBracketState(bracketId: string): Promise<any> {
-    return bracketDatabaseService.getBracketState(bracketId);
+    return PlayoffDatabaseAdapter.service.getBracketState(bracketId);
   }
 
   /**
@@ -123,7 +130,7 @@ export class PlayoffDatabaseAdapter {
     position?: number;
     seeding?: number;
   }): Promise<string> {
-    return bracketDatabaseService.createParticipant(participant);
+    return PlayoffDatabaseAdapter.service.createParticipant(participant);
   }
 
   /**
@@ -139,14 +146,11 @@ export class PlayoffDatabaseAdapter {
     position?: number;
     seeding?: number;
   }>> {
-    return bracketDatabaseService.selectParticipants(filters);
+    return PlayoffDatabaseAdapter.service.selectParticipants(filters);
   }
 }
 
-/**
- * Export the adapter instance for brackets-manager compatibility
- */
-export const adapter = new BracketsManagerAdapter();
-
-// Import here to avoid circular dependency
+// Import and export the new adapter for brackets-manager compatibility
+// to avoid circular dependency
 import { BracketsManagerAdapter } from './adapters/BracketsManagerAdapter';
+export const adapter = new BracketsManagerAdapter();

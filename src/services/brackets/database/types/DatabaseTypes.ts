@@ -1,5 +1,5 @@
 
-import { PlayoffMatch, PlayoffGame } from "../../types";
+import { PlayoffGame, PlayoffMatchType } from "../../types";
 
 /**
  * Error thrown for database operations
@@ -96,15 +96,15 @@ export interface DatabasePlayoffMatch {
   bracket_id: string;
   round: number;
   position: number;
-  match_type: string;
+  match_type: PlayoffMatchType;
   team1_id: string | null;
   team2_id: string | null;
   team1_score: number | null;
   team2_score: number | null;
-  team1_game_wins: number | null;
-  team2_game_wins: number | null;
   team1_seed: number | null;
   team2_seed: number | null;
+  team1_game_wins: number | null;
+  team2_game_wins: number | null;
   winner_id: string | null;
   loser_id: string | null;
   next_win_match_id: string | null;
@@ -143,4 +143,61 @@ export interface ParticipantData {
 export interface ParticipantFilter {
   tournament_id?: string;
   name?: string;
+}
+
+/**
+ * Interface for playoff matches repository
+ */
+export interface IPlayoffMatchesRepository {
+  saveMatches(matches: DatabasePlayoffMatch[]): Promise<void>;
+  updateMatchResult(matchId: string, result: MatchResultDTO): Promise<void>;
+  getBracketMatches(bracketId: string): Promise<DatabasePlayoffMatch[]>;
+  getMatchById(matchId: string): Promise<DatabasePlayoffMatch | null>;
+}
+
+/**
+ * Interface for playoff games repository
+ */
+export interface IPlayoffGamesRepository {
+  saveGames(games: PlayoffGame[]): Promise<void>;
+  getMatchGames(matchId: string): Promise<PlayoffGame[]>;
+}
+
+/**
+ * Interface for team advancement service
+ */
+export interface ITeamAdvancementService {
+  advanceTeam(nextMatchId: string, teamId: string, isWinner: boolean): Promise<void>;
+  handleGrandFinalsReset(
+    bracketId: string, 
+    winnersBracketChampionId: string,
+    losersBracketChampionId: string,
+    gf1WinnerId: string
+  ): Promise<string>;
+}
+
+/**
+ * Playoff Match type for application use
+ * Represents a match in the playoff bracket
+ */
+export interface PlayoffMatch {
+  id: string;
+  bracket_id?: string;
+  round: number;
+  position: number;
+  matchType: PlayoffMatchType;
+  team1Id: string | null;
+  team2Id: string | null;
+  team1Score?: number | null;
+  team2Score?: number | null;
+  team1Seed?: number | null;
+  team2Seed?: number | null;
+  team1GameWins?: number | null;
+  team2GameWins?: number | null;
+  winnerId?: string | null;
+  loserId?: string | null;
+  nextWinMatchId?: string | null;
+  nextLoseMatchId?: string | null;
+  bestOf?: number;
+  status?: string;
 }
