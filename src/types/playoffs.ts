@@ -63,8 +63,7 @@ export interface PlayoffBracket {
   /** raw DB rows or mapped PlayoffMatch objects – loosen until UI refactor */
   matches: any[];
   champion?: string;
-  challongeTournamentId?: string;
-  challongeTournamentUrl?: string;
+  /* challonge columns removed */
   state?: BracketState;
   created_at?: string;
 }
