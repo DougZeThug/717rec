@@ -1,9 +1,7 @@
-
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { supabase } from "@/integrations/supabase/client";
 import { TableNameMapper, ValidTableName, isValidTable, isValidView } from '../interfaces/TableNameMapper';
 import { Database } from "@/integrations/supabase/types";
-import { PostgrestFilterBuilder, PostgrestQueryBuilder } from '@supabase/postgrest-js';
 
 /**
  * Type for valid database table names
@@ -20,15 +18,15 @@ export type DatabaseViewName = keyof Database['public']['Views'];
  * This is a simplified version that lets us handle the common operations
  */
 type GenericQueryBuilder = {
-  select: (columns?: string) => PostgrestFilterBuilder<any, any, any>;
+  select: (columns?: string) => any;
   insert: (values: any, options?: any) => Promise<{ data: any; error: any; count?: number }>;
-  update: (values: any, options?: any) => PostgrestFilterBuilder<any, any, any>;
-  delete: () => PostgrestFilterBuilder<any, any, any>;
-  eq: (column: string, value: any) => PostgrestFilterBuilder<any, any, any>;
-  in: (column: string, values: any[]) => PostgrestFilterBuilder<any, any, any>;
-  order: (column: string, options?: { ascending?: boolean }) => PostgrestFilterBuilder<any, any, any>;
-  limit: (count: number) => PostgrestFilterBuilder<any, any, any>;
-  offset: (count: number) => PostgrestFilterBuilder<any, any, any>;
+  update: (values: any, options?: any) => any;
+  delete: () => any;
+  eq: (column: string, value: any) => any;
+  in: (column: string, values: any[]) => any;
+  order: (column: string, options?: { ascending?: boolean }) => any;
+  limit: (count: number) => any;
+  offset: (count: number) => any;
 };
 
 /**
