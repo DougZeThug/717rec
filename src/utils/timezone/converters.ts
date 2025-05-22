@@ -1,4 +1,5 @@
 
+
 import { parseTimeString } from './parsers';
 import { logTimeOperation } from './logger';
 
@@ -78,4 +79,37 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   });
   
   return utcDate;
+};
+
+/**
+ * Format a time string to UTC format
+ * Used for ensuring consistent storage of times in the database
+ */
+export const formatTimeToUTC = (date: Date, timeString: string): string => {
+  try {
+    if (!timeString || !date) {
+      return '';
+    }
+    
+    logTimeOperation('formatTimeToUTC input', {
+      date: date.toString(),
+      timeString
+    });
+    
+    // Create UTC date with the time string
+    const utcDate = createUTCDateWithTime(date, timeString);
+    
+    // Format to ISO string
+    const isoString = utcDate.toISOString();
+    
+    logTimeOperation('formatTimeToUTC result', {
+      input: timeString,
+      output: isoString
+    });
+    
+    return isoString;
+  } catch (error) {
+    console.error('Error formatting time to UTC:', error);
+    return '';
+  }
 };
