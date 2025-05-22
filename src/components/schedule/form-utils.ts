@@ -1,5 +1,5 @@
 
-import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezoneUtils';
+import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezone';
 
 /**
  * Format a date object for use in an HTML date input
