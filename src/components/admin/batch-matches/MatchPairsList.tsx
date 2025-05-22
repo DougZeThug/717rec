@@ -46,7 +46,9 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
     '7:30 PM',
     '8:00 PM',
     '8:30 PM',
-    '9:00 PM'
+    '9:00 PM',
+    '9:30 PM',
+    '10:00 PM'
   ];
 
   return (
