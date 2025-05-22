@@ -64,7 +64,7 @@ export const formatTimeToUTC = (timeString: string): string => {
 
 /**
  * Create a date object with the correct UTC time for storage
- * FIXED: Previously was applying timezone offset twice
+ * FIXED: Now correctly accounts for timezone offset
  */
 export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   console.log(`🌐 createUTCDateWithTime inputs:`, {
@@ -73,6 +73,11 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
     localDateString: date.toString()
   });
   
+  if (!timeString) {
+    console.warn("No time string provided, returning date as is");
+    return date;
+  }
+
   // Extract hours and minutes from the time string
   let hours = 0;
   let minutes = 0;
@@ -98,26 +103,36 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
     minutes = parseInt(minuteStr);
   }
   
-  // Create a new date object with the date part (year, month, day) from the input date
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
+  // Create a new local date from the input date
+  const localDate = new Date(date);
   
-  // Create a new date at UTC midnight for this date
-  const utcDate = new Date(Date.UTC(year, month, day)); 
+  // Set the hours and minutes in local time
+  localDate.setHours(hours, minutes, 0, 0);
   
-  // Set the hours and minutes directly to UTC time values
-  // This avoids the double conversion issue we had before
-  utcDate.setUTCHours(hours, minutes, 0, 0);
+  console.log(`🌐 Local date with time set:`, {
+    localDateWithTime: localDate.toString(),
+    localHours: localDate.getHours(),
+    localMinutes: localDate.getMinutes()
+  });
   
+  // Convert to UTC by creating a new Date from ISO string
+  // This automatically handles the timezone offset conversion
+  const utcDate = new Date(localDate.toISOString());
+
   console.log(`🌐 createUTCDateWithTime detailed debugging:`, {
     original: {
-      year, month, day,
-      inputDateString: date.toString(),
-      inputTimeString: timeString
+      timeString,
+      dateString: date.toString()
     },
-    localTime: {
-      hours, minutes
+    parsedTime: {
+      hours, 
+      minutes
+    },
+    localDate: {
+      dateString: localDate.toString(),
+      hours: localDate.getHours(),
+      minutes: localDate.getMinutes(),
+      timezoneOffset: localDate.getTimezoneOffset() / 60
     },
     result: {
       utcIsoString: utcDate.toISOString(),
