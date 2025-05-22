@@ -1,27 +1,74 @@
 
 /**
- * Timezone utilities for consistent time handling between EST frontend and UTC storage
+ * Timezone utilities for consistent time handling between local time and UTC
  * 
- * This module provides functions to convert between local time (EST/EDT) and UTC
+ * This module provides functions to convert between local browser time and UTC
  * for proper display and storage of time values.
  */
 
-/**
- * Convert a local date (EST/EDT) to a UTC date
- * For storing in the database
- */
-export const toUTCDate = (localDate: Date): Date => {
-  return new Date(localDate.toISOString());
-};
+// ============================================================
+// Types
+// ============================================================
 
 /**
- * Convert a UTC date to a local date (EST/EDT)
- * For displaying in the UI
+ * Options for displaying a time
  */
-export const toLocalDate = (utcDate: Date | string): Date => {
-  // If string is passed, convert to Date object
-  const dateObj = typeof utcDate === 'string' ? new Date(utcDate) : utcDate;
-  return new Date(dateObj);
+interface TimeDisplayOptions {
+  use24Hour?: boolean;
+  includeSeconds?: boolean;
+}
+
+/**
+ * Date range for querying
+ */
+interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
+// ============================================================
+// Time Parsing and Formatting Utilities
+// ============================================================
+
+/**
+ * Parse a time string into hours and minutes
+ * Handles both 12-hour and 24-hour formats
+ */
+const parseTimeString = (timeString: string): { hours: number, minutes: number } => {
+  let hours = 0;
+  let minutes = 0;
+  
+  if (!timeString) {
+    return { hours, minutes };
+  }
+  
+  try {
+    if (timeString.includes('PM') || timeString.includes('AM')) {
+      // 12-hour format like "6:30 PM"
+      const [time, period] = timeString.split(' ');
+      const [hourStr, minuteStr] = time.split(':');
+      
+      hours = parseInt(hourStr);
+      minutes = parseInt(minuteStr);
+      
+      // Convert to 24-hour format
+      if (period === 'PM' && hours < 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+    } else {
+      // Already in 24-hour format like "18:30"
+      const [hourStr, minuteStr] = timeString.split(':');
+      hours = parseInt(hourStr);
+      minutes = parseInt(minuteStr);
+    }
+    
+    return { hours, minutes };
+  } catch (error) {
+    console.error('🚨 Error parsing time string:', error);
+    return { hours: 0, minutes: 0 };
+  }
 };
 
 /**
@@ -32,29 +79,7 @@ export const formatTimeToUTC = (timeString: string): string => {
   console.log(`🌐 formatTimeToUTC input:`, timeString);
   
   // Parse the time string and convert to 24-hour format
-  let hours = 0;
-  let minutes = 0;
-  
-  if (timeString.includes('PM') || timeString.includes('AM')) {
-    // 12-hour format like "6:30 PM"
-    const [time, period] = timeString.split(' ');
-    const [hourStr, minuteStr] = time.split(':');
-    
-    hours = parseInt(hourStr);
-    minutes = parseInt(minuteStr);
-    
-    // Convert to 24-hour format
-    if (period === 'PM' && hours < 12) {
-      hours += 12;
-    } else if (period === 'AM' && hours === 12) {
-      hours = 0;
-    }
-  } else {
-    // Already in 24-hour format like "18:30"
-    const [hourStr, minuteStr] = timeString.split(':');
-    hours = parseInt(hourStr);
-    minutes = parseInt(minuteStr);
-  }
+  const { hours, minutes } = parseTimeString(timeString);
   
   // Format as "HH:MM" in 24-hour format
   const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
@@ -62,9 +87,30 @@ export const formatTimeToUTC = (timeString: string): string => {
   return formattedTime;
 };
 
+// ============================================================
+// Date Conversion Utilities
+// ============================================================
+
+/**
+ * Convert a local date to a UTC date
+ * For storing in the database
+ */
+export const toUTCDate = (localDate: Date): Date => {
+  return new Date(localDate.toISOString());
+};
+
+/**
+ * Convert a UTC date to a local date 
+ * For displaying in the UI
+ */
+export const toLocalDate = (utcDate: Date | string): Date => {
+  // If string is passed, convert to Date object
+  const dateObj = typeof utcDate === 'string' ? new Date(utcDate) : utcDate;
+  return new Date(dateObj);
+};
+
 /**
  * Create a date object with the correct UTC time for storage
- * FIXED: Now correctly accounts for timezone offset
  */
 export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   console.log(`🌐 createUTCDateWithTime inputs:`, {
@@ -79,29 +125,7 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   }
 
   // Extract hours and minutes from the time string
-  let hours = 0;
-  let minutes = 0;
-  
-  if (timeString.includes('PM') || timeString.includes('AM')) {
-    // 12-hour format like "6:30 PM"
-    const [time, period] = timeString.split(' ');
-    const [hourStr, minuteStr] = time.split(':');
-    
-    hours = parseInt(hourStr);
-    minutes = parseInt(minuteStr);
-    
-    // Convert to 24-hour format
-    if (period === 'PM' && hours < 12) {
-      hours += 12;
-    } else if (period === 'AM' && hours === 12) {
-      hours = 0;
-    }
-  } else {
-    // Already in 24-hour format like "18:30"
-    const [hourStr, minuteStr] = timeString.split(':');
-    hours = parseInt(hourStr);
-    minutes = parseInt(minuteStr);
-  }
+  const { hours, minutes } = parseTimeString(timeString);
   
   // Create a new local date from the input date
   const localDate = new Date(date);
@@ -145,19 +169,28 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   return utcDate;
 };
 
+// ============================================================
+// Display Formatting Utilities
+// ============================================================
+
 /**
- * Format a UTC date object to display in EST time
+ * Format a UTC date object to display in local time
  */
-export const formatUTCToLocalTimeString = (date: Date | string): string => {
+export const formatUTCToLocalTimeString = (date: Date | string, options?: TimeDisplayOptions): string => {
   if (!date) return 'No Time';
   
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  return dateObj.toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true
-  });
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    return dateObj.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: options?.use24Hour === false || true
+    });
+  } catch (error) {
+    console.error('🚨 Error formatting UTC to local time:', error);
+    return 'No Time';
+  }
 };
 
 /**
@@ -203,15 +236,16 @@ export const extractTimeSlotFromUTC = (dateString: string): string => {
   }
 };
 
+// ============================================================
+// Query and Range Utilities
+// ============================================================
+
 /**
  * Create a date range that includes the evening session
  * This ensures that evening matches (which may be stored as next-day UTC)
  * are included when filtering for a specific day
- * 
- * @param date The selected local date to view matches for
- * @returns An object with start and end dates for database filtering
  */
-export const createEveningAwareDateRange = (date: Date) => {
+export const createEveningAwareDateRange = (date: Date): DateRange => {
   // Create start date (the selected day at midnight UTC)
   const year = date.getFullYear();
   const month = date.getMonth();
@@ -234,4 +268,3 @@ export const createEveningAwareDateRange = (date: Date) => {
   
   return { startDate, endDate };
 };
-
