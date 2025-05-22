@@ -25,7 +25,8 @@ const timeSlots = [
   "7:30 PM",
   "8:00 PM",
   "8:30 PM",
-  "9:00 PM"
+  "9:00 PM",
+  "9:30 PM"
 ];
 
 const MatchFormRow = ({ match, teams, onUpdate, onRemove }: MatchFormRowProps) => {
@@ -83,7 +84,7 @@ const MatchFormRow = ({ match, teams, onUpdate, onRemove }: MatchFormRowProps) =
             <SelectValue placeholder="Select Time" />
           </SelectTrigger>
           <SelectContent>
-            {["6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM"].map((slot) => (
+            {timeSlots.map((slot) => (
               <SelectItem key={slot} value={slot}>
                 {slot}
               </SelectItem>

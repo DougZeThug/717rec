@@ -6,7 +6,8 @@ export const TIME_BLOCKS: Record<string, TimeBlockData> = {
   // Keys match the main timeslot values in the database ('6:30 PM', not '6:30')
   '6:30 PM': { main: '6:30 PM', secondary: '7:00 PM' },
   '7:30 PM': { main: '7:30 PM', secondary: '8:00 PM' },
-  '8:30 PM': { main: '8:30 PM', secondary: '9:00 PM' }
+  '8:30 PM': { main: '8:30 PM', secondary: '9:00 PM' },
+  '9:30 PM': { main: '9:30 PM', secondary: '10:00 PM' }
 };
 
 // Helper function to find a time block by its key or value

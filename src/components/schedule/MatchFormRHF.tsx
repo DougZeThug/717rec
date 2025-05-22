@@ -25,7 +25,7 @@ import { Switch } from "@/components/ui/switch";
 
 const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel }) => {
   // Set up time slots with consistent formatting
-  const timeSlots = ["6:30 PM", "7:30 PM", "8:30 PM"];
+  const timeSlots = ["6:30 PM", "7:30 PM", "8:30 PM", "9:30 PM"];
   
   // Initialize form with default values or existing match data
   const form = useForm<MatchFormValues>({

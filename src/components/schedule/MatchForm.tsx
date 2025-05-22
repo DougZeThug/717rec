@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Match } from "@/types";
@@ -19,7 +18,7 @@ const MatchForm: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel 
   const [team2Score, setTeam2Score] = useState<number | undefined>(match?.team2Score);
 
   // Set up time slots with consistent formatting
-  const timeSlots = ["6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM"];
+  const timeSlots = ["6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM", "10:00 PM"];
 
   useEffect(() => {
     // If editing an existing match, set the appropriate time slot
