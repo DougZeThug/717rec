@@ -1,3 +1,4 @@
+
 import React from "react";
 import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +7,7 @@ import { usePlayoffState } from "@/hooks/playoffs/usePlayoffState";
 import { usePlayoffEditMatch } from "@/hooks/playoffs/usePlayoffEditMatch";
 import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
+import { useDivisions } from "@/hooks/useDivisions";
 import AdminView from "@/components/playoffs/views/AdminView";
 import PlayoffView from "@/components/playoffs/views/PlayoffView";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
@@ -39,12 +41,13 @@ const Playoffs = () => {
     deleteBracket
   } = usePlayoffViewModel(selectedBracketId);
   
+  // Fetch divisions directly to ensure we have proper data
+  const { divisions, isLoading: divisionsLoading } = useDivisions();
+  
   // Setup for divisions and brackets lists (separate from single bracket view)
   const {
     brackets: allBrackets,
     bracketsLoading,
-    divisions,
-    divisionsLoading,
     teamsByDivision,
     bracketsByDivision,
     handleBracketCreated,
