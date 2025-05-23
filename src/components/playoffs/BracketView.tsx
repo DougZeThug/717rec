@@ -1,15 +1,8 @@
 
-import React, { useMemo, useState } from "react";
-import type { PlayoffBracket, Team, PlayoffMatch } from "@/types";
-import RoundColumn from "./RoundColumn";
-import { getBracketConnectorPaths, getVerticalSpacing, getNextMatch } from "./BracketUtils";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import { blueAmber } from "@/styles/design-system";
-import ChampionDisplay from "./celebration/ChampionDisplay";
-import { usePlayoffBracketData, BracketMatchesByType } from "@/hooks/usePlayoffViewModel.compat";
-import DoubleElimBracket from "./DoubleElimBracket";
-import { BRACKET_FORMATS } from "@/constants/brackets";
+import React from "react";
+import { PlayoffBracket, Team } from "@/types";
+import GlootBracket from "./GlootBracket";
+import ChallongeBracketView from "./ChallongeBracketView";
 
 interface BracketViewProps {
   bracket: PlayoffBracket;
@@ -17,136 +10,40 @@ interface BracketViewProps {
   onEditMatch?: (matchId: string) => void;
 }
 
-const BracketView: React.FC<BracketViewProps> = ({ bracket, teams, onEditMatch }) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  const [showChampion, setShowChampion] = useState(true);
-  
-  // Get organized bracket data by match type (winners, losers, finals)
-  const { bracketMatchesByType } = usePlayoffBracketData(bracket.id);
-
-  // Check if we should use the double elimination layout
-  const isDoubleElimination = bracket.format === BRACKET_FORMATS.DOUBLE;
-  
-  // If we have a double elimination bracket and the data is organized by type,
-  // use the specialized double elimination component
-  if (isDoubleElimination && bracketMatchesByType) {
+/**
+ * Main bracket view component that delegates to appropriate bracket renderer
+ */
+const BracketView: React.FC<BracketViewProps> = ({
+  bracket,
+  teams,
+  onEditMatch
+}) => {
+  // For Challonge brackets, use the existing Challonge view
+  if (bracket.challonge_tournament_id) {
     return (
-      <DoubleElimBracket
-        winners={bracketMatchesByType.winners}
-        losers={bracketMatchesByType.losers}
-        finals={bracketMatchesByType.finals}
+      <ChallongeBracketView 
+        bracket={bracket} 
+        teams={teams} 
+        onEditMatch={onEditMatch} 
+      />
+    );
+  }
+  
+  // For native brackets, use the new @g-loot component
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
+        <div className="text-sm text-gray-500">
+          {bracket.format} • {bracket.state}
+        </div>
+      </div>
+      
+      <GlootBracket 
         bracket={bracket}
         teams={teams}
         onEditMatch={onEditMatch}
       />
-    );
-  }
-
-  // Get vertical spacing for each round
-  const roundSpacing = useMemo(() => {
-    if (!bracket?.matches) return [];
-    return bracket.matches.reduce((acc: Record<number, number>, match) => {
-      if (!acc[match.round]) {
-        acc[match.round] = 0;
-      }
-      acc[match.round]++;
-      return acc;
-    }, {});
-  }, [bracket?.matches]);
-  
-  // Group matches by round
-  const matchesByRound = useMemo(() => {
-    if (!bracket?.matches) return [];
-    return bracket.matches.reduce((acc: Record<number, PlayoffMatch[]>, match) => {
-      if (!acc[match.round]) {
-        acc[match.round] = [];
-      }
-      acc[match.round].push(match);
-      return acc;
-    }, {});
-  }, [bracket?.matches]);
-  
-  // Convert to array of rounds
-  const rounds = useMemo(() => {
-    return Object.keys(matchesByRound).map(Number).sort((a, b) => a - b);
-  }, [matchesByRound]);
-  
-  // Calculate bracket connector paths
-  const connectorPaths = useMemo(() => {
-    if (!bracket?.matches || rounds.length === 0) return [];
-    return getBracketConnectorPaths(bracket.matches);
-  }, [bracket?.matches]);
-  
-  // Find the champion if the bracket is complete
-  const champion = useMemo(() => {
-    if (!bracket?.matches || !bracket.champion) return null;
-    
-    // Find the team with the champion ID
-    return teams.find(team => team.id === bracket.champion) || null;
-  }, [bracket?.matches, bracket.champion, teams]);
-
-  // Function to get next match for a given match
-  const getNextMatchForRound = (match: PlayoffMatch) => {
-    if (!bracket?.matches) return null;
-    return getNextMatch(match, bracket.matches);
-  };
-  
-  if (!bracket || !bracket.matches) {
-    return (
-      <div className="p-6 text-center">
-        <h3 className="text-lg font-medium">No bracket data available</h3>
-      </div>
-    );
-  }
-  
-  return (
-    <div className="overflow-auto my-4 relative">
-      <div className={cn(
-        "flex space-x-16 relative min-w-max p-6 rounded-lg",
-        isLight 
-          ? "bg-gradient-to-br from-white to-blue-50/10" 
-          : "bg-gradient-to-br from-gray-900/80 to-gray-800/80"
-      )}>
-        {rounds.map((round, index) => (
-          <RoundColumn
-            key={`round-${round}`}
-            round={String(round)}
-            type="winners"
-            matches={matchesByRound[round]}
-            teams={teams}
-            onEditMatch={onEditMatch}
-            verticalSpacing={getVerticalSpacing(roundSpacing[round])}
-            roundIndex={index}
-            getNextMatch={getNextMatchForRound}
-          />
-        ))}
-        
-        {/* SVG layer for bracket connectors */}
-        <svg 
-          className="absolute inset-0 w-full h-full pointer-events-none z-0"
-          style={{ overflow: 'visible' }}
-        >
-          {connectorPaths.map((path, i) => (
-            <path
-              key={`connector-${i}`}
-              d={path}
-              fill="none"
-              stroke={isLight ? "#9ca3af" : "#6b7280"}
-              strokeWidth="2"
-              className="transition-colors duration-300"
-            />
-          ))}
-        </svg>
-      </div>
-      
-      {/* Champion display if tournament is complete */}
-      {champion && showChampion && (
-        <ChampionDisplay
-          champion={champion}
-          onClose={() => setShowChampion(false)}
-        />
-      )}
     </div>
   );
 };

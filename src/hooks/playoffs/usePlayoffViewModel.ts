@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { BracketService, fetchBracketById, groupBracketMatchesByType, updateMatchResult, computeBracketState } from "@/services/BracketService";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
 import { BracketMatchesByType } from "@/services/brackets/types";
-import { PlayoffBracket, PlayoffViewModel, Team, PlayoffGame, BracketState } from "@/types/playoffs";
+import { PlayoffBracket, PlayoffViewModel, Team, PlayoffGame, BracketState, PlayoffMatch } from "@/types/playoffs";
 import { BRACKET_STATES } from '@/constants/brackets';
 
 /**
@@ -43,6 +44,61 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     }
   });
   
+  // Fetch playoff matches with team data
+  const playoffMatchesQuery = useQuery({
+    queryKey: ['playoff-matches', bracketId],
+    queryFn: async () => {
+      if (!bracketId) return [];
+      
+      const { data, error } = await BracketService.supabase
+        .from('playoff_matches')
+        .select(`
+          *,
+          team1:teams!playoff_matches_team1_id_fkey(id, name, logo_url, image_url),
+          team2:teams!playoff_matches_team2_id_fkey(id, name, logo_url, image_url),
+          playoff_games(*)
+        `)
+        .eq('bracket_id', bracketId)
+        .order('round')
+        .order('position');
+        
+      if (error) throw error;
+      
+      // Transform to PlayoffMatch format
+      return (data || []).map(match => ({
+        id: match.id,
+        bracket_id: match.bracket_id,
+        round: match.round,
+        position: match.position,
+        team1Id: match.team1_id,
+        team2Id: match.team2_id,
+        winnerId: match.winner_id,
+        loserId: match.loser_id,
+        team1Score: match.team1_score,
+        team2Score: match.team2_score,
+        team1GameWins: match.team1_game_wins,
+        team2GameWins: match.team2_game_wins,
+        matchType: match.match_type,
+        bestOf: match.best_of || 3,
+        team1Seed: match.team1_seed,
+        team2Seed: match.team2_seed,
+        nextWinMatchId: match.next_win_match_id,
+        nextLoseMatchId: match.next_lose_match_id,
+        status: match.status || 'pending',
+        games: (match.playoff_games || []).map(game => ({
+          id: game.id,
+          matchId: game.match_id,
+          gameNumber: game.game_number,
+          team1Score: game.team1_score,
+          team2Score: game.team2_score,
+          winnerId: game.winner_id,
+          winner: game.winner_id
+        }))
+      })) as PlayoffMatch[];
+    },
+    enabled: !!bracketId
+  });
+  
   // Fetch bracket data
   const bracketQuery = useQuery({
     queryKey: ['bracket', bracketId],
@@ -50,6 +106,11 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       if (!bracketId) return null;
       
       const bracket = await fetchBracketById(bracketId);
+      
+      // Use playoff matches if available, otherwise fall back to regular matches
+      if (bracket && playoffMatchesQuery.data) {
+        bracket.matches = playoffMatchesQuery.data;
+      }
       
       // Calculate and update the bracket state if needed
       if (bracket) {
@@ -68,7 +129,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       
       return bracket;
     },
-    enabled: !!bracketId
+    enabled: !!bracketId && !playoffMatchesQuery.isLoading
   });
   
   // Process bracket data to separate winners, losers and finals matches
@@ -95,6 +156,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       
       // Invalidate all related queries
       await queryClient.invalidateQueries({ queryKey: ['brackets'] });
+      await queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
       await invalidateMatchRelatedQueries(queryClient);
       
     } catch (error) {
@@ -120,17 +182,41 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     games?: PlayoffGame[]
   ) => {
     try {
-      await updateMatchResult(
-        matchId,
-        winnerId,
-        team1Score,
-        team2Score,
-        team1GameWins,
-        team2GameWins,
-        games
-      );
+      // Update in playoff_matches table
+      const { error: matchError } = await BracketService.supabase
+        .from('playoff_matches')
+        .update({
+          winner_id: winnerId,
+          team1_score: team1Score,
+          team2_score: team2Score,
+          team1_game_wins: team1GameWins,
+          team2_game_wins: team2GameWins,
+          status: 'completed'
+        })
+        .eq('id', matchId);
       
-      // Refetch bracket data after updating match
+      if (matchError) throw matchError;
+      
+      // Update games if provided
+      if (games && games.length > 0) {
+        for (const game of games) {
+          if (game.id) {
+            await BracketService.supabase
+              .from('playoff_games')
+              .upsert({
+                id: game.id,
+                match_id: matchId,
+                game_number: game.gameNumber || 1,
+                team1_score: game.team1Score,
+                team2_score: game.team2Score,
+                winner_id: game.winnerId
+              });
+          }
+        }
+      }
+      
+      // Refetch data after updating match
+      playoffMatchesQuery.refetch();
       bracketQuery.refetch();
       
       toast({
@@ -150,7 +236,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   return {
     // Bracket data
     bracket: bracketQuery.data,
-    isLoading: bracketQuery.isLoading,
+    isLoading: bracketQuery.isLoading || playoffMatchesQuery.isLoading,
     error: bracketQuery.error as Error | null,
     bracketMatchesByType,
     
@@ -159,7 +245,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     teamsLoading: teamsQuery.isLoading,
     
     // Actions
-    refetch: bracketQuery.refetch,
+    refetch: () => Promise.all([bracketQuery.refetch(), playoffMatchesQuery.refetch()]),
     deleteBracket: handleDeleteBracket,
     updateMatchResult: handleUpdateMatchResult
   };

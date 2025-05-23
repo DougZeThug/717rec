@@ -13,7 +13,7 @@ export function transformMatches(matchesData: any[]): PlayoffMatch[] {
     
     return {
       id: match.id,
-      round: match.round_number,
+      round: match.round_number || match.round,
       position: match.position,
       team1Id: match.team1_id,
       team2Id: match.team2_id,
@@ -24,19 +24,65 @@ export function transformMatches(matchesData: any[]): PlayoffMatch[] {
       winnerId: match.winner_id,
       loserId: match.loser_id,
       matchType: match.match_type,
-      team1Seed: metadata.team1_seed || null,
-      team2Seed: metadata.team2_seed || null,
-      nextWinMatchId: match.next_match_id,
-      nextLoseMatchId: match.next_loser_match_id,
+      team1Seed: metadata.team1_seed || match.team1_seed || null,
+      team2Seed: metadata.team2_seed || match.team2_seed || null,
+      nextWinMatchId: match.next_match_id || match.next_win_match_id,
+      nextLoseMatchId: match.next_loser_match_id || match.next_lose_match_id,
       bestOf: match.best_of || 3,
       bracket_id: match.bracket_id,
-      status: match.iscompleted ? 'completed' : 'pending',
+      status: match.iscompleted ? 'completed' : (match.status || 'pending'),
       games: match.games?.map(game => ({
         id: game.id,
         team1Score: game.team1_score,
         team2Score: game.team2_score,
         winner: game.winner_id || (game.team1_score > game.team2_score ? match.team1_id : match.team2_id)
+      })) || match.playoff_games?.map(game => ({
+        id: game.id,
+        matchId: game.match_id,
+        gameNumber: game.game_number,
+        team1Score: game.team1_score,
+        team2Score: game.team2_score,
+        winnerId: game.winner_id,
+        winner: game.winner_id
       })) || []
     };
   });
+}
+
+/**
+ * Transforms playoff matches specifically from playoff_matches table
+ */
+export function transformPlayoffMatches(matchesData: any[]): PlayoffMatch[] {
+  if (!matchesData) return [];
+  
+  return matchesData.map(match => ({
+    id: match.id,
+    round: match.round,
+    position: match.position,
+    team1Id: match.team1_id,
+    team2Id: match.team2_id,
+    team1Score: match.team1_score,
+    team2Score: match.team2_score,
+    team1GameWins: match.team1_game_wins,
+    team2GameWins: match.team2_game_wins,
+    winnerId: match.winner_id,
+    loserId: match.loser_id,
+    matchType: match.match_type,
+    team1Seed: match.team1_seed,
+    team2Seed: match.team2_seed,
+    nextWinMatchId: match.next_win_match_id,
+    nextLoseMatchId: match.next_lose_match_id,
+    bestOf: match.best_of || 3,
+    bracket_id: match.bracket_id,
+    status: match.status || 'pending',
+    games: (match.playoff_games || []).map(game => ({
+      id: game.id,
+      matchId: game.match_id,
+      gameNumber: game.game_number,
+      team1Score: game.team1_score,
+      team2Score: game.team2_score,
+      winnerId: game.winner_id,
+      winner: game.winner_id
+    }))
+  }));
 }
