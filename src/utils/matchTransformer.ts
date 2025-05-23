@@ -13,7 +13,7 @@ export function transformMatches(matchesData: any[]): PlayoffMatch[] {
     
     return {
       id: match.id,
-      round: match.round_number,
+      round: match.round_number || match.round,
       position: match.position,
       team1Id: match.team1_id,
       team2Id: match.team2_id,
@@ -26,11 +26,11 @@ export function transformMatches(matchesData: any[]): PlayoffMatch[] {
       matchType: match.match_type,
       team1Seed: metadata.team1_seed || null,
       team2Seed: metadata.team2_seed || null,
-      nextWinMatchId: match.next_match_id,
-      nextLoseMatchId: match.next_loser_match_id,
+      nextWinMatchId: match.next_win_match_id || match.next_match_id,
+      nextLoseMatchId: match.next_lose_match_id || match.next_loser_match_id,
       bestOf: match.best_of || 3,
       bracket_id: match.bracket_id,
-      status: match.iscompleted ? 'completed' : 'pending',
+      status: match.status || (match.iscompleted ? 'completed' : 'pending'),
       games: match.games?.map(game => ({
         id: game.id,
         team1Score: game.team1_score,

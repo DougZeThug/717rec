@@ -16,8 +16,9 @@ import BracketViewer from "./bracket-viewer/BracketViewer";
 import { transformToBracketViewerFormat } from "./bracket-viewer/dataTransformer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeamDivisionTable from "./TeamDivisionTable";
-import { PlayoffBracket, Team } from "@/types";
+import { PlayoffBracket, PlayoffMatch, Team } from "@/types";
 import { BracketFormat, BRACKET_FORMATS, BRACKET_STATES, BracketState } from "@/constants/brackets";
+import { transformMatches } from "@/utils/matchTransformer";
 
 const PlayoffsUnified = () => {
   const {
@@ -57,15 +58,21 @@ const PlayoffsUnified = () => {
       
       if (error) throw error;
       
-      return data.map(bracket => ({
-        id: bracket.id,
-        name: bracket.title || 'Unnamed Bracket',
-        division: bracket.division_id,
-        format: (bracket.format || BRACKET_FORMATS.DOUBLE) as BracketFormat,
-        state: (bracket.state || BRACKET_STATES.PENDING) as BracketState,
-        matches: bracket.playoff_matches || [],
-        created_at: bracket.created_at
-      })) as PlayoffBracket[];
+      // Transform the data to match our PlayoffBracket type
+      return data.map(bracket => {
+        // Transform the matches to our PlayoffMatch format
+        const transformedMatches: PlayoffMatch[] = transformMatches(bracket.playoff_matches || []);
+        
+        return {
+          id: bracket.id,
+          name: bracket.title || 'Unnamed Bracket',
+          division: bracket.division_id,
+          format: (bracket.format || BRACKET_FORMATS.DOUBLE) as BracketFormat,
+          state: (bracket.state || BRACKET_STATES.PENDING) as BracketState,
+          matches: transformedMatches,
+          created_at: bracket.created_at
+        } as PlayoffBracket;
+      });
     }
   });
 
@@ -98,10 +105,11 @@ const PlayoffsUnified = () => {
   const bracketViewerData = React.useMemo(() => {
     if (!bracket || !teams) return null;
     
+    // Fix: ensure format is passed correctly to the transformer
     return transformToBracketViewerFormat(
       bracket.matches,
       teams,
-      bracket.format
+      bracket.format === BRACKET_FORMATS.SINGLE ? BRACKET_FORMATS.SINGLE : BRACKET_FORMATS.DOUBLE
     );
   }, [bracket, teams]);
 

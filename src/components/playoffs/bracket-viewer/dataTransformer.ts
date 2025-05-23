@@ -10,7 +10,7 @@ import { BRACKET_FORMATS } from "@/constants/brackets";
 export const transformToBracketViewerFormat = (
   matches: PlayoffMatch[],
   teams: Team[],
-  format = BRACKET_FORMATS.SINGLE
+  format: string = BRACKET_FORMATS.SINGLE
 ): BracketData => {
   console.log('Transforming data for brackets-viewer:', { matches: matches.length, teams: teams.length, format });
 
