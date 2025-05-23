@@ -6,9 +6,10 @@ import {
   Match,
   SVGViewer 
 } from "@g-loot/react-tournament-brackets";
-import { PlayoffBracket, Team } from "@/types";
+import { PlayoffBracket, Team } from "@/types/playoffs";
 import { adaptPlayoffMatchesToGloot } from "@/services/brackets/glootAdapter";
 import { useTheme } from "next-themes";
+import { BRACKET_FORMATS } from "@/constants/brackets";
 
 interface GlootBracketProps {
   bracket: PlayoffBracket;
@@ -63,7 +64,7 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   return (
     <div className="w-full overflow-auto">
       <div className="min-w-max p-4">
-        {bracket.format === 'Double Elimination' ? (
+        {bracket.format === BRACKET_FORMATS.DOUBLE ? (
           <DoubleEliminationBracket
             matches={tournament.matches}
             matchComponent={Match}

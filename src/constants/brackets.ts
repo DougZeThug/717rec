@@ -3,8 +3,8 @@
  * Bracket format constants
  */
 export const BRACKET_FORMATS = {
-  SINGLE: 'single_elimination',
-  DOUBLE: 'double_elimination',
+  SINGLE: 'Single Elimination',
+  DOUBLE: 'Double Elimination',
 } as const;
 
 export type BracketFormat = typeof BRACKET_FORMATS[keyof typeof BRACKET_FORMATS];

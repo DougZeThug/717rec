@@ -41,9 +41,6 @@ export interface PlayoffMatch {
   matchType: PlayoffMatchType;
   bestOf: number;
   games?: PlayoffGame[];
-  team1ChallongeId?: number;
-  team2ChallongeId?: number;
-  challongeMatchId?: string;
   team1Seed?: number | null;
   team2Seed?: number | null;
   nextWinMatchId?: string | null;
@@ -123,9 +120,9 @@ export interface PlayoffViewModel {
   ) => Promise<void>;
 }
 
-/* ─────────────────────────────────────────
-   Temporary domain stubs – refine later
-   ───────────────────────────────────────── */
+/**
+ * Team definition for playoff operations
+ */
 export interface Team {
   id: string;
   name: string;
@@ -147,6 +144,3 @@ export type BracketMatchesByType = {
   finals: any[];
   playIn?: any[][];
 };
-
-// Remove the old export since we've defined BracketState at the top
-// export type { BracketState } from "@/constants/brackets";

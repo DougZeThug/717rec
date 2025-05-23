@@ -1,8 +1,7 @@
 
 import React from "react";
-import { PlayoffBracket, Team } from "@/types";
+import { PlayoffBracket, Team } from "@/types/playoffs";
 import GlootBracket from "./GlootBracket";
-import ChallongeBracketView from "./ChallongeBracketView";
 
 interface BracketViewProps {
   bracket: PlayoffBracket;
@@ -11,25 +10,13 @@ interface BracketViewProps {
 }
 
 /**
- * Main bracket view component that delegates to appropriate bracket renderer
+ * Main bracket view component that uses @g-loot bracket renderer
  */
 const BracketView: React.FC<BracketViewProps> = ({
   bracket,
   teams,
   onEditMatch
 }) => {
-  // For Challonge brackets, use the existing Challonge view
-  if (bracket.challonge_tournament_id) {
-    return (
-      <ChallongeBracketView 
-        bracket={bracket} 
-        teams={teams} 
-        onEditMatch={onEditMatch} 
-      />
-    );
-  }
-  
-  // For native brackets, use the new @g-loot component
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

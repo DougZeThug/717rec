@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -76,8 +75,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
         loserId: match.loser_id,
         team1Score: match.team1_score,
         team2Score: match.team2_score,
-        team1GameWins: match.team1_game_wins,
-        team2GameWins: match.team2_game_wins,
+        team1GameWins: match.team1_game_wins || 0,
+        team2GameWins: match.team2_game_wins || 0,
         matchType: match.match_type,
         bestOf: match.best_of || 3,
         team1Seed: match.team1_seed,
