@@ -1,6 +1,6 @@
 
 import React from "react";
-import { PlayoffBracket, Team } from "@/types";
+import { PlayoffBracket, Team } from "@/types/playoffs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BracketList from "../BracketList";
 import BracketView from "../BracketView";

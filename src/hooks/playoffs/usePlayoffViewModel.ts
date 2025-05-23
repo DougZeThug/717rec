@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -64,36 +65,43 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       if (error) throw error;
       
       // Transform to PlayoffMatch format
-      return (data || []).map(match => ({
-        id: match.id,
-        bracket_id: match.bracket_id,
-        round: match.round,
-        position: match.position,
-        team1Id: match.team1_id,
-        team2Id: match.team2_id,
-        winnerId: match.winner_id,
-        loserId: match.loser_id,
-        team1Score: match.team1_score,
-        team2Score: match.team2_score,
-        team1GameWins: match.team1_game_wins || 0,
-        team2GameWins: match.team2_game_wins || 0,
-        matchType: match.match_type,
-        bestOf: match.best_of || 3,
-        team1Seed: match.team1_seed,
-        team2Seed: match.team2_seed,
-        nextWinMatchId: match.next_win_match_id,
-        nextLoseMatchId: match.next_lose_match_id,
-        status: match.status || 'pending',
-        games: (match.playoff_games || []).map(game => ({
-          id: game.id,
-          matchId: game.match_id,
-          gameNumber: game.game_number,
-          team1Score: game.team1_score,
-          team2Score: game.team2_score,
-          winnerId: game.winner_id,
-          winner: game.winner_id
-        }))
-      })) as PlayoffMatch[];
+      return (data || []).map(match => {
+        // Calculate game wins from playoff_games if available
+        const games = match.playoff_games || [];
+        const team1GameWins = games.filter(game => game.winner_id === match.team1_id).length;
+        const team2GameWins = games.filter(game => game.winner_id === match.team2_id).length;
+        
+        return {
+          id: match.id,
+          bracket_id: match.bracket_id,
+          round: match.round,
+          position: match.position,
+          team1Id: match.team1_id,
+          team2Id: match.team2_id,
+          winnerId: match.winner_id,
+          loserId: match.loser_id,
+          team1Score: match.team1_score,
+          team2Score: match.team2_score,
+          team1GameWins: team1GameWins || 0,
+          team2GameWins: team2GameWins || 0,
+          matchType: match.match_type,
+          bestOf: match.best_of || 3,
+          team1Seed: match.team1_seed,
+          team2Seed: match.team2_seed,
+          nextWinMatchId: match.next_win_match_id,
+          nextLoseMatchId: match.next_lose_match_id,
+          status: match.status || 'pending',
+          games: games.map(game => ({
+            id: game.id,
+            matchId: game.match_id,
+            gameNumber: game.game_number,
+            team1Score: game.team1_score,
+            team2Score: game.team2_score,
+            winnerId: game.winner_id,
+            winner: game.winner_id
+          }))
+        };
+      }) as PlayoffMatch[];
     },
     enabled: !!bracketId
   });
@@ -188,8 +196,6 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
           winner_id: winnerId,
           team1_score: team1Score,
           team2_score: team2Score,
-          team1_game_wins: team1GameWins,
-          team2_game_wins: team2GameWins,
           status: 'completed'
         })
         .eq('id', matchId);

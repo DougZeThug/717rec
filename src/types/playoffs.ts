@@ -93,6 +93,24 @@ export interface MatchResult {
 }
 
 /**
+ * Team definition for playoff operations - compatible with main Team interface
+ */
+export interface Team {
+  id: string;
+  name: string;
+  logo_url?: string;
+  image_url?: string;
+  division_id?: string;
+  created_at?: string;
+  wins?: number; // Made optional to match main Team interface
+  losses?: number; // Made optional to match main Team interface
+  game_wins?: number;
+  game_losses?: number;
+  seed?: number;
+  players?: string[];
+}
+
+/**
  * View model interface for playoff brackets
  */
 export interface PlayoffViewModel {
@@ -118,24 +136,6 @@ export interface PlayoffViewModel {
     team2GameWins?: number,
     games?: PlayoffGame[]
   ) => Promise<void>;
-}
-
-/**
- * Team definition for playoff operations
- */
-export interface Team {
-  id: string;
-  name: string;
-  logo_url?: string;
-  image_url?: string;
-  division_id?: string;
-  created_at?: string;
-  wins: number;
-  losses: number;
-  game_wins?: number;
-  game_losses?: number;
-  seed?: number;
-  players?: string[];
 }
 
 export type BracketMatchesByType = {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Loader2, Trash } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
 import ChampionDisplay from "@/components/playoffs/ChampionDisplay";
-import { PlayoffBracket, Team } from "@/types";
+import { PlayoffBracket, Team } from "@/types/playoffs";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
@@ -48,7 +48,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
       className={cn(
         "mb-8 overflow-hidden",
         "border-t-4",
-        getDivisionColorClass(bracket.division),
+        getDivisionColorClass(bracket.division || ""),
         isLight ? blueAmber.background.card : ""
       )}
       id={`bracket-${bracketId}`}
@@ -92,7 +92,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                   variant="outline" 
                   size="sm" 
                   className="hidden md:flex text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20" 
-                  onClick={() => onDeleteBracket(bracketId, bracket.name)}
+                  onClick={() => onDeleteBracket(bracketId, bracket.name || "")}
                 >
                   <Trash className="h-4 w-4 mr-2" /> Delete
                 </Button>
