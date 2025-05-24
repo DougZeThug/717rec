@@ -1,3 +1,4 @@
+
 /**
  * Service for inserting, updating and deleting participants
  */
@@ -17,7 +18,7 @@ import { isValidUUID, isNotEmpty } from '@/utils/validation';
  */
 export class ParticipantMutationService {
   /**
-   * Insert participants into the database
+   * Insert participants into the database with enhanced validation
    * @returns Number of participants successfully inserted
    */
   async insertParticipants(participants: ParticipantInsertData[]): Promise<number> {
@@ -27,57 +28,102 @@ export class ParticipantMutationService {
     }
     
     try {
-      console.log('ParticipantMutationService: Inserting participants:', {
+      console.log('ParticipantMutationService: Inserting participants with enhanced validation:', {
         count: participants.length,
         participants: participants.map((p, index) => ({
           index,
           bracket_id: p.bracket_id,
           team_id: p.team_id,
           position: p.position,
-          bracket_id_valid: isValidUUID(p.bracket_id),
-          team_id_valid: isValidUUID(p.team_id),
+          bracket_id_valid: isValidUUID(p.bracket_id || ''),
+          team_id_valid: isValidUUID(p.team_id || ''),
           bracket_id_empty: p.bracket_id === '',
-          team_id_empty: p.team_id === ''
+          team_id_empty: p.team_id === '',
+          bracket_id_undefined: p.bracket_id === 'undefined',
+          team_id_undefined: p.team_id === 'undefined'
         }))
       });
       
-      // Validate all participants
+      // Pre-validation: check for obvious issues before calling validateParticipantBatch
+      const preValidationErrors: string[] = [];
+      participants.forEach((p, index) => {
+        if (!p.bracket_id || p.bracket_id === 'undefined' || p.bracket_id === 'null' || p.bracket_id.trim() === '') {
+          preValidationErrors.push(`Participant ${index}: bracket_id is empty or invalid`);
+        }
+        if (!p.team_id || p.team_id === 'undefined' || p.team_id === 'null' || p.team_id.trim() === '') {
+          preValidationErrors.push(`Participant ${index}: team_id is empty or invalid`);
+        }
+        if (!isValidUUID(p.bracket_id || '')) {
+          preValidationErrors.push(`Participant ${index}: bracket_id is not a valid UUID`);
+        }
+        if (!isValidUUID(p.team_id || '')) {
+          preValidationErrors.push(`Participant ${index}: team_id is not a valid UUID`);
+        }
+      });
+      
+      if (preValidationErrors.length > 0) {
+        console.error('Pre-validation failed:', preValidationErrors);
+        throw new ParticipantOperationError(
+          `Pre-validation failed: ${preValidationErrors.join(', ')}`,
+          { preValidationErrors }
+        );
+      }
+      
+      // Validate all participants using existing validation
       const validParticipants = validateParticipantBatch(participants);
       
       if (validParticipants.length === 0) {
-        console.warn("No valid participants to insert");
+        console.warn("No valid participants to insert after validation");
         return 0;
       }
       
       // Add name and tournament_id for each participant if not provided
-      const enrichedParticipants = validParticipants.map(p => {
+      const enrichedParticipants = validParticipants.map((p, index) => {
         const enriched = {
           ...p,
           name: p.name || p.team_id, // Default to team_id if name is not provided
           tournament_id: p.tournament_id || p.bracket_id // Use bracket_id as tournament_id if not provided
         };
         
-        // Final validation before database insert
+        // Final validation before database insert with detailed logging
+        console.log(`Final validation for participant ${index}:`, {
+          bracket_id: enriched.bracket_id,
+          team_id: enriched.team_id,
+          tournament_id: enriched.tournament_id,
+          position: enriched.position
+        });
+        
         if (!isValidUUID(enriched.bracket_id)) {
-          throw new ParticipantOperationError(`Invalid bracket_id UUID: "${enriched.bracket_id}"`);
+          throw new ParticipantOperationError(`Final validation failed: Invalid bracket_id UUID at index ${index}: "${enriched.bracket_id}"`);
         }
         if (!isValidUUID(enriched.team_id)) {
-          throw new ParticipantOperationError(`Invalid team_id UUID: "${enriched.team_id}"`);
+          throw new ParticipantOperationError(`Final validation failed: Invalid team_id UUID at index ${index}: "${enriched.team_id}"`);
         }
         if (!isValidUUID(enriched.tournament_id)) {
-          throw new ParticipantOperationError(`Invalid tournament_id UUID: "${enriched.tournament_id}"`);
+          throw new ParticipantOperationError(`Final validation failed: Invalid tournament_id UUID at index ${index}: "${enriched.tournament_id}"`);
         }
         
         return enriched;
       });
       
-      console.log(`Inserting ${enrichedParticipants.length} validated participants`);
+      console.log(`Inserting ${enrichedParticipants.length} fully validated participants`);
       const { error, data } = await supabase.from('participants').insert(enrichedParticipants)
         .select('id'); // Select IDs to count inserted rows
       
       if (error) {
-        console.error("Error inserting participants:", error);
-        throw new ParticipantOperationError(`Participant insert failed: ${error.message}`, error);
+        console.error("Database error inserting participants:", error);
+        
+        // Provide specific error messages for common issues
+        let enhancedErrorMessage = error.message;
+        if (error.message.includes('invalid input syntax for type uuid')) {
+          enhancedErrorMessage = 'Invalid UUID format detected in participant data';
+        } else if (error.message.includes('violates foreign key constraint')) {
+          enhancedErrorMessage = 'Referenced teams or brackets no longer exist';
+        } else if (error.message.includes('violates not-null constraint')) {
+          enhancedErrorMessage = 'Required participant data is missing';
+        }
+        
+        throw new ParticipantOperationError(`Participant insert failed: ${enhancedErrorMessage}`, error);
       }
       
       const insertedCount = data?.length || enrichedParticipants.length;
@@ -87,7 +133,7 @@ export class ParticipantMutationService {
       if (error instanceof ParticipantOperationError) {
         throw error; // Re-throw our own error types
       }
-      console.error("Error inserting participants:", error);
+      console.error("Unexpected error inserting participants:", error);
       throw new ParticipantOperationError(`Failed to insert participants: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
@@ -157,10 +203,6 @@ export class ParticipantMutationService {
     }
   }
   
-  /**
-   * Delete participants from the database
-   * @returns Number of participants deleted
-   */
   async deleteParticipants(filter?: ParticipantFilter): Promise<number> {
     try {
       let query = supabase.from('participants').delete();
@@ -215,31 +257,49 @@ export class ParticipantMutationService {
 }
 
 /**
- * Simplified static service for quick use
+ * Enhanced static service for quick use with better validation
  */
 export const ParticipantMutationServiceStatic = {
   async insert(bracketId: string, teamIds: string[]): Promise<number> {
-    console.log('ParticipantMutationServiceStatic.insert called:', {
+    console.log('ParticipantMutationServiceStatic.insert called with enhanced validation:', {
       bracketId,
       teamIds,
       bracketIdValid: isValidUUID(bracketId),
       bracketIdEmpty: bracketId === '',
-      teamIdsValid: teamIds.map(id => ({ id, valid: isValidUUID(id), empty: id === '' }))
+      bracketIdUndefined: bracketId === 'undefined',
+      teamIdsValid: teamIds.map(id => ({ 
+        id, 
+        valid: isValidUUID(id), 
+        empty: id === '', 
+        undefined: id === 'undefined',
+        null: id === 'null'
+      }))
     });
     
     if (!bracketId || !teamIds || teamIds.length === 0) {
-      console.warn('Invalid parameters for participant insert');
+      console.warn('Invalid parameters for participant insert - missing required data');
       return 0;
     }
     
-    // Validate inputs before proceeding
-    if (!isValidUUID(bracketId)) {
-      throw new ParticipantOperationError(`Invalid bracket ID: "${bracketId}"`);
+    // Enhanced input validation
+    if (bracketId === 'undefined' || bracketId === 'null' || bracketId.trim() === '') {
+      throw new ParticipantOperationError(`Invalid bracket ID: "${bracketId}" - cannot be empty, undefined, or null`);
     }
     
-    const invalidTeamIds = teamIds.filter(id => !isValidUUID(id));
+    if (!isValidUUID(bracketId)) {
+      throw new ParticipantOperationError(`Invalid bracket ID format: "${bracketId}" - must be a valid UUID`);
+    }
+    
+    const invalidTeamIds = teamIds.filter(id => 
+      !id || 
+      id === 'undefined' || 
+      id === 'null' || 
+      id.trim() === '' || 
+      !isValidUUID(id)
+    );
+    
     if (invalidTeamIds.length > 0) {
-      throw new ParticipantOperationError(`Invalid team IDs: ${invalidTeamIds.join(', ')}`);
+      throw new ParticipantOperationError(`Invalid team IDs detected: ${invalidTeamIds.map(id => `"${id}"`).join(', ')}`);
     }
     
     const service = new ParticipantMutationService();

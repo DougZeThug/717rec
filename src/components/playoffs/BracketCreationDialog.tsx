@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ParticipantOperationError } from "@/services/brackets/adapter/types/ParticipantTypes";
 import { BracketFormat } from "@/constants/brackets";
-import { validateTeamIds, validateDivisionId } from "@/utils/validation";
+import { validateTeamIds, validateDivisionId, isValidUUID } from "@/utils/validation";
 
 interface BracketCreationDialogProps {
   open: boolean;
@@ -29,22 +29,58 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Handle form submission
+  // Handle form submission with comprehensive validation
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("BracketCreationDialog: Creating bracket with data:", {
+      console.log("BracketCreationDialog: Starting bracket creation with data:", {
         ...data,
-        teamsDetailed: data.teams.map((id, index) => ({ index, id, type: typeof id, isEmpty: id === '' }))
+        teamsDetailed: data.teams.map((id, index) => ({ 
+          index, 
+          id, 
+          type: typeof id, 
+          isEmpty: id === '',
+          isUndefined: id === 'undefined',
+          isNull: id === 'null',
+          isValidUUID: isValidUUID(id)
+        }))
       });
       
-      // Pre-submission validation
+      // Pre-submission safety checks
+      if (!data.title?.trim()) {
+        toast({
+          title: "Missing Title",
+          description: "Please provide a title for the bracket",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!data.divisionId?.trim()) {
+        toast({
+          title: "Missing Division",
+          description: "Please select a division for the bracket",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!data.teams || data.teams.length === 0) {
+        toast({
+          title: "No Teams Selected",
+          description: "Please select teams for the bracket",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Enhanced validation before service call
       const divisionValidation = validateDivisionId(data.divisionId);
       if (!divisionValidation.isValid) {
         console.error('Pre-submission division validation failed:', divisionValidation.error);
         toast({
           title: "Invalid Division",
-          description: divisionValidation.error,
+          description: "The selected division is invalid. Please refresh and try again.",
           variant: "destructive"
         });
         return;
@@ -55,40 +91,29 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         console.error('Pre-submission team validation failed:', teamValidation.errors);
         toast({
           title: "Invalid Teams",
-          description: teamValidation.errors.join(', '),
+          description: "One or more selected teams are invalid. Please refresh and try again.",
           variant: "destructive"
         });
         return;
       }
       
-      // Legacy validation checks
-      if (!data.title) {
-        toast({
-          title: "Missing Title",
-          description: "Please provide a title for the bracket",
-          variant: "destructive"
-        });
-        console.warn("Missing title in form submission");
-        return;
-      }
+      // Check for any problematic team IDs
+      const problematicTeams = data.teams.filter(id => 
+        !id || 
+        typeof id !== 'string' || 
+        id.trim() === '' || 
+        id === 'undefined' || 
+        id === 'null' ||
+        !isValidUUID(id)
+      );
       
-      if (!data.divisionId) {
+      if (problematicTeams.length > 0) {
+        console.error('Found problematic team IDs:', problematicTeams);
         toast({
-          title: "Missing Division",
-          description: "Please select a division for the bracket",
+          title: "Invalid Team Selection",
+          description: "Some selected teams have invalid data. Please refresh and reselect teams.",
           variant: "destructive"
         });
-        console.warn("Missing divisionId in form submission");
-        return;
-      }
-      
-      if (!data.teams.length) {
-        toast({
-          title: "No Teams Selected",
-          description: "Please select teams for the bracket",
-          variant: "destructive"
-        });
-        console.warn("No teams selected in form submission");
         return;
       }
       
@@ -96,7 +121,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       
       const bracketId = await BracketService.createBracket(
         data.format as BracketFormat,
-        data.title,
+        data.title.trim(),
         data.divisionId,
         data.teams
       );
@@ -115,34 +140,41 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       // Close dialog and navigate to new bracket
       onOpenChange(false);
       navigate(`/playoffs?bracketId=${bracketId}`);
+      
     } catch (error: any) {
       console.error("BracketCreationDialog: Error creating bracket:", error);
       console.error("Error stack:", error?.stack);
       
       let errorMessage = "Unknown error occurred";
-      let errorDetails = undefined;
+      let errorTitle = "Error";
       
       if (error instanceof ParticipantOperationError) {
-        errorMessage = `Participant error: ${error.message}`;
-        errorDetails = error.details;
+        errorTitle = "Participant Error";
+        errorMessage = error.message;
       } else if (error instanceof Error) {
         errorMessage = error.message;
+        
+        // Provide user-friendly messages for common errors
+        if (error.message.includes('invalid input syntax for type uuid')) {
+          errorTitle = "Data Format Error";
+          errorMessage = "Invalid data detected. Please refresh the page and try again.";
+        } else if (error.message.includes('Teams not found')) {
+          errorTitle = "Teams Not Found";
+          errorMessage = "Some selected teams no longer exist. Please refresh and try again.";
+        } else if (error.message.includes('Division not found')) {
+          errorTitle = "Division Not Found";
+          errorMessage = "The selected division no longer exists. Please refresh and try again.";
+        } else if (error.message.includes('violates foreign key constraint')) {
+          errorTitle = "Data Integrity Error";
+          errorMessage = "The selected data is no longer valid. Please refresh and try again.";
+        }
       }
       
       toast({
-        title: "Error",
-        description: `Bracket creation failed – ${errorMessage}`,
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive"
       });
-      
-      // Add additional toast with details if they exist
-      if (errorDetails) {
-        console.error("Additional error details:", errorDetails);
-        toast({
-          description: `Debug info: ${JSON.stringify(errorDetails)}`,
-          variant: "destructive"
-        });
-      }
     } finally {
       setIsSubmitting(false);
     }
