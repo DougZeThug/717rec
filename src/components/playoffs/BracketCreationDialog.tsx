@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ParticipantOperationError } from "@/services/brackets/adapter/types/ParticipantTypes";
 import { BracketFormat } from "@/constants/brackets";
+import { validateTeamIds, validateDivisionId } from "@/utils/validation";
 
 interface BracketCreationDialogProps {
   open: boolean;
@@ -32,9 +33,35 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("Creating bracket with data:", data);
+      console.log("BracketCreationDialog: Creating bracket with data:", {
+        ...data,
+        teamsDetailed: data.teams.map((id, index) => ({ index, id, type: typeof id, isEmpty: id === '' }))
+      });
       
-      // Validate required fields
+      // Pre-submission validation
+      const divisionValidation = validateDivisionId(data.divisionId);
+      if (!divisionValidation.isValid) {
+        console.error('Pre-submission division validation failed:', divisionValidation.error);
+        toast({
+          title: "Invalid Division",
+          description: divisionValidation.error,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const teamValidation = validateTeamIds(data.teams);
+      if (!teamValidation.isValid) {
+        console.error('Pre-submission team validation failed:', teamValidation.errors);
+        toast({
+          title: "Invalid Teams",
+          description: teamValidation.errors.join(', '),
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Legacy validation checks
       if (!data.title) {
         toast({
           title: "Missing Title",
@@ -65,12 +92,16 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
+      console.log('All pre-submission validations passed, calling BracketService...');
+      
       const bracketId = await BracketService.createBracket(
         data.format as BracketFormat,
         data.title,
         data.divisionId,
         data.teams
       );
+      
+      console.log('Bracket created successfully with ID:', bracketId);
       
       toast({
         title: "Bracket Created",
@@ -85,7 +116,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       onOpenChange(false);
       navigate(`/playoffs?bracketId=${bracketId}`);
     } catch (error: any) {
-      console.error("Error creating bracket:", error);
+      console.error("BracketCreationDialog: Error creating bracket:", error);
+      console.error("Error stack:", error?.stack);
       
       let errorMessage = "Unknown error occurred";
       let errorDetails = undefined;
@@ -105,8 +137,9 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       
       // Add additional toast with details if they exist
       if (errorDetails) {
+        console.error("Additional error details:", errorDetails);
         toast({
-          description: JSON.stringify(errorDetails),
+          description: `Debug info: ${JSON.stringify(errorDetails)}`,
           variant: "destructive"
         });
       }

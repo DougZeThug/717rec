@@ -1,21 +1,41 @@
 
 import { ParticipantInsertData, ParticipantValidationError } from '../types/ParticipantTypes';
+import { isValidUUID, isNotEmpty } from '@/utils/validation';
 
 /**
  * Validates participant data before database operations
  */
 export function validateParticipantData(data: ParticipantInsertData): void {
+  console.log('Validating participant data:', {
+    bracket_id: data.bracket_id,
+    team_id: data.team_id,
+    position: data.position,
+    bracket_id_valid: isValidUUID(data.bracket_id || ''),
+    team_id_valid: isValidUUID(data.team_id || ''),
+    bracket_id_empty: data.bracket_id === '',
+    team_id_empty: data.team_id === ''
+  });
+
   // Check for required fields
-  if (!data.bracket_id || data.bracket_id === 'undefined') {
-    throw new ParticipantValidationError('Bracket ID is required', { field: 'bracket_id' });
+  if (!data.bracket_id || data.bracket_id === 'undefined' || data.bracket_id === '') {
+    throw new ParticipantValidationError('Bracket ID is required and cannot be empty', { field: 'bracket_id', value: data.bracket_id });
   }
 
-  if (!data.team_id || data.team_id === 'undefined') {
-    throw new ParticipantValidationError('Team ID is required', { field: 'team_id' });
+  if (!data.team_id || data.team_id === 'undefined' || data.team_id === '') {
+    throw new ParticipantValidationError('Team ID is required and cannot be empty', { field: 'team_id', value: data.team_id });
+  }
+
+  // Validate UUID format
+  if (!isValidUUID(data.bracket_id)) {
+    throw new ParticipantValidationError('Bracket ID must be a valid UUID', { field: 'bracket_id', value: data.bracket_id });
+  }
+
+  if (!isValidUUID(data.team_id)) {
+    throw new ParticipantValidationError('Team ID must be a valid UUID', { field: 'team_id', value: data.team_id });
   }
 
   if (data.position === undefined || data.position === null || isNaN(data.position)) {
-    throw new ParticipantValidationError('Position must be a valid number', { field: 'position' });
+    throw new ParticipantValidationError('Position must be a valid number', { field: 'position', value: data.position });
   }
 
   // Validate position is a positive integer
@@ -60,11 +80,13 @@ export function validateParticipantBatch(participants: ParticipantInsertData[]):
   });
 
   if (errors.length > 0) {
+    console.error('Participant validation errors:', errors);
     throw new ParticipantValidationError(
       `${errors.length} participants failed validation`,
       { errors, validCount: validParticipants.length }
     );
   }
 
+  console.log(`Successfully validated ${validParticipants.length} participants`);
   return validParticipants;
 }

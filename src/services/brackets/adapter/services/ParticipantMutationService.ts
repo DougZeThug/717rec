@@ -1,4 +1,3 @@
-
 /**
  * Service for inserting, updating and deleting participants
  */
@@ -11,6 +10,7 @@ import {
   ParticipantOperationResult
 } from '../types/ParticipantTypes';
 import { validateParticipantBatch } from '../utils/ParticipantValidationUtils';
+import { isValidUUID, isNotEmpty } from '@/utils/validation';
 
 /**
  * Service for modifying participants in the database
@@ -27,6 +27,20 @@ export class ParticipantMutationService {
     }
     
     try {
+      console.log('ParticipantMutationService: Inserting participants:', {
+        count: participants.length,
+        participants: participants.map((p, index) => ({
+          index,
+          bracket_id: p.bracket_id,
+          team_id: p.team_id,
+          position: p.position,
+          bracket_id_valid: isValidUUID(p.bracket_id),
+          team_id_valid: isValidUUID(p.team_id),
+          bracket_id_empty: p.bracket_id === '',
+          team_id_empty: p.team_id === ''
+        }))
+      });
+      
       // Validate all participants
       const validParticipants = validateParticipantBatch(participants);
       
@@ -36,13 +50,28 @@ export class ParticipantMutationService {
       }
       
       // Add name and tournament_id for each participant if not provided
-      const enrichedParticipants = validParticipants.map(p => ({
-        ...p,
-        name: p.name || p.team_id, // Default to team_id if name is not provided
-        tournament_id: p.tournament_id || p.bracket_id // Use bracket_id as tournament_id if not provided
-      }));
+      const enrichedParticipants = validParticipants.map(p => {
+        const enriched = {
+          ...p,
+          name: p.name || p.team_id, // Default to team_id if name is not provided
+          tournament_id: p.tournament_id || p.bracket_id // Use bracket_id as tournament_id if not provided
+        };
+        
+        // Final validation before database insert
+        if (!isValidUUID(enriched.bracket_id)) {
+          throw new ParticipantOperationError(`Invalid bracket_id UUID: "${enriched.bracket_id}"`);
+        }
+        if (!isValidUUID(enriched.team_id)) {
+          throw new ParticipantOperationError(`Invalid team_id UUID: "${enriched.team_id}"`);
+        }
+        if (!isValidUUID(enriched.tournament_id)) {
+          throw new ParticipantOperationError(`Invalid tournament_id UUID: "${enriched.tournament_id}"`);
+        }
+        
+        return enriched;
+      });
       
-      console.log(`Inserting ${enrichedParticipants.length} participants`);
+      console.log(`Inserting ${enrichedParticipants.length} validated participants`);
       const { error, data } = await supabase.from('participants').insert(enrichedParticipants)
         .select('id'); // Select IDs to count inserted rows
       
@@ -51,7 +80,9 @@ export class ParticipantMutationService {
         throw new ParticipantOperationError(`Participant insert failed: ${error.message}`, error);
       }
       
-      return data?.length || enrichedParticipants.length;
+      const insertedCount = data?.length || enrichedParticipants.length;
+      console.log(`Successfully inserted ${insertedCount} participants`);
+      return insertedCount;
     } catch (error) {
       if (error instanceof ParticipantOperationError) {
         throw error; // Re-throw our own error types
@@ -188,8 +219,27 @@ export class ParticipantMutationService {
  */
 export const ParticipantMutationServiceStatic = {
   async insert(bracketId: string, teamIds: string[]): Promise<number> {
+    console.log('ParticipantMutationServiceStatic.insert called:', {
+      bracketId,
+      teamIds,
+      bracketIdValid: isValidUUID(bracketId),
+      bracketIdEmpty: bracketId === '',
+      teamIdsValid: teamIds.map(id => ({ id, valid: isValidUUID(id), empty: id === '' }))
+    });
+    
     if (!bracketId || !teamIds || teamIds.length === 0) {
+      console.warn('Invalid parameters for participant insert');
       return 0;
+    }
+    
+    // Validate inputs before proceeding
+    if (!isValidUUID(bracketId)) {
+      throw new ParticipantOperationError(`Invalid bracket ID: "${bracketId}"`);
+    }
+    
+    const invalidTeamIds = teamIds.filter(id => !isValidUUID(id));
+    if (invalidTeamIds.length > 0) {
+      throw new ParticipantOperationError(`Invalid team IDs: ${invalidTeamIds.join(', ')}`);
     }
     
     const service = new ParticipantMutationService();

@@ -6,6 +6,7 @@ import { bracketFormSchema, BracketFormValues } from "./BracketFormSchema";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { BRACKET_FORMATS } from "@/constants/brackets";
+import { validateTeamIds, validateDivisionId } from "@/utils/validation";
 
 interface UseBracketFormProps {
   teams: Team[];
@@ -54,6 +55,7 @@ export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
   
   // Filter teams by selected division
   const handleDivisionChange = (divisionId: string) => {
+    console.log('Division changed to:', divisionId);
     setSelectedDivision(divisionId);
     form.setValue('divisionId', divisionId);
     
@@ -63,11 +65,13 @@ export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
     }
     
     if (divisionId) {
-      // Fix: Explicitly check for both division_id and division fields
-      const divisionTeams = teams.filter(team => 
-        team.division_id === divisionId || team.division === divisionId
-      );
-      console.log(`Filtered teams for division ${divisionId}:`, divisionTeams);
+      // Explicitly check for both division_id and division fields
+      const divisionTeams = teams.filter(team => {
+        const teamDivisionId = team.division_id || team.division;
+        return teamDivisionId === divisionId;
+      });
+      
+      console.log(`Filtered teams for division ${divisionId}:`, divisionTeams.map(t => ({ id: t.id, name: t.name })));
       setFilteredTeams(divisionTeams);
       
       // Clear previously selected teams when division changes
@@ -75,29 +79,55 @@ export const useBracketForm = ({ teams, onSubmit }: UseBracketFormProps) => {
     }
   };
   
-  // Handle form submission with improved error handling
+  // Handle form submission with improved error handling and validation
   const handleSubmit = form.handleSubmit(async (data) => {
     try {
       console.log("Form submission data:", data);
       
-      // Additional validation
-      if (!data.divisionId || data.divisionId === 'undefined') {
+      // Validate division ID
+      const divisionValidation = validateDivisionId(data.divisionId);
+      if (!divisionValidation.isValid) {
+        console.error('Division validation failed:', divisionValidation.error);
         toast({
           variant: "destructive", 
-          title: "Division Required", 
-          description: "Please select a valid division"
+          title: "Invalid Division", 
+          description: divisionValidation.error
         });
         return;
       }
       
-      if (!data.teams || data.teams.length < 2) {
+      // Validate team IDs
+      const teamValidation = validateTeamIds(data.teams);
+      if (!teamValidation.isValid) {
+        console.error('Team validation failed:', teamValidation.errors);
         toast({
           variant: "destructive", 
-          title: "Teams Required", 
+          title: "Invalid Teams", 
+          description: teamValidation.errors.join(', ')
+        });
+        return;
+      }
+      
+      // Additional client-side validation
+      if (!data.title?.trim()) {
+        toast({
+          variant: "destructive", 
+          title: "Title Required", 
+          description: "Please provide a title for the bracket"
+        });
+        return;
+      }
+      
+      if (data.teams.length < 2) {
+        toast({
+          variant: "destructive", 
+          title: "Insufficient Teams", 
           description: "Please select at least 2 teams"
         });
         return;
       }
+      
+      console.log('All validations passed, submitting form...');
       
       // Submit the form data
       await onSubmit(data);
