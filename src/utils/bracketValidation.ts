@@ -1,5 +1,6 @@
 
 import { isValidUUID } from './validation';
+import { BracketFormValues } from '@/components/playoffs/form/BracketFormSchema';
 
 /**
  * Comprehensive validation utilities for bracket creation
@@ -19,11 +20,7 @@ export interface TeamValidationResult {
 /**
  * Validates bracket form data before submission
  */
-export function validateBracketFormData(data: {
-  title: string;
-  divisionId: string;
-  teams: string[];
-}): BracketValidationResult {
+export function validateBracketFormData(data: BracketFormValues): BracketValidationResult {
   const errors: string[] = [];
 
   // Title validation
@@ -36,6 +33,11 @@ export function validateBracketFormData(data: {
     errors.push('Division selection is required');
   } else if (!isValidUUID(data.divisionId)) {
     errors.push('Selected division is invalid');
+  }
+
+  // Format validation
+  if (!data.format || typeof data.format !== 'string' || data.format.trim() === '') {
+    errors.push('Format selection is required');
   }
 
   // Teams validation
@@ -86,14 +88,11 @@ export function validateTeamSelection(teamIds: string[]): TeamValidationResult {
 /**
  * Sanitizes form data to prevent invalid submissions
  */
-export function sanitizeBracketFormData(data: {
-  title: string;
-  divisionId: string;
-  teams: string[];
-}) {
+export function sanitizeBracketFormData(data: BracketFormValues): BracketFormValues {
   return {
     title: (data.title || '').trim(),
     divisionId: (data.divisionId || '').trim(),
+    format: data.format,
     teams: Array.isArray(data.teams) 
       ? data.teams.filter(id => id && typeof id === 'string' && id.trim() !== '' && isValidUUID(id))
       : []

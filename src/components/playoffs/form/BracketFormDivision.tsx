@@ -27,7 +27,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
     typeof division.name === 'string'
   ) : [];
   
-  const handleDivisionSelect = (value: string) => {
+  const handleDivisionSelect = (value: string, field: any) => {
     console.log("Division selected:", value);
     
     // Validate the selected value
@@ -56,7 +56,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
           <FormLabel>Division<span className="text-red-500">*</span></FormLabel>
           <FormControl>
             <Select
-              onValueChange={handleDivisionSelect}
+              onValueChange={(value) => handleDivisionSelect(value, field)}
               value={field.value || ""}
             >
               <SelectTrigger>
