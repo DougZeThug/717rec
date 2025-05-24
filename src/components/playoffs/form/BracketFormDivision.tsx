@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UseFormReturn } from "react-hook-form";
 import { BracketFormValues } from "./BracketFormSchema";
 import { AlertCircle } from "lucide-react";
+import { isValidUUID } from "@/utils/validation";
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<BracketFormValues>;
@@ -12,9 +13,39 @@ interface BracketFormDivisionProps {
   onDivisionChange: (divisionId: string) => void;
 }
 
-export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ form, divisions, onDivisionChange }) => {
-  // Ensure divisions is an array
-  const validDivisions = Array.isArray(divisions) ? divisions : [];
+export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ 
+  form, 
+  divisions, 
+  onDivisionChange 
+}) => {
+  // Ensure divisions is an array and filter out invalid entries
+  const validDivisions = Array.isArray(divisions) ? divisions.filter(division => 
+    division && 
+    division.id && 
+    isValidUUID(division.id) && 
+    division.name && 
+    typeof division.name === 'string'
+  ) : [];
+  
+  const handleDivisionSelect = (value: string) => {
+    console.log("Division selected:", value);
+    
+    // Validate the selected value
+    if (!value || value === 'no-divisions' || !isValidUUID(value)) {
+      console.warn('Invalid division selection:', value);
+      return;
+    }
+    
+    // Verify the division exists in our valid list
+    const selectedDivision = validDivisions.find(div => div.id === value);
+    if (!selectedDivision) {
+      console.error('Selected division not found in valid divisions:', value);
+      return;
+    }
+    
+    field.onChange(value);
+    onDivisionChange(value);
+  };
   
   return (
     <FormField
@@ -25,13 +56,8 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ form, 
           <FormLabel>Division<span className="text-red-500">*</span></FormLabel>
           <FormControl>
             <Select
-              onValueChange={(value) => {
-                console.log("Division selected:", value);
-                field.onChange(value);
-                onDivisionChange(value);
-              }}
-              defaultValue={field.value}
-              value={field.value}
+              onValueChange={handleDivisionSelect}
+              value={field.value || ""}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Division" />
@@ -40,7 +66,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ form, 
                 {validDivisions.length > 0 ? (
                   validDivisions.map((division) => (
                     <SelectItem key={division.id} value={division.id}>
-                      {division.name || division.id}
+                      {division.name}
                     </SelectItem>
                   ))
                 ) : (
@@ -59,6 +85,11 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({ form, 
               </div>
             )}
           </FormMessage>
+          {validDivisions.length === 0 && (
+            <p className="text-xs text-red-500 mt-1">
+              No valid divisions found. Please contact an administrator.
+            </p>
+          )}
         </FormItem>
       )}
     />
