@@ -1,15 +1,13 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Team } from "@/types";
 import BracketForm, { BracketFormValues } from "./BracketForm";
-import { BracketService } from "@/services/BracketService";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ParticipantOperationError } from "@/services/brackets/adapter/types/ParticipantTypes";
 import { BracketFormat } from "@/constants/brackets";
-import { validateBracketFormData, sanitizeBracketFormData } from "@/utils/bracketValidation";
-import { isValidUUID } from "@/utils/validation";
+import { SimpleBracketCreationService } from "@/services/brackets/services/SimpleBracketCreationService";
+import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
 
 interface BracketCreationDialogProps {
   open: boolean;
@@ -34,16 +32,11 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("BracketCreationDialog: Starting bracket creation with raw data:", data);
+      console.log("BracketCreationDialog: Starting bracket creation");
       
-      // Sanitize the form data first
-      const sanitizedData = sanitizeBracketFormData(data);
-      console.log("BracketCreationDialog: Sanitized data:", sanitizedData);
-      
-      // Comprehensive validation before service call
-      const validation = validateBracketFormData(sanitizedData);
+      // Final validation before submission
+      const validation = BracketValidationService.validateForSubmission(data);
       if (!validation.isValid) {
-        console.error('Pre-submission validation failed:', validation.errors);
         toast({
           title: "Validation Error",
           description: validation.errors[0],
@@ -52,50 +45,26 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      // Additional safety checks for UUID format
-      if (!isValidUUID(sanitizedData.divisionId)) {
-        console.error('Division ID is not a valid UUID:', sanitizedData.divisionId);
-        toast({
-          title: "Invalid Division",
-          description: "The selected division is invalid. Please refresh and try again.",
-          variant: "destructive"
-        });
-        return;
-      }
+      console.log('Creating bracket with validated data');
       
-      // Check all team IDs are valid UUIDs
-      const invalidTeamIds = sanitizedData.teams.filter(id => !isValidUUID(id));
-      if (invalidTeamIds.length > 0) {
-        console.error('Found invalid team IDs:', invalidTeamIds);
-        toast({
-          title: "Invalid Team Selection",
-          description: "Some selected teams have invalid data. Please refresh and reselect teams.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      console.log('All pre-submission validations passed, calling BracketService...');
-      
-      const bracketId = await BracketService.createBracket(
-        sanitizedData.format as BracketFormat,
-        sanitizedData.title,
-        sanitizedData.divisionId,
-        sanitizedData.teams
+      const bracketId = await SimpleBracketCreationService.createBracket(
+        data.format as BracketFormat,
+        data.title,
+        data.divisionId,
+        data.teams
       );
       
       console.log('Bracket created successfully with ID:', bracketId);
       
       toast({
         title: "Bracket Created",
-        description: `The ${sanitizedData.format} bracket has been created successfully.`
+        description: `The ${data.format} bracket has been created successfully.`
       });
       
       if (onBracketCreated) {
         onBracketCreated(bracketId);
       }
       
-      // Close dialog and navigate to new bracket
       onOpenChange(false);
       navigate(`/playoffs?bracketId=${bracketId}`);
       
@@ -105,25 +74,17 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       let errorMessage = "An unexpected error occurred";
       let errorTitle = "Bracket Creation Failed";
       
-      if (error instanceof ParticipantOperationError) {
-        errorTitle = "Team Assignment Error";
+      if (error.message.includes('Teams not found')) {
+        errorTitle = "Teams Not Found";
+        errorMessage = "Some selected teams no longer exist. Please refresh and try again.";
+      } else if (error.message.includes('Division not found')) {
+        errorTitle = "Division Not Found";
+        errorMessage = "The selected division no longer exists. Please refresh and try again.";
+      } else if (error.message.includes('validation failed')) {
+        errorTitle = "Data Validation Error";
+        errorMessage = "Invalid data detected. Please check your selections and try again.";
+      } else {
         errorMessage = error.message;
-      } else if (error instanceof Error) {
-        if (error.message.includes('invalid input syntax for type uuid')) {
-          errorTitle = "Data Format Error";
-          errorMessage = "Invalid data detected. Please refresh the page and try again.";
-        } else if (error.message.includes('Teams not found')) {
-          errorTitle = "Teams Not Found";
-          errorMessage = "Some selected teams no longer exist. Please refresh and try again.";
-        } else if (error.message.includes('Division not found')) {
-          errorTitle = "Division Not Found";
-          errorMessage = "The selected division no longer exists. Please refresh and try again.";
-        } else if (error.message.includes('violates foreign key constraint')) {
-          errorTitle = "Data Integrity Error";
-          errorMessage = "The selected data is no longer valid. Please refresh and try again.";
-        } else {
-          errorMessage = error.message;
-        }
       }
       
       toast({
