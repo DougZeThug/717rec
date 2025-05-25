@@ -30,9 +30,15 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
   const handleDivisionSelect = (value: string, field: any) => {
     console.log("Division selected:", value);
     
-    // Validate the selected value
-    if (!value || value === 'no-divisions' || !isValidUUID(value)) {
+    // Handle empty/placeholder selections
+    if (!value || value === 'no-divisions') {
       console.warn('Invalid division selection:', value);
+      return;
+    }
+    
+    // Validate the selected value
+    if (!isValidUUID(value)) {
+      console.error('Invalid division ID format:', value);
       return;
     }
     
@@ -57,7 +63,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
           <FormControl>
             <Select
               onValueChange={(value) => handleDivisionSelect(value, field)}
-              value={field.value || ""}
+              value={field.value || ""} // Handle undefined values properly
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Division" />
