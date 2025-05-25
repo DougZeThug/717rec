@@ -1,4 +1,6 @@
 
+import { BracketValidationService } from '@/services/brackets/validation/BracketValidationService';
+
 // Re-export from the new validation service for backward compatibility
 export {
   BracketValidationService,
