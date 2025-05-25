@@ -32,11 +32,12 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("BracketCreationDialog: Starting bracket creation");
+      console.log("BracketCreationDialog: Starting bracket creation with SimpleBracketCreationService");
       
       // Final validation before submission
       const validation = BracketValidationService.validateForSubmission(data);
       if (!validation.isValid) {
+        console.error("BracketCreationDialog: Validation failed:", validation.errors);
         toast({
           title: "Validation Error",
           description: validation.errors[0],
@@ -45,7 +46,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      console.log('Creating bracket with validated data');
+      console.log('BracketCreationDialog: Creating bracket with validated data using SimpleBracketCreationService');
       
       const bracketId = await SimpleBracketCreationService.createBracket(
         data.format as BracketFormat,
@@ -54,7 +55,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         data.teams
       );
       
-      console.log('Bracket created successfully with ID:', bracketId);
+      console.log('BracketCreationDialog: Bracket created successfully with ID:', bracketId);
       
       toast({
         title: "Bracket Created",
@@ -69,7 +70,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       navigate(`/playoffs?bracketId=${bracketId}`);
       
     } catch (error: any) {
-      console.error("BracketCreationDialog: Error creating bracket:", error);
+      console.error("BracketCreationDialog: Error creating bracket with SimpleBracketCreationService:", error);
       
       let errorMessage = "An unexpected error occurred";
       let errorTitle = "Bracket Creation Failed";

@@ -1,11 +1,12 @@
+
 /**
  * Transitional shim: re-exports the only runtime call sites still
  * referenced by BracketCreationDialog and usePlayoffBracketManagement.
  * Once those components are refactored you can delete this file and
- * import BracketCreationService directly.
+ * import SimpleBracketCreationService directly.
  */
 
-import { BracketCreationService } from '@/services/brackets/services/BracketCreationService';
+import { SimpleBracketCreationService } from '@/services/brackets/services/SimpleBracketCreationService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
 import { BracketFormat, BRACKET_FORMATS, BracketState } from '@/constants/brackets';
@@ -65,9 +66,10 @@ export async function createDoubleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
+  console.log('BracketService.createDoubleElimStage: Using SimpleBracketCreationService');
   // We'll implement this by creating a bracket with the correct format
   const divisionId = ''; // This would need to be retrieved or passed in
-  await BracketCreationService.createBracket(
+  await SimpleBracketCreationService.createBracket(
     BRACKET_FORMATS.DOUBLE,
     name,
     divisionId,
@@ -84,9 +86,10 @@ export async function createSingleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
+  console.log('BracketService.createSingleElimStage: Using SimpleBracketCreationService');
   // We'll implement this by creating a bracket with the correct format
   const divisionId = ''; // This would need to be retrieved or passed in
-  await BracketCreationService.createBracket(
+  await SimpleBracketCreationService.createBracket(
     BRACKET_FORMATS.SINGLE,
     name,
     divisionId,
@@ -126,7 +129,7 @@ export async function updateMatchResult(
 }
 
 /** 
- * Create a Tournament Bracket 
+ * Create a Tournament Bracket - Now uses SimpleBracketCreationService
  */
 export async function createTournamentBracket(
   bracketFormat: BracketFormat,
@@ -134,12 +137,14 @@ export async function createTournamentBracket(
   divisionId: string,
   teams: Team[]
 ): Promise<string> {
+  console.log('BracketService.createTournamentBracket: Using SimpleBracketCreationService');
+  
   // Fix: Ensure bracketFormat is a valid BracketFormat by passing it directly
   const format: BracketFormat = Object.values(BRACKET_FORMATS).includes(bracketFormat as any) 
     ? bracketFormat 
     : BRACKET_FORMATS.SINGLE;
     
-  return BracketCreationService.createBracket(
+  return SimpleBracketCreationService.createBracket(
     format,
     name, 
     divisionId, 
@@ -216,10 +221,10 @@ export async function fetchBracketById(bracketId: string) {
 }
 
 // ——————————————————————————————————————————————
-// Export barrel (declared AFTER all helpers)
+// Export barrel (declared AFTER all helpers) - Now uses SimpleBracketCreationService
 // ——————————————————————————————————————————————
 export const BracketService = {
-  createBracket: BracketCreationService.createBracket,
+  createBracket: SimpleBracketCreationService.createBracket,
   deleteBracket,
   listBrackets,
   getBracketById,
