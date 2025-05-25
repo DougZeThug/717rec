@@ -22,25 +22,39 @@ export class SimpleBracketCreationService {
       throw new Error('Bracket name is required');
     }
 
+    // Explicit validation for divisionId to prevent empty strings
     if (!divisionId) {
-      throw new Error('Division ID is required');
+      throw new Error('Division ID is required and cannot be undefined');
     }
 
     if (typeof divisionId !== 'string') {
       throw new Error('Division ID must be a string');
     }
 
-    if (divisionId.trim() === '') {
-      throw new Error('Division ID cannot be empty');
+    if (divisionId === '' || divisionId.trim() === '') {
+      throw new Error('Division ID cannot be empty or whitespace');
     }
 
     if (!isValidUUID(divisionId)) {
-      throw new Error(`Division ID has invalid UUID format: ${divisionId}`);
+      throw new Error(`Division ID has invalid UUID format: "${divisionId}"`);
     }
 
     if (!Array.isArray(teamIds) || teamIds.length < 2) {
       throw new Error('At least 2 teams are required');
     }
+
+    // Enhanced team validation - check for empty strings explicitly
+    teamIds.forEach((teamId, index) => {
+      if (!teamId || typeof teamId !== 'string') {
+        throw new Error(`Team ID at position ${index + 1} is invalid: ${teamId}`);
+      }
+      if (teamId === '' || teamId.trim() === '') {
+        throw new Error(`Team ID at position ${index + 1} cannot be empty`);
+      }
+      if (!isValidUUID(teamId)) {
+        throw new Error(`Team ID at position ${index + 1} has invalid UUID format: "${teamId}"`);
+      }
+    });
 
     // Validate team IDs with detailed error reporting
     const teamValidation = BracketValidationService.validateTeamSelection(teamIds);

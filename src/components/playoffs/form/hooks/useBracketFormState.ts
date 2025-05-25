@@ -18,7 +18,7 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
       title: "",
-      divisionId: undefined, // Changed from "" to undefined
+      divisionId: undefined, // Keep as undefined to prevent empty string issues
       format: BRACKET_FORMATS.SINGLE,
       teams: []
     },
@@ -28,6 +28,13 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   // Real-time validation
   const validateForm = useCallback((data: BracketFormValues) => {
     console.log("Validating form data:", data);
+    
+    // Explicit check for empty strings in divisionId
+    if (data.divisionId === "" || (typeof data.divisionId === 'string' && data.divisionId.trim() === '')) {
+      console.error('Empty string detected in divisionId:', data.divisionId);
+      setIsFormValid(false);
+      return { isValid: false, errors: ["Division cannot be empty"] };
+    }
     
     // Only validate if we have the required fields
     if (!data.title || !data.divisionId || !data.teams?.length) {
@@ -45,9 +52,9 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const handleSubmit = form.handleSubmit(async (data) => {
     console.log("Form submission started with data:", data);
     
-    // Check for empty divisionId specifically
-    if (!data.divisionId || data.divisionId.trim() === '') {
-      console.error('Division ID is empty or undefined');
+    // Explicit check for empty divisionId
+    if (!data.divisionId || data.divisionId === '' || data.divisionId.trim() === '') {
+      console.error('Division ID is empty, undefined, or whitespace:', data.divisionId);
       throw new Error('Please select a division');
     }
     
@@ -56,6 +63,16 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
       console.error('One or more team IDs are empty');
       throw new Error('Invalid team selection detected');
     }
+    
+    // Additional safety check - ensure we don't have any empty strings before sanitization
+    const preValidation = {
+      title: data.title,
+      divisionId: data.divisionId,
+      format: data.format,
+      teams: data.teams
+    };
+    
+    console.log('Pre-validation data check:', preValidation);
     
     // Sanitize and validate
     const sanitizedData = BracketValidationService.sanitizeFormData(data);

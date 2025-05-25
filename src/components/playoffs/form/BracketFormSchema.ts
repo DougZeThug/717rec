@@ -2,15 +2,19 @@
 import * as z from "zod";
 import { BRACKET_FORMATS, BracketFormat } from "@/constants/brackets";
 
-// UUID validation helper
-const uuidSchema = z.string().uuid("Invalid UUID format").optional().or(z.literal(""));
+// Enhanced UUID validation that explicitly rejects empty strings
+const uuidFieldSchema = z.string()
+  .refine((val) => val !== "", "Please select a valid option")
+  .uuid("Invalid UUID format");
 
-// Enhanced form schema with proper UUID validation
+// Enhanced form schema with proper UUID validation and empty string prevention
 export const bracketFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  divisionId: z.string().uuid("Please select a valid division"),
+  divisionId: uuidFieldSchema.refine((val) => val && val.trim() !== "", "Please select a division"),
   format: z.enum([BRACKET_FORMATS.SINGLE, BRACKET_FORMATS.DOUBLE] as const),
-  teams: z.array(z.string().uuid("Invalid team ID format")).min(2, "At least 2 teams are required"),
+  teams: z.array(z.string().uuid("Invalid team ID format"))
+    .min(2, "At least 2 teams are required")
+    .refine((teams) => teams.every(id => id && id.trim() !== ""), "All selected teams must be valid"),
 });
 
 export type BracketFormValues = z.infer<typeof bracketFormSchema>;
