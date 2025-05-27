@@ -1,11 +1,4 @@
 
-/**
- * Transitional shim: re-exports the only runtime call sites still
- * referenced by BracketCreationDialog and usePlayoffBracketManagement.
- * Once those components are refactored you can delete this file and
- * import SimpleBracketCreationService directly.
- */
-
 import { SimpleBracketCreationService } from '@/services/brackets/services/SimpleBracketCreationService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
@@ -23,42 +16,64 @@ export { updateMatchScore };
 // Export bracket state helper
 export { computeBracketState };
 
-// TODO: UI uses this; replace with real impl if needed. For now noop.
-export const scoreMatch = async () => ({ ok: true });
-
 export const listBrackets = async () => {
-  const { data, error } = await supabase
-    .from('brackets')
-    .select('*, matches(*)');
-  if (error) throw new Error(error.message);
-  
-  return data.map(bracketDto => {
-    const matchesDto = bracketDto.matches || [];
-    return BracketMapper.bracketDtoToDomain(bracketDto as BracketDto, matchesDto);
-  });
+  try {
+    const { data, error } = await supabase
+      .from('brackets')
+      .select('*, matches(*)');
+    
+    if (error) throw new Error(error.message);
+    
+    return data.map(bracketDto => {
+      const matchesDto = bracketDto.matches || [];
+      return BracketMapper.bracketDtoToDomain(bracketDto as BracketDto, matchesDto);
+    });
+  } catch (error) {
+    console.error('Error listing brackets:', error);
+    throw new Error(`Failed to list brackets: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };
 
 export const getBracketById = async (id: string) => {
-  const { data, error } = await supabase
-    .from('brackets')
-    .select('*, matches(*)')
-    .eq('id', id)
-    .single();
-  if (error) throw new Error(error.message);
-  
-  return BracketMapper.bracketDtoToDomain(
-    data as BracketDto, 
-    (data.matches || [])
-  );
+  try {
+    if (!id) {
+      throw new Error('Bracket ID is required');
+    }
+
+    const { data, error } = await supabase
+      .from('brackets')
+      .select('*, matches(*)')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw new Error(error.message);
+    
+    return BracketMapper.bracketDtoToDomain(
+      data as BracketDto, 
+      (data.matches || [])
+    );
+  } catch (error) {
+    console.error('Error getting bracket by ID:', error);
+    throw new Error(`Failed to get bracket: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };
 
 export const deleteBracket = async (id: string) => {
-  const { error } = await supabase.from('brackets').delete().eq('id', id);
-  if (error) throw new Error(error.message);
+  try {
+    if (!id) {
+      throw new Error('Bracket ID is required');
+    }
+
+    const { error } = await supabase.from('brackets').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+  } catch (error) {
+    console.error('Error deleting bracket:', error);
+    throw new Error(`Failed to delete bracket: ${error instanceof Error ? error.message : String(error)}`);
+  }
 };
 
 /** 
- * Create a double-elimination stage (play-ins auto-handled) 
+ * Create a double-elimination stage 
  */
 export async function createDoubleElimStage(
   bracketId: string,
@@ -66,15 +81,27 @@ export async function createDoubleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  console.log('BracketService.createDoubleElimStage: Using SimpleBracketCreationService');
-  // We'll implement this by creating a bracket with the correct format
-  const divisionId = ''; // This would need to be retrieved or passed in
-  await SimpleBracketCreationService.createBracket(
-    BRACKET_FORMATS.DOUBLE,
-    name,
-    divisionId,
-    teams.map(t => t.id)
-  );
+  try {
+    // Get the division from the first team
+    if (!teams.length) {
+      throw new Error('No teams provided');
+    }
+
+    const divisionId = teams[0].division_id;
+    if (!divisionId) {
+      throw new Error('Teams must have a division ID');
+    }
+
+    await SimpleBracketCreationService.createBracket(
+      BRACKET_FORMATS.DOUBLE,
+      name,
+      divisionId,
+      teams.map(t => t.id)
+    );
+  } catch (error) {
+    console.error('Error creating double elimination stage:', error);
+    throw new Error(`Failed to create double elimination stage: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /** 
@@ -86,15 +113,27 @@ export async function createSingleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  console.log('BracketService.createSingleElimStage: Using SimpleBracketCreationService');
-  // We'll implement this by creating a bracket with the correct format
-  const divisionId = ''; // This would need to be retrieved or passed in
-  await SimpleBracketCreationService.createBracket(
-    BRACKET_FORMATS.SINGLE,
-    name,
-    divisionId,
-    teams.map(t => t.id)
-  );
+  try {
+    // Get the division from the first team
+    if (!teams.length) {
+      throw new Error('No teams provided');
+    }
+
+    const divisionId = teams[0].division_id;
+    if (!divisionId) {
+      throw new Error('Teams must have a division ID');
+    }
+
+    await SimpleBracketCreationService.createBracket(
+      BRACKET_FORMATS.SINGLE,
+      name,
+      divisionId,
+      teams.map(t => t.id)
+    );
+  } catch (error) {
+    console.error('Error creating single elimination stage:', error);
+    throw new Error(`Failed to create single elimination stage: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 /** 
@@ -110,7 +149,6 @@ export async function updateMatchResult(
   games?: PlayoffGame[]
 ): Promise<void> {
   try {
-    // Use the new updateMatchScore implementation
     await updateMatchScore(
       matchId,
       winnerId, 
@@ -124,12 +162,12 @@ export async function updateMatchResult(
     console.log(`Match ${matchId} updated with scores: ${team1Score}-${team2Score}`);
   } catch (error) {
     console.error('Error updating match result:', error);
-    throw new Error(`Failed to update match result: ${error}`);
+    throw new Error(`Failed to update match result: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
 /** 
- * Create a Tournament Bracket - Now uses SimpleBracketCreationService
+ * Create a Tournament Bracket
  */
 export async function createTournamentBracket(
   bracketFormat: BracketFormat,
@@ -137,47 +175,56 @@ export async function createTournamentBracket(
   divisionId: string,
   teams: Team[]
 ): Promise<string> {
-  console.log('BracketService.createTournamentBracket: Using SimpleBracketCreationService');
-  
-  // Fix: Ensure bracketFormat is a valid BracketFormat by passing it directly
-  const format: BracketFormat = Object.values(BRACKET_FORMATS).includes(bracketFormat as any) 
-    ? bracketFormat 
-    : BRACKET_FORMATS.SINGLE;
-    
-  return SimpleBracketCreationService.createBracket(
-    format,
-    name, 
-    divisionId, 
-    teams.map(t => t.id)
-  );
+  try {
+    if (!name?.trim()) {
+      throw new Error('Bracket name is required');
+    }
+
+    if (!divisionId) {
+      throw new Error('Division ID is required');
+    }
+
+    if (!teams.length) {
+      throw new Error('Teams are required');
+    }
+
+    const format: BracketFormat = Object.values(BRACKET_FORMATS).includes(bracketFormat as any) 
+      ? bracketFormat 
+      : BRACKET_FORMATS.SINGLE;
+      
+    return SimpleBracketCreationService.createBracket(
+      format,
+      name, 
+      divisionId, 
+      teams.map(t => t.id)
+    );
+  } catch (error) {
+    console.error('Error creating tournament bracket:', error);
+    throw new Error(`Failed to create tournament bracket: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 // Re-export for convenience
 export { mapBracketsToAppFormat };
 
-// Group bracket matches by type (winners/losers/finals) for a bracket
+// Group bracket matches by type
 export function groupBracketMatchesByType(bracket: any) {
   if (!bracket || !bracket.matches || !Array.isArray(bracket.matches)) {
     return { winners: [], losers: [], finals: [] };
   }
 
-  // Group matches by type and round
   const winners: any[][] = [];
   const losers: any[][] = [];
   const finals: any[] = [];
 
-  // Process matches
   bracket.matches.forEach((match: any) => {
     const round = match.round || 0;
     
-    // Categorize by match type
     if (match.matchType === "winners" || match.match_type === "winners") {
-      // Ensure the round array exists
       winners[round] = winners[round] || [];
       winners[round].push(match);
     } 
     else if (match.matchType === "losers" || match.match_type === "losers") {
-      // Ensure the round array exists
       losers[round] = losers[round] || [];
       losers[round].push(match);
     } 
@@ -192,6 +239,10 @@ export function groupBracketMatchesByType(bracket: any) {
 // Fetch a bracket by ID
 export async function fetchBracketById(bracketId: string) {
   try {
+    if (!bracketId) {
+      throw new Error('Bracket ID is required');
+    }
+
     // Get the bracket details
     const { data: bracket, error: bracketError } = await supabase
       .from('brackets')
@@ -209,20 +260,17 @@ export async function fetchBracketById(bracketId: string) {
       
     if (matchesError) throw matchesError;
     
-    // Use our mapper to convert DTO to domain model
     return BracketMapper.bracketDtoToDomain(
       bracket as BracketDto, 
       (matches || [])
     );
   } catch (error) {
     console.error('Error fetching bracket:', error);
-    throw new Error('Failed to fetch bracket data');
+    throw new Error(`Failed to fetch bracket data: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
-// ——————————————————————————————————————————————
-// Export barrel (declared AFTER all helpers) - Now uses SimpleBracketCreationService
-// ——————————————————————————————————————————————
+// Export barrel
 export const BracketService = {
   createBracket: SimpleBracketCreationService.createBracket,
   deleteBracket,
@@ -230,5 +278,5 @@ export const BracketService = {
   getBracketById,
   updateMatchScore,
   computeBracketState,
-  supabase // Export supabase to be used by our hooks
+  supabase
 };

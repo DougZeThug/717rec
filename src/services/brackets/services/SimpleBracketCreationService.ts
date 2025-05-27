@@ -6,8 +6,8 @@ import { BracketValidationService } from '../validation/BracketValidationService
 import { isValidUUID } from '@/utils/validation';
 import { manager } from '../BracketsManagerInstance';
 
-// Define participant structure for seeding - updated to match brackets-manager expectations
-interface ParticipantEntry {
+// Define participant structure that's compatible with brackets-manager
+interface ParticipantEntry extends Record<string, unknown> {
   id: string;
   name: string;
   tournament_id: string;
@@ -24,79 +24,51 @@ export class SimpleBracketCreationService {
       format, name, divisionId, teamCount: teamIds.length, teamIds
     });
 
-    // Enhanced input validation with specific error messages
+    // Validation
     if (!name?.trim()) {
       throw new Error('Bracket name is required');
     }
 
-    // Explicit validation for divisionId to prevent empty strings
-    if (!divisionId) {
-      throw new Error('Division ID is required and cannot be undefined');
-    }
-
-    if (typeof divisionId !== 'string') {
-      throw new Error('Division ID must be a string');
-    }
-
-    if (divisionId === '' || divisionId.trim() === '') {
-      throw new Error('Division ID cannot be empty or whitespace');
-    }
-
-    if (!isValidUUID(divisionId)) {
-      throw new Error(`Division ID has invalid UUID format: "${divisionId}"`);
+    if (!divisionId || !isValidUUID(divisionId)) {
+      throw new Error('Valid division ID is required');
     }
 
     if (!Array.isArray(teamIds) || teamIds.length < 2) {
       throw new Error('At least 2 teams are required');
     }
 
-    // Enhanced team validation - check for empty strings explicitly
+    // Validate team IDs
     teamIds.forEach((teamId, index) => {
-      if (!teamId || typeof teamId !== 'string') {
+      if (!teamId || !isValidUUID(teamId)) {
         throw new Error(`Team ID at position ${index + 1} is invalid: ${teamId}`);
-      }
-      if (teamId === '' || teamId.trim() === '') {
-        throw new Error(`Team ID at position ${index + 1} cannot be empty`);
-      }
-      if (!isValidUUID(teamId)) {
-        throw new Error(`Team ID at position ${index + 1} has invalid UUID format: "${teamId}"`);
       }
     });
 
-    // Validate team IDs with detailed error reporting
     const teamValidation = BracketValidationService.validateTeamSelection(teamIds);
     if (!teamValidation.isValid) {
-      console.error('Team validation failed:', teamValidation);
       throw new Error(`Team validation failed: ${teamValidation.errors.join(', ')}`);
     }
 
     const bracketId = uuidv4();
-    console.log('Generated bracket ID:', bracketId);
     
     try {
-      // Verify teams exist with detailed logging
-      console.log('Verifying teams exist for IDs:', teamIds);
+      // Verify teams exist
       const { data: existingTeams, error: teamsError } = await supabase
         .from('teams')
         .select('id, name, division_id')
         .in('id', teamIds);
       
       if (teamsError) {
-        console.error('Error fetching teams:', teamsError);
         throw new Error(`Failed to verify teams: ${teamsError.message}`);
       }
-      
-      console.log('Found teams:', existingTeams);
       
       if (!existingTeams || existingTeams.length !== teamIds.length) {
         const foundIds = existingTeams?.map(t => t.id) || [];
         const missingIds = teamIds.filter(id => !foundIds.includes(id));
-        console.error('Missing teams:', missingIds);
         throw new Error(`Teams not found: ${missingIds.join(', ')}`);
       }
       
-      // Verify division with detailed logging
-      console.log('Verifying division exists for ID:', divisionId);
+      // Verify division
       const { data: division, error: divisionError } = await supabase
         .from('divisions')
         .select('id, name')
@@ -104,14 +76,10 @@ export class SimpleBracketCreationService {
         .single();
       
       if (divisionError || !division) {
-        console.error('Division verification failed:', { divisionError, division });
         throw new Error(`Division not found: ${divisionId}`);
       }
       
-      console.log('Found division:', division);
-      
-      // Create bracket with detailed logging
-      console.log('Creating bracket record:', { bracketId, name: name.trim(), format, divisionId });
+      // Create bracket
       const { error: bracketError } = await supabase
         .from('brackets')
         .insert({
@@ -122,22 +90,12 @@ export class SimpleBracketCreationService {
         });
       
       if (bracketError) {
-        console.error('Bracket creation error:', bracketError);
         throw new Error(`Failed to create bracket: ${bracketError.message}`);
       }
       
-      console.log('Bracket record created successfully');
-      
-      // Create tournament stage with participant objects containing UUIDs and tournament_id
+      // Create tournament stage
       const participantEntries = await this.fetchTeamParticipants(teamIds, bracketId);
       const seeding = this.padToNextPowerOfTwo(participantEntries);
-      
-      console.log('Creating tournament with manager using participant objects:', { 
-        name: name.trim(), 
-        tournamentId: bracketId, 
-        seedingCount: seeding.length,
-        seeding: seeding.map(p => p ? { id: p.id, name: p.name, tournament_id: p.tournament_id } : null)
-      });
       
       await manager.create({
         name: name.trim(),
@@ -153,10 +111,9 @@ export class SimpleBracketCreationService {
     } catch (error: any) {
       console.error('Bracket creation failed:', error);
       
-      // Clean up bracket record if tournament creation failed
+      // Clean up bracket record
       try {
         await supabase.from('brackets').delete().eq('id', bracketId);
-        console.log('Cleaned up bracket record after failure');
       } catch (cleanupError) {
         console.error('Failed to cleanup bracket record:', cleanupError);
       }
@@ -166,8 +123,6 @@ export class SimpleBracketCreationService {
   }
 
   private static async fetchTeamParticipants(teamIds: string[], bracketId: string): Promise<ParticipantEntry[]> {
-    console.log('Fetching team participants for IDs:', teamIds, 'bracketId:', bracketId);
-    
     const { data, error } = await supabase
       .from('teams')
       .select('id, name')
@@ -177,32 +132,25 @@ export class SimpleBracketCreationService {
       throw new Error(`Failed to fetch team participants: ${error?.message}`);
     }
     
-    // Ensure we maintain the original order and validate UUIDs
     const participantMap = new Map(data.map(t => [t.id, t.name!]));
     const participants = teamIds.map(id => {
       const name = participantMap.get(id);
       if (!name) {
         throw new Error(`Team not found for ID: ${id}`);
       }
-      if (!isValidUUID(id)) {
-        throw new Error(`Invalid team UUID: ${id}`);
-      }
       return { 
         id, 
         name, 
-        tournament_id: bracketId  // Add tournament_id as required by brackets-manager
-      };
+        tournament_id: bracketId
+      } as ParticipantEntry;
     });
     
-    console.log('Created participant entries with tournament_id:', participants);
     return participants;
   }
 
   private static padToNextPowerOfTwo<T>(arr: T[]): (T | null)[] {
     let size = 1;
     while (size < arr.length) size <<= 1;
-    const padded = [...arr, ...Array(size - arr.length).fill(null)];
-    console.log(`Padded array from ${arr.length} to ${size} entries`);
-    return padded;
+    return [...arr, ...Array(size - arr.length).fill(null)];
   }
 }
