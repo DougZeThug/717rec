@@ -11,8 +11,6 @@ export type Database = {
     Tables: {
       brackets: {
         Row: {
-          challonge_tournament_id: string | null
-          challonge_tournament_url: string | null
           created_at: string | null
           division_id: string | null
           format: string | null
@@ -25,8 +23,6 @@ export type Database = {
           wb_champion_id: string | null
         }
         Insert: {
-          challonge_tournament_id?: string | null
-          challonge_tournament_url?: string | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null
@@ -39,8 +35,6 @@ export type Database = {
           wb_champion_id?: string | null
         }
         Update: {
-          challonge_tournament_id?: string | null
-          challonge_tournament_url?: string | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null

@@ -6,10 +6,11 @@ import { BracketValidationService } from '../validation/BracketValidationService
 import { isValidUUID } from '@/utils/validation';
 import { manager } from '../BracketsManagerInstance';
 
-// Define participant structure for seeding
+// Define participant structure for seeding - updated to match brackets-manager expectations
 interface ParticipantEntry {
   id: string;
   name: string;
+  tournament_id: string;
 }
 
 export class SimpleBracketCreationService {
@@ -127,15 +128,15 @@ export class SimpleBracketCreationService {
       
       console.log('Bracket record created successfully');
       
-      // Create tournament stage with participant objects containing UUIDs
-      const participantEntries = await this.fetchTeamParticipants(teamIds);
+      // Create tournament stage with participant objects containing UUIDs and tournament_id
+      const participantEntries = await this.fetchTeamParticipants(teamIds, bracketId);
       const seeding = this.padToNextPowerOfTwo(participantEntries);
       
       console.log('Creating tournament with manager using participant objects:', { 
         name: name.trim(), 
         tournamentId: bracketId, 
         seedingCount: seeding.length,
-        seeding: seeding.map(p => p ? { id: p.id, name: p.name } : null)
+        seeding: seeding.map(p => p ? { id: p.id, name: p.name, tournament_id: p.tournament_id } : null)
       });
       
       await manager.create({
@@ -164,8 +165,8 @@ export class SimpleBracketCreationService {
     }
   }
 
-  private static async fetchTeamParticipants(teamIds: string[]): Promise<ParticipantEntry[]> {
-    console.log('Fetching team participants for IDs:', teamIds);
+  private static async fetchTeamParticipants(teamIds: string[], bracketId: string): Promise<ParticipantEntry[]> {
+    console.log('Fetching team participants for IDs:', teamIds, 'bracketId:', bracketId);
     
     const { data, error } = await supabase
       .from('teams')
@@ -186,10 +187,14 @@ export class SimpleBracketCreationService {
       if (!isValidUUID(id)) {
         throw new Error(`Invalid team UUID: ${id}`);
       }
-      return { id, name };
+      return { 
+        id, 
+        name, 
+        tournament_id: bracketId  // Add tournament_id as required by brackets-manager
+      };
     });
     
-    console.log('Created participant entries:', participants);
+    console.log('Created participant entries with tournament_id:', participants);
     return participants;
   }
 
