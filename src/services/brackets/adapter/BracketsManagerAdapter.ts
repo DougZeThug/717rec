@@ -1,10 +1,10 @@
-
 /**
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
  */
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffMatch, PlayoffMatchType } from "@/types/playoffs";
+import { isValidUUID } from '@/utils/validation';
 
 // Define types to match brackets-manager's expectations
 interface Id {
@@ -129,14 +129,55 @@ export class BracketsManagerAdapter implements CrudInterface {
           
         case 'participant':
           const participant = dataArray[0] as any; // Use first entry in case of array
+          
+          // Enhanced validation for participant data
+          console.log('BracketsManagerAdapter: Processing participant insert:', participant);
+          
+          // Validate participant object structure
+          if (!participant || typeof participant !== 'object') {
+            throw new Error('Participant must be an object');
+          }
+          
+          // Extract and validate team ID
+          let teamId = participant.id;
+          if (!teamId) {
+            console.error('BracketsManagerAdapter: Missing participant.id:', participant);
+            throw new Error('Participant ID is required');
+          }
+          
+          // Convert to string if it's a number
+          if (typeof teamId === 'number') {
+            teamId = teamId.toString();
+          }
+          
+          if (typeof teamId !== 'string') {
+            throw new Error(`Invalid participant ID type: ${typeof teamId}`);
+          }
+          
+          if (teamId.trim() === '' || teamId === 'undefined' || teamId === 'null') {
+            throw new Error(`Invalid participant ID value: "${teamId}"`);
+          }
+          
+          if (!isValidUUID(teamId)) {
+            throw new Error(`Invalid participant UUID format: "${teamId}"`);
+          }
+          
+          // Validate tournament/bracket ID
+          const tournamentId = participant.tournament_id;
+          if (!tournamentId || !isValidUUID(tournamentId)) {
+            throw new Error(`Invalid tournament ID: "${tournamentId}"`);
+          }
+          
           const participantData = {
-            bracket_id: participant.tournament_id, // Use tournament_id as bracket_id
-            team_id: participant.id || '', // Required field
-            tournament_id: participant.tournament_id,
-            name: participant.name || '',
+            bracket_id: tournamentId,
+            team_id: teamId,
+            tournament_id: tournamentId,
+            name: participant.name || teamId,
             position: participant.position || 0,
             seeding: participant.seeding ?? null
           };
+          
+          console.log('BracketsManagerAdapter: Inserting participant with validated data:', participantData);
           
           const participantResult = await supabase
             .from('participants')
@@ -144,25 +185,19 @@ export class BracketsManagerAdapter implements CrudInterface {
             .select('id')
             .single();
           
-          if (participantResult.error) throw participantResult.error;
+          if (participantResult.error) {
+            console.error('BracketsManagerAdapter: Participant insert failed:', participantResult.error);
+            throw participantResult.error;
+          }
+          
+          console.log('BracketsManagerAdapter: Participant inserted successfully:', participantResult.data.id);
           return participantResult.data.id as string;
           
         case 'stage':
-          const stage = dataArray[0] as any; // Use first entry in case of array
-          const stageData = {
-            id: stage.id, // Assuming bracket ID is provided
-            title: stage.name,
-            format: stage.type || 'single_elimination'
-          };
-          
-          const stageResult = await supabase
-            .from('brackets')
-            .insert(stageData)
-            .select('id')
-            .single();
-          
-          if (stageResult.error) throw stageResult.error;
-          return stageResult.data.id as string;
+          // Note: This case might be duplicate with SimpleBracketCreationService
+          // For now, we'll skip this to avoid conflicts since the bracket is already created
+          console.log('BracketsManagerAdapter: Skipping stage insert to avoid duplicate bracket creation');
+          return 'stage-skipped';
           
         default:
           console.warn(`Insert operation not implemented for table ${table}`);

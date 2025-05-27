@@ -6,6 +6,12 @@ import { BracketValidationService } from '../validation/BracketValidationService
 import { isValidUUID } from '@/utils/validation';
 import { manager } from '../BracketsManagerInstance';
 
+// Define participant structure for seeding
+interface ParticipantEntry {
+  id: string;
+  name: string;
+}
+
 export class SimpleBracketCreationService {
   static async createBracket(
     format: BracketFormat,
@@ -121,11 +127,17 @@ export class SimpleBracketCreationService {
       
       console.log('Bracket record created successfully');
       
-      // Create tournament stage
-      const teamNames = await this.fetchTeamNames(teamIds);
-      const seeding = this.padToNextPowerOfTwo(teamNames);
+      // Create tournament stage with participant objects containing UUIDs
+      const participantEntries = await this.fetchTeamParticipants(teamIds);
+      const seeding = this.padToNextPowerOfTwo(participantEntries);
       
-      console.log('Creating tournament with manager:', { name: name.trim(), tournamentId: bracketId, seeding });
+      console.log('Creating tournament with manager using participant objects:', { 
+        name: name.trim(), 
+        tournamentId: bracketId, 
+        seedingCount: seeding.length,
+        seeding: seeding.map(p => p ? { id: p.id, name: p.name } : null)
+      });
+      
       await manager.create({
         name: name.trim(),
         tournamentId: bracketId,
@@ -152,23 +164,40 @@ export class SimpleBracketCreationService {
     }
   }
 
-  private static async fetchTeamNames(teamIds: string[]): Promise<string[]> {
+  private static async fetchTeamParticipants(teamIds: string[]): Promise<ParticipantEntry[]> {
+    console.log('Fetching team participants for IDs:', teamIds);
+    
     const { data, error } = await supabase
       .from('teams')
       .select('id, name')
       .in('id', teamIds);
       
     if (error || !data) {
-      throw new Error(`Failed to fetch team names: ${error?.message}`);
+      throw new Error(`Failed to fetch team participants: ${error?.message}`);
     }
     
-    const map = new Map(data.map(t => [t.id, t.name!]));
-    return teamIds.map(id => map.get(id) ?? id);
+    // Ensure we maintain the original order and validate UUIDs
+    const participantMap = new Map(data.map(t => [t.id, t.name!]));
+    const participants = teamIds.map(id => {
+      const name = participantMap.get(id);
+      if (!name) {
+        throw new Error(`Team not found for ID: ${id}`);
+      }
+      if (!isValidUUID(id)) {
+        throw new Error(`Invalid team UUID: ${id}`);
+      }
+      return { id, name };
+    });
+    
+    console.log('Created participant entries:', participants);
+    return participants;
   }
 
   private static padToNextPowerOfTwo<T>(arr: T[]): (T | null)[] {
     let size = 1;
     while (size < arr.length) size <<= 1;
-    return [...arr, ...Array(size - arr.length).fill(null)];
+    const padded = [...arr, ...Array(size - arr.length).fill(null)];
+    console.log(`Padded array from ${arr.length} to ${size} entries`);
+    return padded;
   }
 }
