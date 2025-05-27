@@ -11,14 +11,36 @@ export interface TeamValidationResult extends ValidationResult {
   invalidTeams: string[];
 }
 
+// Type guard to ensure we have valid form data
+const isValidBracketFormData = (data: unknown): data is BracketFormValues => {
+  return (
+    data &&
+    typeof data === 'object' &&
+    'title' in data &&
+    'divisionId' in data &&
+    'format' in data &&
+    'teams' in data &&
+    typeof (data as any).title === 'string' &&
+    (typeof (data as any).divisionId === 'string' || (data as any).divisionId === undefined) &&
+    typeof (data as any).format === 'string' &&
+    Array.isArray((data as any).teams)
+  );
+};
+
 export class BracketValidationService {
   /**
    * Validates complete bracket form data
    */
-  static validateFormData(data: BracketFormValues): ValidationResult {
+  static validateFormData(data: unknown): ValidationResult {
     const errors: string[] = [];
 
     console.log('BracketValidationService.validateFormData called with:', data);
+
+    // Type guard check
+    if (!isValidBracketFormData(data)) {
+      errors.push('Invalid form data structure');
+      return { isValid: false, errors };
+    }
 
     // Title validation
     if (!data.title || typeof data.title !== 'string' || data.title.trim() === '') {
@@ -59,7 +81,7 @@ export class BracketValidationService {
   /**
    * Validates team selection array
    */
-  static validateTeamSelection(teamIds: string[]): TeamValidationResult {
+  static validateTeamSelection(teamIds: unknown): TeamValidationResult {
     const errors: string[] = [];
     const invalidTeams: string[] = [];
 
@@ -99,8 +121,13 @@ export class BracketValidationService {
   /**
    * Sanitizes form data to prevent invalid submissions
    */
-  static sanitizeFormData(data: BracketFormValues): BracketFormValues {
+  static sanitizeFormData(data: unknown): BracketFormValues {
     console.log('BracketValidationService.sanitizeFormData called with:', data);
+    
+    // Type guard check
+    if (!isValidBracketFormData(data)) {
+      throw new Error('Invalid form data structure for sanitization');
+    }
     
     const sanitized = {
       title: (data.title || '').trim(),
@@ -118,7 +145,7 @@ export class BracketValidationService {
   /**
    * Comprehensive pre-submission validation
    */
-  static validateForSubmission(data: BracketFormValues): ValidationResult {
+  static validateForSubmission(data: unknown): ValidationResult {
     console.log('BracketValidationService.validateForSubmission called with:', data);
     
     const sanitizedData = this.sanitizeFormData(data);

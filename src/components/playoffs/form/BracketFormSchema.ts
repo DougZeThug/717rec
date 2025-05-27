@@ -2,10 +2,10 @@
 import * as z from "zod";
 import { BRACKET_FORMATS, BracketFormat } from "@/constants/brackets";
 
-// Enhanced UUID validation that explicitly rejects empty strings
+// Enhanced UUID validation with proper type chaining
 const uuidFieldSchema = z.string()
-  .refine((val) => val !== "", "Please select a valid option")
-  .uuid("Invalid UUID format");
+  .uuid("Invalid UUID format")
+  .refine((val) => val !== "", "Please select a valid option");
 
 // Enhanced form schema with proper UUID validation and empty string prevention
 export const bracketFormSchema = z.object({

@@ -28,7 +28,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Handle form submission with enhanced validation
+  // Handle form submission with enhanced validation and proper typing
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
@@ -46,12 +46,15 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
+      // Type assertion for divisionId since validation passed
+      const divisionId = data.divisionId as string;
+      
       console.log('BracketCreationDialog: Creating bracket with validated data using SimpleBracketCreationService');
       
       const bracketId = await SimpleBracketCreationService.createBracket(
         data.format as BracketFormat,
         data.title,
-        data.divisionId,
+        divisionId,
         data.teams
       );
       

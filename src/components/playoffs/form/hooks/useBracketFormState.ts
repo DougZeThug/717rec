@@ -10,6 +10,18 @@ interface UseBracketFormStateProps {
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
 }
 
+// Type guard to ensure we have valid form data
+const isValidFormData = (data: any): data is BracketFormValues => {
+  return (
+    data &&
+    typeof data === 'object' &&
+    typeof data.title === 'string' &&
+    (typeof data.divisionId === 'string' || data.divisionId === undefined) &&
+    typeof data.format === 'string' &&
+    Array.isArray(data.teams)
+  );
+};
+
 export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const [isFormValid, setIsFormValid] = useState(false);
   
@@ -25,9 +37,16 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
     mode: "onChange"
   });
 
-  // Real-time validation
-  const validateForm = useCallback((data: BracketFormValues) => {
+  // Real-time validation with type guards
+  const validateForm = useCallback((data: unknown) => {
     console.log("Validating form data:", data);
+    
+    // Type guard check
+    if (!isValidFormData(data)) {
+      console.error('Invalid form data structure:', data);
+      setIsFormValid(false);
+      return { isValid: false, errors: ["Invalid form data structure"] };
+    }
     
     // Explicit check for empty strings in divisionId
     if (data.divisionId === "" || (typeof data.divisionId === 'string' && data.divisionId.trim() === '')) {
@@ -48,9 +67,15 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
     return validation;
   }, []);
 
-  // Enhanced form submission with better error handling
+  // Enhanced form submission with better error handling and type guards
   const handleSubmit = form.handleSubmit(async (data) => {
     console.log("Form submission started with data:", data);
+    
+    // Type guard check for submission
+    if (!isValidFormData(data)) {
+      console.error('Invalid form data for submission:', data);
+      throw new Error('Invalid form data structure');
+    }
     
     // Explicit check for empty divisionId
     if (!data.divisionId || data.divisionId === '' || data.divisionId.trim() === '') {
