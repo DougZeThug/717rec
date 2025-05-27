@@ -93,15 +93,23 @@ export class SimpleBracketCreationService {
         throw new Error(`Failed to create bracket: ${bracketError.message}`);
       }
       
-      // Create tournament stage
+      // Create tournament stage with validated participants only
       const participantEntries = await this.fetchTeamParticipants(teamIds, bracketId);
-      const seeding = this.padToNextPowerOfTwo(participantEntries);
+      console.log('Raw participant entries:', participantEntries);
+      
+      // Filter out null values and validate participants before creating tournament
+      const validParticipants = this.validateAndFilterParticipants(participantEntries);
+      console.log('Valid participants for tournament:', validParticipants);
+      
+      if (validParticipants.length === 0) {
+        throw new Error('No valid participants found for tournament creation');
+      }
       
       await manager.create({
         name: name.trim(),
         tournamentId: bracketId,
         type: format === BRACKET_FORMATS.DOUBLE ? 'double_elimination' : 'single_elimination',
-        seeding,
+        seeding: validParticipants,
         settings: { grandFinal: 'double' },
       });
       
@@ -148,9 +156,41 @@ export class SimpleBracketCreationService {
     return participants;
   }
 
-  private static padToNextPowerOfTwo<T>(arr: T[]): (T | null)[] {
-    let size = 1;
-    while (size < arr.length) size <<= 1;
-    return [...arr, ...Array(size - arr.length).fill(null)];
+  private static validateAndFilterParticipants(participants: ParticipantEntry[]): ParticipantEntry[] {
+    console.log('Validating participants:', participants);
+    
+    const validParticipants = participants.filter(participant => {
+      // Check for null or undefined
+      if (!participant) {
+        console.warn('Skipping null/undefined participant');
+        return false;
+      }
+      
+      // Validate required properties
+      if (!participant.id || typeof participant.id !== 'string') {
+        console.warn('Skipping participant with invalid id:', participant);
+        return false;
+      }
+      
+      if (!isValidUUID(participant.id)) {
+        console.warn('Skipping participant with invalid UUID:', participant.id);
+        return false;
+      }
+      
+      if (!participant.name || typeof participant.name !== 'string') {
+        console.warn('Skipping participant with invalid name:', participant);
+        return false;
+      }
+      
+      if (!participant.tournament_id || !isValidUUID(participant.tournament_id)) {
+        console.warn('Skipping participant with invalid tournament_id:', participant);
+        return false;
+      }
+      
+      return true;
+    });
+    
+    console.log(`Filtered ${participants.length} participants down to ${validParticipants.length} valid ones`);
+    return validParticipants;
   }
 }

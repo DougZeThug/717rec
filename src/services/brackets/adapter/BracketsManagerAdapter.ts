@@ -83,6 +83,55 @@ interface CrudInterface {
 }
 
 /**
+ * Validates participant data before database insertion
+ */
+function validateParticipantData(participant: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  console.log('BracketsManagerAdapter: Validating participant:', participant);
+  
+  // Check if participant is null or undefined
+  if (!participant) {
+    errors.push('Participant is null or undefined');
+    return { isValid: false, errors };
+  }
+  
+  // Check if participant is an object
+  if (typeof participant !== 'object') {
+    errors.push(`Participant must be an object, got ${typeof participant}`);
+    return { isValid: false, errors };
+  }
+  
+  // Validate participant ID
+  if (!participant.id) {
+    errors.push('Participant ID is required');
+  } else {
+    const teamId = typeof participant.id === 'number' ? participant.id.toString() : participant.id;
+    if (typeof teamId !== 'string') {
+      errors.push(`Invalid participant ID type: ${typeof teamId}`);
+    } else if (teamId.trim() === '' || teamId === 'undefined' || teamId === 'null') {
+      errors.push(`Invalid participant ID value: "${teamId}"`);
+    } else if (!isValidUUID(teamId)) {
+      errors.push(`Invalid participant UUID format: "${teamId}"`);
+    }
+  }
+  
+  // Validate tournament ID
+  if (!participant.tournament_id) {
+    errors.push('Tournament ID is required');
+  } else if (!isValidUUID(participant.tournament_id)) {
+    errors.push(`Invalid tournament UUID format: "${participant.tournament_id}"`);
+  }
+  
+  // Validate name
+  if (!participant.name) {
+    console.warn('Participant name is missing, will use ID as fallback');
+  }
+  
+  return { isValid: errors.length === 0, errors };
+}
+
+/**
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
  */
@@ -99,7 +148,7 @@ export class BracketsManagerAdapter implements CrudInterface {
       // Match table name to operation
       switch (table) {
         case 'match':
-          const match = dataArray[0] as any; // Use first entry in case of array
+          const match = dataArray[0];
           const matchData = {
             id: match.id || undefined,
             round: match.round || 1,
@@ -128,45 +177,21 @@ export class BracketsManagerAdapter implements CrudInterface {
           return matchResult.data.id as string;
           
         case 'participant':
-          const participant = dataArray[0] as any; // Use first entry in case of array
+          const participant = dataArray[0];
           
-          // Enhanced validation for participant data
           console.log('BracketsManagerAdapter: Processing participant insert:', participant);
           
-          // Validate participant object structure
-          if (!participant || typeof participant !== 'object') {
-            throw new Error('Participant must be an object');
+          // Validate participant data
+          const validation = validateParticipantData(participant);
+          if (!validation.isValid) {
+            const errorMessage = `Participant validation failed: ${validation.errors.join(', ')}`;
+            console.error('BracketsManagerAdapter:', errorMessage);
+            throw new Error(errorMessage);
           }
           
           // Extract and validate team ID
-          let teamId = participant.id;
-          if (!teamId) {
-            console.error('BracketsManagerAdapter: Missing participant.id:', participant);
-            throw new Error('Participant ID is required');
-          }
-          
-          // Convert to string if it's a number
-          if (typeof teamId === 'number') {
-            teamId = teamId.toString();
-          }
-          
-          if (typeof teamId !== 'string') {
-            throw new Error(`Invalid participant ID type: ${typeof teamId}`);
-          }
-          
-          if (teamId.trim() === '' || teamId === 'undefined' || teamId === 'null') {
-            throw new Error(`Invalid participant ID value: "${teamId}"`);
-          }
-          
-          if (!isValidUUID(teamId)) {
-            throw new Error(`Invalid participant UUID format: "${teamId}"`);
-          }
-          
-          // Validate tournament/bracket ID
+          const teamId = typeof participant.id === 'number' ? participant.id.toString() : participant.id;
           const tournamentId = participant.tournament_id;
-          if (!tournamentId || !isValidUUID(tournamentId)) {
-            throw new Error(`Invalid tournament ID: "${tournamentId}"`);
-          }
           
           const participantData = {
             bracket_id: tournamentId,
