@@ -1,11 +1,10 @@
-
 // Core domain types ---------------------------------------------
 export interface PlayoffBracket {
   id: string;
   name?: string;
   division?: string;
   divisionId?: string;
-  format: BracketFormat;
+  format: string;
   matches?: PlayoffMatch[];
   champion?: string;
   state: BracketState;

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -145,6 +144,9 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       // Use playoff matches if available, otherwise fall back to regular matches
       if (bracket && playoffMatchesQuery.data) {
         bracket.matches = playoffMatchesQuery.data;
+      } else {
+        // Ensure matches field always exists
+        bracket.matches = bracket.matches ?? [];
       }
       
       // Calculate and update the bracket state if needed
