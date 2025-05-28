@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 import { BaseFilter } from '../interfaces/StorageAdapter';
