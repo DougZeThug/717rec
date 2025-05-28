@@ -14,6 +14,7 @@ export interface ChallongeParticipant {
 
 export interface ChallongeMatch {
   id: number;
+  tournament_id?: number;
   player1_id: number;
   player2_id: number;
   scores_csv: string;

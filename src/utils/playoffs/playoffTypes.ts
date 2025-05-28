@@ -93,5 +93,29 @@ export type BracketMatchesByType = {
   playIn?: any[][];
 };
 
+// Legacy type aliases for backward compatibility
+export type Team = PlayoffTeam;
+
+// Minimal placeholder for PlayoffViewModel until view-model is fully refactored
+export interface PlayoffViewModel {
+  bracket: PlayoffBracket | null;
+  teams: PlayoffTeam[];
+  isLoading: boolean;
+  error: Error | null;
+  bracketMatchesByType: BracketMatchesByType | null;
+  teamsLoading: boolean;
+  refetch: () => Promise<any>;
+  deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
+  updateMatchResult: (
+    matchId: string, 
+    winnerId: string, 
+    team1Score: number, 
+    team2Score: number,
+    team1GameWins?: number,
+    team2GameWins?: number,
+    games?: PlayoffGame[]
+  ) => Promise<void>;
+}
+
 // Re-export Challonge API types so callers import everything here
 export type { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from '@/services/challonge/types';
