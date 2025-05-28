@@ -5,7 +5,6 @@ import { Team } from "@/types";
 import BracketForm, { BracketFormValues } from "./BracketForm";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { BracketFormat } from "@/constants/brackets";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
@@ -47,19 +46,19 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       }
       
       // Map form data to Challonge format
-      const tournamentType = data.format === BracketFormat.SINGLE ? "single elimination" : "double elimination";
-      const selectedTeams = (teams || []).filter(team => data.selectedTeamIds.includes(team.id));
+      const tournamentType = "single elimination"; // Default to single elimination
+      const selectedTeams = (teams || []).filter(team => data.teams.includes(team.id));
       
       // Create tournament via Challonge
       const tournament = await createBracket.mutateAsync({
-        name: data.name,
+        name: data.title,
         tournamentType,
         teams: selectedTeams.map(team => ({ id: team.id, name: team.name }))
       });
       
       toast({
         title: "Bracket Created",
-        description: `Tournament "${data.name}" has been created successfully.`,
+        description: `Tournament "${data.title}" has been created successfully.`,
       });
       
       // Close dialog and notify parent

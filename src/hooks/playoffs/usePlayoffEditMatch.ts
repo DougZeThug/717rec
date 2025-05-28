@@ -62,7 +62,7 @@ export const usePlayoffEditMatch = () => {
       
       // Report match to Challonge
       await reportMatch.mutateAsync({
-        tournamentId: editingMatch?.bracketId || "", // Assuming bracketId is available
+        tournamentId: editingMatch?.bracket_id || "", // Using bracket_id instead of bracketId
         matchId,
         scoresCsv,
         winnerId,
