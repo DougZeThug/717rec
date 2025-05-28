@@ -1,7 +1,9 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { MatchConverterUtils } from "../utils/MatchConverterUtils";
 import { BaseFilter } from '../interfaces/StorageAdapter';
 import { AdapterOperationError } from '../errors/AdapterErrors';
+import { assertValidUuidOrNull } from '@/utils/uuidValidation';
 
 /**
  * Match type enum for database compatibility
@@ -65,8 +67,16 @@ export class MatchAdapter {
    * @private
    */
   private async insertMatchBatch(matchBatch: any[]): Promise<BatchInsertResponse> {
-    // Convert to our match format
-    const matchesForDb = matchBatch.map(match => this.converter.convertMatchToDbFormat(match));
+    // Convert to our match format and validate UUID fields
+    const matchesForDb = matchBatch.map(match => {
+      const dbMatch = this.converter.convertMatchToDbFormat(match);
+      
+      // Validate optional UUID fields before insertion
+      assertValidUuidOrNull(dbMatch.next_match_id, 'next_match_id');
+      assertValidUuidOrNull(dbMatch.next_loser_match_id, 'next_loser_match_id');
+      
+      return dbMatch;
+    });
     
     const { error, count } = await supabase.from('matches').insert(matchesForDb).select('count');
     
@@ -115,7 +125,7 @@ export class MatchAdapter {
    * @private
    */
   private applyMatchFilters(query: any, filter: MatchFilter) {
-    // Apply filters if provided
+    // Apply filters if provided - FIXED: Use conditional logic instead of || ''
     if (filter.id) {
       if (Array.isArray(filter.id)) {
         query = query.in('id', filter.id);
@@ -152,6 +162,11 @@ export class MatchAdapter {
   async updateMatch(id: string, match: any): Promise<number> {
     try {
       const matchForDb = this.converter.convertMatchToDbFormat(match);
+      
+      // Validate optional UUID fields before update
+      assertValidUuidOrNull(matchForDb.next_match_id, 'next_match_id');
+      assertValidUuidOrNull(matchForDb.next_loser_match_id, 'next_loser_match_id');
+      
       const { error } = await supabase
         .from('matches')
         .update(matchForDb)

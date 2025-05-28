@@ -153,6 +153,10 @@ export class BracketsManagerAdapter implements CrudInterface {
             assertValidUuid(match.stage_id, 'stage_id');
           }
           
+          // Validate optional UUID fields before insertion
+          assertValidUuidOrNull(match.opponent1?.id, 'match.opponent1.id');
+          assertValidUuidOrNull(match.opponent2?.id, 'match.opponent2.id');
+          
           const matchData = {
             id: match.id || undefined,
             round: match.round || 1,
@@ -274,7 +278,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           // Build query only with valid tournament ID
           let query = supabase.from('playoff_matches').select('*');
           
-          // FIXED: Use conditional logic instead of || ''
+          // FIXED: Use conditional logic instead of empty string fallback
           if (filter && 'stage_id' in filter && filter.stage_id && isValidUuidSafe(filter.stage_id as string)) {
             query = query.eq('bracket_id', filter.stage_id as string);
           }
@@ -307,7 +311,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           let participantQuery = supabase.from('participants').select('*');
           
           if (filter) {
-            // FIXED: Use conditional logic instead of || ''
+            // FIXED: Use conditional logic instead of empty string fallback
             if ('tournament_id' in filter && filter.tournament_id && isValidUuidSafe(filter.tournament_id as string)) {
               participantQuery = participantQuery.eq('tournament_id', filter.tournament_id as string);
             }
@@ -356,6 +360,10 @@ export class BracketsManagerAdapter implements CrudInterface {
                           data.opponent2?.result === 'loss' ? data.opponent2.id : null;
             
             if (winnerId && loserId) {
+              // Validate winner and loser IDs before update
+              assertValidUuidOrNull(winnerId, 'winnerId');
+              assertValidUuidOrNull(loserId, 'loserId');
+              
               const updateData = {
                 winner_id: winnerId,
                 loser_id: loserId,

@@ -25,8 +25,8 @@ export class FinalsGenerator {
       team2Id: null, // Winner of losers bracket
       team1Seed: null,
       team2Seed: null,
-      nextWinMatchId: null, // FIXED: Always null for finals
-      nextLoseMatchId: null, // FIXED: Always null for finals
+      nextWinMatchId: null, // Always null for finals
+      nextLoseMatchId: null, // Always null for finals
       winnerId: null,
       bracket_id: bracketId
     };

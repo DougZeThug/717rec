@@ -1,3 +1,4 @@
+
 /**
  * Utility class for converting match formats between brackets-manager and our database
  */
@@ -7,10 +8,7 @@ export class MatchConverterUtils {
    * @private
    */
   private nil(id?: string | null): string | null {
-    if (!id || id === "undefined" || id === "") {
-      return null;
-    }
-    return id;
+    return !id || id === 'undefined' || id === '' ? null : id;
   }
 
   /**

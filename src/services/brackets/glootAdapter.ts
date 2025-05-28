@@ -35,7 +35,7 @@ export function adaptPlayoffMatchesToGloot(
   const teamMap = new Map(teams.map(team => [team.id, team]));
   
   const glootMatches: GlootMatch[] = matches.map(match => {
-    // FIXED: Use conditional logic instead of || fallback
+    // FIXED: Use conditional logic instead of empty string fallback
     const team1 = match.team1Id ? teamMap.get(match.team1Id) : undefined;
     const team2 = match.team2Id ? teamMap.get(match.team2Id) : undefined;
     
