@@ -18,6 +18,9 @@ export class SimpleBracketCreationService {
       format, name, divisionId, teamCount: teamIds.length, teamIds
     });
 
+    // Move bracketId declaration outside try block for proper scope
+    const bracketId = uuidv4();
+
     try {
       // Validation with enhanced UUID checking
       if (!name?.trim()) {
@@ -39,8 +42,6 @@ export class SimpleBracketCreationService {
       if (!teamValidation.isValid) {
         throw new Error(`Team validation failed: ${teamValidation.errors.join(', ')}`);
       }
-
-      const bracketId = uuidv4();
       
       // Verify teams exist and get their data
       const { data: existingTeams, error: teamsError } = await supabase
@@ -85,19 +86,17 @@ export class SimpleBracketCreationService {
       
       console.log('Bracket record created successfully');
       
-      // Create participants using the simple approach that works with brackets-manager
-      const participants = existingTeams.map(team => ({
-        name: team.name
-      }));
+      // Create participants using simple string array (team names only)
+      const participants = existingTeams.map(team => team.name);
       
       console.log('Creating tournament with participants:', participants);
       
-      // Create tournament using brackets-manager with simplified approach
+      // Create tournament using brackets-manager with simplified seeding
       await manager.create({
         name: name.trim(),
         tournamentId: bracketId,
         type: format === BRACKET_FORMATS.DOUBLE ? 'double_elimination' : 'single_elimination',
-        seeding: participants,
+        seeding: participants, // Use simple string array
         settings: { 
           grandFinal: format === BRACKET_FORMATS.DOUBLE ? 'double' : 'simple',
           skipFirstRound: false
@@ -106,35 +105,40 @@ export class SimpleBracketCreationService {
       
       console.log(`Tournament created successfully with brackets-manager`);
       
-      // Now get the matches created by brackets-manager and store them in our database
-      const matches = await manager.get.stage.matches(0);
-      console.log('Retrieved matches from brackets-manager:', matches.length);
-      
-      // Convert and store matches in our format
-      if (matches && matches.length > 0) {
-        const matchesToInsert = matches.map((match, index) => ({
-          id: uuidv4(),
-          bracket_id: bracketId,
-          round_number: match.round_id + 1,
-          position: match.number,
-          match_type: this.determineMatchType(match, format),
-          team1_id: match.opponent1?.id ? existingTeams[match.opponent1.position]?.id : null,
-          team2_id: match.opponent2?.id ? existingTeams[match.opponent2.position]?.id : null,
-          best_of: 3,
-          next_match_id: null, // Will be populated by brackets-manager logic
-          next_loser_match_id: null // Will be populated by brackets-manager logic
-        }));
+      // Try to get matches using the correct API method
+      try {
+        const matches = await manager.get.match({ stage_id: bracketId });
+        console.log('Retrieved matches from brackets-manager:', matches?.length || 0);
         
-        const { error: matchesError } = await supabase
-          .from('matches')
-          .insert(matchesToInsert);
+        // Convert and store matches in our format if any were created
+        if (matches && matches.length > 0) {
+          const matchesToInsert = matches.map((match, index) => ({
+            id: uuidv4(),
+            bracket_id: bracketId,
+            round_number: match.round_id + 1,
+            position: match.number,
+            match_type: this.determineMatchType(match, format),
+            team1_id: match.opponent1?.id ? existingTeams[match.opponent1.position]?.id : null,
+            team2_id: match.opponent2?.id ? existingTeams[match.opponent2.position]?.id : null,
+            best_of: 3,
+            next_match_id: null, // Will be populated by brackets-manager logic
+            next_loser_match_id: null // Will be populated by brackets-manager logic
+          }));
           
-        if (matchesError) {
-          console.error('Failed to insert matches:', matchesError);
-          // Don't fail the whole operation, just log the error
-        } else {
-          console.log(`Inserted ${matchesToInsert.length} matches`);
+          const { error: matchesError } = await supabase
+            .from('matches')
+            .insert(matchesToInsert);
+            
+          if (matchesError) {
+            console.error('Failed to insert matches:', matchesError);
+            // Don't fail the whole operation, just log the error
+          } else {
+            console.log(`Inserted ${matchesToInsert.length} matches`);
+          }
         }
+      } catch (matchError) {
+        console.warn('Failed to retrieve matches from brackets-manager:', matchError);
+        // Don't fail bracket creation if match sync fails
       }
       
       console.log(`Bracket created successfully: ${bracketId}`);
@@ -143,7 +147,7 @@ export class SimpleBracketCreationService {
     } catch (error: any) {
       console.error('Bracket creation failed:', error);
       
-      // Clean up bracket record if it was created
+      // Clean up bracket record if it was created (bracketId now in scope)
       try {
         await supabase.from('brackets').delete().eq('id', bracketId);
       } catch (cleanupError) {
