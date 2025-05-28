@@ -6,7 +6,6 @@ import BracketForm, { BracketFormValues } from "./BracketForm";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { BracketFormat } from "@/constants/brackets";
-import { SimpleBracketCreationService } from "@/services/brackets/services/SimpleBracketCreationService";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 
@@ -33,76 +32,23 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("BracketCreationDialog: Starting bracket creation with SimpleBracketCreationService");
+      console.warn("TODO: wire to ChallongeService in Phase-3");
       
-      // Convert to BracketFormData for validation
-      const bracketFormData: BracketFormData = {
-        title: data.title,
-        divisionId: data.divisionId || '',
-        format: data.format,
-        teams: data.teams
-      };
-      
-      // Final validation before submission
-      const validation = BracketValidationService.validateForSubmission(bracketFormData);
-      if (!validation.isValid) {
-        console.error("BracketCreationDialog: Validation failed:", validation.errors);
-        toast({
-          title: "Validation Error",
-          description: validation.errors[0],
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Type assertion for divisionId since validation passed
-      const divisionId = data.divisionId as string;
-      
-      console.log('BracketCreationDialog: Creating bracket with validated data using SimpleBracketCreationService');
-      
-      const bracketId = await SimpleBracketCreationService.createBracket(
-        data.format as BracketFormat,
-        data.title,
-        divisionId,
-        data.teams
-      );
-      
-      console.log('BracketCreationDialog: Bracket created successfully with ID:', bracketId);
-      
+      // Show user that this feature is not yet implemented
       toast({
-        title: "Bracket Created",
-        description: `The ${data.format} bracket has been created successfully.`
+        title: "Feature Not Available",
+        description: "Bracket creation via Challonge not yet implemented.",
+        variant: "destructive"
       });
       
-      if (onBracketCreated) {
-        onBracketCreated(bracketId);
-      }
-      
-      onOpenChange(false);
-      navigate(`/playoffs?bracketId=${bracketId}`);
+      return;
       
     } catch (error: any) {
-      console.error("BracketCreationDialog: Error creating bracket with SimpleBracketCreationService:", error);
-      
-      let errorMessage = "An unexpected error occurred";
-      let errorTitle = "Bracket Creation Failed";
-      
-      if (error.message.includes('Teams not found')) {
-        errorTitle = "Teams Not Found";
-        errorMessage = "Some selected teams no longer exist. Please refresh and try again.";
-      } else if (error.message.includes('Division not found')) {
-        errorTitle = "Division Not Found";
-        errorMessage = "The selected division no longer exists. Please refresh and try again.";
-      } else if (error.message.includes('validation failed')) {
-        errorTitle = "Data Validation Error";
-        errorMessage = "Invalid data detected. Please check your selections and try again.";
-      } else {
-        errorMessage = error.message;
-      }
+      console.error("BracketCreationDialog: Error creating bracket:", error);
       
       toast({
-        title: errorTitle,
-        description: errorMessage,
+        title: "Bracket Creation Failed",
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
     } finally {

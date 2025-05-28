@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PlayoffMatch, PlayoffGame } from "@/types/playoffs";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
-import { BracketService } from "@/services/BracketService";
+import { updateMatchScore } from '@/services/brackets/legacyStub';
 
 export const usePlayoffEditMatch = () => {
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
@@ -67,8 +67,8 @@ export const usePlayoffEditMatch = () => {
         winner: g.team1Score > g.team2Score ? 'team1Score' : 'team2Score'
       }));
       
-      // Use the BracketService to update the match
-      await BracketService.updateMatchScore(
+      // Use the legacy stub (will reject until Challonge is implemented)
+      await updateMatchScore(
         matchId,
         winnerId,
         team1Score,
