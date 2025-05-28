@@ -4,6 +4,7 @@ import { BracketFormat, BRACKET_FORMATS } from '@/constants/brackets';
 import { supabase } from "@/integrations/supabase/client";
 import { BracketValidationService } from '../validation/BracketValidationService';
 import { isValidUUID } from '@/utils/validation';
+import { assertValidUuid, validateUuidArray } from '@/utils/uuidValidation';
 import { manager } from '../BracketsManagerInstance';
 
 // Define participant structure that's compatible with brackets-manager
@@ -24,47 +25,43 @@ export class SimpleBracketCreationService {
       format, name, divisionId, teamCount: teamIds.length, teamIds
     });
 
-    // Validation
-    if (!name?.trim()) {
-      throw new Error('Bracket name is required');
-    }
-
-    if (!divisionId || !isValidUUID(divisionId)) {
-      throw new Error('Valid division ID is required');
-    }
-
-    if (!Array.isArray(teamIds) || teamIds.length < 2) {
-      throw new Error('At least 2 teams are required');
-    }
-
-    // Validate team IDs
-    teamIds.forEach((teamId, index) => {
-      if (!teamId || !isValidUUID(teamId)) {
-        throw new Error(`Team ID at position ${index + 1} is invalid: ${teamId}`);
-      }
-    });
-
-    const teamValidation = BracketValidationService.validateTeamSelection(teamIds);
-    if (!teamValidation.isValid) {
-      throw new Error(`Team validation failed: ${teamValidation.errors.join(', ')}`);
-    }
-
-    const bracketId = uuidv4();
-    
     try {
+      // Validation with enhanced UUID checking
+      if (!name?.trim()) {
+        throw new Error('Bracket name is required');
+      }
+
+      // Validate division ID
+      assertValidUuid(divisionId, 'divisionId');
+
+      if (!Array.isArray(teamIds) || teamIds.length < 2) {
+        throw new Error('At least 2 teams are required');
+      }
+
+      // Validate all team IDs
+      const validatedTeamIds = validateUuidArray(teamIds, 'teamIds');
+
+      // Additional business logic validation
+      const teamValidation = BracketValidationService.validateTeamSelection(validatedTeamIds);
+      if (!teamValidation.isValid) {
+        throw new Error(`Team validation failed: ${teamValidation.errors.join(', ')}`);
+      }
+
+      const bracketId = uuidv4();
+      
       // Verify teams exist
       const { data: existingTeams, error: teamsError } = await supabase
         .from('teams')
         .select('id, name, division_id')
-        .in('id', teamIds);
+        .in('id', validatedTeamIds);
       
       if (teamsError) {
         throw new Error(`Failed to verify teams: ${teamsError.message}`);
       }
       
-      if (!existingTeams || existingTeams.length !== teamIds.length) {
+      if (!existingTeams || existingTeams.length !== validatedTeamIds.length) {
         const foundIds = existingTeams?.map(t => t.id) || [];
-        const missingIds = teamIds.filter(id => !foundIds.includes(id));
+        const missingIds = validatedTeamIds.filter(id => !foundIds.includes(id));
         throw new Error(`Teams not found: ${missingIds.join(', ')}`);
       }
       
@@ -94,7 +91,7 @@ export class SimpleBracketCreationService {
       }
       
       // Create tournament stage with validated participants only
-      const participantEntries = await this.fetchTeamParticipants(teamIds, bracketId);
+      const participantEntries = await this.fetchTeamParticipants(validatedTeamIds, bracketId);
       console.log('Raw participant entries:', participantEntries);
       
       // Filter out null values and validate participants before creating tournament
@@ -119,8 +116,9 @@ export class SimpleBracketCreationService {
     } catch (error: any) {
       console.error('Bracket creation failed:', error);
       
-      // Clean up bracket record
+      // Clean up bracket record if it was created
       try {
+        const bracketId = error.bracketId || uuidv4(); // Use the bracketId if available
         await supabase.from('brackets').delete().eq('id', bracketId);
       } catch (cleanupError) {
         console.error('Failed to cleanup bracket record:', cleanupError);
@@ -131,6 +129,10 @@ export class SimpleBracketCreationService {
   }
 
   private static async fetchTeamParticipants(teamIds: string[], bracketId: string): Promise<ParticipantEntry[]> {
+    // Validate inputs before proceeding
+    assertValidUuid(bracketId, 'bracketId');
+    validateUuidArray(teamIds, 'teamIds');
+    
     const { data, error } = await supabase
       .from('teams')
       .select('id, name')
@@ -166,28 +168,21 @@ export class SimpleBracketCreationService {
         return false;
       }
       
-      // Validate required properties
-      if (!participant.id || typeof participant.id !== 'string') {
-        console.warn('Skipping participant with invalid id:', participant);
+      // Validate required properties using our new validation functions
+      try {
+        assertValidUuid(participant.id, 'participant.id');
+        assertValidUuid(participant.tournament_id, 'participant.tournament_id');
+        
+        if (!participant.name || typeof participant.name !== 'string') {
+          console.warn('Skipping participant with invalid name:', participant);
+          return false;
+        }
+        
+        return true;
+      } catch (error) {
+        console.warn('Skipping invalid participant:', error instanceof Error ? error.message : String(error));
         return false;
       }
-      
-      if (!isValidUUID(participant.id)) {
-        console.warn('Skipping participant with invalid UUID:', participant.id);
-        return false;
-      }
-      
-      if (!participant.name || typeof participant.name !== 'string') {
-        console.warn('Skipping participant with invalid name:', participant);
-        return false;
-      }
-      
-      if (!participant.tournament_id || !isValidUUID(participant.tournament_id)) {
-        console.warn('Skipping participant with invalid tournament_id:', participant);
-        return false;
-      }
-      
-      return true;
     });
     
     console.log(`Filtered ${participants.length} participants down to ${validParticipants.length} valid ones`);

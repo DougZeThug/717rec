@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UseFormReturn } from "react-hook-form";
 import { BracketFormValues } from "./BracketFormSchema";
 import { AlertCircle } from "lucide-react";
-import { isValidUUID } from "@/utils/validation";
+import { isValidUuidSafe } from "@/utils/uuidValidation";
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<BracketFormValues>;
@@ -22,7 +22,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
   const validDivisions = Array.isArray(divisions) ? divisions.filter(division => 
     division && 
     division.id && 
-    isValidUUID(division.id) && 
+    isValidUuidSafe(division.id) && 
     division.name && 
     typeof division.name === 'string'
   ) : [];
@@ -36,8 +36,8 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
       return;
     }
     
-    // Validate the selected value
-    if (!isValidUUID(value)) {
+    // Validate the selected value using our new validation
+    if (!isValidUuidSafe(value)) {
       console.error('Invalid division ID format:', value);
       return;
     }
