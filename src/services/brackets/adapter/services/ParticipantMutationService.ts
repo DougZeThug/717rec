@@ -35,9 +35,9 @@ export class ParticipantMutationService {
         return 0;
       }
       
-      // Enrich participants with defaults - FIXED: use null-safe logic for tournament_id
+      // Enrich participants with defaults - use null-safe logic for tournament_id
       const enrichedParticipants = validParticipants.map(p => {
-        // FIXED: Ensure tournament_id is either a valid UUID or null
+        // Ensure tournament_id is either a valid UUID or null
         let tournamentId = null;
         if (p.tournament_id) {
           assertValidUuid(p.tournament_id, 'tournament_id');
@@ -112,7 +112,7 @@ export class ParticipantMutationService {
         return 0;
       }
       
-      // FIXED: Use null-safe logic for tournament_id
+      // Use null-safe logic for tournament_id
       let tournamentId = null;
       if (data.tournament_id) {
         assertValidUuid(data.tournament_id, 'tournament_id');

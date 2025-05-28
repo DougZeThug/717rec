@@ -278,7 +278,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           // Build query only with valid tournament ID
           let query = supabase.from('playoff_matches').select('*');
           
-          // FIXED: Use conditional logic instead of empty string fallback
+          // Use conditional logic instead of empty string fallback
           if (filter && 'stage_id' in filter && filter.stage_id && isValidUuidSafe(filter.stage_id as string)) {
             query = query.eq('bracket_id', filter.stage_id as string);
           }
@@ -311,7 +311,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           let participantQuery = supabase.from('participants').select('*');
           
           if (filter) {
-            // FIXED: Use conditional logic instead of empty string fallback
+            // Use conditional logic instead of empty string fallback
             if ('tournament_id' in filter && filter.tournament_id && isValidUuidSafe(filter.tournament_id as string)) {
               participantQuery = participantQuery.eq('tournament_id', filter.tournament_id as string);
             }

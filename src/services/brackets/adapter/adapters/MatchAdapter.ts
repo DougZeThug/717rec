@@ -125,7 +125,7 @@ export class MatchAdapter {
    * @private
    */
   private applyMatchFilters(query: any, filter: MatchFilter) {
-    // Apply filters if provided - FIXED: Use conditional logic instead of || ''
+    // Apply filters if provided - use conditional logic instead of || ''
     if (filter.id) {
       if (Array.isArray(filter.id)) {
         query = query.in('id', filter.id);
