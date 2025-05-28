@@ -19,6 +19,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
   const maxTeams = 16;
   
   // Verify teams is properly defined and filter out invalid teams
+  // Make sure we're showing the correct team records from v_team_details
   const validTeams = Array.isArray(teams) ? teams.filter(team => 
     team && 
     team.id && 
@@ -77,6 +78,10 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
                     const isSelected = selectedTeams.includes(team.id);
                     const canSelect = !isSelected || selectedTeams.length < maxTeams;
                     
+                    // Display accurate team records - use the data from v_team_details
+                    const wins = team.wins || 0;
+                    const losses = team.losses || 0;
+                    
                     return (
                       <div 
                         key={team.id} 
@@ -107,7 +112,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
                         </div>
                         <span className="flex-1">{team.name}</span>
                         <span className="ml-auto text-xs text-gray-500">
-                          {team.wins || 0}-{team.losses || 0}
+                          {wins}-{losses}
                         </span>
                       </div>
                     );

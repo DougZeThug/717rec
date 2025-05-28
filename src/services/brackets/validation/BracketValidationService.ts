@@ -1,5 +1,5 @@
 
-import { BracketFormValues } from '@/components/playoffs/form/BracketFormSchema';
+import { BracketFormData } from '../types/BracketFormData';
 import { isValidUUID } from '@/utils/validation';
 
 export interface ValidationResult {
@@ -12,7 +12,7 @@ export interface TeamValidationResult extends ValidationResult {
 }
 
 // Type guard to ensure we have valid form data
-const isValidBracketFormData = (data: unknown): data is BracketFormValues => {
+const isValidBracketFormData = (data: unknown): data is BracketFormData => {
   return (
     data &&
     typeof data === 'object' &&
@@ -21,7 +21,7 @@ const isValidBracketFormData = (data: unknown): data is BracketFormValues => {
     'format' in data &&
     'teams' in data &&
     typeof (data as any).title === 'string' &&
-    (typeof (data as any).divisionId === 'string' || (data as any).divisionId === undefined) &&
+    typeof (data as any).divisionId === 'string' &&
     typeof (data as any).format === 'string' &&
     Array.isArray((data as any).teams)
   );
@@ -47,7 +47,7 @@ export class BracketValidationService {
       errors.push('Title is required and cannot be empty');
     }
 
-    // Division validation - handle undefined/empty values
+    // Division validation
     if (!data.divisionId) {
       errors.push('Division selection is required');
     } else if (typeof data.divisionId !== 'string') {
@@ -121,7 +121,7 @@ export class BracketValidationService {
   /**
    * Sanitizes form data to prevent invalid submissions
    */
-  static sanitizeFormData(data: unknown): BracketFormValues {
+  static sanitizeFormData(data: unknown): BracketFormData {
     console.log('BracketValidationService.sanitizeFormData called with:', data);
     
     // Type guard check
@@ -131,7 +131,7 @@ export class BracketValidationService {
     
     const sanitized = {
       title: (data.title || '').trim(),
-      divisionId: data.divisionId && typeof data.divisionId === 'string' ? data.divisionId.trim() : undefined,
+      divisionId: data.divisionId && typeof data.divisionId === 'string' ? data.divisionId.trim() : '',
       format: data.format,
       teams: Array.isArray(data.teams) 
         ? data.teams.filter(id => id && typeof id === 'string' && id.trim() !== '' && isValidUUID(id))
@@ -139,7 +139,7 @@ export class BracketValidationService {
     };
 
     console.log('Sanitized data:', sanitized);
-    return sanitized as BracketFormValues;
+    return sanitized as BracketFormData;
   }
 
   /**

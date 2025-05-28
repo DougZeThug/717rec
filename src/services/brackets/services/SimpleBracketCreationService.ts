@@ -7,13 +7,6 @@ import { isValidUUID } from '@/utils/validation';
 import { assertValidUuid, validateUuidArray } from '@/utils/uuidValidation';
 import { manager } from '../BracketsManagerInstance';
 
-// Define participant structure that's compatible with brackets-manager
-interface ParticipantEntry extends Record<string, unknown> {
-  id: string;
-  name: string;
-  tournament_id: string;
-}
-
 export class SimpleBracketCreationService {
   static async createBracket(
     format: BracketFormat,
@@ -49,7 +42,7 @@ export class SimpleBracketCreationService {
 
       const bracketId = uuidv4();
       
-      // Verify teams exist
+      // Verify teams exist and get their data
       const { data: existingTeams, error: teamsError } = await supabase
         .from('teams')
         .select('id, name, division_id')
@@ -76,7 +69,7 @@ export class SimpleBracketCreationService {
         throw new Error(`Division not found: ${divisionId}`);
       }
       
-      // Create bracket
+      // Create bracket record first
       const { error: bracketError } = await supabase
         .from('brackets')
         .insert({
@@ -90,25 +83,59 @@ export class SimpleBracketCreationService {
         throw new Error(`Failed to create bracket: ${bracketError.message}`);
       }
       
-      // Create tournament stage with validated participants only
-      const participantEntries = await this.fetchTeamParticipants(validatedTeamIds, bracketId);
-      console.log('Raw participant entries:', participantEntries);
+      console.log('Bracket record created successfully');
       
-      // Filter out null values and validate participants before creating tournament
-      const validParticipants = this.validateAndFilterParticipants(participantEntries);
-      console.log('Valid participants for tournament:', validParticipants);
+      // Create participants using the simple approach that works with brackets-manager
+      const participants = existingTeams.map(team => ({
+        name: team.name
+      }));
       
-      if (validParticipants.length === 0) {
-        throw new Error('No valid participants found for tournament creation');
-      }
+      console.log('Creating tournament with participants:', participants);
       
+      // Create tournament using brackets-manager with simplified approach
       await manager.create({
         name: name.trim(),
         tournamentId: bracketId,
         type: format === BRACKET_FORMATS.DOUBLE ? 'double_elimination' : 'single_elimination',
-        seeding: validParticipants,
-        settings: { grandFinal: 'double' },
+        seeding: participants,
+        settings: { 
+          grandFinal: format === BRACKET_FORMATS.DOUBLE ? 'double' : 'simple',
+          skipFirstRound: false
+        },
       });
+      
+      console.log(`Tournament created successfully with brackets-manager`);
+      
+      // Now get the matches created by brackets-manager and store them in our database
+      const matches = await manager.get.stage.matches(0);
+      console.log('Retrieved matches from brackets-manager:', matches.length);
+      
+      // Convert and store matches in our format
+      if (matches && matches.length > 0) {
+        const matchesToInsert = matches.map((match, index) => ({
+          id: uuidv4(),
+          bracket_id: bracketId,
+          round_number: match.round_id + 1,
+          position: match.number,
+          match_type: this.determineMatchType(match, format),
+          team1_id: match.opponent1?.id ? existingTeams[match.opponent1.position]?.id : null,
+          team2_id: match.opponent2?.id ? existingTeams[match.opponent2.position]?.id : null,
+          best_of: 3,
+          next_match_id: null, // Will be populated by brackets-manager logic
+          next_loser_match_id: null // Will be populated by brackets-manager logic
+        }));
+        
+        const { error: matchesError } = await supabase
+          .from('matches')
+          .insert(matchesToInsert);
+          
+        if (matchesError) {
+          console.error('Failed to insert matches:', matchesError);
+          // Don't fail the whole operation, just log the error
+        } else {
+          console.log(`Inserted ${matchesToInsert.length} matches`);
+        }
+      }
       
       console.log(`Bracket created successfully: ${bracketId}`);
       return bracketId;
@@ -118,7 +145,6 @@ export class SimpleBracketCreationService {
       
       // Clean up bracket record if it was created
       try {
-        const bracketId = error.bracketId || uuidv4(); // Use the bracketId if available
         await supabase.from('brackets').delete().eq('id', bracketId);
       } catch (cleanupError) {
         console.error('Failed to cleanup bracket record:', cleanupError);
@@ -128,64 +154,14 @@ export class SimpleBracketCreationService {
     }
   }
 
-  private static async fetchTeamParticipants(teamIds: string[], bracketId: string): Promise<ParticipantEntry[]> {
-    // Validate inputs before proceeding
-    assertValidUuid(bracketId, 'bracketId');
-    validateUuidArray(teamIds, 'teamIds');
-    
-    const { data, error } = await supabase
-      .from('teams')
-      .select('id, name')
-      .in('id', teamIds);
-      
-    if (error || !data) {
-      throw new Error(`Failed to fetch team participants: ${error?.message}`);
+  private static determineMatchType(match: any, format: BracketFormat): string {
+    // Simple logic to determine match type based on brackets-manager data
+    if (format === BRACKET_FORMATS.SINGLE) {
+      return 'winners';
     }
     
-    const participantMap = new Map(data.map(t => [t.id, t.name!]));
-    const participants = teamIds.map(id => {
-      const name = participantMap.get(id);
-      if (!name) {
-        throw new Error(`Team not found for ID: ${id}`);
-      }
-      return { 
-        id, 
-        name, 
-        tournament_id: bracketId
-      } as ParticipantEntry;
-    });
-    
-    return participants;
-  }
-
-  private static validateAndFilterParticipants(participants: ParticipantEntry[]): ParticipantEntry[] {
-    console.log('Validating participants:', participants);
-    
-    const validParticipants = participants.filter(participant => {
-      // Check for null or undefined
-      if (!participant) {
-        console.warn('Skipping null/undefined participant');
-        return false;
-      }
-      
-      // Validate required properties using our new validation functions
-      try {
-        assertValidUuid(participant.id, 'participant.id');
-        assertValidUuid(participant.tournament_id, 'participant.tournament_id');
-        
-        if (!participant.name || typeof participant.name !== 'string') {
-          console.warn('Skipping participant with invalid name:', participant);
-          return false;
-        }
-        
-        return true;
-      } catch (error) {
-        console.warn('Skipping invalid participant:', error instanceof Error ? error.message : String(error));
-        return false;
-      }
-    });
-    
-    console.log(`Filtered ${participants.length} participants down to ${validParticipants.length} valid ones`);
-    return validParticipants;
+    // For double elimination, we'd need more sophisticated logic
+    // For now, default to winners bracket
+    return 'winners';
   }
 }

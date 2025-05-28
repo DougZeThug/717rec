@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { BracketFormat } from "@/constants/brackets";
 import { SimpleBracketCreationService } from "@/services/brackets/services/SimpleBracketCreationService";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
+import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 
 interface BracketCreationDialogProps {
   open: boolean;
@@ -34,8 +35,16 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       setIsSubmitting(true);
       console.log("BracketCreationDialog: Starting bracket creation with SimpleBracketCreationService");
       
+      // Convert to BracketFormData for validation
+      const bracketFormData: BracketFormData = {
+        title: data.title,
+        divisionId: data.divisionId || '',
+        format: data.format,
+        teams: data.teams
+      };
+      
       // Final validation before submission
-      const validation = BracketValidationService.validateForSubmission(data);
+      const validation = BracketValidationService.validateForSubmission(bracketFormData);
       if (!validation.isValid) {
         console.error("BracketCreationDialog: Validation failed:", validation.errors);
         toast({

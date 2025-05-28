@@ -5,18 +5,19 @@ import { useState, useCallback } from "react";
 import { bracketFormSchema, BracketFormValues } from "../BracketFormSchema";
 import { BRACKET_FORMATS } from "@/constants/brackets";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
+import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 
 interface UseBracketFormStateProps {
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
 }
 
 // Type guard to ensure we have valid form data
-const isValidFormData = (data: any): data is BracketFormValues => {
+const isValidFormData = (data: any): data is BracketFormData => {
   return (
     data &&
     typeof data === 'object' &&
     typeof data.title === 'string' &&
-    (typeof data.divisionId === 'string' || data.divisionId === undefined) &&
+    typeof data.divisionId === 'string' &&
     typeof data.format === 'string' &&
     Array.isArray(data.teams)
   );
@@ -25,12 +26,12 @@ const isValidFormData = (data: any): data is BracketFormValues => {
 export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const [isFormValid, setIsFormValid] = useState(false);
   
-  // Initialize form with proper default values (undefined instead of empty strings)
+  // Initialize form with proper default values
   const form = useForm<BracketFormValues>({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
       title: "",
-      divisionId: undefined, // Keep as undefined to prevent empty string issues
+      divisionId: undefined,
       format: BRACKET_FORMATS.SINGLE,
       teams: []
     },
@@ -41,27 +42,29 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const validateForm = useCallback((data: unknown) => {
     console.log("Validating form data:", data);
     
+    // Convert form data to BracketFormData format for validation
+    const formData = data as any;
+    const bracketFormData: BracketFormData = {
+      title: formData.title || '',
+      divisionId: formData.divisionId || '',
+      format: formData.format || BRACKET_FORMATS.SINGLE,
+      teams: formData.teams || []
+    };
+    
     // Type guard check
-    if (!isValidFormData(data)) {
+    if (!isValidFormData(bracketFormData)) {
       console.error('Invalid form data structure:', data);
       setIsFormValid(false);
       return { isValid: false, errors: ["Invalid form data structure"] };
     }
     
-    // Explicit check for empty strings in divisionId
-    if (data.divisionId === "" || (typeof data.divisionId === 'string' && data.divisionId.trim() === '')) {
-      console.error('Empty string detected in divisionId:', data.divisionId);
-      setIsFormValid(false);
-      return { isValid: false, errors: ["Division cannot be empty"] };
-    }
-    
     // Only validate if we have the required fields
-    if (!data.title || !data.divisionId || !data.teams?.length) {
+    if (!bracketFormData.title || !bracketFormData.divisionId || !bracketFormData.teams?.length) {
       setIsFormValid(false);
       return { isValid: false, errors: ["Missing required fields"] };
     }
     
-    const validation = BracketValidationService.validateForSubmission(data);
+    const validation = BracketValidationService.validateForSubmission(bracketFormData);
     console.log("Validation result:", validation);
     setIsFormValid(validation.isValid);
     return validation;
@@ -71,36 +74,22 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const handleSubmit = form.handleSubmit(async (data) => {
     console.log("Form submission started with data:", data);
     
-    // Type guard check for submission
-    if (!isValidFormData(data)) {
-      console.error('Invalid form data for submission:', data);
-      throw new Error('Invalid form data structure');
-    }
-    
-    // Explicit check for empty divisionId
-    if (!data.divisionId || data.divisionId === '' || data.divisionId.trim() === '') {
-      console.error('Division ID is empty, undefined, or whitespace:', data.divisionId);
-      throw new Error('Please select a division');
-    }
-    
-    // Check for empty team IDs
-    if (data.teams.some(teamId => !teamId || teamId.trim() === '')) {
-      console.error('One or more team IDs are empty');
-      throw new Error('Invalid team selection detected');
-    }
-    
-    // Additional safety check - ensure we don't have any empty strings before sanitization
-    const preValidation = {
+    // Convert to BracketFormData format
+    const bracketFormData: BracketFormData = {
       title: data.title,
-      divisionId: data.divisionId,
+      divisionId: data.divisionId || '',
       format: data.format,
       teams: data.teams
     };
     
-    console.log('Pre-validation data check:', preValidation);
+    // Type guard check for submission
+    if (!isValidFormData(bracketFormData)) {
+      console.error('Invalid form data for submission:', data);
+      throw new Error('Invalid form data structure');
+    }
     
     // Sanitize and validate
-    const sanitizedData = BracketValidationService.sanitizeFormData(data);
+    const sanitizedData = BracketValidationService.sanitizeFormData(bracketFormData);
     console.log("Sanitized data:", sanitizedData);
     
     const validation = BracketValidationService.validateForSubmission(sanitizedData);
@@ -111,7 +100,7 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
     }
     
     console.log('Form validation passed, submitting:', sanitizedData);
-    await onSubmit(sanitizedData);
+    await onSubmit(data); // Submit original form data
   });
   
   return {
