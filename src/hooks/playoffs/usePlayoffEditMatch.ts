@@ -4,13 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 import { PlayoffMatch, PlayoffGame } from "@/types/playoffs";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
-import { updateMatchScore } from '@/services/brackets/legacyStub';
+import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 
 export const usePlayoffEditMatch = () => {
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
   const [isQuickEdit, setIsQuickEdit] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { reportMatch } = useChallongeAdmin();
   
   const handleEditMatch = (matchId: string, quickEdit: boolean = false) => {
     // This function is intended to be used with a bracket object from the parent component
@@ -56,27 +57,16 @@ export const usePlayoffEditMatch = () => {
         throw new Error("Cannot determine winner");
       }
 
-      // Format the games for storage
-      const formattedGames: PlayoffGame[] = games.map((g, idx) => ({
-        id: `${matchId}-game-${idx + 1}`,
-        matchId,
-        gameNumber: idx + 1,
-        team1Score: g.team1Score,
-        team2Score: g.team2Score,
-        winnerId: g.team1Score > g.team2Score ? editingMatch?.team1Id : editingMatch?.team2Id,
-        winner: g.team1Score > g.team2Score ? 'team1Score' : 'team2Score'
-      }));
+      // Format scores for Challonge (CSV format: "score1-score2")
+      const scoresCsv = `${team1GameWins}-${team2GameWins}`;
       
-      // Use the legacy stub (will reject until Challonge is implemented)
-      await updateMatchScore(
+      // Report match to Challonge
+      await reportMatch.mutateAsync({
+        tournamentId: editingMatch?.bracketId || "", // Assuming bracketId is available
         matchId,
+        scoresCsv,
         winnerId,
-        team1Score,
-        team2Score,
-        team1GameWins,
-        team2GameWins,
-        formattedGames
-      );
+      });
       
       toast({
         title: "Score Saved",

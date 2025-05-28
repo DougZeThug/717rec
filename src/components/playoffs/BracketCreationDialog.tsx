@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { BracketFormat } from "@/constants/brackets";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
+import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 
 interface BracketCreationDialogProps {
   open: boolean;
@@ -27,28 +28,52 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { createBracket } = useChallongeAdmin();
   
-  // Handle form submission with enhanced validation and proper typing
+  // Handle form submission with Challonge integration
   const handleSubmit = async (data: BracketFormValues) => {
     try {
       setIsSubmitting(true);
-      console.warn("TODO: wire to ChallongeService in Phase-3");
       
-      // Show user that this feature is not yet implemented
-      toast({
-        title: "Feature Not Available",
-        description: "Bracket creation via Challonge not yet implemented.",
-        variant: "destructive"
+      // Validate the form data
+      const validation = BracketValidationService.validateFormData(data as BracketFormData);
+      if (!validation.isValid) {
+        toast({
+          title: "Validation Error",
+          description: validation.errors.join(", "),
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Map form data to Challonge format
+      const tournamentType = data.format === BracketFormat.SINGLE ? "single elimination" : "double elimination";
+      const selectedTeams = (teams || []).filter(team => data.selectedTeamIds.includes(team.id));
+      
+      // Create tournament via Challonge
+      const tournament = await createBracket.mutateAsync({
+        name: data.name,
+        tournamentType,
+        teams: selectedTeams.map(team => ({ id: team.id, name: team.name }))
       });
       
-      return;
+      toast({
+        title: "Bracket Created",
+        description: `Tournament "${data.name}" has been created successfully.`,
+      });
+      
+      // Close dialog and notify parent
+      onOpenChange(false);
+      if (onBracketCreated) {
+        onBracketCreated(tournament.id.toString());
+      }
       
     } catch (error: any) {
       console.error("BracketCreationDialog: Error creating bracket:", error);
       
       toast({
         title: "Bracket Creation Failed",
-        description: "An unexpected error occurred",
+        description: error?.message || "An unexpected error occurred",
         variant: "destructive"
       });
     } finally {
