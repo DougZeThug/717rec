@@ -1,9 +1,10 @@
-
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeamsData } from '@/hooks/useTeamsData';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
 export const usePlayoffData = () => {
@@ -16,19 +17,63 @@ export const usePlayoffData = () => {
   // Fetch teams data to populate teamsByDivision
   const { teams, isLoading: teamsLoading } = useTeamsData();
 
+  // Fetch brackets data from Supabase
+  const { data: brackets = [], isLoading: bracketsLoading, error: bracketsError, refetch: refetchBrackets } = useQuery({
+    queryKey: ['brackets'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('brackets')
+        .select(`
+          *,
+          divisions(*)
+        `);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Group brackets by division
+  const bracketsByDivision = useMemo(() => {
+    const grouped: Record<string, any[]> = {};
+    
+    if (divisions && brackets) {
+      // Initialize with empty arrays for each division
+      divisions.forEach(div => {
+        grouped[div.name] = [];
+      });
+      
+      // Group brackets by division name
+      brackets.forEach(bracket => {
+        const divisionName = bracket.divisions?.name;
+        if (divisionName && grouped[divisionName]) {
+          grouped[divisionName].push(bracket);
+        }
+      });
+    }
+    
+    return grouped;
+  }, [divisions, brackets]);
+
+  const handleBracketCreated = async () => {
+    await refetchBrackets();
+  };
+
   return useMemo(() => ({
-    brackets: [],  // Placeholder - would need implementation
-    bracketsLoading: vm.isLoading,
-    divisions: divisions || [],  // Use actual divisions data
-    divisionsLoading,  // Use actual loading state
-    teamsByDivision: groupTeamsByDivision(teams || []),  // Use real team data grouped by division
-    bracketsByDivision: {},  // Placeholder - would need implementation
-    handleBracketCreated: () => Promise.resolve(),  // Placeholder
+    brackets: brackets || [],
+    bracketsLoading,
+    divisions: divisions || [],
+    divisionsLoading,
+    teamsByDivision: groupTeamsByDivision(teams || []),
+    bracketsByDivision,
+    handleBracketCreated,
     handleTeamDivisionChange: () => Promise.resolve(),  // Placeholder
-    refetchBrackets: () => Promise.resolve(), // Fix: provide a valid refetch function
-    teams: teams || [],  // Also expose teams directly
-    teamsLoading,  // Expose teams loading state
-  }), [vm, divisions, divisionsLoading, teams, teamsLoading]);
+    refetchBrackets,
+    teams: teams || [],
+    teamsLoading,
+    error: bracketsError,
+    isLoading: bracketsLoading || divisionsLoading || teamsLoading,
+  }), [vm, divisions, divisionsLoading, teams, teamsLoading, brackets, bracketsLoading, bracketsByDivision, refetchBrackets, bracketsError]);
 };
 
 /**
