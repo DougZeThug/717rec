@@ -3,24 +3,22 @@ import React from "react";
 import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
 import PlayoffDialogs from "@/components/playoffs/dialogs/PlayoffDialogs";
+import { PlayoffViewSelector } from "./PlayoffViewSelector";
 import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
+import { useViewSelection } from "../hooks/useViewSelection";
+import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
+import { usePlayoffViewState } from "../hooks/usePlayoffViewState";
 import { PlayoffPageData } from "../hooks/usePlayoffPageData";
-import { PlayoffHandlers } from "../hooks/usePlayoffHandlers";
-import { PlayoffViewState } from "../hooks/usePlayoffViewState";
 
 interface PlayoffPageLayoutProps {
   data: PlayoffPageData;
-  view: PlayoffViewState;
-  handlers: PlayoffHandlers;
-  children: React.ReactNode;
 }
 
-const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({
-  data,
-  view,
-  handlers,
-  children
-}) => {
+const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
+  const handlers = usePlayoffHandlers(data);
+  const view = usePlayoffViewState(data, handlers);
+  const selectedView = useViewSelection(data);
+  
   // Subscribe to real-time updates for the selected bracket
   const { realtimeEnabled, lastUpdatedMatch } = usePlayoffRealtime(data.selectedBracketId);
   
@@ -39,7 +37,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({
           onOpenTeamDialog={() => view.setTeamDialogOpen(true)} 
         />
         
-        {children}
+        <PlayoffViewSelector view={selectedView} />
         
         {/* Realtime indicator */}
         <RealtimeIndicator enabled={!!realtimeEnabled && !!data.selectedBracketId} />

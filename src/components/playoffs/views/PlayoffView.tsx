@@ -1,54 +1,30 @@
 
 import React from "react";
 import PlayoffPageContent from "@/components/playoffs/PlayoffPageContent";
-import { PlayoffBracket, Team } from "@/types";
+import { usePlayoffPageData } from "../hooks/usePlayoffPageData";
+import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
+import { usePlayoffViewState } from "../hooks/usePlayoffViewState";
 
-interface PlayoffViewProps {
-  availableDivisions: string[];
-  bracketsByDivision: Record<string, PlayoffBracket[]>;
-  selectedBracketId: string | null;
-  bracket: PlayoffBracket | null;
-  teams: Team[];
-  bracketLoading: boolean;
-  allBracketsData: PlayoffBracket[];
-  isLoading: boolean;
-  onCreateBracket: () => void;
-  onViewBracket: (id: string) => void;
-  onEditBracket: () => void;
-  onEditMatch: (matchId: string) => void;
-  onDeleteBracket?: (id: string, name: string) => void;
-}
+const PlayoffView: React.FC = () => {
+  const data = usePlayoffPageData();
+  const handlers = usePlayoffHandlers(data);
+  const view = usePlayoffViewState(data, handlers);
 
-const PlayoffView: React.FC<PlayoffViewProps> = ({
-  availableDivisions,
-  bracketsByDivision,
-  selectedBracketId,
-  bracket,
-  teams,
-  bracketLoading,
-  allBracketsData,
-  isLoading,
-  onCreateBracket,
-  onViewBracket,
-  onEditBracket,
-  onEditMatch,
-  onDeleteBracket
-}) => {
   return (
     <PlayoffPageContent
-      availableDivisions={availableDivisions}
-      bracketsByDivision={bracketsByDivision}
-      selectedBracketId={selectedBracketId}
-      bracket={bracket}
-      teams={teams}
-      bracketLoading={bracketLoading}
-      allBracketsData={allBracketsData}
-      isLoading={isLoading}
-      onCreateBracket={onCreateBracket}
-      onViewBracket={onViewBracket}
-      onEditBracket={onEditBracket}
-      onEditMatch={onEditMatch}
-      onDeleteBracket={onDeleteBracket}
+      availableDivisions={data.availableDivisions}
+      bracketsByDivision={data.typesafeBracketsByDivision}
+      selectedBracketId={data.selectedBracketId}
+      bracket={data.bracket}
+      teams={data.teams}
+      bracketLoading={data.isLoading}
+      allBracketsData={data.allBracketsData}
+      isLoading={data.isLoading}
+      onCreateBracket={view.handleCreateBracket}
+      onViewBracket={data.setSelectedBracketId}
+      onEditBracket={view.handleCreateBracket}
+      onEditMatch={handlers.handleEditMatchClick}
+      onDeleteBracket={data.isAdmin ? view.handleDeleteBracket : undefined}
     />
   );
 };
