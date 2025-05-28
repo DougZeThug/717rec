@@ -1,4 +1,3 @@
-
 import { SimpleBracketCreationService } from '@/services/brackets/services/SimpleBracketCreationService';
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
@@ -74,6 +73,7 @@ export const deleteBracket = async (id: string) => {
 
 /** 
  * Create a double-elimination stage 
+ * @deprecated Use ChallongeService instead
  */
 export async function createDoubleElimStage(
   bracketId: string,
@@ -81,31 +81,12 @@ export async function createDoubleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  try {
-    // Get the division from the first team
-    if (!teams.length) {
-      throw new Error('No teams provided');
-    }
-
-    const divisionId = teams[0].division_id;
-    if (!divisionId) {
-      throw new Error('Teams must have a division ID');
-    }
-
-    await SimpleBracketCreationService.createBracket(
-      BRACKET_FORMATS.DOUBLE,
-      name,
-      divisionId,
-      teams.map(t => t.id)
-    );
-  } catch (error) {
-    console.error('Error creating double elimination stage:', error);
-    throw new Error(`Failed to create double elimination stage: ${error instanceof Error ? error.message : String(error)}`);
-  }
+  throw new Error('Legacy bracket creation deprecated - use ChallongeService instead');
 }
 
 /** 
  * Create a single-elimination stage 
+ * @deprecated Use ChallongeService instead
  */
 export async function createSingleElimStage(
   bracketId: string,
@@ -113,27 +94,7 @@ export async function createSingleElimStage(
   teams: Team[],
   bestOf = 3,
 ): Promise<void> {
-  try {
-    // Get the division from the first team
-    if (!teams.length) {
-      throw new Error('No teams provided');
-    }
-
-    const divisionId = teams[0].division_id;
-    if (!divisionId) {
-      throw new Error('Teams must have a division ID');
-    }
-
-    await SimpleBracketCreationService.createBracket(
-      BRACKET_FORMATS.SINGLE,
-      name,
-      divisionId,
-      teams.map(t => t.id)
-    );
-  } catch (error) {
-    console.error('Error creating single elimination stage:', error);
-    throw new Error(`Failed to create single elimination stage: ${error instanceof Error ? error.message : String(error)}`);
-  }
+  throw new Error('Legacy bracket creation deprecated - use ChallongeService instead');
 }
 
 /** 
@@ -168,6 +129,7 @@ export async function updateMatchResult(
 
 /** 
  * Create a Tournament Bracket
+ * @deprecated Use ChallongeService instead
  */
 export async function createTournamentBracket(
   bracketFormat: BracketFormat,
@@ -175,33 +137,7 @@ export async function createTournamentBracket(
   divisionId: string,
   teams: Team[]
 ): Promise<string> {
-  try {
-    if (!name?.trim()) {
-      throw new Error('Bracket name is required');
-    }
-
-    if (!divisionId) {
-      throw new Error('Division ID is required');
-    }
-
-    if (!teams.length) {
-      throw new Error('Teams are required');
-    }
-
-    const format: BracketFormat = Object.values(BRACKET_FORMATS).includes(bracketFormat as any) 
-      ? bracketFormat 
-      : BRACKET_FORMATS.SINGLE;
-      
-    return SimpleBracketCreationService.createBracket(
-      format,
-      name, 
-      divisionId, 
-      teams.map(t => t.id)
-    );
-  } catch (error) {
-    console.error('Error creating tournament bracket:', error);
-    throw new Error(`Failed to create tournament bracket: ${error instanceof Error ? error.message : String(error)}`);
-  }
+  throw new Error('Legacy bracket creation deprecated - use ChallongeService instead');
 }
 
 // Re-export for convenience
@@ -272,7 +208,7 @@ export async function fetchBracketById(bracketId: string) {
 
 // Export barrel
 export const BracketService = {
-  createBracket: SimpleBracketCreationService.createBracket,
+  createBracket: () => { throw new Error('Legacy bracket creation deprecated - use ChallongeService instead'); },
   deleteBracket,
   listBrackets,
   getBracketById,
