@@ -3,13 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { ChallongeService } from '@/services/ChallongeService';
 import { useChallongeBracket } from './useChallongeBracket';
 
-export function useChallongePublicBracket(tournamentId: number) {
-  const matches = useChallongeBracket(tournamentId);
+export function useChallongePublicBracket(tournamentId: number | string) {
+  const id = Number(tournamentId);
+  const matches = useChallongeBracket(id);
   
   const { data: participants } = useQuery({
-    queryKey: ['participants', tournamentId],
-    queryFn: () => ChallongeService.getParticipants(tournamentId.toString()),
-    enabled: !!tournamentId
+    queryKey: ['participants', id],
+    queryFn: () => ChallongeService.getParticipants(id.toString()),
+    enabled: !!id
   });
   
   return { 
