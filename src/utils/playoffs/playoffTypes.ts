@@ -6,7 +6,7 @@ export interface PlayoffBracket {
   division?: string;
   divisionId?: string;
   format: BracketFormat;
-  matches: PlayoffMatch[];
+  matches?: PlayoffMatch[];
   champion?: string;
   state: BracketState;
   created_at?: string;
