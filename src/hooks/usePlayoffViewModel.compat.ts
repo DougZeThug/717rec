@@ -46,5 +46,9 @@ export const usePlayoffBracketData = (bracketId: string) => {
   };
 };
 
-// Re-export the type
-export type { BracketMatchesByType } from '@/services/brackets/types';
+// Re-export the type from the brackets services
+export type BracketMatchesByType = {
+  winners: any[][];
+  losers: any[][];
+  finals: any[];
+};
