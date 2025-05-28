@@ -29,7 +29,7 @@ const isValidBracketFormData = (data: unknown): data is BracketFormData => {
 
 export class BracketValidationService {
   /**
-   * Validates complete bracket form data
+   * Validates complete bracket form data with simplified validation
    */
   static validateFormData(data: unknown): ValidationResult {
     const errors: string[] = [];
@@ -42,35 +42,27 @@ export class BracketValidationService {
       return { isValid: false, errors };
     }
 
-    // Title validation
-    if (!data.title || typeof data.title !== 'string' || data.title.trim() === '') {
-      errors.push('Title is required and cannot be empty');
+    // Title validation - simplified
+    if (!data.title || data.title.trim() === '') {
+      errors.push('Title is required');
     }
 
-    // Division validation
-    if (!data.divisionId) {
+    // Division validation - simplified to be less strict
+    if (!data.divisionId || data.divisionId.trim() === '') {
       errors.push('Division selection is required');
-    } else if (typeof data.divisionId !== 'string') {
-      errors.push('Division ID must be a string');
-    } else if (data.divisionId.trim() === '') {
-      errors.push('Division ID cannot be empty');
-    } else if (!isValidUUID(data.divisionId)) {
-      errors.push(`Selected division has invalid UUID format: ${data.divisionId}`);
     }
 
-    // Format validation
-    if (!data.format || typeof data.format !== 'string' || data.format.trim() === '') {
+    // Format validation - simplified
+    if (!data.format || data.format.trim() === '') {
       errors.push('Format selection is required');
     }
 
-    // Teams validation
-    if (!Array.isArray(data.teams) || data.teams.length === 0) {
+    // Teams validation - simplified
+    if (!Array.isArray(data.teams) || data.teams.length < 2) {
       errors.push('At least 2 teams must be selected');
-    } else if (data.teams.length < 2) {
-      errors.push('Minimum 2 teams required for bracket creation');
     }
 
-    console.log('Validation result:', { isValid: errors.length === 0, errors });
+    console.log('Simplified validation result:', { isValid: errors.length === 0, errors });
 
     return {
       isValid: errors.length === 0,
@@ -79,7 +71,7 @@ export class BracketValidationService {
   }
 
   /**
-   * Validates team selection array
+   * Validates team selection array with simplified logic
    */
   static validateTeamSelection(teamIds: unknown): TeamValidationResult {
     const errors: string[] = [];
@@ -92,19 +84,16 @@ export class BracketValidationService {
       return { isValid: false, invalidTeams: [], errors };
     }
 
+    if (teamIds.length < 2) {
+      errors.push('At least 2 teams must be selected');
+      return { isValid: false, invalidTeams, errors };
+    }
+
+    // Simplified team validation - just check that they're strings
     teamIds.forEach((teamId, index) => {
-      if (!teamId || typeof teamId !== 'string') {
+      if (!teamId || typeof teamId !== 'string' || teamId.trim() === '') {
         invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Empty or invalid team ID at position ${index + 1}`);
-      } else if (teamId.trim() === '') {
-        invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Empty team ID at position ${index + 1}`);
-      } else if (teamId === 'undefined' || teamId === 'null') {
-        invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Invalid team ID value at position ${index + 1}`);
-      } else if (!isValidUUID(teamId)) {
-        invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Invalid team ID format at position ${index + 1}: ${teamId}`);
+        errors.push(`Invalid team selection at position ${index + 1}`);
       }
     });
 
@@ -114,12 +103,12 @@ export class BracketValidationService {
       errors
     };
 
-    console.log('Team validation result:', result);
+    console.log('Simplified team validation result:', result);
     return result;
   }
 
   /**
-   * Sanitizes form data to prevent invalid submissions
+   * Sanitizes form data with simplified logic
    */
   static sanitizeFormData(data: unknown): BracketFormData {
     console.log('BracketValidationService.sanitizeFormData called with:', data);
@@ -131,10 +120,10 @@ export class BracketValidationService {
     
     const sanitized = {
       title: (data.title || '').trim(),
-      divisionId: data.divisionId && typeof data.divisionId === 'string' ? data.divisionId.trim() : '',
+      divisionId: (data.divisionId || '').trim(),
       format: data.format,
       teams: Array.isArray(data.teams) 
-        ? data.teams.filter(id => id && typeof id === 'string' && id.trim() !== '' && isValidUUID(id))
+        ? data.teams.filter(id => id && typeof id === 'string' && id.trim() !== '')
         : []
     };
 
@@ -143,26 +132,31 @@ export class BracketValidationService {
   }
 
   /**
-   * Comprehensive pre-submission validation
+   * Simplified pre-submission validation
    */
   static validateForSubmission(data: unknown): ValidationResult {
     console.log('BracketValidationService.validateForSubmission called with:', data);
     
-    const sanitizedData = this.sanitizeFormData(data);
-    const formValidation = this.validateFormData(sanitizedData);
-    
-    if (!formValidation.isValid) {
-      return formValidation;
-    }
+    try {
+      const sanitizedData = this.sanitizeFormData(data);
+      const formValidation = this.validateFormData(sanitizedData);
+      
+      if (!formValidation.isValid) {
+        return formValidation;
+      }
 
-    const teamValidation = this.validateTeamSelection(sanitizedData.teams);
-    if (!teamValidation.isValid) {
-      return {
-        isValid: false,
-        errors: teamValidation.errors
-      };
-    }
+      const teamValidation = this.validateTeamSelection(sanitizedData.teams);
+      if (!teamValidation.isValid) {
+        return {
+          isValid: false,
+          errors: teamValidation.errors
+        };
+      }
 
-    return { isValid: true, errors: [] };
+      return { isValid: true, errors: [] };
+    } catch (error) {
+      console.error('Validation error:', error);
+      return { isValid: false, errors: ['Validation failed'] };
+    }
   }
 }
