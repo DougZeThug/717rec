@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,19 @@ const groupBracketMatchesByType = (bracket: any): BracketMatchesByType => {
     finals: []
   };
 };
+
+// Normalization function to convert Supabase rows to PlayoffBracket objects
+const mapRowToBracket = (row: any): PlayoffBracket => ({
+  ...row,
+  /* default when Supabase row has no matches column */
+  matches: Array.isArray(row.matches) ? row.matches : [],
+  /* normalise state string to BracketState union */
+  state: row.state === 'underway' 
+    ? 'in_progress' as BracketState
+    : row.state === 'complete' 
+    ? 'finished' as BracketState
+    : 'pending' as BracketState,
+});
 
 /**
  * Unified hook for playoff bracket data and management
@@ -139,14 +153,12 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     queryFn: async () => {
       if (!bracketId) return null;
       
-      const bracket = await fetchBracketById(bracketId);
+      const row = await fetchBracketById(bracketId);
+      const bracket = mapRowToBracket(row);
       
       // Use playoff matches if available, otherwise fall back to regular matches
       if (bracket && playoffMatchesQuery.data) {
         bracket.matches = playoffMatchesQuery.data;
-      } else {
-        // Ensure matches field always exists
-        bracket.matches = bracket.matches ?? [];
       }
       
       // Calculate and update the bracket state if needed
@@ -160,7 +172,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
             .eq('id', bracketId);
           
           // Update the local state
-          bracket.state = calculatedState;
+          bracket.state = calculatedState as BracketState;
         }
       }
       
