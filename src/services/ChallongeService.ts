@@ -123,6 +123,21 @@ export class ChallongeService {
   }
   
   /**
+   * Gets participants for a tournament
+   */
+  static async getParticipants(tournamentId: string): Promise<ChallongeParticipant[]> {
+    const { data, error } = await supabase.functions.invoke("challonge", {
+      body: {
+        action: "getParticipants",
+        tournamentId,
+      }
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+  
+  /**
    * Updates a match with scores
    */
   static async updateMatch(params: UpdateMatchParams): Promise<ChallongeMatch> {
