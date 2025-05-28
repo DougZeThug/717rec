@@ -105,14 +105,17 @@ export class SimpleBracketCreationService {
       
       console.log(`Tournament created successfully with brackets-manager`);
       
-      // Try to get matches using the correct API method
+      // Try to get matches using the correct API method - use select instead of get.match
       try {
-        const matches = await manager.get.match({ stage_id: bracketId });
+        const matches = await manager.select.match.all();
         console.log('Retrieved matches from brackets-manager:', matches?.length || 0);
         
+        // Filter matches for this bracket/tournament
+        const bracketMatches = matches.filter(match => match.stage_id === bracketId);
+        
         // Convert and store matches in our format if any were created
-        if (matches && matches.length > 0) {
-          const matchesToInsert = matches.map((match, index) => ({
+        if (bracketMatches && bracketMatches.length > 0) {
+          const matchesToInsert = bracketMatches.map((match, index) => ({
             id: uuidv4(),
             bracket_id: bracketId,
             round_number: match.round_id + 1,
