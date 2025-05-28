@@ -1,3 +1,4 @@
+
 /**
  * Adapter that implements the CrudInterface for BracketsManager
  * This adapter conforms to the exact interface expected by BracketsManager
@@ -159,7 +160,7 @@ export class BracketsManagerAdapter implements CrudInterface {
             match_type: match.group_id ? 'losers' as PlayoffMatchType : 'winners' as PlayoffMatchType,
             team1_id: match.opponent1?.id || null,
             team2_id: match.opponent2?.id || null,
-            bracket_id: match.stage_id || null, // FIXED: use null instead of empty string
+            bracket_id: match.stage_id || null,
             winner_id: null,
             loser_id: null,
             best_of: match.best_of || 3,
@@ -284,7 +285,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           
           return data.map(match => ({
             id: match.id,
-            stage_id: match.bracket_id || null, // FIXED: use null instead of empty string
+            stage_id: match.bracket_id || null,
             group_id: match.match_type === 'losers' ? 'loser_bracket' : undefined,
             round: match.round,
             position: match.position,

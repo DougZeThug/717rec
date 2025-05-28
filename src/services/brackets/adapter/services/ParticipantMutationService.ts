@@ -8,7 +8,7 @@ import {
 } from '../types/ParticipantTypes';
 import { validateParticipantBatch } from '../utils/ParticipantValidationUtils';
 import { isValidUUID } from '@/utils/validation';
-import { assertValidUuidOrNull } from '@/utils/uuidValidation';
+import { assertValidUuid, assertValidUuidOrNull } from '@/utils/uuidValidation';
 
 /**
  * Service for modifying participants in the database
@@ -38,8 +38,14 @@ export class ParticipantMutationService {
       // Enrich participants with defaults - FIXED: use null-safe logic for tournament_id
       const enrichedParticipants = validParticipants.map(p => {
         // FIXED: Ensure tournament_id is either a valid UUID or null
-        const tournamentId = p.tournament_id || p.bracket_id || null;
-        assertValidUuidOrNull(tournamentId, 'tournament_id');
+        let tournamentId = null;
+        if (p.tournament_id) {
+          assertValidUuid(p.tournament_id, 'tournament_id');
+          tournamentId = p.tournament_id;
+        } else if (p.bracket_id) {
+          assertValidUuid(p.bracket_id, 'bracket_id as fallback tournament_id');
+          tournamentId = p.bracket_id;
+        }
         
         return {
           ...p,
@@ -107,7 +113,15 @@ export class ParticipantMutationService {
       }
       
       // FIXED: Use null-safe logic for tournament_id
-      const tournamentId = data.tournament_id || data.bracket_id || null;
+      let tournamentId = null;
+      if (data.tournament_id) {
+        assertValidUuid(data.tournament_id, 'tournament_id');
+        tournamentId = data.tournament_id;
+      } else if (data.bracket_id) {
+        assertValidUuid(data.bracket_id, 'bracket_id as fallback tournament_id');
+        tournamentId = data.bracket_id;
+      }
+      
       if (!tournamentId) {
         throw new ParticipantOperationError('Tournament or bracket ID is required for update');
       }
@@ -148,9 +162,18 @@ export class ParticipantMutationService {
           }
         }
         
-        if (filter.bracket_id) query = query.eq('bracket_id', filter.bracket_id);
-        if (filter.tournament_id) query = query.eq('tournament_id', filter.tournament_id);
-        if (filter.team_id) query = query.eq('team_id', filter.team_id);
+        if (filter.bracket_id) {
+          assertValidUuid(filter.bracket_id, 'filter.bracket_id');
+          query = query.eq('bracket_id', filter.bracket_id);
+        }
+        if (filter.tournament_id) {
+          assertValidUuid(filter.tournament_id, 'filter.tournament_id');
+          query = query.eq('tournament_id', filter.tournament_id);
+        }
+        if (filter.team_id) {
+          assertValidUuid(filter.team_id, 'filter.team_id');
+          query = query.eq('team_id', filter.team_id);
+        }
         if (filter.position !== undefined) query = query.eq('position', filter.position);
         if (filter.seeding !== undefined) query = query.eq('seeding', filter.seeding);
       }
@@ -180,9 +203,7 @@ export const ParticipantMutationServiceStatic = {
       return 0;
     }
     
-    if (!isValidUUID(bracketId)) {
-      throw new ParticipantOperationError(`Invalid bracket ID: ${bracketId}`);
-    }
+    assertValidUuid(bracketId, 'bracketId');
     
     const invalidTeamIds = teamIds.filter(id => !id || !isValidUUID(id));
     if (invalidTeamIds.length > 0) {

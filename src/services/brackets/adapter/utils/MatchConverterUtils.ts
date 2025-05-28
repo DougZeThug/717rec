@@ -1,4 +1,3 @@
-
 /**
  * Utility class for converting match formats between brackets-manager and our database
  */
@@ -8,7 +7,10 @@ export class MatchConverterUtils {
    * @private
    */
   private nil(id?: string | null): string | null {
-    return !id || id === "undefined" ? null : id;
+    if (!id || id === "undefined" || id === "") {
+      return null;
+    }
+    return id;
   }
 
   /**
@@ -108,8 +110,8 @@ export class MatchConverterUtils {
       opponent1: opponent1,
       opponent2: opponent2,
       child_count: childCount,
-      child_match_id: dbMatch.next_match_id,
-      child_match_id_loser: dbMatch.next_loser_match_id,
+      child_match_id: this.nil(dbMatch.next_match_id),
+      child_match_id_loser: this.nil(dbMatch.next_loser_match_id),
       best_of: dbMatch.best_of
     };
     
@@ -120,11 +122,11 @@ export class MatchConverterUtils {
   }
 
   /**
-   * Validate an ID to ensure it's not 'undefined' or undefined
+   * Validate an ID to ensure it's not 'undefined', undefined, or empty string
    * Returns null if invalid, otherwise returns the original ID
    */
   private validateId(id: any): string | null {
-    if (!id || id === 'undefined') {
+    if (!id || id === 'undefined' || id === '') {
       return null;
     }
     return id;

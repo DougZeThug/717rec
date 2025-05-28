@@ -54,7 +54,7 @@ export function adaptPlayoffMatchesToGloot(
       participants.push({
         id: team1.id,
         name: team1.name,
-        resultText: match.team1Score?.toString() || '',
+        resultText: match.team1Score !== null && match.team1Score !== undefined ? match.team1Score.toString() : undefined,
         isWinner: match.winnerId === team1.id,
         status: match.status === 'completed' ? 'PLAYED' as const : 'NO_PARTY' as const
       });
@@ -64,7 +64,7 @@ export function adaptPlayoffMatchesToGloot(
       participants.push({
         id: team2.id,
         name: team2.name,
-        resultText: match.team2Score?.toString() || '',
+        resultText: match.team2Score !== null && match.team2Score !== undefined ? match.team2Score.toString() : undefined,
         isWinner: match.winnerId === team2.id,
         status: match.status === 'completed' ? 'PLAYED' as const : 'NO_PARTY' as const
       });
@@ -82,8 +82,8 @@ export function adaptPlayoffMatchesToGloot(
     return {
       id: match.id,
       name: `${match.matchType} R${match.round}`,
-      nextMatchId: match.nextWinMatchId || undefined, // FIXED: use undefined instead of empty string fallback
-      nextLooserMatchId: match.nextLoseMatchId || undefined, // FIXED: use undefined instead of empty string fallback
+      nextMatchId: match.nextWinMatchId || undefined,
+      nextLooserMatchId: match.nextLoseMatchId || undefined,
       tournamentRoundText: `Round ${match.round}`,
       startTime: new Date().toISOString(), // Fallback since we don't have scheduled_at
       state,
