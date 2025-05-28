@@ -1,4 +1,5 @@
 
+
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeamsData } from '@/hooks/useTeamsData';
@@ -7,16 +8,41 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from "@/integrations/supabase/types";
+import type { PlayoffBracket, PlayoffMatch } from "@/utils/playoffs/playoffTypes";
 
-type BracketRow   = Database["public"]["Tables"]["brackets"]["Row"];
-type DivisionRow  = Database["public"]["Tables"]["divisions"]["Row"];
-type MatchRow     = Database["public"]["Tables"]["matches"]["Row"];
+// Helper type aliases
+type MatchRow = Database["public"]["Tables"]["matches"]["Row"];
+type BracketRow = Database["public"]["Tables"]["brackets"]["Row"];
+type DivisionRow = Database["public"]["Tables"]["divisions"]["Row"];
 
-/** Bracket record joined with its division + matches */
-export interface BracketWithMatches extends BracketRow {
+interface BracketRowWithRels extends BracketRow {
   divisions: DivisionRow | null;
   matches: MatchRow[];
 }
+
+// Row-to-Domain mapper
+const mapMatchRow = (row: MatchRow): PlayoffMatch => ({
+  id: row.id,
+  round: row.round_number ?? 0,
+  position: row.position ?? 0,
+  team1Id: row.team1_id,
+  team2Id: row.team2_id,
+  winnerId: row.winner_id,
+  loserId: row.loser_id,
+  team1Score: row.team1_score,
+  team2Score: row.team2_score,
+  team1GameWins: row.team1_game_wins,
+  team2GameWins: row.team2_game_wins,
+  matchType: (row.match_type as PlayoffMatch["matchType"]) ?? "winners",
+  bestOf: row.best_of ?? 3,
+  games: [],
+  team1Seed: null,
+  team2Seed: null,
+  nextWinMatchId: row.next_match_id,
+  nextLoseMatchId: row.next_loser_match_id,
+  bracket_id: row.bracket_id ?? "",
+  status: row.iscompleted ? "completed" : "pending"
+});
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
 export const usePlayoffData = () => {
@@ -39,16 +65,36 @@ export const usePlayoffData = () => {
           *,
           divisions(*),
           matches(*)
-        `);
+        `) as unknown as {
+          data: BracketRowWithRels[] | null;
+          error: any;
+        };
       
       if (error) throw error;
-      return (data || []) as BracketWithMatches[];
+      
+      // Transform to domain objects
+      const brackets: PlayoffBracket[] = (data ?? []).map(br => ({
+        id: br.id,
+        name: br.title,
+        division: br.divisions?.name,
+        divisionId: br.division_id,
+        format: br.format ?? "Double Elimination",
+        matches: (br.matches ?? []).map(mapMatchRow),
+        champion: undefined,
+        state: (br.state === 'underway' ? 'in_progress' : 
+                br.state === 'complete' ? 'completed' : 
+                'pending') as PlayoffBracket["state"],
+        created_at: br.created_at,
+        challonge_tournament_id: br.challonge_tournament_id
+      }));
+      
+      return brackets;
     }
   });
 
   // Group brackets by division
   const bracketsByDivision = useMemo(() => {
-    const grouped: Record<string, BracketWithMatches[]> = {};
+    const grouped: Record<string, PlayoffBracket[]> = {};
     
     if (divisions && brackets) {
       // Initialize with empty arrays for each division
@@ -58,7 +104,7 @@ export const usePlayoffData = () => {
       
       // Group brackets by division name
       brackets.forEach(bracket => {
-        const divisionName = bracket.divisions?.name;
+        const divisionName = bracket.division;
         if (divisionName && grouped[divisionName]) {
           grouped[divisionName].push(bracket);
         }
@@ -73,7 +119,7 @@ export const usePlayoffData = () => {
   };
 
   return useMemo(() => ({
-    brackets: brackets as BracketWithMatches[],
+    brackets: brackets as PlayoffBracket[],
     bracketsLoading,
     divisions: divisions || [],
     divisionsLoading,
@@ -110,3 +156,4 @@ export type BracketMatchesByType = {
   losers: any[][];
   finals: any[];
 };
+
