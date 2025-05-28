@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from "@/services/challonge/types";
 import { Team } from "@/types";
@@ -36,14 +37,12 @@ export class ChallongeService {
     const uniqueSlug = `${safeSlug}_${Date.now()}`;
     
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "createTournament",
-        args: {
-          name,
-          url: uniqueSlug,
-          tournament_type: tournamentType,
-          description,
-        }
+      action: "createTournament",
+      args: {
+        name,
+        url: uniqueSlug,
+        tournament_type: tournamentType,
+        description,
       }
     });
     
@@ -58,13 +57,11 @@ export class ChallongeService {
     const { tournamentId, name, seed, miscInfo } = params;
     
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "addParticipant",
-        args: {
-          tournamentId,
-          name,
-          misc_info: miscInfo,
-        }
+      action: "addParticipant",
+      args: {
+        tournamentId,
+        name,
+        misc_info: miscInfo,
       }
     });
     
@@ -97,10 +94,8 @@ export class ChallongeService {
    */
   static async getTournament(tournamentId: string): Promise<ChallongeTournament> {
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "getTournament",
-        tournamentId,
-      }
+      action: "getTournament",
+      tournamentId,
     });
     
     if (error) throw error;
@@ -112,8 +107,8 @@ export class ChallongeService {
    */
   static async getMatches(tournamentId: string): Promise<ChallongeMatch[]> {
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "getMatches",
+      action: "getMatches",
+      args: {
         tournamentId,
       }
     });
@@ -127,8 +122,8 @@ export class ChallongeService {
    */
   static async getParticipants(tournamentId: string): Promise<ChallongeParticipant[]> {
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "getParticipants",
+      action: "getParticipants",
+      args: {
         tournamentId,
       }
     });
@@ -143,18 +138,16 @@ export class ChallongeService {
   static async updateMatch(params: UpdateMatchParams): Promise<ChallongeMatch> {
     const { tournamentId, matchId, scoresCsv, winnerId, loserId } = params;
     
-    const scoreData = {
-      scores_csv: scoresCsv,
-      winner_id: winnerId,
-      loser_id: loserId,
-    };
-    
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "updateMatch",
+      action: "updateMatch",
+      args: {
         tournamentId,
         matchId,
-        scoreData,
+        scoreData: {
+          scores_csv: scoresCsv,
+          winner_id: winnerId,
+          loser_id: loserId,
+        }
       }
     });
     
@@ -167,8 +160,8 @@ export class ChallongeService {
    */
   static async startTournament(tournamentId: string): Promise<ChallongeTournament> {
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "startTournament",
+      action: "startTournament",
+      args: {
         tournamentId,
       }
     });
@@ -182,8 +175,8 @@ export class ChallongeService {
    */
   static async finalizeTournament(tournamentId: string): Promise<ChallongeTournament> {
     const { data, error } = await supabase.functions.invoke("challonge", {
-      body: {
-        action: "finalizeTournament",
+      action: "finalizeTournament",
+      args: {
         tournamentId,
       }
     });
