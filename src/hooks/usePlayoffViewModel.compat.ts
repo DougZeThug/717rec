@@ -1,6 +1,8 @@
 
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useDivisions } from '@/hooks/useDivisions';
+import { useTeamsData } from '@/hooks/useTeamsData';
+import { groupTeamsByDivision } from '@/utils/teamGrouping';
 import { useMemo } from 'react';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
@@ -10,18 +12,23 @@ export const usePlayoffData = () => {
   
   // Fetch divisions data using the proper hook
   const { divisions, isLoading: divisionsLoading } = useDivisions();
+  
+  // Fetch teams data to populate teamsByDivision
+  const { teams, isLoading: teamsLoading } = useTeamsData();
 
   return useMemo(() => ({
     brackets: [],  // Placeholder - would need implementation
     bracketsLoading: vm.isLoading,
     divisions: divisions || [],  // Use actual divisions data
     divisionsLoading,  // Use actual loading state
-    teamsByDivision: {},  // Placeholder - would need implementation
+    teamsByDivision: groupTeamsByDivision(teams || []),  // Use real team data grouped by division
     bracketsByDivision: {},  // Placeholder - would need implementation
     handleBracketCreated: () => Promise.resolve(),  // Placeholder
     handleTeamDivisionChange: () => Promise.resolve(),  // Placeholder
     refetchBrackets: vm.refetch,
-  }), [vm, divisions, divisionsLoading]);
+    teams: teams || [],  // Also expose teams directly
+    teamsLoading,  // Expose teams loading state
+  }), [vm, divisions, divisionsLoading, teams, teamsLoading]);
 };
 
 /**
