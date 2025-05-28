@@ -1,38 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from "@/services/challonge/types";
 import { Team } from "@/types";
-
-interface ChallongeTournament {
-  id: number;
-  name: string;
-  url: string;
-  tournament_type: string;
-  started_at: string | null;
-  completed_at: string | null;
-  state: string;
-  participants?: ChallongeParticipant[];
-  matches?: ChallongeMatch[];
-}
-
-interface ChallongeParticipant {
-  id: number;
-  tournament_id: number;
-  name: string;
-  seed: number;
-  final_rank?: number;
-}
-
-interface ChallongeMatch {
-  id: number;
-  tournament_id: number;
-  round: number;
-  player1_id: number;
-  player2_id: number;
-  state: string;
-  winner_id?: number;
-  loser_id?: number;
-  scores_csv?: string;
-}
 
 interface CreateTournamentParams {
   name: string;
