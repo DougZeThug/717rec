@@ -1,4 +1,3 @@
-
 // Minimal helper for HTTPS calls to Challonge v1
 export async function challongeFetch(
   method: "GET" | "POST" | "PUT" | "DELETE",
@@ -14,9 +13,19 @@ export async function challongeFetch(
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
   });
+  
   if (!res.ok) {
-    const msg = await res.text();
+    let msg = await res.text();
+    try {
+      const json = JSON.parse(msg);
+      if (json.errors) {
+        msg = Array.isArray(json.errors) ? json.errors.join(', ') : json.errors;
+      }
+    } catch (_) {
+      // keep raw msg if JSON parsing fails
+    }
     throw new Error(`Challonge ${res.status}: ${msg}`);
   }
+  
   return await res.json();
 }

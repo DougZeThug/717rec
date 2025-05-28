@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       brackets: {
         Row: {
+          challonge_tournament_id: number | null
           created_at: string | null
           division_id: string | null
           format: string | null
@@ -23,6 +24,7 @@ export type Database = {
           wb_champion_id: string | null
         }
         Insert: {
+          challonge_tournament_id?: number | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null
@@ -35,6 +37,7 @@ export type Database = {
           wb_champion_id?: string | null
         }
         Update: {
+          challonge_tournament_id?: number | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null
@@ -913,6 +916,88 @@ export type Database = {
           },
         ]
       }
+      playoff_team_records: {
+        Row: {
+          bracket_id: string | null
+          game_losses: number | null
+          game_wins: number | null
+          id: string
+          inserted_at: string | null
+          losses: number | null
+          placement: number | null
+          team_id: string | null
+          updated_at: string | null
+          wins: number | null
+        }
+        Insert: {
+          bracket_id?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          id?: string
+          inserted_at?: string | null
+          losses?: number | null
+          placement?: number | null
+          team_id?: string | null
+          updated_at?: string | null
+          wins?: number | null
+        }
+        Update: {
+          bracket_id?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          id?: string
+          inserted_at?: string | null
+          losses?: number | null
+          placement?: number | null
+          team_id?: string | null
+          updated_at?: string | null
+          wins?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playoff_team_records_bracket_id_fkey"
+            columns: ["bracket_id"]
+            isOneToOne: false
+            referencedRelation: "brackets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_team_records_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playoff_team_records_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_team_records_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_team_records_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "playoff_team_records_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1218,6 +1303,7 @@ export type Database = {
       }
       teams: {
         Row: {
+          challonge_participant_id: number | null
           created_at: string | null
           division_id: string | null
           game_losses: number | null
@@ -1232,6 +1318,7 @@ export type Database = {
           wins: number
         }
         Insert: {
+          challonge_participant_id?: number | null
           created_at?: string | null
           division_id?: string | null
           game_losses?: number | null
@@ -1246,6 +1333,7 @@ export type Database = {
           wins?: number
         }
         Update: {
+          challonge_participant_id?: number | null
           created_at?: string | null
           division_id?: string | null
           game_losses?: number | null

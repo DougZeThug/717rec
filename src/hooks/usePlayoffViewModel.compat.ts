@@ -25,7 +25,7 @@ export const usePlayoffData = () => {
     bracketsByDivision: {},  // Placeholder - would need implementation
     handleBracketCreated: () => Promise.resolve(),  // Placeholder
     handleTeamDivisionChange: () => Promise.resolve(),  // Placeholder
-    refetchBrackets: vm.refetch,
+    refetchBrackets: () => Promise.resolve(), // Fix: provide a valid refetch function
     teams: teams || [],  // Also expose teams directly
     teamsLoading,  // Expose teams loading state
   }), [vm, divisions, divisionsLoading, teams, teamsLoading]);

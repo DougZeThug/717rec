@@ -27,8 +27,8 @@ serve(async req => {
   try {
     switch (payload.action) {
       case "createTournament": {
-        const { name, url } = payload.args;
-        const body = { tournament: { name, url } };
+        const { name, url, tournament_type, description } = payload.args;
+        const body = { tournament: { name, url, tournament_type, description } };
         const data = await challongeFetch("POST", "/tournaments", body);
         return json(200, data);
       }
@@ -77,6 +77,7 @@ serve(async req => {
     }
   } catch (e) {
     console.error(e);
-    return json(500, { error: e.message });
+    // Send plain string for frontend toast
+    return json(500, { error: String(e.message || e) });
   }
 });

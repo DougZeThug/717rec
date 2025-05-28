@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from "@/services/challonge/types";
 import { Team } from "@/types";
+import { slugify } from "@/utils/slugify";
 
 interface CreateTournamentParams {
   name: string;
@@ -31,8 +31,13 @@ export class ChallongeService {
   static async createTournament(params: CreateTournamentParams): Promise<ChallongeTournament> {
     const { name, tournamentType, description } = params;
     
+    // Create a unique, safe URL slug
+    const safeSlug = slugify(name);
+    const uniqueSlug = `${safeSlug}-${Date.now()}`;
+    
     const tournamentData = {
       name,
+      url: uniqueSlug,
       tournament_type: tournamentType,
       description,
     };
@@ -40,11 +45,11 @@ export class ChallongeService {
     const { data, error } = await supabase.functions.invoke("challonge", {
       body: {
         action: "createTournament",
-        tournamentData,
+        args: tournamentData,
       }
     });
     
-    if (error) throw error;
+    if (error) throw new Error(error.message || 'Challonge create failed');
     return data.tournament;
   }
   
