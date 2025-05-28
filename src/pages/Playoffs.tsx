@@ -7,11 +7,14 @@ import { usePlayoffState } from "@/hooks/playoffs/usePlayoffState";
 import { usePlayoffEditMatch } from "@/hooks/playoffs/usePlayoffEditMatch";
 import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
+import { useChallongePublicBracket } from "@/hooks/useChallongePublicBracket";
 import { useDivisions } from "@/hooks/useDivisions";
 import AdminView from "@/components/playoffs/views/AdminView";
 import PlayoffView from "@/components/playoffs/views/PlayoffView";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
 import PlayoffDialogs from "@/components/playoffs/dialogs/PlayoffDialogs";
+import BracketView from "@/components/playoffs/BracketView";
+import { Loader2 } from "lucide-react";
 import { PlayoffBracket } from "@/types";
 import { BracketFormat, BRACKET_FORMATS, BRACKET_STATES, BracketState } from "@/constants/brackets";
 
@@ -54,6 +57,11 @@ const Playoffs = () => {
     handleTeamDivisionChange,
     refetchBrackets
   } = usePlayoffData(); // Using the compatibility layer
+  
+  // Handle Challonge bracket display if the current bracket has a challonge_tournament_id
+  const challongeBracket = useChallongePublicBracket(
+    bracket?.challonge_tournament_id ? parseInt(bracket.challonge_tournament_id) : 0
+  );
   
   // Subscribe to real-time updates for the selected bracket
   const { realtimeEnabled, lastUpdatedMatch } = usePlayoffRealtime(selectedBracketId);
@@ -136,6 +144,41 @@ const Playoffs = () => {
     format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
   })) || [];
   const availableDivisions = divisions?.map(div => div.name) || [];
+
+  // Handle Challonge bracket display
+  if (bracket?.challonge_tournament_id) {
+    if (challongeBracket.isLoading || !challongeBracket.matches || !challongeBracket.participants) {
+      return (
+        <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
+          <div className="max-w-7xl mx-auto">
+            <PlayoffHeader 
+              onCreateBracket={handleCreateBracket} 
+              onOpenTeamDialog={() => setTeamDialogOpen(true)} 
+            />
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 text-cornhole-navy animate-spin mb-2" />
+              <p>Loading Challonge tournament...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          <PlayoffHeader 
+            onCreateBracket={handleCreateBracket} 
+            onOpenTeamDialog={() => setTeamDialogOpen(true)} 
+          />
+          <BracketView
+            matches={challongeBracket.matches}
+            participants={challongeBracket.participants}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">

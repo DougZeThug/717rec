@@ -2,6 +2,8 @@
 import React from "react";
 import { PlayoffBracket, Team } from "@/types/playoffs";
 import { ChallongeMatch, ChallongeParticipant } from "@/services/challonge/types";
+import { SingleEliminationBracket, Match } from "@g-loot/react-tournament-brackets";
+import { adaptChallongeMatches } from "@/utils/adaptChallongeMatches";
 import GlootBracket from "./GlootBracket";
 
 export interface Participant { 
@@ -29,6 +31,11 @@ const BracketView: React.FC<BracketViewProps> = ({
 }) => {
   // Handle Challonge bracket display
   if (matches && participants) {
+    const playerMap = Object.fromEntries(
+      participants.map(p => [p.id, p.name])
+    );
+    const adapted = adaptChallongeMatches(matches, playerMap);
+    
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -38,10 +45,13 @@ const BracketView: React.FC<BracketViewProps> = ({
           </div>
         </div>
         
-        <div className="bg-white p-4 rounded-lg shadow">
-          <p>Challonge bracket rendering will be implemented here</p>
-          <p>Matches: {matches.length}</p>
-          <p>Participants: {participants.length}</p>
+        <div className="w-full overflow-auto">
+          <div className="min-w-max p-4">
+            <SingleEliminationBracket
+              matches={adapted}
+              matchComponent={Match}
+            />
+          </div>
         </div>
       </div>
     );
