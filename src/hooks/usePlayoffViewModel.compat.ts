@@ -1,3 +1,4 @@
+
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeamsData } from '@/hooks/useTeamsData';
@@ -5,6 +6,17 @@ import { groupTeamsByDivision } from '@/utils/teamGrouping';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from "@/integrations/supabase/types";
+
+type BracketRow   = Database["public"]["Tables"]["brackets"]["Row"];
+type DivisionRow  = Database["public"]["Tables"]["divisions"]["Row"];
+type MatchRow     = Database["public"]["Tables"]["matches"]["Row"];
+
+/** Bracket record joined with its division + matches */
+export interface BracketWithMatches extends BracketRow {
+  divisions: DivisionRow | null;
+  matches: MatchRow[];
+}
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
 export const usePlayoffData = () => {
@@ -17,7 +29,7 @@ export const usePlayoffData = () => {
   // Fetch teams data to populate teamsByDivision
   const { teams, isLoading: teamsLoading } = useTeamsData();
 
-  // Fetch brackets data from Supabase
+  // Fetch brackets data from Supabase with matches included
   const { data: brackets = [], isLoading: bracketsLoading, error: bracketsError, refetch: refetchBrackets } = useQuery({
     queryKey: ['brackets'],
     queryFn: async () => {
@@ -25,17 +37,18 @@ export const usePlayoffData = () => {
         .from('brackets')
         .select(`
           *,
-          divisions(*)
+          divisions(*),
+          matches(*)
         `);
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as BracketWithMatches[];
     }
   });
 
   // Group brackets by division
   const bracketsByDivision = useMemo(() => {
-    const grouped: Record<string, any[]> = {};
+    const grouped: Record<string, BracketWithMatches[]> = {};
     
     if (divisions && brackets) {
       // Initialize with empty arrays for each division
@@ -60,7 +73,7 @@ export const usePlayoffData = () => {
   };
 
   return useMemo(() => ({
-    brackets: brackets || [],
+    brackets: brackets as BracketWithMatches[],
     bracketsLoading,
     divisions: divisions || [],
     divisionsLoading,
