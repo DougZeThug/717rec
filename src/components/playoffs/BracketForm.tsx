@@ -31,8 +31,6 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const validDivisions = Array.isArray(divisions) ? divisions : [];
   const validTeams = Array.isArray(teams) ? teams : [];
   
-  console.log('BracketForm - Received teams:', validTeams.length, 'divisions:', validDivisions.length);
-  
   const {
     form,
     filteredTeams,

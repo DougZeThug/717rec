@@ -22,47 +22,44 @@ export class SimpleBracketCreationService {
     const bracketId = uuidv4();
 
     try {
-      // Simplified validation
+      // Validation with enhanced UUID checking
       if (!name?.trim()) {
         throw new Error('Bracket name is required');
       }
 
-      if (!divisionId?.trim()) {
-        throw new Error('Division ID is required');
-      }
+      // Validate division ID
+      assertValidUuid(divisionId, 'divisionId');
 
       if (!Array.isArray(teamIds) || teamIds.length < 2) {
         throw new Error('At least 2 teams are required');
       }
 
-      // Filter out any invalid team IDs
-      const validTeamIds = teamIds.filter(id => id && typeof id === 'string' && id.trim() !== '');
-      
-      if (validTeamIds.length < 2) {
-        throw new Error('At least 2 valid teams are required');
-      }
+      // Validate all team IDs
+      const validatedTeamIds = validateUuidArray(teamIds, 'teamIds');
 
-      console.log('Using valid team IDs:', validTeamIds);
+      // Additional business logic validation
+      const teamValidation = BracketValidationService.validateTeamSelection(validatedTeamIds);
+      if (!teamValidation.isValid) {
+        throw new Error(`Team validation failed: ${teamValidation.errors.join(', ')}`);
+      }
       
       // Verify teams exist and get their data
       const { data: existingTeams, error: teamsError } = await supabase
         .from('teams')
         .select('id, name, division_id')
-        .in('id', validTeamIds);
+        .in('id', validatedTeamIds);
       
       if (teamsError) {
-        console.error('Teams query error:', teamsError);
         throw new Error(`Failed to verify teams: ${teamsError.message}`);
       }
       
-      if (!existingTeams || existingTeams.length !== validTeamIds.length) {
+      if (!existingTeams || existingTeams.length !== validatedTeamIds.length) {
         const foundIds = existingTeams?.map(t => t.id) || [];
-        const missingIds = validTeamIds.filter(id => !foundIds.includes(id));
-        console.error('Missing teams:', missingIds);
+        const missingIds = validatedTeamIds.filter(id => !foundIds.includes(id));
         throw new Error(`Teams not found: ${missingIds.join(', ')}`);
       }
       
-      // Verify division exists
+      // Verify division
       const { data: division, error: divisionError } = await supabase
         .from('divisions')
         .select('id, name')
@@ -70,11 +67,8 @@ export class SimpleBracketCreationService {
         .single();
       
       if (divisionError || !division) {
-        console.error('Division query error:', divisionError);
         throw new Error(`Division not found: ${divisionId}`);
       }
-      
-      console.log('Validation passed, creating bracket...');
       
       // Create bracket record first
       const { error: bracketError } = await supabase
@@ -87,7 +81,6 @@ export class SimpleBracketCreationService {
         });
       
       if (bracketError) {
-        console.error('Bracket creation error:', bracketError);
         throw new Error(`Failed to create bracket: ${bracketError.message}`);
       }
       
@@ -112,8 +105,15 @@ export class SimpleBracketCreationService {
       
       console.log(`Tournament created successfully with brackets-manager`);
       
-      // Skip match synchronization for now to avoid API issues
-      console.log('Bracket created successfully, match synchronization will be handled by adapter');
+      // Try to get matches using the correct API - skip for now to avoid API issues
+      try {
+        // Note: Using the brackets-manager adapter directly for match retrieval
+        // This will be handled by the existing adapter implementation
+        console.log('Bracket created successfully, match synchronization will be handled by adapter');
+      } catch (matchError) {
+        console.warn('Skipping match synchronization for now:', matchError);
+        // Don't fail bracket creation if match sync fails
+      }
       
       console.log(`Bracket created successfully: ${bracketId}`);
       return bracketId;
@@ -124,7 +124,6 @@ export class SimpleBracketCreationService {
       // Clean up bracket record if it was created (bracketId now in scope)
       try {
         await supabase.from('brackets').delete().eq('id', bracketId);
-        console.log('Cleaned up bracket record after error');
       } catch (cleanupError) {
         console.error('Failed to cleanup bracket record:', cleanupError);
       }
