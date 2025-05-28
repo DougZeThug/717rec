@@ -1,4 +1,3 @@
-
 /** Round-level progress of an entire bracket */
 export type BracketState = 'pending' | 'in_progress' | 'completed';
 
@@ -63,6 +62,10 @@ export interface PlayoffBracket {
   champion?: string;
   state: BracketState;
   created_at?: string;
+  /**
+   * Challonge tournament ID (null/undefined if bracket is local)
+   */
+  challonge_tournament_id?: number;
 }
 
 /**
