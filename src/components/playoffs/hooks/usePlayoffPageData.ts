@@ -1,12 +1,11 @@
-
 import { useState } from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
 import { useChallongePublicBracket } from "@/hooks/useChallongePublicBracket";
 import { useDivisions } from "@/hooks/useDivisions";
-import { PlayoffBracket } from "@/types";
-import { BracketFormat, BRACKET_FORMATS, BRACKET_STATES, BracketState } from "@/constants/brackets";
+import { PlayoffBracket, BracketFormat, BracketState } from "@/utils/playoffs/playoffTypes";
+import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
 
 export interface PlayoffPageData {
   // Auth & permissions

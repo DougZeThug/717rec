@@ -1,8 +1,8 @@
 
 import React from "react";
 import { SingleEliminationBracket, Match } from "@g-loot/react-tournament-brackets";
-import { ChallongeMatch, ChallongeParticipant } from "@/services/challonge/types";
-import { adaptChallongeMatches } from "@/utils/adaptChallongeMatches";
+import { ChallongeMatch, ChallongeParticipant } from "@/utils/playoffs/playoffTypes";
+import { adaptChallongeMatches } from "@/utils/playoffs/playoffUtils";
 
 interface ChallongeBracketRendererProps {
   matches: ChallongeMatch[];

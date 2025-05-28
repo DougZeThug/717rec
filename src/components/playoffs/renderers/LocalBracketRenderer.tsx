@@ -2,11 +2,11 @@
 import React from "react";
 import AdminView from "@/components/playoffs/views/AdminView";
 import PlayoffView from "@/components/playoffs/views/PlayoffView";
-import { PlayoffBracket, Team } from "@/types/playoffs";
+import { PlayoffBracket, PlayoffTeam } from "@/utils/playoffs/playoffTypes";
 
 interface LocalBracketRendererProps {
   bracket: PlayoffBracket;
-  teams: Team[];
+  teams: PlayoffTeam[];
   // Accept and ignore any extra legacy props so TypeScript stops complaining
   [key: string]: any;
 }

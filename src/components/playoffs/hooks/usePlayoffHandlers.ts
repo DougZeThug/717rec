@@ -1,7 +1,7 @@
-
 import { usePlayoffEditMatch } from "@/hooks/playoffs/usePlayoffEditMatch";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
+import { PlayoffGame } from "@/utils/playoffs/playoffTypes";
 import { PlayoffPageData } from "./usePlayoffPageData";
 
 export interface PlayoffHandlers {
