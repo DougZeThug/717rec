@@ -10,11 +10,15 @@ export function useChallongeAdmin() {
     mutationFn: async ({ 
       name, 
       tournamentType, 
-      teams 
+      teams,
+      divisionId,
+      format
     }: { 
       name: string; 
       tournamentType: "single elimination" | "double elimination"; 
-      teams: { id: string; name: string }[] 
+      teams: { id: string; name: string }[];
+      divisionId: string;
+      format: string;
     }) => {
       const tournament = await ChallongeService.createTournament({
         name,

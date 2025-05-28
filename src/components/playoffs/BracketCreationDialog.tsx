@@ -45,15 +45,17 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      // Map form data to Challonge format
-      const tournamentType = "double elimination"; // Default to double elimination
+      // Map form data to Challonge format using the selected format
+      const tournamentType = data.format.toLowerCase() as "single elimination" | "double elimination";
       const selectedTeams = (teams || []).filter(team => data.teams.includes(team.id));
       
-      // Create tournament via Challonge
+      // Create tournament via Challonge with all required parameters
       const tournament = await createBracket.mutateAsync({
         name: data.title,
         tournamentType,
-        teams: selectedTeams.map(team => ({ id: team.id, name: team.name }))
+        teams: selectedTeams.map(team => ({ id: team.id, name: team.name })),
+        divisionId: data.divisionId,
+        format: data.format
       });
       
       toast({
