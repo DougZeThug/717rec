@@ -46,7 +46,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       }
       
       // Map form data to Challonge format
-      const tournamentType = "single elimination"; // Default to single elimination
+      const tournamentType = "double elimination"; // Default to double elimination
       const selectedTeams = (teams || []).filter(team => data.teams.includes(team.id));
       
       // Create tournament via Challonge
