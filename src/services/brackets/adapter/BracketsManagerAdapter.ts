@@ -5,7 +5,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PlayoffMatch, PlayoffMatchType } from "@/types/playoffs";
 import { isValidUUID } from '@/utils/validation';
-import { assertValidUuid, isValidUuidSafe } from '@/utils/uuidValidation';
+import { assertValidUuid, assertValidUuidOrNull, isValidUuidSafe } from '@/utils/uuidValidation';
 
 // Define types to match brackets-manager's expectations
 interface Id {
@@ -147,7 +147,7 @@ export class BracketsManagerAdapter implements CrudInterface {
         case 'match':
           const match = dataArray[0];
           
-          // Validate stage_id if present
+          // Validate stage_id if present using null-safe validation
           if (match.stage_id) {
             assertValidUuid(match.stage_id, 'stage_id');
           }
@@ -159,7 +159,7 @@ export class BracketsManagerAdapter implements CrudInterface {
             match_type: match.group_id ? 'losers' as PlayoffMatchType : 'winners' as PlayoffMatchType,
             team1_id: match.opponent1?.id || null,
             team2_id: match.opponent2?.id || null,
-            bracket_id: match.stage_id,
+            bracket_id: match.stage_id || null, // FIXED: use null instead of empty string
             winner_id: null,
             loser_id: null,
             best_of: match.best_of || 3,
@@ -273,14 +273,9 @@ export class BracketsManagerAdapter implements CrudInterface {
           // Build query only with valid tournament ID
           let query = supabase.from('playoff_matches').select('*');
           
-          if (filter && 'stage_id' in filter && filter.stage_id) {
-            // Only add the filter if we have a valid UUID
-            if (isValidUuidSafe(filter.stage_id as string)) {
-              query = query.eq('bracket_id', filter.stage_id as string);
-            } else {
-              console.warn('Invalid stage_id UUID, skipping filter:', filter.stage_id);
-              return [] as DataTypes[T][];
-            }
+          // FIXED: Use conditional logic instead of || ''
+          if (filter && 'stage_id' in filter && filter.stage_id && isValidUuidSafe(filter.stage_id as string)) {
+            query = query.eq('bracket_id', filter.stage_id as string);
           }
           
           const { data, error } = await query;
@@ -289,7 +284,7 @@ export class BracketsManagerAdapter implements CrudInterface {
           
           return data.map(match => ({
             id: match.id,
-            stage_id: match.bracket_id || '',
+            stage_id: match.bracket_id || null, // FIXED: use null instead of empty string
             group_id: match.match_type === 'losers' ? 'loser_bracket' : undefined,
             round: match.round,
             position: match.position,
@@ -311,13 +306,9 @@ export class BracketsManagerAdapter implements CrudInterface {
           let participantQuery = supabase.from('participants').select('*');
           
           if (filter) {
-            if ('tournament_id' in filter && filter.tournament_id) {
-              if (isValidUuidSafe(filter.tournament_id as string)) {
-                participantQuery = participantQuery.eq('tournament_id', filter.tournament_id as string);
-              } else {
-                console.warn('Invalid tournament_id UUID, skipping filter:', filter.tournament_id);
-                return [] as DataTypes[T][];
-              }
+            // FIXED: Use conditional logic instead of || ''
+            if ('tournament_id' in filter && filter.tournament_id && isValidUuidSafe(filter.tournament_id as string)) {
+              participantQuery = participantQuery.eq('tournament_id', filter.tournament_id as string);
             }
             
             if ('name' in filter && filter.name) {

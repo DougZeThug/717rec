@@ -10,8 +10,8 @@ export function validateParticipantData(data: ParticipantInsertData): void {
     bracket_id: data.bracket_id,
     team_id: data.team_id,
     position: data.position,
-    bracket_id_valid: isValidUUID(data.bracket_id || ''),
-    team_id_valid: isValidUUID(data.team_id || ''),
+    bracket_id_valid: data.bracket_id ? isValidUUID(data.bracket_id) : false, // FIXED: only validate if exists
+    team_id_valid: data.team_id ? isValidUUID(data.team_id) : false, // FIXED: only validate if exists
     bracket_id_empty: data.bracket_id === '',
     team_id_empty: data.team_id === ''
   });
@@ -25,7 +25,7 @@ export function validateParticipantData(data: ParticipantInsertData): void {
     throw new ParticipantValidationError('Team ID is required and cannot be empty', { field: 'team_id', value: data.team_id });
   }
 
-  // Validate UUID format
+  // Validate UUID format - FIXED: don't pass empty strings to validation
   if (!isValidUUID(data.bracket_id)) {
     throw new ParticipantValidationError('Bracket ID must be a valid UUID', { field: 'bracket_id', value: data.bracket_id });
   }

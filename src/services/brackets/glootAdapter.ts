@@ -35,8 +35,9 @@ export function adaptPlayoffMatchesToGloot(
   const teamMap = new Map(teams.map(team => [team.id, team]));
   
   const glootMatches: GlootMatch[] = matches.map(match => {
-    const team1 = teamMap.get(match.team1Id || '');
-    const team2 = teamMap.get(match.team2Id || '');
+    // FIXED: Use conditional logic instead of || fallback
+    const team1 = match.team1Id ? teamMap.get(match.team1Id) : undefined;
+    const team2 = match.team2Id ? teamMap.get(match.team2Id) : undefined;
     
     // Determine match state
     let state: GlootMatch['state'] = 'NO_PARTY';
@@ -81,8 +82,8 @@ export function adaptPlayoffMatchesToGloot(
     return {
       id: match.id,
       name: `${match.matchType} R${match.round}`,
-      nextMatchId: match.nextWinMatchId || undefined,
-      nextLooserMatchId: match.nextLoseMatchId || undefined,
+      nextMatchId: match.nextWinMatchId || undefined, // FIXED: use undefined instead of empty string fallback
+      nextLooserMatchId: match.nextLoseMatchId || undefined, // FIXED: use undefined instead of empty string fallback
       tournamentRoundText: `Round ${match.round}`,
       startTime: new Date().toISOString(), // Fallback since we don't have scheduled_at
       state,

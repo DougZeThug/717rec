@@ -8,6 +8,7 @@ import {
 } from '../types/ParticipantTypes';
 import { validateParticipantBatch } from '../utils/ParticipantValidationUtils';
 import { isValidUUID } from '@/utils/validation';
+import { assertValidUuidOrNull } from '@/utils/uuidValidation';
 
 /**
  * Service for modifying participants in the database
@@ -34,12 +35,18 @@ export class ParticipantMutationService {
         return 0;
       }
       
-      // Enrich participants with defaults
-      const enrichedParticipants = validParticipants.map(p => ({
-        ...p,
-        name: p.name || p.team_id,
-        tournament_id: p.tournament_id || p.bracket_id
-      }));
+      // Enrich participants with defaults - FIXED: use null-safe logic for tournament_id
+      const enrichedParticipants = validParticipants.map(p => {
+        // FIXED: Ensure tournament_id is either a valid UUID or null
+        const tournamentId = p.tournament_id || p.bracket_id || null;
+        assertValidUuidOrNull(tournamentId, 'tournament_id');
+        
+        return {
+          ...p,
+          name: p.name || p.team_id,
+          tournament_id: tournamentId
+        };
+      });
       
       const { error, data } = await supabase
         .from('participants')
@@ -99,7 +106,8 @@ export class ParticipantMutationService {
         return 0;
       }
       
-      const tournamentId = data.tournament_id || data.bracket_id;
+      // FIXED: Use null-safe logic for tournament_id
+      const tournamentId = data.tournament_id || data.bracket_id || null;
       if (!tournamentId) {
         throw new ParticipantOperationError('Tournament or bracket ID is required for update');
       }
