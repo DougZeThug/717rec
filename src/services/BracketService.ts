@@ -1,4 +1,4 @@
-import { SimpleBracketCreationService } from '@/services/brackets/services/SimpleBracketCreationService';
+
 import { Team } from "@/types";
 import { mapBracketsToAppFormat } from './brackets/utils/BracketConversionUtils';
 import { BracketFormat, BRACKET_FORMATS, BracketState } from '@/constants/brackets';
@@ -6,11 +6,7 @@ import { PlayoffMatch, PlayoffGame } from '@/types/playoffs';
 import { supabase } from '@/integrations/supabase/client';
 import { BracketMapper } from './brackets/mappers/BracketMapper';
 import { BracketDto, MatchDto } from '@/types/supabase.generated';
-import { updateMatchScore } from './brackets/updateMatchScore';
 import { computeBracketState } from './brackets/computeBracketState';
-
-// Export new score update function
-export { updateMatchScore };
 
 // Export bracket state helper
 export { computeBracketState };
@@ -99,6 +95,7 @@ export async function createSingleElimStage(
 
 /** 
  * Update a match result 
+ * @deprecated Legacy function - use ChallongeService instead
  */
 export async function updateMatchResult(
   matchId: string,
@@ -109,22 +106,7 @@ export async function updateMatchResult(
   team2GameWins: number = 0,
   games?: PlayoffGame[]
 ): Promise<void> {
-  try {
-    await updateMatchScore(
-      matchId,
-      winnerId, 
-      team1Score,
-      team2Score,
-      team1GameWins,
-      team2GameWins,
-      games
-    );
-    
-    console.log(`Match ${matchId} updated with scores: ${team1Score}-${team2Score}`);
-  } catch (error) {
-    console.error('Error updating match result:', error);
-    throw new Error(`Failed to update match result: ${error instanceof Error ? error.message : String(error)}`);
-  }
+  throw new Error('Legacy match updates deprecated - use ChallongeService instead');
 }
 
 /** 
@@ -212,7 +194,6 @@ export const BracketService = {
   deleteBracket,
   listBrackets,
   getBracketById,
-  updateMatchScore,
   computeBracketState,
   supabase
 };
