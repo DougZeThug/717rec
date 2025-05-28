@@ -60,7 +60,7 @@ const Playoffs = () => {
   
   // Handle Challonge bracket display if the current bracket has a challonge_tournament_id
   const challongeBracket = useChallongePublicBracket(
-    bracket?.challonge_tournament_id ? parseInt(bracket.challonge_tournament_id) : 0
+    bracket?.challonge_tournament_id ? String(bracket.challonge_tournament_id) : "0"
   );
   
   // Subscribe to real-time updates for the selected bracket
