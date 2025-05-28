@@ -15,13 +15,12 @@ export const BracketsManagerUtils = {
   /**
    * Create a new tournament stage
    */
-  async createStage(tournamentId: string, name: string, type: 'single_elimination' | 'double_elimination', seeding: any[]) {
-    return manager.create({
-      name,
+  async createStage(tournamentId: string, name: string, type: 'single_elimination' | 'double_elimination', participants: any[]) {
+    return manager.create.stage({
       tournamentId,
+      name,
       type,
-      seeding,
-      settings: { grandFinal: 'double' }
+      participants
     });
   },
 
@@ -29,7 +28,7 @@ export const BracketsManagerUtils = {
    * Get all matches for a stage
    */
   async getMatches(stageId: string) {
-    return manager.get.stageData(stageId);
+    return manager.get.stageMatches(stageId);
   },
 
   /**
