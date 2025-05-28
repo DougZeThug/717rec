@@ -21,7 +21,7 @@ export const listBrackets = async () => {
     
     return data.map(bracketDto => {
       const matchesDto = bracketDto.matches || [];
-      return BracketMapper.bracketDtoToDomain(bracketDto as BracketDto, matchesDto);
+      return BracketMapper.bracketDtoToDomain(bracketDto, matchesDto);
     });
   } catch (error) {
     console.error('Error listing brackets:', error);
@@ -44,7 +44,7 @@ export const getBracketById = async (id: string) => {
     if (error) throw new Error(error.message);
     
     return BracketMapper.bracketDtoToDomain(
-      data as BracketDto, 
+      data, 
       (data.matches || [])
     );
   } catch (error) {
@@ -179,7 +179,7 @@ export async function fetchBracketById(bracketId: string) {
     if (matchesError) throw matchesError;
     
     return BracketMapper.bracketDtoToDomain(
-      bracket as BracketDto, 
+      bracket, 
       (matches || [])
     );
   } catch (error) {
