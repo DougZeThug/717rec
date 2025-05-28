@@ -34,6 +34,10 @@ port = 54329
 # For functions deployed locally through the CLI
 [functions]
 debug = true
+verify_jwt = true
+
+[functions.environment]
+CHALLONGE_API_KEY = "CHALLONGE_API_KEY"
 
 [functions.challonge]
 verify_jwt = true
