@@ -33,19 +33,17 @@ export class ChallongeService {
     
     // Create a unique, safe URL slug
     const safeSlug = slugify(name);
-    const uniqueSlug = `${safeSlug}-${Date.now()}`;
-    
-    const tournamentData = {
-      name,
-      url: uniqueSlug,
-      tournament_type: tournamentType,
-      description,
-    };
+    const uniqueSlug = `${safeSlug}_${Date.now()}`;
     
     const { data, error } = await supabase.functions.invoke("challonge", {
       body: {
         action: "createTournament",
-        args: tournamentData,
+        args: {
+          name,
+          url: uniqueSlug,
+          tournament_type: tournamentType,
+          description,
+        }
       }
     });
     
@@ -59,17 +57,14 @@ export class ChallongeService {
   static async addParticipant(params: AddParticipantParams): Promise<ChallongeParticipant> {
     const { tournamentId, name, seed, miscInfo } = params;
     
-    const participantData = {
-      name,
-      seed,
-      misc: miscInfo,
-    };
-    
     const { data, error } = await supabase.functions.invoke("challonge", {
       body: {
         action: "addParticipant",
-        tournamentId,
-        participantData,
+        args: {
+          tournamentId,
+          name,
+          misc_info: miscInfo,
+        }
       }
     });
     
