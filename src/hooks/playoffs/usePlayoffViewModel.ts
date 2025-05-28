@@ -1,12 +1,17 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { BracketService, fetchBracketById, groupBracketMatchesByType, updateMatchResult, computeBracketState } from "@/services/BracketService";
+import { fetchBracketById, groupBracketMatchesByType, updateMatchResult } from "@/services/BracketService";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
 import { BracketMatchesByType } from "@/services/brackets/types";
 import { PlayoffBracket, PlayoffViewModel, Team, PlayoffGame, BracketState, PlayoffMatch } from "@/types/playoffs";
 import { BRACKET_STATES } from '@/constants/brackets';
+
+// Very small replacement for legacy BracketService.computeBracketState
+const computeBracketState = (state: string) =>
+  state === 'underway' ? 'in_progress'
+  : state === 'complete' ? 'finished'
+  : 'pending';
 
 /**
  * Unified hook for playoff bracket data and management
@@ -121,7 +126,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       
       // Calculate and update the bracket state if needed
       if (bracket) {
-        const calculatedState = computeBracketState(bracket);
+        const calculatedState = computeBracketState(bracket.state);
         if (bracket.state !== calculatedState) {
           // Update the bracket state in the database
           await BracketService.supabase
