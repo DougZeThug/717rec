@@ -55,7 +55,8 @@ export const fetchTeamsFromApi = async () => {
     game_wins: team.game_wins || 0,
     game_losses: team.game_losses || 0,
     created_at: team.created_at || new Date().toISOString(),
-    division: team.division_id || null,
+    division_id: team.division_id || null, // Keep consistent naming
+    division: team.division_id || null, // For backward compatibility
     divisionName: team.divisionname || null,
     // Use directly the SOS and power score calculated in the database view
     sos: typeof team.sos === 'number' ? team.sos : 0.5,
