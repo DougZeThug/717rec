@@ -16,7 +16,8 @@ export interface PlayoffHandlers {
     team2Score: number,
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
-    team2GameWins: number
+    team2GameWins: number,
+    refetchBrackets?: () => Promise<any>
   ) => Promise<void>;
   
   // Bracket operations
