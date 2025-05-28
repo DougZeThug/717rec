@@ -2,6 +2,7 @@
 import { ChallongeService } from '@/services/ChallongeService';
 import { ChallongeTournament } from '@/services/challonge/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from "@/integrations/supabase/client";
 
 export function useChallongeAdmin() {
   const qc = useQueryClient();
@@ -28,6 +29,16 @@ export function useChallongeAdmin() {
       
       await ChallongeService.addTeamsToTournament(tournament.id.toString(), teams);
       await ChallongeService.startTournament(tournament.id.toString());
+      
+      // Save bracket to local database
+      const { error: insertError } = await supabase.from("brackets").insert({
+        title: name.trim(),
+        division_id: divisionId,
+        format,
+        state: "pending",
+        challonge_tournament_id: Number(tournament.id),
+      });
+      if (insertError) throw new Error(`Local save failed: ${insertError.message}`);
       
       return tournament as ChallongeTournament;
     },
