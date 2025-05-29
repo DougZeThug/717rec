@@ -30,10 +30,6 @@ const AdminView: React.FC = () => {
       <TabsContent value="brackets" className="space-y-6">
         {/* Challonge Fallback - Always show for admins */}
         <div className="mb-8">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">2025 Spring Playoffs</h2>
-            <p className="text-gray-600">Live tournament brackets</p>
-          </div>
           <ChallongeFallback />
         </div>
 
