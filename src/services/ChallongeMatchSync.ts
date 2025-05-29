@@ -50,43 +50,45 @@ export async function syncChallongeMatches(
     console.log(`📊 Found ${matches.length} matches to sync`);
 
     // 2. Transform Challonge matches to playoff_matches format
-    const rows: PlayoffMatchInsert[] = (matches as RawChallongeMatch[]).map((match, index) => {
-      // Determine match type based on Challonge match structure
-      let matchType: "winners" | "losers" | "finals" = "winners";
-      
-      // In Challonge, negative rounds are typically losers bracket
-      if (match.round < 0) {
-        matchType = "losers";
-      } else if (match.round === 1 && matches.filter(m => (m as RawChallongeMatch).round === 1).length === 1) {
-        // If there's only one match in round 1, it's likely the finals
-        matchType = "finals";
+    const rows: PlayoffMatchInsert[] = (matches as unknown as RawChallongeMatch[]).map(
+      (m) => {
+        // Determine match type based on Challonge match structure
+        let matchType: "winners" | "losers" | "finals" = "winners";
+        
+        // In Challonge, negative rounds are typically losers bracket
+        if (m.round < 0) {
+          matchType = "losers";
+        } else if (m.round === 1 && matches.filter(match => (match as unknown as RawChallongeMatch).round === 1).length === 1) {
+          // If there's only one match in round 1, it's likely the finals
+          matchType = "finals";
+        }
+
+        // Calculate position - use suggested_play_order if available, otherwise use a default
+        const position = m.suggested_play_order ?? 1;
+
+        const transformedMatch: PlayoffMatchInsert = {
+          bracket_id: bracketId,
+          round: Math.abs(m.round), // Use absolute value for round number
+          position: position,
+          match_type: matchType,
+          best_of: 3, // Default best of 3 for the league
+          
+          // Map Challonge participant IDs to local team IDs
+          team1_id: teamMap[m.player1_id ?? 0] ?? null,
+          team2_id: teamMap[m.player2_id ?? 0] ?? null,
+          winner_id: teamMap[m.winner_id ?? 0] ?? null,
+          
+          // Set status based on Challonge match state
+          status: m.state === "complete" ? "completed" : "pending",
+          
+          // Store original Challonge match data for reference
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        return transformedMatch;
       }
-
-      // Calculate position - use suggested_play_order if available, otherwise use index
-      const position = match.suggested_play_order || (index + 1);
-
-      const transformedMatch: PlayoffMatchInsert = {
-        bracket_id: bracketId,
-        round: Math.abs(match.round), // Use absolute value for round number
-        position: position,
-        match_type: matchType,
-        best_of: 3, // Default best of 3 for the league
-        
-        // Map Challonge participant IDs to local team IDs
-        team1_id: match.player1_id ? teamMap[match.player1_id] || null : null,
-        team2_id: match.player2_id ? teamMap[match.player2_id] || null : null,
-        winner_id: match.winner_id ? teamMap[match.winner_id] || null : null,
-        
-        // Set status based on Challonge match state
-        status: match.state === "complete" ? "completed" : "pending",
-        
-        // Store original Challonge match data for reference
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-
-      return transformedMatch;
-    });
+    );
 
     // Filter out matches with missing team mappings (log warnings)
     const validRows = rows.filter(row => {
