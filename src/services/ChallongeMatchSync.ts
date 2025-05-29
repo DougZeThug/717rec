@@ -50,7 +50,7 @@ export async function syncChallongeMatches(
     console.log(`📊 Found ${matches.length} matches to sync`);
 
     // 2. Transform Challonge matches to playoff_matches format
-    const rows: PlayoffMatchInsert[] = (matches as unknown as RawChallongeMatch[]).map(
+    const rows: PlayoffMatchInsert[] = (matches as RawChallongeMatch[]).map(
       (m) => {
         // Determine match type based on Challonge match structure
         let matchType: "winners" | "losers" | "finals" = "winners";
@@ -58,7 +58,7 @@ export async function syncChallongeMatches(
         // In Challonge, negative rounds are typically losers bracket
         if (m.round < 0) {
           matchType = "losers";
-        } else if (m.round === 1 && matches.filter(match => (match as unknown as RawChallongeMatch).round === 1).length === 1) {
+        } else if (m.round === 1 && matches.filter(match => (match as RawChallongeMatch).round === 1).length === 1) {
           // If there's only one match in round 1, it's likely the finals
           matchType = "finals";
         }
