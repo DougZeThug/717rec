@@ -18,10 +18,7 @@ export const PlayoffViewSelector: React.FC<Props> = ({ view }) => {
     case 'public':
       return <PlayoffView />;
     default:
-      return (
-        <div className="text-center py-10">
-          <p className="text-muted-foreground">No bracket selected</p>
-        </div>
-      );
+      // Fallback to public view to ensure Challonge brackets are always shown
+      return <PlayoffView />;
   }
 };
