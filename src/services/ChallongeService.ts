@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from "@/services/challonge/types";
 import { Team } from "@/types";
@@ -68,17 +67,16 @@ export class ChallongeService {
   }
   
   /**
-   * Bulk adds participants (teams) to a Challonge tournament
+   * Bulk adds participants (teams) to a Challonge tournament with proper seeding
    */
   static async addTeamsToTournament(tournamentId: string, teams: Team[]): Promise<ChallongeParticipant[]> {
     const participants: ChallongeParticipant[] = [];
     
-    for (let i = 0; i < teams.length; i++) {
-      const team = teams[i];
+    for (const team of teams) {
       const participant = await this.addParticipant({
         tournamentId,
         name: team.name,
-        seed: i + 1,
+        seed: team.seed || 1, // Use the team's actual seed, fallback to 1
         misc: team.id, // Store the team ID in Challonge for reference
       });
       participants.push(participant);

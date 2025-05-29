@@ -36,7 +36,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
     name: ranking.teamName,
     logoUrl: ranking.imageUrl,
     imageUrl: ranking.imageUrl,
-    seed: index + 1,
+    seed: index + 1, // This is the correct seed based on rankings
     powerScore: ranking.powerScore,
     wins: ranking.wins,
     losses: ranking.losses,
@@ -56,7 +56,8 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
   console.log("BracketFormTeams: Available teams with divisions:", rankedTeams.map(t => ({
     name: t.name,
     divisionName: t.divisionName,
-    powerScore: t.powerScore
+    powerScore: t.powerScore,
+    seed: t.seed
   })));
   
   // Filter by selected division if needed
@@ -73,7 +74,8 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
   console.log("BracketFormTeams: Filtered teams for division:", filteredTeams.map(t => ({
     name: t.name,
     divisionName: t.divisionName,
-    powerScore: t.powerScore
+    powerScore: t.powerScore,
+    seed: t.seed
   })));
   
   // Verify teams and filter out invalid teams

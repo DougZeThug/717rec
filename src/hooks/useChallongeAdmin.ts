@@ -1,3 +1,4 @@
+
 import { ChallongeService } from '@/services/ChallongeService';
 import { ChallongeTournament } from '@/services/challonge/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +19,7 @@ export function useChallongeAdmin() {
     }: { 
       name: string; 
       tournamentType: "single elimination" | "double elimination"; 
-      teams: { id: string; name: string }[];
+      teams: { id: string; name: string; seed?: number }[];
       divisionId: string;
       format: string;
     }) => {
@@ -34,8 +35,12 @@ export function useChallongeAdmin() {
           description: `Tournament created for ${name}`
         });
         
-        // Step 2: Add teams to Challonge tournament
-        await ChallongeService.addTeamsToTournament(tournament.id.toString(), teams);
+        // Step 2: Add teams to Challonge tournament with proper seeding
+        // Sort teams by seed to ensure proper order
+        const sortedTeams = teams.sort((a, b) => (a.seed || 999) - (b.seed || 999));
+        console.log("Adding teams to Challonge with seeds:", sortedTeams.map(t => ({ name: t.name, seed: t.seed })));
+        
+        await ChallongeService.addTeamsToTournament(tournament.id.toString(), sortedTeams);
         
         // Step 3: Start Challonge tournament
         await ChallongeService.startTournament(tournament.id.toString());
