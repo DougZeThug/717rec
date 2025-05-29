@@ -34,7 +34,6 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
       <div className="max-w-7xl mx-auto">
         <PlayoffHeader 
           onCreateBracket={view.handleCreateBracket} 
-          onOpenTeamDialog={() => view.setTeamDialogOpen(true)} 
         />
         
         <PlayoffViewSelector view={selectedView} />
@@ -45,7 +44,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
 
       {/* All dialogs */}
       <PlayoffDialogs
-        // Team division dialog props
+        // Team division dialog props - only accessible through admin panel now
         teamDialogOpen={view.teamDialogOpen}
         setTeamDialogOpen={view.setTeamDialogOpen}
         teamsByDivision={data.teamsByDivision}
