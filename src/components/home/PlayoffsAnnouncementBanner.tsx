@@ -18,17 +18,13 @@ const PlayoffsAnnouncementBanner: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-orange-600/20 to-red-600/20" />
       
       <div className="relative z-10 text-center text-white px-6">
-        <div className="flex justify-center items-center gap-2 mb-4">
+        <div className="flex justify-center items-center gap-2 mb-6">
           <Trophy className="w-8 h-8 text-yellow-300 animate-pulse" />
           <h2 className="text-3xl md:text-4xl font-bebas uppercase tracking-wide">
             Playoffs Start Tonight!
           </h2>
           <Star className="w-8 h-8 text-yellow-300 animate-pulse" />
         </div>
-        
-        <p className="text-lg md:text-xl mb-6 font-sans opacity-95">
-          Don't miss the action - brackets are live now!
-        </p>
         
         <Button
           asChild
