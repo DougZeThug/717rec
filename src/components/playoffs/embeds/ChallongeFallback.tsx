@@ -1,6 +1,7 @@
 
-import React from "react";
-import { ChallongeEmbed } from "./ChallongeEmbed";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Expand, Minimize, ChevronDown, ChevronUp } from "lucide-react";
 
 const brackets = [
   { slug: "717reccomp", title: "Competitive" },
@@ -9,10 +10,117 @@ const brackets = [
   { slug: "717recRec", title: "Recreational" },
 ];
 
-export const ChallongeFallback: React.FC = () => (
-  <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {brackets.map(({ slug, title }) => (
-      <ChallongeEmbed key={slug} slug={slug} title={title} />
-    ))}
-  </section>
-);
+export const ChallongeFallback: React.FC = () => {
+  const [allExpanded, setAllExpanded] = useState(false);
+
+  const toggleAll = () => {
+    setAllExpanded(!allExpanded);
+    // Force all brackets to update their state
+    const event = new CustomEvent('toggleAllBrackets', { detail: !allExpanded });
+    window.dispatchEvent(event);
+  };
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">2025 Spring Playoffs</h2>
+          <p className="text-gray-600">Live tournament brackets - click any bracket to view details</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleAll}
+          className="flex items-center gap-2"
+        >
+          {allExpanded ? (
+            <>
+              <Minimize className="h-4 w-4" />
+              Collapse All
+            </>
+          ) : (
+            <>
+              <Expand className="h-4 w-4" />
+              Expand All
+            </>
+          )}
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4">
+        {brackets.map(({ slug, title }) => (
+          <ChallongeEmbedWithToggle 
+            key={slug} 
+            slug={slug} 
+            title={title} 
+            forceExpanded={allExpanded}
+          />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+// Wrapper component to handle the expand all functionality
+const ChallongeEmbedWithToggle: React.FC<{ 
+  slug: string; 
+  title: string; 
+  forceExpanded: boolean;
+}> = ({ slug, title, forceExpanded }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  React.useEffect(() => {
+    const handleToggleAll = (event: CustomEvent) => {
+      setIsOpen(event.detail);
+    };
+
+    window.addEventListener('toggleAllBrackets', handleToggleAll as EventListener);
+    return () => {
+      window.removeEventListener('toggleAllBrackets', handleToggleAll as EventListener);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    setIsOpen(forceExpanded);
+  }, [forceExpanded]);
+
+  return (
+    <div className="rounded-2xl shadow-lg overflow-hidden bg-white">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full p-4 text-left bg-gray-100 border-b border-gray-200 hover:bg-gray-200 transition-colors duration-200 flex items-center justify-between group"
+      >
+        <h3 className="text-lg font-semibold text-gray-900">
+          {title}
+        </h3>
+        <div className="flex items-center gap-2">
+          {!isOpen && (
+            <span className="text-sm text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              Click to view bracket
+            </span>
+          )}
+          {isOpen ? (
+            <ChevronUp className="h-5 w-5 text-gray-600 transition-transform duration-200" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-gray-600 transition-transform duration-200" />
+          )}
+        </div>
+      </button>
+      
+      {isOpen && (
+        <div className="transition-all duration-300 ease-in-out">
+          <iframe
+            src={`https://challonge.com/${slug}/module`}
+            width="100%"
+            height="500"
+            frameBorder="0"
+            scrolling="auto"
+            allowTransparency
+            title={`${title} Bracket`}
+            className="border-0"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
