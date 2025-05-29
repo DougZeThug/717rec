@@ -28,24 +28,33 @@ export function useChallongeAdmin() {
       let bracketId: string | null = null;
       
       try {
+        console.log("🎯 Starting bracket creation process...");
+        console.log("Teams to add:", teams.map(t => ({ name: t.name, seed: t.seed, id: t.id })));
+        
         // Step 1: Create Challonge tournament
+        console.log("📝 Step 1: Creating Challonge tournament...");
         tournament = await ChallongeService.createTournament({
           name,
           tournamentType,
           description: `Tournament created for ${name}`
         });
+        console.log("✅ Challonge tournament created with ID:", tournament.id);
         
         // Step 2: Add teams to Challonge tournament with proper seeding
         // Sort teams by seed to ensure proper order
         const sortedTeams = teams.sort((a, b) => (a.seed || 999) - (b.seed || 999));
-        console.log("Adding teams to Challonge with seeds:", sortedTeams.map(t => ({ name: t.name, seed: t.seed })));
+        console.log("👥 Step 2: Adding teams to Challonge with seeds:", sortedTeams.map(t => ({ name: t.name, seed: t.seed })));
         
-        await ChallongeService.addTeamsToTournament(tournament.id.toString(), sortedTeams);
+        const challongeParticipants = await ChallongeService.addTeamsToTournament(tournament.id.toString(), sortedTeams);
+        console.log("✅ Added participants to Challonge:", challongeParticipants.length);
         
         // Step 3: Start Challonge tournament
+        console.log("🚀 Step 3: Starting Challonge tournament...");
         await ChallongeService.startTournament(tournament.id.toString());
+        console.log("✅ Challonge tournament started");
         
         // Step 4: Save bracket to local database
+        console.log("💾 Step 4: Saving bracket to local database...");
         const { data: bracketData, error: insertError } = await supabase
           .from("brackets")
           .insert({
@@ -59,7 +68,7 @@ export function useChallongeAdmin() {
           .single();
         
         if (insertError || !bracketData) {
-          // Challonge succeeded but Supabase failed
+          console.error("❌ Local bracket save failed:", insertError);
           toast({
             title: "Partial Success",
             description: "Challonge tournament created but local save failed. Tournament exists in Challonge but not in local database.",
@@ -70,16 +79,47 @@ export function useChallongeAdmin() {
         
         localBracketInserted = true;
         bracketId = bracketData.id;
+        console.log("✅ Local bracket saved with ID:", bracketId);
+        
+        // Step 4.5: Create local participants
+        console.log("👤 Step 4.5: Creating local participants...");
+        try {
+          for (const team of sortedTeams) {
+            const { error: participantError } = await supabase
+              .from('participants')
+              .insert({
+                bracket_id: bracketId,
+                team_id: team.id,
+                position: team.seed || 1,
+                name: team.name
+              });
+            
+            if (participantError) {
+              console.error("⚠️ Error creating participant for team:", team.name, participantError);
+            } else {
+              console.log("✅ Created participant for:", team.name, "with seed:", team.seed);
+            }
+          }
+          console.log("✅ All local participants created");
+        } catch (participantError) {
+          console.error("❌ Failed to create local participants:", participantError);
+          // Don't throw here - participants are not critical for the match sync
+        }
         
         // Step 5: Sync matches from Challonge to local database
         try {
-          console.log("🔄 Syncing matches from Challonge to local database...");
+          console.log("🔄 Step 5: Syncing matches from Challonge to local database...");
           
-          // Build participant map
-          const participantMap = await buildParticipantMap(teams, tournament.id.toString());
+          // Build participant map - use the teams we just added
+          console.log("🗺️ Building participant map...");
+          const participantMap = await buildParticipantMap(sortedTeams, tournament.id.toString());
+          console.log("✅ Participant map built:", Object.keys(participantMap).length, "entries");
+          console.log("Participant map details:", participantMap);
           
           // Sync matches
+          console.log("⚽ Syncing matches...");
           await syncChallongeMatches(tournament.id, bracketId, participantMap);
+          console.log("✅ Matches synced successfully");
           
           toast({
             title: "Bracket Created Successfully",
@@ -87,10 +127,11 @@ export function useChallongeAdmin() {
           });
           
         } catch (syncError) {
-          console.error("Match sync failed:", syncError);
+          console.error("❌ Match sync failed with detailed error:", syncError);
+          console.error("Error stack:", syncError.stack);
           toast({
-            title: "Bracket Created with Warning",
-            description: "Bracket was created but some matches may not have synced properly. You can view the bracket in Challonge.",
+            title: "Bracket Created with Sync Error",
+            description: `Bracket was created but match sync failed: ${syncError.message || 'Unknown error'}. Check console for details.`,
             variant: "destructive"
           });
           // Don't throw here - the bracket was created successfully
@@ -99,8 +140,11 @@ export function useChallongeAdmin() {
         return tournament;
         
       } catch (error: any) {
-        // Determine which step failed and provide appropriate error handling
+        console.error("❌ Bracket creation failed at some step:", error);
+        console.error("Error details:", error.message);
+        console.error("Error stack:", error.stack);
         
+        // Determine which step failed and provide appropriate error handling
         if (tournament && !localBracketInserted) {
           // Challonge operations succeeded, but local save failed
           toast({
