@@ -6,6 +6,19 @@ import type { Database } from "@/integrations/supabase/types";
 // DB row types for playoff_matches table
 type PlayoffMatchInsert = Database["public"]["Tables"]["playoff_matches"]["Insert"];
 
+/** Minimal shape returned by Challonge /matches endpoint that we need. */
+type RawChallongeMatch = {
+  id: number;
+  round: number;                       // positive = WB, negative = LB
+  group_id: number | null;
+  suggested_play_order: number | null;
+  player1_id: number | null;
+  player2_id: number | null;
+  winner_id: number | null;
+  loser_id: number | null;
+  state: string;
+};
+
 interface ParticipantMap {
   [challongeParticipantId: number]: string; // maps to local team_id (uuid)
 }
@@ -37,14 +50,14 @@ export async function syncChallongeMatches(
     console.log(`📊 Found ${matches.length} matches to sync`);
 
     // 2. Transform Challonge matches to playoff_matches format
-    const rows: PlayoffMatchInsert[] = matches.map((match, index) => {
+    const rows: PlayoffMatchInsert[] = (matches as RawChallongeMatch[]).map((match, index) => {
       // Determine match type based on Challonge match structure
       let matchType: "winners" | "losers" | "finals" = "winners";
       
       // In Challonge, negative rounds are typically losers bracket
       if (match.round < 0) {
         matchType = "losers";
-      } else if (match.round === 1 && matches.filter(m => m.round === 1).length === 1) {
+      } else if (match.round === 1 && matches.filter(m => (m as RawChallongeMatch).round === 1).length === 1) {
         // If there's only one match in round 1, it's likely the finals
         matchType = "finals";
       }
