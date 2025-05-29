@@ -53,7 +53,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
       {/* FIXME: Temporary Challonge fallback - remove once native bracket logic is working */}
       <div className="mb-8">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">2024 Playoffs</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">2025 Spring Playoffs</h2>
           <p className="text-gray-600">Live tournament brackets</p>
         </div>
         <ChallongeFallback />

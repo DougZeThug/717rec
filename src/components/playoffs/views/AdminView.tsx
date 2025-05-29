@@ -21,7 +21,7 @@ const AdminView: React.FC = () => {
   };
 
   return (
-    <Tabs value={view.activeTab} onValueChange={view.setActiveTab} className="space-y-4">
+    <Tabs value={view.activeTab} onValueChange={view.setActiveTab} defaultValue="brackets" className="space-y-4">
       <TabsList>
         <TabsTrigger value="brackets">Brackets</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
@@ -31,7 +31,7 @@ const AdminView: React.FC = () => {
         {/* Challonge Fallback - Always show for admins */}
         <div className="mb-8">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">2024 Playoffs</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">2025 Spring Playoffs</h2>
             <p className="text-gray-600">Live tournament brackets</p>
           </div>
           <ChallongeFallback />
