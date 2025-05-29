@@ -30,7 +30,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
       id: ranking.teamId,
       name: ranking.teamName,
       logoUrl: ranking.imageUrl,
-      imageUrl: ranking.image_url || ranking.imageUrl,
+      imageUrl: ranking.imageUrl,
       seed: index + 1, // This is the correct seed based on rankings
       powerScore: ranking.powerScore,
       wins: ranking.wins,
