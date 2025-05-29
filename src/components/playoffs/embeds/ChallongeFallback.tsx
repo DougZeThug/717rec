@@ -3,10 +3,10 @@ import React from "react";
 import { ChallongeEmbed } from "./ChallongeEmbed";
 
 const brackets = [
-  { slug: "717reccomp", title: "Division A" },
-  { slug: "717recInt1", title: "Division B" },
-  { slug: "717recInt2", title: "Division C" },
-  { slug: "717recRec", title: "Division D" },
+  { slug: "717reccomp", title: "Competitive" },
+  { slug: "717recInt1", title: "Intermediate 1" },
+  { slug: "717recInt2", title: "Intermediate 2" },
+  { slug: "717recRec", title: "Recreational" },
 ];
 
 export const ChallongeFallback: React.FC = () => (
