@@ -1,4 +1,3 @@
-
 // Team related types
 export interface Team {
   id: string;
@@ -99,6 +98,9 @@ export interface Ranking {
 
 // Types for playoff brackets - Export from the new centralized file
 export * from './playoffs';
+
+// New bracket operation types
+export * from './bracket';
 
 // Division type
 export interface Division {
