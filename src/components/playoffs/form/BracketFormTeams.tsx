@@ -7,6 +7,7 @@ import { BracketFormValues } from "./BracketFormSchema";
 import { Team } from "@/types";
 import { validateTeamSelection } from "@/utils/bracketValidation";
 import { isValidUUID } from "@/utils/validation";
+import { useTeamRankings } from "@/hooks/useTeamRankings";
 
 interface BracketFormTeamsProps {
   form: UseFormReturn<BracketFormValues>;
@@ -18,9 +19,31 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
   const minTeams = 2;
   const maxTeams = 16;
   
-  // Verify teams is properly defined and filter out invalid teams
-  // Make sure we're showing the correct team records from v_team_details
-  const validTeams = Array.isArray(teams) ? teams.filter(team => 
+  // Get properly ranked teams using the ranking system
+  const { rankings, isLoading: rankingsLoading } = useTeamRankings(teams);
+  
+  // Convert rankings back to team format with seed numbers
+  const rankedTeams = rankings.map((ranking, index) => {
+    const team = teams?.find(t => t.id === ranking.teamId);
+    if (!team) return null;
+    
+    return {
+      ...team,
+      seed: index + 1, // Add seed number based on ranking position
+      powerScore: ranking.powerScore,
+      wins: ranking.wins,
+      losses: ranking.losses
+    };
+  }).filter(Boolean) as (Team & { seed: number; powerScore: number })[];
+  
+  // Filter by selected division if needed
+  const selectedDivisionId = form.watch('divisionId');
+  const filteredTeams = selectedDivisionId 
+    ? rankedTeams.filter(team => team.division_id === selectedDivisionId)
+    : rankedTeams;
+  
+  // Verify teams and filter out invalid teams
+  const validTeams = Array.isArray(filteredTeams) ? filteredTeams.filter(team => 
     team && 
     team.id && 
     isValidUUID(team.id) && 
@@ -69,18 +92,20 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
           <FormDescription className="text-xs">
             Selected {teamCount} of {maxTeams} maximum teams
             {validTeams.length > 0 && ` from ${validTeams.length} available`}
+            <br />
+            <span className="text-blue-600">Teams are ordered by current standings (seeding order)</span>
           </FormDescription>
           <FormControl>
             <Card className="p-2 max-h-64 overflow-y-auto">
-              {validTeams.length > 0 ? (
+              {rankingsLoading ? (
+                <div className="text-center py-4 text-gray-500">
+                  Loading team rankings...
+                </div>
+              ) : validTeams.length > 0 ? (
                 <div className="space-y-2">
                   {validTeams.map((team) => {
                     const isSelected = selectedTeams.includes(team.id);
                     const canSelect = !isSelected || selectedTeams.length < maxTeams;
-                    
-                    // Display accurate team records - use the data from v_team_details
-                    const wins = team.wins || 0;
-                    const losses = team.losses || 0;
                     
                     return (
                       <div 
@@ -94,6 +119,9 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
                         }`}
                         onClick={() => canSelect && handleTeamToggle(team.id)}
                       >
+                        <div className="mr-3 flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full text-xs font-bold text-blue-800">
+                          {team.seed}
+                        </div>
                         <div className="mr-2">
                           {team.logoUrl || team.imageUrl ? (
                             <img 
@@ -110,9 +138,14 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
                             </div>
                           )}
                         </div>
-                        <span className="flex-1">{team.name}</span>
+                        <div className="flex-1">
+                          <div className="font-medium">{team.name}</div>
+                          <div className="text-xs text-gray-500">
+                            Power: {team.powerScore.toFixed(1)}
+                          </div>
+                        </div>
                         <span className="ml-auto text-xs text-gray-500">
-                          {wins}-{losses}
+                          {team.wins}-{team.losses}
                         </span>
                       </div>
                     );
