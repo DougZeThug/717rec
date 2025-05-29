@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from "@/services/challonge/types";
 import { Team } from "@/types";
@@ -122,7 +121,8 @@ export class ChallongeService {
     });
     
     if (error) throw error;
-    return data;
+    // Challonge returns [{ match: { … } }] - unwrap the match objects
+    return (data as any[]).map((m) => m.match);
   }
   
   /**
@@ -139,7 +139,8 @@ export class ChallongeService {
     });
     
     if (error) throw error;
-    return data;
+    // Challonge returns [{ participant: { … } }] - unwrap the participant objects
+    return (data as any[]).map((p) => p.participant);
   }
   
   /**

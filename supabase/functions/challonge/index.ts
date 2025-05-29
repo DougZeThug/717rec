@@ -58,6 +58,14 @@ serve(async req => {
         );
         return json(200, data);
       }
+      case "getParticipants": {
+        const { tournamentId } = payload.args;
+        const data = await challongeFetch(
+          "GET",
+          `/tournaments/${tournamentId}/participants`,
+        );
+        return json(200, data);
+      }
       case "updateMatch": {
         const { matchId, scores_csv, winner_id } = payload.args;
         const body = { match: { scores_csv, winner_id } };
