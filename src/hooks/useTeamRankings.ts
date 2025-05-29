@@ -21,7 +21,26 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       const teamsToUse = teams || latestTeams;
       const matchesToUse = matches || latestMatches;
       
-      if (!teamsToUse || teamsToUse.length === 0) {
+      // Wait for teams data to be loaded and ensure we have power scores
+      if (!teamsToUse || teamsToUse.length === 0 || teamsLoading) {
+        console.log("Teams not loaded yet or empty:", { teamsCount: teamsToUse?.length, teamsLoading });
+        setRankings([]);
+        return;
+      }
+
+      // Check if teams have power scores - if not, wait for proper data
+      const teamsWithPowerScores = teamsToUse.filter(team => 
+        team.power_score !== undefined && team.power_score !== null && team.power_score > 0
+      );
+
+      if (teamsWithPowerScores.length === 0) {
+        console.log("No teams with valid power scores found, waiting for data to load...");
+        console.log("Sample team data:", teamsToUse.slice(0, 2).map(t => ({
+          name: t.name,
+          power_score: t.power_score,
+          wins: t.wins,
+          losses: t.losses
+        })));
         setRankings([]);
         return;
       }
@@ -29,14 +48,16 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       setIsLoading(true);
       
       try {
+        console.log(`Processing ${teamsToUse.length} teams with power scores`);
+        
         // Create rankings directly from team data, using v_team_details values
         const calculatedRankings = teamsToUse.map((team): Ranking => {
           // Calculate streak from matches
           const streak = calculateStreak(team.id, matchesToUse);
           const previousRank = previousRankings[team.id];
           
-          // Debug log for previous rank data
-          console.log(`Team ${team.name} previous rank: ${previousRank !== undefined ? previousRank : 'none'}`);
+          // Debug log for power score data
+          console.log(`Team ${team.name}: power_score=${team.power_score}, wins=${team.wins}, losses=${team.losses}`);
           
           // Use the power_score directly from v_team_details
           return {
@@ -44,14 +65,14 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             teamName: team.name,
             imageUrl: team.imageUrl,
             logoUrl: team.logoUrl,
-            wins: team.wins,
-            losses: team.losses,
-            gamesWon: team.game_wins,
-            gamesLost: team.game_losses,
-            winPercentage: team.win_percentage,
-            gameWinPercentage: team.game_win_percentage,
-            sos: team.sos,
-            powerScore: team.power_score,
+            wins: team.wins || 0,
+            losses: team.losses || 0,
+            gamesWon: team.game_wins || 0,
+            gamesLost: team.game_losses || 0,
+            winPercentage: team.win_percentage || 0,
+            gameWinPercentage: team.game_win_percentage || 0,
+            sos: team.sos || 0.5,
+            powerScore: team.power_score || 0,
             streak,
             divisionName: team.divisionName || 'Unassigned',
             previousRank,
@@ -62,39 +83,44 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         });
 
         // Sort by power score from v_team_details (descending)
-        const sortedRankings = calculatedRankings.sort((a, b) => b.powerScore - a.powerScore);
+        const sortedRankings = calculatedRankings.sort((a, b) => {
+          // Primary sort by power score (descending)
+          if (b.powerScore !== a.powerScore) {
+            return b.powerScore - a.powerScore;
+          }
+          // Secondary sort by win percentage if power scores are equal
+          if (b.winPercentage !== a.winPercentage) {
+            return b.winPercentage - a.winPercentage;
+          }
+          // Tertiary sort by name for consistency
+          return a.teamName.localeCompare(b.teamName);
+        });
         
-        console.log("Before updating rank changes:", 
-          sortedRankings.map(r => ({
+        console.log("Sorted rankings by power score:", 
+          sortedRankings.slice(0, 5).map(r => ({
             team: r.teamName,
-            previousRank: r.previousRank,
-            currentRank: sortedRankings.findIndex(sr => sr.teamId === r.teamId) + 1
+            powerScore: r.powerScore,
+            winPct: r.winPercentage
           }))
         );
 
         // Update rank changes based on previous rankings
         const finalRankings = updateRankChanges(sortedRankings);
         
-        console.log("After updating rank changes:", 
-          finalRankings.map(r => ({
-            team: r.teamName, 
-            rankChange: r.rankChange,
-            previousRank: r.previousRank
-          }))
-        );
-        
         // Save current rankings for future rank change calculations
-        // This will be saved to 'currentRankings' in localStorage
         saveRankingsToStorage(finalRankings);
         
         setRankings(finalRankings);
+      } catch (error) {
+        console.error("Error calculating rankings:", error);
+        setRankings([]);
       } finally {
         setIsLoading(false);
       }
     };
     
     updateRankings();
-  }, [teams, latestTeams, latestMatches, matches, previousRankings, lastUpdated]);
+  }, [teams, latestTeams, latestMatches, matches, previousRankings, lastUpdated, teamsLoading]);
 
   return {
     rankings,

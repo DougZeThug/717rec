@@ -27,6 +27,13 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
   // Get properly ranked teams using the ranking system
   const { rankings, isLoading: rankingsLoading } = useTeamRankings(teams);
   
+  console.log("TeamSelectionList: rankings data:", rankings.slice(0, 3).map(r => ({
+    team: r.teamName,
+    powerScore: r.powerScore,
+    wins: r.wins,
+    losses: r.losses
+  })));
+  
   // Convert rankings back to team format with seed numbers
   const rankedTeams = rankings.map((ranking, index) => {
     const team = teams?.find(t => t.id === ranking.teamId);
@@ -71,7 +78,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
     <>
       <div className="border rounded-md p-2 h-[200px] overflow-y-auto">
         {isLoadingData ? (
-          <p className="text-center py-4 text-gray-500">Loading teams...</p>
+          <p className="text-center py-4 text-gray-500">Loading teams and calculating rankings...</p>
         ) : rankedTeams.length > 0 ? (
           <div className="space-y-2">
             {rankedTeams.map((team) => {
@@ -101,7 +108,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
                   <div className="flex-1">
                     <div className="font-medium">{team.name || 'Unnamed Team'}</div>
                     <div className="text-xs text-gray-500">
-                      Power: {team.powerScore.toFixed(1)}
+                      Power: {team.powerScore > 0 ? team.powerScore.toFixed(1) : 'TBD'}
                     </div>
                   </div>
                   <span className="ml-auto text-xs">
@@ -121,7 +128,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
         Selected: {selectedIds.length} teams
         {maxTeams && ` (max: ${maxTeams})`}
         <br />
-        <span className="text-blue-600">Teams ordered by current standings</span>
+        <span className="text-blue-600">Teams ordered by current standings (seed order)</span>
       </div>
       <FormMessage />
     </>

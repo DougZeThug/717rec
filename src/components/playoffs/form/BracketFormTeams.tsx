@@ -22,6 +22,13 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
   // Get properly ranked teams using the ranking system
   const { rankings, isLoading: rankingsLoading } = useTeamRankings(teams);
   
+  console.log("BracketFormTeams: rankings data:", rankings.slice(0, 3).map(r => ({
+    team: r.teamName,
+    powerScore: r.powerScore,
+    wins: r.wins,
+    losses: r.losses
+  })));
+  
   // Convert rankings back to team format with seed numbers
   const rankedTeams = rankings.map((ranking, index) => {
     const team = teams?.find(t => t.id === ranking.teamId);
@@ -82,6 +89,28 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
     }
   };
 
+  if (rankingsLoading) {
+    return (
+      <FormField
+        control={form.control}
+        name="teams"
+        render={() => (
+          <FormItem>
+            <FormLabel>Select Teams (Min {minTeams}, Max {maxTeams})</FormLabel>
+            <FormDescription className="text-xs">
+              Loading team rankings and seeding order...
+            </FormDescription>
+            <FormControl>
+              <Card className="p-4 text-center text-gray-500">
+                Loading teams...
+              </Card>
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    );
+  }
+
   return (
     <FormField
       control={form.control}
@@ -97,11 +126,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
           </FormDescription>
           <FormControl>
             <Card className="p-2 max-h-64 overflow-y-auto">
-              {rankingsLoading ? (
-                <div className="text-center py-4 text-gray-500">
-                  Loading team rankings...
-                </div>
-              ) : validTeams.length > 0 ? (
+              {validTeams.length > 0 ? (
                 <div className="space-y-2">
                   {validTeams.map((team) => {
                     const isSelected = selectedTeams.includes(team.id);
@@ -141,7 +166,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
                         <div className="flex-1">
                           <div className="font-medium">{team.name}</div>
                           <div className="text-xs text-gray-500">
-                            Power: {team.powerScore.toFixed(1)}
+                            Power: {team.powerScore > 0 ? team.powerScore.toFixed(1) : 'TBD'}
                           </div>
                         </div>
                         <span className="ml-auto text-xs text-gray-500">
@@ -153,7 +178,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
                 </div>
               ) : (
                 <p className="text-center py-4 text-gray-500">
-                  No teams found in this division
+                  {selectedDivisionId ? 'No teams found in this division' : 'No teams available. Please select a division first.'}
                 </p>
               )}
             </Card>
