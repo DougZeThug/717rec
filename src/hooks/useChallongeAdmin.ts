@@ -173,5 +173,82 @@ export function useChallongeAdmin() {
     },
   });
 
-  return { createBracket, reportMatch };
+  const resyncMatches = useMutation({
+    mutationFn: async ({
+      bracketId,
+      challongeTournamentId
+    }: {
+      bracketId: string;
+      challongeTournamentId: number;
+    }) => {
+      try {
+        console.log("🔄 Resyncing matches from Challonge...");
+        
+        // Get bracket details to find teams
+        const { data: bracket, error: bracketError } = await supabase
+          .from('brackets')
+          .select(`
+            id,
+            division_id,
+            divisions!inner(id)
+          `)
+          .eq('id', bracketId)
+          .single();
+          
+        if (bracketError || !bracket) {
+          throw new Error(`Failed to fetch bracket: ${bracketError?.message || 'Bracket not found'}`);
+        }
+        
+        // Get teams in this division
+        const { data: teams, error: teamsError } = await supabase
+          .from('teams')
+          .select('id, name')
+          .eq('division_id', bracket.division_id);
+          
+        if (teamsError) {
+          throw new Error(`Failed to fetch teams: ${teamsError.message}`);
+        }
+        
+        // Build participant map
+        const participantMap = await buildParticipantMap(teams || [], challongeTournamentId.toString());
+        
+        // Delete existing playoff matches for this bracket
+        const { error: deleteError } = await supabase
+          .from('playoff_matches')
+          .delete()
+          .eq('bracket_id', bracketId);
+          
+        if (deleteError) {
+          throw new Error(`Failed to clear existing matches: ${deleteError.message}`);
+        }
+        
+        // Sync matches from Challonge
+        await syncChallongeMatches(challongeTournamentId, bracketId, participantMap);
+        
+        return { success: true };
+        
+      } catch (error: any) {
+        console.error("Match resync failed:", error);
+        throw new Error(`Failed to resync matches: ${error.message}`);
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Matches Resynced Successfully",
+        description: "All matches have been resynced from Challonge.",
+      });
+      qc.invalidateQueries({ queryKey: ['brackets'] });
+      qc.invalidateQueries({ queryKey: ['playoff-matches'] });
+      qc.invalidateQueries({ queryKey: ['challonge-bracket'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Resync Failed",
+        description: error.message || "Failed to resync matches from Challonge.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  return { createBracket, reportMatch, resyncMatches };
 }

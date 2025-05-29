@@ -7,11 +7,17 @@ import TeamDivisionTable from "../TeamDivisionTable";
 import { usePlayoffPageData } from "../hooks/usePlayoffPageData";
 import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
 import { usePlayoffViewState } from "../hooks/usePlayoffViewState";
+import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 
 const AdminView: React.FC = () => {
   const data = usePlayoffPageData();
   const handlers = usePlayoffHandlers(data);
   const view = usePlayoffViewState(data, handlers);
+  const { resyncMatches } = useChallongeAdmin();
+
+  const handleResyncBracket = (bracketId: string, challongeTournamentId: number) => {
+    resyncMatches.mutate({ bracketId, challongeTournamentId });
+  };
 
   return (
     <Tabs value={view.activeTab} onValueChange={view.setActiveTab} className="space-y-4">
@@ -29,6 +35,8 @@ const AdminView: React.FC = () => {
             onViewBracket={data.setSelectedBracketId}
             onEditBracket={view.handleCreateBracket}
             onDeleteBracket={view.handleDeleteBracket}
+            onResyncBracket={handleResyncBracket}
+            isResyncLoading={resyncMatches.isPending}
             isLoading={data.isLoading}
           />
         ) : (

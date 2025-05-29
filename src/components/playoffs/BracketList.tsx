@@ -13,6 +13,8 @@ interface BracketListProps {
   onViewBracket: (id: string) => void;
   onEditBracket: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
+  onResyncBracket?: (bracketId: string, challongeTournamentId: number) => void;
+  isResyncLoading?: boolean;
   isLoading: boolean;
 }
 
@@ -23,6 +25,8 @@ const BracketList: React.FC<BracketListProps> = ({
   onViewBracket,
   onEditBracket,
   onDeleteBracket,
+  onResyncBracket,
+  isResyncLoading,
   isLoading
 }) => {
   if (isLoading) {
@@ -70,6 +74,8 @@ const BracketList: React.FC<BracketListProps> = ({
               onCreateBracket={onCreateBracket}
               onEditBracket={onEditBracket}
               onDeleteBracket={onDeleteBracket}
+              onResyncBracket={onResyncBracket}
+              isResyncLoading={isResyncLoading}
             />
           ))}
         </div>
