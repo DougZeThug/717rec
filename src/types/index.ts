@@ -1,3 +1,4 @@
+
 // Team related types
 export interface Team {
   id: string;
@@ -99,8 +100,16 @@ export interface Ranking {
 // Types for playoff brackets - Export from the new centralized file
 export * from './playoffs';
 
-// New bracket operation types
-export * from './bracket';
+// Export specific types from bracket.ts (excluding BracketFormat to avoid conflict)
+export type {
+  TeamBase,
+  BracketMeta,
+  PlayoffMatchSimple,
+  BracketCreationRequest,
+  BracketOperationResult,
+  MatchStatus,
+  MatchType,
+} from './bracket';
 
 // Division type
 export interface Division {
