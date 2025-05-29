@@ -8,7 +8,6 @@ import { ChallongeError, SupabaseError } from "@/utils/errors";
 export interface BracketCreationOptions {
   name: string;
   format: "singleElim" | "doubleElim";
-  tournamentType: "single elimination" | "double elimination";
   divisionId: string;
   teams: { id: string; name: string; seed?: number }[];
   onProgress?: (step: string) => void;
@@ -19,10 +18,13 @@ export interface BracketCreationResult {
   challongeTournamentId: number;
 }
 
-export async function createBracket(options: BracketCreationOptions): Promise<BracketCreationResult> {
-  const { name, tournamentType, divisionId, teams, onProgress } = options;
+export async function createBracket(options: BracketCreationOptions): Promise<string> {
+  const { name, format, divisionId, teams, onProgress } = options;
   
-  bracketLog("Starting bracket creation:", { name, format: options.format, teamCount: teams.length });
+  // Convert format to Challonge type
+  const tournamentType = format === "singleElim" ? "single elimination" : "double elimination";
+  
+  bracketLog("Starting bracket creation:", { name, format, teamCount: teams.length });
   
   let tournament: any = null;
   let bracketId: string | null = null;
@@ -65,7 +67,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       .insert({
         title: name.trim(),
         division_id: divisionId,
-        format: options.format,
+        format: format,
         state: "pending",
         challonge_tournament_id: Number(tournament.id),
       })
@@ -108,10 +110,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     
     onProgress?.("Complete!");
     
-    return {
-      bracketId,
-      challongeTournamentId: tournament.id
-    };
+    return bracketId;
     
   } catch (error) {
     failureLog("Bracket creation failed", error);

@@ -9,6 +9,12 @@ import { BracketValidationService } from "@/services/brackets/validation/Bracket
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 
+// Format mapping from UI strings to internal format
+const FORMAT_MAP = {
+  "Single Elimination": "singleElim",
+  "Double Elimination": "doubleElim",
+} as const;
+
 interface BracketCreationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,17 +51,16 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      // Map form data to Challonge format using the selected format
-      const tournamentType = data.format.toLowerCase() as "single elimination" | "double elimination";
+      // Map UI format to internal format
+      const internalFormat = FORMAT_MAP[data.format as keyof typeof FORMAT_MAP];
       const selectedTeams = (teams || []).filter(team => data.teams.includes(team.id));
       
       // Create tournament via Challonge with all required parameters
-      const tournament = await createBracket.mutateAsync({
+      const bracketId = await createBracket.mutateAsync({
         name: data.title,
-        tournamentType,
+        format: internalFormat,
         teams: selectedTeams.map(team => ({ id: team.id, name: team.name })),
-        divisionId: data.divisionId,
-        format: data.format
+        divisionId: data.divisionId
       });
       
       toast({
@@ -66,7 +71,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       // Close dialog and notify parent
       onOpenChange(false);
       if (onBracketCreated) {
-        onBracketCreated(tournament.id.toString());
+        onBracketCreated(bracketId);
       }
       
     } catch (error: any) {

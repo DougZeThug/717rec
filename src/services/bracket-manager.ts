@@ -2,7 +2,7 @@
 import { ChallongeService } from "@/services/ChallongeService";
 import { supabase } from "@/integrations/supabase/client";
 import { syncChallongeMatches, buildParticipantMap } from "@/services/ChallongeMatchSync";
-import { challengeLog, successLog, failureLog } from "@/utils/logger";
+import { challongeLog, successLog, failureLog } from "@/utils/logger";
 import { ChallongeError, SupabaseError } from "@/utils/errors";
 
 export interface MatchReportOptions {
@@ -20,7 +20,7 @@ export interface MatchResyncOptions {
 export async function reportMatch(options: MatchReportOptions) {
   const { tournamentId, matchId, scoresCsv, winnerId } = options;
   
-  challengeLog("Reporting match result:", { tournamentId, matchId, winnerId });
+  challongeLog("Reporting match result:", { tournamentId, matchId, winnerId });
   
   try {
     const result = await ChallongeService.updateMatch({
@@ -42,7 +42,7 @@ export async function reportMatch(options: MatchReportOptions) {
 export async function resyncMatches(options: MatchResyncOptions) {
   const { bracketId, challongeTournamentId } = options;
   
-  challengeLog("Resyncing matches from Challonge:", { bracketId, challongeTournamentId });
+  challongeLog("Resyncing matches from Challonge:", { bracketId, challongeTournamentId });
   
   try {
     // Get bracket details to find teams

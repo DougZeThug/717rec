@@ -10,7 +10,7 @@ export function useChallongeAdmin() {
 
   const createBracketMutation = useMutation({
     mutationFn: (options: BracketCreationOptions) => createBracket(options),
-    onSuccess: (result, variables) => {
+    onSuccess: (bracketId, variables) => {
       toast({
         title: "Bracket Created Successfully",
         description: `"${variables.name}" has been created with ${variables.teams.length} teams and matches synced from Challonge.`,
