@@ -26,10 +26,14 @@ export interface PlayoffViewState {
   handleConfirmDeleteBracket: () => Promise<void>;
 }
 
-export function usePlayoffViewState(data: PlayoffPageData, handlers: PlayoffHandlers): PlayoffViewState {
+export function usePlayoffViewState(
+  data: PlayoffPageData, 
+  handlers: PlayoffHandlers,
+  initialTab: string = "view"
+): PlayoffViewState {
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("view");
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [deletingBracket, setDeletingBracket] = useState<{ id: string, name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 

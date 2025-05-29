@@ -13,7 +13,7 @@ import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 const AdminView: React.FC = () => {
   const data = usePlayoffPageData();
   const handlers = usePlayoffHandlers(data);
-  const view = usePlayoffViewState(data, handlers);
+  const view = usePlayoffViewState(data, handlers, "brackets");
   const { resyncMatches } = useChallongeAdmin();
 
   const handleResyncBracket = (bracketId: string, challongeTournamentId: number) => {
