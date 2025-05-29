@@ -7,8 +7,10 @@ interface Props {
 }
 
 export const ChallongeEmbed: React.FC<Props> = ({ slug, title }) => (
-  <div className="rounded-2xl shadow-lg overflow-hidden">
-    <h3 className="p-4 text-lg font-semibold bg-gray-50 border-b">{title}</h3>
+  <div className="rounded-2xl shadow-lg overflow-hidden bg-white">
+    <h3 className="p-4 text-lg font-semibold bg-gray-100 border-b text-gray-900 border-gray-200">
+      {title}
+    </h3>
     <iframe
       src={`https://challonge.com/${slug}/module`}
       width="100%"
