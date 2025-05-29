@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
 import BracketDetail from "@/components/playoffs/BracketDetail";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
+import { ChallongeFallback } from "@/components/playoffs/embeds/ChallongeFallback";
 import { PlayoffBracket, Team } from "@/types/playoffs";
 import BracketView from "./BracketView";
 
@@ -49,6 +50,15 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 
   return (
     <div className="space-y-8">
+      {/* FIXME: Temporary Challonge fallback - remove once native bracket logic is working */}
+      <div className="mb-8">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">2024 Playoffs</h2>
+          <p className="text-gray-600">Live tournament brackets</p>
+        </div>
+        <ChallongeFallback />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {availableDivisions.map((division) => (
           <DivisionBracketsCard 
