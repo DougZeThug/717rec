@@ -24,8 +24,8 @@ export const ChallongeFallback: React.FC = () => {
     <section className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">2025 Spring Playoffs</h2>
-          <p className="text-gray-600">Live tournament brackets - click any bracket to view details</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">2025 Spring Playoffs</h2>
+          <p className="text-muted-foreground">Live tournament brackets - click any bracket to view details</p>
         </div>
         <Button
           variant="outline"
@@ -85,24 +85,24 @@ const ChallongeEmbedWithToggle: React.FC<{
   }, [forceExpanded]);
 
   return (
-    <div className="rounded-2xl shadow-lg overflow-hidden bg-white">
+    <div className="rounded-2xl shadow-lg overflow-hidden bg-card">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 text-left bg-gray-100 border-b border-gray-200 hover:bg-gray-200 transition-colors duration-200 flex items-center justify-between group"
+        className="w-full p-4 text-left bg-muted border-b border-border hover:bg-muted/80 transition-colors duration-200 flex items-center justify-between group"
       >
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-foreground">
           {title}
         </h3>
         <div className="flex items-center gap-2">
           {!isOpen && (
-            <span className="text-sm text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <span className="text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               Click to view bracket
             </span>
           )}
           {isOpen ? (
-            <ChevronUp className="h-5 w-5 text-gray-600 transition-transform duration-200" />
+            <ChevronUp className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
           ) : (
-            <ChevronDown className="h-5 w-5 text-gray-600 transition-transform duration-200" />
+            <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200" />
           )}
         </div>
       </button>
