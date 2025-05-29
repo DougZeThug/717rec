@@ -57,30 +57,55 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Fetch teams data
+  // Fetch teams data from v_team_details view
   const teamsQuery = useQuery({
     queryKey: ['teams'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('teams')
-        .select('*');
-        
+        .from('v_team_details')
+        .select(`
+          team_id,
+          name,
+          logo_url,
+          image_url,
+          division_id,
+          divisionname,
+          wins,
+          losses,
+          game_wins,
+          game_losses,
+          players
+        `)
+        .order('name');
+
       if (error) throw error;
-      
-      // Map the database teams to the PlayoffViewModel Team type
-      return (data || []).map(team => ({
-        id: team.id,
-        name: team.name,
-        logo_url: team.logo_url,
-        image_url: team.image_url,
-        division_id: team.division_id,
-        created_at: team.created_at,
-        wins: team.wins || 0,
-        losses: team.losses || 0,
-        game_wins: team.game_wins,
-        game_losses: team.game_losses,
-        seed: team.seed,
-        players: team.players
+
+      return (data ?? []).map(row => ({
+        id: row.team_id,
+        name: row.name ?? 'Unnamed Team',
+
+        // camel-case fields used by TeamDivisionTable
+        logoUrl: row.logo_url ?? null,
+        imageUrl: row.image_url ?? null,
+        division_id: row.division_id ?? null,
+        division: row.division_id ?? null,          // legacy fallback
+        divisionName: row.divisionname ?? null,
+
+        wins: row.wins ?? 0,
+        losses: row.losses ?? 0,
+        game_wins: row.game_wins ?? 0,
+        game_losses: row.game_losses ?? 0,
+
+        players: Array.isArray(row.players) ? row.players : [],
+        
+        // Additional fields to satisfy Team type
+        created_at: new Date().toISOString(),
+        seed: null,
+        power_score: 0,
+        sos: 0.5,
+        win_percentage: 0,
+        game_win_percentage: 0,
+        close_match_losses: 0
       })) as Team[];
     }
   });
