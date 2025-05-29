@@ -33,8 +33,8 @@ serve(async req => {
         return json(200, data);
       }
       case "addParticipant": {
-        const { tournamentId, name, misc_info } = payload.args;
-        const body = { participant: { name, misc_info } };
+        const { tournamentId, name, seed, misc } = payload.args;
+        const body = { participant: { name, seed, misc } };
         const data = await challongeFetch(
           "POST",
           `/tournaments/${tournamentId}/participants`,

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from "@/services/challonge/types";
 import { Team } from "@/types";
@@ -12,8 +13,8 @@ interface CreateTournamentParams {
 interface AddParticipantParams {
   tournamentId: string;
   name: string;
-  seed?: number;
-  miscInfo?: string;
+  seed: number;
+  misc: string;
 }
 
 interface UpdateMatchParams {
@@ -55,16 +56,10 @@ export class ChallongeService {
    * Adds a participant (team) to a Challonge tournament
    */
   static async addParticipant(params: AddParticipantParams): Promise<ChallongeParticipant> {
-    const { tournamentId, name, seed, miscInfo } = params;
-    
     const { data, error } = await supabase.functions.invoke("challonge", {
       body: {
         action: "addParticipant",
-        args: {
-          tournamentId,
-          name,
-          misc_info: miscInfo,
-        }
+        args: params
       }
     });
     
@@ -83,8 +78,8 @@ export class ChallongeService {
       const participant = await this.addParticipant({
         tournamentId,
         name: team.name,
-        seed: team.seed || i + 1,
-        miscInfo: team.id, // Store the team ID in Challonge for reference
+        seed: i + 1,
+        misc: team.id, // Store the team ID in Challonge for reference
       });
       participants.push(participant);
     }

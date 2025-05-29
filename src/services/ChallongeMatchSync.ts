@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChallongeService } from "./ChallongeService";
 import type { Database } from "@/integrations/supabase/types";
@@ -125,11 +126,11 @@ export async function buildParticipantMap(
     
     const participantMap: ParticipantMap = {};
     
-    // Map participants using misc_info field which contains local team ID
+    // Map participants using misc field which contains local team ID
     participants.forEach(participant => {
-      if (participant.misc_info) {
-        // misc_info contains the local team ID
-        participantMap[participant.id] = participant.misc_info;
+      if (participant.misc) {
+        // misc contains the local team ID
+        participantMap[participant.id] = participant.misc;
       } else {
         // Fallback: try to match by name
         const matchingTeam = teams.find(team => team.name === participant.name);
