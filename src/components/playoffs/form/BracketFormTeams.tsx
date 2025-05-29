@@ -11,43 +11,70 @@ import { useTeamRankings } from "@/hooks/useTeamRankings";
 
 interface BracketFormTeamsProps {
   form: UseFormReturn<BracketFormValues>;
-  teams: Team[] | undefined;
+  teams?: Team[] | undefined; // Make teams optional since we'll fetch our own
 }
 
-export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams }) => {
+export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
   // Minimum team requirement
   const minTeams = 2;
   const maxTeams = 16;
   
-  // Get properly ranked teams using the ranking system
-  const { rankings, isLoading: rankingsLoading } = useTeamRankings(teams);
+  // Fetch our own teams data with power scores - don't rely on the prop
+  const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
-  console.log("BracketFormTeams: rankings data:", rankings.slice(0, 3).map(r => ({
+  console.log("BracketFormTeams: Fresh rankings data with power scores:", rankings.slice(0, 3).map(r => ({
     team: r.teamName,
     powerScore: r.powerScore,
     wins: r.wins,
-    losses: r.losses
+    losses: r.losses,
+    divisionName: r.divisionName
   })));
   
-  // Convert rankings back to team format with seed numbers
-  const rankedTeams = rankings.map((ranking, index) => {
-    const team = teams?.find(t => t.id === ranking.teamId);
-    if (!team) return null;
-    
-    return {
-      ...team,
-      seed: index + 1, // Add seed number based on ranking position
-      powerScore: ranking.powerScore,
-      wins: ranking.wins,
-      losses: ranking.losses
-    };
-  }).filter(Boolean) as (Team & { seed: number; powerScore: number })[];
+  // Convert rankings to team format with seed numbers - these teams have proper power scores
+  const rankedTeams = rankings.map((ranking, index) => ({
+    id: ranking.teamId,
+    name: ranking.teamName,
+    logoUrl: ranking.imageUrl,
+    imageUrl: ranking.imageUrl,
+    seed: index + 1,
+    powerScore: ranking.powerScore,
+    wins: ranking.wins,
+    losses: ranking.losses,
+    division_id: null, // Will be populated from division filtering
+    divisionName: ranking.divisionName,
+    players: [],
+    created_at: new Date().toISOString(),
+    game_wins: ranking.gamesWon,
+    game_losses: ranking.gamesLost,
+    sos: ranking.sos,
+    power_score: ranking.powerScore,
+    win_percentage: ranking.winPercentage,
+    game_win_percentage: ranking.gameWinPercentage,
+    close_match_losses: ranking.closeMatchLosses || 0
+  }));
+  
+  console.log("BracketFormTeams: Available teams with divisions:", rankedTeams.map(t => ({
+    name: t.name,
+    divisionName: t.divisionName,
+    powerScore: t.powerScore
+  })));
   
   // Filter by selected division if needed
   const selectedDivisionId = form.watch('divisionId');
-  const filteredTeams = selectedDivisionId 
-    ? rankedTeams.filter(team => team.division_id === selectedDivisionId)
+  const selectedDivisionName = form.watch('divisionName'); // Get division name for filtering
+  
+  console.log("BracketFormTeams: Selected division:", { selectedDivisionId, selectedDivisionName });
+  
+  // Filter teams by division name since that's what we have in rankings
+  const filteredTeams = selectedDivisionName 
+    ? rankedTeams.filter(team => team.divisionName === selectedDivisionName)
     : rankedTeams;
+  
+  console.log("BracketFormTeams: Filtered teams for division:", filteredTeams.map(t => ({
+    name: t.name,
+    divisionName: t.divisionName,
+    powerScore: t.powerScore
+  })));
   
   // Verify teams and filter out invalid teams
   const validTeams = Array.isArray(filteredTeams) ? filteredTeams.filter(team => 
@@ -178,7 +205,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form, teams 
                 </div>
               ) : (
                 <p className="text-center py-4 text-gray-500">
-                  {selectedDivisionId ? 'No teams found in this division' : 'No teams available. Please select a division first.'}
+                  {selectedDivisionName ? `No teams found in ${selectedDivisionName} division` : 'No teams available. Please select a division first.'}
                 </p>
               )}
             </Card>

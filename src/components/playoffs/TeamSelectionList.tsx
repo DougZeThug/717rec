@@ -6,47 +6,70 @@ import { TeamLogo } from "@/components/ui/team";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 
 interface TeamSelectionListProps {
-  teams: Team[] | undefined;
+  teams?: Team[] | undefined; // Make teams optional
   selectedTeams: string[];
   selectedTeamIds?: string[];
   onTeamToggle: (teamId: string) => void;
   onChange?: (selectedIds: string[]) => void;
   isLoading?: boolean;
   maxTeams?: number;
+  divisionName?: string; // Add division filtering
 }
 
 const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
-  teams,
   selectedTeams,
   selectedTeamIds,
   onTeamToggle,
   onChange,
   isLoading = false,
-  maxTeams
+  maxTeams,
+  divisionName
 }) => {
-  // Get properly ranked teams using the ranking system
-  const { rankings, isLoading: rankingsLoading } = useTeamRankings(teams);
+  // Fetch our own teams data with power scores - don't rely on the teams prop
+  const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
-  console.log("TeamSelectionList: rankings data:", rankings.slice(0, 3).map(r => ({
+  console.log("TeamSelectionList: Fresh rankings data:", rankings.slice(0, 3).map(r => ({
     team: r.teamName,
     powerScore: r.powerScore,
     wins: r.wins,
-    losses: r.losses
+    losses: r.losses,
+    divisionName: r.divisionName
   })));
   
-  // Convert rankings back to team format with seed numbers
-  const rankedTeams = rankings.map((ranking, index) => {
-    const team = teams?.find(t => t.id === ranking.teamId);
-    if (!team) return null;
-    
-    return {
-      ...team,
-      seed: index + 1, // Add seed number based on ranking position
-      powerScore: ranking.powerScore,
-      wins: ranking.wins,
-      losses: ranking.losses
-    };
-  }).filter(Boolean) as (Team & { seed: number; powerScore: number })[];
+  // Convert rankings to team format with seed numbers
+  const rankedTeams = rankings.map((ranking, index) => ({
+    id: ranking.teamId,
+    name: ranking.teamName,
+    logoUrl: ranking.imageUrl,
+    imageUrl: ranking.imageUrl,
+    seed: index + 1,
+    powerScore: ranking.powerScore,
+    wins: ranking.wins,
+    losses: ranking.losses,
+    divisionName: ranking.divisionName,
+    players: [],
+    created_at: new Date().toISOString(),
+    division_id: null,
+    division: null,
+    game_wins: ranking.gamesWon,
+    game_losses: ranking.gamesLost,
+    sos: ranking.sos,
+    power_score: ranking.powerScore,
+    win_percentage: ranking.winPercentage,
+    game_win_percentage: ranking.gameWinPercentage,
+    close_match_losses: ranking.closeMatchLosses || 0
+  }));
+  
+  // Filter by division if specified
+  const filteredTeams = divisionName 
+    ? rankedTeams.filter(team => team.divisionName === divisionName)
+    : rankedTeams;
+  
+  console.log("TeamSelectionList: Filtered teams for division:", filteredTeams.map(t => ({
+    name: t.name,
+    divisionName: t.divisionName,
+    powerScore: t.powerScore
+  })));
   
   // Use either selectedTeamIds or selectedTeams
   const selectedIds = selectedTeamIds || selectedTeams || [];
@@ -79,9 +102,9 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
       <div className="border rounded-md p-2 h-[200px] overflow-y-auto">
         {isLoadingData ? (
           <p className="text-center py-4 text-gray-500">Loading teams and calculating rankings...</p>
-        ) : rankedTeams.length > 0 ? (
+        ) : filteredTeams.length > 0 ? (
           <div className="space-y-2">
-            {rankedTeams.map((team) => {
+            {filteredTeams.map((team) => {
               // Skip rendering invalid teams
               if (!team || !team.id) return null;
               
@@ -120,7 +143,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
           </div>
         ) : (
           <p className="text-center py-4 text-gray-500">
-            No teams found in this division
+            {divisionName ? `No teams found in ${divisionName} division` : 'No teams available'}
           </p>
         )}
       </div>
