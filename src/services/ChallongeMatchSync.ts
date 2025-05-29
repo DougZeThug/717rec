@@ -19,6 +19,13 @@ type RawChallongeMatch = {
   state: string;
 };
 
+/** Challonge /participants payload with the misc field we store */
+type RawChallongeParticipant = {
+  id: number;
+  name: string;
+  misc: string | null;     // holds local team-uuid
+};
+
 interface ParticipantMap {
   [challongeParticipantId: number]: string; // maps to local team_id (uuid)
 }
@@ -124,24 +131,26 @@ export async function buildParticipantMap(
     // Fetch participants from Challonge
     const participants = await ChallongeService.getParticipants(challongeTournamentId);
     
-    const participantMap: ParticipantMap = {};
+    // Create name-to-ID lookup for fallback matching
+    const teamNameToId: { [name: string]: string } = {};
+    teams.forEach(team => {
+      teamNameToId[team.name.toLowerCase()] = team.id;
+    });
     
-    // Map participants using misc field which contains local team ID
-    participants.forEach(participant => {
-      if (participant.misc) {
-        // misc contains the local team ID
-        participantMap[participant.id] = participant.misc;
+    const map: { [id: number]: string } = {};
+
+    (participants as unknown as RawChallongeParticipant[]).forEach((p) => {
+      if (p.misc) {
+        map[p.id] = p.misc;         // happy path
       } else {
-        // Fallback: try to match by name
-        const matchingTeam = teams.find(team => team.name === participant.name);
-        if (matchingTeam) {
-          participantMap[participant.id] = matchingTeam.id;
-        }
+        // fallback to name match if misc missing
+        const found = teamNameToId[p.name?.toLowerCase() ?? ""];
+        if (found) map[p.id] = found;
       }
     });
 
-    console.log("✅ Built participant map:", participantMap);
-    return participantMap;
+    console.log("✅ Built participant map:", map);
+    return map;
     
   } catch (error) {
     console.error("❌ Error building participant map:", error);
