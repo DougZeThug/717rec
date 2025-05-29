@@ -2,23 +2,26 @@
 import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
-import { UseFormReturn } from "react-hook-form";
-import { BracketFormValues } from "./BracketFormSchema";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import { useFilteredTeams, useTeamSelection, useTeamSeeding } from "@/hooks/playoffs";
 import SimpleTeamSelectionList from "../SimpleTeamSelectionList";
 import TeamSelectionSummary from "../TeamSelectionSummary";
 
-interface BracketFormTeamsProps {
-  form: UseFormReturn<BracketFormValues>;
+export interface BracketFormTeamsProps {
+  divisionId: string | null;
+  maxTeams: number;
+  onChange: (ids: string[]) => void;
 }
 
-export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
+export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ 
+  divisionId, 
+  maxTeams, 
+  onChange 
+}) => {
   // Minimum team requirement
   const minTeams = 2;
-  const maxTeams = 16;
   
-  // Fetch our own teams data with power scores - don't rely on props
+  // Fetch our own teams data with power scores
   const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
   // Convert rankings to team format with seed numbers - these teams have proper power scores
@@ -27,7 +30,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
       id: ranking.teamId,
       name: ranking.teamName,
       logoUrl: ranking.imageUrl,
-      imageUrl: ranking.imageUrl,
+      imageUrl: ranking.image_url || ranking.imageUrl,
       seed: index + 1, // This is the correct seed based on rankings
       powerScore: ranking.powerScore,
       wins: ranking.wins,
@@ -45,46 +48,28 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
       close_match_losses: ranking.closeMatchLosses || 0
     })), [rankings]);
   
-  // Get division filtering
-  const selectedDivisionName = form.watch('divisionName');
-  
   // Filter teams by division using the new hook
-  const filteredTeams = useFilteredTeams(rankedTeams, selectedDivisionName);
+  const filteredTeams = useFilteredTeams(rankedTeams, divisionId);
   
   // Apply seeding using the new hook
   const seededTeams = useTeamSeeding(filteredTeams);
   
   // Team selection using the new hook
-  const currentSelection = form.watch('teams') || [];
-  const { selected, toggle, setSelected } = useTeamSelection(currentSelection);
+  const { selected, toggle, setSelected } = useTeamSelection([]);
   
-  // Sync form changes with team selection
+  // Sync with parent through onChange callback
   React.useEffect(() => {
-    setSelected(currentSelection);
-  }, [currentSelection, setSelected]);
+    onChange(Array.from(selected));
+  }, [selected, onChange]);
   
   // Handle team toggle
   const handleTeamToggle = React.useCallback((teamId: string) => {
-    const currentTeams = form.getValues('teams') || [];
-    const isSelected = currentTeams.includes(teamId);
-    
-    let newSelection: string[];
-    if (isSelected) {
-      newSelection = currentTeams.filter(id => id !== teamId);
-    } else {
-      if (currentTeams.length >= maxTeams) {
-        return; // Don't add more teams if at max
-      }
-      newSelection = [...currentTeams, teamId];
-    }
-    
-    form.setValue('teams', newSelection, { shouldValidate: true });
-  }, [form, maxTeams]);
+    toggle(teamId, maxTeams);
+  }, [toggle, maxTeams]);
 
   if (rankingsLoading) {
     return (
       <FormField
-        control={form.control}
         name="teams"
         render={() => (
           <FormItem>
@@ -105,13 +90,12 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
 
   return (
     <FormField
-      control={form.control}
       name="teams"
-      render={({ field }) => (
+      render={() => (
         <FormItem>
           <FormLabel>Select Teams (Min {minTeams}, Max {maxTeams})</FormLabel>
           <FormDescription className="text-xs">
-            Selected {currentSelection.length} of {maxTeams} maximum teams
+            Selected {selected.size} of {maxTeams} maximum teams
             {seededTeams.length > 0 && ` from ${seededTeams.length} available`}
           </FormDescription>
           <FormControl>
@@ -123,7 +107,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ form }) => {
             />
           </FormControl>
           <TeamSelectionSummary 
-            count={currentSelection.length} 
+            count={selected.size} 
             max={maxTeams}
             minTeams={minTeams}
           />
