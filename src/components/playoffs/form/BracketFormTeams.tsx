@@ -3,6 +3,7 @@ import React from "react";
 import { useFilteredTeams, useTeamSeeding } from "@/hooks/playoffs";
 import { useBracketFormData, useBracketFormState } from "./bracket-teams/hooks";
 import { BracketFormTeamsProps } from "./bracket-teams/types";
+import { Team } from "@/types";
 import {
   TeamSelectionError,
   TeamSelectionLoading,
@@ -22,17 +23,41 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
   // Use the consolidated data hook
   const { teams: rankedTeams, isLoading, isError, errorMessage, isDataReady } = useBracketFormData(divisions);
   
+  // Convert ProcessedTeam[] to Team[] for UI components
+  const convertedTeams: Team[] = React.useMemo(() => {
+    return rankedTeams.map(team => ({
+      id: team.id,
+      name: team.name,
+      wins: team.wins,
+      losses: team.losses,
+      game_wins: team.game_wins,
+      game_losses: team.game_losses,
+      divisionName: team.divisionName,
+      division_id: team.division_id,
+      imageUrl: team.imageUrl,
+      logoUrl: team.logoUrl,
+      players: team.players,
+      seed: team.seed,
+      power_score: team.power_score,
+      sos: team.sos,
+      win_percentage: team.win_percentage,
+      game_win_percentage: team.game_win_percentage,
+      created_at: team.created_at,
+      close_match_losses: team.close_match_losses
+    }));
+  }, [rankedTeams]);
+  
   // Filter teams by division using the existing hook
-  const filteredTeams = useFilteredTeams(rankedTeams, divisionId);
+  const filteredTeams = useFilteredTeams(convertedTeams, divisionId);
   
   console.log("BracketFormTeams: Filtering results", {
-    totalTeams: rankedTeams.length,
+    totalTeams: convertedTeams.length,
     filteredTeams: filteredTeams.length,
     selectedDivisionId: divisionId,
-    sampleTeam: rankedTeams[0] ? {
-      name: rankedTeams[0].name,
-      division_id: rankedTeams[0].division_id,
-      divisionName: rankedTeams[0].divisionName
+    sampleTeam: convertedTeams[0] ? {
+      name: convertedTeams[0].name,
+      division_id: convertedTeams[0].division_id,
+      divisionName: convertedTeams[0].divisionName
     } : null
   });
   

@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { TeamSelectionForm } from '../bracket-teams/components/TeamSelectionForm';
+import { Team } from '@/types';
 
 // Mock the child components
 vi.mock('@/components/playoffs/SimpleTeamSelectionList', () => ({
@@ -33,19 +34,31 @@ vi.mock('@/components/playoffs/TeamSelectionSummary', () => ({
   ),
 }));
 
+// Helper function to create complete mock team
+const createMockTeam = (overrides: Partial<Team> = {}): Team => ({
+  id: 'team-1',
+  name: 'Team Alpha',
+  wins: 8,
+  losses: 2,
+  game_wins: 24,
+  game_losses: 6,
+  divisionName: 'Division A',
+  division_id: 'div-1',
+  imageUrl: null,
+  logoUrl: null,
+  players: [],
+  seed: 1,
+  power_score: 95.5,
+  sos: 0.65,
+  win_percentage: 0.8,
+  game_win_percentage: 0.8,
+  created_at: new Date().toISOString(),
+  close_match_losses: 0,
+  ...overrides
+});
+
 describe('TeamSelectionForm', () => {
-  const mockTeams = [
-    {
-      id: 'team-1',
-      name: 'Team Alpha',
-      seed: 1,
-      division_id: 'div-1',
-      divisionName: 'Division A',
-      powerScore: 95.5,
-      wins: 8,
-      losses: 2
-    }
-  ];
+  const mockTeams: Team[] = [createMockTeam()];
 
   const defaultProps = {
     minTeams: 2,
@@ -105,7 +118,7 @@ describe('TeamSelectionForm', () => {
       ...defaultProps,
       seededTeams: [],
       availableTeamsCount: 0,
-      selected: new Set(),
+      selected: new Set<string>(),
       count: 0
     };
     

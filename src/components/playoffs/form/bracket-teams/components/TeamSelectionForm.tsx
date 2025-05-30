@@ -3,14 +3,14 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import SimpleTeamSelectionList from "@/components/playoffs/SimpleTeamSelectionList";
 import TeamSelectionSummary from "@/components/playoffs/TeamSelectionSummary";
-import { ProcessedTeam } from "../types";
+import { Team } from "@/types";
 
 interface TeamSelectionFormProps {
   minTeams: number;
   maxTeams: number;
   statusMessage: string;
   availableTeamsCount: number;
-  seededTeams: ProcessedTeam[];
+  seededTeams: Team[];
   selected: Set<string>;
   count: number;
   onTeamToggle: (teamId: string) => void;

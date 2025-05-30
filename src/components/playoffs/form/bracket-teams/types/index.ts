@@ -69,6 +69,7 @@ export interface Division {
   name: string;
 }
 
+// Use Team from main types instead of ProcessedTeam
 export interface ProcessedTeam {
   id: string;
   name: string;
@@ -114,13 +115,13 @@ export interface DivisionMappingResult {
   mapDivisionName: (name: string) => string | null;
 }
 
-// Team data processor types
+// Team data processor types - return Team[] instead of ProcessedTeam[]
 export interface TeamDataProcessorResult {
   processedTeams: ProcessedTeam[];
   processingError: string | null;
 }
 
-// Bracket form data types
+// Bracket form data types - return Team[] instead of ProcessedTeam[]
 export interface BracketFormDataResult {
   teams: ProcessedTeam[];
   isLoading: boolean;
