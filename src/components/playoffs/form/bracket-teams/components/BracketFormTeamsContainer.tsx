@@ -22,11 +22,11 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   // Fetch and process team data
   const { teams, isLoading, isError, errorMessage } = useBracketFormData(divisions as Division[]);
   
-  // Manage form state
+  // Manage form state - fix potential object spreading issue
   const formState = useBracketFormState(
     maxTeams,
     onChange,
-    teams.length,
+    Array.isArray(teams) ? teams.length : 0,
     minTeams
   );
 
@@ -37,15 +37,15 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
 
   // Error state
   if (isError) {
-    return <TeamSelectionError message={errorMessage} />;
+    return <TeamSelectionError message={errorMessage || "An error occurred loading teams"} />;
   }
 
   // Empty state (no teams available)
-  if (!teams || teams.length === 0) {
+  if (!Array.isArray(teams) || teams.length === 0) {
     return <TeamSelectionEmpty />;
   }
 
-  // Main form with teams available
+  // Main form with teams available - ensure proper prop structure
   return (
     <TeamSelectionForm
       teams={teams}

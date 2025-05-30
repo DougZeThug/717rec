@@ -20,15 +20,20 @@ export const useBracketFormState = (
   availableTeamsCount: number = 0,
   minTeams: number = 2
 ): BracketFormStateResult => {
+  // Ensure we have valid numbers to prevent React errors
+  const validMaxTeams = typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16;
+  const validMinTeams = typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2;
+  const validAvailableCount = typeof availableTeamsCount === 'number' ? availableTeamsCount : 0;
+  
   // Team selection state
-  const teamSelection = useTeamSelectionState(maxTeams);
+  const teamSelection = useTeamSelectionState(validMaxTeams);
   
   // Form validation
   const validation = useFormValidation(
     teamSelection.count,
-    maxTeams,
-    minTeams,
-    availableTeamsCount
+    validMaxTeams,
+    validMinTeams,
+    validAvailableCount
   );
   
   // Side effects (parent sync)
@@ -39,31 +44,40 @@ export const useBracketFormState = (
    * Handles team selection/deselection with proper validation checks
    */
   const handleTeamToggle = React.useCallback((teamId: string) => {
-    teamSelection.toggle(teamId);
+    if (typeof teamId === 'string' && teamId.length > 0) {
+      teamSelection.toggle(teamId);
+    }
   }, [teamSelection.toggle]);
 
+  // Ensure we return a complete, valid object structure
   return {
-    // Team selection
-    selected: teamSelection.selected,
-    selectedArray: teamSelection.selectedArray,
-    count: teamSelection.count,
+    // Team selection - ensure all values are properly defined
+    selected: teamSelection.selected || new Set(),
+    selectedArray: teamSelection.selectedArray || [],
+    count: teamSelection.count || 0,
     handleTeamToggle,
-    clearSelection: teamSelection.clearSelection,
-    canSelectMore: teamSelection.canSelectMore,
-    isAtMaximum: teamSelection.isAtMaximum,
-    hasSelection: teamSelection.hasSelection,
+    clearSelection: teamSelection.clearSelection || (() => {}),
+    canSelectMore: teamSelection.canSelectMore ?? true,
+    isAtMaximum: teamSelection.isAtMaximum ?? false,
+    hasSelection: teamSelection.hasSelection ?? false,
     
-    // Validation
-    isValid: validation.isValid,
-    isComplete: validation.isComplete,
-    hasError: validation.hasError,
-    hasWarning: validation.hasWarning,
-    errorMessage: validation.errorMessage,
-    warningMessage: validation.warningMessage,
-    statusMessage: validation.statusMessage,
-    progress: validation.progress,
+    // Validation - ensure all validation properties exist
+    isValid: validation.isValid ?? false,
+    isComplete: validation.isComplete ?? false,
+    hasError: validation.hasError ?? false,
+    hasWarning: validation.hasWarning ?? false,
+    errorMessage: validation.errorMessage || null,
+    warningMessage: validation.warningMessage || null,
+    statusMessage: validation.statusMessage || 'Ready to select teams',
+    progress: validation.progress || {
+      percentage: 0,
+      selected: 0,
+      required: validMinTeams,
+      maximum: validMaxTeams,
+      available: validAvailableCount
+    },
     
     // Effects
-    cleanup: effects.cleanup
+    cleanup: effects.cleanup || (() => {})
   };
 };

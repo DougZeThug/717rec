@@ -103,13 +103,18 @@ export function usePlayoffPageData(): PlayoffPageData {
   try {
     if (bracketsByDivision) {
       Object.keys(bracketsByDivision).forEach(div => {
-        typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
-          ...b,
-          matches: b.matches || [],
-          id: b.id || crypto.randomUUID(), 
-          state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
-          format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
-        }));
+        const divisionBrackets = bracketsByDivision[div];
+        if (Array.isArray(divisionBrackets)) {
+          typesafeBracketsByDivision[div] = divisionBrackets.map(b => ({
+            ...b,
+            matches: Array.isArray(b.matches) ? b.matches : [],
+            id: b.id || crypto.randomUUID(), 
+            state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
+            format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
+          }));
+        } else {
+          typesafeBracketsByDivision[div] = [];
+        }
       });
     }
   } catch (err) {
@@ -123,13 +128,16 @@ export function usePlayoffPageData(): PlayoffPageData {
   
   const allBracketsData = (() => {
     try {
-      return allBrackets?.map(b => ({
+      if (!Array.isArray(allBrackets)) {
+        return [];
+      }
+      return allBrackets.map(b => ({
         ...b,
-        matches: b.matches || [],
+        matches: Array.isArray(b.matches) ? b.matches : [],
         id: b.id || crypto.randomUUID(),
         state: (b.state || BRACKET_STATES.PENDING) as BracketState,
         format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
-      })) || [];
+      }));
     } catch (err) {
       const errorMessage = getUIErrorMessage(err, "Failed to process all brackets data");
       logError(err, "allBracketsData processing");
@@ -140,7 +148,10 @@ export function usePlayoffPageData(): PlayoffPageData {
   
   const availableDivisions = (() => {
     try {
-      return divisions?.map(div => div.name) || [];
+      if (!Array.isArray(divisions)) {
+        return [];
+      }
+      return divisions.map(div => div.name).filter(Boolean);
     } catch (err) {
       const errorMessage = getUIErrorMessage(err, "Failed to process divisions data");
       logError(err, "availableDivisions processing");
@@ -166,7 +177,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     // Current bracket data
     bracket,
     isLoading: bracketLoading,
-    teams: teams || [],
+    teams: Array.isArray(teams) ? teams : [],
     teamsLoading,
     bracketMatchesByType,
     deleteBracket,
@@ -178,15 +189,15 @@ export function usePlayoffPageData(): PlayoffPageData {
     bracketsError: finalBracketsError,
     
     // Divisions data
-    divisions: divisions || [],
+    divisions: Array.isArray(divisions) ? divisions : [],
     divisionsLoading,
     availableDivisions,
     
     // All brackets data
-    allBrackets: allBrackets || [],
+    allBrackets: Array.isArray(allBrackets) ? allBrackets : [],
     bracketsLoading,
-    teamsByDivision,
-    bracketsByDivision,
+    teamsByDivision: teamsByDivision || {},
+    bracketsByDivision: bracketsByDivision || {},
     typesafeBracketsByDivision,
     allBracketsData,
     handleBracketCreated,
