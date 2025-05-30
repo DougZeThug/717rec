@@ -4,7 +4,7 @@ import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
 import { usePlayoffActions } from './usePlayoffActions';
 import { BracketMatchesByType } from "@/services/brackets/types";
-import { getUIErrorMessage, logError } from "@/utils/errors";
+import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/errors";
 import type { PlayoffViewModel } from "@/types/playoffs";
 
 // Local helper to group bracket matches by type
@@ -46,8 +46,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     }
   };
   
-  // Safely handle error conversion
-  const processedError = bracketQuery.error ? new Error(getUIErrorMessage(bracketQuery.error)) : null;
+  // Safely convert error to string for consistent interface
+  const processedError = convertErrorToString(bracketQuery.error);
   
   return {
     // Bracket data

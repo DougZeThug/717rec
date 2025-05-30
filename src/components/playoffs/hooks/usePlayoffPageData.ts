@@ -7,7 +7,7 @@ import { useChallongePublicBracket } from "@/hooks/useChallongePublicBracket";
 import { useDivisions } from "@/hooks/useDivisions";
 import { PlayoffBracket, BracketFormat, BracketState } from "@/utils/playoffs/playoffTypes";
 import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
-import { getUIErrorMessage, logError } from "@/utils/errors";
+import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/errors";
 
 export interface PlayoffPageData {
   // Auth & permissions
@@ -26,7 +26,7 @@ export interface PlayoffPageData {
   bracketMatchesByType: any;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   
-  // Enhanced error states
+  // Enhanced error states - all strings for consistency
   error: string | null;
   divisionsError: string | null;
   teamsError: string | null;
@@ -149,10 +149,10 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   })();
 
-  // Safely convert error types to strings for UI display
-  const teamsError = bracketError ? getUIErrorMessage(bracketError, "Teams loading") : null;
-  const finalDivisionsError = divisionsError || null;
-  const finalBracketsError = bracketsDataError || null;
+  // Safely convert error types to strings for UI display using new utility
+  const teamsError = convertErrorToString(bracketError);
+  const finalDivisionsError = convertErrorToString(divisionsError);
+  const finalBracketsError = convertErrorToString(bracketsDataError);
 
   return {
     // Auth & permissions
@@ -171,7 +171,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     bracketMatchesByType,
     deleteBracket,
     
-    // Enhanced error states
+    // Enhanced error states - all properly converted to strings
     error,
     divisionsError: finalDivisionsError,
     teamsError,

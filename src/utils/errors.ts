@@ -1,3 +1,4 @@
+
 export class ChallongeError extends Error {
   constructor(message: string, public readonly operation?: string) {
     super(message);
@@ -55,6 +56,20 @@ export function getErrorMessage(error: unknown): string {
     return error;
   }
   return 'An unknown error occurred';
+}
+
+// Enhanced error string conversion with type safety
+export function ensureErrorString(error: unknown, context?: string): string {
+  const message = getErrorMessage(error);
+  return context ? `${context}: ${message}` : message;
+}
+
+// Type-safe error state converter
+export function convertErrorToString(error: unknown): string | null {
+  if (error === null || error === undefined) {
+    return null;
+  }
+  return ensureErrorString(error);
 }
 
 // Error categorization for user-friendly messages
@@ -131,13 +146,7 @@ export function processError(error: unknown): {
 
 // Utility to safely extract error messages for UI display
 export function getUIErrorMessage(error: unknown, context?: string): string {
-  const processed = processError(error);
-  
-  if (context) {
-    return `${context}: ${processed.message}`;
-  }
-  
-  return processed.message;
+  return ensureErrorString(error, context);
 }
 
 // Utility to log errors consistently
