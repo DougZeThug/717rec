@@ -32,24 +32,40 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   onBracketCreated
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [dialogError, setDialogError] = React.useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { createBracket } = useChallongeAdmin();
   
-  // Handle form submission with better error handling
+  // Enhanced form submission with specific error categorization
   const handleSubmit = async (data: BracketFormValues) => {
     console.log("BracketCreationDialog: Starting form submission", data);
     
     try {
       setIsSubmitting(true);
+      setDialogError(null);
       
-      // Validate the form data
+      // Enhanced validation with specific error messages
       const validation = BracketValidationService.validateFormData(data as BracketFormData);
       if (!validation.isValid) {
+        const validationErrors = validation.errors.join(", ");
         console.error("BracketCreationDialog: Validation failed", validation.errors);
+        setDialogError(`Validation failed: ${validationErrors}`);
         toast({
           title: "Validation Error",
-          description: validation.errors.join(", "),
+          description: validationErrors,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Validate teams are available
+      if (!teams || teams.length === 0) {
+        const error = "No teams available for bracket creation";
+        setDialogError(error);
+        toast({
+          title: "Teams Required",
+          description: "Please add teams to your divisions before creating a bracket.",
           variant: "destructive"
         });
         return;
@@ -57,7 +73,29 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       
       // Map UI format to internal format
       const internalFormat = FORMAT_MAP[data.format as keyof typeof FORMAT_MAP];
-      const selectedTeams = (teams || []).filter(team => data.teams.includes(team.id));
+      if (!internalFormat) {
+        const error = `Invalid tournament format: ${data.format}`;
+        setDialogError(error);
+        toast({
+          title: "Format Error",
+          description: error,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const selectedTeams = teams.filter(team => data.teams.includes(team.id));
+      
+      if (selectedTeams.length < 2) {
+        const error = "At least 2 teams are required for a bracket";
+        setDialogError(error);
+        toast({
+          title: "Insufficient Teams",
+          description: error,
+          variant: "destructive"
+        });
+        return;
+      }
       
       console.log("BracketCreationDialog: Creating bracket with:", {
         name: data.title,
@@ -66,7 +104,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         divisionId: data.divisionId
       });
       
-      // Create tournament via Challonge with all required parameters
+      // Create tournament via Challonge with enhanced error handling
       const bracketId = await createBracket.mutateAsync({
         name: data.title,
         format: internalFormat,
@@ -88,9 +126,28 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     } catch (error: any) {
       console.error("BracketCreationDialog: Error creating bracket:", error);
       
+      let errorMessage = "An unexpected error occurred";
+      
+      // Categorize errors for better user experience
+      if (error?.message) {
+        if (error.message.includes("Challonge")) {
+          errorMessage = `Challonge API Error: ${error.message}`;
+        } else if (error.message.includes("network") || error.message.includes("fetch")) {
+          errorMessage = "Network Error: Please check your internet connection and try again";
+        } else if (error.message.includes("validation")) {
+          errorMessage = `Validation Error: ${error.message}`;
+        } else if (error.message.includes("database")) {
+          errorMessage = `Database Error: ${error.message}`;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setDialogError(errorMessage);
+      
       toast({
         title: "Bracket Creation Failed",
-        description: error?.message || "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -98,10 +155,11 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     }
   };
 
-  // Handle error boundary reset
+  // Enhanced error boundary reset
   const handleErrorReset = () => {
     console.log("BracketCreationDialog: Resetting after error");
     setIsSubmitting(false);
+    setDialogError(null);
   };
   
   return (
@@ -110,6 +168,14 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
         </DialogHeader>
+        
+        {dialogError && (
+          <div className="mb-4 p-4 border border-destructive rounded-lg bg-destructive/10">
+            <p className="text-sm text-destructive font-medium">Error Details:</p>
+            <p className="text-sm text-destructive mt-1">{dialogError}</p>
+          </div>
+        )}
+        
         <BracketCreationErrorBoundary onReset={handleErrorReset}>
           <BracketForm
             divisions={divisions}

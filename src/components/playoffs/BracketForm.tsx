@@ -10,7 +10,7 @@ import { BracketFormFormat } from "./form/BracketFormFormat";
 import { BracketFormTeams } from "./form/BracketFormTeams";
 import { BracketFormActions } from "./form/BracketFormActions";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw, Database, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BracketFormProps {
@@ -36,23 +36,99 @@ const BracketForm: React.FC<BracketFormProps> = ({
     isSubmitting 
   });
 
-  // Add validation for divisions and teams with loading states
-  const validDivisions = Array.isArray(divisions) ? divisions : [];
-  const validTeams = Array.isArray(teams) ? teams : [];
-  
-  // Show loading state if divisions or teams are undefined (still loading)
+  // Enhanced loading state with specific indicators
   if (divisions === undefined || teams === undefined) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Loading form data...</span>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="space-y-2">
+            <h3 className="font-medium">Loading Form Data</h3>
+            <div className="text-sm text-muted-foreground space-y-1">
+              {divisions === undefined && (
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  <span>Loading divisions...</span>
+                </div>
+              )}
+              {teams === undefined && (
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <span>Loading teams...</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
   
-  // Initialize form with error handling
+  // Validate data arrays
+  const validDivisions = Array.isArray(divisions) ? divisions : [];
+  const validTeams = Array.isArray(teams) ? teams : [];
+  
+  // Enhanced error handling for divisions
+  if (validDivisions.length === 0) {
+    return (
+      <Alert variant="destructive" className="my-4">
+        <Database className="h-4 w-4" />
+        <AlertTitle>No Divisions Available</AlertTitle>
+        <AlertDescription className="space-y-3">
+          <p>You need to create at least one division before creating a bracket.</p>
+          <div className="text-sm">
+            <p className="font-medium">To fix this:</p>
+            <ul className="list-disc list-inside space-y-1 mt-1">
+              <li>Go to the Admin Dashboard</li>
+              <li>Navigate to the Teams section</li>
+              <li>Create or verify divisions exist</li>
+            </ul>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh After Creating Divisions
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  // Enhanced error handling for teams
+  if (validTeams.length === 0) {
+    return (
+      <Alert variant="destructive" className="my-4">
+        <Users className="h-4 w-4" />
+        <AlertTitle>No Teams Available</AlertTitle>
+        <AlertDescription className="space-y-3">
+          <p>You need to have teams in your divisions before creating a bracket.</p>
+          <div className="text-sm">
+            <p className="font-medium">To fix this:</p>
+            <ul className="list-disc list-inside space-y-1 mt-1">
+              <li>Go to the Teams page</li>
+              <li>Create teams and assign them to divisions</li>
+              <li>Ensure teams have proper division assignments</li>
+            </ul>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh After Adding Teams
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Initialize form with enhanced error handling
   let formHook;
   try {
     formHook = useBracketForm({ teams: validTeams, onSubmit });
@@ -62,8 +138,14 @@ const BracketForm: React.FC<BracketFormProps> = ({
       <Alert variant="destructive" className="my-4">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Form Initialization Error</AlertTitle>
-        <AlertDescription className="space-y-2">
-          <p>There was an error initializing the bracket creation form.</p>
+        <AlertDescription className="space-y-3">
+          <p>Failed to initialize the bracket creation form.</p>
+          <div className="text-sm">
+            <p className="font-medium">Error details:</p>
+            <p className="font-mono text-xs bg-muted p-2 rounded">
+              {error instanceof Error ? error.message : 'Unknown error'}
+            </p>
+          </div>
           <Button 
             variant="outline" 
             size="sm" 
@@ -84,43 +166,31 @@ const BracketForm: React.FC<BracketFormProps> = ({
     handleDivisionChange,
     handleSubmit
   } = formHook;
-  
-  // Show warning if no divisions are available
-  if (validDivisions.length === 0) {
-    return (
-      <Alert variant="warning" className="my-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>No Divisions Available</AlertTitle>
-        <AlertDescription>
-          You need to create at least one division before creating a bracket. 
-          Divisions will be created automatically if none exist in the database.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  
-  // Show warning if no teams are available  
-  if (validTeams.length === 0) {
-    return (
-      <Alert variant="warning" className="my-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>No Teams Available</AlertTitle>
-        <AlertDescription>
-          You need to have teams in your divisions before creating a bracket.
-          Please add teams to your divisions first.
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
-  // Handle form submission with error boundary
+  // Enhanced form submission with specific error handling
   const handleFormSubmit = async (data: any) => {
     try {
       setFormError(null);
+      console.log("BracketForm: Submitting form data:", data);
       await handleSubmit(data);
     } catch (error) {
       console.error("BracketForm: Form submission error:", error);
-      setFormError(error instanceof Error ? error.message : "An unexpected error occurred");
+      
+      let errorMessage = "An unexpected error occurred";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("validation")) {
+          errorMessage = `Validation Error: ${error.message}`;
+        } else if (error.message.includes("network")) {
+          errorMessage = "Network Error: Please check your connection and try again";
+        } else if (error.message.includes("tournament")) {
+          errorMessage = `Tournament Creation Error: ${error.message}`;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setFormError(errorMessage);
     }
   };
   
@@ -130,8 +200,17 @@ const BracketForm: React.FC<BracketFormProps> = ({
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Submission Error</AlertTitle>
-          <AlertDescription>
-            {formError}
+          <AlertDescription className="space-y-2">
+            <p>{formError}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setFormError(null)}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
           </AlertDescription>
         </Alert>
       )}

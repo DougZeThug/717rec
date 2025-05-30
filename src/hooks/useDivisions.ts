@@ -11,6 +11,7 @@ interface Division {
 export function useDivisions() {
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -20,30 +21,39 @@ export function useDivisions() {
   const fetchDivisions = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       
-      const { data, error } = await supabase
+      console.log("useDivisions: Fetching divisions from database");
+      
+      const { data, error: fetchError } = await supabase
         .from('divisions')
         .select('*')
         .order('name');
 
-      if (error) {
-        console.error("Error fetching divisions:", error);
+      if (fetchError) {
+        console.error("useDivisions: Database error:", fetchError);
+        const errorMessage = `Database error: ${fetchError.message}`;
+        setError(errorMessage);
         toast({
-          title: "Error",
-          description: "Failed to fetch divisions. Please try again.",
+          title: "Database Error",
+          description: "Failed to fetch divisions. Please check your database connection.",
           variant: "destructive"
         });
         return;
       }
 
+      console.log("useDivisions: Successfully fetched divisions:", data?.length || 0);
       setDivisions(data || []);
       
       // If no divisions exist, create default ones
-      if (data.length === 0) {
+      if (!data || data.length === 0) {
+        console.log("useDivisions: No divisions found, creating default divisions");
         await createDefaultDivisions();
       }
     } catch (error) {
-      console.error("Error in divisions hook:", error);
+      console.error("useDivisions: Unexpected error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      setError(errorMessage);
       toast({
         title: "Error",
         description: "An unexpected error occurred while fetching divisions.",
@@ -56,24 +66,37 @@ export function useDivisions() {
 
   const createDefaultDivisions = async () => {
     try {
+      console.log("useDivisions: Creating default divisions");
+      
       const defaultDivisions = [
         { name: 'Recreational' },
         { name: 'Intermediate' },
         { name: 'Competitive' }
       ];
       
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('divisions')
         .insert(defaultDivisions)
         .select();
         
-      if (error) {
-        throw error;
+      if (insertError) {
+        console.error("useDivisions: Error creating default divisions:", insertError);
+        const errorMessage = `Failed to create default divisions: ${insertError.message}`;
+        setError(errorMessage);
+        throw insertError;
       }
       
+      console.log("useDivisions: Successfully created default divisions:", data?.length || 0);
       setDivisions(data || []);
+      
+      toast({
+        title: "Divisions Created",
+        description: "Default divisions have been created successfully.",
+      });
     } catch (error) {
-      console.error("Error creating default divisions:", error);
+      console.error("useDivisions: Error in createDefaultDivisions:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to create default divisions";
+      setError(errorMessage);
       toast({
         title: "Error",
         description: "Failed to create default divisions.",
@@ -85,6 +108,7 @@ export function useDivisions() {
   return {
     divisions,
     isLoading,
+    error,
     fetchDivisions
   };
 }

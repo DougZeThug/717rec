@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
@@ -23,6 +24,12 @@ export interface PlayoffPageData {
   teamsLoading: boolean;
   bracketMatchesByType: any;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
+  
+  // Enhanced error states
+  error: string | null;
+  divisionsError: string | null;
+  teamsError: string | null;
+  bracketsError: string | null;
   
   // Divisions data
   divisions: any[];
@@ -50,24 +57,30 @@ export interface PlayoffPageData {
 
 export function usePlayoffPageData(): PlayoffPageData {
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
 
-  // Use our unified view model hook for the selected bracket
+  // Enhanced data fetching with error handling
   const {
     bracket,
     isLoading: bracketLoading,
     teams,
     teamsLoading,
     bracketMatchesByType,
-    deleteBracket
+    deleteBracket,
+    error: bracketError
   } = usePlayoffViewModel(selectedBracketId);
   
-  // Fetch divisions directly to ensure we have proper data
-  const { divisions, isLoading: divisionsLoading } = useDivisions();
+  // Fetch divisions with enhanced error handling
+  const { 
+    divisions, 
+    isLoading: divisionsLoading,
+    error: divisionsError 
+  } = useDivisions();
   
-  // Setup for divisions and brackets lists (separate from single bracket view)
+  // Setup for divisions and brackets lists with error handling
   const {
     brackets: allBrackets,
     bracketsLoading,
@@ -75,37 +88,67 @@ export function usePlayoffPageData(): PlayoffPageData {
     bracketsByDivision,
     handleBracketCreated,
     handleTeamDivisionChange,
-    refetchBrackets
-  } = usePlayoffData(); // Using the compatibility layer
+    refetchBrackets,
+    error: bracketsDataError
+  } = usePlayoffData();
   
-  // Handle Challonge bracket display if the current bracket has a challonge_tournament_id
+  // Handle Challonge bracket display
   const challongeBracket = useChallongePublicBracket(
     bracket?.challonge_tournament_id ? String(bracket.challonge_tournament_id) : "0"
   );
 
-  // Create typesafe version of bracketsByDivision
+  // Create typesafe version of bracketsByDivision with error handling
   const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
-  if (bracketsByDivision) {
-    Object.keys(bracketsByDivision).forEach(div => {
-      typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
-        ...b,
-        matches: b.matches || [],
-        id: b.id || crypto.randomUUID(), 
-        state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
-        format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
-      }));
-    });
+  try {
+    if (bracketsByDivision) {
+      Object.keys(bracketsByDivision).forEach(div => {
+        typesafeBracketsByDivision[div] = (bracketsByDivision[div] || []).map(b => ({
+          ...b,
+          matches: b.matches || [],
+          id: b.id || crypto.randomUUID(), 
+          state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
+          format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
+        }));
+      });
+    }
+  } catch (err) {
+    console.error("Error processing brackets by division:", err);
+    setError("Failed to process bracket data");
   }
 
+  // Enhanced loading and error states
   const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
-  const allBracketsData = allBrackets?.map(b => ({
-    ...b,
-    matches: b.matches || [],
-    id: b.id || crypto.randomUUID(),
-    state: (b.state || BRACKET_STATES.PENDING) as BracketState,
-    format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
-  })) || [];
-  const availableDivisions = divisions?.map(div => div.name) || [];
+  
+  const allBracketsData = (() => {
+    try {
+      return allBrackets?.map(b => ({
+        ...b,
+        matches: b.matches || [],
+        id: b.id || crypto.randomUUID(),
+        state: (b.state || BRACKET_STATES.PENDING) as BracketState,
+        format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
+      })) || [];
+    } catch (err) {
+      console.error("Error processing all brackets data:", err);
+      setError("Failed to process all brackets data");
+      return [];
+    }
+  })();
+  
+  const availableDivisions = (() => {
+    try {
+      return divisions?.map(div => div.name) || [];
+    } catch (err) {
+      console.error("Error processing available divisions:", err);
+      setError("Failed to process divisions data");
+      return [];
+    }
+  })();
+
+  // Determine specific error messages
+  const teamsError = bracketError?.message || null;
+  const finalDivisionsError = divisionsError || null;
+  const finalBracketsError = bracketsDataError || null;
 
   return {
     // Auth & permissions
@@ -123,6 +166,12 @@ export function usePlayoffPageData(): PlayoffPageData {
     teamsLoading,
     bracketMatchesByType,
     deleteBracket,
+    
+    // Enhanced error states
+    error,
+    divisionsError: finalDivisionsError,
+    teamsError,
+    bracketsError: finalBracketsError,
     
     // Divisions data
     divisions: divisions || [],
