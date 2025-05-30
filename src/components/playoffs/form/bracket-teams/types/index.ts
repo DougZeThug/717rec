@@ -1,4 +1,3 @@
-
 // Team selection state types
 export interface TeamSelectionStateResult {
   selected: Set<string>;
@@ -61,6 +60,11 @@ export interface BracketFormStateResult {
   
   // Effects
   cleanup: () => void;
+}
+
+// Container-specific types
+export interface BracketFormTeamsContainerProps extends BracketFormTeamsProps {
+  minTeams?: number;
 }
 
 // Re-export existing types for backward compatibility
