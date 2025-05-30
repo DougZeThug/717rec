@@ -2,10 +2,10 @@
 import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Card } from "@/components/ui/card";
-import { useFilteredTeams, useTeamSelection, useTeamSeeding } from "@/hooks/playoffs";
+import { useFilteredTeams, useTeamSeeding } from "@/hooks/playoffs";
 import SimpleTeamSelectionList from "../SimpleTeamSelectionList";
 import TeamSelectionSummary from "../TeamSelectionSummary";
-import { useBracketFormData } from "./bracket-teams/hooks";
+import { useBracketFormData, useBracketFormState } from "./bracket-teams/hooks";
 import { BracketFormTeamsProps } from "./bracket-teams/types";
 
 export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ 
@@ -17,7 +17,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
   // Minimum team requirement
   const minTeams = 2;
   
-  // Use the new consolidated data hook
+  // Use the consolidated data hook
   const { teams: rankedTeams, isLoading, isError, errorMessage, isDataReady } = useBracketFormData(divisions);
   
   // Filter teams by division using the existing hook
@@ -37,26 +37,13 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
   // Apply seeding using the existing hook
   const seededTeams = useTeamSeeding(filteredTeams);
   
-  // Team selection using the existing hook
-  const { selected, toggle, setSelected } = useTeamSelection([]);
-  
-  // Sync with parent through onChange callback
-  React.useEffect(() => {
-    try {
-      onChange(Array.from(selected));
-    } catch (error) {
-      console.error("BracketFormTeams: Error in onChange callback:", error);
-    }
-  }, [selected, onChange]);
-  
-  // Handle team toggle
-  const handleTeamToggle = React.useCallback((teamId: string) => {
-    try {
-      toggle(teamId, maxTeams);
-    } catch (error) {
-      console.error("BracketFormTeams: Error toggling team:", error);
-    }
-  }, [toggle, maxTeams]);
+  // Consolidated state management
+  const formState = useBracketFormState(
+    maxTeams,
+    onChange,
+    seededTeams.length,
+    minTeams
+  );
 
   // Show error state if data failed to load
   if (isError) {
@@ -131,19 +118,19 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
         <FormItem>
           <FormLabel>Select Teams (Min {minTeams}, Max {maxTeams})</FormLabel>
           <FormDescription className="text-xs">
-            Selected {selected.size} of {maxTeams} maximum teams
+            {formState.statusMessage}
             {seededTeams.length > 0 && ` from ${seededTeams.length} available`}
           </FormDescription>
           <FormControl>
             <SimpleTeamSelectionList
               teams={seededTeams}
-              selected={selected}
-              onToggle={handleTeamToggle}
+              selected={formState.selected}
+              onToggle={formState.handleTeamToggle}
               maxTeams={maxTeams}
             />
           </FormControl>
           <TeamSelectionSummary 
-            count={selected.size} 
+            count={formState.count} 
             max={maxTeams}
             minTeams={minTeams}
           />
