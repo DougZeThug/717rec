@@ -149,6 +149,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
             divisionId={form.watch("divisionId") ?? null}
             maxTeams={form.watch("format") === "Double Elimination" ? 16 : 32}
             onChange={(ids) => form.setValue("teams", ids)}
+            divisions={validDivisions}
           />
           <BracketFormActions 
             isSubmitting={isSubmitting} 

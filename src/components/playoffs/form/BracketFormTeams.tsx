@@ -11,18 +11,30 @@ export interface BracketFormTeamsProps {
   divisionId: string | null;
   maxTeams: number;
   onChange: (ids: string[]) => void;
+  divisions?: { id: string; name: string }[]; // Add divisions prop for mapping
 }
 
 export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({ 
   divisionId, 
   maxTeams, 
-  onChange 
+  onChange,
+  divisions = []
 }) => {
   // Minimum team requirement
   const minTeams = 2;
   
-  // Fetch our own teams data with power scores - removed error destructuring
+  // Fetch our own teams data with power scores
   const { rankings, isLoading: rankingsLoading } = useTeamRankings();
+  
+  // Create a lookup map for division name to division ID
+  const divisionNameToIdMap = React.useMemo(() => {
+    const map = new Map<string, string>();
+    divisions.forEach(division => {
+      map.set(division.name, division.id);
+    });
+    console.log("BracketFormTeams: Division lookup map:", Object.fromEntries(map));
+    return map;
+  }, [divisions]);
   
   // Convert rankings to team format with seed numbers - these teams have proper power scores
   const rankedTeams = React.useMemo(() => {
@@ -32,35 +44,57 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
     }
 
     try {
-      return rankings.map((ranking, index) => ({
-        id: ranking.teamId,
-        name: ranking.teamName,
-        logoUrl: ranking.imageUrl,
-        imageUrl: ranking.imageUrl,
-        seed: index + 1, // This is the correct seed based on rankings
-        powerScore: ranking.powerScore,
-        wins: ranking.wins,
-        losses: ranking.losses,
-        division_id: ranking.divisionName || null, // Use divisionName instead of divisionId
-        divisionName: ranking.divisionName,
-        players: [],
-        created_at: new Date().toISOString(),
-        game_wins: ranking.gamesWon,
-        game_losses: ranking.gamesLost,
-        sos: ranking.sos,
-        power_score: ranking.powerScore,
-        win_percentage: ranking.winPercentage,
-        game_win_percentage: ranking.gameWinPercentage,
-        close_match_losses: ranking.closeMatchLosses || 0
-      }));
+      return rankings.map((ranking, index) => {
+        // Map division name to proper division ID UUID
+        const divisionId = ranking.divisionName ? divisionNameToIdMap.get(ranking.divisionName) : null;
+        
+        console.log("BracketFormTeams: Mapping team", {
+          teamName: ranking.teamName,
+          divisionName: ranking.divisionName,
+          mappedDivisionId: divisionId
+        });
+
+        return {
+          id: ranking.teamId,
+          name: ranking.teamName,
+          logoUrl: ranking.imageUrl,
+          imageUrl: ranking.imageUrl,
+          seed: index + 1, // This is the correct seed based on rankings
+          powerScore: ranking.powerScore,
+          wins: ranking.wins,
+          losses: ranking.losses,
+          division_id: divisionId, // Use properly mapped division UUID
+          divisionName: ranking.divisionName,
+          players: [],
+          created_at: new Date().toISOString(),
+          game_wins: ranking.gamesWon,
+          game_losses: ranking.gamesLost,
+          sos: ranking.sos,
+          power_score: ranking.powerScore,
+          win_percentage: ranking.winPercentage,
+          game_win_percentage: ranking.gameWinPercentage,
+          close_match_losses: ranking.closeMatchLosses || 0
+        };
+      });
     } catch (error) {
       console.error("BracketFormTeams: Error converting rankings to teams:", error);
       return [];
     }
-  }, [rankings]);
+  }, [rankings, divisionNameToIdMap]);
   
   // Filter teams by division using the new hook
   const filteredTeams = useFilteredTeams(rankedTeams, divisionId);
+  
+  console.log("BracketFormTeams: Filtering results", {
+    totalTeams: rankedTeams.length,
+    filteredTeams: filteredTeams.length,
+    selectedDivisionId: divisionId,
+    sampleTeam: rankedTeams[0] ? {
+      name: rankedTeams[0].name,
+      division_id: rankedTeams[0].division_id,
+      divisionName: rankedTeams[0].divisionName
+    } : null
+  });
   
   // Apply seeding using the new hook
   const seededTeams = useTeamSeeding(filteredTeams);
