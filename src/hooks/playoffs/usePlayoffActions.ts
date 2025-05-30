@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
+import { getUIErrorMessage, logError } from "@/utils/errors";
 import type { PlayoffGame } from "@/types/playoffs";
 
 export const usePlayoffActions = () => {
@@ -37,12 +38,16 @@ export const usePlayoffActions = () => {
       await invalidateMatchRelatedQueries(queryClient);
       
     } catch (error) {
-      console.error("Error deleting bracket:", error);
+      const errorMessage = getUIErrorMessage(error, "Failed to delete bracket");
+      logError(error, "deleteBracket", { bracketId, bracketName });
+      
       toast({
         title: "Error",
-        description: "Failed to delete bracket. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
+      
+      throw new Error(errorMessage);
     } finally {
       setIsDeleting(false);
     }
@@ -99,12 +104,16 @@ export const usePlayoffActions = () => {
         description: "Match score has been successfully updated.",
       });
     } catch (error) {
-      console.error("Error updating match:", error);
+      const errorMessage = getUIErrorMessage(error, "Failed to update match");
+      logError(error, "updateMatchResult", { matchId, winnerId, team1Score, team2Score });
+      
       toast({
         title: "Error",
-        description: "Failed to update match. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
+      
+      throw new Error(errorMessage);
     }
   };
   

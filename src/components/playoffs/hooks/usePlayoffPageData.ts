@@ -7,6 +7,7 @@ import { useChallongePublicBracket } from "@/hooks/useChallongePublicBracket";
 import { useDivisions } from "@/hooks/useDivisions";
 import { PlayoffBracket, BracketFormat, BracketState } from "@/utils/playoffs/playoffTypes";
 import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
+import { getUIErrorMessage, logError } from "@/utils/errors";
 
 export interface PlayoffPageData {
   // Auth & permissions
@@ -112,8 +113,9 @@ export function usePlayoffPageData(): PlayoffPageData {
       });
     }
   } catch (err) {
-    console.error("Error processing brackets by division:", err);
-    setError("Failed to process bracket data");
+    const errorMessage = getUIErrorMessage(err, "Failed to process bracket data");
+    logError(err, "typesafeBracketsByDivision processing");
+    setError(errorMessage);
   }
 
   // Enhanced loading and error states
@@ -129,8 +131,9 @@ export function usePlayoffPageData(): PlayoffPageData {
         format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
       })) || [];
     } catch (err) {
-      console.error("Error processing all brackets data:", err);
-      setError("Failed to process all brackets data");
+      const errorMessage = getUIErrorMessage(err, "Failed to process all brackets data");
+      logError(err, "allBracketsData processing");
+      setError(errorMessage);
       return [];
     }
   })();
@@ -139,14 +142,15 @@ export function usePlayoffPageData(): PlayoffPageData {
     try {
       return divisions?.map(div => div.name) || [];
     } catch (err) {
-      console.error("Error processing available divisions:", err);
-      setError("Failed to process divisions data");
+      const errorMessage = getUIErrorMessage(err, "Failed to process divisions data");
+      logError(err, "availableDivisions processing");
+      setError(errorMessage);
       return [];
     }
   })();
 
-  // Determine specific error messages
-  const teamsError = bracketError?.message || null;
+  // Safely convert error types to strings for UI display
+  const teamsError = bracketError ? getUIErrorMessage(bracketError, "Teams loading") : null;
   const finalDivisionsError = divisionsError || null;
   const finalBracketsError = bracketsDataError || null;
 

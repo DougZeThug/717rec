@@ -1,4 +1,3 @@
-
 export class ChallongeError extends Error {
   constructor(message: string, public readonly operation?: string) {
     super(message);
@@ -103,4 +102,52 @@ export function categorizeError(error: unknown): {
     message,
     userMessage: 'An unexpected error occurred. Please try again.'
   };
+}
+
+// Enhanced error handling utilities for consistent error processing
+export function processError(error: unknown): {
+  message: string;
+  originalError: Error | null;
+} {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      originalError: error
+    };
+  }
+  
+  if (typeof error === 'string') {
+    return {
+      message: error,
+      originalError: null
+    };
+  }
+  
+  return {
+    message: 'An unknown error occurred',
+    originalError: null
+  };
+}
+
+// Utility to safely extract error messages for UI display
+export function getUIErrorMessage(error: unknown, context?: string): string {
+  const processed = processError(error);
+  
+  if (context) {
+    return `${context}: ${processed.message}`;
+  }
+  
+  return processed.message;
+}
+
+// Utility to log errors consistently
+export function logError(error: unknown, context: string, additionalData?: any): void {
+  const processed = processError(error);
+  
+  console.error(`${context}:`, {
+    message: processed.message,
+    originalError: processed.originalError,
+    context,
+    additionalData
+  });
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getUIErrorMessage, logError } from "@/utils/errors";
 
 interface Division {
   id: string;
@@ -31,9 +32,10 @@ export function useDivisions() {
         .order('name');
 
       if (fetchError) {
-        console.error("useDivisions: Database error:", fetchError);
-        const errorMessage = `Database error: ${fetchError.message}`;
+        const errorMessage = getUIErrorMessage(fetchError, "Database error");
+        logError(fetchError, "useDivisions fetchDivisions");
         setError(errorMessage);
+        
         toast({
           title: "Database Error",
           description: "Failed to fetch divisions. Please check your database connection.",
@@ -51,12 +53,13 @@ export function useDivisions() {
         await createDefaultDivisions();
       }
     } catch (error) {
-      console.error("useDivisions: Unexpected error:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage = getUIErrorMessage(error, "Unexpected error while fetching divisions");
+      logError(error, "useDivisions fetchDivisions unexpected");
       setError(errorMessage);
+      
       toast({
         title: "Error",
-        description: "An unexpected error occurred while fetching divisions.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -80,10 +83,10 @@ export function useDivisions() {
         .select();
         
       if (insertError) {
-        console.error("useDivisions: Error creating default divisions:", insertError);
-        const errorMessage = `Failed to create default divisions: ${insertError.message}`;
+        const errorMessage = getUIErrorMessage(insertError, "Failed to create default divisions");
+        logError(insertError, "useDivisions createDefaultDivisions");
         setError(errorMessage);
-        throw insertError;
+        throw new Error(errorMessage);
       }
       
       console.log("useDivisions: Successfully created default divisions:", data?.length || 0);
@@ -94,12 +97,13 @@ export function useDivisions() {
         description: "Default divisions have been created successfully.",
       });
     } catch (error) {
-      console.error("useDivisions: Error in createDefaultDivisions:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to create default divisions";
+      const errorMessage = getUIErrorMessage(error, "Failed to create default divisions");
+      logError(error, "useDivisions createDefaultDivisions");
       setError(errorMessage);
+      
       toast({
         title: "Error",
-        description: "Failed to create default divisions.",
+        description: errorMessage,
         variant: "destructive"
       });
     }

@@ -4,6 +4,7 @@ import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
 import { usePlayoffActions } from './usePlayoffActions';
 import { BracketMatchesByType } from "@/services/brackets/types";
+import { getUIErrorMessage, logError } from "@/utils/errors";
 import type { PlayoffViewModel } from "@/types/playoffs";
 
 // Local helper to group bracket matches by type
@@ -33,18 +34,26 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   
   // Refetch function that triggers all related queries
   const refetch = async () => {
-    await Promise.all([
-      bracketQuery.refetch(),
-      matchesQuery.refetch(),
-      teamsQuery.refetch()
-    ]);
+    try {
+      await Promise.all([
+        bracketQuery.refetch(),
+        matchesQuery.refetch(),
+        teamsQuery.refetch()
+      ]);
+    } catch (err) {
+      logError(err, "usePlayoffViewModel refetch");
+      throw new Error(getUIErrorMessage(err, "Failed to refresh data"));
+    }
   };
+  
+  // Safely handle error conversion
+  const processedError = bracketQuery.error ? new Error(getUIErrorMessage(bracketQuery.error)) : null;
   
   return {
     // Bracket data
     bracket: bracketQuery.data || null,
     isLoading: bracketQuery.isLoading || matchesQuery.isLoading,
-    error: bracketQuery.error as Error | null,
+    error: processedError,
     bracketMatchesByType,
     
     // Teams data
