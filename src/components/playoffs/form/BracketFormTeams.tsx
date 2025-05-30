@@ -22,31 +22,42 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
   const minTeams = 2;
   
   // Fetch our own teams data with power scores
-  const { rankings, isLoading: rankingsLoading } = useTeamRankings();
+  const { rankings, isLoading: rankingsLoading, error: rankingsError } = useTeamRankings();
   
   // Convert rankings to team format with seed numbers - these teams have proper power scores
-  const rankedTeams = React.useMemo(() => 
-    rankings.map((ranking, index) => ({
-      id: ranking.teamId,
-      name: ranking.teamName,
-      logoUrl: ranking.imageUrl,
-      imageUrl: ranking.imageUrl,
-      seed: index + 1, // This is the correct seed based on rankings
-      powerScore: ranking.powerScore,
-      wins: ranking.wins,
-      losses: ranking.losses,
-      division_id: null, // Will be populated from division filtering
-      divisionName: ranking.divisionName,
-      players: [],
-      created_at: new Date().toISOString(),
-      game_wins: ranking.gamesWon,
-      game_losses: ranking.gamesLost,
-      sos: ranking.sos,
-      power_score: ranking.powerScore,
-      win_percentage: ranking.winPercentage,
-      game_win_percentage: ranking.gameWinPercentage,
-      close_match_losses: ranking.closeMatchLosses || 0
-    })), [rankings]);
+  const rankedTeams = React.useMemo(() => {
+    if (!rankings || !Array.isArray(rankings)) {
+      console.log("BracketFormTeams: No rankings data available");
+      return [];
+    }
+
+    try {
+      return rankings.map((ranking, index) => ({
+        id: ranking.teamId,
+        name: ranking.teamName,
+        logoUrl: ranking.imageUrl,
+        imageUrl: ranking.imageUrl,
+        seed: index + 1, // This is the correct seed based on rankings
+        powerScore: ranking.powerScore,
+        wins: ranking.wins,
+        losses: ranking.losses,
+        division_id: ranking.divisionId || null, // Use divisionId from rankings
+        divisionName: ranking.divisionName,
+        players: [],
+        created_at: new Date().toISOString(),
+        game_wins: ranking.gamesWon,
+        game_losses: ranking.gamesLost,
+        sos: ranking.sos,
+        power_score: ranking.powerScore,
+        win_percentage: ranking.winPercentage,
+        game_win_percentage: ranking.gameWinPercentage,
+        close_match_losses: ranking.closeMatchLosses || 0
+      }));
+    } catch (error) {
+      console.error("BracketFormTeams: Error converting rankings to teams:", error);
+      return [];
+    }
+  }, [rankings]);
   
   // Filter teams by division using the new hook
   const filteredTeams = useFilteredTeams(rankedTeams, divisionId);
@@ -59,13 +70,43 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
   
   // Sync with parent through onChange callback
   React.useEffect(() => {
-    onChange(Array.from(selected));
+    try {
+      onChange(Array.from(selected));
+    } catch (error) {
+      console.error("BracketFormTeams: Error in onChange callback:", error);
+    }
   }, [selected, onChange]);
   
   // Handle team toggle
   const handleTeamToggle = React.useCallback((teamId: string) => {
-    toggle(teamId, maxTeams);
+    try {
+      toggle(teamId, maxTeams);
+    } catch (error) {
+      console.error("BracketFormTeams: Error toggling team:", error);
+    }
   }, [toggle, maxTeams]);
+
+  // Show error state if rankings failed to load
+  if (rankingsError) {
+    return (
+      <FormField
+        name="teams"
+        render={() => (
+          <FormItem>
+            <FormLabel>Select Teams (Min {minTeams}, Max {maxTeams})</FormLabel>
+            <FormDescription className="text-xs text-red-600">
+              Error loading team data. Please try refreshing the page.
+            </FormDescription>
+            <FormControl>
+              <Card className="p-4 text-center text-red-500 border-red-300">
+                Failed to load teams: {rankingsError.message || "Unknown error"}
+              </Card>
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    );
+  }
 
   if (rankingsLoading) {
     return (
@@ -80,6 +121,28 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
             <FormControl>
               <Card className="p-4 text-center text-gray-500">
                 Loading teams...
+              </Card>
+            </FormControl>
+          </FormItem>
+        )}
+      />
+    );
+  }
+
+  // Show message if no teams available for selected division
+  if (divisionId && filteredTeams.length === 0) {
+    return (
+      <FormField
+        name="teams"
+        render={() => (
+          <FormItem>
+            <FormLabel>Select Teams (Min {minTeams}, Max {maxTeams})</FormLabel>
+            <FormDescription className="text-xs">
+              No teams found for the selected division.
+            </FormDescription>
+            <FormControl>
+              <Card className="p-4 text-center text-gray-500">
+                No teams available in this division
               </Card>
             </FormControl>
           </FormItem>

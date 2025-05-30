@@ -17,15 +17,45 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
   onDivisionChange,
 }) => {
   const handleDivisionChange = (divisionId: string) => {
-    const selectedDivision = divisions.find(d => d.id === divisionId);
-    console.log("BracketFormDivision: Division changed to:", { divisionId, divisionName: selectedDivision?.name });
-    
-    // Set both division ID and name for easier filtering
-    form.setValue('divisionId', divisionId);
-    form.setValue('divisionName', selectedDivision?.name || '');
-    
-    onDivisionChange(divisionId);
+    try {
+      const selectedDivision = divisions.find(d => d.id === divisionId);
+      console.log("BracketFormDivision: Division changed to:", { divisionId, divisionName: selectedDivision?.name });
+      
+      // Set the division ID in the form
+      form.setValue('divisionId', divisionId);
+      
+      // Set division name if available for easier filtering
+      if (selectedDivision?.name) {
+        form.setValue('divisionName', selectedDivision.name);
+      }
+      
+      // Call the parent handler
+      onDivisionChange(divisionId);
+    } catch (error) {
+      console.error("BracketFormDivision: Error handling division change:", error);
+    }
   };
+
+  // Show message if no divisions available
+  if (!divisions || !Array.isArray(divisions) || divisions.length === 0) {
+    return (
+      <FormField
+        control={form.control}
+        name="divisionId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Division</FormLabel>
+            <FormControl>
+              <div className="p-2 text-sm text-gray-500 border rounded">
+                No divisions available. Please create divisions first.
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  }
 
   return (
     <FormField

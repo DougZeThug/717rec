@@ -10,7 +10,8 @@ import { BracketFormFormat } from "./form/BracketFormFormat";
 import { BracketFormTeams } from "./form/BracketFormTeams";
 import { BracketFormActions } from "./form/BracketFormActions";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface BracketFormProps {
   divisions: { id: string; name: string }[] | undefined;
@@ -27,6 +28,8 @@ const BracketForm: React.FC<BracketFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
+  const [formError, setFormError] = React.useState<string | null>(null);
+
   console.log("BracketForm: Rendering with", { 
     divisionsCount: divisions?.length, 
     teamsCount: teams?.length, 
@@ -49,12 +52,38 @@ const BracketForm: React.FC<BracketFormProps> = ({
     );
   }
   
+  // Initialize form with error handling
+  let formHook;
+  try {
+    formHook = useBracketForm({ teams: validTeams, onSubmit });
+  } catch (error) {
+    console.error("BracketForm: Error initializing form hook:", error);
+    return (
+      <Alert variant="destructive" className="my-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Form Initialization Error</AlertTitle>
+        <AlertDescription className="space-y-2">
+          <p>There was an error initializing the bracket creation form.</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh Page
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   const {
     form,
     filteredTeams,
     handleDivisionChange,
     handleSubmit
-  } = useBracketForm({ teams: validTeams, onSubmit });
+  } = formHook;
   
   // Show warning if no divisions are available
   if (validDivisions.length === 0) {
@@ -83,29 +112,52 @@ const BracketForm: React.FC<BracketFormProps> = ({
       </Alert>
     );
   }
+
+  // Handle form submission with error boundary
+  const handleFormSubmit = async (data: any) => {
+    try {
+      setFormError(null);
+      await handleSubmit(data);
+    } catch (error) {
+      console.error("BracketForm: Form submission error:", error);
+      setFormError(error instanceof Error ? error.message : "An unexpected error occurred");
+    }
+  };
   
   return (
-    <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <BracketFormTitle form={form} />
-        <BracketFormDivision 
-          form={form} 
-          divisions={validDivisions} 
-          onDivisionChange={handleDivisionChange} 
-        />
-        <BracketFormFormat form={form} />
-        <BracketFormTeams
-          divisionId={form.watch("divisionId") ?? null}
-          maxTeams={form.watch("format") === "Double Elimination" ? 16 : 32}
-          onChange={(ids) => form.setValue("teams", ids)}
-        />
-        <BracketFormActions 
-          isSubmitting={isSubmitting} 
-          onCancel={onCancel} 
-          form={form}
-        />
-      </form>
-    </Form>
+    <div className="space-y-4">
+      {formError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Submission Error</AlertTitle>
+          <AlertDescription>
+            {formError}
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <BracketFormTitle form={form} />
+          <BracketFormDivision 
+            form={form} 
+            divisions={validDivisions} 
+            onDivisionChange={handleDivisionChange} 
+          />
+          <BracketFormFormat form={form} />
+          <BracketFormTeams
+            divisionId={form.watch("divisionId") ?? null}
+            maxTeams={form.watch("format") === "Double Elimination" ? 16 : 32}
+            onChange={(ids) => form.setValue("teams", ids)}
+          />
+          <BracketFormActions 
+            isSubmitting={isSubmitting} 
+            onCancel={onCancel} 
+            form={form}
+          />
+        </form>
+      </Form>
+    </div>
   );
 };
 
