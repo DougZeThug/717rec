@@ -1,19 +1,20 @@
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useBracketFormData } from '../useBracketFormData';
 import { Division } from '@/types';
 
 // Mock the dependencies
-jest.mock('@/hooks/useTeamRankings', () => ({
-  useTeamRankings: jest.fn()
+vi.mock('@/hooks/useTeamRankings', () => ({
+  useTeamRankings: vi.fn()
 }));
 
-jest.mock('../useDivisionMapping', () => ({
-  useDivisionMapping: jest.fn()
+vi.mock('../useDivisionMapping', () => ({
+  useDivisionMapping: vi.fn()
 }));
 
-jest.mock('../useTeamDataProcessor', () => ({
-  useTeamDataProcessor: jest.fn()
+vi.mock('../useTeamDataProcessor', () => ({
+  useTeamDataProcessor: vi.fn()
 }));
 
 import { useTeamRankings } from '@/hooks/useTeamRankings';
@@ -21,9 +22,9 @@ import { useDivisionMapping } from '../useDivisionMapping';
 import { useTeamDataProcessor } from '../useTeamDataProcessor';
 
 describe('useBracketFormData', () => {
-  const mockUseTeamRankings = useTeamRankings as jest.MockedFunction<typeof useTeamRankings>;
-  const mockUseDivisionMapping = useDivisionMapping as jest.MockedFunction<typeof useDivisionMapping>;
-  const mockUseTeamDataProcessor = useTeamDataProcessor as jest.MockedFunction<typeof useTeamDataProcessor>;
+  const mockUseTeamRankings = useTeamRankings as any;
+  const mockUseDivisionMapping = useDivisionMapping as any;
+  const mockUseTeamDataProcessor = useTeamDataProcessor as any;
 
   const mockDivisions: Division[] = [
     { id: 'div-1', name: 'Division A' },
@@ -71,7 +72,7 @@ describe('useBracketFormData', () => {
   ];
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should return loading state when rankings are loading', () => {
@@ -82,7 +83,7 @@ describe('useBracketFormData', () => {
 
     mockUseDivisionMapping.mockReturnValue({
       divisionMap: new Map(),
-      mapDivisionName: jest.fn()
+      mapDivisionName: vi.fn()
     });
 
     mockUseTeamDataProcessor.mockReturnValue({
@@ -107,7 +108,7 @@ describe('useBracketFormData', () => {
 
     mockUseDivisionMapping.mockReturnValue({
       divisionMap: new Map([['Division A', 'div-1']]),
-      mapDivisionName: jest.fn()
+      mapDivisionName: vi.fn()
     });
 
     mockUseTeamDataProcessor.mockReturnValue({
@@ -134,7 +135,7 @@ describe('useBracketFormData', () => {
 
     mockUseDivisionMapping.mockReturnValue({
       divisionMap: new Map(),
-      mapDivisionName: jest.fn()
+      mapDivisionName: vi.fn()
     });
 
     mockUseTeamDataProcessor.mockReturnValue({
@@ -159,7 +160,7 @@ describe('useBracketFormData', () => {
 
     mockUseDivisionMapping.mockReturnValue({
       divisionMap: new Map(),
-      mapDivisionName: jest.fn()
+      mapDivisionName: vi.fn()
     });
 
     mockUseTeamDataProcessor.mockReturnValue({
@@ -183,7 +184,7 @@ describe('useBracketFormData', () => {
 
     mockUseDivisionMapping.mockReturnValue({
       divisionMap: new Map(),
-      mapDivisionName: jest.fn()
+      mapDivisionName: vi.fn()
     });
 
     mockUseTeamDataProcessor.mockReturnValue({
@@ -207,7 +208,7 @@ describe('useBracketFormData', () => {
 
     mockUseDivisionMapping.mockReturnValue({
       divisionMap: new Map(),
-      mapDivisionName: jest.fn()
+      mapDivisionName: vi.fn()
     });
 
     mockUseTeamDataProcessor.mockReturnValue({
@@ -223,7 +224,7 @@ describe('useBracketFormData', () => {
   });
 
   it('should determine data readiness correctly', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     mockUseTeamRankings.mockReturnValue({
       rankings: mockRankings,
@@ -232,7 +233,7 @@ describe('useBracketFormData', () => {
 
     mockUseDivisionMapping.mockReturnValue({
       divisionMap: new Map(),
-      mapDivisionName: jest.fn()
+      mapDivisionName: vi.fn()
     });
 
     mockUseTeamDataProcessor.mockReturnValue({

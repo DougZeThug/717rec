@@ -1,10 +1,11 @@
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useTeamSelectionEffects } from '../useTeamSelectionEffects';
 
 describe('useTeamSelectionEffects', () => {
   it('should call onChange on initial render with empty selection', () => {
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     
     renderHook(() => 
       useTeamSelectionEffects([], mockOnChange)
@@ -15,7 +16,7 @@ describe('useTeamSelectionEffects', () => {
   });
 
   it('should call onChange when selection changes', () => {
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     
     const { rerender } = renderHook(
       ({ selected }) => useTeamSelectionEffects(selected, mockOnChange),
@@ -33,7 +34,7 @@ describe('useTeamSelectionEffects', () => {
   });
 
   it('should call onChange for subsequent non-empty selections', () => {
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     
     const { rerender } = renderHook(
       ({ selected }) => useTeamSelectionEffects(selected, mockOnChange),
@@ -50,8 +51,8 @@ describe('useTeamSelectionEffects', () => {
   });
 
   it('should handle onChange callback errors gracefully', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-    const mockOnChange = jest.fn().mockImplementation(() => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const mockOnChange = vi.fn().mockImplementation(() => {
       throw new Error('onChange failed');
     });
     
@@ -68,7 +69,7 @@ describe('useTeamSelectionEffects', () => {
   });
 
   it('should provide cleanup function', () => {
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     
     const { result } = renderHook(() => 
       useTeamSelectionEffects([], mockOnChange)
@@ -78,7 +79,7 @@ describe('useTeamSelectionEffects', () => {
   });
 
   it('should reset tracking after cleanup', () => {
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     
     const { result, rerender } = renderHook(
       ({ selected }) => useTeamSelectionEffects(selected, mockOnChange),
@@ -98,7 +99,7 @@ describe('useTeamSelectionEffects', () => {
   });
 
   it('should not call onChange multiple times for same selection', () => {
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     
     const { rerender } = renderHook(
       ({ selected }) => useTeamSelectionEffects(selected, mockOnChange),

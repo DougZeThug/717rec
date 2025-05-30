@@ -1,18 +1,19 @@
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useBracketFormState } from '../useBracketFormState';
 
 // Mock the dependent hooks
-jest.mock('../useTeamSelectionState', () => ({
-  useTeamSelectionState: jest.fn()
+vi.mock('../useTeamSelectionState', () => ({
+  useTeamSelectionState: vi.fn()
 }));
 
-jest.mock('../useFormValidation', () => ({
-  useFormValidation: jest.fn()
+vi.mock('../useFormValidation', () => ({
+  useFormValidation: vi.fn()
 }));
 
-jest.mock('../useTeamSelectionEffects', () => ({
-  useTeamSelectionEffects: jest.fn()
+vi.mock('../useTeamSelectionEffects', () => ({
+  useTeamSelectionEffects: vi.fn()
 }));
 
 import { useTeamSelectionState } from '../useTeamSelectionState';
@@ -20,28 +21,28 @@ import { useFormValidation } from '../useFormValidation';
 import { useTeamSelectionEffects } from '../useTeamSelectionEffects';
 
 describe('useBracketFormState', () => {
-  const mockUseTeamSelectionState = useTeamSelectionState as jest.MockedFunction<typeof useTeamSelectionState>;
-  const mockUseFormValidation = useFormValidation as jest.MockedFunction<typeof useFormValidation>;
-  const mockUseTeamSelectionEffects = useTeamSelectionEffects as jest.MockedFunction<typeof useTeamSelectionEffects>;
+  const mockUseTeamSelectionState = useTeamSelectionState as any;
+  const mockUseFormValidation = useFormValidation as any;
+  const mockUseTeamSelectionEffects = useTeamSelectionEffects as any;
 
-  const mockOnChange = jest.fn();
+  const mockOnChange = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should combine all hook results correctly', () => {
     const mockSelected = new Set(['team-1', 'team-2']);
     const mockSelectedArray = ['team-1', 'team-2'];
-    const mockToggle = jest.fn();
+    const mockToggle = vi.fn();
 
     mockUseTeamSelectionState.mockReturnValue({
       selected: mockSelected,
       selectedArray: mockSelectedArray,
       count: 2,
       toggle: mockToggle,
-      setSelected: jest.fn(),
-      clearSelection: jest.fn(),
+      setSelected: vi.fn(),
+      clearSelection: vi.fn(),
       canSelectMore: true,
       isAtMaximum: false,
       hasSelection: true
@@ -65,7 +66,7 @@ describe('useBracketFormState', () => {
     });
 
     mockUseTeamSelectionEffects.mockReturnValue({
-      cleanup: jest.fn()
+      cleanup: vi.fn()
     });
 
     const { result } = renderHook(() => 
@@ -81,15 +82,15 @@ describe('useBracketFormState', () => {
   });
 
   it('should handle team toggle correctly', () => {
-    const mockToggle = jest.fn();
+    const mockToggle = vi.fn();
 
     mockUseTeamSelectionState.mockReturnValue({
       selected: new Set(),
       selectedArray: [],
       count: 0,
       toggle: mockToggle,
-      setSelected: jest.fn(),
-      clearSelection: jest.fn(),
+      setSelected: vi.fn(),
+      clearSelection: vi.fn(),
       canSelectMore: true,
       isAtMaximum: false,
       hasSelection: false
@@ -113,7 +114,7 @@ describe('useBracketFormState', () => {
     });
 
     mockUseTeamSelectionEffects.mockReturnValue({
-      cleanup: jest.fn()
+      cleanup: vi.fn()
     });
 
     const { result } = renderHook(() => 
@@ -132,9 +133,9 @@ describe('useBracketFormState', () => {
       selected: new Set(['team-1']),
       selectedArray: ['team-1'],
       count: 1,
-      toggle: jest.fn(),
-      setSelected: jest.fn(),
-      clearSelection: jest.fn(),
+      toggle: vi.fn(),
+      setSelected: vi.fn(),
+      clearSelection: vi.fn(),
       canSelectMore: true,
       isAtMaximum: false,
       hasSelection: true
@@ -158,7 +159,7 @@ describe('useBracketFormState', () => {
     });
 
     mockUseTeamSelectionEffects.mockReturnValue({
-      cleanup: jest.fn()
+      cleanup: vi.fn()
     });
 
     renderHook(() => 
@@ -175,9 +176,9 @@ describe('useBracketFormState', () => {
       selected: new Set(mockSelectedArray),
       selectedArray: mockSelectedArray,
       count: 2,
-      toggle: jest.fn(),
-      setSelected: jest.fn(),
-      clearSelection: jest.fn(),
+      toggle: vi.fn(),
+      setSelected: vi.fn(),
+      clearSelection: vi.fn(),
       canSelectMore: true,
       isAtMaximum: false,
       hasSelection: true
@@ -201,7 +202,7 @@ describe('useBracketFormState', () => {
     });
 
     mockUseTeamSelectionEffects.mockReturnValue({
-      cleanup: jest.fn()
+      cleanup: vi.fn()
     });
 
     renderHook(() => 
@@ -212,15 +213,15 @@ describe('useBracketFormState', () => {
   });
 
   it('should memoize team toggle handler', () => {
-    const mockToggle = jest.fn();
+    const mockToggle = vi.fn();
 
     mockUseTeamSelectionState.mockReturnValue({
       selected: new Set(),
       selectedArray: [],
       count: 0,
       toggle: mockToggle,
-      setSelected: jest.fn(),
-      clearSelection: jest.fn(),
+      setSelected: vi.fn(),
+      clearSelection: vi.fn(),
       canSelectMore: true,
       isAtMaximum: false,
       hasSelection: false
@@ -244,7 +245,7 @@ describe('useBracketFormState', () => {
     });
 
     mockUseTeamSelectionEffects.mockReturnValue({
-      cleanup: jest.fn()
+      cleanup: vi.fn()
     });
 
     const { result, rerender } = renderHook(() => 

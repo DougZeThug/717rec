@@ -1,19 +1,20 @@
 
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTeamSelectionState } from '../useTeamSelectionState';
 
 // Mock the useTeamSelection hook
-jest.mock('@/hooks/playoffs', () => ({
-  useTeamSelection: jest.fn()
+vi.mock('@/hooks/playoffs', () => ({
+  useTeamSelection: vi.fn()
 }));
 
 import { useTeamSelection } from '@/hooks/playoffs';
 
 describe('useTeamSelectionState', () => {
-  const mockUseTeamSelection = useTeamSelection as jest.MockedFunction<typeof useTeamSelection>;
+  const mockUseTeamSelection = useTeamSelection as any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should initialize with correct state', () => {
@@ -24,8 +25,8 @@ describe('useTeamSelectionState', () => {
       selected: mockSelected,
       selectedArray: mockSelectedArray,
       count: 2,
-      toggle: jest.fn(),
-      setSelected: jest.fn()
+      toggle: vi.fn(),
+      setSelected: vi.fn()
     });
 
     const { result } = renderHook(() => 
@@ -41,14 +42,14 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should handle team toggle with max teams validation', () => {
-    const mockToggle = jest.fn();
+    const mockToggle = vi.fn();
     
     mockUseTeamSelection.mockReturnValue({
       selected: new Set(['team-1']),
       selectedArray: ['team-1'],
       count: 1,
       toggle: mockToggle,
-      setSelected: jest.fn()
+      setSelected: vi.fn()
     });
 
     const { result } = renderHook(() => 
@@ -63,8 +64,8 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should handle error in toggle gracefully', () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-    const mockToggle = jest.fn().mockImplementation(() => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const mockToggle = vi.fn().mockImplementation(() => {
       throw new Error('Toggle failed');
     });
     
@@ -73,7 +74,7 @@ describe('useTeamSelectionState', () => {
       selectedArray: [],
       count: 0,
       toggle: mockToggle,
-      setSelected: jest.fn()
+      setSelected: vi.fn()
     });
 
     const { result } = renderHook(() => 
@@ -93,13 +94,13 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should validate selection when setting teams', () => {
-    const mockSetSelected = jest.fn();
+    const mockSetSelected = vi.fn();
     
     mockUseTeamSelection.mockReturnValue({
       selected: new Set(),
       selectedArray: [],
       count: 0,
-      toggle: jest.fn(),
+      toggle: vi.fn(),
       setSelected: mockSetSelected
     });
 
@@ -116,13 +117,13 @@ describe('useTeamSelectionState', () => {
   });
 
   it('should clear selection correctly', () => {
-    const mockSetSelected = jest.fn();
+    const mockSetSelected = vi.fn();
     
     mockUseTeamSelection.mockReturnValue({
       selected: new Set(['team-1', 'team-2']),
       selectedArray: ['team-1', 'team-2'],
       count: 2,
-      toggle: jest.fn(),
+      toggle: vi.fn(),
       setSelected: mockSetSelected
     });
 
@@ -143,8 +144,8 @@ describe('useTeamSelectionState', () => {
       selected: new Set(['team-1', 'team-2', 'team-3']),
       selectedArray: ['team-1', 'team-2', 'team-3'],
       count: 3,
-      toggle: jest.fn(),
-      setSelected: jest.fn()
+      toggle: vi.fn(),
+      setSelected: vi.fn()
     });
 
     const { result } = renderHook(() => 
@@ -161,8 +162,8 @@ describe('useTeamSelectionState', () => {
       selected: new Set(),
       selectedArray: [],
       count: 0,
-      toggle: jest.fn(),
-      setSelected: jest.fn()
+      toggle: vi.fn(),
+      setSelected: vi.fn()
     });
 
     const { result } = renderHook(() => 
