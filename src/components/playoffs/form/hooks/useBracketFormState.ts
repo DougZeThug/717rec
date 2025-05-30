@@ -26,81 +26,109 @@ const isValidFormData = (data: any): data is BracketFormData => {
 export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const [isFormValid, setIsFormValid] = useState(false);
   
-  // Initialize form with proper default values
+  // Initialize form with proper default values and less aggressive validation
   const form = useForm<BracketFormValues>({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
       title: "",
-      divisionId: undefined,
+      divisionId: "",
       format: BRACKET_FORMATS.SINGLE,
       teams: []
     },
-    mode: "onChange"
+    mode: "onSubmit" // Changed from "onChange" to prevent premature validation
   });
 
-  // Real-time validation with type guards
+  // More defensive validation that won't crash on undefined values
   const validateForm = useCallback((data: unknown) => {
     console.log("Validating form data:", data);
     
-    // Convert form data to BracketFormData format for validation
-    const formData = data as any;
-    const bracketFormData: BracketFormData = {
-      title: formData.title || '',
-      divisionId: formData.divisionId || '',
-      format: formData.format || BRACKET_FORMATS.SINGLE,
-      teams: formData.teams || []
-    };
-    
-    // Type guard check
-    if (!isValidFormData(bracketFormData)) {
-      console.error('Invalid form data structure:', data);
+    try {
+      // Safely handle undefined or null data
+      if (!data || typeof data !== 'object') {
+        console.log("No data provided for validation");
+        setIsFormValid(false);
+        return { isValid: false, errors: ["No form data"] };
+      }
+      
+      // Convert form data to BracketFormData format for validation
+      const formData = data as any;
+      const bracketFormData: BracketFormData = {
+        title: formData.title || '',
+        divisionId: formData.divisionId || '',
+        format: formData.format || BRACKET_FORMATS.SINGLE,
+        teams: Array.isArray(formData.teams) ? formData.teams : []
+      };
+      
+      // Type guard check
+      if (!isValidFormData(bracketFormData)) {
+        console.log('Form data structure is not yet complete');
+        setIsFormValid(false);
+        return { isValid: false, errors: ["Form not ready"] };
+      }
+      
+      // Only validate if we have the required fields - don't error on empty forms
+      if (!bracketFormData.title && !bracketFormData.divisionId && !bracketFormData.teams?.length) {
+        console.log("Form is empty, validation not needed yet");
+        setIsFormValid(false);
+        return { isValid: false, errors: ["Form is empty"] };
+      }
+      
+      // Only validate if we have some content to validate
+      if (bracketFormData.title || bracketFormData.divisionId || bracketFormData.teams?.length) {
+        const validation = BracketValidationService.validateForSubmission(bracketFormData);
+        console.log("Validation result:", validation);
+        setIsFormValid(validation.isValid);
+        return validation;
+      }
+      
+      // Default case - form is not ready
       setIsFormValid(false);
-      return { isValid: false, errors: ["Invalid form data structure"] };
-    }
-    
-    // Only validate if we have the required fields
-    if (!bracketFormData.title || !bracketFormData.divisionId || !bracketFormData.teams?.length) {
+      return { isValid: false, errors: ["Form not ready"] };
+      
+    } catch (error) {
+      console.error("Error during form validation:", error);
       setIsFormValid(false);
-      return { isValid: false, errors: ["Missing required fields"] };
+      return { isValid: false, errors: ["Validation error"] };
     }
-    
-    const validation = BracketValidationService.validateForSubmission(bracketFormData);
-    console.log("Validation result:", validation);
-    setIsFormValid(validation.isValid);
-    return validation;
   }, []);
 
   // Enhanced form submission with better error handling and type guards
   const handleSubmit = form.handleSubmit(async (data) => {
     console.log("Form submission started with data:", data);
     
-    // Convert to BracketFormData format
-    const bracketFormData: BracketFormData = {
-      title: data.title,
-      divisionId: data.divisionId || '',
-      format: data.format,
-      teams: data.teams
-    };
-    
-    // Type guard check for submission
-    if (!isValidFormData(bracketFormData)) {
-      console.error('Invalid form data for submission:', data);
-      throw new Error('Invalid form data structure');
+    try {
+      // Convert to BracketFormData format
+      const bracketFormData: BracketFormData = {
+        title: data.title,
+        divisionId: data.divisionId || '',
+        format: data.format,
+        teams: data.teams
+      };
+      
+      // Type guard check for submission
+      if (!isValidFormData(bracketFormData)) {
+        console.error('Invalid form data for submission:', data);
+        throw new Error('Invalid form data structure');
+      }
+      
+      // Sanitize and validate
+      const sanitizedData = BracketValidationService.sanitizeFormData(bracketFormData);
+      console.log("Sanitized data:", sanitizedData);
+      
+      const validation = BracketValidationService.validateForSubmission(sanitizedData);
+      
+      if (!validation.isValid) {
+        console.error('Form validation failed:', validation.errors);
+        throw new Error(validation.errors[0]);
+      }
+      
+      console.log('Form validation passed, submitting:', sanitizedData);
+      await onSubmit(data); // Submit original form data
+      
+    } catch (error) {
+      console.error("Error during form submission:", error);
+      throw error; // Re-throw to be handled by the calling component
     }
-    
-    // Sanitize and validate
-    const sanitizedData = BracketValidationService.sanitizeFormData(bracketFormData);
-    console.log("Sanitized data:", sanitizedData);
-    
-    const validation = BracketValidationService.validateForSubmission(sanitizedData);
-    
-    if (!validation.isValid) {
-      console.error('Form validation failed:', validation.errors);
-      throw new Error(validation.errors[0]);
-    }
-    
-    console.log('Form validation passed, submitting:', sanitizedData);
-    await onSubmit(data); // Submit original form data
   });
   
   return {

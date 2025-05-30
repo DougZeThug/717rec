@@ -10,7 +10,7 @@ import { BracketFormFormat } from "./form/BracketFormFormat";
 import { BracketFormTeams } from "./form/BracketFormTeams";
 import { BracketFormActions } from "./form/BracketFormActions";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 interface BracketFormProps {
   divisions: { id: string; name: string }[] | undefined;
@@ -27,9 +27,27 @@ const BracketForm: React.FC<BracketFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  // Add validation for divisions
+  console.log("BracketForm: Rendering with", { 
+    divisionsCount: divisions?.length, 
+    teamsCount: teams?.length, 
+    isSubmitting 
+  });
+
+  // Add validation for divisions and teams with loading states
   const validDivisions = Array.isArray(divisions) ? divisions : [];
   const validTeams = Array.isArray(teams) ? teams : [];
+  
+  // Show loading state if divisions or teams are undefined (still loading)
+  if (divisions === undefined || teams === undefined) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading form data...</span>
+        </div>
+      </div>
+    );
+  }
   
   const {
     form,
@@ -47,6 +65,20 @@ const BracketForm: React.FC<BracketFormProps> = ({
         <AlertDescription>
           You need to create at least one division before creating a bracket. 
           Divisions will be created automatically if none exist in the database.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  // Show warning if no teams are available  
+  if (validTeams.length === 0) {
+    return (
+      <Alert variant="warning" className="my-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No Teams Available</AlertTitle>
+        <AlertDescription>
+          You need to have teams in your divisions before creating a bracket.
+          Please add teams to your divisions first.
         </AlertDescription>
       </Alert>
     );

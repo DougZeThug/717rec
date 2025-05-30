@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
+import { BracketCreationErrorBoundary } from "./BracketCreationErrorBoundary";
 
 // Format mapping from UI strings to internal format
 const FORMAT_MAP = {
@@ -35,14 +36,17 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const navigate = useNavigate();
   const { createBracket } = useChallongeAdmin();
   
-  // Handle form submission with Challonge integration
+  // Handle form submission with better error handling
   const handleSubmit = async (data: BracketFormValues) => {
+    console.log("BracketCreationDialog: Starting form submission", data);
+    
     try {
       setIsSubmitting(true);
       
       // Validate the form data
       const validation = BracketValidationService.validateFormData(data as BracketFormData);
       if (!validation.isValid) {
+        console.error("BracketCreationDialog: Validation failed", validation.errors);
         toast({
           title: "Validation Error",
           description: validation.errors.join(", "),
@@ -54,6 +58,13 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       // Map UI format to internal format
       const internalFormat = FORMAT_MAP[data.format as keyof typeof FORMAT_MAP];
       const selectedTeams = (teams || []).filter(team => data.teams.includes(team.id));
+      
+      console.log("BracketCreationDialog: Creating bracket with:", {
+        name: data.title,
+        format: internalFormat,
+        teamsCount: selectedTeams.length,
+        divisionId: data.divisionId
+      });
       
       // Create tournament via Challonge with all required parameters
       const bracketId = await createBracket.mutateAsync({
@@ -86,6 +97,12 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  // Handle error boundary reset
+  const handleErrorReset = () => {
+    console.log("BracketCreationDialog: Resetting after error");
+    setIsSubmitting(false);
+  };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,13 +110,15 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
         </DialogHeader>
-        <BracketForm
-          divisions={divisions}
-          teams={teams}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmit}
-          onCancel={() => onOpenChange(false)}
-        />
+        <BracketCreationErrorBoundary onReset={handleErrorReset}>
+          <BracketForm
+            divisions={divisions}
+            teams={teams}
+            isSubmitting={isSubmitting}
+            onSubmit={handleSubmit}
+            onCancel={() => onOpenChange(false)}
+          />
+        </BracketCreationErrorBoundary>
       </DialogContent>
     </Dialog>
   );

@@ -16,14 +16,25 @@ export const useDivisionManagement = ({ teams, form }: UseDivisionManagementProp
   const [selectedDivision, setSelectedDivision] = useState<string>("");
   const [filteredTeams, setFilteredTeams] = useState<Team[]>([]);
 
-  // Group teams by division
+  // Group teams by division with better error handling
   const teamsByDivision = useMemo(() => {
     const grouped: Record<string, Team[]> = {};
     
-    if (teams && teams.length > 0) {
+    // Safely handle undefined or empty teams array
+    if (!teams || !Array.isArray(teams) || teams.length === 0) {
+      console.log("No teams available for division grouping");
+      return grouped;
+    }
+    
+    try {
       teams.forEach(team => {
-        if (!team || !team.id || !isValidUUID(team.id)) {
-          console.warn('Skipping invalid team:', team);
+        if (!team || !team.id) {
+          console.warn('Skipping team with missing data:', team);
+          return;
+        }
+        
+        if (!isValidUUID(team.id)) {
+          console.warn('Skipping team with invalid ID:', team);
           return;
         }
         
@@ -33,62 +44,92 @@ export const useDivisionManagement = ({ teams, form }: UseDivisionManagementProp
         }
         grouped[divId].push(team);
       });
+    } catch (error) {
+      console.error("Error grouping teams by division:", error);
     }
     
     return grouped;
   }, [teams]);
 
-  // Handle division change
+  // Handle division change with better error handling
   const handleDivisionChange = useCallback((divisionId: string) => {
-    console.log('Division changed to:', divisionId);
+    console.log('Division change requested:', divisionId);
     
-    // Reset teams selection
-    form.setValue('teams', []);
-    
-    // Validate division ID
-    if (!divisionId || divisionId.trim() === '') {
-      setSelectedDivision("");
-      setFilteredTeams([]);
-      form.setValue('divisionId', '');
-      return;
-    }
-    
-    if (divisionId === 'undefined' || divisionId === 'null') {
-      console.error('Invalid division ID value:', divisionId);
-      toast({
-        variant: "destructive",
-        title: "Invalid Division",
-        description: "Please select a valid division from the list."
-      });
-      return;
-    }
-    
-    if (!isValidUUID(divisionId)) {
-      console.error('Invalid division ID format:', divisionId);
-      toast({
-        variant: "destructive",
-        title: "Invalid Division",
-        description: "The selected division has an invalid format. Please refresh and try again."
-      });
-      return;
-    }
-    
-    setSelectedDivision(divisionId);
-    form.setValue('divisionId', divisionId);
-    
-    // Filter teams
-    const divisionTeams = teams.filter(team => {
-      if (!team || !team.id || !isValidUUID(team.id)) {
-        console.warn('Skipping team with invalid ID:', team);
-        return false;
+    try {
+      // Reset teams selection safely
+      if (form && form.setValue) {
+        form.setValue('teams', []);
       }
       
-      const teamDivisionId = team.division_id || team.division;
-      return teamDivisionId === divisionId;
-    });
-    
-    console.log(`Filtered ${divisionTeams.length} valid teams for division ${divisionId}`);
-    setFilteredTeams(divisionTeams);
+      // Validate division ID
+      if (!divisionId || divisionId.trim() === '') {
+        console.log("Empty division ID provided");
+        setSelectedDivision("");
+        setFilteredTeams([]);
+        if (form && form.setValue) {
+          form.setValue('divisionId', '');
+        }
+        return;
+      }
+      
+      if (divisionId === 'undefined' || divisionId === 'null') {
+        console.error('Invalid division ID value:', divisionId);
+        toast({
+          variant: "destructive",
+          title: "Invalid Division",
+          description: "Please select a valid division from the list."
+        });
+        return;
+      }
+      
+      if (!isValidUUID(divisionId)) {
+        console.error('Invalid division ID format:', divisionId);
+        toast({
+          variant: "destructive",
+          title: "Invalid Division",
+          description: "The selected division has an invalid format. Please refresh and try again."
+        });
+        return;
+      }
+      
+      setSelectedDivision(divisionId);
+      if (form && form.setValue) {
+        form.setValue('divisionId', divisionId);
+      }
+      
+      // Filter teams safely
+      if (!teams || !Array.isArray(teams)) {
+        console.warn("No teams available for filtering");
+        setFilteredTeams([]);
+        return;
+      }
+      
+      const divisionTeams = teams.filter(team => {
+        if (!team || !team.id) {
+          console.warn('Skipping team with missing data during filtering:', team);
+          return false;
+        }
+        
+        if (!isValidUUID(team.id)) {
+          console.warn('Skipping team with invalid ID during filtering:', team);
+          return false;
+        }
+        
+        const teamDivisionId = team.division_id || team.division;
+        return teamDivisionId === divisionId;
+      });
+      
+      console.log(`Filtered ${divisionTeams.length} valid teams for division ${divisionId}`);
+      setFilteredTeams(divisionTeams);
+      
+    } catch (error) {
+      console.error("Error in handleDivisionChange:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred while changing divisions. Please try again."
+      });
+    }
   }, [teams, form, toast]);
 
   return {
