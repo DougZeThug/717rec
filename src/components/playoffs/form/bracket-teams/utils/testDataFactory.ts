@@ -1,5 +1,6 @@
 
-import { ProcessedTeam, Division, BracketFormTeamsProps } from '../types';
+import { ProcessedTeam, BracketFormTeamsProps } from '../types';
+import { Division } from '@/types';
 
 /**
  * Factory functions for creating test data

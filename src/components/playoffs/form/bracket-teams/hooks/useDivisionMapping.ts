@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Division, DivisionMappingResult } from '../types';
+import { Division } from '@/types';
+import { DivisionMappingResult } from '../types';
 
 export const useDivisionMapping = (
   divisions: Division[],

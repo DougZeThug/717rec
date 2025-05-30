@@ -1,5 +1,6 @@
 
-import { ProcessedTeam, Division } from '../types';
+import { ProcessedTeam } from '../types';
+import { Division } from '@/types';
 
 /**
  * Helper functions for team data processing

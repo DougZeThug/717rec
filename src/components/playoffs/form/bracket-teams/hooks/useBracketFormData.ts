@@ -1,6 +1,7 @@
 
 import { useTeamRankings } from "@/hooks/useTeamRankings";
-import { BracketFormDataResult, Division } from '../types';
+import { Division } from '@/types';
+import { BracketFormDataResult } from '../types';
 import { useDivisionMapping } from './useDivisionMapping';
 import { useTeamDataProcessor } from './useTeamDataProcessor';
 

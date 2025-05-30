@@ -1,6 +1,6 @@
 
 // Re-export Team from main types to avoid duplication
-export type { Team, Division } from '@/types';
+export type { Team } from '@/types';
 
 // Team selection state types
 export interface TeamSelectionStateResult {
@@ -127,12 +127,12 @@ export interface BracketFormDataResult {
   isDataReady: boolean;
 }
 
-// Component props
+// Component props - Import Division directly where needed
 export interface BracketFormTeamsProps {
   divisionId: string | null;
   maxTeams: number;
   onChange: (ids: string[]) => void;
-  divisions?: Division[];
+  divisions?: import('@/types').Division[];
 }
 
 // Container-specific types
