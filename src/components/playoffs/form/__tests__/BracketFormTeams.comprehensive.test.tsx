@@ -5,17 +5,19 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BracketFormTeams } from '../BracketFormTeams';
 
-// Mock all the hooks used by the component
-vi.mock('@/hooks/useTeamRankings', () => ({
-  useTeamRankings: vi.fn()
+// Mock the new hooks
+vi.mock('../bracket-teams/hooks', () => ({
+  useBracketFormData: vi.fn()
 }));
 
+// Mock the existing hooks
 vi.mock('@/hooks/playoffs', () => ({
   useFilteredTeams: vi.fn(),
   useTeamSelection: vi.fn(),
   useTeamSeeding: vi.fn()
 }));
 
+// Mock the child components
 vi.mock('@/components/playoffs/SimpleTeamSelectionList', () => ({
   default: ({ teams, selected, onToggle, maxTeams }: any) => (
     <div data-testid="team-selection-list">
@@ -47,13 +49,13 @@ vi.mock('@/components/playoffs/TeamSelectionSummary', () => ({
 }));
 
 // Mock imports
-const mockUseTeamRankings = vi.hoisted(() => vi.fn());
+const mockUseBracketFormData = vi.hoisted(() => vi.fn());
 const mockUseFilteredTeams = vi.hoisted(() => vi.fn());
 const mockUseTeamSelection = vi.hoisted(() => vi.fn());
 const mockUseTeamSeeding = vi.hoisted(() => vi.fn());
 
-vi.mock('@/hooks/useTeamRankings', () => ({
-  useTeamRankings: mockUseTeamRankings
+vi.mock('../bracket-teams/hooks', () => ({
+  useBracketFormData: mockUseBracketFormData
 }));
 
 vi.mock('@/hooks/playoffs', () => ({
@@ -72,39 +74,6 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
       { id: 'div-2', name: 'Division B' }
     ]
   };
-
-  const mockRankings = [
-    {
-      teamId: 'team-1',
-      teamName: 'Team Alpha',
-      powerScore: 95.5,
-      wins: 8,
-      losses: 2,
-      divisionName: 'Division A',
-      imageUrl: 'team1.jpg',
-      gamesWon: 16,
-      gamesLost: 4,
-      sos: 0.65,
-      winPercentage: 0.8,
-      gameWinPercentage: 0.8,
-      closeMatchLosses: 1
-    },
-    {
-      teamId: 'team-2', 
-      teamName: 'Team Beta',
-      powerScore: 88.2,
-      wins: 7,
-      losses: 3,
-      divisionName: 'Division A',
-      imageUrl: 'team2.jpg',
-      gamesWon: 14,
-      gamesLost: 6,
-      sos: 0.55,
-      winPercentage: 0.7,
-      gameWinPercentage: 0.7,
-      closeMatchLosses: 2
-    }
-  ];
 
   const mockTeams = [
     {
@@ -133,9 +102,12 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
     vi.clearAllMocks();
     
     // Default mock implementations
-    mockUseTeamRankings.mockReturnValue({
-      rankings: mockRankings,
-      isLoading: false
+    mockUseBracketFormData.mockReturnValue({
+      teams: mockTeams,
+      isLoading: false,
+      isError: false,
+      errorMessage: null,
+      isDataReady: true
     });
     
     mockUseFilteredTeams.mockReturnValue(mockTeams);
@@ -153,10 +125,13 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
   });
 
   describe('Data Loading States', () => {
-    it('shows loading state when rankings are loading', () => {
-      mockUseTeamRankings.mockReturnValue({
-        rankings: null,
-        isLoading: true
+    it('shows loading state when data is loading', () => {
+      mockUseBracketFormData.mockReturnValue({
+        teams: [],
+        isLoading: true,
+        isError: false,
+        errorMessage: null,
+        isDataReady: false
       });
 
       render(<BracketFormTeams {...defaultProps} />);
@@ -165,16 +140,13 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
       expect(screen.getByText(/Loading team rankings and division data/)).toBeInTheDocument();
     });
 
-    it('shows loading state when divisions are undefined', () => {
-      render(<BracketFormTeams {...defaultProps} divisions={undefined} />);
-      
-      expect(screen.getByText('Loading teams...')).toBeInTheDocument();
-    });
-
-    it('shows loading state when rankings data is not ready', () => {
-      mockUseTeamRankings.mockReturnValue({
-        rankings: null,
-        isLoading: false
+    it('shows loading state when data is not ready', () => {
+      mockUseBracketFormData.mockReturnValue({
+        teams: [],
+        isLoading: false,
+        isError: false,
+        errorMessage: null,
+        isDataReady: false
       });
 
       render(<BracketFormTeams {...defaultProps} />);
@@ -184,10 +156,13 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
   });
 
   describe('Error States', () => {
-    it('shows error state when rankings failed to load', () => {
-      mockUseTeamRankings.mockReturnValue({
-        rankings: null,
-        isLoading: false
+    it('shows error state when data failed to load', () => {
+      mockUseBracketFormData.mockReturnValue({
+        teams: [],
+        isLoading: false,
+        isError: true,
+        errorMessage: 'Failed to load teams. Please refresh and try again.',
+        isDataReady: false
       });
 
       render(<BracketFormTeams {...defaultProps} />);
@@ -196,15 +171,19 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
       expect(screen.getByText(/Error loading team data/)).toBeInTheDocument();
     });
 
-    it('shows error state when rankings is empty array', () => {
-      mockUseTeamRankings.mockReturnValue({
-        rankings: [],
-        isLoading: false
+    it('shows custom error message when provided', () => {
+      const customError = 'Custom error message';
+      mockUseBracketFormData.mockReturnValue({
+        teams: [],
+        isLoading: false,
+        isError: true,
+        errorMessage: customError,
+        isDataReady: false
       });
 
       render(<BracketFormTeams {...defaultProps} />);
       
-      expect(screen.getByText('Failed to load teams. Please refresh and try again.')).toBeInTheDocument();
+      expect(screen.getByText(customError)).toBeInTheDocument();
     });
   });
 
@@ -219,43 +198,23 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
     });
   });
 
-  describe('Data Transformation', () => {
-    it('correctly transforms rankings to teams with proper division mapping', () => {
+  describe('Data Integration', () => {
+    it('passes divisions to useBracketFormData hook', () => {
       render(<BracketFormTeams {...defaultProps} />);
       
-      // Verify the teams were passed to filtered teams hook
-      expect(mockUseFilteredTeams).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: 'team-1',
-            name: 'Team Alpha',
-            seed: 1,
-            division_id: 'div-1',
-            divisionName: 'Division A',
-            powerScore: 95.5
-          })
-        ]),
-        'div-1'
-      );
+      expect(mockUseBracketFormData).toHaveBeenCalledWith(defaultProps.divisions);
     });
 
-    it('handles missing division mapping gracefully', () => {
-      const rankingsWithUnknownDivision = [
-        {
-          ...mockRankings[0],
-          divisionName: 'Unknown Division'
-        }
-      ];
-
-      mockUseTeamRankings.mockReturnValue({
-        rankings: rankingsWithUnknownDivision,
-        isLoading: false
-      });
-
+    it('passes processed teams to useFilteredTeams hook', () => {
       render(<BracketFormTeams {...defaultProps} />);
       
-      // Should still render without crashing
-      expect(screen.getByTestId('team-selection-list')).toBeInTheDocument();
+      expect(mockUseFilteredTeams).toHaveBeenCalledWith(mockTeams, 'div-1');
+    });
+
+    it('passes filtered teams to useTeamSeeding hook', () => {
+      render(<BracketFormTeams {...defaultProps} />);
+      
+      expect(mockUseTeamSeeding).toHaveBeenCalledWith(mockTeams);
     });
   });
 
@@ -295,14 +254,6 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
       
       // onChange should be called with current selection
       expect(mockOnChange).toHaveBeenCalledWith(['team-1']);
-    });
-  });
-
-  describe('Team Seeding', () => {
-    it('applies seeding to filtered teams', () => {
-      render(<BracketFormTeams {...defaultProps} />);
-      
-      expect(mockUseTeamSeeding).toHaveBeenCalledWith(mockTeams);
     });
   });
 
@@ -362,8 +313,7 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
       
       rerender(<BracketFormTeams {...defaultProps} divisions={newDivisions} />);
       
-      // Should trigger re-processing of teams with new division mapping
-      expect(mockUseFilteredTeams).toHaveBeenCalled();
+      expect(mockUseBracketFormData).toHaveBeenCalledWith(newDivisions);
     });
   });
 
@@ -378,41 +328,13 @@ describe('BracketFormTeams - Comprehensive Tests', () => {
     it('handles empty divisions array', () => {
       render(<BracketFormTeams {...defaultProps} divisions={[]} />);
       
-      expect(screen.getByText('Loading teams...')).toBeInTheDocument();
+      expect(mockUseBracketFormData).toHaveBeenCalledWith([]);
     });
 
-    it('handles malformed rankings data', () => {
-      mockUseTeamRankings.mockReturnValue({
-        rankings: [{ invalid: 'data' }],
-        isLoading: false
-      });
-
-      render(<BracketFormTeams {...defaultProps} />);
+    it('handles undefined divisions', () => {
+      render(<BracketFormTeams {...defaultProps} divisions={undefined} />);
       
-      // Should handle gracefully without crashing
-      expect(screen.getByTestId('team-selection-list')).toBeInTheDocument();
-    });
-  });
-
-  describe('Performance', () => {
-    it('memoizes division mapping correctly', () => {
-      const { rerender } = render(<BracketFormTeams {...defaultProps} />);
-      
-      // Rerender with same divisions - should not recompute
-      rerender(<BracketFormTeams {...defaultProps} maxTeams={8} />);
-      
-      // Verify memoization is working (this would need spy on useMemo in real test)
-      expect(mockUseFilteredTeams).toHaveBeenCalled();
-    });
-
-    it('memoizes team processing correctly', () => {
-      const { rerender } = render(<BracketFormTeams {...defaultProps} />);
-      
-      // Rerender with same rankings and divisions
-      rerender(<BracketFormTeams {...defaultProps} maxTeams={8} />);
-      
-      // Should use memoized teams
-      expect(mockUseFilteredTeams).toHaveBeenCalled();
+      expect(mockUseBracketFormData).toHaveBeenCalledWith([]);
     });
   });
 });
