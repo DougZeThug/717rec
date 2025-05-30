@@ -49,9 +49,9 @@ export const useBracketFormState = (
     }
   }, [teamSelection.toggle]);
 
-  // Ensure we return a complete, valid object structure
-  return {
-    // Team selection - ensure all values are properly defined
+  // Return a complete, properly typed object
+  const result: BracketFormStateResult = {
+    // Team selection - provide defaults for all required properties
     selected: teamSelection.selected || new Set(),
     selectedArray: teamSelection.selectedArray || [],
     count: teamSelection.count || 0,
@@ -61,7 +61,7 @@ export const useBracketFormState = (
     isAtMaximum: teamSelection.isAtMaximum ?? false,
     hasSelection: teamSelection.hasSelection ?? false,
     
-    // Validation - ensure all validation properties exist
+    // Validation - provide defaults for all required properties
     isValid: validation.isValid ?? false,
     isComplete: validation.isComplete ?? false,
     hasError: validation.hasError ?? false,
@@ -80,4 +80,6 @@ export const useBracketFormState = (
     // Effects
     cleanup: effects.cleanup || (() => {})
   };
+
+  return result;
 };

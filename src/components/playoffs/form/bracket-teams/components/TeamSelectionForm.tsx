@@ -26,9 +26,32 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
 }) => {
   // Ensure we have valid arrays and objects to prevent React error #300
   const validTeams = Array.isArray(teams) ? teams : [];
-  const validFormState = formState || {};
-  const selected = validFormState.selected || new Set();
-  const progress = validFormState.progress || { percentage: 0 };
+  
+  // Ensure formState has all required properties with proper defaults
+  const safeFormState = {
+    selected: formState?.selected || new Set(),
+    selectedArray: formState?.selectedArray || [],
+    count: formState?.count || 0,
+    handleTeamToggle: formState?.handleTeamToggle || (() => {}),
+    clearSelection: formState?.clearSelection || (() => {}),
+    canSelectMore: formState?.canSelectMore ?? true,
+    isAtMaximum: formState?.isAtMaximum ?? false,
+    hasSelection: formState?.hasSelection ?? false,
+    isValid: formState?.isValid ?? false,
+    isComplete: formState?.isComplete ?? false,
+    hasError: formState?.hasError ?? false,
+    hasWarning: formState?.hasWarning ?? false,
+    errorMessage: formState?.errorMessage || null,
+    warningMessage: formState?.warningMessage || null,
+    statusMessage: formState?.statusMessage || 'Ready to select teams',
+    progress: formState?.progress || {
+      percentage: 0,
+      selected: 0,
+      required: minTeams,
+      maximum: maxTeams,
+      available: validTeams.length
+    }
+  };
 
   /**
    * Renders team selection button with appropriate styling based on selection state
@@ -36,8 +59,8 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
   const renderTeamButton = (team: ProcessedTeam) => {
     if (!team || !team.id) return null;
     
-    const isSelected = selected.has(team.id);
-    const canSelect = !isSelected && (validFormState.canSelectMore ?? true);
+    const isSelected = safeFormState.selected.has(team.id);
+    const canSelect = !isSelected && safeFormState.canSelectMore;
     const isDisabled = !isSelected && !canSelect;
 
     return (
@@ -45,7 +68,7 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
         key={team.id}
         variant={isSelected ? "default" : "outline"}
         size="sm"
-        onClick={() => validFormState.handleTeamToggle?.(team.id)}
+        onClick={() => safeFormState.handleTeamToggle(team.id)}
         disabled={isDisabled}
         className={`
           flex items-center gap-2 p-3 h-auto justify-start
@@ -88,28 +111,28 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Select Teams</CardTitle>
-            <Badge variant={(validFormState.isValid ?? false) ? "default" : "secondary"}>
-              {validFormState.count || 0}/{maxTeams}
+            <Badge variant={safeFormState.isValid ? "default" : "secondary"}>
+              {safeFormState.count}/{maxTeams}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Progress value={progress.percentage || 0} className="w-full" />
+          <Progress value={safeFormState.progress.percentage} className="w-full" />
           
           <div className="flex items-center justify-between text-sm">
             <span className={
-              validFormState.hasError ? "text-destructive" : 
-              validFormState.hasWarning ? "text-yellow-600" : 
+              safeFormState.hasError ? "text-destructive" : 
+              safeFormState.hasWarning ? "text-yellow-600" : 
               "text-muted-foreground"
             }>
-              {validFormState.statusMessage || 'Select teams for your bracket'}
+              {safeFormState.statusMessage}
             </span>
             
-            {validFormState.hasSelection && (
+            {safeFormState.hasSelection && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={validFormState.clearSelection}
+                onClick={safeFormState.clearSelection}
                 className="h-auto p-1 text-muted-foreground hover:text-foreground"
               >
                 Clear all
@@ -118,15 +141,15 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
           </div>
 
           {/* Error/Warning messages */}
-          {validFormState.errorMessage && (
+          {safeFormState.errorMessage && (
             <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
-              {validFormState.errorMessage}
+              {safeFormState.errorMessage}
             </div>
           )}
           
-          {validFormState.warningMessage && (
+          {safeFormState.warningMessage && (
             <div className="text-sm text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
-              {validFormState.warningMessage}
+              {safeFormState.warningMessage}
             </div>
           )}
         </CardContent>

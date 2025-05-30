@@ -22,12 +22,12 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   // Fetch and process team data
   const { teams, isLoading, isError, errorMessage } = useBracketFormData(divisions as Division[]);
   
-  // Manage form state - fix potential object spreading issue
+  // Manage form state - ensure we pass valid parameters
   const formState = useBracketFormState(
-    maxTeams,
-    onChange,
+    typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16,
+    typeof onChange === 'function' ? onChange : () => {},
     Array.isArray(teams) ? teams.length : 0,
-    minTeams
+    typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2
   );
 
   // Loading state
