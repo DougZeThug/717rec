@@ -131,6 +131,7 @@ export interface BracketFormDataResult {
 export interface BracketFormTeamsProps {
   divisionId: string | null;
   maxTeams: number;
+  minTeams?: number;
   onChange: (ids: string[]) => void;
   divisions?: import('@/types').Division[];
 }

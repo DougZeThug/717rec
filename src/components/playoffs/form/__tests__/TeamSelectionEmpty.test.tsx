@@ -5,48 +5,29 @@ import { describe, it, expect } from 'vitest';
 import { TeamSelectionEmpty } from '../bracket-teams/components/TeamSelectionEmpty';
 
 describe('TeamSelectionEmpty', () => {
-  const defaultProps = {
-    minTeams: 2,
-    maxTeams: 16,
-    message: 'No teams available',
-    description: 'No teams found for the selected division.'
-  };
-
-  it('renders empty message', () => {
-    render(<TeamSelectionEmpty {...defaultProps} />);
+  it('renders empty state message', () => {
+    render(<TeamSelectionEmpty />);
     
-    expect(screen.getByText('No teams available')).toBeInTheDocument();
+    expect(screen.getByText('No Teams Available')).toBeInTheDocument();
   });
 
-  it('displays description', () => {
-    render(<TeamSelectionEmpty {...defaultProps} />);
+  it('displays default description', () => {
+    render(<TeamSelectionEmpty />);
     
-    expect(screen.getByText('No teams found for the selected division.')).toBeInTheDocument();
+    expect(screen.getByText(/No teams are currently available for bracket creation/)).toBeInTheDocument();
   });
 
-  it('displays min and max teams in label', () => {
-    render(<TeamSelectionEmpty {...defaultProps} />);
+  it('shows users icon', () => {
+    render(<TeamSelectionEmpty />);
     
-    expect(screen.getByText('Select Teams (Min 2, Max 16)')).toBeInTheDocument();
+    const usersIcon = screen.getByTestId('users-icon') || document.querySelector('[data-lucide="users"]');
+    expect(usersIcon).toBeInTheDocument();
   });
 
-  it('applies empty state styling', () => {
-    render(<TeamSelectionEmpty {...defaultProps} />);
+  it('applies correct styling', () => {
+    render(<TeamSelectionEmpty />);
     
-    const emptyCard = screen.getByText('No teams available');
-    expect(emptyCard).toHaveClass('text-gray-500');
-  });
-
-  it('handles custom messages', () => {
-    const customProps = {
-      ...defaultProps,
-      message: 'Custom empty message',
-      description: 'Custom description'
-    };
-
-    render(<TeamSelectionEmpty {...customProps} />);
-    
-    expect(screen.getByText('Custom empty message')).toBeInTheDocument();
-    expect(screen.getByText('Custom description')).toBeInTheDocument();
+    const card = screen.getByText('No Teams Available').closest('.card, [class*="card"]');
+    expect(card).toBeInTheDocument();
   });
 });

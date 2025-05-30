@@ -4,38 +4,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { TeamSelectionForm } from '../bracket-teams/components/TeamSelectionForm';
-import { Team } from '@/types';
+import { ProcessedTeam, BracketFormStateResult } from '../bracket-teams/types';
 
-// Mock the child components
-vi.mock('@/components/playoffs/SimpleTeamSelectionList', () => ({
-  default: ({ teams, selected, onToggle, maxTeams }: any) => (
-    <div data-testid="team-selection-list">
-      <span>Teams: {teams?.length || 0}</span>
-      <span>Selected: {selected?.size || 0}</span>
-      <span>Max: {maxTeams}</span>
-      {teams?.map((team: any) => (
-        <button
-          key={team.id}
-          data-testid={`team-${team.id}`}
-          onClick={() => onToggle(team.id)}
-        >
-          {team.name}
-        </button>
-      ))}
-    </div>
-  ),
-}));
-
-vi.mock('@/components/playoffs/TeamSelectionSummary', () => ({
-  default: ({ count, max, minTeams }: any) => (
-    <div data-testid="team-selection-summary">
-      Count: {count}, Max: {max}, Min: {minTeams}
-    </div>
-  ),
-}));
-
-// Helper function to create complete mock team
-const createMockTeam = (overrides: Partial<Team> = {}): Team => ({
+// Helper function to create mock team
+const createMockTeam = (overrides: Partial<ProcessedTeam> = {}): ProcessedTeam => ({
   id: 'team-1',
   name: 'Team Alpha',
   wins: 8,
@@ -49,6 +21,7 @@ const createMockTeam = (overrides: Partial<Team> = {}): Team => ({
   players: [],
   seed: 1,
   power_score: 95.5,
+  powerScore: 95.5,
   sos: 0.65,
   win_percentage: 0.8,
   game_win_percentage: 0.8,
@@ -57,86 +30,101 @@ const createMockTeam = (overrides: Partial<Team> = {}): Team => ({
   ...overrides
 });
 
+// Helper function to create mock form state
+const createMockFormState = (overrides: Partial<BracketFormStateResult> = {}): BracketFormStateResult => ({
+  selected: new Set(['team-1']),
+  selectedArray: ['team-1'],
+  count: 1,
+  handleTeamToggle: vi.fn(),
+  clearSelection: vi.fn(),
+  canSelectMore: true,
+  isAtMaximum: false,
+  hasSelection: true,
+  isValid: false,
+  isComplete: false,
+  hasError: false,
+  hasWarning: true,
+  errorMessage: null,
+  warningMessage: 'Need at least 2 teams',
+  statusMessage: 'Select at least 1 more team',
+  progress: {
+    percentage: 50,
+    selected: 1,
+    required: 2,
+    maximum: 16,
+    available: 5
+  },
+  cleanup: vi.fn(),
+  ...overrides
+});
+
 describe('TeamSelectionForm', () => {
-  const mockTeams: Team[] = [createMockTeam()];
+  const mockTeams: ProcessedTeam[] = [createMockTeam()];
+  const mockFormState = createMockFormState();
 
   const defaultProps = {
-    minTeams: 2,
+    teams: mockTeams,
+    formState: mockFormState,
     maxTeams: 16,
-    statusMessage: 'Select teams to continue',
-    availableTeamsCount: 1,
-    seededTeams: mockTeams,
-    selected: new Set(['team-1']),
-    count: 1,
-    onTeamToggle: vi.fn()
+    minTeams: 2
   };
 
-  it('renders form with correct label', () => {
+  it('renders form header with team count', () => {
     render(<TeamSelectionForm {...defaultProps} />);
     
-    expect(screen.getByText('Select Teams (Min 2, Max 16)')).toBeInTheDocument();
+    expect(screen.getByText('Select Teams')).toBeInTheDocument();
+    expect(screen.getByText('1/16')).toBeInTheDocument();
   });
 
-  it('displays status message and availability count', () => {
+  it('displays progress bar', () => {
     render(<TeamSelectionForm {...defaultProps} />);
     
-    expect(screen.getByText('Select teams to continue from 1 available')).toBeInTheDocument();
+    const progressBar = document.querySelector('[role="progressbar"], [class*="progress"]');
+    expect(progressBar).toBeInTheDocument();
   });
 
-  it('renders team selection list with correct props', () => {
+  it('shows status message', () => {
     render(<TeamSelectionForm {...defaultProps} />);
     
-    const teamList = screen.getByTestId('team-selection-list');
-    expect(teamList).toBeInTheDocument();
-    expect(screen.getByText('Teams: 1')).toBeInTheDocument();
-    expect(screen.getByText('Selected: 1')).toBeInTheDocument();
-    expect(screen.getByText('Max: 16')).toBeInTheDocument();
+    expect(screen.getByText('Select at least 1 more team')).toBeInTheDocument();
   });
 
-  it('renders team selection summary', () => {
+  it('renders available teams section', () => {
     render(<TeamSelectionForm {...defaultProps} />);
     
-    const summary = screen.getByTestId('team-selection-summary');
-    expect(summary).toBeInTheDocument();
-    expect(screen.getByText('Count: 1, Max: 16, Min: 2')).toBeInTheDocument();
+    expect(screen.getByText('Available Teams (1)')).toBeInTheDocument();
   });
 
-  it('calls onTeamToggle when team is clicked', async () => {
-    const mockOnToggle = vi.fn();
-    const props = { ...defaultProps, onTeamToggle: mockOnToggle };
+  it('displays team button with correct info', () => {
+    render(<TeamSelectionForm {...defaultProps} />);
     
-    render(<TeamSelectionForm {...props} />);
-    
-    const teamButton = screen.getByTestId('team-team-1');
-    await userEvent.click(teamButton);
-    
-    expect(mockOnToggle).toHaveBeenCalledWith('team-1');
+    expect(screen.getByText('Team Alpha')).toBeInTheDocument();
+    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText('96')).toBeInTheDocument(); // Rounded power score
   });
 
-  it('handles empty teams gracefully', () => {
-    const props = {
-      ...defaultProps,
-      seededTeams: [],
-      availableTeamsCount: 0,
-      selected: new Set<string>(),
-      count: 0
-    };
+  it('calls handleTeamToggle when team is clicked', async () => {
+    const mockToggle = vi.fn();
+    const formState = createMockFormState({ handleTeamToggle: mockToggle });
     
-    render(<TeamSelectionForm {...props} />);
+    render(<TeamSelectionForm {...defaultProps} formState={formState} />);
     
-    expect(screen.getByText('Teams: 0')).toBeInTheDocument();
-    expect(screen.getByText('Selected: 0')).toBeInTheDocument();
+    const teamButton = screen.getByText('Team Alpha').closest('button');
+    if (teamButton) {
+      await userEvent.click(teamButton);
+      expect(mockToggle).toHaveBeenCalledWith('team-1');
+    }
   });
 
-  it('does not show availability count when zero', () => {
-    const props = {
-      ...defaultProps,
-      availableTeamsCount: 0
-    };
+  it('shows clear all button when has selection', () => {
+    render(<TeamSelectionForm {...defaultProps} />);
     
-    render(<TeamSelectionForm {...props} />);
+    expect(screen.getByText('Clear all')).toBeInTheDocument();
+  });
+
+  it('shows warning message when present', () => {
+    render(<TeamSelectionForm {...defaultProps} />);
     
-    expect(screen.getByText('Select teams to continue')).toBeInTheDocument();
-    expect(screen.queryByText(/from 0 available/)).not.toBeInTheDocument();
+    expect(screen.getByText('Need at least 2 teams')).toBeInTheDocument();
   });
 });

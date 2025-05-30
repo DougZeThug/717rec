@@ -18,28 +18,26 @@ vi.mock('@/hooks/playoffs', () => ({
 
 // Mock the child components
 vi.mock('../bracket-teams/components', () => ({
-  TeamSelectionError: ({ errorMessage, minTeams, maxTeams }: any) => (
+  TeamSelectionError: ({ message }: any) => (
     <div data-testid="team-selection-error">
-      <span>{errorMessage}</span>
-      <span>Min: {minTeams}, Max: {maxTeams}</span>
-    </div>
-  ),
-  TeamSelectionLoading: ({ minTeams, maxTeams }: any) => (
-    <div data-testid="team-selection-loading">
-      Min: {minTeams}, Max: {maxTeams}
-    </div>
-  ),
-  TeamSelectionEmpty: ({ message, minTeams, maxTeams }: any) => (
-    <div data-testid="team-selection-empty">
       <span>{message}</span>
-      <span>Min: {minTeams}, Max: {maxTeams}</span>
     </div>
   ),
-  TeamSelectionForm: ({ statusMessage, seededTeams, onTeamToggle }: any) => (
+  TeamSelectionLoading: () => (
+    <div data-testid="team-selection-loading">
+      Loading teams...
+    </div>
+  ),
+  TeamSelectionEmpty: () => (
+    <div data-testid="team-selection-empty">
+      No teams available
+    </div>
+  ),
+  TeamSelectionForm: ({ teams, formState }: any) => (
     <div data-testid="team-selection-form">
-      <span>{statusMessage}</span>
-      <span>Teams: {seededTeams ? seededTeams.length : 0}</span>
-      <button onClick={() => onTeamToggle('team-1')}>Toggle Team</button>
+      <span>Teams: {teams ? teams.length : 0}</span>
+      <span>{formState?.statusMessage || 'Ready'}</span>
+      <button onClick={() => formState?.handleTeamToggle?.('team-1')}>Toggle Team</button>
     </div>
   )
 }));
@@ -47,17 +45,10 @@ vi.mock('../bracket-teams/components', () => ({
 // Mock imports
 const mockUseBracketFormData = vi.hoisted(() => vi.fn());
 const mockUseBracketFormState = vi.hoisted(() => vi.fn());
-const mockUseFilteredTeams = vi.hoisted(() => vi.fn());
-const mockUseTeamSeeding = vi.hoisted(() => vi.fn());
 
 vi.mock('../bracket-teams/hooks', () => ({
   useBracketFormData: mockUseBracketFormData,
   useBracketFormState: mockUseBracketFormState
-}));
-
-vi.mock('@/hooks/playoffs', () => ({
-  useFilteredTeams: mockUseFilteredTeams,
-  useTeamSeeding: mockUseTeamSeeding
 }));
 
 describe('BracketFormTeamsContainer', () => {
@@ -85,29 +76,7 @@ describe('BracketFormTeamsContainer', () => {
       logoUrl: null,
       players: [],
       power_score: 95.5,
-      sos: 0.65,
-      win_percentage: 0.8,
-      game_win_percentage: 0.8,
-      created_at: new Date().toISOString(),
-      close_match_losses: 0
-    }
-  ];
-
-  const mockTeams = [
-    {
-      id: 'team-1',
-      name: 'Team Alpha',
-      seed: 1,
-      division_id: 'div-1',
-      divisionName: 'Division A',
-      wins: 8,
-      losses: 2,
-      game_wins: 24,
-      game_losses: 6,
-      imageUrl: null,
-      logoUrl: null,
-      players: [],
-      power_score: 95.5,
+      powerScore: 95.5,
       sos: 0.65,
       win_percentage: 0.8,
       game_win_percentage: 0.8,
@@ -134,9 +103,6 @@ describe('BracketFormTeamsContainer', () => {
       handleTeamToggle: vi.fn(),
       statusMessage: 'Selected 1 of 16 maximum teams'
     });
-    
-    mockUseFilteredTeams.mockReturnValue(mockTeams);
-    mockUseTeamSeeding.mockReturnValue(mockTeams);
   });
 
   afterEach(() => {
@@ -177,13 +143,18 @@ describe('BracketFormTeamsContainer', () => {
   });
 
   describe('Empty States', () => {
-    it('renders empty state when no teams in division', () => {
-      mockUseFilteredTeams.mockReturnValue([]);
+    it('renders empty state when no teams available', () => {
+      mockUseBracketFormData.mockReturnValue({
+        teams: [],
+        isLoading: false,
+        isError: false,
+        errorMessage: null,
+        isDataReady: true
+      });
 
       render(<BracketFormTeamsContainer {...defaultProps} />);
       
       expect(screen.getByTestId('team-selection-empty')).toBeInTheDocument();
-      expect(screen.getByText('No teams available in this division')).toBeInTheDocument();
     });
   });
 
@@ -217,31 +188,16 @@ describe('BracketFormTeamsContainer', () => {
 
   describe('Props and Configuration', () => {
     it('uses custom minTeams prop', () => {
-      mockUseBracketFormData.mockReturnValue({
-        teams: [],
-        isLoading: true,
-        isError: false,
-        errorMessage: null,
-        isDataReady: false
-      });
-
       render(<BracketFormTeamsContainer {...defaultProps} minTeams={4} />);
       
-      expect(screen.getByText('Min: 4, Max: 16')).toBeInTheDocument();
+      // Should pass minTeams to useBracketFormState
+      expect(mockUseBracketFormState).toHaveBeenCalledWith(16, expect.any(Function), 1, 4);
     });
 
     it('defaults minTeams to 2 when not provided', () => {
-      mockUseBracketFormData.mockReturnValue({
-        teams: [],
-        isLoading: true,
-        isError: false,
-        errorMessage: null,
-        isDataReady: false
-      });
-
       render(<BracketFormTeamsContainer {...defaultProps} />);
       
-      expect(screen.getByText('Min: 2, Max: 16')).toBeInTheDocument();
+      expect(mockUseBracketFormState).toHaveBeenCalledWith(16, expect.any(Function), 1, 2);
     });
   });
 });

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Division } from '@/types';
-import { BracketFormTeamsProps } from '../types';
+import { BracketFormTeamsContainerProps } from '../types';
 import { useBracketFormData } from '../hooks/useBracketFormData';
 import { useBracketFormState } from '../hooks/useBracketFormState';
 import { TeamSelectionLoading } from './TeamSelectionLoading';
@@ -13,7 +13,7 @@ import { TeamSelectionForm } from './TeamSelectionForm';
  * Main container component for bracket team selection
  * Manages data fetching, state, and renders appropriate child components based on loading/error states
  */
-export const BracketFormTeamsContainer: React.FC<BracketFormTeamsProps> = ({
+export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps> = ({
   maxTeams,
   minTeams = 2,
   divisions = [],

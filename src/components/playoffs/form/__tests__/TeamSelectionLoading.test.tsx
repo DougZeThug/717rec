@@ -5,33 +5,27 @@ import { describe, it, expect } from 'vitest';
 import { TeamSelectionLoading } from '../bracket-teams/components/TeamSelectionLoading';
 
 describe('TeamSelectionLoading', () => {
-  const defaultProps = {
-    minTeams: 2,
-    maxTeams: 16
-  };
-
-  it('renders loading message', () => {
-    render(<TeamSelectionLoading {...defaultProps} />);
+  it('renders loading skeleton structure', () => {
+    render(<TeamSelectionLoading />);
     
-    expect(screen.getByText('Loading teams...')).toBeInTheDocument();
+    // Check for skeleton elements
+    const skeletons = screen.getAllByTestId(/skeleton/) || document.querySelectorAll('[class*="animate-pulse"], [class*="skeleton"]');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it('displays min and max teams in label', () => {
-    render(<TeamSelectionLoading {...defaultProps} />);
+  it('shows multiple loading cards', () => {
+    render(<TeamSelectionLoading />);
     
-    expect(screen.getByText('Select Teams (Min 2, Max 16)')).toBeInTheDocument();
+    // Should have multiple card structures for skeleton loading
+    const cards = document.querySelectorAll('[class*="card"], .card');
+    expect(cards.length).toBeGreaterThan(0);
   });
 
-  it('shows loading description', () => {
-    render(<TeamSelectionLoading {...defaultProps} />);
+  it('displays loading state layout', () => {
+    render(<TeamSelectionLoading />);
     
-    expect(screen.getByText(/Loading team rankings and division data/)).toBeInTheDocument();
-  });
-
-  it('applies loading styling', () => {
-    render(<TeamSelectionLoading {...defaultProps} />);
-    
-    const loadingCard = screen.getByText('Loading teams...');
-    expect(loadingCard).toHaveClass('text-gray-500');
+    // Should have the container structure
+    const container = document.querySelector('[class*="space-y"]');
+    expect(container).toBeInTheDocument();
   });
 });
