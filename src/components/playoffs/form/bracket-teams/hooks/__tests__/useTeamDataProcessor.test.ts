@@ -1,8 +1,7 @@
-
 import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useTeamDataProcessor } from '../useTeamDataProcessor';
-import { Ranking, DivisionMappingResult } from '../types';
+import { Ranking, DivisionMappingResult } from '../types/index';
 
 describe('useTeamDataProcessor', () => {
   const mockRankings: Ranking[] = [
