@@ -1,35 +1,42 @@
 
-import React from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
-import { Card } from "@/components/ui/card";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TeamSelectionErrorProps {
-  errorMessage: string;
-  minTeams: number;
-  maxTeams: number;
+  message?: string | null;
+  onRetry?: () => void;
 }
 
+/**
+ * Error state component for team selection
+ * Displays error message and optional retry functionality
+ */
 export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
-  errorMessage,
-  minTeams,
-  maxTeams
+  message = "Failed to load teams",
+  onRetry
 }) => {
   return (
-    <FormField
-      name="teams"
-      render={() => (
-        <FormItem>
-          <FormLabel>Select Teams (Min {minTeams}, Max {maxTeams})</FormLabel>
-          <FormDescription className="text-xs text-red-600">
-            Error loading team data. Please try refreshing the page.
-          </FormDescription>
-          <FormControl>
-            <Card className="p-4 text-center text-red-500 border-red-300">
-              {errorMessage}
-            </Card>
-          </FormControl>
-        </FormItem>
-      )}
-    />
+    <Card className="border-destructive/50">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-destructive">
+          <AlertCircle className="w-5 h-5" />
+          Error Loading Teams
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-muted-foreground">
+          {message || "Unable to load teams for bracket creation. Please try again."}
+        </p>
+        
+        {onRetry && (
+          <Button onClick={onRetry} variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 };

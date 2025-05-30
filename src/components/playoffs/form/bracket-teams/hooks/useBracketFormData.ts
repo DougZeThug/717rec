@@ -5,21 +5,17 @@ import { BracketFormDataResult } from '../types';
 import { useDivisionMapping } from './useDivisionMapping';
 import { useTeamDataProcessor } from './useTeamDataProcessor';
 
+/**
+ * Hook for managing bracket form data including team rankings and division mapping
+ * @param divisions - Array of available divisions
+ * @returns Object containing processed teams, loading state, and error information
+ */
 export const useBracketFormData = (divisions: Division[] = []): BracketFormDataResult => {
   // Fetch team rankings
   const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
   // Check if we have all required data before proceeding
   const isDataReady = !rankingsLoading && rankings && Array.isArray(rankings) && divisions && Array.isArray(divisions);
-  
-  console.log("useBracketFormData: Data readiness check", {
-    rankingsLoading,
-    hasRankings: !!rankings,
-    rankingsLength: rankings?.length || 0,
-    hasDivisions: !!divisions,
-    divisionsLength: divisions?.length || 0,
-    isDataReady
-  });
 
   // Create division mapping
   const divisionMapping = useDivisionMapping(divisions, isDataReady);

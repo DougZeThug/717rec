@@ -2,6 +2,13 @@
 import React from 'react';
 import { Ranking, ProcessedTeam, TeamDataProcessorResult, DivisionMappingResult } from '../types';
 
+/**
+ * Hook for processing team rankings data into a format suitable for bracket forms
+ * @param rankings - Array of team ranking objects from the API
+ * @param divisionMapping - Division mapping utilities for name-to-UUID conversion
+ * @param isDataReady - Boolean indicating if all required data is available
+ * @returns Object containing processed teams and any processing errors
+ */
 export const useTeamDataProcessor = (
   rankings: Ranking[] | null,
   divisionMapping: DivisionMappingResult,
@@ -9,7 +16,6 @@ export const useTeamDataProcessor = (
 ): TeamDataProcessorResult => {
   const processedTeams = React.useMemo(() => {
     if (!isDataReady || !rankings || !Array.isArray(rankings)) {
-      console.log("useTeamDataProcessor: No rankings data available or data not ready");
       return [];
     }
 
@@ -17,12 +23,6 @@ export const useTeamDataProcessor = (
       return rankings.map((ranking, index) => {
         // Map division name to proper division ID UUID
         const divisionId = ranking.divisionName ? divisionMapping.mapDivisionName(ranking.divisionName) : null;
-        
-        console.log("useTeamDataProcessor: Mapping team", {
-          teamName: ranking.teamName,
-          divisionName: ranking.divisionName,
-          mappedDivisionId: divisionId
-        });
 
         const processedTeam: ProcessedTeam = {
           id: ranking.teamId,

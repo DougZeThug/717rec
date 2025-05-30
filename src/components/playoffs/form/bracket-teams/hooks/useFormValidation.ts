@@ -2,6 +2,15 @@
 import React from 'react';
 import { FormValidationResult } from '../types';
 
+/**
+ * Hook for validating team selection in bracket forms
+ * Provides comprehensive validation state including errors, warnings, and progress tracking
+ * @param selectedCount - Number of currently selected teams
+ * @param maxTeams - Maximum number of teams allowed
+ * @param minTeams - Minimum number of teams required (default: 2)
+ * @param availableTeamsCount - Total number of teams available for selection (default: 0)
+ * @returns Object containing validation state, messages, and progress information
+ */
 export const useFormValidation = (
   selectedCount: number,
   maxTeams: number,
@@ -62,7 +71,10 @@ export const useFormValidation = (
     };
   }, [selectedCount, maxTeams, minTeams, availableTeamsCount]);
 
-  // Progress information
+  /**
+   * Progress information for UI feedback
+   * Calculates completion percentage and provides selection stats
+   */
   const progress = React.useMemo(() => {
     const percentage = availableTeamsCount > 0 
       ? Math.min((selectedCount / minTeams) * 100, 100)

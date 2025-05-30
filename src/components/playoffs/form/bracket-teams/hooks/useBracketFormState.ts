@@ -5,6 +5,15 @@ import { useTeamSelectionState } from './useTeamSelectionState';
 import { useFormValidation } from './useFormValidation';
 import { useTeamSelectionEffects } from './useTeamSelectionEffects';
 
+/**
+ * Main hook for managing bracket form state including team selection and validation
+ * Combines team selection, form validation, and side effects management
+ * @param maxTeams - Maximum number of teams allowed in the bracket
+ * @param onChange - Callback function to notify parent of selection changes
+ * @param availableTeamsCount - Total number of teams available for selection (default: 0)
+ * @param minTeams - Minimum number of teams required (default: 2)
+ * @returns Comprehensive object containing all bracket form state and handlers
+ */
 export const useBracketFormState = (
   maxTeams: number,
   onChange: (ids: string[]) => void,
@@ -25,7 +34,10 @@ export const useBracketFormState = (
   // Side effects (parent sync)
   const effects = useTeamSelectionEffects(teamSelection.selectedArray, onChange);
 
-  // Combined team toggle handler
+  /**
+   * Combined team toggle handler with validation
+   * Handles team selection/deselection with proper validation checks
+   */
   const handleTeamToggle = React.useCallback((teamId: string) => {
     teamSelection.toggle(teamId);
   }, [teamSelection.toggle]);

@@ -2,6 +2,13 @@
 import React from 'react';
 import { TeamSelectionEffectsResult } from '../types';
 
+/**
+ * Hook for managing side effects of team selection changes
+ * Handles syncing selection state with parent components and prevents infinite loops
+ * @param selectedArray - Array of currently selected team IDs
+ * @param onChange - Callback function to notify parent of selection changes
+ * @returns Object containing cleanup function for resetting tracking state
+ */
 export const useTeamSelectionEffects = (
   selectedArray: string[],
   onChange: (ids: string[]) => void
@@ -27,7 +34,10 @@ export const useTeamSelectionEffects = (
     }
   }, [selectedArray, onChange]);
 
-  // Cleanup function for future use
+  /**
+   * Cleanup function for resetting the tracking state
+   * Useful when the component needs to reset its sync behavior
+   */
   const cleanup = React.useCallback(() => {
     hasCalledOnChange.current = false;
   }, []);

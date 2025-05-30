@@ -11,15 +11,22 @@ interface BracketFormDivisionProps {
   onDivisionChange: (divisionId: string) => void;
 }
 
+/**
+ * Division selection component for bracket forms
+ * Handles division selection and updates form state accordingly
+ */
 export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
   form,
   divisions,
   onDivisionChange,
 }) => {
+  /**
+   * Handles division selection change events
+   * @param divisionId - The selected division ID
+   */
   const handleDivisionChange = (divisionId: string) => {
     try {
       const selectedDivision = divisions.find(d => d.id === divisionId);
-      console.log("BracketFormDivision: Division changed to:", { divisionId, divisionName: selectedDivision?.name });
       
       // Set the division ID in the form
       form.setValue('divisionId', divisionId);
