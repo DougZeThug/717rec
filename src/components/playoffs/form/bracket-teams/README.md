@@ -11,6 +11,8 @@ bracket-teams/
 ├── hooks/              # Custom React Hooks
 ├── types/              # TypeScript Interfaces
 ├── utils/              # Utility Functions
+├── README.md           # Module Documentation
+├── IMPORT_GUIDELINES.md # Import Pattern Documentation
 └── index.ts            # Main Barrel Export
 ```
 
@@ -18,6 +20,7 @@ bracket-teams/
 
 ```typescript
 import { BracketFormTeamsContainer } from '@/components/playoffs/form/bracket-teams';
+import { Division } from '@/types'; // Import core types directly
 
 <BracketFormTeamsContainer
   divisionId="div-1"
@@ -27,6 +30,10 @@ import { BracketFormTeamsContainer } from '@/components/playoffs/form/bracket-te
   minTeams={2}
 />
 ```
+
+## Import Guidelines
+
+**Important**: Always import core types like `Division` and `Team` directly from `@/types` to avoid circular dependencies. See [IMPORT_GUIDELINES.md](./IMPORT_GUIDELINES.md) for detailed patterns.
 
 ## Key Features
 
@@ -57,3 +64,7 @@ import { BracketFormTeamsContainer } from '@/components/playoffs/form/bracket-te
 ## Testing
 
 The module includes comprehensive test utilities in `utils/testDataFactory.ts` for creating mock data and test scenarios.
+
+## Type Safety
+
+This module follows strict import guidelines to prevent circular dependencies. All core types are imported directly from `@/types`, while module-specific types are defined locally.

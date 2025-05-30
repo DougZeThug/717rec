@@ -28,7 +28,7 @@ export {
   useTeamSelectionEffects
 } from './hooks';
 
-// Types
+// Types - Note: Import Division directly from '@/types' where needed
 export type {
   BracketFormTeamsProps,
   BracketFormTeamsContainerProps,
@@ -37,6 +37,5 @@ export type {
   FormValidationResult,
   ValidationProgress,
   BracketFormDataResult,
-  ProcessedTeam,
-  Division
+  ProcessedTeam
 } from './types';
