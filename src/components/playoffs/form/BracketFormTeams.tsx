@@ -26,20 +26,37 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
   // Fetch our own teams data with power scores
   const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
-  // Create a lookup map for division name to division ID
+  // Check if we have all required data before proceeding
+  const isDataReady = !rankingsLoading && rankings && Array.isArray(rankings) && divisions && Array.isArray(divisions);
+  
+  console.log("BracketFormTeams: Data readiness check", {
+    rankingsLoading,
+    hasRankings: !!rankings,
+    rankingsLength: rankings?.length || 0,
+    hasDivisions: !!divisions,
+    divisionsLength: divisions?.length || 0,
+    isDataReady
+  });
+  
+  // Create a lookup map for division name to division ID - only when data is ready
   const divisionNameToIdMap = React.useMemo(() => {
+    if (!isDataReady || !divisions.length) {
+      console.log("BracketFormTeams: Skipping division map creation - data not ready");
+      return new Map<string, string>();
+    }
+    
     const map = new Map<string, string>();
     divisions.forEach(division => {
       map.set(division.name, division.id);
     });
     console.log("BracketFormTeams: Division lookup map:", Object.fromEntries(map));
     return map;
-  }, [divisions]);
+  }, [divisions, isDataReady]);
   
-  // Convert rankings to team format with seed numbers - these teams have proper power scores
+  // Convert rankings to team format with seed numbers - only when all data is ready
   const rankedTeams = React.useMemo(() => {
-    if (!rankings || !Array.isArray(rankings)) {
-      console.log("BracketFormTeams: No rankings data available");
+    if (!isDataReady || !rankings || !Array.isArray(rankings)) {
+      console.log("BracketFormTeams: No rankings data available or data not ready");
       return [];
     }
 
@@ -80,7 +97,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
       console.error("BracketFormTeams: Error converting rankings to teams:", error);
       return [];
     }
-  }, [rankings, divisionNameToIdMap]);
+  }, [rankings, divisionNameToIdMap, isDataReady]);
   
   // Filter teams by division using the new hook
   const filteredTeams = useFilteredTeams(rankedTeams, divisionId);
@@ -145,7 +162,8 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
     );
   }
 
-  if (rankingsLoading) {
+  // Show loading state if either rankings or divisions are loading or data is not ready
+  if (rankingsLoading || !isDataReady) {
     return (
       <FormField
         name="teams"
@@ -153,7 +171,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
           <FormItem>
             <FormLabel>Select Teams (Min {minTeams}, Max {maxTeams})</FormLabel>
             <FormDescription className="text-xs">
-              Loading team rankings and seeding order...
+              Loading team rankings and division data...
             </FormDescription>
             <FormControl>
               <Card className="p-4 text-center text-gray-500">
