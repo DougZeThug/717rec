@@ -1,3 +1,7 @@
+
+// Re-export Team from main types to avoid duplication
+export type { Team, Division } from '@/types';
+
 // Team selection state types
 export interface TeamSelectionStateResult {
   selected: Set<string>;
@@ -62,18 +66,7 @@ export interface BracketFormStateResult {
   cleanup: () => void;
 }
 
-// Container-specific types
-export interface BracketFormTeamsContainerProps extends BracketFormTeamsProps {
-  minTeams?: number;
-}
-
-// Re-export existing types for backward compatibility
-export interface Division {
-  id: string;
-  name: string;
-}
-
-// Use Team from main types instead of ProcessedTeam
+// Use Team from main types - ProcessedTeam is kept for internal processing
 export interface ProcessedTeam {
   id: string;
   name: string;
@@ -119,13 +112,13 @@ export interface DivisionMappingResult {
   mapDivisionName: (name: string) => string | null;
 }
 
-// Team data processor types - return Team[] instead of ProcessedTeam[]
+// Team data processor types
 export interface TeamDataProcessorResult {
   processedTeams: ProcessedTeam[];
   processingError: string | null;
 }
 
-// Bracket form data types - return Team[] instead of ProcessedTeam[]
+// Bracket form data types
 export interface BracketFormDataResult {
   teams: ProcessedTeam[];
   isLoading: boolean;
@@ -140,4 +133,9 @@ export interface BracketFormTeamsProps {
   maxTeams: number;
   onChange: (ids: string[]) => void;
   divisions?: Division[];
+}
+
+// Container-specific types
+export interface BracketFormTeamsContainerProps extends BracketFormTeamsProps {
+  minTeams?: number;
 }
