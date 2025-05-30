@@ -1,11 +1,10 @@
-
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
 import { usePlayoffActions } from './usePlayoffActions';
 import { BracketMatchesByType } from "@/services/brackets/types";
 import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/errors";
-import type { PlayoffViewModel } from "@/types/playoffs";
+import type { PlayoffViewModel } from "@/utils/playoffs/playoffTypes";
 
 // Local helper to group bracket matches by type
 const groupBracketMatchesByType = (bracket: any): BracketMatchesByType => {

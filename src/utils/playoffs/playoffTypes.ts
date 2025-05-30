@@ -1,3 +1,4 @@
+
 // Core domain types ---------------------------------------------
 export interface PlayoffBracket {
   id: string;
@@ -95,15 +96,20 @@ export type BracketMatchesByType = {
 // Legacy type aliases for backward compatibility
 export type Team = PlayoffTeam;
 
-// Minimal placeholder for PlayoffViewModel until view-model is fully refactored
+// Updated PlayoffViewModel with string error type for consistency
 export interface PlayoffViewModel {
+  // Bracket data
   bracket: PlayoffBracket | null;
-  teams: PlayoffTeam[];
   isLoading: boolean;
-  error: Error | null;
+  error: string | null; // Updated to use string for UI consistency
   bracketMatchesByType: BracketMatchesByType | null;
+  
+  // Teams data
+  teams: PlayoffTeam[];
   teamsLoading: boolean;
-  refetch: () => Promise<any>;
+  
+  // Actions
+  refetch: () => Promise<void>;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   updateMatchResult: (
     matchId: string, 
