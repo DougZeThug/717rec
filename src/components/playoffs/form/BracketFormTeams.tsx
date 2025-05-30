@@ -21,8 +21,8 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
   // Minimum team requirement
   const minTeams = 2;
   
-  // Fetch our own teams data with power scores
-  const { rankings, isLoading: rankingsLoading, error: rankingsError } = useTeamRankings();
+  // Fetch our own teams data with power scores - removed error destructuring
+  const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
   // Convert rankings to team format with seed numbers - these teams have proper power scores
   const rankedTeams = React.useMemo(() => {
@@ -41,7 +41,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
         powerScore: ranking.powerScore,
         wins: ranking.wins,
         losses: ranking.losses,
-        division_id: ranking.divisionId || null, // Use divisionId from rankings
+        division_id: ranking.divisionName || null, // Use divisionName instead of divisionId
         divisionName: ranking.divisionName,
         players: [],
         created_at: new Date().toISOString(),
@@ -86,8 +86,11 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
     }
   }, [toggle, maxTeams]);
 
+  // Detect error state - if not loading but no rankings available
+  const hasError = !rankingsLoading && (!rankings || rankings.length === 0);
+
   // Show error state if rankings failed to load
-  if (rankingsError) {
+  if (hasError) {
     return (
       <FormField
         name="teams"
@@ -99,7 +102,7 @@ export const BracketFormTeams: React.FC<BracketFormTeamsProps> = ({
             </FormDescription>
             <FormControl>
               <Card className="p-4 text-center text-red-500 border-red-300">
-                Failed to load teams: {rankingsError.message || "Unknown error"}
+                Failed to load teams. Please refresh and try again.
               </Card>
             </FormControl>
           </FormItem>
