@@ -1,9 +1,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useBracketFormState } from '../useBracketFormState';
+import { useTeamSelectionState } from '../useTeamSelectionState';
 
-describe('useBracketFormState', () => {
+describe('useTeamSelectionState', () => {
   const mockOnChange = vi.fn();
 
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe('useBracketFormState', () => {
 
   it('should initialize with correct state', () => {
     const { result } = renderHook(() => 
-      useBracketFormState(16, mockOnChange, 10, 2)
+      useTeamSelectionState(16, mockOnChange, 10, 2)
     );
 
     expect(result.current.count).toBe(0);
@@ -24,7 +24,7 @@ describe('useBracketFormState', () => {
 
   it('should handle team toggle correctly', () => {
     const { result } = renderHook(() => 
-      useBracketFormState(16, mockOnChange, 10, 2)
+      useTeamSelectionState(16, mockOnChange, 10, 2)
     );
 
     act(() => {
@@ -37,7 +37,7 @@ describe('useBracketFormState', () => {
 
   it('should prevent selection beyond maximum', () => {
     const { result } = renderHook(() => 
-      useBracketFormState(2, mockOnChange, 10, 2)
+      useTeamSelectionState(2, mockOnChange, 10, 2)
     );
 
     // Add first team
@@ -63,7 +63,7 @@ describe('useBracketFormState', () => {
 
   it('should clear selection correctly', () => {
     const { result } = renderHook(() => 
-      useBracketFormState(16, mockOnChange, 10, 2)
+      useTeamSelectionState(16, mockOnChange, 10, 2)
     );
 
     // Add a team first
