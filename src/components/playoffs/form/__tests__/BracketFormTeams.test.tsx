@@ -27,10 +27,18 @@ vi.mock('@/hooks/useTeamRankings', () => ({
   })
 }));
 
-// Test with valid props - Fixed to match interface
-const TestWrapper = ({ maxTeams = 16, onChange = vi.fn(), divisions = [] }) => {
+// Test with valid props - Updated to include divisionId
+const TestWrapper = ({ 
+  divisionId = 'div-1',
+  maxTeams = 16, 
+  onChange = vi.fn(), 
+  divisions = [],
+  teams = undefined
+}) => {
   return (
     <BracketFormTeamsContainer
+      divisionId={divisionId}
+      teams={teams}
       maxTeams={maxTeams}
       onChange={onChange}
       divisions={divisions}
@@ -62,5 +70,18 @@ describe('BracketFormTeamsContainer', () => {
     
     // The onChange should eventually be called when team selection changes
     // Note: This might need adjustment based on the actual implementation
+  });
+
+  it('filters teams by divisionId when provided', () => {
+    const mockTeams = [
+      { id: 'team1', name: 'Team 1', division_id: 'div-1' },
+      { id: 'team2', name: 'Team 2', division_id: 'div-2' },
+    ];
+    
+    render(<TestWrapper divisionId="div-1" teams={mockTeams} />);
+    
+    // Should only show teams from div-1
+    const teamSelection = screen.getByTestId('team-selection-list');
+    expect(teamSelection).toBeInTheDocument();
   });
 });

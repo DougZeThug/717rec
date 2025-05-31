@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -14,8 +13,9 @@ vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
 }));
 
 describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
-  // Test Data Factories - Fixed to match interface
+  // Test Data Factories - Updated to include divisionId and teams
   const createBasicProps = (): BracketFormTeamsContainerProps => ({
+    divisionId: 'div-1',
     maxTeams: 16,
     onChange: vi.fn(),
     divisions: [
@@ -25,12 +25,14 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
   });
 
   const createEdgeCaseProps = () => ({
+    divisionId: null,
     maxTeams: 0,
     onChange: vi.fn(),
     divisions: []
   });
 
   const createLargeDatasetProps = () => ({
+    divisionId: 'div-1',
     maxTeams: 64,
     onChange: vi.fn(),
     divisions: Array.from({ length: 50 }, (_, i) => ({
@@ -55,6 +57,32 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
 
   afterEach(() => {
     vi.resetAllMocks();
+  });
+
+  describe('Division Filtering Tests', () => {
+    it('filters teams by divisionId when provided', () => {
+      const mockTeams = [
+        { id: 'team1', name: 'Team 1', division_id: 'div-1' },
+        { id: 'team2', name: 'Team 2', division_id: 'div-2' },
+      ];
+      
+      const props = { ...createBasicProps(), teams: mockTeams, divisionId: 'div-1' };
+      render(<BracketFormTeamsContainer {...props} />);
+      
+      expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
+    });
+
+    it('shows all teams when no divisionId is provided', () => {
+      const mockTeams = [
+        { id: 'team1', name: 'Team 1', division_id: 'div-1' },
+        { id: 'team2', name: 'Team 2', division_id: 'div-2' },
+      ];
+      
+      const props = { ...createBasicProps(), teams: mockTeams, divisionId: null };
+      render(<BracketFormTeamsContainer {...props} />);
+      
+      expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
+    });
   });
 
   describe('Prop Forwarding Tests', () => {

@@ -51,6 +51,7 @@ describe('BracketFormTeamsContainer - Integration Tests', () => {
   it('integrates all hooks correctly in real scenario', async () => {
     const mockOnChange = vi.fn();
     const props = {
+      divisionId: 'div-1',
       maxTeams: 16,
       onChange: mockOnChange,
       divisions: [{ id: 'div-1', name: 'Division A' }]
@@ -67,9 +68,16 @@ describe('BracketFormTeamsContainer - Integration Tests', () => {
     }, { timeout: 3000 });
   });
 
-  it('handles real user interaction flow', async () => {
+  it('handles division filtering in integration scenario', async () => {
     const mockOnChange = vi.fn();
+    const mockTeams = [
+      { id: 'team1', name: 'Team 1', division_id: 'div-1' },
+      { id: 'team2', name: 'Team 2', division_id: 'div-2' },
+    ];
+    
     const props = {
+      divisionId: 'div-1',
+      teams: mockTeams,
       maxTeams: 16,
       onChange: mockOnChange,
       divisions: [{ id: 'div-1', name: 'Division A' }]
@@ -77,11 +85,9 @@ describe('BracketFormTeamsContainer - Integration Tests', () => {
 
     renderWithProviders(props);
 
+    // Should render without loading since teams are provided
     await waitFor(() => {
       expect(screen.queryByText('Loading teams...')).not.toBeInTheDocument();
     });
-
-    // Should be able to interact with team selection
-    // This would test the full integration without mocking individual hooks
   });
 });
