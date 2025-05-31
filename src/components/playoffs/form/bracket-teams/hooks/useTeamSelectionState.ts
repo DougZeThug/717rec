@@ -7,7 +7,7 @@ import { BracketFormStateResult } from '../types';
  * Simplified version that manages team selection state directly
  * Phase 3: Updated to work with unified validation system
  */
-export const useBracketFormState = (
+export const useTeamSelectionState = (
   maxTeams: number,
   onChange: (ids: string[]) => void,
   availableTeamsCount: number = 0,
@@ -92,3 +92,5 @@ export const useBracketFormState = (
 
   return result;
 };
+
+export default useTeamSelectionState;

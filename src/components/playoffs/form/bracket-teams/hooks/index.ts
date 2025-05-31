@@ -1,5 +1,5 @@
 
 // Simplified exports after removing over-engineered abstractions
 export { useBracketFormData } from './useBracketFormData';
-export { useBracketFormState } from './useBracketFormState';
+export { useTeamSelectionState } from './useTeamSelectionState';
 export { useBracketFormValidation } from './useBracketFormValidation';

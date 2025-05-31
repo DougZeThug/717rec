@@ -6,12 +6,50 @@ import { BracketFormDataResult, ProcessedTeam } from '../types';
 
 /**
  * Hook for managing bracket form data including team rankings and division mapping
- * Simplified version with inlined division mapping and team processing
+ * Enhanced version that handles both fetched teams and provided teams
  * @param divisions - Array of available divisions
+ * @param providedTeams - Optional teams provided via props (bypasses fetch)
  * @returns Object containing processed teams, loading state, and error information
  */
-export const useBracketFormData = (divisions: Division[] = []): BracketFormDataResult => {
-  // Fetch team rankings
+export const useBracketFormData = (
+  divisions: Division[] = [], 
+  providedTeams?: any[]
+): BracketFormDataResult => {
+  
+  // Short-circuit if teams are provided via props
+  if (providedTeams && Array.isArray(providedTeams) && providedTeams.length > 0) {
+    const processedProvidedTeams: ProcessedTeam[] = providedTeams.map((team, index) => ({
+      id: team.id || `team-${index}`,
+      name: team.name || 'Unnamed Team',
+      wins: team.wins || 0,
+      losses: team.losses || 0,
+      game_wins: team.game_wins || 0,
+      game_losses: team.game_losses || 0,
+      divisionName: team.divisionName || 'Unknown Division',
+      division_id: team.division_id || team.division || null,
+      imageUrl: team.imageUrl || team.logoUrl || null,
+      logoUrl: team.logoUrl || team.imageUrl || null,
+      players: Array.isArray(team.players) ? team.players : [],
+      seed: team.seed || index + 1,
+      power_score: team.power_score || 0,
+      powerScore: team.power_score || 0,
+      sos: team.sos || 0.5,
+      win_percentage: team.win_percentage || 0,
+      game_win_percentage: team.game_win_percentage || 0,
+      created_at: team.created_at || new Date().toISOString(),
+      close_match_losses: team.close_match_losses || 0
+    }));
+    
+    return {
+      teams: processedProvidedTeams,
+      isLoading: false,
+      isError: false,
+      errorMessage: null,
+      isDataReady: true
+    };
+  }
+  
+  // Fetch team rankings if no teams provided
   const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
   // Check if we have all required data before proceeding

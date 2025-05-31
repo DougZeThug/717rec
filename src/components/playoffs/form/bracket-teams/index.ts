@@ -20,7 +20,7 @@ export {
 // Simplified Custom Hooks
 export {
   useBracketFormData,
-  useBracketFormState,
+  useTeamSelectionState,
   useBracketFormValidation
 } from './hooks';
 

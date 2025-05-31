@@ -8,7 +8,7 @@ import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFo
 // Mock the hooks
 vi.mock('../bracket-teams/hooks', () => ({
   useBracketFormData: vi.fn(),
-  useBracketFormState: vi.fn()
+  useTeamSelectionState: vi.fn()
 }));
 
 vi.mock('@/hooks/playoffs', () => ({
@@ -44,11 +44,11 @@ vi.mock('../bracket-teams/components', () => ({
 
 // Mock imports
 const mockUseBracketFormData = vi.hoisted(() => vi.fn());
-const mockUseBracketFormState = vi.hoisted(() => vi.fn());
+const mockUseTeamSelectionState = vi.hoisted(() => vi.fn());
 
 vi.mock('../bracket-teams/hooks', () => ({
   useBracketFormData: mockUseBracketFormData,
-  useBracketFormState: mockUseBracketFormState
+  useTeamSelectionState: mockUseTeamSelectionState
 }));
 
 describe('BracketFormTeamsContainer', () => {
@@ -97,7 +97,7 @@ describe('BracketFormTeamsContainer', () => {
       isDataReady: true
     });
     
-    mockUseBracketFormState.mockReturnValue({
+    mockUseTeamSelectionState.mockReturnValue({
       selected: new Set(['team-1']),
       count: 1,
       handleTeamToggle: vi.fn(),
@@ -170,7 +170,7 @@ describe('BracketFormTeamsContainer', () => {
     it('handles team toggle interactions', async () => {
       const mockToggle = vi.fn();
       
-      mockUseBracketFormState.mockReturnValue({
+      mockUseTeamSelectionState.mockReturnValue({
         selected: new Set(['team-1']),
         count: 1,
         handleTeamToggle: mockToggle,
@@ -190,14 +190,25 @@ describe('BracketFormTeamsContainer', () => {
     it('uses custom minTeams prop', () => {
       render(<BracketFormTeamsContainer {...defaultProps} minTeams={4} />);
       
-      // Should pass minTeams to useBracketFormState
-      expect(mockUseBracketFormState).toHaveBeenCalledWith(16, expect.any(Function), 1, 4);
+      // Should pass minTeams to useTeamSelectionState
+      expect(mockUseTeamSelectionState).toHaveBeenCalledWith(16, expect.any(Function), 1, 4);
     });
 
     it('defaults minTeams to 2 when not provided', () => {
       render(<BracketFormTeamsContainer {...defaultProps} />);
       
-      expect(mockUseBracketFormState).toHaveBeenCalledWith(16, expect.any(Function), 1, 2);
+      expect(mockUseTeamSelectionState).toHaveBeenCalledWith(16, expect.any(Function), 1, 2);
+    });
+
+    it('always calls useBracketFormData even with provided teams', () => {
+      const teamsProp = [{ id: 'team-1', name: 'Team One' }];
+      render(<BracketFormTeamsContainer {...defaultProps} teams={teamsProp} />);
+      
+      // Should still call useBracketFormData (not conditionally)
+      expect(mockUseBracketFormData).toHaveBeenCalledWith(
+        defaultProps.divisions,
+        teamsProp
+      );
     });
   });
 });

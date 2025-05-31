@@ -3,7 +3,7 @@ import React from 'react';
 import { Division, Team } from '@/types';
 import { BracketFormTeamsContainerProps, ProcessedTeam } from '../types';
 import { useBracketFormData } from '../hooks/useBracketFormData';
-import { useBracketFormState } from '../hooks/useBracketFormState';
+import { useTeamSelectionState } from '../hooks/useTeamSelectionState';
 import { useBracketFormValidation } from '../hooks/useBracketFormValidation';
 import { TeamSelectionLoading } from './TeamSelectionLoading';
 import { TeamSelectionError } from './TeamSelectionError';
@@ -23,15 +23,21 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   divisions = [],
   onChange
 }) => {
-  // Conditional data fetching - use parent teams if provided, otherwise fetch
-  const { teams: fetchedTeams, isLoading, isError, errorMessage, refetch } = teamsProp
-    ? { teams: [], isLoading: false, isError: false, errorMessage: null, refetch: undefined }
-    : useBracketFormData(divisions as Division[]);
+  // Always call useBracketFormData - pass teamsProp to short-circuit if provided
+  const { 
+    teams: fetchedTeams, 
+    isLoading: fetchLoading, 
+    isError: fetchError, 
+    errorMessage, 
+    isDataReady 
+  } = useBracketFormData(divisions as Division[], teamsProp);
 
-  // Determine which teams to use
-  const allTeams = teamsProp || fetchedTeams;
+  // Determine which teams to use and loading states
+  const allTeams = teamsProp ?? fetchedTeams;
+  const isLoading = teamsProp ? false : fetchLoading;
+  const isError = teamsProp ? false : fetchError;
 
-  // Convert parent teams to ProcessedTeam format if needed
+  // Convert teams to ProcessedTeam format if needed
   const processedTeams = React.useMemo((): ProcessedTeam[] => {
     if (!Array.isArray(allTeams)) return [];
     
@@ -68,10 +74,14 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   }, [processedTeams, divisionId]);
 
   // Manage form state with enhanced onChange callback
-  const formState = useBracketFormState(
+  const formState = useTeamSelectionState(
     typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16,
     (ids) => {
-      // Will be updated below with validation
+      // Enhanced onChange callback that includes validation
+      onChange({
+        ids,
+        isValid: ids.length >= minTeams && ids.length <= maxTeams
+      });
     },
     Array.isArray(filteredTeams) ? filteredTeams.length : 0,
     typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2
@@ -85,22 +95,6 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     maxTeams
   );
 
-  // Enhanced onChange callback that includes validation
-  const handleSelectionChange = React.useCallback((ids: string[]) => {
-    onChange({
-      ids,
-      isValid: validation.isValid
-    });
-  }, [onChange, validation.isValid]);
-
-  // Update the form state with the enhanced callback
-  React.useEffect(() => {
-    // Update the internal callback to use our enhanced version
-    if (formState.selectedArray) {
-      handleSelectionChange(formState.selectedArray);
-    }
-  }, [formState.selectedArray, handleSelectionChange]);
-
   // Reset selection when division changes
   React.useEffect(() => {
     if (formState.clearSelection) {
@@ -108,17 +102,17 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     }
   }, [divisionId, formState.clearSelection]);
 
-  // Loading state (only if we're fetching data internally)
-  if (!teamsProp && isLoading) {
+  // Loading state
+  if (isLoading) {
     return <TeamSelectionLoading />;
   }
 
-  // Error state (only if we're fetching data internally)
-  if (!teamsProp && isError) {
+  // Error state
+  if (isError) {
     return (
       <TeamSelectionError 
         message={errorMessage || "An error occurred loading teams"} 
-        onRetry={refetch}
+        onRetry={() => window.location.reload()}
       />
     );
   }
