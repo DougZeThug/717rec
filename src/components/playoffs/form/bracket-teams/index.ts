@@ -21,7 +21,7 @@ export {
 export {
   useBracketFormData,
   useBracketFormState,
-  useFormValidation
+  useBracketFormValidation
 } from './hooks';
 
 // Types - Note: Import Division directly from '@/types' where needed
