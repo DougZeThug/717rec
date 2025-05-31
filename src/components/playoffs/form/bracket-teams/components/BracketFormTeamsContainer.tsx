@@ -12,8 +12,7 @@ import { TeamSelectionForm } from './TeamSelectionForm';
 
 /**
  * Main container component for bracket team selection
- * Manages data fetching, state, validation, and renders appropriate child components
- * Phase 3: Added unified validation, error handling, and improved UX
+ * Phase 2: Single-path onChange - parent notification via useEffect only
  */
 export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps> = ({
   divisionId,
@@ -73,16 +72,10 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     );
   }, [processedTeams, divisionId]);
 
-  // Manage form state with enhanced onChange callback
+  // Manage form state - no onChange parameter passed to hook
   const formState = useTeamSelectionState(
     typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16,
-    (ids) => {
-      // Enhanced onChange callback that includes validation
-      onChange({
-        ids,
-        isValid: ids.length >= minTeams && ids.length <= maxTeams
-      });
-    },
+    new Set(), // initialSelected
     Array.isArray(filteredTeams) ? filteredTeams.length : 0,
     typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2
   );
@@ -94,6 +87,15 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     minTeams,
     maxTeams
   );
+
+  // Single-path parent notification via useEffect
+  React.useEffect(() => {
+    const ids = Array.from(formState.selected);
+    onChange({
+      ids,
+      isValid: validation.isValid
+    });
+  }, [formState.selected, validation.isValid, onChange]);
 
   // Reset selection when division changes
   React.useEffect(() => {

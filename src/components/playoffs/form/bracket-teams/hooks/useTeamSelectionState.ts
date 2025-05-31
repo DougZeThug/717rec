@@ -3,13 +3,12 @@ import React from 'react';
 import { BracketFormStateResult } from '../types';
 
 /**
- * Main hook for managing bracket form state including team selection
- * Simplified version that manages team selection state directly
- * Phase 3: Updated to work with unified validation system
+ * Simplified hook for managing team selection state
+ * Phase 2: Removed onChange parameter - parent notification handled at container level
  */
 export const useTeamSelectionState = (
   maxTeams: number,
-  onChange: (ids: string[]) => void,
+  initialSelected: Set<string> = new Set(),
   availableTeamsCount: number = 0,
   minTeams: number = 2
 ): BracketFormStateResult => {
@@ -19,7 +18,7 @@ export const useTeamSelectionState = (
   const validAvailableCount = typeof availableTeamsCount === 'number' ? availableTeamsCount : 0;
   
   // Simple team selection state
-  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const [selected, setSelected] = React.useState<Set<string>>(initialSelected);
   
   // Derived state
   const selectedArray = React.useMemo(() => Array.from(selected), [selected]);
@@ -29,7 +28,7 @@ export const useTeamSelectionState = (
   const hasSelection = count > 0;
 
   /**
-   * Team toggle handler with immediate onChange callback
+   * Team toggle handler - no longer calls onChange internally
    */
   const handleTeamToggle = React.useCallback((teamId: string) => {
     if (typeof teamId === 'string' && teamId.length > 0) {
@@ -40,23 +39,17 @@ export const useTeamSelectionState = (
         } else if (next.size < validMaxTeams) {
           next.add(teamId);
         }
-        
-        // Call onChange immediately after state update
-        const newArray = Array.from(next);
-        onChange(newArray);
-        
         return next;
       });
     }
-  }, [onChange, validMaxTeams]);
+  }, [validMaxTeams]);
 
   /**
-   * Clear selection handler
+   * Clear selection handler - no longer calls onChange internally
    */
   const clearSelection = React.useCallback(() => {
     setSelected(new Set());
-    onChange([]);
-  }, [onChange]);
+  }, []);
 
   // Return a complete object with legacy validation properties for compatibility
   const result: BracketFormStateResult = {

@@ -8,7 +8,8 @@ import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFo
 // Mock the hooks
 vi.mock('../bracket-teams/hooks', () => ({
   useBracketFormData: vi.fn(),
-  useTeamSelectionState: vi.fn()
+  useTeamSelectionState: vi.fn(),
+  useBracketFormValidation: vi.fn()
 }));
 
 vi.mock('@/hooks/playoffs', () => ({
@@ -45,10 +46,12 @@ vi.mock('../bracket-teams/components', () => ({
 // Mock imports
 const mockUseBracketFormData = vi.hoisted(() => vi.fn());
 const mockUseTeamSelectionState = vi.hoisted(() => vi.fn());
+const mockUseBracketFormValidation = vi.hoisted(() => vi.fn());
 
 vi.mock('../bracket-teams/hooks', () => ({
   useBracketFormData: mockUseBracketFormData,
-  useTeamSelectionState: mockUseTeamSelectionState
+  useTeamSelectionState: mockUseTeamSelectionState,
+  useBracketFormValidation: mockUseBracketFormValidation
 }));
 
 describe('BracketFormTeamsContainer', () => {
@@ -99,9 +102,16 @@ describe('BracketFormTeamsContainer', () => {
     
     mockUseTeamSelectionState.mockReturnValue({
       selected: new Set(['team-1']),
+      selectedArray: ['team-1'],
       count: 1,
       handleTeamToggle: vi.fn(),
+      clearSelection: vi.fn(),
       statusMessage: 'Selected 1 of 16 maximum teams'
+    });
+
+    mockUseBracketFormValidation.mockReturnValue({
+      isValid: true,
+      message: null
     });
   });
 
@@ -172,8 +182,10 @@ describe('BracketFormTeamsContainer', () => {
       
       mockUseTeamSelectionState.mockReturnValue({
         selected: new Set(['team-1']),
+        selectedArray: ['team-1'],
         count: 1,
         handleTeamToggle: mockToggle,
+        clearSelection: vi.fn(),
         statusMessage: 'Selected 1 of 16 maximum teams'
       });
 
@@ -184,20 +196,46 @@ describe('BracketFormTeamsContainer', () => {
       
       expect(mockToggle).toHaveBeenCalledWith('team-1');
     });
+
+    it('calls onChange exactly once when selection changes', () => {
+      const mockOnChange = vi.fn();
+      
+      mockUseTeamSelectionState.mockReturnValue({
+        selected: new Set(['team-1']),
+        selectedArray: ['team-1'],
+        count: 1,
+        handleTeamToggle: vi.fn(),
+        clearSelection: vi.fn(),
+        statusMessage: 'Selected 1 of 16 maximum teams'
+      });
+
+      mockUseBracketFormValidation.mockReturnValue({
+        isValid: true,
+        message: null
+      });
+
+      render(<BracketFormTeamsContainer {...defaultProps} onChange={mockOnChange} />);
+      
+      // Should call onChange once during render
+      expect(mockOnChange).toHaveBeenCalledWith({
+        ids: ['team-1'],
+        isValid: true
+      });
+    });
   });
 
   describe('Props and Configuration', () => {
     it('uses custom minTeams prop', () => {
       render(<BracketFormTeamsContainer {...defaultProps} minTeams={4} />);
       
-      // Should pass minTeams to useTeamSelectionState
-      expect(mockUseTeamSelectionState).toHaveBeenCalledWith(16, expect.any(Function), 1, 4);
+      // Should pass minTeams to useTeamSelectionState (4th parameter)
+      expect(mockUseTeamSelectionState).toHaveBeenCalledWith(16, new Set(), 1, 4);
     });
 
     it('defaults minTeams to 2 when not provided', () => {
       render(<BracketFormTeamsContainer {...defaultProps} />);
       
-      expect(mockUseTeamSelectionState).toHaveBeenCalledWith(16, expect.any(Function), 1, 2);
+      expect(mockUseTeamSelectionState).toHaveBeenCalledWith(16, new Set(), 1, 2);
     });
 
     it('always calls useBracketFormData even with provided teams', () => {

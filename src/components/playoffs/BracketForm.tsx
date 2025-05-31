@@ -172,13 +172,13 @@ const BracketForm: React.FC<BracketFormProps> = ({
     handleSubmit
   } = formHook;
 
-  // Handle teams selection with validation callback
-  const handleTeamsChange = ({ ids, isValid }: { ids: string[]; isValid: boolean }) => {
+  // Stable callback for teams selection with validation
+  const handleTeamsChange = React.useCallback(({ ids, isValid }: { ids: string[]; isValid: boolean }) => {
     form.setValue("teams", ids);
     if (onTeamsValidityChange) {
       onTeamsValidityChange(isValid);
     }
-  };
+  }, [form, onTeamsValidityChange]);
 
   // Enhanced form submission with specific error handling
   const handleFormSubmit = async (data: any) => {
