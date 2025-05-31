@@ -12,6 +12,7 @@ import { BracketFormActions } from "./form/BracketFormActions";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2, RefreshCw, Database, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface BracketFormProps {
   divisions: { id: string; name: string }[] | undefined;
@@ -33,6 +34,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
   onCancel,
 }) => {
   const [formError, setFormError] = React.useState<string | null>(null);
+  const { toast } = useToast();
 
   console.log("BracketForm: Rendering with", { 
     divisionsCount: divisions?.length, 
@@ -165,12 +167,24 @@ const BracketForm: React.FC<BracketFormProps> = ({
     );
   }
 
-  const {
-    form,
-    filteredTeams,
-    handleDivisionChange,
-    handleSubmit
-  } = formHook;
+  const { form, handleSubmit } = formHook;
+
+  // Simple division change handler
+  const handleDivisionChange = React.useCallback((divisionId: string) => {
+    // Validate division ID
+    if (divisionId && !validDivisions.some(d => d.id === divisionId)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Division",
+        description: "Invalid division selected. Please try again."
+      });
+      return;
+    }
+
+    // Set form values and clear teams
+    form.setValue("divisionId", divisionId);
+    form.setValue("teams", []);
+  }, [form, validDivisions, toast]);
 
   // Stable callback for teams selection with validation
   const handleTeamsChange = React.useCallback(({ ids, isValid }: { ids: string[]; isValid: boolean }) => {
