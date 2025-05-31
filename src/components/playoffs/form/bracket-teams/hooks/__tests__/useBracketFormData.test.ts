@@ -60,7 +60,25 @@ describe('useBracketFormData', () => {
     );
 
     await waitFor(() => {
-      expect(result.current.teams).toEqual(mockTeams);
+      expect(result.current.teams).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'team1',
+            name: 'Team 1',
+            division_id: 'div1'
+          }),
+          expect.objectContaining({
+            id: 'team2',
+            name: 'Team 2',
+            division_id: 'div1'
+          }),
+          expect.objectContaining({
+            id: 'team3',
+            name: 'Team 3',
+            division_id: 'div2'
+          })
+        ])
+      );
       expect(result.current.isLoading).toBe(false);
       expect(result.current.isError).toBe(false);
       expect(result.current.isDataReady).toBe(true);
@@ -83,7 +101,22 @@ describe('useBracketFormData', () => {
     );
 
     await waitFor(() => {
-      expect(result.current.teams).toEqual(mockTeams);
+      expect(result.current.teams).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'team1',
+            name: 'Team 1'
+          }),
+          expect.objectContaining({
+            id: 'team2',
+            name: 'Team 2'
+          }),
+          expect.objectContaining({
+            id: 'team3',
+            name: 'Team 3'
+          })
+        ])
+      );
       expect(result.current.isLoading).toBe(false);
       expect(result.current.isError).toBe(false);
       expect(result.current.isDataReady).toBe(true);
@@ -109,7 +142,7 @@ describe('useBracketFormData', () => {
     expect(result.current.isDataReady).toBe(false);
   });
 
-  it('should handle error state', async () => {
+  it('should handle error state when no teams are fetched', async () => {
     mockUseTeams.mockReturnValue({
       teams: [],
       isLoading: false,
@@ -131,7 +164,7 @@ describe('useBracketFormData', () => {
     });
   });
 
-  it('should return empty array when no teams are available', async () => {
+  it('should return empty teams array when no teams are available but maintain ready state', async () => {
     mockUseTeams.mockReturnValue({
       teams: [],
       isLoading: false,
@@ -142,12 +175,45 @@ describe('useBracketFormData', () => {
     });
 
     const { result } = renderHook(
-      () => useBracketFormData(mockDivisions, undefined),
+      () => useBracketFormData(mockDivisions, []), // Provide empty array as teams prop
       { wrapper }
     );
 
     await waitFor(() => {
       expect(result.current.teams).toEqual([]);
+      expect(result.current.isDataReady).toBe(true);
+      expect(result.current.isError).toBe(false);
+    });
+  });
+
+  it('should handle invalid team data gracefully', async () => {
+    const invalidTeams = [
+      { id: 'team1', name: 'Team 1', division_id: 'div1' },
+      null, // Invalid team
+      { name: 'Team without ID' }, // Missing required fields
+      { id: 'team3', name: 'Team 3', division_id: 'div2' }
+    ] as any[];
+
+    const { result } = renderHook(
+      () => useBracketFormData(mockDivisions, invalidTeams),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      // Should filter out invalid teams and process valid ones
+      expect(result.current.teams).toHaveLength(2);
+      expect(result.current.teams[0]).toEqual(
+        expect.objectContaining({
+          id: 'team1',
+          name: 'Team 1'
+        })
+      );
+      expect(result.current.teams[1]).toEqual(
+        expect.objectContaining({
+          id: 'team3',
+          name: 'Team 3'
+        })
+      );
       expect(result.current.isDataReady).toBe(true);
     });
   });

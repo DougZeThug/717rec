@@ -25,10 +25,52 @@ describe('useBracketForm', () => {
   
   const mockOnSubmit = vi.fn();
   
-  // Create a complete UseFormReturn mock with proper typing
+  // Create a complete UseFormReturn mock with proper React Hook Form patterns
   const createMockForm = (): UseFormReturn<BracketFormValues> => {
     const mockWatch = vi.fn();
     const mockGetValues = vi.fn();
+    
+    // Setup watch to handle different call patterns
+    mockWatch.mockImplementation((fieldName?: any) => {
+      if (fieldName === undefined) {
+        // watch() without parameters returns current form values
+        return {
+          title: "",
+          divisionId: "",
+          format: "Single Elimination" as const,
+          teams: [],
+        };
+      }
+      // watch(fieldName) returns specific field value
+      const formValues = {
+        title: "",
+        divisionId: "",
+        format: "Single Elimination" as const,
+        teams: [],
+      };
+      return formValues[fieldName as keyof BracketFormValues];
+    });
+
+    // Setup getValues to handle different call patterns
+    mockGetValues.mockImplementation((fieldName?: any) => {
+      if (fieldName === undefined) {
+        // getValues() without parameters returns all values
+        return {
+          title: "",
+          divisionId: "",
+          format: "Single Elimination" as const,
+          teams: [],
+        };
+      }
+      // getValues(fieldName) returns specific field value
+      const formValues = {
+        title: "",
+        divisionId: "",
+        format: "Single Elimination" as const,
+        teams: [],
+      };
+      return formValues[fieldName as keyof BracketFormValues];
+    });
     
     return {
       watch: mockWatch,
@@ -83,22 +125,6 @@ describe('useBracketForm', () => {
     
     // Setup default mock implementation
     mockUseBracketFormState.mockReturnValue(mockFormState);
-    
-    // Setup default watch return value
-    vi.mocked(mockForm.watch).mockReturnValue({
-      title: "",
-      divisionId: "",
-      format: "Single Elimination" as const,
-      teams: [],
-    });
-    
-    // Setup default getValues return
-    vi.mocked(mockForm.getValues).mockReturnValue({
-      title: "",
-      divisionId: "",
-      format: "Single Elimination" as const,
-      teams: [],
-    });
   });
 
   it('should initialize correctly with form state', () => {
@@ -135,7 +161,13 @@ describe('useBracketForm', () => {
       teams: ["team1", "team2"],
     };
     
-    vi.mocked(mockForm.watch).mockReturnValue(newFormValues);
+    // Update the mock to return new values
+    vi.mocked(mockForm.watch).mockImplementation((fieldName?: any) => {
+      if (fieldName === undefined) {
+        return newFormValues;
+      }
+      return newFormValues[fieldName as keyof BracketFormValues];
+    });
     
     renderHook(() => 
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
@@ -172,7 +204,7 @@ describe('useBracketForm', () => {
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
     );
     
-    // Change watched values
+    // Change watched values by updating the mock implementation
     const updatedValues = {
       title: "Updated Title",
       divisionId: "div2",
@@ -180,7 +212,12 @@ describe('useBracketForm', () => {
       teams: ["team3"],
     };
     
-    vi.mocked(mockForm.watch).mockReturnValue(updatedValues);
+    vi.mocked(mockForm.watch).mockImplementation((fieldName?: any) => {
+      if (fieldName === undefined) {
+        return updatedValues;
+      }
+      return updatedValues[fieldName as keyof BracketFormValues];
+    });
     
     rerender();
     
