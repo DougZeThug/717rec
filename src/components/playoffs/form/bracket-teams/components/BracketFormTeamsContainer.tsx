@@ -9,10 +9,12 @@ import { TeamSelectionLoading } from './TeamSelectionLoading';
 import { TeamSelectionError } from './TeamSelectionError';
 import { TeamSelectionEmpty } from './TeamSelectionEmpty';
 import { TeamSelectionForm } from './TeamSelectionForm';
+import { isTeamArray, isDivisionArray, isDivisionIdValid } from '@/utils/typeGuards';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Main container component for bracket team selection
- * Phase 2: Single-path onChange - parent notification via useEffect only
+ * Phase 4: Type-safe with runtime guards and zero `as any` casts
  */
 export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps> = ({
   divisionId,
@@ -22,23 +24,62 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   divisions = [],
   onChange
 }) => {
-  // Always call useBracketFormData - pass teamsProp to short-circuit if provided
+  const { toast } = useToast();
+  const hasToastedInvalidDivision = React.useRef(false);
+
+  // Runtime validation of props using type guards
+  const validDivisions = React.useMemo(() => {
+    if (!isDivisionArray(divisions)) {
+      console.warn('BracketFormTeamsContainer: Invalid divisions prop, using empty array');
+      return [];
+    }
+    return divisions;
+  }, [divisions]);
+
+  const validTeamsProp = React.useMemo(() => {
+    if (teamsProp !== undefined && !isTeamArray(teamsProp)) {
+      console.warn('BracketFormTeamsContainer: Invalid teams prop, ignoring');
+      return undefined;
+    }
+    return teamsProp;
+  }, [teamsProp]);
+
+  const validDivisionId = React.useMemo(() => {
+    if (!divisionId) return null;
+    
+    if (!isDivisionIdValid(validDivisions, divisionId)) {
+      // Toast error once per component instance
+      if (!hasToastedInvalidDivision.current) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Division",
+          description: "The selected division is not valid. Showing all teams."
+        });
+        hasToastedInvalidDivision.current = true;
+      }
+      return null;
+    }
+    
+    return divisionId;
+  }, [divisionId, validDivisions, toast]);
+
+  // Always call useBracketFormData - pass validTeamsProp to short-circuit if provided
   const { 
     teams: fetchedTeams, 
     isLoading: fetchLoading, 
     isError: fetchError, 
     errorMessage, 
     isDataReady 
-  } = useBracketFormData(divisions as Division[], teamsProp);
+  } = useBracketFormData(validDivisions, validTeamsProp);
 
   // Determine which teams to use and loading states
-  const allTeams = teamsProp ?? fetchedTeams;
-  const isLoading = teamsProp ? false : fetchLoading;
-  const isError = teamsProp ? false : fetchError;
+  const allTeams = validTeamsProp ?? fetchedTeams;
+  const isLoading = validTeamsProp ? false : fetchLoading;
+  const isError = validTeamsProp ? false : fetchError;
 
-  // Convert teams to ProcessedTeam format if needed
+  // Convert teams to ProcessedTeam format with type safety
   const processedTeams = React.useMemo((): ProcessedTeam[] => {
-    if (!Array.isArray(allTeams)) return [];
+    if (!isTeamArray(allTeams)) return [];
     
     return allTeams.map((team, index) => ({
       id: team.id,
@@ -63,14 +104,14 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     }));
   }, [allTeams]);
 
-  // Filter teams by division
+  // Filter teams by division with type safety
   const filteredTeams = React.useMemo(() => {
-    if (!divisionId || !Array.isArray(processedTeams)) return processedTeams;
+    if (!validDivisionId || !Array.isArray(processedTeams)) return processedTeams;
     
     return processedTeams.filter(team => 
-      team.division_id === divisionId || team.division_id === divisionId
+      team.division_id === validDivisionId
     );
-  }, [processedTeams, divisionId]);
+  }, [processedTeams, validDivisionId]);
 
   // Manage form state - no onChange parameter passed to hook
   const formState = useTeamSelectionState(
@@ -102,7 +143,9 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     if (formState.clearSelection) {
       formState.clearSelection();
     }
-  }, [divisionId, formState.clearSelection]);
+    // Reset toast flag when division changes
+    hasToastedInvalidDivision.current = false;
+  }, [validDivisionId, formState.clearSelection]);
 
   // Loading state
   if (isLoading) {

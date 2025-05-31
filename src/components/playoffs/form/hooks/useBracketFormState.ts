@@ -11,18 +11,6 @@ interface UseBracketFormStateProps {
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
 }
 
-// Type guard to ensure we have valid form data
-const isValidFormData = (data: any): data is BracketFormData => {
-  return (
-    data &&
-    typeof data === 'object' &&
-    typeof data.title === 'string' &&
-    typeof data.divisionId === 'string' &&
-    typeof data.format === 'string' &&
-    Array.isArray(data.teams)
-  );
-};
-
 export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const [isFormValid, setIsFormValid] = useState(false);
   
@@ -38,7 +26,7 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
     mode: "onSubmit" // Changed from "onChange" to prevent premature validation
   });
 
-  // More defensive validation that won't crash on undefined values
+  // Type-safe validation using Zod safeParse
   const validateForm = useCallback((data: unknown) => {
     console.log("Validating form data:", data);
     
@@ -50,31 +38,37 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
         return { isValid: false, errors: ["No form data"] };
       }
       
-      // Convert form data to BracketFormData format for validation
-      const formData = data as any;
-      const bracketFormData: BracketFormData = {
-        title: formData.title || '',
-        divisionId: formData.divisionId || '',
-        format: formData.format || BRACKET_FORMATS.SINGLE,
-        teams: Array.isArray(formData.teams) ? formData.teams : []
-      };
+      // Use Zod safeParse instead of casting
+      const parseResult = bracketFormSchema.safeParse(data);
       
-      // Type guard check
-      if (!isValidFormData(bracketFormData)) {
-        console.log('Form data structure is not yet complete');
+      if (!parseResult.success) {
+        console.log('Form data validation failed:', parseResult.error.format());
         setIsFormValid(false);
-        return { isValid: false, errors: ["Form not ready"] };
+        return { 
+          isValid: false, 
+          errors: parseResult.error.issues.map(issue => issue.message) 
+        };
       }
       
+      const formData = parseResult.data;
+      
       // Only validate if we have the required fields - don't error on empty forms
-      if (!bracketFormData.title && !bracketFormData.divisionId && !bracketFormData.teams?.length) {
+      if (!formData.title && !formData.divisionId && !formData.teams?.length) {
         console.log("Form is empty, validation not needed yet");
         setIsFormValid(false);
         return { isValid: false, errors: ["Form is empty"] };
       }
       
       // Only validate if we have some content to validate
-      if (bracketFormData.title || bracketFormData.divisionId || bracketFormData.teams?.length) {
+      if (formData.title || formData.divisionId || formData.teams?.length) {
+        // Convert to BracketFormData format for validation service
+        const bracketFormData: BracketFormData = {
+          title: formData.title,
+          divisionId: formData.divisionId,
+          format: formData.format,
+          teams: formData.teams
+        };
+        
         const validation = BracketValidationService.validateForSubmission(bracketFormData);
         console.log("Validation result:", validation);
         setIsFormValid(validation.isValid);
@@ -92,24 +86,28 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
     }
   }, []);
 
-  // Enhanced form submission with better error handling and type guards
+  // Enhanced form submission with type-safe parsing
   const handleSubmit = form.handleSubmit(async (data) => {
     console.log("Form submission started with data:", data);
     
     try {
-      // Convert to BracketFormData format
-      const bracketFormData: BracketFormData = {
-        title: data.title,
-        divisionId: data.divisionId || '',
-        format: data.format,
-        teams: data.teams
-      };
+      // Validate with Zod before submission
+      const parseResult = bracketFormSchema.safeParse(data);
       
-      // Type guard check for submission
-      if (!isValidFormData(bracketFormData)) {
-        console.error('Invalid form data for submission:', data);
+      if (!parseResult.success) {
+        console.error('Form submission validation failed:', parseResult.error.format());
         throw new Error('Invalid form data structure');
       }
+      
+      const validatedData = parseResult.data;
+      
+      // Convert to BracketFormData format for service validation
+      const bracketFormData: BracketFormData = {
+        title: validatedData.title,
+        divisionId: validatedData.divisionId,
+        format: validatedData.format,
+        teams: validatedData.teams
+      };
       
       // Sanitize and validate
       const sanitizedData = BracketValidationService.sanitizeFormData(bracketFormData);
@@ -122,8 +120,8 @@ export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
         throw new Error(validation.errors[0]);
       }
       
-      console.log('Form validation passed, submitting:', sanitizedData);
-      await onSubmit(data); // Submit original form data
+      console.log('Form validation passed, submitting:', validatedData);
+      await onSubmit(validatedData); // Submit validated form data
       
     } catch (error) {
       console.error("Error during form submission:", error);

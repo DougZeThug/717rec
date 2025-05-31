@@ -1,5 +1,5 @@
 
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useBracketForm } from '../useBracketForm';
 import { Team } from '@/types';
@@ -11,6 +11,9 @@ vi.mock('../hooks/useBracketFormState', () => ({
 
 import { useBracketFormState } from '../hooks/useBracketFormState';
 
+// Create properly typed mock
+const mockUseBracketFormState = vi.mocked(useBracketFormState);
+
 describe('useBracketForm', () => {
   const mockTeams: Team[] = [
     { id: 'team1', name: 'Team 1', division_id: 'div1' },
@@ -20,14 +23,14 @@ describe('useBracketForm', () => {
   
   const mockOnSubmit = vi.fn();
   
-  // Mock form object with required methods
+  // Mock form object with required methods - properly typed
   const mockForm = {
     watch: vi.fn(),
     setValue: vi.fn(),
     getValues: vi.fn(() => ({
       title: "",
       divisionId: "",
-      format: "Single Elimination",
+      format: "Single Elimination" as const,
       teams: [],
     })),
     reset: vi.fn(),
@@ -44,12 +47,12 @@ describe('useBracketForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Setup default mock implementation
-    (useBracketFormState as any).mockReturnValue(mockFormState);
+    // Setup default mock implementation with proper typing
+    mockUseBracketFormState.mockReturnValue(mockFormState);
     mockForm.watch.mockReturnValue({
       title: "",
       divisionId: "",
-      format: "Single Elimination",
+      format: "Single Elimination" as const,
       teams: [],
     });
   });
@@ -69,7 +72,7 @@ describe('useBracketForm', () => {
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
     );
     
-    expect(useBracketFormState).toHaveBeenCalledWith({ onSubmit: mockOnSubmit });
+    expect(mockUseBracketFormState).toHaveBeenCalledWith({ onSubmit: mockOnSubmit });
   });
 
   it('should watch form values for validation', () => {
@@ -84,7 +87,7 @@ describe('useBracketForm', () => {
     const newFormValues = {
       title: "Test Tournament",
       divisionId: "div1",
-      format: "Single Elimination",
+      format: "Single Elimination" as const,
       teams: ["team1", "team2"],
     };
     
@@ -103,7 +106,7 @@ describe('useBracketForm', () => {
       isFormValid: true
     };
     
-    (useBracketFormState as any).mockReturnValue(validFormState);
+    mockUseBracketFormState.mockReturnValue(validFormState);
     
     const { result } = renderHook(() => 
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
@@ -129,7 +132,7 @@ describe('useBracketForm', () => {
     const updatedValues = {
       title: "Updated Title",
       divisionId: "div2",
-      format: "Double Elimination",
+      format: "Double Elimination" as const,
       teams: ["team3"],
     };
     
