@@ -49,7 +49,7 @@ export const useBracketFormData = (divisions: Division[] = []): BracketFormDataR
           game_wins: ranking.gamesWon || 0,
           game_losses: ranking.gamesLost || 0,
           divisionName: ranking.divisionName || 'Unknown Division',
-          division_id: ranking.divisionId || null,
+          division_id: ranking.divisionName ? divisionMapping.get(ranking.divisionName) || null : null,
           imageUrl: ranking.imageUrl || null,
           logoUrl: ranking.imageUrl || null,
           players: [],

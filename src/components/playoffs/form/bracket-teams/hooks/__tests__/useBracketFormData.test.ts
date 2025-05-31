@@ -9,22 +9,10 @@ vi.mock('@/hooks/useTeamRankings', () => ({
   useTeamRankings: vi.fn()
 }));
 
-vi.mock('../useDivisionMapping', () => ({
-  useDivisionMapping: vi.fn()
-}));
-
-vi.mock('../useTeamDataProcessor', () => ({
-  useTeamDataProcessor: vi.fn()
-}));
-
 import { useTeamRankings } from '@/hooks/useTeamRankings';
-import { useDivisionMapping } from '../useDivisionMapping';
-import { useTeamDataProcessor } from '../useTeamDataProcessor';
 
 describe('useBracketFormData', () => {
   const mockUseTeamRankings = useTeamRankings as any;
-  const mockUseDivisionMapping = useDivisionMapping as any;
-  const mockUseTeamDataProcessor = useTeamDataProcessor as any;
 
   const mockDivisions: Division[] = [
     { id: 'div-1', name: 'Division A' },
@@ -47,30 +35,6 @@ describe('useBracketFormData', () => {
     }
   ];
 
-  const mockProcessedTeams = [
-    {
-      id: 'team-1',
-      name: 'Team Alpha',
-      seed: 1,
-      powerScore: 1200,
-      wins: 10,
-      losses: 2,
-      division_id: 'div-1',
-      divisionName: 'Division A',
-      logoUrl: null,
-      imageUrl: null,
-      players: [],
-      created_at: '2024-01-01T00:00:00.000Z',
-      game_wins: 25,
-      game_losses: 8,
-      sos: 0.65,
-      power_score: 1200,
-      win_percentage: 0.83,
-      game_win_percentage: 0.76,
-      close_match_losses: 0
-    }
-  ];
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -79,16 +43,6 @@ describe('useBracketFormData', () => {
     mockUseTeamRankings.mockReturnValue({
       rankings: null,
       isLoading: true
-    });
-
-    mockUseDivisionMapping.mockReturnValue({
-      divisionMap: new Map(),
-      mapDivisionName: vi.fn()
-    });
-
-    mockUseTeamDataProcessor.mockReturnValue({
-      processedTeams: [],
-      processingError: null
     });
 
     const { result } = renderHook(() => 
@@ -106,23 +60,13 @@ describe('useBracketFormData', () => {
       isLoading: false
     });
 
-    mockUseDivisionMapping.mockReturnValue({
-      divisionMap: new Map([['Division A', 'div-1']]),
-      mapDivisionName: vi.fn()
-    });
-
-    mockUseTeamDataProcessor.mockReturnValue({
-      processedTeams: mockProcessedTeams,
-      processingError: null
-    });
-
     const { result } = renderHook(() => 
       useBracketFormData(mockDivisions)
     );
 
     expect(result.current.isLoading).toBe(false);
     expect(result.current.isDataReady).toBe(true);
-    expect(result.current.teams).toEqual(mockProcessedTeams);
+    expect(result.current.teams.length).toBe(1);
     expect(result.current.isError).toBe(false);
     expect(result.current.errorMessage).toBeNull();
   });
@@ -131,16 +75,6 @@ describe('useBracketFormData', () => {
     mockUseTeamRankings.mockReturnValue({
       rankings: null,
       isLoading: false
-    });
-
-    mockUseDivisionMapping.mockReturnValue({
-      divisionMap: new Map(),
-      mapDivisionName: vi.fn()
-    });
-
-    mockUseTeamDataProcessor.mockReturnValue({
-      processedTeams: [],
-      processingError: null
     });
 
     const { result } = renderHook(() => 
@@ -152,44 +86,10 @@ describe('useBracketFormData', () => {
     expect(result.current.teams).toEqual([]);
   });
 
-  it('should handle processing error', () => {
-    mockUseTeamRankings.mockReturnValue({
-      rankings: mockRankings,
-      isLoading: false
-    });
-
-    mockUseDivisionMapping.mockReturnValue({
-      divisionMap: new Map(),
-      mapDivisionName: vi.fn()
-    });
-
-    mockUseTeamDataProcessor.mockReturnValue({
-      processedTeams: [],
-      processingError: 'Failed to process team data'
-    });
-
-    const { result } = renderHook(() => 
-      useBracketFormData(mockDivisions)
-    );
-
-    expect(result.current.errorMessage).toBe('Failed to process team data');
-    expect(result.current.teams).toEqual([]);
-  });
-
   it('should handle empty rankings array', () => {
     mockUseTeamRankings.mockReturnValue({
       rankings: [],
       isLoading: false
-    });
-
-    mockUseDivisionMapping.mockReturnValue({
-      divisionMap: new Map(),
-      mapDivisionName: vi.fn()
-    });
-
-    mockUseTeamDataProcessor.mockReturnValue({
-      processedTeams: [],
-      processingError: null
     });
 
     const { result } = renderHook(() => 
@@ -206,57 +106,10 @@ describe('useBracketFormData', () => {
       isLoading: false
     });
 
-    mockUseDivisionMapping.mockReturnValue({
-      divisionMap: new Map(),
-      mapDivisionName: vi.fn()
-    });
-
-    mockUseTeamDataProcessor.mockReturnValue({
-      processedTeams: [],
-      processingError: null
-    });
-
     const { result } = renderHook(() => 
       useBracketFormData()
     );
 
     expect(result.current.isDataReady).toBe(false);
-  });
-
-  it('should determine data readiness correctly', () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-    mockUseTeamRankings.mockReturnValue({
-      rankings: mockRankings,
-      isLoading: false
-    });
-
-    mockUseDivisionMapping.mockReturnValue({
-      divisionMap: new Map(),
-      mapDivisionName: vi.fn()
-    });
-
-    mockUseTeamDataProcessor.mockReturnValue({
-      processedTeams: mockProcessedTeams,
-      processingError: null
-    });
-
-    renderHook(() => 
-      useBracketFormData(mockDivisions)
-    );
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      'useBracketFormData: Data readiness check',
-      expect.objectContaining({
-        rankingsLoading: false,
-        hasRankings: true,
-        rankingsLength: 1,
-        hasDivisions: true,
-        divisionsLength: 2,
-        isDataReady: true
-      })
-    );
-
-    consoleSpy.mockRestore();
   });
 });

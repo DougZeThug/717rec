@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BracketFormTeams } from '../BracketFormTeams';
+import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFormTeamsContainer';
 
 // Integration tests with real hooks (mocked at API level)
 vi.mock('@/integrations/supabase/client', () => ({
@@ -28,7 +28,7 @@ vi.mock('@/integrations/supabase/client', () => ({
   }
 }));
 
-describe('BracketFormTeams - Integration Tests', () => {
+describe('BracketFormTeamsContainer - Integration Tests', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe('BracketFormTeams - Integration Tests', () => {
   const renderWithProviders = (props: any) => {
     return render(
       <QueryClientProvider client={queryClient}>
-        <BracketFormTeams {...props} />
+        <BracketFormTeamsContainer {...props} />
       </QueryClientProvider>
     );
   };
@@ -51,7 +51,6 @@ describe('BracketFormTeams - Integration Tests', () => {
   it('integrates all hooks correctly in real scenario', async () => {
     const mockOnChange = vi.fn();
     const props = {
-      divisionId: 'div-1',
       maxTeams: 16,
       onChange: mockOnChange,
       divisions: [{ id: 'div-1', name: 'Division A' }]
@@ -71,7 +70,6 @@ describe('BracketFormTeams - Integration Tests', () => {
   it('handles real user interaction flow', async () => {
     const mockOnChange = vi.fn();
     const props = {
-      divisionId: 'div-1', 
       maxTeams: 16,
       onChange: mockOnChange,
       divisions: [{ id: 'div-1', name: 'Division A' }]
