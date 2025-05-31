@@ -25,57 +25,75 @@ describe('useBracketForm', () => {
   
   const mockOnSubmit = vi.fn();
   
-  // Create a complete UseFormReturn mock
-  const createMockForm = (): UseFormReturn<BracketFormValues> => ({
-    watch: vi.fn(),
-    setValue: vi.fn(),
-    getValues: vi.fn(() => ({
-      title: "",
-      divisionId: "",
-      format: "Single Elimination" as const,
-      teams: [],
-    })),
-    reset: vi.fn(),
-    handleSubmit: vi.fn(),
-    control: {} as any,
-    register: vi.fn(),
-    unregister: vi.fn(),
-    formState: {
-      errors: {},
-      isDirty: false,
-      isValid: false,
-      isSubmitting: false,
-      isLoading: false,
-      isSubmitted: false,
-      isSubmitSuccessful: false,
-      isValidating: false,
-      submitCount: 0,
-      touchedFields: {},
-      dirtyFields: {},
-      validatingFields: {},
-      defaultValues: {}
-    },
-    getFieldState: vi.fn(),
-    setError: vi.fn(),
-    clearErrors: vi.fn(),
-    trigger: vi.fn(),
-    resetField: vi.fn(),
-    setFocus: vi.fn()
-  });
-
-  const mockFormState = {
-    form: createMockForm(),
-    isFormValid: false,
-    validateForm: vi.fn(),
-    handleSubmit: vi.fn()
+  // Create a complete UseFormReturn mock with proper typing
+  const createMockForm = (): UseFormReturn<BracketFormValues> => {
+    const mockWatch = vi.fn();
+    const mockGetValues = vi.fn();
+    
+    return {
+      watch: mockWatch,
+      setValue: vi.fn(),
+      getValues: mockGetValues,
+      reset: vi.fn(),
+      handleSubmit: vi.fn(),
+      control: {} as any,
+      register: vi.fn(),
+      unregister: vi.fn(),
+      formState: {
+        errors: {},
+        isDirty: false,
+        isValid: false,
+        isSubmitting: false,
+        isLoading: false,
+        isSubmitted: false,
+        isSubmitSuccessful: false,
+        isValidating: false,
+        submitCount: 0,
+        touchedFields: {},
+        dirtyFields: {},
+        validatingFields: {},
+        defaultValues: {},
+        disabled: false
+      },
+      getFieldState: vi.fn(),
+      setError: vi.fn(),
+      clearErrors: vi.fn(),
+      trigger: vi.fn(),
+      resetField: vi.fn(),
+      setFocus: vi.fn()
+    };
   };
+
+  let mockForm: UseFormReturn<BracketFormValues>;
+  let mockFormState: ReturnType<typeof useBracketFormState>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Setup default mock implementation with proper typing
+    // Create fresh mock form
+    mockForm = createMockForm();
+    
+    // Setup mock form state
+    mockFormState = {
+      form: mockForm,
+      isFormValid: false,
+      validateForm: vi.fn(),
+      handleSubmit: vi.fn()
+    };
+    
+    // Setup default mock implementation
     mockUseBracketFormState.mockReturnValue(mockFormState);
-    mockFormState.form.watch.mockReturnValue({
+    
+    // Setup default watch return value
+    vi.mocked(mockForm.watch).mockReturnValue({
+      title: "",
+      divisionId: "",
+      format: "Single Elimination" as const,
+      teams: [],
+    });
+    
+    // Setup default getValues return
+    vi.mocked(mockForm.getValues).mockReturnValue({
       title: "",
       divisionId: "",
       format: "Single Elimination" as const,
@@ -106,7 +124,7 @@ describe('useBracketForm', () => {
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
     );
     
-    expect(mockFormState.form.watch).toHaveBeenCalled();
+    expect(mockForm.watch).toHaveBeenCalled();
   });
 
   it('should call validateForm when watched values change', () => {
@@ -117,7 +135,7 @@ describe('useBracketForm', () => {
       teams: ["team1", "team2"],
     };
     
-    mockFormState.form.watch.mockReturnValue(newFormValues);
+    vi.mocked(mockForm.watch).mockReturnValue(newFormValues);
     
     renderHook(() => 
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
@@ -162,7 +180,7 @@ describe('useBracketForm', () => {
       teams: ["team3"],
     };
     
-    mockFormState.form.watch.mockReturnValue(updatedValues);
+    vi.mocked(mockForm.watch).mockReturnValue(updatedValues);
     
     rerender();
     
