@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
@@ -57,11 +58,21 @@ export interface PlayoffPageData {
 }
 
 export function usePlayoffPageData(): PlayoffPageData {
+  const [searchParams] = useSearchParams();
   const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
+
+  // Handle URL parameters for bracket selection
+  useEffect(() => {
+    const bracketParam = searchParams.get('bracket');
+    if (bracketParam && bracketParam !== selectedBracketId) {
+      console.log('Setting selected bracket from URL:', bracketParam);
+      setSelectedBracketId(bracketParam);
+    }
+  }, [searchParams, selectedBracketId]);
 
   // Enhanced data fetching with error handling
   const {

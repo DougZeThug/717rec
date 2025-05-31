@@ -100,6 +100,9 @@ export interface Ranking {
 // Types for playoff brackets - Export from the new centralized file
 export * from './playoffs';
 
+// Export bracket record types
+export * from './bracketRecord';
+
 // Export specific types from bracket.ts (excluding BracketFormat to avoid conflict)
 export type {
   TeamBase,

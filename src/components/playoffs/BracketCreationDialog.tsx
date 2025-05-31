@@ -9,6 +9,8 @@ import { BracketValidationService } from "@/services/brackets/validation/Bracket
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 import { BracketCreationErrorBoundary } from "./BracketCreationErrorBoundary";
+import { useQueryClient } from "@tanstack/react-query";
+import type { BracketRecord } from "@/types/bracketRecord";
 
 // Format mapping from UI strings to internal format
 const FORMAT_MAP = {
@@ -21,7 +23,7 @@ interface BracketCreationDialogProps {
   onOpenChange: (open: boolean) => void;
   divisions: { id: string; name: string }[] | undefined;
   teams: Team[] | undefined;
-  onBracketCreated?: (bracketId: string) => void;
+  onBracketCreated?: (bracket: BracketRecord) => void;
 }
 
 const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
@@ -36,17 +38,18 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const [teamsValid, setTeamsValid] = React.useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { createBracket } = useChallongeAdmin();
   
-  // Enhanced form submission with API error handling
+  // Enhanced form submission with E2E flow
   const handleSubmit = async (data: BracketFormValues) => {
-    console.log("BracketCreationDialog: Starting form submission", data);
+    console.log("BracketCreationDialog: Starting E2E bracket creation", data);
     
     try {
       setIsSubmitting(true);
       setDialogError(null);
       
-      // Enhanced validation with specific error messages
+      // Enhanced validation
       const validation = BracketValidationService.validateFormData(data as BracketFormData);
       if (!validation.isValid) {
         const validationErrors = validation.errors.join(", ");
@@ -98,34 +101,47 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      console.log("BracketCreationDialog: Creating bracket with:", {
+      console.log("BracketCreationDialog: Creating bracket via E2E flow:", {
         name: data.title,
         format: internalFormat,
         teamsCount: selectedTeams.length,
         divisionId: data.divisionId
       });
       
-      // Create tournament via Challonge with enhanced error handling
-      const bracketId = await createBracket.mutateAsync({
+      // Create tournament via E2E flow
+      const bracket = await createBracket.mutateAsync({
         name: data.title,
         format: internalFormat,
-        teams: selectedTeams.map(team => ({ id: team.id, name: team.name })),
+        teams: selectedTeams.map((team, index) => ({ 
+          id: team.id, 
+          name: team.name,
+          seed: team.seed || (index + 1)
+        })),
         divisionId: data.divisionId
       });
       
       toast({
-        title: "Bracket Created",
-        description: `Tournament "${data.title}" has been created successfully.`,
+        title: "Bracket Created Successfully",
+        description: `Tournament "${data.title}" has been created and is ready for matches.`,
       });
       
-      // Close dialog and notify parent
+      // Close dialog first
       onOpenChange(false);
+      
+      // Invalidate queries to refresh the UI
+      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
+      await queryClient.invalidateQueries({ queryKey: ['playoff-data'] });
+      
+      // Navigate to the created bracket
+      navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
+      
+      // Call parent callback if provided
       if (onBracketCreated) {
-        onBracketCreated(bracketId);
+        onBracketCreated(bracket);
       }
       
     } catch (error: any) {
-      console.error("BracketCreationDialog: Error creating bracket:", error);
+      console.error("BracketCreationDialog: E2E bracket creation failed:", error);
       
       let errorMessage = "Failed to create bracket. Check your internet or try again.";
       

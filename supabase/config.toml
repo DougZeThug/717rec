@@ -1,43 +1,32 @@
 
 project_id = "wcitdamvochthvxvtxyb"
 
-# This flag tells if you're running in local development or production
-# We suggest keeping `debug = true` for development
-debug = true
-
 [api]
+enabled = true
 port = 54321
-schemas = ["public", "storage", "graphql_public"]
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://lovable.dev"]
+jwt_expiry = 3600
+enable_signup = true
+enable_confirmations = false
 
 [db]
 port = 54322
-shadow_port = 54320
-major_version = 15
-
-[studio]
-port = 54323
-
-[inbucket]
-port = 54324
-smtp_port = 54325
-pop3_port = 54326
-
-[storage]
-port = 54327
-
-[auth]
-port = 54328
-
-[vector]
-port = 54329
-
-# For functions deployed locally through the CLI
-[functions]
-debug = true
-verify_jwt = true
-
-[functions.environment]
-CHALLONGE_API_KEY = "CHALLONGE_API_KEY"
 
 [functions.challonge]
+verify_jwt = false
+
+[functions.create-bracket]
 verify_jwt = true
+
+[storage]
+enabled = true
+port = 54323
+file_size_limit = "50MiB"
