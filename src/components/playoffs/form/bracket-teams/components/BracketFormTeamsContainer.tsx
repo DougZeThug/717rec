@@ -4,6 +4,7 @@ import { Division, Team } from '@/types';
 import { BracketFormTeamsContainerProps, ProcessedTeam } from '../types';
 import { useBracketFormData } from '../hooks/useBracketFormData';
 import { useBracketFormState } from '../hooks/useBracketFormState';
+import { useBracketFormValidation } from '../hooks/useBracketFormValidation';
 import { TeamSelectionLoading } from './TeamSelectionLoading';
 import { TeamSelectionError } from './TeamSelectionError';
 import { TeamSelectionEmpty } from './TeamSelectionEmpty';
@@ -11,8 +12,8 @@ import { TeamSelectionForm } from './TeamSelectionForm';
 
 /**
  * Main container component for bracket team selection
- * Manages data fetching, state, and renders appropriate child components based on loading/error states
- * Phase 2: Added division filtering and conditional data fetching
+ * Manages data fetching, state, validation, and renders appropriate child components
+ * Phase 3: Added unified validation, error handling, and improved UX
  */
 export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps> = ({
   divisionId,
@@ -22,15 +23,15 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   divisions = [],
   onChange
 }) => {
-  // Phase 2A: Conditional data fetching - use parent teams if provided, otherwise fetch
-  const { teams: fetchedTeams, isLoading, isError, errorMessage } = teamsProp
-    ? { teams: [], isLoading: false, isError: false, errorMessage: null }
+  // Conditional data fetching - use parent teams if provided, otherwise fetch
+  const { teams: fetchedTeams, isLoading, isError, errorMessage, refetch } = teamsProp
+    ? { teams: [], isLoading: false, isError: false, errorMessage: null, refetch: undefined }
     : useBracketFormData(divisions as Division[]);
 
   // Determine which teams to use
   const allTeams = teamsProp || fetchedTeams;
 
-  // Phase 2A: Convert parent teams to ProcessedTeam format if needed
+  // Convert parent teams to ProcessedTeam format if needed
   const processedTeams = React.useMemo((): ProcessedTeam[] => {
     if (!Array.isArray(allTeams)) return [];
     
@@ -57,7 +58,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     }));
   }, [allTeams]);
 
-  // Phase 2A: Filter teams by division
+  // Filter teams by division
   const filteredTeams = React.useMemo(() => {
     if (!divisionId || !Array.isArray(processedTeams)) return processedTeams;
     
@@ -66,15 +67,41 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     );
   }, [processedTeams, divisionId]);
 
-  // Manage form state - ensure we pass valid parameters
+  // Manage form state with enhanced onChange callback
   const formState = useBracketFormState(
     typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16,
-    typeof onChange === 'function' ? onChange : () => {},
+    (ids) => {
+      // Will be updated below with validation
+    },
     Array.isArray(filteredTeams) ? filteredTeams.length : 0,
     typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2
   );
 
-  // Phase 2A: Reset selection when division changes
+  // Unified validation
+  const validation = useBracketFormValidation(
+    formState.count,
+    filteredTeams.length,
+    minTeams,
+    maxTeams
+  );
+
+  // Enhanced onChange callback that includes validation
+  const handleSelectionChange = React.useCallback((ids: string[]) => {
+    onChange({
+      ids,
+      isValid: validation.isValid
+    });
+  }, [onChange, validation.isValid]);
+
+  // Update the form state with the enhanced callback
+  React.useEffect(() => {
+    // Update the internal callback to use our enhanced version
+    if (formState.selectedArray) {
+      handleSelectionChange(formState.selectedArray);
+    }
+  }, [formState.selectedArray, handleSelectionChange]);
+
+  // Reset selection when division changes
   React.useEffect(() => {
     if (formState.clearSelection) {
       formState.clearSelection();
@@ -88,7 +115,12 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
 
   // Error state (only if we're fetching data internally)
   if (!teamsProp && isError) {
-    return <TeamSelectionError message={errorMessage || "An error occurred loading teams"} />;
+    return (
+      <TeamSelectionError 
+        message={errorMessage || "An error occurred loading teams"} 
+        onRetry={refetch}
+      />
+    );
   }
 
   // Empty state (no teams available)
@@ -96,13 +128,22 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     return <TeamSelectionEmpty />;
   }
 
-  // Main form with teams available - ensure proper prop structure
+  // Main form with teams available
   return (
-    <TeamSelectionForm
-      teams={filteredTeams}
-      formState={formState}
-      maxTeams={maxTeams}
-      minTeams={minTeams}
-    />
+    <div className="space-y-2">
+      <TeamSelectionForm
+        teams={filteredTeams}
+        formState={formState}
+        maxTeams={maxTeams}
+        minTeams={minTeams}
+      />
+      
+      {/* Display validation message */}
+      {validation.message && (
+        <div className="text-sm text-destructive">
+          {validation.message}
+        </div>
+      )}
+    </div>
   );
 };

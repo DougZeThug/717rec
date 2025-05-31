@@ -12,6 +12,7 @@ interface TeamSelectionErrorProps {
 /**
  * Error state component for team selection
  * Displays error message and optional retry functionality
+ * Phase 3: Added retry button for transient failures
  */
 export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
   message = "Failed to load teams",
@@ -33,7 +34,7 @@ export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
         {onRetry && (
           <Button onClick={onRetry} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Try Again
+            Retry
           </Button>
         )}
       </CardContent>

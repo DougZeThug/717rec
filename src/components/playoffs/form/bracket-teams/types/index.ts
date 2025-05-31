@@ -2,6 +2,12 @@
 // Re-export Team from main types to avoid duplication
 export type { Team } from '@/types';
 
+// Team selection callback types
+export interface TeamSelectionCallback {
+  ids: string[];
+  isValid: boolean;
+}
+
 // Team selection state types
 export interface TeamSelectionStateResult {
   selected: Set<string>;
@@ -125,19 +131,20 @@ export interface BracketFormDataResult {
   isError: boolean;
   errorMessage: string | null;
   isDataReady: boolean;
+  refetch?: () => void;
 }
 
-// Component props - Added divisionId and teams props for Phase 2
+// Component props - Updated to use new callback type
 export interface BracketFormTeamsProps {
   divisionId?: string | null;
   teams?: import('@/types').Team[];
   maxTeams: number;
   minTeams?: number;
-  onChange: (ids: string[]) => void;
+  onChange: (data: TeamSelectionCallback) => void;
   divisions?: import('@/types').Division[];
 }
 
-// Container-specific types - Added divisionId and teams props
+// Container-specific types
 export interface BracketFormTeamsContainerProps extends BracketFormTeamsProps {
   divisionId?: string | null;
   teams?: import('@/types').Team[];

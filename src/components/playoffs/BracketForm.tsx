@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Team } from "@/types";
@@ -16,6 +17,8 @@ interface BracketFormProps {
   divisions: { id: string; name: string }[] | undefined;
   teams: Team[] | undefined;
   isSubmitting: boolean;
+  teamsValid?: boolean;
+  onTeamsValidityChange?: (valid: boolean) => void;
   onSubmit: (data: BracketFormValues) => Promise<void> | void;
   onCancel: () => void;
 }
@@ -24,6 +27,8 @@ const BracketForm: React.FC<BracketFormProps> = ({
   divisions,
   teams,
   isSubmitting,
+  teamsValid = false,
+  onTeamsValidityChange,
   onSubmit,
   onCancel,
 }) => {
@@ -32,7 +37,8 @@ const BracketForm: React.FC<BracketFormProps> = ({
   console.log("BracketForm: Rendering with", { 
     divisionsCount: divisions?.length, 
     teamsCount: teams?.length, 
-    isSubmitting 
+    isSubmitting,
+    teamsValid
   });
 
   // Enhanced loading state with specific indicators
@@ -166,6 +172,14 @@ const BracketForm: React.FC<BracketFormProps> = ({
     handleSubmit
   } = formHook;
 
+  // Handle teams selection with validation callback
+  const handleTeamsChange = ({ ids, isValid }: { ids: string[]; isValid: boolean }) => {
+    form.setValue("teams", ids);
+    if (onTeamsValidityChange) {
+      onTeamsValidityChange(isValid);
+    }
+  };
+
   // Enhanced form submission with specific error handling
   const handleFormSubmit = async (data: any) => {
     try {
@@ -227,11 +241,12 @@ const BracketForm: React.FC<BracketFormProps> = ({
             divisionId={form.watch("divisionId") ?? null}
             teams={validTeams}
             maxTeams={form.watch("format") === "Double Elimination" ? 16 : 32}
-            onChange={(ids) => form.setValue("teams", ids)}
+            onChange={handleTeamsChange}
             divisions={validDivisions}
           />
           <BracketFormActions 
             isSubmitting={isSubmitting} 
+            teamsValid={teamsValid}
             onCancel={onCancel} 
             form={form}
           />

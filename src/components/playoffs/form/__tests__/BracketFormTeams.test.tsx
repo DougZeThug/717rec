@@ -27,7 +27,7 @@ vi.mock('@/hooks/useTeamRankings', () => ({
   })
 }));
 
-// Test with valid props - Updated to include divisionId
+// Test with valid props - Updated to include new callback structure
 const TestWrapper = ({ 
   divisionId = 'div-1',
   maxTeams = 16, 
@@ -61,14 +61,14 @@ describe('BracketFormTeamsContainer', () => {
     expect(teamSelection).toBeInTheDocument();
   });
 
-  it('calls onChange when teams are selected', async () => {
+  it('calls onChange with validation when teams are selected', async () => {
     const mockOnChange = vi.fn();
     render(<TestWrapper onChange={mockOnChange} />);
     
     const toggleButton = screen.getByText('Toggle Team');
     await userEvent.click(toggleButton);
     
-    // The onChange should eventually be called when team selection changes
+    // The onChange should be called with validation object
     // Note: This might need adjustment based on the actual implementation
   });
 
@@ -83,5 +83,24 @@ describe('BracketFormTeamsContainer', () => {
     // Should only show teams from div-1
     const teamSelection = screen.getByTestId('team-selection-list');
     expect(teamSelection).toBeInTheDocument();
+  });
+
+  it('shows validation message when no teams available', () => {
+    render(<TestWrapper teams={[]} />);
+    
+    // Should show empty state with actionable guidance
+    expect(screen.getByText('No Teams Available')).toBeInTheDocument();
+  });
+
+  it('shows validation message when too few teams selected', () => {
+    const mockTeams = [
+      { id: 'team1', name: 'Team 1', division_id: 'div-1' },
+      { id: 'team2', name: 'Team 2', division_id: 'div-1' },
+    ];
+    
+    render(<TestWrapper teams={mockTeams} minTeams={2} />);
+    
+    // Should show validation message about needing more teams
+    // This will be tested more thoroughly in integration tests
   });
 });

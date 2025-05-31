@@ -33,11 +33,12 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [dialogError, setDialogError] = React.useState<string | null>(null);
+  const [teamsValid, setTeamsValid] = React.useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { createBracket } = useChallongeAdmin();
   
-  // Enhanced form submission with specific error categorization
+  // Enhanced form submission with API error handling
   const handleSubmit = async (data: BracketFormValues) => {
     console.log("BracketCreationDialog: Starting form submission", data);
     
@@ -126,7 +127,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     } catch (error: any) {
       console.error("BracketCreationDialog: Error creating bracket:", error);
       
-      let errorMessage = "An unexpected error occurred";
+      let errorMessage = "Failed to create bracket. Check your internet or try again.";
       
       // Categorize errors for better user experience
       if (error?.message) {
@@ -181,6 +182,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
             divisions={divisions}
             teams={teams}
             isSubmitting={isSubmitting}
+            teamsValid={teamsValid}
+            onTeamsValidityChange={setTeamsValid}
             onSubmit={handleSubmit}
             onCancel={() => onOpenChange(false)}
           />
