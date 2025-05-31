@@ -46,10 +46,12 @@ describe('useBracketFormData', () => {
 
   it('should return provided teams when teamsProp is given', async () => {
     mockUseTeams.mockReturnValue({
-      data: [],
+      teams: [],
       isLoading: false,
-      isError: false,
-      error: null
+      fetchTeams: vi.fn(),
+      createTeam: vi.fn(),
+      updateTeam: vi.fn(),
+      deleteTeam: vi.fn()
     });
 
     const { result } = renderHook(
@@ -67,10 +69,12 @@ describe('useBracketFormData', () => {
 
   it('should fetch teams when teamsProp is not provided', async () => {
     mockUseTeams.mockReturnValue({
-      data: mockTeams,
+      teams: mockTeams,
       isLoading: false,
-      isError: false,
-      error: null
+      fetchTeams: vi.fn(),
+      createTeam: vi.fn(),
+      updateTeam: vi.fn(),
+      deleteTeam: vi.fn()
     });
 
     const { result } = renderHook(
@@ -88,10 +92,12 @@ describe('useBracketFormData', () => {
 
   it('should handle loading state', async () => {
     mockUseTeams.mockReturnValue({
-      data: undefined,
+      teams: [],
       isLoading: true,
-      isError: false,
-      error: null
+      fetchTeams: vi.fn(),
+      createTeam: vi.fn(),
+      updateTeam: vi.fn(),
+      deleteTeam: vi.fn()
     });
 
     const { result } = renderHook(
@@ -104,12 +110,13 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle error state', async () => {
-    const mockError = new Error('Failed to fetch teams');
     mockUseTeams.mockReturnValue({
-      data: undefined,
+      teams: [],
       isLoading: false,
-      isError: true,
-      error: mockError
+      fetchTeams: vi.fn(),
+      createTeam: vi.fn(),
+      updateTeam: vi.fn(),
+      deleteTeam: vi.fn()
     });
 
     const { result } = renderHook(
@@ -119,17 +126,19 @@ describe('useBracketFormData', () => {
 
     await waitFor(() => {
       expect(result.current.isError).toBe(true);
-      expect(result.current.errorMessage).toBe('Failed to fetch teams');
+      expect(result.current.errorMessage).toBe('Failed to load teams. Please refresh and try again.');
       expect(result.current.isDataReady).toBe(false);
     });
   });
 
   it('should return empty array when no teams are available', async () => {
     mockUseTeams.mockReturnValue({
-      data: [],
+      teams: [],
       isLoading: false,
-      isError: false,
-      error: null
+      fetchTeams: vi.fn(),
+      createTeam: vi.fn(),
+      updateTeam: vi.fn(),
+      deleteTeam: vi.fn()
     });
 
     const { result } = renderHook(

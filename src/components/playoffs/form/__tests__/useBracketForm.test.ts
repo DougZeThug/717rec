@@ -3,6 +3,8 @@ import { renderHook } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useBracketForm } from '../useBracketForm';
 import { Team } from '@/types';
+import { UseFormReturn } from 'react-hook-form';
+import { BracketFormValues } from '../BracketFormSchema';
 
 // Mock the useBracketFormState hook
 vi.mock('../hooks/useBracketFormState', () => ({
@@ -23,8 +25,8 @@ describe('useBracketForm', () => {
   
   const mockOnSubmit = vi.fn();
   
-  // Mock form object with required methods - properly typed
-  const mockForm = {
+  // Create a complete UseFormReturn mock
+  const createMockForm = (): UseFormReturn<BracketFormValues> => ({
     watch: vi.fn(),
     setValue: vi.fn(),
     getValues: vi.fn(() => ({
@@ -34,11 +36,35 @@ describe('useBracketForm', () => {
       teams: [],
     })),
     reset: vi.fn(),
-    handleSubmit: vi.fn()
-  };
+    handleSubmit: vi.fn(),
+    control: {} as any,
+    register: vi.fn(),
+    unregister: vi.fn(),
+    formState: {
+      errors: {},
+      isDirty: false,
+      isValid: false,
+      isSubmitting: false,
+      isLoading: false,
+      isSubmitted: false,
+      isSubmitSuccessful: false,
+      isValidating: false,
+      submitCount: 0,
+      touchedFields: {},
+      dirtyFields: {},
+      validatingFields: {},
+      defaultValues: {}
+    },
+    getFieldState: vi.fn(),
+    setError: vi.fn(),
+    clearErrors: vi.fn(),
+    trigger: vi.fn(),
+    resetField: vi.fn(),
+    setFocus: vi.fn()
+  });
 
   const mockFormState = {
-    form: mockForm,
+    form: createMockForm(),
     isFormValid: false,
     validateForm: vi.fn(),
     handleSubmit: vi.fn()
@@ -49,7 +75,7 @@ describe('useBracketForm', () => {
     
     // Setup default mock implementation with proper typing
     mockUseBracketFormState.mockReturnValue(mockFormState);
-    mockForm.watch.mockReturnValue({
+    mockFormState.form.watch.mockReturnValue({
       title: "",
       divisionId: "",
       format: "Single Elimination" as const,
@@ -62,7 +88,7 @@ describe('useBracketForm', () => {
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
     );
     
-    expect(result.current.form).toBe(mockForm);
+    expect(result.current.form).toBe(mockFormState.form);
     expect(result.current.isFormValid).toBe(false);
     expect(result.current.handleSubmit).toBe(mockFormState.handleSubmit);
   });
@@ -80,7 +106,7 @@ describe('useBracketForm', () => {
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
     );
     
-    expect(mockForm.watch).toHaveBeenCalled();
+    expect(mockFormState.form.watch).toHaveBeenCalled();
   });
 
   it('should call validateForm when watched values change', () => {
@@ -91,7 +117,7 @@ describe('useBracketForm', () => {
       teams: ["team1", "team2"],
     };
     
-    mockForm.watch.mockReturnValue(newFormValues);
+    mockFormState.form.watch.mockReturnValue(newFormValues);
     
     renderHook(() => 
       useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
@@ -136,7 +162,7 @@ describe('useBracketForm', () => {
       teams: ["team3"],
     };
     
-    mockForm.watch.mockReturnValue(updatedValues);
+    mockFormState.form.watch.mockReturnValue(updatedValues);
     
     rerender();
     
