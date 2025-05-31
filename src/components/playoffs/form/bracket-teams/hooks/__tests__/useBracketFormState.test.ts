@@ -3,15 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useBracketFormState } from '../useBracketFormState';
 
-// Mock the dependent hooks
-vi.mock('../useFormValidation', () => ({
-  useFormValidation: vi.fn()
-}));
-
-import { useFormValidation } from '../useFormValidation';
-
 describe('useBracketFormState', () => {
-  const mockUseFormValidation = useFormValidation as any;
   const mockOnChange = vi.fn();
 
   beforeEach(() => {
@@ -19,23 +11,6 @@ describe('useBracketFormState', () => {
   });
 
   it('should initialize with correct state', () => {
-    mockUseFormValidation.mockReturnValue({
-      isValid: false,
-      isComplete: false,
-      hasError: false,
-      hasWarning: false,
-      errorMessage: null,
-      warningMessage: null,
-      statusMessage: 'Ready to select teams',
-      progress: {
-        percentage: 0,
-        selected: 0,
-        required: 2,
-        maximum: 16,
-        available: 10
-      }
-    });
-
     const { result } = renderHook(() => 
       useBracketFormState(16, mockOnChange, 10, 2)
     );
@@ -48,23 +23,6 @@ describe('useBracketFormState', () => {
   });
 
   it('should handle team toggle correctly', () => {
-    mockUseFormValidation.mockReturnValue({
-      isValid: false,
-      isComplete: false,
-      hasError: false,
-      hasWarning: false,
-      errorMessage: null,
-      warningMessage: null,
-      statusMessage: 'Ready to select teams',
-      progress: {
-        percentage: 0,
-        selected: 0,
-        required: 2,
-        maximum: 16,
-        available: 10
-      }
-    });
-
     const { result } = renderHook(() => 
       useBracketFormState(16, mockOnChange, 10, 2)
     );
@@ -78,23 +36,6 @@ describe('useBracketFormState', () => {
   });
 
   it('should prevent selection beyond maximum', () => {
-    mockUseFormValidation.mockReturnValue({
-      isValid: true,
-      isComplete: true,
-      hasError: false,
-      hasWarning: false,
-      errorMessage: null,
-      warningMessage: null,
-      statusMessage: 'Maximum teams selected',
-      progress: {
-        percentage: 100,
-        selected: 2,
-        required: 2,
-        maximum: 2,
-        available: 10
-      }
-    });
-
     const { result } = renderHook(() => 
       useBracketFormState(2, mockOnChange, 10, 2)
     );
@@ -121,23 +62,6 @@ describe('useBracketFormState', () => {
   });
 
   it('should clear selection correctly', () => {
-    mockUseFormValidation.mockReturnValue({
-      isValid: false,
-      isComplete: false,
-      hasError: false,
-      hasWarning: false,
-      errorMessage: null,
-      warningMessage: null,
-      statusMessage: 'Ready to select teams',
-      progress: {
-        percentage: 0,
-        selected: 0,
-        required: 2,
-        maximum: 16,
-        available: 10
-      }
-    });
-
     const { result } = renderHook(() => 
       useBracketFormState(16, mockOnChange, 10, 2)
     );

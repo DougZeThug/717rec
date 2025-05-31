@@ -98,7 +98,7 @@ describe('BracketFormTeamsContainer', () => {
       { id: 'team2', name: 'Team 2', division_id: 'div-1' },
     ];
     
-    render(<TestWrapper teams={mockTeams} minTeams={2} />);
+    render(<TestWrapper teams={mockTeams} />);
     
     // Should show validation message about needing more teams
     // This will be tested more thoroughly in integration tests
