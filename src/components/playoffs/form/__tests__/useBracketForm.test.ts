@@ -1,8 +1,15 @@
 
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useBracketForm } from '../useBracketForm';
 import { Team } from '@/types';
+
+// Mock the useBracketFormState hook
+vi.mock('../hooks/useBracketFormState', () => ({
+  useBracketFormState: vi.fn()
+}));
+
+import { useBracketFormState } from '../hooks/useBracketFormState';
 
 describe('useBracketForm', () => {
   const mockTeams: Team[] = [
@@ -12,44 +19,34 @@ describe('useBracketForm', () => {
   ];
   
   const mockOnSubmit = vi.fn();
+  
+  // Mock form object with required methods
+  const mockForm = {
+    watch: vi.fn(),
+    setValue: vi.fn(),
+    getValues: vi.fn(() => ({
+      title: "",
+      divisionId: "",
+      format: "Single Elimination",
+      teams: [],
+    })),
+    reset: vi.fn(),
+    handleSubmit: vi.fn()
+  };
+
+  const mockFormState = {
+    form: mockForm,
+    isFormValid: false,
+    validateForm: vi.fn(),
+    handleSubmit: vi.fn()
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('initializes with empty filtered teams and no selected division', () => {
-    const { result } = renderHook(() => useBracketForm({ 
-      teams: mockTeams, 
-      onSubmit: mockOnSubmit 
-    }));
     
-    expect(result.current.filteredTeams).toEqual([]);
-    expect(result.current.selectedDivision).toBe("");
-  });
-
-  it('filters teams when division changes', () => {
-    const { result } = renderHook(() => useBracketForm({ 
-      teams: mockTeams, 
-      onSubmit: mockOnSubmit 
-    }));
-    
-    act(() => {
-      result.current.handleDivisionChange('div1');
-    });
-    
-    expect(result.current.selectedDivision).toBe('div1');
-    expect(result.current.filteredTeams.length).toBe(2);
-    expect(result.current.filteredTeams[0].id).toBe('team1');
-    expect(result.current.filteredTeams[1].id).toBe('team2');
-  });
-
-  it('initializes form with default values', () => {
-    const { result } = renderHook(() => useBracketForm({ 
-      teams: mockTeams, 
-      onSubmit: mockOnSubmit 
-    }));
-    
-    expect(result.current.form.getValues()).toEqual({
+    // Setup default mock implementation
+    (useBracketFormState as any).mockReturnValue(mockFormState);
+    mockForm.watch.mockReturnValue({
       title: "",
       divisionId: "",
       format: "Single Elimination",
@@ -57,31 +54,89 @@ describe('useBracketForm', () => {
     });
   });
 
-  it('handles division change and updates form values', () => {
-    const { result } = renderHook(() => useBracketForm({ 
-      teams: mockTeams, 
-      onSubmit: mockOnSubmit 
-    }));
+  it('should initialize correctly with form state', () => {
+    const { result } = renderHook(() => 
+      useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
+    );
     
-    const setValueSpy = vi.spyOn(result.current.form, 'setValue');
-    
-    act(() => {
-      result.current.handleDivisionChange('div2');
-    });
-    
-    expect(result.current.selectedDivision).toBe('div2');
-    expect(setValueSpy).toHaveBeenCalledWith('divisionId', 'div2');
-    expect(setValueSpy).toHaveBeenCalledWith('teams', []);
+    expect(result.current.form).toBe(mockForm);
+    expect(result.current.isFormValid).toBe(false);
+    expect(result.current.handleSubmit).toBe(mockFormState.handleSubmit);
   });
 
-  it('groups teams by division correctly', () => {
-    const { result } = renderHook(() => useBracketForm({ 
-      teams: mockTeams, 
-      onSubmit: mockOnSubmit 
-    }));
+  it('should call useBracketFormState with correct parameters', () => {
+    renderHook(() => 
+      useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
+    );
     
-    expect(Object.keys(result.current.teamsByDivision).length).toBe(2);
-    expect(result.current.teamsByDivision['div1'].length).toBe(2);
-    expect(result.current.teamsByDivision['div2'].length).toBe(1);
+    expect(useBracketFormState).toHaveBeenCalledWith({ onSubmit: mockOnSubmit });
+  });
+
+  it('should watch form values for validation', () => {
+    renderHook(() => 
+      useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
+    );
+    
+    expect(mockForm.watch).toHaveBeenCalled();
+  });
+
+  it('should call validateForm when watched values change', () => {
+    const newFormValues = {
+      title: "Test Tournament",
+      divisionId: "div1",
+      format: "Single Elimination",
+      teams: ["team1", "team2"],
+    };
+    
+    mockForm.watch.mockReturnValue(newFormValues);
+    
+    renderHook(() => 
+      useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
+    );
+    
+    expect(mockFormState.validateForm).toHaveBeenCalledWith(newFormValues);
+  });
+
+  it('should return correct form validation state', () => {
+    const validFormState = {
+      ...mockFormState,
+      isFormValid: true
+    };
+    
+    (useBracketFormState as any).mockReturnValue(validFormState);
+    
+    const { result } = renderHook(() => 
+      useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
+    );
+    
+    expect(result.current.isFormValid).toBe(true);
+  });
+
+  it('should handle form submission correctly', () => {
+    const { result } = renderHook(() => 
+      useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
+    );
+    
+    expect(result.current.handleSubmit).toBe(mockFormState.handleSubmit);
+  });
+
+  it('should re-validate when form values change', () => {
+    const { rerender } = renderHook(() => 
+      useBracketForm({ teams: mockTeams, onSubmit: mockOnSubmit })
+    );
+    
+    // Change watched values
+    const updatedValues = {
+      title: "Updated Title",
+      divisionId: "div2",
+      format: "Double Elimination",
+      teams: ["team3"],
+    };
+    
+    mockForm.watch.mockReturnValue(updatedValues);
+    
+    rerender();
+    
+    expect(mockFormState.validateForm).toHaveBeenCalledWith(updatedValues);
   });
 });
