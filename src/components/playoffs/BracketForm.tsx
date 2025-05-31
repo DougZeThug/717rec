@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Form } from "@/components/ui/form";
 import { Team } from "@/types";
@@ -7,7 +6,7 @@ import { BracketFormValues } from "./form/BracketFormSchema";
 import { BracketFormTitle } from "./form/BracketFormTitle";
 import { BracketFormDivision } from "./form/BracketFormDivision";
 import { BracketFormFormat } from "./form/BracketFormFormat";
-import { BracketFormTeams } from "./form/BracketFormTeams";
+import { BracketFormTeamsContainer } from "./form/bracket-teams/components/BracketFormTeamsContainer";
 import { BracketFormActions } from "./form/BracketFormActions";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Loader2, RefreshCw, Database, Users } from "lucide-react";
@@ -224,7 +223,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
             onDivisionChange={handleDivisionChange} 
           />
           <BracketFormFormat form={form} />
-          <BracketFormTeams
+          <BracketFormTeamsContainer
             divisionId={form.watch("divisionId") ?? null}
             maxTeams={form.watch("format") === "Double Elimination" ? 16 : 32}
             onChange={(ids) => form.setValue("teams", ids)}

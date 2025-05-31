@@ -1,13 +1,11 @@
 
 import React from 'react';
 import { BracketFormStateResult } from '../types';
-import { useTeamSelectionState } from './useTeamSelectionState';
 import { useFormValidation } from './useFormValidation';
-import { useTeamSelectionEffects } from './useTeamSelectionEffects';
 
 /**
  * Main hook for managing bracket form state including team selection and validation
- * Combines team selection, form validation, and side effects management
+ * Simplified version that manages team selection state directly without complex abstractions
  * @param maxTeams - Maximum number of teams allowed in the bracket
  * @param onChange - Callback function to notify parent of selection changes
  * @param availableTeamsCount - Total number of teams available for selection (default: 0)
@@ -25,41 +23,65 @@ export const useBracketFormState = (
   const validMinTeams = typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2;
   const validAvailableCount = typeof availableTeamsCount === 'number' ? availableTeamsCount : 0;
   
-  // Team selection state
-  const teamSelection = useTeamSelectionState(validMaxTeams);
+  // Simple team selection state - no complex abstractions
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  
+  // Derived state
+  const selectedArray = React.useMemo(() => Array.from(selected), [selected]);
+  const count = selected.size;
+  const canSelectMore = count < validMaxTeams;
+  const isAtMaximum = count >= validMaxTeams;
+  const hasSelection = count > 0;
   
   // Form validation
   const validation = useFormValidation(
-    teamSelection.count,
+    count,
     validMaxTeams,
     validMinTeams,
     validAvailableCount
   );
-  
-  // Side effects (parent sync)
-  const effects = useTeamSelectionEffects(teamSelection.selectedArray, onChange);
 
   /**
-   * Combined team toggle handler with validation
-   * Handles team selection/deselection with proper validation checks
+   * Team toggle handler with immediate onChange callback (no useEffect side-channel)
    */
   const handleTeamToggle = React.useCallback((teamId: string) => {
     if (typeof teamId === 'string' && teamId.length > 0) {
-      teamSelection.toggle(teamId);
+      setSelected(prev => {
+        const next = new Set(prev);
+        if (next.has(teamId)) {
+          next.delete(teamId);
+        } else if (next.size < validMaxTeams) {
+          next.add(teamId);
+        }
+        
+        // Call onChange immediately after state update - no useEffect needed
+        const newArray = Array.from(next);
+        onChange(newArray);
+        
+        return next;
+      });
     }
-  }, [teamSelection.toggle]);
+  }, [onChange, validMaxTeams]);
+
+  /**
+   * Clear selection handler
+   */
+  const clearSelection = React.useCallback(() => {
+    setSelected(new Set());
+    onChange([]);
+  }, [onChange]);
 
   // Return a complete, properly typed object
   const result: BracketFormStateResult = {
-    // Team selection - provide defaults for all required properties
-    selected: teamSelection.selected || new Set(),
-    selectedArray: teamSelection.selectedArray || [],
-    count: teamSelection.count || 0,
+    // Team selection - direct state management
+    selected,
+    selectedArray,
+    count,
     handleTeamToggle,
-    clearSelection: teamSelection.clearSelection || (() => {}),
-    canSelectMore: teamSelection.canSelectMore ?? true,
-    isAtMaximum: teamSelection.isAtMaximum ?? false,
-    hasSelection: teamSelection.hasSelection ?? false,
+    clearSelection,
+    canSelectMore,
+    isAtMaximum,
+    hasSelection,
     
     // Validation - provide defaults for all required properties
     isValid: validation.isValid ?? false,
@@ -77,8 +99,8 @@ export const useBracketFormState = (
       available: validAvailableCount
     },
     
-    // Effects
-    cleanup: effects.cleanup || (() => {})
+    // No cleanup needed since we removed useEffect
+    cleanup: () => {}
   };
 
   return result;

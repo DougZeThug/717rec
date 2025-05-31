@@ -15,7 +15,7 @@ import { TeamSelectionForm } from './TeamSelectionForm';
  */
 export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps> = ({
   maxTeams,
-  minTeams = 2,
+  minTeams = 2, // Add default here instead of in wrapper
   divisions = [],
   onChange
 }) => {
