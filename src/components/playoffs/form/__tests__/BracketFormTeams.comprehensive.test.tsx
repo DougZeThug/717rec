@@ -14,7 +14,7 @@ vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
 }));
 
 describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
-  // Test Data Factories
+  // Test Data Factories - Fixed to match interface
   const createBasicProps = (): BracketFormTeamsContainerProps => ({
     maxTeams: 16,
     onChange: vi.fn(),

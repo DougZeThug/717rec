@@ -127,16 +127,15 @@ export interface BracketFormDataResult {
   isDataReady: boolean;
 }
 
-// Component props - Import Division directly where needed
+// Component props - Fixed to remove unused divisionId requirement
 export interface BracketFormTeamsProps {
-  divisionId: string | null;
   maxTeams: number;
   minTeams?: number;
   onChange: (ids: string[]) => void;
   divisions?: import('@/types').Division[];
 }
 
-// Container-specific types
+// Container-specific types - Removed divisionId requirement
 export interface BracketFormTeamsContainerProps extends BracketFormTeamsProps {
   minTeams?: number;
 }

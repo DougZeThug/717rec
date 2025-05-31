@@ -27,7 +27,7 @@ vi.mock('@/hooks/useTeamRankings', () => ({
   })
 }));
 
-// Test with valid props
+// Test with valid props - Fixed to match interface
 const TestWrapper = ({ maxTeams = 16, onChange = vi.fn(), divisions = [] }) => {
   return (
     <BracketFormTeamsContainer
