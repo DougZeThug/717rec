@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -434,9 +433,10 @@ serve(async (req) => {
     // Generate and insert playoff matches using three-pass approach
     console.log('[MATCHES] Generating playoff match structure...');
     
+    // Declare bracketResult outside the try block so it's accessible in the return statement
+    let bracketResult: any = null;
+    
     try {
-      let bracketResult: any;
-      
       if (payload.format === 'singleElim') {
         bracketResult = BracketGenerator.generateSingleElimination(payload.teams, bracketData.id);
         console.log(`[MATCHES] Generated ${bracketResult.matches.length} single elimination matches`);
