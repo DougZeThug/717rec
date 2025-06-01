@@ -3,7 +3,7 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { BracketFormValues } from "./BracketFormSchema";
+import { BracketFormValues } from "../BracketForm";
 
 interface BracketFormTitleProps {
   form: UseFormReturn<BracketFormValues>;
