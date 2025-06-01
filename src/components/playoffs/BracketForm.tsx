@@ -33,6 +33,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
 }) => {
   const [selectedTeams, setSelectedTeams] = React.useState<string[]>([]);
   const [teamsValidationState, setTeamsValidationState] = React.useState(false);
+  const [isExplicitSubmission, setIsExplicitSubmission] = React.useState(false);
 
   const form = useForm<BracketFormValues>({
     resolver: zodResolver(bracketFormSchema),
@@ -42,7 +43,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
       format: "Single Elimination",
       teams: [],
     },
-    mode: "onChange",
+    mode: "onBlur", // Changed from "onChange" to prevent auto-submission
   });
 
   const { watch, setValue, handleSubmit, formState } = form;
@@ -50,20 +51,12 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
   // Update teams field when selection changes - NO SUBMISSION
   React.useEffect(() => {
-    console.log("BracketForm: Updating teams field:", selectedTeams.length, "teams - NO submission");
-    setValue("teams", selectedTeams, { shouldValidate: true });
+    setValue("teams", selectedTeams, { shouldValidate: false }); // Don't validate immediately
   }, [selectedTeams, setValue]);
 
   // Handle team selection changes - ONLY updates state, NEVER submits
   const handleTeamSelectionChange = React.useCallback(
     ({ ids, isValid }: { ids: string[]; isValid: boolean }) => {
-      console.log("BracketForm: Team selection changed:", {
-        count: ids.length,
-        isValid,
-        teams: ids,
-        action: "STATE_UPDATE_ONLY"
-      });
-      
       setSelectedTeams(ids);
       setTeamsValidationState(isValid);
       
@@ -77,7 +70,6 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
   // Handle division change - clears team selection
   const handleDivisionChange = React.useCallback((divisionId: string) => {
-    console.log("BracketForm: Division changed to:", divisionId, "- clearing team selection");
     // Clear selected teams when division changes
     setSelectedTeams([]);
     setTeamsValidationState(false);
@@ -88,11 +80,13 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {
-    console.log("BracketForm: EXPLICIT submit button clicked - form submission triggered", {
-      data,
-      teamsCount: data.teams.length,
-      isValid: formState.isValid && teamsValidationState
-    });
+    // Guard: Only proceed if this is an explicit submission
+    if (!isExplicitSubmission) {
+      return;
+    }
+    
+    // Reset the explicit submission flag
+    setIsExplicitSubmission(false);
     
     // Additional validation before submission
     if (!data.teams || data.teams.length < 2) {
@@ -107,8 +101,20 @@ const BracketForm: React.FC<BracketFormProps> = ({
       divisionName: selectedDivision?.name || "Unknown Division"
     };
 
-    console.log("BracketForm: Calling parent onSubmit with data:", formDataWithDivision);
     onSubmit(formDataWithDivision);
+  };
+
+  // Handle explicit submit button click
+  const handleSubmitButtonClick = () => {
+    setIsExplicitSubmission(true);
+    // Trigger form validation and submission
+    form.trigger().then((isValid) => {
+      if (isValid && teamsValidationState) {
+        form.handleSubmit(onFormSubmit)();
+      } else {
+        setIsExplicitSubmission(false);
+      }
+    });
   };
 
   // Calculate form state
@@ -117,17 +123,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const minTeams = 2;
   const maxTeams = 16;
 
-  console.log("BracketForm render:", {
-    selectedTeamCount,
-    teamsValidationState,
-    formValid: formState.isValid,
-    canSubmit: isFormValid,
-    isSubmitting
-  });
-
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+      <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
         {/* Form Title */}
         <BracketFormTitle form={form} />
 
@@ -190,7 +188,8 @@ const BracketForm: React.FC<BracketFormProps> = ({
             Cancel
           </Button>
           <Button
-            type="submit"
+            type="button"
+            onClick={handleSubmitButtonClick}
             disabled={!isFormValid || isSubmitting}
             className="flex-1"
           >
@@ -204,14 +203,6 @@ const BracketForm: React.FC<BracketFormProps> = ({
             )}
           </Button>
         </div>
-
-        {/* Debug info in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="text-xs text-gray-500 border-t pt-2">
-            Form Valid: {String(formState.isValid)} | Teams Valid: {String(teamsValidationState)} | 
-            Selected: {selectedTeamCount} | Can Submit: {String(isFormValid)} | Submitting: {String(isSubmitting)}
-          </div>
-        )}
       </form>
     </Form>
   );

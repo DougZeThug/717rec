@@ -44,12 +44,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   
   // EXPLICIT form submission handler - ONLY triggered by form submit button
   const handleSubmit = async (data: BracketFormValues) => {
-    console.log("BracketCreationDialog: EXPLICIT form submission initiated", data);
-    console.log("BracketCreationDialog: Current submission state:", { isSubmitting });
-    
     // Prevent multiple submissions
     if (isSubmitting) {
-      console.log("BracketCreationDialog: Blocking submission - already in progress");
       return;
     }
     
@@ -119,13 +115,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         });
         return;
       }
-      
-      console.log("BracketCreationDialog: Creating bracket via E2E flow:", {
-        name: data.title,
-        format: internalFormat,
-        teamsCount: selectedTeams.length,
-        divisionId: data.divisionId
-      });
       
       // Create tournament via E2E flow
       const bracket = await createBracket.mutateAsync({
@@ -197,13 +186,11 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
   // Team validity change handler - ONLY updates state, NEVER submits
   const handleTeamsValidityChange = React.useCallback((isValid: boolean) => {
-    console.log("BracketCreationDialog: Teams validity changed:", isValid, "- NOT submitting");
     setTeamsValid(isValid);
   }, []);
 
   // Enhanced error boundary reset
   const handleErrorReset = () => {
-    console.log("BracketCreationDialog: Resetting after error");
     setIsSubmitting(false);
     setDialogError(null);
   };
