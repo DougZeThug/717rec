@@ -1,3 +1,4 @@
+
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
@@ -7,13 +8,16 @@ import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/error
 import type { PlayoffViewModel } from "@/utils/playoffs/playoffTypes";
 
 // Local helper to group bracket matches by type
-const groupBracketMatchesByType = (bracket: any): BracketMatchesByType => {
-  // Simple implementation - can be enhanced based on actual bracket structure
-  return {
-    winners: [],
-    losers: [],
-    finals: []
-  };
+const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
+  if (!Array.isArray(matches)) {
+    return { winners: [], losers: [], finals: [] };
+  }
+  
+  const winners = matches.filter(match => match.matchType === 'winners');
+  const losers = matches.filter(match => match.matchType === 'losers');
+  const finals = matches.filter(match => match.matchType === 'finals');
+  
+  return { winners, losers, finals };
 };
 
 /**
@@ -26,9 +30,15 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   const teamsQuery = usePlayoffTeams();
   const actions = usePlayoffActions();
   
+  // Combine bracket data with matches data
+  const combinedBracket = bracketQuery.data ? {
+    ...bracketQuery.data,
+    matches: matchesQuery.data || []
+  } : null;
+  
   // Process bracket data to separate winners, losers and finals matches
-  const bracketMatchesByType: BracketMatchesByType | null = bracketQuery.data
-    ? groupBracketMatchesByType(bracketQuery.data)
+  const bracketMatchesByType: BracketMatchesByType | null = matchesQuery.data
+    ? groupBracketMatchesByType(matchesQuery.data)
     : null;
   
   // Refetch function that triggers all related queries
@@ -46,11 +56,11 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   };
   
   // Safely convert error to string for consistent interface
-  const processedError = convertErrorToString(bracketQuery.error);
+  const processedError = convertErrorToString(bracketQuery.error || matchesQuery.error);
   
   return {
-    // Bracket data
-    bracket: bracketQuery.data || null,
+    // Bracket data with matches combined
+    bracket: combinedBracket,
     isLoading: bracketQuery.isLoading || matchesQuery.isLoading,
     error: processedError,
     bracketMatchesByType,

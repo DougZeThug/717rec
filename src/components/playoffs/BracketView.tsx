@@ -62,12 +62,34 @@ const BracketView: React.FC<BracketViewProps> = ({
     return <div>No bracket data available</div>;
   }
 
+  // Debug logging to see what data we have
+  console.log('BracketView: bracket data:', bracket);
+  console.log('BracketView: bracket matches:', bracket.matches);
+  console.log('BracketView: teams data:', teams);
+
+  // Check if bracket has matches
+  if (!bracket.matches || bracket.matches.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
+          <div className="text-sm text-gray-500">
+            {bracket.format} • {bracket.state}
+          </div>
+        </div>
+        <div className="text-center p-8 text-gray-500">
+          No matches found for this bracket. The bracket structure may still be generating.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
         <div className="text-sm text-gray-500">
-          {bracket.format} • {bracket.state}
+          {bracket.format} • {bracket.state} • {bracket.matches.length} matches
         </div>
       </div>
       

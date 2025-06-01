@@ -32,9 +32,23 @@ export function adaptPlayoffMatchesToGloot(
   teams: Team[],
   bracketTitle: string = "Tournament"
 ): GlootTournament {
+  console.log('adaptPlayoffMatchesToGloot: Converting matches:', matches);
+  console.log('adaptPlayoffMatchesToGloot: Available teams:', teams);
+  
+  if (!Array.isArray(matches) || matches.length === 0) {
+    console.log('adaptPlayoffMatchesToGloot: No matches to convert');
+    return {
+      type: 'DOUBLE_ELIMINATION',
+      title: bracketTitle,
+      matches: []
+    };
+  }
+  
   const teamMap = new Map(teams.map(team => [team.id, team]));
   
   const glootMatches: GlootMatch[] = matches.map(match => {
+    console.log('adaptPlayoffMatchesToGloot: Processing match:', match);
+    
     // Use conditional logic instead of empty string fallback
     const team1 = match.team1Id ? teamMap.get(match.team1Id) : undefined;
     const team2 = match.team2Id ? teamMap.get(match.team2Id) : undefined;
@@ -58,6 +72,13 @@ export function adaptPlayoffMatchesToGloot(
         isWinner: match.winnerId === team1.id,
         status: match.status === 'completed' ? 'PLAYED' as const : 'NO_PARTY' as const
       });
+    } else {
+      // Add placeholder for missing team
+      participants.push({
+        id: `tbd-${match.id}-0`,
+        name: 'TBD',
+        status: 'NO_PARTY' as const
+      });
     }
     
     if (team2) {
@@ -68,28 +89,31 @@ export function adaptPlayoffMatchesToGloot(
         isWinner: match.winnerId === team2.id,
         status: match.status === 'completed' ? 'PLAYED' as const : 'NO_PARTY' as const
       });
-    }
-    
-    // Fill empty slots if needed
-    while (participants.length < 2) {
+    } else {
+      // Add placeholder for missing team
       participants.push({
-        id: `tbd-${match.id}-${participants.length}`,
+        id: `tbd-${match.id}-1`,
         name: 'TBD',
         status: 'NO_PARTY' as const
       });
     }
     
-    return {
+    const glootMatch = {
       id: match.id,
       name: `${match.matchType} R${match.round}`,
       nextMatchId: match.nextWinMatchId || undefined,
       nextLooserMatchId: match.nextLoseMatchId || undefined,
       tournamentRoundText: `Round ${match.round}`,
-      startTime: new Date().toISOString(), // Fallback since we don't have scheduled_at
+      startTime: new Date().toISOString(),
       state,
       participants
     };
+    
+    console.log('adaptPlayoffMatchesToGloot: Created gloot match:', glootMatch);
+    return glootMatch;
   });
+  
+  console.log('adaptPlayoffMatchesToGloot: Final gloot matches:', glootMatches);
   
   return {
     type: 'DOUBLE_ELIMINATION',
