@@ -37,6 +37,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [dialogError, setDialogError] = React.useState<string | null>(null);
   const [teamsValid, setTeamsValid] = React.useState(false);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -52,6 +53,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     try {
       setIsSubmitting(true);
       setDialogError(null);
+      
+      console.log("BracketCreationDialog: Starting bracket creation with data:", data);
       
       // Enhanced validation
       const validation = BracketValidationService.validateFormData(data as BracketFormData);
@@ -117,6 +120,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       }
       
       // Create tournament via E2E flow
+      console.log("BracketCreationDialog: Creating bracket via Challonge...");
       const bracket = await createBracket.mutateAsync({
         name: data.title,
         format: internalFormat,
@@ -128,20 +132,54 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         divisionId: data.divisionId
       });
       
+      console.log("BracketCreationDialog: Bracket created successfully:", bracket);
+      
+      // Show initial success message
       toast({
         title: "Bracket Created Successfully",
-        description: `Tournament "${data.title}" has been created with ${selectedTeams.length} teams and is ready for matches.`,
+        description: `Tournament "${data.title}" has been created with ${selectedTeams.length} teams.`,
       });
       
       // Close dialog first
       onOpenChange(false);
       
-      // Invalidate queries to refresh the UI
-      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
-      await queryClient.invalidateQueries({ queryKey: ['playoff-data'] });
+      // Start data refresh process
+      console.log("BracketCreationDialog: Starting data refresh...");
+      setIsRefreshing(true);
       
-      // Navigate to the created bracket
-      navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
+      try {
+        // Force complete data refresh
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+          queryClient.invalidateQueries({ queryKey: ['playoff-data'] }),
+          queryClient.invalidateQueries({ queryKey: ['playoff-matches'] }),
+          queryClient.refetchQueries({ queryKey: ['brackets'] }),
+          queryClient.refetchQueries({ queryKey: ['playoff-data'] })
+        ]);
+        
+        console.log("BracketCreationDialog: Data refresh completed");
+        
+        // Show refresh completion message
+        toast({
+          title: "Data Refreshed",
+          description: "Bracket data has been updated. Your new bracket should now be visible.",
+        });
+        
+        // Navigate to the created bracket after a short delay to ensure data is loaded
+        setTimeout(() => {
+          navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
+        }, 1000);
+        
+      } catch (refreshError) {
+        console.error("BracketCreationDialog: Data refresh failed:", refreshError);
+        toast({
+          title: "Refresh Warning",
+          description: "Bracket created but data refresh failed. Please reload the page to see your new bracket.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsRefreshing(false);
+      }
       
       // Call parent callback if provided
       if (onBracketCreated) {
@@ -201,6 +239,21 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
         </DialogHeader>
+        
+        {/* Show refreshing indicator */}
+        {isRefreshing && (
+          <div className="mb-4 p-4 border border-blue-500 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                Refreshing bracket data...
+              </p>
+            </div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              Your new bracket will appear in the division list once this completes.
+            </p>
+          </div>
+        )}
         
         {dialogError && (
           <div className="mb-4 p-4 border border-destructive rounded-lg bg-destructive/10">

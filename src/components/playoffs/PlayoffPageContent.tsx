@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
 import BracketDetail from "@/components/playoffs/BracketDetail";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
@@ -22,6 +23,7 @@ interface PlayoffPageContentProps {
   onEditBracket: () => void;
   onEditMatch: (matchId: string) => void;
   onDeleteBracket?: (id: string, name: string) => void;
+  onRefreshData?: () => Promise<void>;
 }
 
 const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
@@ -37,8 +39,24 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   onViewBracket,
   onEditBracket,
   onEditMatch,
-  onDeleteBracket
+  onDeleteBracket,
+  onRefreshData
 }) => {
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  const handleRefreshClick = async () => {
+    if (!onRefreshData || isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      await onRefreshData();
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   if (isLoading && !allBracketsData.length) {
     return (
       <div className="flex flex-col items-center">
@@ -53,6 +71,23 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
       {/* FIXME: Temporary Challonge fallback - remove once native bracket logic is working */}
       <div className="mb-8">
         <ChallongeFallback />
+      </div>
+
+      {/* Header with refresh button */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Tournament Brackets</h2>
+        {onRefreshData && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefreshClick}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

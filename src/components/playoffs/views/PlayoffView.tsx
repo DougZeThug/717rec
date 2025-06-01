@@ -25,6 +25,7 @@ const PlayoffView: React.FC = () => {
       onEditBracket={view.handleCreateBracket}
       onEditMatch={handlers.handleEditMatchClick}
       onDeleteBracket={data.isAdmin ? view.handleDeleteBracket : undefined}
+      onRefreshData={data.refetchBrackets}
     />
   );
 };

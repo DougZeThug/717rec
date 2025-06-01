@@ -98,12 +98,34 @@ export function usePlayoffPageData(): PlayoffPageData {
     bracketsLoading,
     teamsByDivision,
     bracketsByDivision,
-    handleBracketCreated,
+    handleBracketCreated: originalHandleBracketCreated,
     handleTeamDivisionChange,
     refetchBrackets,
     error: bracketsDataError
   } = usePlayoffData();
   
+  // Enhanced bracket creation handler with better logging and refresh
+  const handleBracketCreated = async () => {
+    console.log('usePlayoffPageData: handleBracketCreated called');
+    
+    try {
+      // Call the original handler
+      await originalHandleBracketCreated();
+      console.log('usePlayoffPageData: Original bracket creation handler completed');
+      
+      // Force additional refresh to ensure data is up to date
+      console.log('usePlayoffPageData: Triggering additional bracket refetch');
+      await refetchBrackets();
+      console.log('usePlayoffPageData: Additional bracket refetch completed');
+      
+    } catch (error) {
+      console.error('usePlayoffPageData: Error in handleBracketCreated:', error);
+      const errorMessage = getUIErrorMessage(error, "Failed to refresh bracket data after creation");
+      logError(error, "handleBracketCreated");
+      setError(errorMessage);
+    }
+  };
+
   // Handle Challonge bracket display
   const challongeBracket = useChallongePublicBracket(
     bracket?.challonge_tournament_id ? String(bracket.challonge_tournament_id) : "0"
