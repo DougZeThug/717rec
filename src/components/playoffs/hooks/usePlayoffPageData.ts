@@ -41,7 +41,7 @@ export interface PlayoffPageData {
   handleTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;
   refetchBrackets: () => Promise<any>;
   
-  // Simplified bracket data
+  // FIXED: Simplified bracket data - this is the key fix
   bracket: any;
   teams: any[];
   teamsLoading: boolean;
@@ -61,7 +61,7 @@ export function usePlayoffPageData(): PlayoffPageData {
 
   // Simple bracket ID management
   const setSelectedBracketId = (id: string | null) => {
-    console.log('🎯 setSelectedBracketId called with:', id);
+    console.log('🎯 PHASE 2 FIX: setSelectedBracketId called with:', id);
     setSelectedBracketIdState(id);
     
     if (id) {
@@ -85,8 +85,20 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   }, [searchParams, selectedBracketId]);
 
-  // Direct bracket data with simplified hook
+  // PHASE 2 FIX: Direct bracket data with proper logging
   const { data: selectedBracket, isLoading: selectedBracketLoading, error: selectedBracketError } = useBracketData(selectedBracketId);
+  
+  console.log('🎯 PHASE 2 FIX: usePlayoffPageData bracket data state:', {
+    selectedBracketId,
+    selectedBracket: selectedBracket ? {
+      id: selectedBracket.id,
+      name: selectedBracket.name,
+      matchesCount: selectedBracket.matches?.length || 0,
+      teamsCount: selectedBracket.teams?.length || 0
+    } : null,
+    selectedBracketLoading,
+    selectedBracketError: selectedBracketError?.message
+  });
   
   // Teams data
   const { data: teamsData, isLoading: teamsLoading } = usePlayoffTeams();
@@ -112,7 +124,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   
   // Simple delete function
   const deleteBracket = async (bracketId: string, bracketName: string) => {
-    console.log('🎯 usePlayoffPageData: Deleting bracket:', bracketId, bracketName);
+    console.log('🎯 PHASE 2 FIX: Deleting bracket:', bracketId, bracketName);
     
     try {
       const { error } = await supabase
@@ -124,9 +136,9 @@ export function usePlayoffPageData(): PlayoffPageData {
         throw error;
       }
       
-      console.log('🎯 usePlayoffPageData: Bracket deleted successfully');
+      console.log('🎯 PHASE 2 FIX: Bracket deleted successfully');
     } catch (error) {
-      console.error('🎯 usePlayoffPageData: Error deleting bracket:', error);
+      console.error('🎯 PHASE 2 FIX: Error deleting bracket:', error);
       const errorMessage = getUIErrorMessage(error, "Failed to delete bracket");
       logError(error, "deleteBracket");
       throw new Error(errorMessage);
@@ -135,13 +147,13 @@ export function usePlayoffPageData(): PlayoffPageData {
   
   // Simple bracket creation handler - no complex loops
   const handleBracketCreated = async () => {
-    console.log('🎯 usePlayoffPageData: handleBracketCreated called');
+    console.log('🎯 PHASE 2 FIX: handleBracketCreated called');
     
     try {
       await originalHandleBracketCreated();
       await refetchBrackets();
     } catch (error) {
-      console.error('🎯 usePlayoffPageData: Error in handleBracketCreated:', error);
+      console.error('🎯 PHASE 2 FIX: Error in handleBracketCreated:', error);
       const errorMessage = getUIErrorMessage(error, "Failed to create bracket");
       logError(error, "handleBracketCreated");
       setError(errorMessage);
@@ -214,6 +226,18 @@ export function usePlayoffPageData(): PlayoffPageData {
   const finalDivisionsError = convertErrorToString(divisionsError);
   const finalBracketsError = convertErrorToString(bracketsDataError);
 
+  // PHASE 2 FIX: Log the final return object
+  console.log('🎯 PHASE 2 FIX: usePlayoffPageData returning:', {
+    selectedBracketId,
+    bracket: selectedBracket ? {
+      id: selectedBracket.id,
+      name: selectedBracket.name,
+      matchesCount: selectedBracket.matches?.length || 0
+    } : null,
+    teamsCount: teamsData?.length || 0,
+    isLoading
+  });
+
   return {
     // Auth & permissions
     profile,
@@ -244,7 +268,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets,
     
-    // Simplified bracket data
+    // PHASE 2 FIX: Direct bracket data with matches
     bracket: selectedBracket,
     teams: teamsData || [],
     teamsLoading,

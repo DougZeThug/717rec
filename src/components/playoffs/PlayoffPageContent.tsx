@@ -21,7 +21,7 @@ interface PlayoffPageContentProps {
   onDeleteBracket?: (id: string, name: string) => void;
   onRefreshData?: () => Promise<void>;
   
-  // Additional props for compatibility
+  // PHASE 2 FIX: Enhanced props for better data flow
   bracket?: any;
   teams?: any[];
   bracketLoading?: boolean;
@@ -45,7 +45,17 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
-  console.log('🎯 PlayoffPageContent: Rendering with selectedBracketId:', selectedBracketId);
+  console.log('🎯 PHASE 2 FIX: PlayoffPageContent rendering with:', {
+    selectedBracketId,
+    bracket: bracket ? {
+      id: bracket.id,
+      name: bracket.name,
+      matchesCount: bracket.matches?.length || 0
+    } : null,
+    teamsCount: teams?.length || 0,
+    isLoading,
+    bracketLoading
+  });
 
   // Simple manual refresh handler - no complex loops
   const handleRefreshClick = async () => {
@@ -53,11 +63,11 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
     
     setIsRefreshing(true);
     try {
-      console.log('🎯 PlayoffPageContent: Manual refresh triggered');
+      console.log('🎯 PHASE 2 FIX: Manual refresh triggered');
       await onRefreshData();
-      console.log('🎯 PlayoffPageContent: Manual refresh completed');
+      console.log('🎯 PHASE 2 FIX: Manual refresh completed');
     } catch (error) {
-      console.error("🎯 PlayoffPageContent: Failed to refresh data:", error);
+      console.error("🎯 PHASE 2 FIX: Failed to refresh data:", error);
     } finally {
       setIsRefreshing(false);
     }
@@ -113,9 +123,15 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         ))}
       </div>
       
-      {/* Selected bracket view - direct display */}
+      {/* PHASE 2 FIX: Enhanced selected bracket view */}
       {selectedBracketId && (
         <div className="mt-8">
+          <div className="mb-4 text-sm text-gray-500">
+            🎯 PHASE 2 DEBUG: Bracket ID: {selectedBracketId} | 
+            Has bracket prop: {!!bracket} | 
+            Bracket matches: {bracket?.matches?.length || 0} | 
+            Teams: {teams?.length || 0}
+          </div>
           <BracketView 
             bracketId={selectedBracketId}
             bracket={bracket}

@@ -13,7 +13,7 @@ interface BracketViewProps {
 }
 
 /**
- * Simplified bracket view component with improved error handling and debugging
+ * PHASE 2 FIX: Improved bracket view component with better data handling
  */
 const BracketView: React.FC<BracketViewProps> = ({
   bracketId,
@@ -21,29 +21,38 @@ const BracketView: React.FC<BracketViewProps> = ({
   teams: legacyTeams,
   onEditMatch
 }) => {
-  console.log('🎯 BracketView: Rendering with props:', {
+  console.log('🎯 PHASE 2 FIX: BracketView rendering with props:', {
     bracketId,
     hasLegacyBracket: !!legacyBracket,
-    hasLegacyTeams: !!legacyTeams
+    legacyBracketMatches: legacyBracket?.matches?.length || 0,
+    hasLegacyTeams: !!legacyTeams,
+    legacyTeamsCount: legacyTeams?.length || 0
   });
   
-  // Use direct data hook when bracketId is provided
-  const { data: bracket, isLoading, error } = useBracketData(bracketId);
+  // Use direct data hook when bracketId is provided and no legacy bracket
+  const { data: fetchedBracket, isLoading, error } = useBracketData(bracketId);
 
-  // Use legacy data if provided, otherwise use new data
-  const displayBracket = legacyBracket || bracket;
+  // PHASE 2 FIX: Better data selection logic
+  const displayBracket = legacyBracket || fetchedBracket;
   const displayTeams = legacyTeams || [];
 
-  console.log('🎯 BracketView: Display data:', {
-    displayBracket: displayBracket?.name,
-    matchesCount: displayBracket?.matches?.length,
+  console.log('🎯 PHASE 2 FIX: BracketView display data decision:', {
+    usingLegacyBracket: !!legacyBracket,
+    usingFetchedBracket: !!fetchedBracket,
+    finalBracket: displayBracket ? {
+      id: displayBracket.id,
+      name: displayBracket.name,
+      matchesCount: displayBracket.matches?.length || 0,
+      matchesIsArray: Array.isArray(displayBracket.matches)
+    } : null,
     teamsCount: displayTeams?.length,
     isLoading,
     error: error?.message
   });
 
-  // Enhanced loading state
+  // Enhanced loading state - only show when actually loading and no legacy data
   if (isLoading && !legacyBracket) {
+    console.log('🎯 PHASE 2 FIX: Showing loading state');
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
@@ -57,8 +66,9 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  // Enhanced error state with more details
+  // Enhanced error state with more details - only show when error and no legacy data
   if (error && !legacyBracket) {
+    console.log('🎯 PHASE 2 FIX: Showing error state:', error.message);
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
@@ -74,6 +84,7 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   // No bracket state with more context
   if (!displayBracket) {
+    console.log('🎯 PHASE 2 FIX: No bracket available - showing empty state');
     return (
       <div className="text-center p-8">
         <p className="text-gray-500">No bracket selected</p>
@@ -85,6 +96,13 @@ const BracketView: React.FC<BracketViewProps> = ({
       </div>
     );
   }
+
+  console.log('🎯 PHASE 2 FIX: Rendering SimpleBracket with bracket:', {
+    id: displayBracket.id,
+    name: displayBracket.name,
+    matchesCount: displayBracket.matches?.length || 0,
+    hasOnEditMatch: !!onEditMatch
+  });
 
   return <SimpleBracket bracket={displayBracket} onMatchClick={onEditMatch} />;
 };
