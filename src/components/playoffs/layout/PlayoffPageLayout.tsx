@@ -63,7 +63,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
         editingMatch={handlers.editingMatch}
         isQuickEdit={handlers.isQuickEdit}
         onCloseMatchEditor={handlers.handleCloseMatchEditor}
-        onSaveMatchScore={handlers.handleSaveScore}
+        onSaveMatchScore={handlers.handleSaveMatchScore}
         
         // Delete bracket props
         deletingBracket={view.deletingBracket}

@@ -49,7 +49,7 @@ const AdminView: React.FC = () => {
           <BracketView 
             bracket={data.bracket} 
             teams={data.teams}
-            onEditMatch={handlers.handleEditMatchClick}
+            onEditMatch={handlers.handleEditMatch}
           />
         )}
       </TabsContent>
