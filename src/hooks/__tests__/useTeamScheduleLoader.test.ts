@@ -5,6 +5,7 @@ import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 import { mockTeams, mockDate } from '@/utils/test/autoSchedule/mockData';
 import * as teamLoaderUtils from '@/utils/autoSchedule/teamLoaderUtils';
 import { useToast } from '@/hooks/use-toast';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 // Mock dependencies
 vi.mock('@/utils/autoSchedule/teamLoaderUtils');
@@ -16,30 +17,17 @@ vi.mock('@/hooks/use-toast', () => ({
 const mockTeamLoaderUtils = vi.mocked(teamLoaderUtils);
 const mockUseToast = vi.mocked(useToast);
 
-// Complete toast mock interface matching the actual useToast return type
-interface MockToast {
-  toast: ReturnType<typeof vi.fn>;
-  dismiss: ReturnType<typeof vi.fn>;
-  toasts: Array<{
-    id: string;
-    title?: React.ReactNode;
-    description?: React.ReactNode;
-    action?: React.ReactElement;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }>;
-}
-
 describe('useTeamScheduleLoader', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     
-    // Mock toast with complete interface
-    const mockToast: MockToast = {
+    // Create a simple mock that satisfies the toast interface
+    const mockToast = {
       toast: vi.fn(),
       dismiss: vi.fn(),
       toasts: [],
-    };
+    } as unknown as ReturnType<typeof useToast>;
+    
     mockUseToast.mockReturnValue(mockToast);
     
     // Mock getTeamsByTimeBlock
@@ -64,7 +52,7 @@ describe('useTeamScheduleLoader', () => {
   it('should load teams for each time block', async () => {
     const { result } = renderHook(() => useTeamScheduleLoader());
     
-    let teamsData: Record<string, unknown[]> | null = null;
+    let teamsData: TimeBlockTeamsMap | null = null;
     await act(async () => {
       teamsData = await result.current.loadTeamsForDate(mockDate);
     });
@@ -89,7 +77,7 @@ describe('useTeamScheduleLoader', () => {
     const { result } = renderHook(() => useTeamScheduleLoader());
     const mockToast = mockUseToast().toast;
     
-    let teamsData: Record<string, unknown[]> | null = null;
+    let teamsData: TimeBlockTeamsMap | null = null;
     await act(async () => {
       teamsData = await result.current.loadTeamsForDate(mockDate);
     });
@@ -101,8 +89,8 @@ describe('useTeamScheduleLoader', () => {
       variant: "destructive"
     });
     
-    // Should return null on error
-    expect(teamsData).toBeNull();
+    // Should return empty object on error
+    expect(teamsData).toEqual({});
   });
 
   it('should calculate team count status correctly', async () => {

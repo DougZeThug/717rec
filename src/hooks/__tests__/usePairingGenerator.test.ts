@@ -17,30 +17,17 @@ vi.mock('@/hooks/use-toast', () => ({
 const mockCompatibilityUtils = vi.mocked(compatibilityUtils);
 const mockUseToast = vi.mocked(useToast);
 
-// Complete toast mock interface matching the actual useToast return type
-interface MockToast {
-  toast: ReturnType<typeof vi.fn>;
-  dismiss: ReturnType<typeof vi.fn>;
-  toasts: Array<{
-    id: string;
-    title?: React.ReactNode;
-    description?: React.ReactNode;
-    action?: React.ReactElement;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }>;
-}
-
 describe('usePairingGenerator', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     
-    // Mock toast with complete interface
-    const mockToast: MockToast = {
+    // Create a simple mock that satisfies the toast interface
+    const mockToast = {
       toast: vi.fn(),
       dismiss: vi.fn(),
       toasts: [],
-    };
+    } as unknown as ReturnType<typeof useToast>;
+    
     mockUseToast.mockReturnValue(mockToast);
     
     // Mock utility functions
