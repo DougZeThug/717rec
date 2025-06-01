@@ -1,7 +1,7 @@
-
 import React, { useCallback, useMemo } from "react";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
 import SimpleBracket from "@/components/brackets/SimpleBracket";
+import BracketErrorBoundary from "./BracketErrorBoundary";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ interface BracketViewProps {
 }
 
 /**
- * PHASE 3 FIX: Enhanced bracket view component with optimistic updates and error recovery
+ * PHASE 4 DIAGNOSIS: Enhanced bracket view component with comprehensive logging
  */
 const BracketView: React.FC<BracketViewProps> = ({
   bracketId,
@@ -22,15 +22,16 @@ const BracketView: React.FC<BracketViewProps> = ({
   teams: legacyTeams,
   onEditMatch
 }) => {
-  console.log('🎯 PHASE 3 FIX: BracketView rendering with props:', {
+  console.log('🎯 PHASE 4 DIAGNOSIS: BracketView rendering with props:', {
     bracketId,
     hasLegacyBracket: !!legacyBracket,
     legacyBracketMatches: legacyBracket?.matches?.length || 0,
+    legacyBracketObject: legacyBracket,
     hasLegacyTeams: !!legacyTeams,
     legacyTeamsCount: legacyTeams?.length || 0
   });
   
-  // PHASE 3 FIX: Enhanced data hook with refetch capability
+  // PHASE 4 DIAGNOSIS: Enhanced data hook with refetch capability
   const { 
     data: fetchedBracket, 
     isLoading, 
@@ -38,42 +39,74 @@ const BracketView: React.FC<BracketViewProps> = ({
     refetch: refetchBracket
   } = useBracketData(bracketId);
 
-  // PHASE 3 FIX: Memoized data selection for performance
+  console.log('🎯 PHASE 4 DIAGNOSIS: useBracketData hook result:', {
+    fetchedBracket: fetchedBracket ? {
+      id: fetchedBracket.id,
+      name: fetchedBracket.name,
+      matchesCount: fetchedBracket.matches?.length || 0,
+      matchesArray: fetchedBracket.matches,
+      matchesIsArray: Array.isArray(fetchedBracket.matches),
+      teamsCount: fetchedBracket.teams?.length || 0,
+      completeObject: fetchedBracket
+    } : null,
+    isLoading,
+    error: error?.message,
+    bracketId
+  });
+
+  // PHASE 4 DIAGNOSIS: Memoized data selection for performance with enhanced logging
   const displayBracket = useMemo(() => {
-    return legacyBracket || fetchedBracket;
+    const result = legacyBracket || fetchedBracket;
+    console.log('🎯 PHASE 4 DIAGNOSIS: displayBracket selection:', {
+      usingLegacy: !!legacyBracket,
+      usingFetched: !!fetchedBracket,
+      finalResult: result ? {
+        id: result.id,
+        name: result.name,
+        matchesCount: result.matches?.length || 0,
+        matchesArray: result.matches,
+        matchesIsArray: Array.isArray(result.matches),
+        hasMatches: !!(result.matches && result.matches.length > 0),
+        completeObject: result
+      } : null
+    });
+    return result;
   }, [legacyBracket, fetchedBracket]);
 
   const displayTeams = useMemo(() => {
     return legacyTeams || [];
   }, [legacyTeams]);
 
-  // PHASE 3 FIX: Optimistic retry handler
+  // PHASE 4 DIAGNOSIS: Optimistic retry handler
   const handleRetry = useCallback(async () => {
-    console.log('🎯 PHASE 3 FIX: Retrying bracket data fetch');
+    console.log('🎯 PHASE 4 DIAGNOSIS: Retrying bracket data fetch');
     try {
       await refetchBracket();
     } catch (retryError) {
-      console.error('🎯 PHASE 3 FIX: Retry failed:', retryError);
+      console.error('🎯 PHASE 4 DIAGNOSIS: Retry failed:', retryError);
     }
   }, [refetchBracket]);
 
-  console.log('🎯 PHASE 3 FIX: BracketView display data decision:', {
-    usingLegacyBracket: !!legacyBracket,
-    usingFetchedBracket: !!fetchedBracket,
-    finalBracket: displayBracket ? {
+  console.log('🎯 PHASE 4 DIAGNOSIS: Pre-render final state:', {
+    displayBracket: displayBracket ? {
       id: displayBracket.id,
       name: displayBracket.name,
       matchesCount: displayBracket.matches?.length || 0,
-      matchesIsArray: Array.isArray(displayBracket.matches)
+      matchesExists: !!displayBracket.matches,
+      matchesIsArray: Array.isArray(displayBracket.matches),
+      matchesLength: displayBracket.matches?.length,
+      firstMatch: displayBracket.matches?.[0],
+      allMatches: displayBracket.matches
     } : null,
     teamsCount: displayTeams?.length,
     isLoading,
-    error: error?.message
+    error: error?.message,
+    willRenderSimpleBracket: !!displayBracket
   });
 
-  // PHASE 3 FIX: Enhanced loading state with better UX
+  // PHASE 4 DIAGNOSIS: Enhanced loading state with better UX
   if (isLoading && !legacyBracket) {
-    console.log('🎯 PHASE 3 FIX: Showing enhanced loading state');
+    console.log('🎯 PHASE 4 DIAGNOSIS: Showing enhanced loading state');
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center space-y-3">
@@ -90,9 +123,9 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  // PHASE 3 FIX: Enhanced error state with retry functionality
+  // PHASE 4 DIAGNOSIS: Enhanced error state with retry functionality
   if (error && !legacyBracket) {
-    console.log('🎯 PHASE 3 FIX: Showing enhanced error state:', error.message);
+    console.log('🎯 PHASE 4 DIAGNOSIS: Showing enhanced error state:', error.message);
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
@@ -121,9 +154,9 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  // PHASE 3 FIX: Enhanced empty state with more context
+  // PHASE 4 DIAGNOSIS: Enhanced empty state with more context
   if (!displayBracket) {
-    console.log('🎯 PHASE 3 FIX: No bracket available - showing enhanced empty state');
+    console.log('🎯 PHASE 4 DIAGNOSIS: No bracket available - showing enhanced empty state');
     return (
       <div className="text-center p-8 space-y-3">
         <div className="space-y-2">
@@ -140,16 +173,58 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  console.log('🎯 PHASE 3 FIX: Rendering SimpleBracket with bracket:', {
-    id: displayBracket.id,
-    name: displayBracket.name,
-    matchesCount: displayBracket.matches?.length || 0,
-    hasOnEditMatch: !!onEditMatch
+  // PHASE 4 DIAGNOSIS: Critical check before rendering SimpleBracket
+  if (!displayBracket.matches || !Array.isArray(displayBracket.matches)) {
+    console.error('🎯 PHASE 4 DIAGNOSIS: CRITICAL - Bracket exists but matches is not an array!', {
+      bracket: displayBracket,
+      matchesProperty: displayBracket.matches,
+      typeOfMatches: typeof displayBracket.matches,
+      isArray: Array.isArray(displayBracket.matches)
+    });
+    
+    return (
+      <div className="text-center p-8 space-y-3">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-lg font-medium text-red-700">Data Structure Error</p>
+          <p className="text-sm text-red-600 mt-1">Bracket found but matches data is corrupted</p>
+          <div className="text-xs text-red-500 mt-2">
+            <p>Bracket ID: {displayBracket.id}</p>
+            <p>Matches property type: {typeof displayBracket.matches}</p>
+            <p>Is array: {Array.isArray(displayBracket.matches) ? 'Yes' : 'No'}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('🎯 PHASE 4 DIAGNOSIS: About to render SimpleBracket with:', {
+    bracketId: displayBracket.id,
+    bracketName: displayBracket.name,
+    matchesCount: displayBracket.matches.length,
+    matchesArray: displayBracket.matches,
+    hasOnEditMatch: !!onEditMatch,
+    passingToBracket: {
+      ...displayBracket,
+      matchesLength: displayBracket.matches.length
+    }
   });
 
-  // PHASE 3 FIX: Return SimpleBracket directly
+  // PHASE 4 DIAGNOSIS: Return SimpleBracket with enhanced error boundary
   return (
-    <SimpleBracket bracket={displayBracket} onMatchClick={onEditMatch} />
+    <div>
+      <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+        <div className="text-sm text-blue-700">
+          🎯 PHASE 4 DEBUG: Rendering SimpleBracket | 
+          Bracket: {displayBracket.name} | 
+          Matches: {displayBracket.matches.length} | 
+          Teams: {displayTeams.length}
+        </div>
+      </div>
+      
+      <BracketErrorBoundary bracketId={bracketId}>
+        <SimpleBracket bracket={displayBracket} onMatchClick={onEditMatch} />
+      </BracketErrorBoundary>
+    </div>
   );
 };
 

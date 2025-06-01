@@ -10,31 +10,88 @@ interface SimpleBracketProps {
 }
 
 const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) => {
-  console.log('🎯 PHASE 1 FIX: SimpleBracket rendering with bracket:', {
-    id: bracket?.id,
-    name: bracket?.name,
-    matchesReceived: bracket?.matches?.length || 0,
-    teamsReceived: bracket?.teams?.length || 0
+  console.log('🎯 PHASE 4 DIAGNOSIS: SimpleBracket rendering with bracket prop:', {
+    bracketExists: !!bracket,
+    bracketId: bracket?.id,
+    bracketName: bracket?.name,
+    matchesProperty: bracket?.matches,
+    matchesType: typeof bracket?.matches,
+    matchesIsArray: Array.isArray(bracket?.matches),
+    matchesLength: bracket?.matches?.length,
+    teamsLength: bracket?.teams?.length,
+    completeBracketObject: bracket
+  });
+
+  // PHASE 4 DIAGNOSIS: Enhanced matches validation
+  if (!bracket) {
+    console.error('🎯 PHASE 4 DIAGNOSIS: CRITICAL - No bracket prop provided to SimpleBracket!');
+    return (
+      <div className="text-center p-8">
+        <p className="text-red-500">Error: No bracket data provided</p>
+      </div>
+    );
+  }
+
+  if (!bracket.matches) {
+    console.error('🎯 PHASE 4 DIAGNOSIS: CRITICAL - bracket.matches is null/undefined!', {
+      bracket,
+      matchesProperty: bracket.matches
+    });
+    return (
+      <div className="text-center p-8">
+        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
+        <p className="text-red-500">Error: Matches property is missing</p>
+        <div className="text-sm text-gray-400 mt-2">
+          Bracket ID: {bracket.id} | State: {bracket.state}
+        </div>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(bracket.matches)) {
+    console.error('🎯 PHASE 4 DIAGNOSIS: CRITICAL - bracket.matches is not an array!', {
+      bracket,
+      matchesProperty: bracket.matches,
+      matchesType: typeof bracket.matches
+    });
+    return (
+      <div className="text-center p-8">
+        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
+        <p className="text-red-500">Error: Matches data is not an array</p>
+        <div className="text-sm text-gray-400 mt-2">
+          Bracket ID: {bracket.id} | Type: {typeof bracket.matches}
+        </div>
+      </div>
+    );
+  }
+
+  console.log('🎯 PHASE 4 DIAGNOSIS: SimpleBracket matches validation passed:', {
+    matchesCount: bracket.matches.length,
+    matchesArray: bracket.matches,
+    firstMatch: bracket.matches[0],
+    lastMatch: bracket.matches[bracket.matches.length - 1]
   });
   
-  if (bracket?.matches && bracket.matches.length > 0) {
-    console.log('🎯 PHASE 1 FIX: SimpleBracket has matches! Details:', {
+  if (bracket.matches.length === 0) {
+    console.log('🎯 PHASE 4 DIAGNOSIS: SimpleBracket has empty matches array - investigating:', {
+      bracket,
+      matchesIsArray: Array.isArray(bracket.matches),
+      matchesLength: bracket.matches.length,
+      teamsCount: bracket.teams?.length || 0
+    });
+  } else {
+    console.log('🎯 PHASE 4 DIAGNOSIS: SimpleBracket has matches! Details:', {
       totalMatches: bracket.matches.length,
       sampleMatch: bracket.matches[0],
       matchesWithTeams: bracket.matches.filter(m => m.team1Id || m.team2Id).length,
       emptyMatches: bracket.matches.filter(m => !m.team1Id && !m.team2Id).length,
-      rounds: [...new Set(bracket.matches.map(m => m.round))].sort()
-    });
-  } else {
-    console.log('🎯 PHASE 1 FIX: SimpleBracket has NO matches - investigating:', {
-      bracketExists: !!bracket,
-      matchesProperty: bracket?.matches,
-      matchesType: typeof bracket?.matches,
-      matchesIsArray: Array.isArray(bracket?.matches)
+      rounds: [...new Set(bracket.matches.map(m => m.round))].sort(),
+      allMatches: bracket.matches
     });
   }
 
   // Group matches by round for display
+  console.log('🎯 PHASE 4 DIAGNOSIS: Starting to group matches by round...');
   const matchesByRound = bracket.matches.reduce((acc, match) => {
     if (!acc[match.round]) {
       acc[match.round] = [];
@@ -47,18 +104,19 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
     .map(Number)
     .sort((a, b) => a - b);
 
-  console.log('🎯 PHASE 1 FIX: Rounds organized:', {
+  console.log('🎯 PHASE 4 DIAGNOSIS: Rounds organized:', {
     roundsCount: rounds.length,
     rounds: rounds,
     matchesByRound: Object.keys(matchesByRound).map(round => ({
       round: Number(round),
       matchCount: matchesByRound[Number(round)].length
-    }))
+    })),
+    completeMatchesByRound: matchesByRound
   });
 
   // Check if we truly have no matches vs just no teams assigned
   if (bracket.matches.length === 0) {
-    console.log('🎯 PHASE 1 FIX: Showing empty state - no matches found');
+    console.log('🎯 PHASE 4 DIAGNOSIS: Showing empty state - no matches found');
     return (
       <div className="text-center p-8">
         <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
@@ -69,11 +127,21 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
         <div className="text-sm text-gray-400 mt-1">
           Teams available in division: {bracket.teams.length}
         </div>
+        <div className="mt-4 p-3 bg-orange-50 rounded-lg">
+          <p className="text-sm text-orange-600">
+            🎯 PHASE 4 DEBUG: This message appears when bracket.matches.length === 0
+          </p>
+        </div>
       </div>
     );
   }
 
-  console.log('🎯 PHASE 1 FIX: Rendering bracket with matches');
+  console.log('🎯 PHASE 4 DIAGNOSIS: Rendering bracket with matches - final check before render:', {
+    bracketName: bracket.name,
+    matchesCount: bracket.matches.length,
+    roundsCount: rounds.length,
+    aboutToRenderMatches: true
+  });
 
   // Show bracket with matches (even if teams aren't assigned yet)
   return (
@@ -88,9 +156,12 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
         </div>
       </div>
 
-      {/* Debug info when in development */}
-      <div className="text-xs text-gray-400 mb-4">
-        🎯 PHASE 1 DEBUG: Matches: {bracket.matches.length} | Teams in division: {bracket.teams.length} | Rounds: {rounds.length}
+      {/* PHASE 4 DIAGNOSIS: Enhanced debug info */}
+      <div className="text-xs text-blue-600 mb-4 p-3 bg-blue-50 rounded-lg">
+        🎯 PHASE 4 DEBUG: Successfully rendering {bracket.matches.length} matches | 
+        Teams in division: {bracket.teams.length} | 
+        Rounds: {rounds.length} | 
+        Rounds found: [{rounds.join(', ')}]
       </div>
 
       <div className="flex gap-6 overflow-x-auto pb-4">
@@ -173,10 +244,10 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
                         </div>
                       )}
 
-                      {/* Only show debug info for matches without teams in development */}
+                      {/* Show debug info for matches without teams */}
                       {(!match.team1Name && !match.team2Name) && (
                         <div className="text-xs text-orange-500 pt-1">
-                          Awaiting team assignments
+                          Awaiting team assignments (Match ID: {match.id})
                         </div>
                       )}
                     </div>
