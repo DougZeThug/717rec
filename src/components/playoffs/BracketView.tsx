@@ -81,9 +81,21 @@ const BracketView: React.FC<BracketViewProps> = ({
     matches: bracket.matches
   });
 
-  // Check if bracket has matches
-  if (!bracket.matches || !Array.isArray(bracket.matches) || bracket.matches.length === 0) {
-    console.log('🎯 BracketView: No matches found in bracket');
+  // ENHANCED: Better validation for matches data
+  const hasValidMatches = bracket.matches && 
+                         Array.isArray(bracket.matches) && 
+                         bracket.matches.length > 0;
+
+  if (!hasValidMatches) {
+    console.log('🎯 BracketView: No valid matches found in bracket');
+    console.log('🎯 BracketView: Debug info:', {
+      bracketExists: !!bracket,
+      matchesExists: !!bracket.matches,
+      matchesIsArray: Array.isArray(bracket.matches),
+      matchesLength: bracket.matches?.length || 0,
+      rawMatches: bracket.matches
+    });
+    
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -95,12 +107,21 @@ const BracketView: React.FC<BracketViewProps> = ({
         <div className="text-center p-8 text-gray-500">
           <p>No matches found for this bracket. The bracket structure may still be generating.</p>
           <p className="text-xs mt-2">Debug: Bracket has {bracket.matches?.length || 0} matches</p>
+          {/* Enhanced debugging info */}
+          <div className="text-xs mt-4 space-y-1 bg-gray-100 p-2 rounded">
+            <p>Bracket ID: {bracket.id}</p>
+            <p>Matches exists: {bracket.matches ? 'Yes' : 'No'}</p>
+            <p>Matches is array: {Array.isArray(bracket.matches) ? 'Yes' : 'No'}</p>
+            <p>Matches length: {bracket.matches?.length || 0}</p>
+            <p>Raw matches type: {typeof bracket.matches}</p>
+          </div>
         </div>
       </div>
     );
   }
 
   console.log('🎯 BracketView: Rendering GlootBracket with', bracket.matches.length, 'matches');
+  console.log('🎯 BracketView: Sample matches data:', bracket.matches.slice(0, 2));
 
   return (
     <div className="space-y-4">

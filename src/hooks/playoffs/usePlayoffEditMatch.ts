@@ -1,96 +1,105 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { PlayoffMatch, PlayoffGame } from "@/types/playoffs";
-import { useQueryClient } from "@tanstack/react-query";
-import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
-import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { PlayoffMatch } from "@/types/playoffs";
 
 export const usePlayoffEditMatch = () => {
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
   const [isQuickEdit, setIsQuickEdit] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { reportMatch } = useChallongeAdmin();
-  
-  const handleEditMatch = (matchId: string, quickEdit: boolean = false) => {
-    // This function is intended to be used with a bracket object from the parent component
-    return (bracket: any) => {
-      if (!bracket) return;
-      
-      const match = bracket.matches.find((m: any) => m.id === matchId);
-      if (!match) {
-        toast({
-          title: "Error",
-          description: `Match not found: ${matchId}`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      setEditingMatch(match);
-      setIsQuickEdit(quickEdit);
-    };
-  };
 
-  const handleCloseMatchEditor = () => {
+  const handleEditMatch = useCallback((matchId: string, quickEdit: boolean = false) => {
+    console.log('🎯 handleEditMatch called with:', { matchId, quickEdit });
+    // TODO: Implement match editing functionality
+    setIsQuickEdit(quickEdit);
+  }, []);
+
+  const handleCloseMatchEditor = useCallback(() => {
+    console.log('🎯 handleCloseMatchEditor called');
     setEditingMatch(null);
     setIsQuickEdit(false);
-  };
-  
-  const handleSaveMatchScore = async (
+  }, []);
+
+  const handleSaveMatchScore = useCallback(async (
     matchId: string,
     team1Score: number,
     team2Score: number,
-    games: { team1Score: number; team2Score: number; }[],
+    games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
     team2GameWins: number,
     refetchBrackets: () => Promise<any>
   ) => {
+    console.log('🎯 handleSaveMatchScore called with all 7 parameters:', {
+      matchId,
+      team1Score,
+      team2Score,
+      games,
+      team1GameWins,
+      team2GameWins,
+      refetchBrackets: typeof refetchBrackets
+    });
+
     try {
-      // Find which team has more game wins to determine the winner
-      const winnerId = editingMatch ? 
-        (team1GameWins > team2GameWins ? editingMatch.team1Id : editingMatch.team2Id) : 
-        null;
-        
-      if (!winnerId) {
-        throw new Error("Cannot determine winner");
+      // Determine winner and loser based on game wins
+      const winnerId = team1GameWins > team2GameWins ? 'team1' : 'team2';
+      const loserId = team1GameWins > team2GameWins ? 'team2' : 'team1';
+
+      // Update the playoff match
+      const { error: matchError } = await supabase
+        .from('playoff_matches')
+        .update({
+          team1_score: team1Score,
+          team2_score: team2Score,
+          winner_id: winnerId,
+          loser_id: loserId,
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', matchId);
+
+      if (matchError) {
+        console.error('🎯 Error updating playoff match:', matchError);
+        throw matchError;
       }
 
-      // Format scores for Challonge (CSV format: "score1-score2")
-      const scoresCsv = `${team1GameWins}-${team2GameWins}`;
+      // Save individual games if provided
+      if (games && games.length > 0) {
+        // Delete existing games first
+        await supabase
+          .from('playoff_games')
+          .delete()
+          .eq('match_id', matchId);
+
+        // Insert new games
+        const gameInserts = games.map((game, index) => ({
+          match_id: matchId,
+          game_number: index + 1,
+          team1_score: game.team1Score,
+          team2_score: game.team2Score,
+          winner_id: game.team1Score > game.team2Score ? 'team1' : 'team2'
+        }));
+
+        const { error: gamesError } = await supabase
+          .from('playoff_games')
+          .insert(gameInserts);
+
+        if (gamesError) {
+          console.error('🎯 Error saving playoff games:', gamesError);
+          throw gamesError;
+        }
+      }
+
+      console.log('🎯 Match score saved successfully');
       
-      // Report match to Challonge
-      await reportMatch.mutateAsync({
-        tournamentId: editingMatch?.bracket_id || "", // Using bracket_id instead of bracketId
-        matchId,
-        scoresCsv,
-        winnerId,
-      });
-      
-      toast({
-        title: "Score Saved",
-        description: "Match score has been updated successfully.",
-      });
-      
-      // Refresh the brackets data
-      await queryClient.invalidateQueries({ queryKey: ['bracket'] });
-      await invalidateMatchRelatedQueries(queryClient);
-      
+      // Call the refetch function to update the UI
       if (refetchBrackets) {
         await refetchBrackets();
       }
-      
-      handleCloseMatchEditor();
+
     } catch (error) {
-      console.error("Error saving match score:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save match score. Please try again.",
-        variant: "destructive"
-      });
+      console.error('🎯 Error in handleSaveMatchScore:', error);
+      throw error;
     }
-  };
+  }, []);
 
   return {
     editingMatch,

@@ -7,8 +7,14 @@ export const usePlayoffMatches = (bracketId: string | null) => {
   return useQuery({
     queryKey: ['playoff-matches', bracketId],
     queryFn: async (): Promise<PlayoffMatch[]> => {
-      if (!bracketId) return [];
+      console.log('🔄 usePlayoffMatches: Starting query for bracketId:', bracketId);
       
+      if (!bracketId) {
+        console.log('🔄 usePlayoffMatches: No bracketId provided, returning empty array');
+        return [];
+      }
+      
+      console.log('🔄 usePlayoffMatches: Fetching matches from playoff_matches table...');
       const { data, error } = await supabase
         .from('playoff_matches')
         .select(`
@@ -21,16 +27,29 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         .order('round')
         .order('position');
         
-      if (error) throw error;
+      if (error) {
+        console.error('🔄 usePlayoffMatches: Database error:', error);
+        throw error;
+      }
+      
+      console.log('🔄 usePlayoffMatches: Raw database result:', data);
+      console.log('🔄 usePlayoffMatches: Found', data?.length || 0, 'matches');
+      
+      if (!data || data.length === 0) {
+        console.log('🔄 usePlayoffMatches: No matches found in database for bracketId:', bracketId);
+        return [];
+      }
       
       // Transform to PlayoffMatch format
-      return (data || []).map(match => {
+      const transformedMatches = data.map(match => {
+        console.log('🔄 usePlayoffMatches: Transforming match:', match.id);
+        
         // Calculate game wins from playoff_games if available
         const games = match.playoff_games || [];
         const team1GameWins = games.filter(game => game.winner_id === match.team1_id).length;
         const team2GameWins = games.filter(game => game.winner_id === match.team2_id).length;
         
-        return {
+        const transformedMatch = {
           id: match.id,
           bracket_id: match.bracket_id,
           round: match.round,
@@ -60,7 +79,15 @@ export const usePlayoffMatches = (bracketId: string | null) => {
             winner: game.winner_id
           }))
         };
+        
+        console.log('🔄 usePlayoffMatches: Transformed match:', transformedMatch);
+        return transformedMatch;
       }) as PlayoffMatch[];
+      
+      console.log('🔄 usePlayoffMatches: Final transformed matches:', transformedMatches);
+      console.log('🔄 usePlayoffMatches: Returning', transformedMatches.length, 'matches');
+      
+      return transformedMatches;
     },
     enabled: !!bracketId
   });

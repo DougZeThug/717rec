@@ -112,6 +112,14 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: bracketError
   } = usePlayoffViewModel(selectedBracketId);
   
+  // Add debugging for the bracket data flow
+  console.log('🎯 usePlayoffPageData - Selected bracket ID:', selectedBracketId);
+  console.log('🎯 usePlayoffPageData - Bracket from usePlayoffViewModel:', bracket);
+  console.log('🎯 usePlayoffPageData - Bracket matches:', bracket?.matches);
+  console.log('🎯 usePlayoffPageData - Bracket matches length:', bracket?.matches?.length);
+  console.log('🎯 usePlayoffPageData - Teams from usePlayoffViewModel:', teams);
+  console.log('🎯 usePlayoffPageData - bracketMatchesByType:', bracketMatchesByType);
+  
   // Fetch divisions with enhanced error handling
   const { 
     divisions, 
@@ -136,6 +144,10 @@ export function usePlayoffPageData(): PlayoffPageData {
     console.log('🎯 usePlayoffPageData: handleBracketCreated called');
     
     try {
+      // Get current bracket count before creation
+      const currentBracketCount = allBrackets ? allBrackets.length : 0;
+      console.log('🎯 usePlayoffPageData: Current bracket count before creation:', currentBracketCount);
+      
       // Call the original handler
       await originalHandleBracketCreated();
       console.log('🎯 usePlayoffPageData: Original bracket creation handler completed');

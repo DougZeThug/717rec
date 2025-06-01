@@ -58,6 +58,12 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Combined bracket AFTER matches attachment:', combinedBracket);
   console.log('🔍 usePlayoffViewModel - Combined bracket matches length:', combinedBracket?.matches?.length);
   
+  // Additional debugging for the matches structure
+  if (combinedBracket?.matches && combinedBracket.matches.length > 0) {
+    console.log('🔍 usePlayoffViewModel - Sample match structure:', combinedBracket.matches[0]);
+    console.log('🔍 usePlayoffViewModel - All match types:', combinedBracket.matches.map(m => m.matchType));
+  }
+  
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: BracketMatchesByType | null = matchesQuery.data
     ? groupBracketMatchesByType(matchesQuery.data)
