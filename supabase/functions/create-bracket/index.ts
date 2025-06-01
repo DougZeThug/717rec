@@ -100,6 +100,9 @@ serve(async (req) => {
 
     const tournament = tournamentData.tournament;
     const tournamentId = tournament.id;
+    const tournamentUrlSlug = tournament.url;
+
+    console.log('[CHALLONGE] Tournament details - ID:', tournamentId, 'URL:', tournamentUrlSlug);
 
     // Add participants to tournament using v1 API
     console.log('[CHALLONGE] Adding participants to tournament...');
@@ -126,15 +129,16 @@ serve(async (req) => {
 
     console.log('[CHALLONGE] All participants added successfully');
 
-    // Start tournament using v1 API
-    console.log('[CHALLONGE] Starting tournament...');
+    // Start tournament using v1 API - Use tournament URL, not ID
+    console.log('[CHALLONGE] Starting tournament using URL:', tournamentUrlSlug);
     
     try {
-      const startData = await challongeFetch('POST', `/tournaments/${tournamentId}/start`);
+      const startData = await challongeFetch('POST', `/tournaments/${tournamentUrlSlug}/start`);
       console.log('[CHALLONGE] Tournament started successfully:', startData.tournament?.state || 'Unknown state');
     } catch (error) {
       console.error('[CHALLONGE] Failed to start tournament:', error);
-      throw new Error(`Failed to start tournament: ${error.message}`);
+      console.log('[CHALLONGE] Tournament will remain in pending state and can be started manually later');
+      // Don't throw here - allow bracket creation to continue even if starting fails
     }
 
     // Create Supabase admin client for database operations
@@ -228,6 +232,9 @@ serve(async (req) => {
     } else if (errorMessage.includes('Authentication required')) {
       statusCode = 401;
     } else if (errorMessage.includes('Invalid payload')) {
+      statusCode = 400;
+    } else if (errorMessage.includes('Failed to add participant')) {
+      errorMessage = 'Failed to add teams to tournament. Please check team names and try again.';
       statusCode = 400;
     }
     
