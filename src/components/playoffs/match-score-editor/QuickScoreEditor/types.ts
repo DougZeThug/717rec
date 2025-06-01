@@ -10,8 +10,9 @@ export interface QuickScoreEditorProps {
     team2Score: number,
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
-    team2GameWins: number
-  ) => void;
+    team2GameWins: number,
+    refetchBrackets: () => Promise<any>
+  ) => Promise<void>;
   onCancel: () => void;
 }
 

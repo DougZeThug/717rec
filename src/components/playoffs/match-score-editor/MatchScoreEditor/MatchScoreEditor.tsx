@@ -56,20 +56,21 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       setIsSubmitting(true);
       const { team1Wins, team2Wins } = calculateTotalScore();
       
-      // Determine winner based on who has more game wins
-      const winnerId = team1Wins > team2Wins ? match.team1Id : match.team2Id;
+      // Calculate match scores (1-0 format for winner-loser)
+      const team1Score = team1Wins > team2Wins ? 1 : 0;
+      const team2Score = team2Wins > team1Wins ? 1 : 0;
       
-      if (!winnerId) {
-        setValidationError("Unable to determine match winner");
-        return;
-      }
+      // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
+      const dummyRefetch = async () => {};
       
       await onSave(
         match.id,
-        games,               // array of { team1Score, team2Score }
+        team1Score,
+        team2Score,
+        games,
         team1Wins,
         team2Wins,
-        winnerId
+        dummyRefetch
       );
       onCancel();
     } catch (error) {

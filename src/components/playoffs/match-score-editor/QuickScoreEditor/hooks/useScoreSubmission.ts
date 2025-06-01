@@ -14,7 +14,7 @@ interface UseScoreSubmissionProps {
     team1GameWins: number,
     team2GameWins: number,
     refetchBrackets: () => Promise<any>
-  ) => void;
+  ) => Promise<void>;
   setIsSubmitting: (value: boolean) => void;
   setSelectedOption: (value: string | null) => void;
 }
