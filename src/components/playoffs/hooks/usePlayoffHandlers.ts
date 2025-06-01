@@ -7,9 +7,9 @@ export function usePlayoffHandlers(data: PlayoffPageData) {
   const {
     editingMatch,
     isQuickEdit,
-    handleEditMatchClick,
+    handleEditMatch,
     handleCloseMatchEditor,
-    handleSaveScore
+    handleSaveMatchScore
   } = usePlayoffEditMatch();
 
   // Enhanced bracket creation handler that navigates to newly created bracket
@@ -63,9 +63,9 @@ export function usePlayoffHandlers(data: PlayoffPageData) {
   return {
     editingMatch,
     isQuickEdit,
-    handleEditMatchClick,
+    handleEditMatch,
     handleCloseMatchEditor,
-    handleSaveScore,
+    handleSaveMatchScore,
     handleBracketCreatedWithNavigation
   };
 }
