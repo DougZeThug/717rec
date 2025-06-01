@@ -12,6 +12,7 @@ interface SimpleBracketProps {
 const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) => {
   console.log('🎯 SimpleBracket: Rendering bracket:', bracket.name);
   console.log('🎯 SimpleBracket: Matches count:', bracket.matches.length);
+  console.log('🎯 SimpleBracket: Sample match data:', bracket.matches[0]);
 
   // Group matches by round for display
   const matchesByRound = bracket.matches.reduce((acc, match) => {
@@ -33,6 +34,9 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
         <p className="text-gray-500">No matches found for this bracket</p>
         <div className="text-sm text-gray-400 mt-2">
           Bracket ID: {bracket.id} | State: {bracket.state}
+        </div>
+        <div className="text-sm text-gray-400 mt-1">
+          Debug: {bracket.teams.length} teams available in division
         </div>
       </div>
     );
@@ -62,12 +66,12 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
                 .map(match => (
                   <Card 
                     key={match.id} 
-                    className={`p-4 min-w-[250px] cursor-pointer hover:shadow-md transition-shadow ${
+                    className={`p-4 min-w-[280px] cursor-pointer hover:shadow-md transition-shadow ${
                       onMatchClick ? 'hover:bg-gray-50' : ''
                     }`}
                     onClick={() => onMatchClick?.(match.id)}
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-500">
                           {match.matchType} • Position {match.position}
@@ -80,33 +84,60 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
                         </Badge>
                       </div>
                       
-                      <div className="space-y-1">
-                        <div className={`flex justify-between items-center p-2 rounded ${
+                      <div className="space-y-2">
+                        {/* Team 1 */}
+                        <div className={`flex justify-between items-center p-3 rounded-lg ${
                           match.winnerId === match.team1Id ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
                         }`}>
-                          <span className="font-medium">
-                            {match.team1Name || 'TBD'}
-                          </span>
-                          <span className="font-bold">
+                          <div className="flex items-center gap-2">
+                            {match.team1Logo && (
+                              <img 
+                                src={match.team1Logo} 
+                                alt={`${match.team1Name} logo`}
+                                className="w-6 h-6 rounded object-cover"
+                              />
+                            )}
+                            <span className="font-medium">
+                              {match.team1Name || 'TBD'}
+                            </span>
+                          </div>
+                          <span className="font-bold text-lg">
                             {match.team1Score ?? '-'}
                           </span>
                         </div>
                         
-                        <div className={`flex justify-between items-center p-2 rounded ${
+                        {/* Team 2 */}
+                        <div className={`flex justify-between items-center p-3 rounded-lg ${
                           match.winnerId === match.team2Id ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
                         }`}>
-                          <span className="font-medium">
-                            {match.team2Name || 'TBD'}
-                          </span>
-                          <span className="font-bold">
+                          <div className="flex items-center gap-2">
+                            {match.team2Logo && (
+                              <img 
+                                src={match.team2Logo} 
+                                alt={`${match.team2Name} logo`}
+                                className="w-6 h-6 rounded object-cover"
+                              />
+                            )}
+                            <span className="font-medium">
+                              {match.team2Name || 'TBD'}
+                            </span>
+                          </div>
+                          <span className="font-bold text-lg">
                             {match.team2Score ?? '-'}
                           </span>
                         </div>
                       </div>
                       
                       {match.winnerId && (
-                        <div className="text-xs text-green-600 font-medium">
+                        <div className="text-xs text-green-600 font-medium pt-1">
                           Winner: {match.winnerId === match.team1Id ? match.team1Name : match.team2Name}
+                        </div>
+                      )}
+
+                      {/* Debug info for troubleshooting */}
+                      {(!match.team1Name || !match.team2Name) && (
+                        <div className="text-xs text-red-500 pt-1">
+                          Debug: Team1 ID: {match.team1Id} | Team2 ID: {match.team2Id}
                         </div>
                       )}
                     </div>

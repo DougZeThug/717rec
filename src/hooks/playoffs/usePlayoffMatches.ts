@@ -14,12 +14,13 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         return [];
       }
       
+      // Use the new foreign key constraints for proper team data fetching
       const { data, error } = await supabase
         .from('playoff_matches')
         .select(`
           *,
-          team1:teams!playoff_matches_team1_id_fkey(id, name, logo_url, image_url),
-          team2:teams!playoff_matches_team2_id_fkey(id, name, logo_url, image_url),
+          team1:teams!fk_playoff_matches_team1(id, name, logo_url, image_url),
+          team2:teams!fk_playoff_matches_team2(id, name, logo_url, image_url),
           playoff_games(*)
         `)
         .eq('bracket_id', bracketId)
@@ -37,7 +38,7 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         return [];
       }
       
-      // Simple transformation without complex logic
+      // Transform with proper team data
       const transformedMatches = data.map(match => {
         const games = match.playoff_games || [];
         const team1GameWins = games.filter(game => game.winner_id === match.team1_id).length;
@@ -63,6 +64,17 @@ export const usePlayoffMatches = (bracketId: string | null) => {
           nextWinMatchId: match.next_win_match_id,
           nextLoseMatchId: match.next_lose_match_id,
           status: match.status || 'pending',
+          // Include team data
+          team1: match.team1 ? {
+            id: match.team1.id,
+            name: match.team1.name,
+            logo_url: match.team1.logo_url || match.team1.image_url
+          } : undefined,
+          team2: match.team2 ? {
+            id: match.team2.id,
+            name: match.team2.name,
+            logo_url: match.team2.logo_url || match.team2.image_url
+          } : undefined,
           games: games.map(game => ({
             id: game.id,
             matchId: game.match_id,
@@ -75,13 +87,13 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         };
       }) as PlayoffMatch[];
       
-      console.log('🔄 usePlayoffMatches: Returning', transformedMatches.length, 'matches');
+      console.log('🔄 usePlayoffMatches: Returning', transformedMatches.length, 'matches with team data');
       return transformedMatches;
     },
     enabled: !!bracketId,
-    staleTime: 1000 * 60 * 5, // 5 minutes - no more frequent polling
-    retry: 1, // Single retry only
-    refetchOnMount: false, // Manual refresh only
-    refetchOnWindowFocus: false // No automatic refresh
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 };

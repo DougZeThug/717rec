@@ -16,6 +16,8 @@ export interface SimpleBracketData {
     team2Id: string | null;
     team1Name?: string;
     team2Name?: string;
+    team1Logo?: string;
+    team2Logo?: string;
     winnerId: string | null;
     team1Score: number | null;
     team2Score: number | null;
@@ -57,13 +59,13 @@ export const useBracketData = (bracketId: string | null) => {
         return null;
       }
 
-      // Get matches ONLY from playoff_matches table - no more dual table confusion
+      // Get matches with team data using the new foreign key constraints
       const { data: matches, error: matchesError } = await supabase
         .from('playoff_matches')
         .select(`
           *,
-          team1:teams!playoff_matches_team1_id_fkey(id, name, logo_url),
-          team2:teams!playoff_matches_team2_id_fkey(id, name, logo_url)
+          team1:teams!fk_playoff_matches_team1(id, name, logo_url, image_url),
+          team2:teams!fk_playoff_matches_team2(id, name, logo_url, image_url)
         `)
         .eq('bracket_id', bracketId)
         .order('round')
@@ -74,10 +76,10 @@ export const useBracketData = (bracketId: string | null) => {
         throw matchesError;
       }
 
-      // Get all teams for this bracket's division
+      // Get all teams for this bracket's division as fallback
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
-        .select('id, name, logo_url')
+        .select('id, name, logo_url, image_url')
         .eq('division_id', bracket.division_id);
 
       if (teamsError) {
@@ -91,33 +93,47 @@ export const useBracketData = (bracketId: string | null) => {
         teamsCount: teams?.length || 0
       });
 
+      // Create team lookup map for fallback
+      const teamLookup = new Map();
+      teams?.forEach(team => {
+        teamLookup.set(team.id, team);
+      });
+
       return {
         id: bracket.id,
         name: bracket.title,
         format: bracket.format || 'Double Elimination',
         state: bracket.state || 'pending',
         division: bracket.division_id,
-        matches: (matches || []).map(match => ({
-          id: match.id,
-          round: match.round,
-          position: match.position,
-          team1Id: match.team1_id,
-          team2Id: match.team2_id,
-          team1Name: match.team1?.name,
-          team2Name: match.team2?.name,
-          winnerId: match.winner_id,
-          team1Score: match.team1_score,
-          team2Score: match.team2_score,
-          matchType: match.match_type || 'winners',
-          status: match.status || 'pending'
-        })),
+        matches: (matches || []).map(match => {
+          // Use joined team data if available, otherwise fall back to lookup
+          const team1 = match.team1 || (match.team1_id ? teamLookup.get(match.team1_id) : null);
+          const team2 = match.team2 || (match.team2_id ? teamLookup.get(match.team2_id) : null);
+          
+          return {
+            id: match.id,
+            round: match.round,
+            position: match.position,
+            team1Id: match.team1_id,
+            team2Id: match.team2_id,
+            team1Name: team1?.name,
+            team2Name: team2?.name,
+            team1Logo: team1?.logo_url || team1?.image_url,
+            team2Logo: team2?.logo_url || team2?.image_url,
+            winnerId: match.winner_id,
+            team1Score: match.team1_score,
+            team2Score: match.team2_score,
+            matchType: match.match_type || 'winners',
+            status: match.status || 'pending'
+          };
+        }),
         teams: teams || []
       };
     },
     enabled: !!bracketId,
-    staleTime: 1000 * 60 * 5, // 5 minutes - no more aggressive polling
-    retry: 1, // Simple retry only
-    refetchOnMount: false, // Manual refresh only
-    refetchOnWindowFocus: false // No automatic refresh
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 };
