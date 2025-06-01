@@ -87,7 +87,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">{bracket.name || bracket.title || "Tournament Bracket"}</h2>
+          <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
           <div className="text-sm text-gray-500">
             {bracket.format} • {bracket.state}
           </div>
@@ -105,7 +105,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{bracket.name || bracket.title || "Tournament Bracket"}</h2>
+        <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
         <div className="text-sm text-gray-500">
           {bracket.format} • {bracket.state} • {bracket.matches.length} matches
         </div>
