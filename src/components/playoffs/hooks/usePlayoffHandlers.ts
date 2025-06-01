@@ -12,9 +12,9 @@ export function usePlayoffHandlers(data: PlayoffPageData) {
     handleSaveMatchScore
   } = usePlayoffEditMatch();
 
-  // Enhanced bracket creation handler that navigates to newly created bracket
+  // Enhanced bracket creation handler with aggressive cache invalidation
   const handleBracketCreatedWithNavigation = useCallback(async () => {
-    console.log('🎯 usePlayoffHandlers: Starting bracket creation with navigation');
+    console.log('🎯 usePlayoffHandlers: Starting bracket creation with enhanced navigation');
     
     try {
       // Get current bracket count before creation
@@ -24,38 +24,49 @@ export function usePlayoffHandlers(data: PlayoffPageData) {
       // Call the original bracket creation handler
       await data.handleBracketCreated();
       
-      // After successful creation, refetch to get updated data
-      console.log('🎯 usePlayoffHandlers: Refetching brackets after creation');
-      await data.refetchBrackets();
+      // Wait longer for backend processing to complete
+      console.log('🎯 usePlayoffHandlers: Waiting for backend processing...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Small delay to ensure data is fully updated
+      // Force multiple refetches to ensure we get the latest data
+      console.log('🎯 usePlayoffHandlers: Performing aggressive data refresh...');
+      for (let i = 0; i < 3; i++) {
+        await data.refetchBrackets();
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // Find and navigate to the newly created bracket
+      console.log('🎯 usePlayoffHandlers: Looking for newly created bracket...');
+      
+      // Wait a bit more and try to find the new bracket
       setTimeout(async () => {
         try {
-          // Refetch one more time to ensure we have the latest data
+          // Final refetch attempt
           await data.refetchBrackets();
           
-          // Find the newly created bracket (should be the most recent one)
+          // Look for the newest bracket
           if (data.allBracketsData.length > currentBracketCount) {
-            // Get the most recently created bracket (assuming they're ordered by creation time)
             const allBrackets = data.allBracketsData;
             const newestBracket = allBrackets[allBrackets.length - 1];
             
             if (newestBracket?.id) {
               console.log('🎯 usePlayoffHandlers: Navigating to newly created bracket:', newestBracket.id);
               data.setSelectedBracketId(newestBracket.id);
-            } else {
-              console.log('🎯 usePlayoffHandlers: Newest bracket found but no ID');
+              
+              // Force an additional refetch of the matches for the new bracket
+              setTimeout(() => {
+                console.log('🎯 usePlayoffHandlers: Triggering final data refresh for new bracket');
+                data.refetchBrackets();
+              }, 1000);
             }
-          } else {
-            console.log('🎯 usePlayoffHandlers: No new bracket detected, bracket count unchanged');
           }
         } catch (error) {
           console.error('🎯 usePlayoffHandlers: Error in delayed bracket navigation:', error);
         }
-      }, 1000);
+      }, 1500);
       
     } catch (error) {
-      console.error('🎯 usePlayoffHandlers: Error in bracket creation with navigation:', error);
+      console.error('🎯 usePlayoffHandlers: Error in enhanced bracket creation:', error);
       throw error;
     }
   }, [data]);

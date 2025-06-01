@@ -93,25 +93,35 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   
   console.log('🔍 usePlayoffViewModel - Bracket matches by type:', bracketMatchesByType);
   
-  // Refetch function that triggers all related queries and invalidates cache
+  // Enhanced refetch function with aggressive cache invalidation
   const refetch = async () => {
     try {
-      console.log('🔍 usePlayoffViewModel - Starting refetch...');
+      console.log('🔍 usePlayoffViewModel - Starting enhanced refetch...');
       console.log('🔍 usePlayoffViewModel - Invalidating React Query cache for bracket:', bracketId);
       
       // Force invalidate cache first using the proper QueryClient
-      if (queryClient) {
-        await queryClient.invalidateQueries({ queryKey: ['playoff-matches', bracketId] });
-        await queryClient.invalidateQueries({ queryKey: ['bracket', bracketId] });
-        console.log('🔍 usePlayoffViewModel - Cache invalidated');
+      if (queryClient && bracketId) {
+        // Invalidate all related queries with more aggressive patterns
+        await queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+        await queryClient.invalidateQueries({ queryKey: ['bracket'] });
+        await queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
+        
+        // Remove specific queries from cache to force fresh fetch
+        await queryClient.removeQueries({ queryKey: ['playoff-matches', bracketId] });
+        await queryClient.removeQueries({ queryKey: ['bracket', bracketId] });
+        
+        console.log('🔍 usePlayoffViewModel - Cache invalidated and queries removed');
       }
+      
+      // Small delay to ensure cache operations complete
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       await Promise.all([
         bracketQuery.refetch(),
         matchesQuery.refetch(),
         teamsQuery.refetch()
       ]);
-      console.log('🔍 usePlayoffViewModel - Refetch completed successfully');
+      console.log('🔍 usePlayoffViewModel - Enhanced refetch completed successfully');
     } catch (err) {
       console.error('🔍 usePlayoffViewModel - Refetch error:', err);
       logError(err, "usePlayoffViewModel refetch");

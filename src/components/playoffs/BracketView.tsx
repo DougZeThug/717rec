@@ -82,7 +82,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     matches: bracket.matches
   });
 
-  // ENHANCED: Better validation for matches data with more detailed logging
+  // Enhanced validation with better loading state handling
   const hasValidMatches = bracket.matches && 
                          Array.isArray(bracket.matches) && 
                          bracket.matches.length > 0;
@@ -100,7 +100,6 @@ const BracketView: React.FC<BracketViewProps> = ({
       matchesType: typeof bracket.matches
     });
     
-    // ENHANCED: More detailed debugging information
     if (bracket.matches) {
       console.log('🎯 BracketView: Matches exists but invalid format');
       console.log('🎯 BracketView: Matches content:', JSON.stringify(bracket.matches, null, 2));
@@ -117,24 +116,19 @@ const BracketView: React.FC<BracketViewProps> = ({
           </div>
         </div>
         <div className="text-center p-8 text-gray-500">
-          <p>No matches found for this bracket. The bracket structure may still be generating.</p>
-          <p className="text-xs mt-2">Debug: Bracket has {bracket.matches?.length || 0} matches</p>
-          {/* Enhanced debugging info */}
-          <div className="text-xs mt-4 space-y-1 bg-gray-100 p-2 rounded">
-            <p>Bracket ID: {bracket.id}</p>
-            <p>Matches exists: {bracket.matches ? 'Yes' : 'No'}</p>
-            <p>Matches is array: {Array.isArray(bracket.matches) ? 'Yes' : 'No'}</p>
-            <p>Matches length: {bracket.matches?.length || 0}</p>
-            <p>Raw matches type: {typeof bracket.matches}</p>
-            {/* Additional debugging to see what's actually in the matches */}
-            {bracket.matches && (
-              <p>Matches JSON: {JSON.stringify(bracket.matches).substring(0, 200)}...</p>
-            )}
+          <div className="animate-pulse mb-4">
+            <div className="w-12 h-12 bg-blue-500 rounded-full mx-auto mb-2"></div>
+            <p className="text-lg font-semibold">Loading bracket matches...</p>
           </div>
-          {/* Manual refresh button for debugging */}
+          <p className="text-sm">The bracket structure is being generated. This may take a few moments.</p>
+          <div className="text-xs mt-4 space-y-1 bg-gray-100 dark:bg-gray-800 p-3 rounded">
+            <p><strong>Bracket ID:</strong> {bracket.id}</p>
+            <p><strong>Matches loaded:</strong> {bracket.matches?.length || 0}</p>
+            <p><strong>Expected:</strong> Should have 15 matches for 8 teams</p>
+          </div>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >
             Refresh Page
           </button>
@@ -151,7 +145,7 @@ const BracketView: React.FC<BracketViewProps> = ({
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
         <div className="text-sm text-gray-500">
-          {bracket.format} • {bracket.state} • {bracket.matches.length} matches
+          {bracket.format} • {bracket.state} • {bracket.matches.length} matches loaded
         </div>
       </div>
       
