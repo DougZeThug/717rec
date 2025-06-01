@@ -129,9 +129,15 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     maxTeams
   );
 
-  // Single-path parent notification via useEffect
+  // Single-path parent notification via useEffect - ONLY updates parent state
   React.useEffect(() => {
     const ids = Array.from(formState.selected);
+    console.log("BracketFormTeamsContainer: Notifying parent of selection change:", {
+      ids: ids.length,
+      isValid: validation.isValid,
+      action: "PARENT_NOTIFICATION_ONLY"
+    });
+    
     onChange({
       ids,
       isValid: validation.isValid
@@ -140,6 +146,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
 
   // Reset selection when division changes
   React.useEffect(() => {
+    console.log("BracketFormTeamsContainer: Division changed, clearing selection");
     if (formState.clearSelection) {
       formState.clearSelection();
     }

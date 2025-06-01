@@ -42,9 +42,16 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const queryClient = useQueryClient();
   const { createBracket } = useChallongeAdmin();
   
-  // Enhanced form submission with E2E flow - EXPLICIT SUBMISSION ONLY
+  // EXPLICIT form submission handler - ONLY triggered by form submit button
   const handleSubmit = async (data: BracketFormValues) => {
-    console.log("BracketCreationDialog: Explicit form submission initiated", data);
+    console.log("BracketCreationDialog: EXPLICIT form submission initiated", data);
+    console.log("BracketCreationDialog: Current submission state:", { isSubmitting });
+    
+    // Prevent multiple submissions
+    if (isSubmitting) {
+      console.log("BracketCreationDialog: Blocking submission - already in progress");
+      return;
+    }
     
     try {
       setIsSubmitting(true);
@@ -188,6 +195,12 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     }
   };
 
+  // Team validity change handler - ONLY updates state, NEVER submits
+  const handleTeamsValidityChange = React.useCallback((isValid: boolean) => {
+    console.log("BracketCreationDialog: Teams validity changed:", isValid, "- NOT submitting");
+    setTeamsValid(isValid);
+  }, []);
+
   // Enhanced error boundary reset
   const handleErrorReset = () => {
     console.log("BracketCreationDialog: Resetting after error");
@@ -215,7 +228,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
             teams={teams}
             isSubmitting={isSubmitting}
             teamsValid={teamsValid}
-            onTeamsValidityChange={setTeamsValid}
+            onTeamsValidityChange={handleTeamsValidityChange}
             onSubmit={handleSubmit}
             onCancel={() => onOpenChange(false)}
           />

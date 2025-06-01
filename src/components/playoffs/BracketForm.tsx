@@ -48,36 +48,55 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const { watch, setValue, handleSubmit, formState } = form;
   const watchedDivisionId = watch("divisionId");
 
-  // Update teams field when selection changes
+  // Update teams field when selection changes - NO SUBMISSION
   React.useEffect(() => {
+    console.log("BracketForm: Updating teams field:", selectedTeams.length, "teams - NO submission");
     setValue("teams", selectedTeams, { shouldValidate: true });
   }, [selectedTeams, setValue]);
 
-  // Handle team selection changes
+  // Handle team selection changes - ONLY updates state, NEVER submits
   const handleTeamSelectionChange = React.useCallback(
     ({ ids, isValid }: { ids: string[]; isValid: boolean }) => {
+      console.log("BracketForm: Team selection changed:", {
+        count: ids.length,
+        isValid,
+        teams: ids,
+        action: "STATE_UPDATE_ONLY"
+      });
+      
       setSelectedTeams(ids);
       setTeamsValidationState(isValid);
-      onTeamsValidityChange?.(isValid);
+      
+      // Notify parent of validity change - DOES NOT TRIGGER SUBMISSION
+      if (onTeamsValidityChange) {
+        onTeamsValidityChange(isValid);
+      }
     },
     [onTeamsValidityChange]
   );
 
-  // Handle division change
+  // Handle division change - clears team selection
   const handleDivisionChange = React.useCallback((divisionId: string) => {
+    console.log("BracketForm: Division changed to:", divisionId, "- clearing team selection");
     // Clear selected teams when division changes
     setSelectedTeams([]);
     setTeamsValidationState(false);
-    onTeamsValidityChange?.(false);
+    if (onTeamsValidityChange) {
+      onTeamsValidityChange(false);
+    }
   }, [onTeamsValidityChange]);
 
-  // EXPLICIT form submission handler - NO AUTO-SUBMISSION
+  // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {
-    console.log("BracketForm: Explicit form submission triggered", data);
+    console.log("BracketForm: EXPLICIT submit button clicked - form submission triggered", {
+      data,
+      teamsCount: data.teams.length,
+      isValid: formState.isValid && teamsValidationState
+    });
     
     // Additional validation before submission
     if (!data.teams || data.teams.length < 2) {
-      console.error("BracketForm: Insufficient teams selected");
+      console.error("BracketForm: Insufficient teams selected - blocking submission");
       return;
     }
 
@@ -88,6 +107,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
       divisionName: selectedDivision?.name || "Unknown Division"
     };
 
+    console.log("BracketForm: Calling parent onSubmit with data:", formDataWithDivision);
     onSubmit(formDataWithDivision);
   };
 
@@ -96,6 +116,14 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const selectedTeamCount = selectedTeams.length;
   const minTeams = 2;
   const maxTeams = 16;
+
+  console.log("BracketForm render:", {
+    selectedTeamCount,
+    teamsValidationState,
+    formValid: formState.isValid,
+    canSubmit: isFormValid,
+    isSubmitting
+  });
 
   return (
     <Form {...form}>
@@ -181,7 +209,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
         {process.env.NODE_ENV === 'development' && (
           <div className="text-xs text-gray-500 border-t pt-2">
             Form Valid: {String(formState.isValid)} | Teams Valid: {String(teamsValidationState)} | 
-            Selected: {selectedTeamCount} | Can Submit: {String(isFormValid)}
+            Selected: {selectedTeamCount} | Can Submit: {String(isFormValid)} | Submitting: {String(isSubmitting)}
           </div>
         )}
       </form>
