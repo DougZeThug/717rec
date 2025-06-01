@@ -10,16 +10,28 @@ interface SimpleBracketProps {
 }
 
 const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) => {
-  console.log('🎯 SimpleBracket: Rendering bracket:', bracket.name);
-  console.log('🎯 SimpleBracket: Matches count:', bracket.matches.length);
-  console.log('🎯 SimpleBracket: Teams available:', bracket.teams.length);
+  console.log('🎯 PHASE 1 FIX: SimpleBracket rendering with bracket:', {
+    id: bracket?.id,
+    name: bracket?.name,
+    matchesReceived: bracket?.matches?.length || 0,
+    teamsReceived: bracket?.teams?.length || 0
+  });
   
-  if (bracket.matches.length > 0) {
-    console.log('🎯 SimpleBracket: Sample match data:', bracket.matches[0]);
-    const matchesWithTeams = bracket.matches.filter(m => m.team1Id || m.team2Id);
-    const emptyMatches = bracket.matches.filter(m => !m.team1Id && !m.team2Id);
-    console.log('🎯 SimpleBracket: Matches with teams:', matchesWithTeams.length);
-    console.log('🎯 SimpleBracket: Empty matches (TBD):', emptyMatches.length);
+  if (bracket?.matches && bracket.matches.length > 0) {
+    console.log('🎯 PHASE 1 FIX: SimpleBracket has matches! Details:', {
+      totalMatches: bracket.matches.length,
+      sampleMatch: bracket.matches[0],
+      matchesWithTeams: bracket.matches.filter(m => m.team1Id || m.team2Id).length,
+      emptyMatches: bracket.matches.filter(m => !m.team1Id && !m.team2Id).length,
+      rounds: [...new Set(bracket.matches.map(m => m.round))].sort()
+    });
+  } else {
+    console.log('🎯 PHASE 1 FIX: SimpleBracket has NO matches - investigating:', {
+      bracketExists: !!bracket,
+      matchesProperty: bracket?.matches,
+      matchesType: typeof bracket?.matches,
+      matchesIsArray: Array.isArray(bracket?.matches)
+    });
   }
 
   // Group matches by round for display
@@ -35,8 +47,18 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
     .map(Number)
     .sort((a, b) => a - b);
 
+  console.log('🎯 PHASE 1 FIX: Rounds organized:', {
+    roundsCount: rounds.length,
+    rounds: rounds,
+    matchesByRound: Object.keys(matchesByRound).map(round => ({
+      round: Number(round),
+      matchCount: matchesByRound[Number(round)].length
+    }))
+  });
+
   // Check if we truly have no matches vs just no teams assigned
   if (bracket.matches.length === 0) {
+    console.log('🎯 PHASE 1 FIX: Showing empty state - no matches found');
     return (
       <div className="text-center p-8">
         <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
@@ -50,6 +72,8 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
       </div>
     );
   }
+
+  console.log('🎯 PHASE 1 FIX: Rendering bracket with matches');
 
   // Show bracket with matches (even if teams aren't assigned yet)
   return (
@@ -66,7 +90,7 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
 
       {/* Debug info when in development */}
       <div className="text-xs text-gray-400 mb-4">
-        Matches: {bracket.matches.length} | Teams in division: {bracket.teams.length}
+        🎯 PHASE 1 DEBUG: Matches: {bracket.matches.length} | Teams in division: {bracket.teams.length} | Rounds: {rounds.length}
       </div>
 
       <div className="flex gap-6 overflow-x-auto pb-4">
