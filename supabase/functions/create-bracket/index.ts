@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -67,9 +68,25 @@ serve(async (req) => {
   }
 
   try {
+    // Validate environment variables early
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const challongeApiKey = Deno.env.get('CHALLONGE_API_KEY');
+
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+      throw new Error('Missing required Supabase environment variables');
+    }
+
+    if (!challongeApiKey) {
+      throw new Error('Challonge API key not configured');
+    }
+
+    console.log('[ENV] All required environment variables are configured');
+
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      supabaseUrl,
+      supabaseAnonKey,
       {
         global: {
           headers: { Authorization: req.headers.get('Authorization')! },
@@ -82,6 +99,8 @@ serve(async (req) => {
     if (userError || !user) {
       throw new Error('Authentication required');
     }
+
+    console.log('[AUTH] User authenticated:', user.id);
 
     const payload: CreateBracketPayload = await req.json();
     
@@ -102,12 +121,6 @@ serve(async (req) => {
       }));
 
     console.log('[BRACKET] Prepared participants:', JSON.stringify(participants, null, 2));
-
-    // Check API key availability
-    const challongeApiKey = Deno.env.get('CHALLONGE_API_KEY');
-    if (!challongeApiKey) {
-      throw new Error('Challonge API key not configured');
-    }
 
     console.log('[CHALLONGE] API key configured, proceeding with tournament creation');
 
@@ -173,13 +186,13 @@ serve(async (req) => {
 
     // Create Supabase admin client for database operations
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      supabaseUrl,
+      supabaseServiceKey
     );
 
     console.log('[DATABASE] Inserting bracket record...');
 
-    // Insert bracket record into Supabase
+    // Insert bracket record into Supabase with participants data
     const { data: bracketData, error: insertError } = await supabaseAdmin
       .from('brackets')
       .insert({
@@ -187,7 +200,7 @@ serve(async (req) => {
         division_id: payload.divisionId,
         format: payload.format,
         state: 'pending',
-        challonge_tournament_id: parseInt(tournamentId),
+        challonge_tournament_id: parseInt(tournamentId.toString()),
         participants: participants.map(p => ({
           teamId: JSON.parse(p.misc).teamId,
           name: p.name,
@@ -220,6 +233,8 @@ serve(async (req) => {
       if (participantError) {
         console.error('[DATABASE] Failed to create participant record for team:', team.name, participantError);
         // Continue with other participants rather than failing completely
+      } else {
+        console.log('[DATABASE] Created participant record for team:', team.name);
       }
     }
 
@@ -266,6 +281,9 @@ serve(async (req) => {
     } else if (errorMessage.includes('Failed to add participant')) {
       errorMessage = 'Failed to add teams to tournament. Please check team names and try again.';
       statusCode = 400;
+    } else if (errorMessage.includes('Missing required')) {
+      errorMessage = 'Server configuration error. Please contact support.';
+      statusCode = 500;
     }
     
     return new Response(

@@ -18,6 +18,7 @@ export type Database = {
           id: string
           migrated: boolean | null
           migrated_at: string | null
+          participants: Json | null
           reset_match_needed: boolean | null
           state: string | null
           title: string
@@ -31,6 +32,7 @@ export type Database = {
           id?: string
           migrated?: boolean | null
           migrated_at?: string | null
+          participants?: Json | null
           reset_match_needed?: boolean | null
           state?: string | null
           title: string
@@ -44,6 +46,7 @@ export type Database = {
           id?: string
           migrated?: boolean | null
           migrated_at?: string | null
+          participants?: Json | null
           reset_match_needed?: boolean | null
           state?: string | null
           title?: string
