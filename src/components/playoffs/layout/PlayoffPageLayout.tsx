@@ -29,14 +29,15 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
     }
   }, [lastUpdatedMatch, data.refetchBrackets, data.selectedBracketId]);
 
-  // Create a wrapper function that includes refetchBrackets
+  // Create a wrapper function that includes refetchBrackets with all 7 parameters
   const handleSaveMatchScore = React.useCallback(async (
     matchId: string,
     team1Score: number,
     team2Score: number,
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
-    team2GameWins: number
+    team2GameWins: number,
+    refetchBrackets: () => Promise<any>
   ) => {
     await handlers.handleSaveMatchScore(
       matchId,

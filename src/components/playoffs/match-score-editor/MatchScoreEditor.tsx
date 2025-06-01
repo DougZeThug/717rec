@@ -26,37 +26,12 @@ const MatchScoreEditorWrapper: React.FC<MatchScoreEditorWrapperProps> = ({
   onSave,
   onCancel
 }) => {
-  // We're adapting the new parameters to match the old expected structure
-  const handleSave = async (
-    matchId: string,
-    games: { team1Score: number; team2Score: number }[],
-    team1GameWins: number,
-    team2GameWins: number,
-    winnerId: string
-  ) => {
-    // Set match score to 1-0 (winner-loser format)
-    const team1Score = match.team1Id === winnerId ? 1 : 0;
-    const team2Score = match.team2Id === winnerId ? 1 : 0;
-    
-    // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
-    const dummyRefetch = async () => {};
-    
-    await onSave(
-      matchId,
-      team1Score,
-      team2Score,
-      games,
-      team1GameWins,
-      team2GameWins,
-      dummyRefetch
-    );
-  };
-
+  // Direct pass-through of the 7-parameter onSave function
   return (
     <MatchScoreEditor
       match={match}
       teams={teams}
-      onSave={handleSave}
+      onSave={onSave}
       onCancel={onCancel}
     />
   );
