@@ -4,9 +4,12 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
 import { useDivisions } from "@/hooks/useDivisions";
+import { useBracketData } from "@/hooks/brackets/useBracketData";
+import { usePlayoffTeams } from "@/hooks/playoffs/usePlayoffTeams";
 import { PlayoffBracket, BracketFormat, BracketState } from "@/utils/playoffs/playoffTypes";
 import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
 import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/errors";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface PlayoffPageData {
   // Auth & permissions
@@ -37,6 +40,12 @@ export interface PlayoffPageData {
   handleBracketCreated: () => void;
   handleTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;
   refetchBrackets: () => Promise<any>;
+  
+  // NEW: Compatibility properties for current selected bracket
+  bracket: any;
+  teams: any[];
+  teamsLoading: boolean;
+  deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   
   // Simplified loading state
   isLoading: boolean;
@@ -85,6 +94,12 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   }, [searchParams, selectedBracketId]);
 
+  // NEW: Use simplified bracket data hook for selected bracket
+  const { data: selectedBracket, isLoading: selectedBracketLoading, error: selectedBracketError } = useBracketData(selectedBracketId);
+  
+  // NEW: Use teams hook
+  const { data: teamsData, isLoading: teamsLoading } = usePlayoffTeams();
+
   // Fetch divisions with enhanced error handling
   const { 
     divisions, 
@@ -103,6 +118,29 @@ export function usePlayoffPageData(): PlayoffPageData {
     refetchBrackets,
     error: bracketsDataError
   } = usePlayoffData();
+  
+  // NEW: Delete bracket function
+  const deleteBracket = async (bracketId: string, bracketName: string) => {
+    console.log('🎯 usePlayoffPageData: Deleting bracket:', bracketId, bracketName);
+    
+    try {
+      const { error } = await supabase
+        .from('brackets')
+        .delete()
+        .eq('id', bracketId);
+      
+      if (error) {
+        throw error;
+      }
+      
+      console.log('🎯 usePlayoffPageData: Bracket deleted successfully');
+    } catch (error) {
+      console.error('🎯 usePlayoffPageData: Error deleting bracket:', error);
+      const errorMessage = getUIErrorMessage(error, "Failed to delete bracket");
+      logError(error, "deleteBracket");
+      throw new Error(errorMessage);
+    }
+  };
   
   // Simplified bracket creation handler
   const handleBracketCreated = async () => {
@@ -221,6 +259,12 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleBracketCreated,
     handleTeamDivisionChange,
     refetchBrackets,
+    
+    // NEW: Compatibility properties
+    bracket: selectedBracket,
+    teams: teamsData || [],
+    teamsLoading,
+    deleteBracket,
     
     // Simplified loading state
     isLoading

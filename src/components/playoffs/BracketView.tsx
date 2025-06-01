@@ -6,29 +6,43 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface BracketViewProps {
-  bracketId: string | null;
+  bracketId?: string | null;
+  bracket?: any; // Legacy prop for backward compatibility
+  teams?: any[]; // Legacy prop for backward compatibility
   onEditMatch?: (matchId: string) => void;
 }
 
 /**
- * Simplified bracket view component
+ * Unified bracket view component with backward compatibility
  */
 const BracketView: React.FC<BracketViewProps> = ({
   bracketId,
+  bracket: legacyBracket,
+  teams: legacyTeams,
   onEditMatch
 }) => {
-  console.log('🎯 BracketView: Rendering with bracketId:', bracketId);
+  console.log('🎯 BracketView: Rendering with props:', {
+    bracketId,
+    hasLegacyBracket: !!legacyBracket,
+    hasLegacyTeams: !!legacyTeams
+  });
   
+  // Use new simplified hook when bracketId is provided
   const { data: bracket, isLoading, error } = useBracketData(bracketId);
 
-  console.log('🎯 BracketView: Hook results:', {
-    bracket: bracket?.name,
-    matchesCount: bracket?.matches?.length,
+  // Use legacy data if provided, otherwise use new data
+  const displayBracket = legacyBracket || bracket;
+  const displayTeams = legacyTeams || [];
+
+  console.log('🎯 BracketView: Display data:', {
+    displayBracket: displayBracket?.name,
+    matchesCount: displayBracket?.matches?.length,
+    teamsCount: displayTeams?.length,
     isLoading,
     error: error?.message
   });
 
-  if (isLoading) {
+  if (isLoading && !legacyBracket) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
@@ -39,7 +53,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  if (error) {
+  if (error && !legacyBracket) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
@@ -50,7 +64,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  if (!bracket) {
+  if (!displayBracket) {
     return (
       <div className="text-center p-8">
         <p className="text-gray-500">No bracket selected</p>
@@ -58,7 +72,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  return <SimpleBracket bracket={bracket} onMatchClick={onEditMatch} />;
+  return <SimpleBracket bracket={displayBracket} onMatchClick={onEditMatch} />;
 };
 
 export default BracketView;
