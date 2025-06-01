@@ -59,14 +59,13 @@ export const useBracketData = (bracketId: string | null) => {
         return null;
       }
 
-      // Get matches with team data using the new foreign key constraints
-      const { data: matches, error: matchesError } = await supabase
+      console.log('🎯 useBracketData: Found bracket:', bracket.title, 'Division:', bracket.division_id);
+
+      // Get ALL matches for this bracket, including those without teams assigned
+      // Use a simpler query without complex joins that might filter out matches
+      const { data: rawMatches, error: matchesError } = await supabase
         .from('playoff_matches')
-        .select(`
-          *,
-          team1:teams!fk_playoff_matches_team1(id, name, logo_url, image_url),
-          team2:teams!fk_playoff_matches_team2(id, name, logo_url, image_url)
-        `)
+        .select('*')
         .eq('bracket_id', bracketId)
         .order('round')
         .order('position');
@@ -76,7 +75,9 @@ export const useBracketData = (bracketId: string | null) => {
         throw matchesError;
       }
 
-      // Get all teams for this bracket's division as fallback
+      console.log('🎯 useBracketData: Raw matches found:', rawMatches?.length || 0);
+
+      // Get all teams for this bracket's division for team data lookup
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
         .select('id, name, logo_url, image_url')
@@ -87,17 +88,40 @@ export const useBracketData = (bracketId: string | null) => {
         throw teamsError;
       }
 
-      console.log('🎯 useBracketData: Successfully fetched data:', {
-        bracket: bracket.title,
-        matchesCount: matches?.length || 0,
-        teamsCount: teams?.length || 0
-      });
+      console.log('🎯 useBracketData: Teams found in division:', teams?.length || 0);
 
-      // Create team lookup map for fallback
+      // Create team lookup map
       const teamLookup = new Map();
       teams?.forEach(team => {
         teamLookup.set(team.id, team);
       });
+
+      // Transform matches with team data lookup
+      const transformedMatches = (rawMatches || []).map(match => {
+        const team1 = match.team1_id ? teamLookup.get(match.team1_id) : null;
+        const team2 = match.team2_id ? teamLookup.get(match.team2_id) : null;
+        
+        console.log(`🎯 useBracketData: Match ${match.id} - Team1: ${team1?.name || 'TBD'}, Team2: ${team2?.name || 'TBD'}`);
+        
+        return {
+          id: match.id,
+          round: match.round,
+          position: match.position,
+          team1Id: match.team1_id,
+          team2Id: match.team2_id,
+          team1Name: team1?.name,
+          team2Name: team2?.name,
+          team1Logo: team1?.logo_url || team1?.image_url,
+          team2Logo: team2?.logo_url || team2?.image_url,
+          winnerId: match.winner_id,
+          team1Score: match.team1_score,
+          team2Score: match.team2_score,
+          matchType: match.match_type || 'winners',
+          status: match.status || 'pending'
+        };
+      });
+
+      console.log('🎯 useBracketData: Successfully transformed', transformedMatches.length, 'matches');
 
       return {
         id: bracket.id,
@@ -105,28 +129,7 @@ export const useBracketData = (bracketId: string | null) => {
         format: bracket.format || 'Double Elimination',
         state: bracket.state || 'pending',
         division: bracket.division_id,
-        matches: (matches || []).map(match => {
-          // Use joined team data if available, otherwise fall back to lookup
-          const team1 = match.team1 || (match.team1_id ? teamLookup.get(match.team1_id) : null);
-          const team2 = match.team2 || (match.team2_id ? teamLookup.get(match.team2_id) : null);
-          
-          return {
-            id: match.id,
-            round: match.round,
-            position: match.position,
-            team1Id: match.team1_id,
-            team2Id: match.team2_id,
-            team1Name: team1?.name,
-            team2Name: team2?.name,
-            team1Logo: team1?.logo_url || team1?.image_url,
-            team2Logo: team2?.logo_url || team2?.image_url,
-            winnerId: match.winner_id,
-            team1Score: match.team1_score,
-            team2Score: match.team2_score,
-            matchType: match.match_type || 'winners',
-            status: match.status || 'pending'
-          };
-        }),
+        matches: transformedMatches,
         teams: teams || []
       };
     },

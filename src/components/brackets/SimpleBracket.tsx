@@ -12,7 +12,15 @@ interface SimpleBracketProps {
 const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) => {
   console.log('🎯 SimpleBracket: Rendering bracket:', bracket.name);
   console.log('🎯 SimpleBracket: Matches count:', bracket.matches.length);
-  console.log('🎯 SimpleBracket: Sample match data:', bracket.matches[0]);
+  console.log('🎯 SimpleBracket: Teams available:', bracket.teams.length);
+  
+  if (bracket.matches.length > 0) {
+    console.log('🎯 SimpleBracket: Sample match data:', bracket.matches[0]);
+    const matchesWithTeams = bracket.matches.filter(m => m.team1Id || m.team2Id);
+    const emptyMatches = bracket.matches.filter(m => !m.team1Id && !m.team2Id);
+    console.log('🎯 SimpleBracket: Matches with teams:', matchesWithTeams.length);
+    console.log('🎯 SimpleBracket: Empty matches (TBD):', emptyMatches.length);
+  }
 
   // Group matches by round for display
   const matchesByRound = bracket.matches.reduce((acc, match) => {
@@ -27,21 +35,23 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
     .map(Number)
     .sort((a, b) => a - b);
 
+  // Check if we truly have no matches vs just no teams assigned
   if (bracket.matches.length === 0) {
     return (
       <div className="text-center p-8">
         <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
-        <p className="text-gray-500">No matches found for this bracket</p>
+        <p className="text-gray-500">No matches have been created for this bracket yet</p>
         <div className="text-sm text-gray-400 mt-2">
           Bracket ID: {bracket.id} | State: {bracket.state}
         </div>
         <div className="text-sm text-gray-400 mt-1">
-          Debug: {bracket.teams.length} teams available in division
+          Teams available in division: {bracket.teams.length}
         </div>
       </div>
     );
   }
 
+  // Show bracket with matches (even if teams aren't assigned yet)
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -52,6 +62,11 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
             {bracket.state}
           </Badge>
         </div>
+      </div>
+
+      {/* Debug info when in development */}
+      <div className="text-xs text-gray-400 mb-4">
+        Matches: {bracket.matches.length} | Teams in division: {bracket.teams.length}
       </div>
 
       <div className="flex gap-6 overflow-x-auto pb-4">
@@ -134,10 +149,10 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
                         </div>
                       )}
 
-                      {/* Debug info for troubleshooting */}
-                      {(!match.team1Name || !match.team2Name) && (
-                        <div className="text-xs text-red-500 pt-1">
-                          Debug: Team1 ID: {match.team1Id} | Team2 ID: {match.team2Id}
+                      {/* Only show debug info for matches without teams in development */}
+                      {(!match.team1Name && !match.team2Name) && (
+                        <div className="text-xs text-orange-500 pt-1">
+                          Awaiting team assignments
                         </div>
                       )}
                     </div>

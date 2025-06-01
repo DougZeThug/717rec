@@ -13,7 +13,7 @@ interface BracketViewProps {
 }
 
 /**
- * Simplified bracket view component - no more complex data transformations
+ * Simplified bracket view component with improved error handling and debugging
  */
 const BracketView: React.FC<BracketViewProps> = ({
   bracketId,
@@ -42,35 +42,46 @@ const BracketView: React.FC<BracketViewProps> = ({
     error: error?.message
   });
 
-  // Simple loading state
+  // Enhanced loading state
   if (isLoading && !legacyBracket) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
           <p>Loading bracket data...</p>
+          {bracketId && (
+            <p className="text-xs text-gray-400 mt-1">Bracket ID: {bracketId}</p>
+          )}
         </div>
       </div>
     );
   }
 
-  // Simple error state
+  // Enhanced error state with more details
   if (error && !legacyBracket) {
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           Failed to load bracket: {error.message}
+          {bracketId && (
+            <div className="text-xs mt-1">Bracket ID: {bracketId}</div>
+          )}
         </AlertDescription>
       </Alert>
     );
   }
 
-  // No bracket state
+  // No bracket state with more context
   if (!displayBracket) {
     return (
       <div className="text-center p-8">
         <p className="text-gray-500">No bracket selected</p>
+        {bracketId && (
+          <p className="text-xs text-gray-400 mt-1">
+            Attempted to load bracket: {bracketId}
+          </p>
+        )}
       </div>
     );
   }
