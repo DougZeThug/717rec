@@ -43,16 +43,19 @@ const BracketForm: React.FC<BracketFormProps> = ({
       format: "Single Elimination",
       teams: [],
     },
-    mode: "onBlur", // Changed from "onChange" to prevent auto-submission
+    mode: "onBlur",
   });
 
-  const { watch, setValue, handleSubmit, formState } = form;
+  const { watch, setValue, handleSubmit, formState, trigger } = form;
   const watchedDivisionId = watch("divisionId");
+  const watchedTitle = watch("title");
 
-  // Update teams field when selection changes - NO SUBMISSION
+  // Update teams field when selection changes and trigger validation
   React.useEffect(() => {
-    setValue("teams", selectedTeams, { shouldValidate: false }); // Don't validate immediately
-  }, [selectedTeams, setValue]);
+    setValue("teams", selectedTeams, { shouldValidate: true });
+    // Manually trigger validation to ensure form state is updated
+    trigger("teams");
+  }, [selectedTeams, setValue, trigger]);
 
   // Handle team selection changes - ONLY updates state, NEVER submits
   const handleTeamSelectionChange = React.useCallback(
@@ -117,8 +120,15 @@ const BracketForm: React.FC<BracketFormProps> = ({
     });
   };
 
-  // Calculate form state
-  const isFormValid = formState.isValid && teamsValidationState;
+  // Simplified button state logic - check individual field requirements
+  const isButtonEnabled = !!(
+    watchedTitle && 
+    watchedDivisionId && 
+    teamsValidationState && 
+    selectedTeams.length >= 2 && 
+    !isSubmitting
+  );
+
   const selectedTeamCount = selectedTeams.length;
   const minTeams = 2;
   const maxTeams = 16;
@@ -190,7 +200,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
           <Button
             type="button"
             onClick={handleSubmitButtonClick}
-            disabled={!isFormValid || isSubmitting}
+            disabled={!isButtonEnabled}
             className="flex-1"
           >
             {isSubmitting ? (
