@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { challongeFetch } from "../challonge/lib.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -54,7 +55,7 @@ serve(async (req) => {
 
     const payload: CreateBracketPayload = await req.json();
     
-    console.log('Creating bracket with payload:', payload);
+    console.log('[BRACKET] Creating bracket with payload:', JSON.stringify(payload, null, 2));
 
     // Validate payload
     if (!payload.name || !payload.divisionId || !payload.teams || payload.teams.length < 2) {
@@ -70,102 +71,79 @@ serve(async (req) => {
         misc: JSON.stringify({ teamId: team.id })
       }));
 
-    // Create tournament on Challonge
+    console.log('[BRACKET] Prepared participants:', JSON.stringify(participants, null, 2));
+
+    // Check API key availability
     const challongeApiKey = Deno.env.get('CHALLONGE_API_KEY');
     if (!challongeApiKey) {
       throw new Error('Challonge API key not configured');
     }
 
+    console.log('[CHALLONGE] API key configured, proceeding with tournament creation');
+
     const tournamentType = payload.format === 'singleElim' ? 'single elimination' : 'double elimination';
     const tournamentUrl = `${payload.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${Date.now()}`;
 
-    // Create tournament
-    const createTournamentResponse = await fetch('https://api.challonge.com/v2/tournaments.json', {
-      method: 'POST',
-      headers: {
-        'Authorization-Type': 'v1',
-        'Authorization': challongeApiKey,
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        data: {
-          type: 'tournaments',
-          attributes: {
-            name: payload.name,
-            url: tournamentUrl,
-            tournament_type: tournamentType,
-            description: `Tournament created for ${payload.name}`
-          }
-        }
-      })
+    console.log('[CHALLONGE] Creating tournament with type:', tournamentType, 'and URL:', tournamentUrl);
+
+    // Create tournament using v1 API with challongeFetch helper
+    const tournamentData = await challongeFetch('POST', '/tournaments', {
+      tournament: {
+        name: payload.name,
+        url: tournamentUrl,
+        tournament_type: tournamentType,
+        description: `Tournament created for ${payload.name}`
+      }
     });
 
-    if (!createTournamentResponse.ok) {
-      const errorText = await createTournamentResponse.text();
-      console.error('Challonge tournament creation failed:', errorText);
-      throw new Error(`Failed to create Challonge tournament: ${createTournamentResponse.status}`);
-    }
+    console.log('[CHALLONGE] Tournament created successfully:', JSON.stringify(tournamentData, null, 2));
 
-    const tournamentData = await createTournamentResponse.json();
-    const tournament = tournamentData.data;
+    const tournament = tournamentData.tournament;
     const tournamentId = tournament.id;
 
-    console.log('Tournament created:', tournament);
-
-    // Add participants to tournament
-    for (const participant of participants) {
-      const addParticipantResponse = await fetch(`https://api.challonge.com/v2/tournaments/${tournamentId}/participants.json`, {
-        method: 'POST',
-        headers: {
-          'Authorization-Type': 'v1',
-          'Authorization': challongeApiKey,
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          data: {
-            type: 'participants',
-            attributes: {
-              name: participant.name,
-              seed: participant.seed,
-              misc: participant.misc
-            }
+    // Add participants to tournament using v1 API
+    console.log('[CHALLONGE] Adding participants to tournament...');
+    
+    for (let i = 0; i < participants.length; i++) {
+      const participant = participants[i];
+      console.log(`[CHALLONGE] Adding participant ${i + 1}/${participants.length}:`, participant.name);
+      
+      try {
+        const participantData = await challongeFetch('POST', `/tournaments/${tournamentId}/participants`, {
+          participant: {
+            name: participant.name,
+            seed: participant.seed,
+            misc: participant.misc
           }
-        })
-      });
-
-      if (!addParticipantResponse.ok) {
-        const errorText = await addParticipantResponse.text();
-        console.error('Failed to add participant:', errorText);
-        throw new Error(`Failed to add participant ${participant.name}`);
+        });
+        
+        console.log(`[CHALLONGE] Successfully added participant:`, participantData.participant?.name || 'Unknown');
+      } catch (error) {
+        console.error(`[CHALLONGE] Failed to add participant ${participant.name}:`, error);
+        throw new Error(`Failed to add participant ${participant.name}: ${error.message}`);
       }
     }
 
-    // Start tournament
-    const startTournamentResponse = await fetch(`https://api.challonge.com/v2/tournaments/${tournamentId}/start.json`, {
-      method: 'POST',
-      headers: {
-        'Authorization-Type': 'v1',
-        'Authorization': challongeApiKey,
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/json'
-      }
-    });
+    console.log('[CHALLONGE] All participants added successfully');
 
-    if (!startTournamentResponse.ok) {
-      const errorText = await startTournamentResponse.text();
-      console.error('Failed to start tournament:', errorText);
-      throw new Error('Failed to start tournament');
+    // Start tournament using v1 API
+    console.log('[CHALLONGE] Starting tournament...');
+    
+    try {
+      const startData = await challongeFetch('POST', `/tournaments/${tournamentId}/start`);
+      console.log('[CHALLONGE] Tournament started successfully:', startData.tournament?.state || 'Unknown state');
+    } catch (error) {
+      console.error('[CHALLONGE] Failed to start tournament:', error);
+      throw new Error(`Failed to start tournament: ${error.message}`);
     }
-
-    console.log('Tournament started successfully');
 
     // Create Supabase admin client for database operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    console.log('[DATABASE] Inserting bracket record...');
 
     // Insert bracket record into Supabase
     const { data: bracketData, error: insertError } = await supabaseAdmin
@@ -186,13 +164,17 @@ serve(async (req) => {
       .single();
 
     if (insertError || !bracketData) {
-      console.error('Failed to insert bracket:', insertError);
+      console.error('[DATABASE] Failed to insert bracket:', insertError);
       throw new Error(`Failed to save bracket: ${insertError?.message || 'No data returned'}`);
     }
 
+    console.log('[DATABASE] Bracket record created:', bracketData.id);
+
     // Create participants records
+    console.log('[DATABASE] Creating participant records...');
+    
     for (const team of payload.teams) {
-      await supabaseAdmin
+      const { error: participantError } = await supabaseAdmin
         .from('participants')
         .insert({
           bracket_id: bracketData.id,
@@ -200,9 +182,14 @@ serve(async (req) => {
           position: team.seed || 1,
           name: team.name
         });
+      
+      if (participantError) {
+        console.error('[DATABASE] Failed to create participant record for team:', team.name, participantError);
+        // Continue with other participants rather than failing completely
+      }
     }
 
-    console.log('Bracket created successfully:', bracketData);
+    console.log('[BRACKET] Bracket creation completed successfully:', bracketData.id);
 
     const bracketRecord: BracketRecord = {
       id: bracketData.id,
@@ -226,15 +213,31 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in create-bracket function:', error);
+    console.error('[BRACKET] Error in create-bracket function:', error);
+    
+    // Parse specific Challonge errors for better user feedback
+    let errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    let statusCode = 500;
+    
+    if (errorMessage.includes('Challonge 422')) {
+      errorMessage = 'Tournament name already exists or invalid data provided';
+      statusCode = 409; // Conflict
+    } else if (errorMessage.includes('Challonge 401')) {
+      errorMessage = 'Invalid Challonge API credentials';
+      statusCode = 401;
+    } else if (errorMessage.includes('Authentication required')) {
+      statusCode = 401;
+    } else if (errorMessage.includes('Invalid payload')) {
+      statusCode = 400;
+    }
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+        error: errorMessage
       }),
       { 
-        status: 500,
+        status: statusCode,
         headers: { 
           ...corsHeaders, 
           'Content-Type': 'application/json' 
