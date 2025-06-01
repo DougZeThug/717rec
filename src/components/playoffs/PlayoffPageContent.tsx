@@ -20,6 +20,11 @@ interface PlayoffPageContentProps {
   onEditMatch: (matchId: string) => void;
   onDeleteBracket?: (id: string, name: string) => void;
   onRefreshData?: () => Promise<void>;
+  
+  // NEW: Additional props for compatibility
+  bracket?: any;
+  teams?: any[];
+  bracketLoading?: boolean;
 }
 
 const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
@@ -33,7 +38,10 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   onEditBracket,
   onEditMatch,
   onDeleteBracket,
-  onRefreshData
+  onRefreshData,
+  bracket,
+  teams,
+  bracketLoading
 }) => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
@@ -54,7 +62,10 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
     }
   };
 
-  if (isLoading && !allBracketsData.length) {
+  // Use bracketLoading if provided, otherwise fall back to general isLoading
+  const displayLoading = bracketLoading !== undefined ? bracketLoading : isLoading;
+
+  if (displayLoading && !allBracketsData.length) {
     return (
       <div className="flex flex-col items-center">
         <Loader2 className="w-8 h-8 text-cornhole-navy animate-spin mb-2" />
@@ -99,17 +110,19 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         ))}
       </div>
       
-      {/* Selected bracket view - now using simplified architecture */}
+      {/* Selected bracket view - supports both new and legacy patterns */}
       {selectedBracketId && (
         <div className="mt-8">
           <BracketView 
             bracketId={selectedBracketId}
+            bracket={bracket}
+            teams={teams}
             onEditMatch={onEditMatch}
           />
         </div>
       )}
       
-      {allBracketsData.length === 0 && !isLoading && (
+      {allBracketsData.length === 0 && !displayLoading && (
         <EmptyBracketState onCreateBracket={onCreateBracket} />
       )}
     </div>
