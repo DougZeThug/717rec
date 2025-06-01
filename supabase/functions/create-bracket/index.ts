@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -59,27 +58,36 @@ class BracketGenerator {
     const rounds = this.calculateRounds(bracketSize);
     const matches: any[] = [];
     
-    let matchId = 1;
+    // Create a mapping of round/position to match IDs for reference
+    const matchIdMap = new Map<string, string>();
     
-    // Generate all rounds structure first
-    const roundMatches: number[][] = [];
+    // Generate all match IDs first
     for (let round = 1; round <= rounds; round++) {
       const matchesInRound = Math.pow(2, rounds - round);
-      roundMatches[round] = [];
-      for (let i = 0; i < matchesInRound; i++) {
-        roundMatches[round].push(matchId++);
+      for (let position = 0; position < matchesInRound; position++) {
+        const key = `${round}-${position}`;
+        matchIdMap.set(key, crypto.randomUUID());
       }
     }
     
     // Create first round matches
-    const firstRoundMatches = roundMatches[1];
-    for (let i = 0; i < firstRoundMatches.length; i++) {
+    const firstRoundMatches = Math.pow(2, rounds - 1);
+    for (let i = 0; i < firstRoundMatches; i++) {
       const matchPosition = i;
       const team1Index = i * 2;
       const team2Index = i * 2 + 1;
+      const matchId = matchIdMap.get(`1-${i}`)!;
+      
+      // Determine next match ID if not final round
+      let nextWinMatchId = null;
+      if (rounds > 1) {
+        const nextRound = 2;
+        const nextPosition = Math.floor(i / 2);
+        nextWinMatchId = matchIdMap.get(`${nextRound}-${nextPosition}`) || null;
+      }
       
       const match = {
-        id: crypto.randomUUID(),
+        id: matchId,
         bracket_id: bracketId,
         round: 1,
         position: matchPosition,
@@ -88,7 +96,7 @@ class BracketGenerator {
         team2_id: team2Index < sortedTeams.length ? sortedTeams[team2Index].id : null,
         team1_seed: team1Index < sortedTeams.length ? sortedTeams[team1Index].seed || (team1Index + 1) : null,
         team2_seed: team2Index < sortedTeams.length ? sortedTeams[team2Index].seed || (team2Index + 1) : null,
-        next_win_match_id: rounds > 1 ? crypto.randomUUID() : null,
+        next_win_match_id: nextWinMatchId,
         best_of: 3,
         status: 'pending'
       };
@@ -98,12 +106,21 @@ class BracketGenerator {
     
     // Create subsequent rounds
     for (let round = 2; round <= rounds; round++) {
-      const matchesInRound = roundMatches[round];
-      const prevRoundMatches = matches.filter(m => m.round === round - 1);
+      const matchesInRound = Math.pow(2, rounds - round);
       
-      for (let i = 0; i < matchesInRound.length; i++) {
+      for (let i = 0; i < matchesInRound; i++) {
+        const matchId = matchIdMap.get(`${round}-${i}`)!;
+        
+        // Determine next match ID if not final round
+        let nextWinMatchId = null;
+        if (round < rounds) {
+          const nextRound = round + 1;
+          const nextPosition = Math.floor(i / 2);
+          nextWinMatchId = matchIdMap.get(`${nextRound}-${nextPosition}`) || null;
+        }
+        
         const match = {
-          id: crypto.randomUUID(),
+          id: matchId,
           bracket_id: bracketId,
           round: round,
           position: i,
@@ -112,23 +129,12 @@ class BracketGenerator {
           team2_id: null,
           team1_seed: null,
           team2_seed: null,
-          next_win_match_id: round < rounds ? crypto.randomUUID() : null,
+          next_win_match_id: nextWinMatchId,
           best_of: 3,
           status: 'pending'
         };
         
         matches.push(match);
-        
-        // Update previous round matches to point to this match
-        const prevMatch1 = prevRoundMatches[i * 2];
-        const prevMatch2 = prevRoundMatches[i * 2 + 1];
-        
-        if (prevMatch1) {
-          prevMatch1.next_win_match_id = match.id;
-        }
-        if (prevMatch2) {
-          prevMatch2.next_win_match_id = match.id;
-        }
       }
     }
     
@@ -141,13 +147,85 @@ class BracketGenerator {
     const rounds = this.calculateRounds(bracketSize);
     const matches: any[] = [];
     
-    // Generate winners bracket (same as single elimination)
-    const winnersMatches = this.generateSingleElimination(teams, bracketId);
-    matches.push(...winnersMatches);
+    // Create match ID mappings for both brackets
+    const winnersMatchIds = new Map<string, string>();
+    const losersMatchIds = new Map<string, string>();
+    const grandFinalsId = crypto.randomUUID();
     
-    // Generate losers bracket
+    // Generate winner bracket match IDs
+    for (let round = 1; round <= rounds; round++) {
+      const matchesInRound = Math.pow(2, rounds - round);
+      for (let position = 0; position < matchesInRound; position++) {
+        const key = `w-${round}-${position}`;
+        winnersMatchIds.set(key, crypto.randomUUID());
+      }
+    }
+    
+    // Generate loser bracket match IDs
     const losersRounds = (rounds - 1) * 2;
+    for (let round = 1; round <= losersRounds; round++) {
+      const isEvenRound = round % 2 === 0;
+      const matchesInRound = isEvenRound ? 
+        Math.pow(2, rounds - Math.ceil(round / 2) - 1) : 
+        Math.pow(2, rounds - Math.ceil(round / 2));
+      
+      for (let position = 0; position < matchesInRound; position++) {
+        const key = `l-${round}-${position}`;
+        losersMatchIds.set(key, crypto.randomUUID());
+      }
+    }
     
+    // Generate winners bracket matches (same logic as single elimination)
+    for (let round = 1; round <= rounds; round++) {
+      const matchesInRound = Math.pow(2, rounds - round);
+      
+      for (let i = 0; i < matchesInRound; i++) {
+        const matchId = winnersMatchIds.get(`w-${round}-${i}`)!;
+        
+        // Determine next win match
+        let nextWinMatchId = null;
+        if (round < rounds) {
+          const nextRound = round + 1;
+          const nextPosition = Math.floor(i / 2);
+          nextWinMatchId = winnersMatchIds.get(`w-${nextRound}-${nextPosition}`) || null;
+        } else {
+          // Finals winner goes to grand finals
+          nextWinMatchId = grandFinalsId;
+        }
+        
+        // For losers bracket routing (elimination from winners bracket)
+        let nextLoseMatchId = null;
+        if (round === 1) {
+          // First round losers go to first round of losers bracket
+          nextLoseMatchId = losersMatchIds.get(`l-1-${i}`) || null;
+        } else if (round > 1) {
+          // Later round losers go to specific losers bracket positions
+          const losersRound = (round - 1) * 2;
+          const losersPosition = i;
+          nextLoseMatchId = losersMatchIds.get(`l-${losersRound}-${losersPosition}`) || null;
+        }
+        
+        const match = {
+          id: matchId,
+          bracket_id: bracketId,
+          round: round,
+          position: i,
+          match_type: round === rounds ? 'finals' : 'winners',
+          team1_id: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].id : null,
+          team2_id: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].id : null,
+          team1_seed: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].seed || (i * 2 + 1) : null,
+          team2_seed: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].seed || (i * 2 + 2) : null,
+          next_win_match_id: nextWinMatchId,
+          next_lose_match_id: nextLoseMatchId,
+          best_of: 3,
+          status: 'pending'
+        };
+        
+        matches.push(match);
+      }
+    }
+    
+    // Generate losers bracket matches
     for (let round = 1; round <= losersRounds; round++) {
       const isEvenRound = round % 2 === 0;
       const matchesInRound = isEvenRound ? 
@@ -155,8 +233,21 @@ class BracketGenerator {
         Math.pow(2, rounds - Math.ceil(round / 2));
       
       for (let i = 0; i < matchesInRound; i++) {
+        const matchId = losersMatchIds.get(`l-${round}-${i}`)!;
+        
+        // Determine next win match
+        let nextWinMatchId = null;
+        if (round < losersRounds) {
+          const nextRound = round + 1;
+          const nextPosition = isEvenRound ? i : Math.floor(i / 2);
+          nextWinMatchId = losersMatchIds.get(`l-${nextRound}-${nextPosition}`) || null;
+        } else {
+          // Losers bracket finals winner goes to grand finals
+          nextWinMatchId = grandFinalsId;
+        }
+        
         const match = {
-          id: crypto.randomUUID(),
+          id: matchId,
           bracket_id: bracketId,
           round: round,
           position: i,
@@ -165,7 +256,7 @@ class BracketGenerator {
           team2_id: null,
           team1_seed: null,
           team2_seed: null,
-          next_win_match_id: round < losersRounds ? crypto.randomUUID() : null,
+          next_win_match_id: nextWinMatchId,
           next_lose_match_id: null, // Losers bracket eliminations
           best_of: 3,
           status: 'pending'
@@ -177,7 +268,7 @@ class BracketGenerator {
     
     // Generate grand finals
     const grandFinals = {
-      id: crypto.randomUUID(),
+      id: grandFinalsId,
       bracket_id: bracketId,
       round: 1,
       position: 0,
@@ -193,20 +284,6 @@ class BracketGenerator {
     };
     
     matches.push(grandFinals);
-    
-    // Link losers bracket eliminations to winners bracket
-    winnersMatches.forEach((winnersMatch, index) => {
-      if (winnersMatch.round > 1) {
-        // Find corresponding losers bracket match to receive eliminated team
-        const correspondingLosersMatch = matches.find(m => 
-          m.match_type === 'losers' && 
-          m.round === (winnersMatch.round - 1) * 2 - 1
-        );
-        if (correspondingLosersMatch) {
-          winnersMatch.next_lose_match_id = correspondingLosersMatch.id;
-        }
-      }
-    });
     
     return matches;
   }
@@ -413,7 +490,7 @@ serve(async (req) => {
       console.log('[DATABASE] Created participant records for all teams');
     }
 
-    // Generate and insert playoff matches
+    // Generate and insert playoff matches using two-pass approach
     console.log('[MATCHES] Generating playoff match structure...');
     
     let playoffMatches: any[] = [];
@@ -430,16 +507,32 @@ serve(async (req) => {
       if (playoffMatches.length > 0) {
         console.log('[MATCHES] Inserting playoff matches into database...');
         
-        const { error: matchesError } = await supabaseAdmin
-          .from('playoff_matches')
-          .insert(playoffMatches);
+        // Sort matches to insert those with no dependencies first (reverse round order)
+        const sortedMatches = [...playoffMatches].sort((a, b) => {
+          // Insert finals/later rounds first (they have no next_win_match_id dependencies from other matches)
+          if (a.match_type === 'finals' && b.match_type !== 'finals') return -1;
+          if (b.match_type === 'finals' && a.match_type !== 'finals') return 1;
+          // Then sort by round descending (later rounds first)
+          return b.round - a.round;
+        });
         
-        if (matchesError) {
-          console.error('[MATCHES] Failed to insert playoff matches:', matchesError);
-          throw new Error(`Failed to create playoff matches: ${matchesError.message}`);
-        } else {
-          console.log(`[MATCHES] Successfully inserted ${playoffMatches.length} playoff matches`);
+        // Insert matches in batches to avoid large transaction issues
+        const batchSize = 10;
+        for (let i = 0; i < sortedMatches.length; i += batchSize) {
+          const batch = sortedMatches.slice(i, i + batchSize);
+          console.log(`[MATCHES] Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(sortedMatches.length/batchSize)} (${batch.length} matches)`);
+          
+          const { error: batchError } = await supabaseAdmin
+            .from('playoff_matches')
+            .insert(batch);
+          
+          if (batchError) {
+            console.error(`[MATCHES] Failed to insert batch ${Math.floor(i/batchSize) + 1}:`, batchError);
+            throw new Error(`Failed to create playoff matches batch: ${batchError.message}`);
+          }
         }
+        
+        console.log(`[MATCHES] Successfully inserted all ${playoffMatches.length} playoff matches`);
       }
     } catch (matchError) {
       console.error('[MATCHES] Error generating or inserting matches:', matchError);
