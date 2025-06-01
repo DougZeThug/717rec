@@ -147,10 +147,10 @@ const BracketView: React.FC<BracketViewProps> = ({
     hasOnEditMatch: !!onEditMatch
   });
 
-  // PHASE 3 FIX: Memoized SimpleBracket to prevent unnecessary re-renders
-  return React.memo(() => (
+  // PHASE 3 FIX: Return SimpleBracket directly
+  return (
     <SimpleBracket bracket={displayBracket} onMatchClick={onEditMatch} />
-  ))();
+  );
 };
 
 export default React.memo(BracketView);

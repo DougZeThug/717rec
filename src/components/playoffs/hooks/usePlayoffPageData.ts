@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from "@tanstack/react-query";
@@ -195,27 +194,30 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   }, [originalHandleBracketCreated, originalRefetchBrackets, queryClient]);
 
-  // PHASE 3 FIX: Enhanced refetch function with optimistic updates
+  // PHASE 3 FIX: Enhanced refetch function with Promise type fix
   const refetchBrackets = useCallback(async () => {
     console.log('🎯 PHASE 3 FIX: refetchBrackets called');
     
     try {
-      // Parallel refetch for better performance
-      const refetchPromises = [
+      // PHASE 3 FIX: Handle refetch promises separately to fix type mismatch
+      const cacheInvalidationPromises = [
         originalRefetchBrackets(),
         queryClient.invalidateQueries({ queryKey: ['brackets'] }),
         queryClient.invalidateQueries({ queryKey: ['playoff-data'] })
       ];
       
-      // If we have a selected bracket, also refetch its data
+      // Handle selected bracket refetch separately due to type mismatch
       if (selectedBracketId) {
-        refetchPromises.push(
-          queryClient.invalidateQueries({ queryKey: ['bracket-data', selectedBracketId] }),
-          refetchSelectedBracket()
-        );
+        await Promise.all([
+          ...cacheInvalidationPromises,
+          queryClient.invalidateQueries({ queryKey: ['bracket-data', selectedBracketId] })
+        ]);
+        
+        // Refetch selected bracket data separately
+        await refetchSelectedBracket();
+      } else {
+        await Promise.all(cacheInvalidationPromises);
       }
-      
-      await Promise.all(refetchPromises);
       
       console.log('🎯 PHASE 3 FIX: All data refetched successfully');
       return true;
