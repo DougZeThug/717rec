@@ -123,21 +123,15 @@ export function usePlayoffPageData(): PlayoffPageData {
   console.log('🎯 usePlayoffPageData - bracketLoading:', bracketLoading);
   console.log('🎯 usePlayoffPageData - bracketError:', bracketError);
   
-  // CRITICAL: Validate bracket matches data
-  if (bracket && selectedBracketId) {
-    console.log('🎯 usePlayoffPageData - VALIDATION: Bracket exists for ID:', selectedBracketId);
-    console.log('🎯 usePlayoffPageData - VALIDATION: Bracket.matches exists:', !!bracket.matches);
-    console.log('🎯 usePlayoffPageData - VALIDATION: Bracket.matches.length:', bracket.matches?.length || 0);
-    
-    if (!bracket.matches || bracket.matches.length === 0) {
-      console.warn('🎯 usePlayoffPageData - WARNING: Bracket exists but has no matches!');
-      console.log('🎯 usePlayoffPageData - Triggering refetch to get matches...');
-      // Trigger a refetch to try to get the matches
-      setTimeout(() => {
-        refetchCurrentBracket();
-      }, 1000);
-    }
-  }
+  // REMOVED: The problematic automatic refetch logic that was causing the infinite loop
+  // The code that was causing issues:
+  // if (bracket && selectedBracketId) {
+  //   if (!bracket.matches || bracket.matches.length === 0) {
+  //     setTimeout(() => {
+  //       refetchCurrentBracket();
+  //     }, 1000);
+  //   }
+  // }
   
   // Fetch divisions with enhanced error handling
   const { 
@@ -158,37 +152,23 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: bracketsDataError
   } = usePlayoffData();
   
-  // Enhanced bracket creation handler with navigation and cache invalidation
+  // Simplified bracket creation handler - no automatic navigation to prevent loops
   const handleBracketCreated = async () => {
     console.log('🎯 usePlayoffPageData: handleBracketCreated called');
     
     try {
-      // Get current bracket count before creation
-      const currentBracketCount = allBrackets ? allBrackets.length : 0;
-      console.log('🎯 usePlayoffPageData: Current bracket count before creation:', currentBracketCount);
-      
       // Call the original handler
       await originalHandleBracketCreated();
       console.log('🎯 usePlayoffPageData: Original bracket creation handler completed');
       
-      // Force additional refresh to ensure data is up to date
-      console.log('🎯 usePlayoffPageData: Triggering additional bracket refetch');
+      // Single refetch - no loops
+      console.log('🎯 usePlayoffPageData: Triggering single bracket refetch');
       await refetchBrackets();
-      console.log('🎯 usePlayoffPageData: Additional bracket refetch completed');
-      
-      // Force refetch current bracket data as well
-      if (selectedBracketId) {
-        console.log('🎯 usePlayoffPageData: Refreshing current bracket data');
-        await refetchCurrentBracket();
-      }
-      
-      // After successful creation and refresh, check if we have new brackets
-      // and automatically navigate to the most recently created one
-      console.log('🎯 usePlayoffPageData: Looking for newly created bracket to navigate to');
+      console.log('🎯 usePlayoffPageData: Bracket refetch completed');
       
     } catch (error) {
       console.error('🎯 usePlayoffPageData: Error in handleBracketCreated:', error);
-      const errorMessage = getUIErrorMessage(error, "Failed to refresh bracket data after creation");
+      const errorMessage = getUIErrorMessage(error, "Failed to create bracket");
       logError(error, "handleBracketCreated");
       setError(errorMessage);
     }

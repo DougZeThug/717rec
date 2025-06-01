@@ -65,27 +65,6 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Combined bracket AFTER matches attachment:', combinedBracket);
   console.log('🔍 usePlayoffViewModel - Combined bracket matches length:', combinedBracket?.matches?.length);
   
-  // CRITICAL: Additional validation
-  if (combinedBracket && matchesQuery.data) {
-    console.log('🔍 usePlayoffViewModel - VALIDATION: Bracket exists:', !!combinedBracket);
-    console.log('🔍 usePlayoffViewModel - VALIDATION: Matches exist:', !!matchesQuery.data);
-    console.log('🔍 usePlayoffViewModel - VALIDATION: Matches count:', matchesQuery.data.length);
-    console.log('🔍 usePlayoffViewModel - VALIDATION: Combined bracket matches count:', combinedBracket.matches.length);
-    
-    // Ensure matches are properly attached
-    if (matchesQuery.data.length > 0 && combinedBracket.matches.length === 0) {
-      console.error('🔍 usePlayoffViewModel - CRITICAL ERROR: Matches exist but not attached to bracket!');
-      combinedBracket.matches = matchesQuery.data;
-      console.log('🔍 usePlayoffViewModel - FIXED: Manually attached matches to bracket');
-    }
-  }
-  
-  // Additional debugging for the matches structure
-  if (combinedBracket?.matches && combinedBracket.matches.length > 0) {
-    console.log('🔍 usePlayoffViewModel - Sample match structure:', combinedBracket.matches[0]);
-    console.log('🔍 usePlayoffViewModel - All match types:', combinedBracket.matches.map(m => m.matchType));
-  }
-  
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: BracketMatchesByType | null = matchesQuery.data
     ? groupBracketMatchesByType(matchesQuery.data)
@@ -93,35 +72,18 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   
   console.log('🔍 usePlayoffViewModel - Bracket matches by type:', bracketMatchesByType);
   
-  // Enhanced refetch function with aggressive cache invalidation
+  // Simplified refetch function - no aggressive cache operations
   const refetch = async () => {
     try {
-      console.log('🔍 usePlayoffViewModel - Starting enhanced refetch...');
-      console.log('🔍 usePlayoffViewModel - Invalidating React Query cache for bracket:', bracketId);
+      console.log('🔍 usePlayoffViewModel - Starting simple refetch...');
       
-      // Force invalidate cache first using the proper QueryClient
-      if (queryClient && bracketId) {
-        // Invalidate all related queries with more aggressive patterns
-        await queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
-        await queryClient.invalidateQueries({ queryKey: ['bracket'] });
-        await queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
-        
-        // Remove specific queries from cache to force fresh fetch
-        await queryClient.removeQueries({ queryKey: ['playoff-matches', bracketId] });
-        await queryClient.removeQueries({ queryKey: ['bracket', bracketId] });
-        
-        console.log('🔍 usePlayoffViewModel - Cache invalidated and queries removed');
-      }
-      
-      // Small delay to ensure cache operations complete
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      // Simple parallel refetch without cache manipulation
       await Promise.all([
         bracketQuery.refetch(),
         matchesQuery.refetch(),
         teamsQuery.refetch()
       ]);
-      console.log('🔍 usePlayoffViewModel - Enhanced refetch completed successfully');
+      console.log('🔍 usePlayoffViewModel - Simple refetch completed successfully');
     } catch (err) {
       console.error('🔍 usePlayoffViewModel - Refetch error:', err);
       logError(err, "usePlayoffViewModel refetch");

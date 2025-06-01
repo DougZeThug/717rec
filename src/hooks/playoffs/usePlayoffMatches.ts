@@ -17,7 +17,7 @@ export const usePlayoffMatches = (bracketId: string | null) => {
       
       console.log('🔄 usePlayoffMatches: Fetching matches from playoff_matches table...');
       
-      // Try the full query with JOINs directly - no basic query first
+      // Single query approach - try the full query with JOINs
       const { data, error } = await supabase
         .from('playoff_matches')
         .select(`
@@ -32,61 +32,14 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         
       if (error) {
         console.error('🔄 usePlayoffMatches: Database error with JOINs:', error);
-        
-        // Fallback to basic query without JOINs
-        console.log('🔄 usePlayoffMatches: Falling back to basic query without JOINs...');
-        const { data: basicData, error: basicError } = await supabase
-          .from('playoff_matches')
-          .select('*')
-          .eq('bracket_id', bracketId)
-          .order('round')
-          .order('position');
-          
-        if (basicError) {
-          console.error('🔄 usePlayoffMatches: Basic query error:', basicError);
-          throw basicError;
-        }
-        
-        console.log('🔄 usePlayoffMatches: Basic query result:', basicData?.length || 0, 'matches');
-        
-        if (!basicData || basicData.length === 0) {
-          console.log('🔄 usePlayoffMatches: No matches found in basic query for bracketId:', bracketId);
-          return [];
-        }
-        
-        // Transform basic data to PlayoffMatch format
-        const transformedMatches = basicData.map(match => ({
-          id: match.id,
-          bracket_id: match.bracket_id,
-          round: match.round,
-          position: match.position,
-          team1Id: match.team1_id,
-          team2Id: match.team2_id,
-          winnerId: match.winner_id,
-          loserId: match.loser_id,
-          team1Score: match.team1_score,
-          team2Score: match.team2_score,
-          team1GameWins: 0,
-          team2GameWins: 0,
-          matchType: match.match_type,
-          bestOf: match.best_of || 3,
-          team1Seed: match.team1_seed,
-          team2Seed: match.team2_seed,
-          nextWinMatchId: match.next_win_match_id,
-          nextLoseMatchId: match.next_lose_match_id,
-          status: match.status || 'pending',
-          games: []
-        })) as PlayoffMatch[];
-        
-        console.log('🔄 usePlayoffMatches: Fallback transformation complete:', transformedMatches.length, 'matches');
-        return transformedMatches;
+        throw error;
       }
       
-      console.log('🔄 usePlayoffMatches: Full query successful - Raw database result:', data);
+      console.log('🔄 usePlayoffMatches: Query successful - Raw database result:', data);
       console.log('🔄 usePlayoffMatches: Found', data?.length || 0, 'matches');
       
       if (!data || data.length === 0) {
-        console.log('🔄 usePlayoffMatches: No matches found in full query for bracketId:', bracketId);
+        console.log('🔄 usePlayoffMatches: No matches found for bracketId:', bracketId);
         return [];
       }
       
@@ -140,14 +93,11 @@ export const usePlayoffMatches = (bracketId: string | null) => {
       return transformedMatches;
     },
     enabled: !!bracketId,
-    staleTime: 1000 * 30, // 30 seconds to avoid constant refetching
-    gcTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 10, // 10 seconds - reduced from 30 to get fresher data
+    gcTime: 1000 * 60 * 2, // Cache for 2 minutes - reduced from 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: false,
-    retry: (failureCount, error) => {
-      console.log('🔄 usePlayoffMatches: Query failed, retry attempt:', failureCount, 'Error:', error);
-      return failureCount < 5; // Retry up to 5 times with exponential backoff
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    retry: 2, // Reduced from 5 attempts
+    retryDelay: 1000, // Fixed 1 second delay instead of exponential backoff
   });
 };

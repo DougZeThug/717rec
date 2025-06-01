@@ -33,7 +33,6 @@ const BracketView: React.FC<BracketViewProps> = ({
   console.log('  - bracket:', bracket);
   console.log('  - bracket.matches:', bracket?.matches);
   console.log('  - bracket.matches.length:', bracket?.matches?.length);
-  console.log('  - bracket.matches detailed:', JSON.stringify(bracket?.matches, null, 2));
   console.log('  - teams:', teams);
   console.log('  - teams.length:', teams?.length);
   console.log('  - challonge matches:', matches);
@@ -100,13 +99,6 @@ const BracketView: React.FC<BracketViewProps> = ({
       matchesType: typeof bracket.matches
     });
     
-    if (bracket.matches) {
-      console.log('🎯 BracketView: Matches exists but invalid format');
-      console.log('🎯 BracketView: Matches content:', JSON.stringify(bracket.matches, null, 2));
-    } else {
-      console.log('🎯 BracketView: Matches property is null/undefined');
-    }
-    
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -116,8 +108,8 @@ const BracketView: React.FC<BracketViewProps> = ({
           </div>
         </div>
         <div className="text-center p-8 text-gray-500">
-          <div className="animate-pulse mb-4">
-            <div className="w-12 h-12 bg-blue-500 rounded-full mx-auto mb-2"></div>
+          <div className="mb-4">
+            <div className="w-12 h-12 bg-blue-500 rounded-full mx-auto mb-2 animate-pulse"></div>
             <p className="text-lg font-semibold">Loading bracket matches...</p>
           </div>
           <p className="text-sm">The bracket structure is being generated. This may take a few moments.</p>
@@ -126,12 +118,6 @@ const BracketView: React.FC<BracketViewProps> = ({
             <p><strong>Matches loaded:</strong> {bracket.matches?.length || 0}</p>
             <p><strong>Expected:</strong> Should have 15 matches for 8 teams</p>
           </div>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-          >
-            Refresh Page
-          </button>
         </div>
       </div>
     );
