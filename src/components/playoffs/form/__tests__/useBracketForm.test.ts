@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useBracketForm } from '../useBracketForm';
 import { Team } from '@/types';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, UseFormWatch } from 'react-hook-form';
 import { BracketFormValues } from '../BracketFormSchema';
 
 // Mock the useBracketFormState hook
@@ -52,30 +52,36 @@ describe('useBracketForm', () => {
   
   // Create a complete UseFormReturn mock with proper React Hook Form patterns
   const createMockForm = (): UseFormReturn<BracketFormValues> => {
-    const mockWatch = vi.fn();
-    const mockGetValues = vi.fn();
+    // Create a proper mock watch function that matches UseFormWatch signature
+    const mockWatch = vi.fn() as unknown as UseFormWatch<BracketFormValues>;
     
-    // Setup watch to handle different call patterns
-    mockWatch.mockImplementation((fieldName?: keyof BracketFormValues) => {
-      if (fieldName === undefined) {
-        // watch() without parameters returns current form values
-        return {
-          title: "",
-          divisionId: "",
-          format: "Single Elimination" as const,
-          teams: [],
-        };
+    // Setup watch implementation with proper overloads
+    (mockWatch as any).mockImplementation((nameOrCallback?: any, defaultValue?: any) => {
+      // Handle callback pattern: watch((values, { name, type }) => ...)
+      if (typeof nameOrCallback === 'function') {
+        // Return unsubscribe function for callback-based watching
+        return () => {};
       }
-      // watch(fieldName) returns specific field value
-      const formValues: BracketFormValues = {
+      
+      // Handle field name pattern: watch('fieldName') or watch()
+      const defaultFormValues: BracketFormValues = {
         title: "",
         divisionId: "",
         format: "Single Elimination" as const,
         teams: [],
       };
-      return formValues[fieldName];
+      
+      if (nameOrCallback === undefined) {
+        // watch() without parameters returns current form values
+        return defaultFormValues;
+      }
+      
+      // watch(fieldName) returns specific field value
+      return defaultFormValues[nameOrCallback as keyof BracketFormValues];
     });
 
+    const mockGetValues = vi.fn();
+    
     // Setup getValues to handle different call patterns
     mockGetValues.mockImplementation((fieldName?: keyof BracketFormValues) => {
       if (fieldName === undefined) {
@@ -188,12 +194,16 @@ describe('useBracketForm', () => {
       teams: ["team1", "team2"],
     };
     
-    // Update the mock to return new values
-    vi.mocked(mockForm.watch).mockImplementation((fieldName?: keyof BracketFormValues) => {
-      if (fieldName === undefined) {
+    // Update the mock to return new values using proper mock implementation
+    const mockWatch = mockForm.watch as any;
+    mockWatch.mockImplementation((nameOrCallback?: any) => {
+      if (typeof nameOrCallback === 'function') {
+        return () => {};
+      }
+      if (nameOrCallback === undefined) {
         return newFormValues;
       }
-      return newFormValues[fieldName];
+      return newFormValues[nameOrCallback as keyof BracketFormValues];
     });
     
     renderHook(() => 
@@ -239,11 +249,15 @@ describe('useBracketForm', () => {
       teams: ["team3"],
     };
     
-    vi.mocked(mockForm.watch).mockImplementation((fieldName?: keyof BracketFormValues) => {
-      if (fieldName === undefined) {
+    const mockWatch = mockForm.watch as any;
+    mockWatch.mockImplementation((nameOrCallback?: any) => {
+      if (typeof nameOrCallback === 'function') {
+        return () => {};
+      }
+      if (nameOrCallback === undefined) {
         return updatedValues;
       }
-      return updatedValues[fieldName];
+      return updatedValues[nameOrCallback as keyof BracketFormValues];
     });
     
     rerender();

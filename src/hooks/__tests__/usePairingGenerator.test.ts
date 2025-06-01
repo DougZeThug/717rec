@@ -5,6 +5,7 @@ import { usePairingGenerator } from '../usePairingGenerator';
 import { mockTeams, mockTimeBlockTeams, mockDate } from '@/utils/test/autoSchedule/mockData';
 import * as compatibilityUtils from '@/utils/autoSchedule/compatibilityUtils';
 import { useToast } from '@/hooks/use-toast';
+import { PairingResult } from '@/types/autoSchedule';
 
 // Mock dependencies
 vi.mock('@/utils/autoSchedule/compatibilityUtils');
@@ -16,17 +17,29 @@ vi.mock('@/hooks/use-toast', () => ({
 const mockCompatibilityUtils = vi.mocked(compatibilityUtils);
 const mockUseToast = vi.mocked(useToast);
 
+// Complete toast mock interface matching the actual useToast return type
 interface MockToast {
   toast: ReturnType<typeof vi.fn>;
+  dismiss: ReturnType<typeof vi.fn>;
+  toasts: Array<{
+    id: string;
+    title?: React.ReactNode;
+    description?: React.ReactNode;
+    action?: React.ReactElement;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }>;
 }
 
 describe('usePairingGenerator', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     
-    // Mock toast with proper typing
+    // Mock toast with complete interface
     const mockToast: MockToast = {
       toast: vi.fn(),
+      dismiss: vi.fn(),
+      toasts: [],
     };
     mockUseToast.mockReturnValue(mockToast);
     
@@ -46,29 +59,36 @@ describe('usePairingGenerator', () => {
   it('should generate pairings for valid time blocks', async () => {
     const { result } = renderHook(() => usePairingGenerator());
     
-    let pairings: Record<string, unknown[]> | null = null;
+    let pairings: PairingResult | null = null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
     });
     
     expect(result.current.isGenerating).toBe(false);
     
-    // Should have pairings for each time block
-    expect(pairings).toHaveProperty('6:30');
-    expect(pairings).toHaveProperty('7:30');
-    expect(pairings).toHaveProperty('8:30');
+    // Should have pairings result
+    expect(pairings).not.toBeNull();
+    expect(pairings).toHaveProperty('pairings');
+    expect(pairings).toHaveProperty('unmatchedTeamIds');
     
-    // Time blocks with teams should have pairings
-    expect(pairings?.['6:30']).toHaveLength(1);
-    expect(pairings?.['7:30']).toHaveLength(1);
-    expect(pairings?.['8:30']).toHaveLength(0);
-    
-    // Pairings should have the expected properties
-    const firstPairing = pairings?.['6:30'][0] as Record<string, unknown>;
-    expect(firstPairing).toHaveProperty('team1');
-    expect(firstPairing).toHaveProperty('team2');
-    expect(firstPairing).toHaveProperty('compatibilityScore');
-    expect(firstPairing).toHaveProperty('hasPlayedBefore');
+    if (pairings) {
+      // Should have pairings for each time block
+      expect(pairings.pairings).toHaveProperty('6:30');
+      expect(pairings.pairings).toHaveProperty('7:30');
+      expect(pairings.pairings).toHaveProperty('8:30');
+      
+      // Time blocks with teams should have pairings
+      expect(pairings.pairings['6:30']).toHaveLength(1);
+      expect(pairings.pairings['7:30']).toHaveLength(1);
+      expect(pairings.pairings['8:30']).toHaveLength(0);
+      
+      // Pairings should have the expected properties
+      const firstPairing = pairings.pairings['6:30'][0];
+      expect(firstPairing).toHaveProperty('team1');
+      expect(firstPairing).toHaveProperty('team2');
+      expect(firstPairing).toHaveProperty('compatibilityScore');
+      expect(firstPairing).toHaveProperty('hasPlayedBefore');
+    }
   });
 
   it('should handle odd number of teams in a block', async () => {
@@ -80,14 +100,17 @@ describe('usePairingGenerator', () => {
     
     const { result } = renderHook(() => usePairingGenerator());
     
-    let pairings: Record<string, unknown[]> | null = null;
+    let pairings: PairingResult | null = null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, oddBlocksData);
     });
     
     // Should still generate some pairings, but not all teams can be paired
-    expect(pairings?.['6:30'].length).toBe(1); // Can only pair 2 of the 3 teams
-    expect(pairings?.['7:30'].length).toBe(1); // Still pairs the 2 teams in this block
+    expect(pairings).not.toBeNull();
+    if (pairings) {
+      expect(pairings.pairings['6:30'].length).toBe(1); // Can only pair 2 of the 3 teams
+      expect(pairings.pairings['7:30'].length).toBe(1); // Still pairs the 2 teams in this block
+    }
   });
 
   it('should handle errors during pairing generation', async () => {
@@ -99,7 +122,7 @@ describe('usePairingGenerator', () => {
     const { result } = renderHook(() => usePairingGenerator());
     const mockToast = mockUseToast().toast;
     
-    let pairings: Record<string, unknown[]> | null = null;
+    let pairings: PairingResult | null = null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
     });

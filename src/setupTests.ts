@@ -11,7 +11,7 @@ configure({
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 // Mock next-themes to prevent SSR hydration issues in tests
-globalThis.matchMedia = globalThis.matchMedia || function(query) {
+globalThis.matchMedia = globalThis.matchMedia || function(query: string): MediaQueryList {
   return {
     matches: false,
     media: query,
@@ -20,14 +20,19 @@ globalThis.matchMedia = globalThis.matchMedia || function(query) {
     removeListener: () => {},
     addEventListener: () => {},
     removeEventListener: () => {},
-    dispatchEvent: () => {},
-  };
+    dispatchEvent: () => true, // MediaQueryList.dispatchEvent returns boolean
+  } as MediaQueryList;
 };
 
-// Mock IntersectionObserver for better test compatibility
+// Mock IntersectionObserver for better test compatibility with complete interface
 globalThis.IntersectionObserver = globalThis.IntersectionObserver || class IntersectionObserver {
+  root: Element | null = null;
+  rootMargin: string = '0px';
+  thresholds: ReadonlyArray<number> = [];
+  
   constructor() {}
   observe() { return null; }
   disconnect() { return null; }
   unobserve() { return null; }
+  takeRecords(): IntersectionObserverEntry[] { return []; }
 };

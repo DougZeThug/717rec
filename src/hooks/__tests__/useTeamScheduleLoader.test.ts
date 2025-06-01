@@ -16,17 +16,29 @@ vi.mock('@/hooks/use-toast', () => ({
 const mockTeamLoaderUtils = vi.mocked(teamLoaderUtils);
 const mockUseToast = vi.mocked(useToast);
 
+// Complete toast mock interface matching the actual useToast return type
 interface MockToast {
   toast: ReturnType<typeof vi.fn>;
+  dismiss: ReturnType<typeof vi.fn>;
+  toasts: Array<{
+    id: string;
+    title?: React.ReactNode;
+    description?: React.ReactNode;
+    action?: React.ReactElement;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+  }>;
 }
 
 describe('useTeamScheduleLoader', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     
-    // Mock toast with proper typing
+    // Mock toast with complete interface
     const mockToast: MockToast = {
       toast: vi.fn(),
+      dismiss: vi.fn(),
+      toasts: [],
     };
     mockUseToast.mockReturnValue(mockToast);
     
