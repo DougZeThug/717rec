@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -58,7 +57,6 @@ interface BracketRecord {
   format: string;
   state: string;
   created_at: string;
-  participants: unknown;
 }
 
 serve(async (req) => {
@@ -106,10 +104,17 @@ serve(async (req) => {
     
     console.log('[BRACKET] Creating bracket with payload:', JSON.stringify(payload, null, 2));
 
-    // Validate payload
+    // Enhanced validation
     if (!payload.name || !payload.divisionId || !payload.teams || payload.teams.length < 2) {
       throw new Error('Invalid payload: name, divisionId, and at least 2 teams are required');
     }
+
+    // Check for reasonable maximum (tournament brackets typically support up to 64 teams)
+    if (payload.teams.length > 64) {
+      throw new Error('Maximum 64 teams allowed per bracket');
+    }
+
+    console.log(`[BRACKET] Validating ${payload.teams.length} teams for ${payload.format} tournament`);
 
     // Transform teams to Challonge participants
     const participants = payload.teams
@@ -135,7 +140,7 @@ serve(async (req) => {
         name: payload.name,
         url: tournamentUrl,
         tournament_type: tournamentType,
-        description: `Tournament created for ${payload.name}`
+        description: `Tournament created for ${payload.name} with ${payload.teams.length} teams`
       }
     });
 
@@ -192,7 +197,7 @@ serve(async (req) => {
 
     console.log('[DATABASE] Inserting bracket record...');
 
-    // Insert bracket record into Supabase with participants data
+    // Insert bracket record into Supabase - REMOVED redundant participants JSON storage
     const { data: bracketData, error: insertError } = await supabaseAdmin
       .from('brackets')
       .insert({
@@ -200,12 +205,7 @@ serve(async (req) => {
         division_id: payload.divisionId,
         format: payload.format,
         state: 'pending',
-        challonge_tournament_id: parseInt(tournamentId.toString()),
-        participants: participants.map(p => ({
-          teamId: JSON.parse(p.misc).teamId,
-          name: p.name,
-          seed: p.seed
-        }))
+        challonge_tournament_id: parseInt(tournamentId.toString())
       })
       .select('*')
       .single();
@@ -217,25 +217,26 @@ serve(async (req) => {
 
     console.log('[DATABASE] Bracket record created:', bracketData.id);
 
-    // Create participants records
+    // Create participants records using the dedicated participants table
     console.log('[DATABASE] Creating participant records...');
     
-    for (const team of payload.teams) {
-      const { error: participantError } = await supabaseAdmin
-        .from('participants')
-        .insert({
-          bracket_id: bracketData.id,
-          team_id: team.id,
-          position: team.seed || 1,
-          name: team.name
-        });
-      
-      if (participantError) {
-        console.error('[DATABASE] Failed to create participant record for team:', team.name, participantError);
-        // Continue with other participants rather than failing completely
-      } else {
-        console.log('[DATABASE] Created participant record for team:', team.name);
-      }
+    const participantRecords = payload.teams.map(team => ({
+      bracket_id: bracketData.id,
+      team_id: team.id,
+      position: team.seed || 1,
+      name: team.name
+    }));
+
+    const { error: participantsError } = await supabaseAdmin
+      .from('participants')
+      .insert(participantRecords);
+    
+    if (participantsError) {
+      console.error('[DATABASE] Failed to create participant records:', participantsError);
+      // Don't fail the entire operation for participant record issues
+      console.log('[DATABASE] Bracket created but participant records may be incomplete');
+    } else {
+      console.log('[DATABASE] Created participant records for all teams');
     }
 
     console.log('[BRACKET] Bracket creation completed successfully:', bracketData.id);
@@ -247,8 +248,7 @@ serve(async (req) => {
       title: bracketData.title,
       format: bracketData.format,
       state: bracketData.state,
-      created_at: bracketData.created_at,
-      participants: bracketData.participants
+      created_at: bracketData.created_at
     };
 
     return new Response(
@@ -284,6 +284,8 @@ serve(async (req) => {
     } else if (errorMessage.includes('Missing required')) {
       errorMessage = 'Server configuration error. Please contact support.';
       statusCode = 500;
+    } else if (errorMessage.includes('Maximum') && errorMessage.includes('teams')) {
+      statusCode = 400;
     }
     
     return new Response(

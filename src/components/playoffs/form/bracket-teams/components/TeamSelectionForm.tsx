@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Users, Trophy, Zap } from 'lucide-react';
+import { Users, Trophy, Zap, AlertCircle } from 'lucide-react';
 import { ProcessedTeam, BracketFormStateResult } from '../types';
 
 interface TeamSelectionFormProps {
@@ -104,6 +104,23 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
     );
   };
 
+  // Calculate status color and icon
+  const getStatusDisplay = () => {
+    if (safeFormState.hasError) {
+      return { color: 'text-destructive', icon: AlertCircle };
+    }
+    if (safeFormState.hasWarning) {
+      return { color: 'text-yellow-600', icon: AlertCircle };
+    }
+    if (safeFormState.isValid) {
+      return { color: 'text-green-600', icon: null };
+    }
+    return { color: 'text-muted-foreground', icon: null };
+  };
+
+  const statusDisplay = getStatusDisplay();
+  const StatusIcon = statusDisplay.icon;
+
   return (
     <div className="space-y-4">
       {/* Header with progress */}
@@ -120,13 +137,10 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
           <Progress value={safeFormState.progress.percentage} className="w-full" />
           
           <div className="flex items-center justify-between text-sm">
-            <span className={
-              safeFormState.hasError ? "text-destructive" : 
-              safeFormState.hasWarning ? "text-yellow-600" : 
-              "text-muted-foreground"
-            }>
-              {safeFormState.statusMessage}
-            </span>
+            <div className={`flex items-center gap-2 ${statusDisplay.color}`}>
+              {StatusIcon && <StatusIcon className="w-4 h-4" />}
+              <span>{safeFormState.statusMessage}</span>
+            </div>
             
             {safeFormState.hasSelection && (
               <Button
@@ -140,15 +154,28 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
             )}
           </div>
 
+          {/* Selection guidance */}
+          <div className="text-xs text-muted-foreground border-t pt-2">
+            <div className="flex justify-between">
+              <span>Minimum: {minTeams} teams</span>
+              <span>Maximum: {maxTeams} teams</span>
+            </div>
+            {safeFormState.count >= minTeams && !safeFormState.isAtMaximum && (
+              <div className="mt-1 text-blue-600 font-medium">
+                ✓ Ready to create bracket • Add more teams or click "Create Bracket"
+              </div>
+            )}
+          </div>
+
           {/* Error/Warning messages */}
           {safeFormState.errorMessage && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded border border-destructive/20">
               {safeFormState.errorMessage}
             </div>
           )}
           
           {safeFormState.warningMessage && (
-            <div className="text-sm text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
+            <div className="text-sm text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
               {safeFormState.warningMessage}
             </div>
           )}

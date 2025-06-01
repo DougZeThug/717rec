@@ -41,9 +41,9 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const queryClient = useQueryClient();
   const { createBracket } = useChallongeAdmin();
   
-  // Enhanced form submission with E2E flow
+  // Enhanced form submission with E2E flow - EXPLICIT SUBMISSION ONLY
   const handleSubmit = async (data: BracketFormValues) => {
-    console.log("BracketCreationDialog: Starting E2E bracket creation", data);
+    console.log("BracketCreationDialog: Explicit form submission initiated", data);
     
     try {
       setIsSubmitting(true);
@@ -100,6 +100,17 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         });
         return;
       }
+
+      if (selectedTeams.length > 64) {
+        const error = "Maximum 64 teams allowed per bracket";
+        setDialogError(error);
+        toast({
+          title: "Too Many Teams",
+          description: error,
+          variant: "destructive"
+        });
+        return;
+      }
       
       console.log("BracketCreationDialog: Creating bracket via E2E flow:", {
         name: data.title,
@@ -122,7 +133,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       
       toast({
         title: "Bracket Created Successfully",
-        description: `Tournament "${data.title}" has been created and is ready for matches.`,
+        description: `Tournament "${data.title}" has been created with ${selectedTeams.length} teams and is ready for matches.`,
       });
       
       // Close dialog first
@@ -155,6 +166,10 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
           errorMessage = `Validation Error: ${error.message}`;
         } else if (error.message.includes("database")) {
           errorMessage = `Database Error: ${error.message}`;
+        } else if (error.message.includes("participant")) {
+          errorMessage = `Team Setup Error: ${error.message}`;
+        } else if (error.message.includes("Maximum") && error.message.includes("teams")) {
+          errorMessage = error.message;
         } else {
           errorMessage = error.message;
         }
