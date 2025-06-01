@@ -153,7 +153,7 @@ export const usePlayoffMatches = (bracketId: string | null) => {
     },
     enabled: !!bracketId,
     staleTime: 0, // Always refetch to avoid stale cache issues
-    cacheTime: 1000 * 60 * 5, // Cache for 5 minutes
+    gcTime: 1000 * 60 * 5, // Cache for 5 minutes (fixed: was cacheTime)
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {

@@ -1,4 +1,5 @@
 
+import { useQueryClient } from "@tanstack/react-query";
 import { usePlayoffBracketData } from './usePlayoffBracketData';
 import { usePlayoffMatches } from './usePlayoffMatches';
 import { usePlayoffTeams } from './usePlayoffTeams';
@@ -35,6 +36,9 @@ const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
 export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel {
   console.log('🔍 usePlayoffViewModel called with bracketId:', bracketId);
   console.log('🔍 usePlayoffViewModel: Timestamp:', new Date().toISOString());
+  
+  // Get QueryClient using the proper hook
+  const queryClient = useQueryClient();
   
   // Use the focused hooks
   const bracketQuery = usePlayoffBracketData(bracketId);
@@ -95,8 +99,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       console.log('🔍 usePlayoffViewModel - Starting refetch...');
       console.log('🔍 usePlayoffViewModel - Invalidating React Query cache for bracket:', bracketId);
       
-      // Force invalidate cache first
-      const queryClient = matchesQuery.queryClient || (window as any).queryClient;
+      // Force invalidate cache first using the proper QueryClient
       if (queryClient) {
         await queryClient.invalidateQueries({ queryKey: ['playoff-matches', bracketId] });
         await queryClient.invalidateQueries({ queryKey: ['bracket', bracketId] });
