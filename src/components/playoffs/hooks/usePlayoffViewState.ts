@@ -1,86 +1,79 @@
 
 import { useState } from 'react';
-import { PlayoffPageData } from "./usePlayoffPageData";
-import { PlayoffHandlers } from "./usePlayoffHandlers";
-
-export interface PlayoffViewState {
-  // Dialog states
-  teamDialogOpen: boolean;
-  setTeamDialogOpen: (open: boolean) => void;
-  bracketDialogOpen: boolean;
-  setBracketDialogOpen: (open: boolean) => void;
-  
-  // Tab state
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  
-  // Deletion states
-  deletingBracket: { id: string; name: string } | null;
-  setDeletingBracket: (bracket: { id: string; name: string } | null) => void;
-  isDeleting: boolean;
-  setIsDeleting: (deleting: boolean) => void;
-  
-  // Computed handlers
-  handleCreateBracket: () => void;
-  handleDeleteBracket: (bracketId: string, bracketName: string) => void;
-  handleConfirmDeleteBracket: () => Promise<void>;
-}
+import { PlayoffPageData } from './usePlayoffPageData';
+import { usePlayoffHandlers } from './usePlayoffHandlers';
 
 export function usePlayoffViewState(
   data: PlayoffPageData, 
-  handlers: PlayoffHandlers,
-  initialTab: string = "view"
-): PlayoffViewState {
-  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  handlers: ReturnType<typeof usePlayoffHandlers>,
+  defaultTab: string = "brackets"
+) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [deletingBracket, setDeletingBracket] = useState<{ id: string, name: string } | null>(null);
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false);
+  const [deletingBracket, setDeletingBracket] = useState<{id: string, name: string} | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreateBracket = () => {
+    console.log('🎯 usePlayoffViewState: Create bracket clicked');
     setBracketDialogOpen(true);
   };
 
   const handleDeleteBracket = (bracketId: string, bracketName: string) => {
+    console.log('🎯 usePlayoffViewState: Delete bracket requested:', bracketId, bracketName);
     setDeletingBracket({ id: bracketId, name: bracketName });
   };
-  
+
   const handleConfirmDeleteBracket = async () => {
     if (!deletingBracket) return;
     
-    await data.deleteBracket(
-      deletingBracket.id,
-      deletingBracket.name,
-    );
+    console.log('🎯 usePlayoffViewState: Confirming bracket deletion:', deletingBracket);
+    setIsDeleting(true);
     
-    // Reset selected bracket if we're deleting the current one
-    if (data.selectedBracketId === deletingBracket.id) {
-      data.setSelectedBracketId(null);
+    try {
+      await data.deleteBracket(deletingBracket.id, deletingBracket.name);
+      console.log('🎯 usePlayoffViewState: Bracket deleted successfully');
+      
+      // Clear selection if we deleted the currently selected bracket
+      if (data.selectedBracketId === deletingBracket.id) {
+        data.setSelectedBracketId(null);
+      }
+      
+      // Refresh the brackets list
+      await data.refetchBrackets();
+    } catch (error) {
+      console.error('🎯 usePlayoffViewState: Error deleting bracket:', error);
+    } finally {
+      setIsDeleting(false);
+      setDeletingBracket(null);
     }
-    
-    setDeletingBracket(null);
+  };
+
+  // Use the enhanced bracket creation handler from usePlayoffHandlers
+  const handleBracketCreatedWithNavigation = async () => {
+    try {
+      // Use the handler that includes navigation
+      await handlers.handleBracketCreatedWithNavigation();
+      setBracketDialogOpen(false);
+      console.log('🎯 usePlayoffViewState: Bracket creation and navigation completed');
+    } catch (error) {
+      console.error('🎯 usePlayoffViewState: Error in bracket creation flow:', error);
+    }
   };
 
   return {
-    // Dialog states
-    teamDialogOpen,
-    setTeamDialogOpen,
-    bracketDialogOpen,
-    setBracketDialogOpen,
-    
-    // Tab state
     activeTab,
     setActiveTab,
-    
-    // Deletion states
+    bracketDialogOpen,
+    setBracketDialogOpen,
+    teamDialogOpen,
+    setTeamDialogOpen,
     deletingBracket,
     setDeletingBracket,
     isDeleting,
-    setIsDeleting,
-    
-    // Computed handlers
     handleCreateBracket,
     handleDeleteBracket,
-    handleConfirmDeleteBracket
+    handleConfirmDeleteBracket,
+    handleBracketCreated: handleBracketCreatedWithNavigation
   };
 }

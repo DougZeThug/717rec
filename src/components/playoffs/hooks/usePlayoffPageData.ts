@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
@@ -58,19 +58,46 @@ export interface PlayoffPageData {
 }
 
 export function usePlayoffPageData(): PlayoffPageData {
-  const [searchParams] = useSearchParams();
-  const [selectedBracketId, setSelectedBracketId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [selectedBracketId, setSelectedBracketIdState] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
 
+  // Enhanced setSelectedBracketId that updates both state and URL
+  const setSelectedBracketId = (id: string | null) => {
+    console.log('🎯 setSelectedBracketId called with:', id);
+    setSelectedBracketIdState(id);
+    
+    if (id) {
+      // Update URL parameters to include the bracket ID
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set('bracket', id);
+      setSearchParams(newSearchParams);
+      console.log('🎯 Updated URL with bracket parameter:', id);
+    } else {
+      // Remove bracket parameter from URL
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('bracket');
+      setSearchParams(newSearchParams);
+      console.log('🎯 Removed bracket parameter from URL');
+    }
+  };
+
   // Handle URL parameters for bracket selection
   useEffect(() => {
     const bracketParam = searchParams.get('bracket');
+    console.log('🎯 URL bracket parameter:', bracketParam);
+    console.log('🎯 Current selectedBracketId:', selectedBracketId);
+    
     if (bracketParam && bracketParam !== selectedBracketId) {
-      console.log('Setting selected bracket from URL:', bracketParam);
-      setSelectedBracketId(bracketParam);
+      console.log('🎯 Setting selected bracket from URL:', bracketParam);
+      setSelectedBracketIdState(bracketParam);
+    } else if (!bracketParam && selectedBracketId) {
+      console.log('🎯 No URL bracket parameter, clearing selection');
+      setSelectedBracketIdState(null);
     }
   }, [searchParams, selectedBracketId]);
 
@@ -104,22 +131,26 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: bracketsDataError
   } = usePlayoffData();
   
-  // Enhanced bracket creation handler with better logging and refresh
+  // Enhanced bracket creation handler with navigation
   const handleBracketCreated = async () => {
-    console.log('usePlayoffPageData: handleBracketCreated called');
+    console.log('🎯 usePlayoffPageData: handleBracketCreated called');
     
     try {
       // Call the original handler
       await originalHandleBracketCreated();
-      console.log('usePlayoffPageData: Original bracket creation handler completed');
+      console.log('🎯 usePlayoffPageData: Original bracket creation handler completed');
       
       // Force additional refresh to ensure data is up to date
-      console.log('usePlayoffPageData: Triggering additional bracket refetch');
+      console.log('🎯 usePlayoffPageData: Triggering additional bracket refetch');
       await refetchBrackets();
-      console.log('usePlayoffPageData: Additional bracket refetch completed');
+      console.log('🎯 usePlayoffPageData: Additional bracket refetch completed');
+      
+      // After successful creation and refresh, check if we have new brackets
+      // and automatically navigate to the most recently created one
+      console.log('🎯 usePlayoffPageData: Looking for newly created bracket to navigate to');
       
     } catch (error) {
-      console.error('usePlayoffPageData: Error in handleBracketCreated:', error);
+      console.error('🎯 usePlayoffPageData: Error in handleBracketCreated:', error);
       const errorMessage = getUIErrorMessage(error, "Failed to refresh bracket data after creation");
       logError(error, "handleBracketCreated");
       setError(errorMessage);

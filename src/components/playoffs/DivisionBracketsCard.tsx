@@ -26,6 +26,12 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   onResyncBracket,
   isResyncLoading = false,
 }) => {
+  
+  const handleViewBracket = (bracketId: string) => {
+    console.log('🎯 DivisionBracketsCard: View bracket clicked for ID:', bracketId);
+    onViewBracket(bracketId);
+  };
+
   return (
     <Card key={division}>
       <CardHeader className="pb-2">
@@ -52,7 +58,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
                 <Button 
                   size="sm" 
                   variant="ghost" 
-                  onClick={() => onViewBracket(bracket.id!)}
+                  onClick={() => handleViewBracket(bracket.id!)}
                 >
                   View
                 </Button>
