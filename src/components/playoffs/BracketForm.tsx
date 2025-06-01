@@ -8,17 +8,9 @@ import { BracketFormTitle } from "./form/BracketFormTitle";
 import { BracketFormDivision } from "./form/BracketFormDivision";
 import { BracketFormFormat } from "./form/BracketFormFormat";
 import { BracketFormTeamsContainer } from "./form/bracket-teams/components/BracketFormTeamsContainer";
-import { bracketFormSchema } from "./form/BracketFormSchema";
+import { bracketFormSchema, BracketFormValues } from "./form/BracketFormSchema";
 import { Team, Division } from "@/types";
 import { AlertCircle, Users } from "lucide-react";
-
-export type BracketFormValues = {
-  title: string;
-  divisionId: string;
-  divisionName?: string;
-  format: "Single Elimination" | "Double Elimination";
-  teams: string[];
-};
 
 interface BracketFormProps {
   divisions?: Division[];

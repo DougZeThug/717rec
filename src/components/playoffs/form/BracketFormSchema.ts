@@ -8,3 +8,5 @@ export const bracketFormSchema = z.object({
   format: z.enum(["Single Elimination", "Double Elimination"]),
   teams: z.array(z.string()).min(2, "At least 2 teams are required").max(16, "Maximum 16 teams allowed"),
 });
+
+export type BracketFormValues = z.infer<typeof bracketFormSchema>;
