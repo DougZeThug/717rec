@@ -9,13 +9,22 @@ import type { PlayoffViewModel } from "@/utils/playoffs/playoffTypes";
 
 // Local helper to group bracket matches by type
 const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
+  console.log('🔍 groupBracketMatchesByType: Input matches:', matches);
+  
   if (!Array.isArray(matches)) {
+    console.log('🔍 groupBracketMatchesByType: Not an array, returning empty structure');
     return { winners: [], losers: [], finals: [] };
   }
   
   const winners = matches.filter(match => match.matchType === 'winners');
   const losers = matches.filter(match => match.matchType === 'losers');
   const finals = matches.filter(match => match.matchType === 'finals');
+  
+  console.log('🔍 groupBracketMatchesByType: Grouped results:', {
+    winners: winners.length,
+    losers: losers.length,
+    finals: finals.length
+  });
   
   return { winners, losers, finals };
 };
@@ -38,13 +47,15 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Matches data length:', matchesQuery.data?.length);
   console.log('🔍 usePlayoffViewModel - Teams data:', teamsQuery.data);
   
-  // Combine bracket data with matches data
+  // CRITICAL FIX: Properly combine bracket data with matches data
   const combinedBracket = bracketQuery.data ? {
     ...bracketQuery.data,
-    matches: matchesQuery.data || []
+    matches: matchesQuery.data || [] // This ensures matches are attached to the bracket
   } : null;
   
-  console.log('🔍 usePlayoffViewModel - Combined bracket:', combinedBracket);
+  console.log('🔍 usePlayoffViewModel - Combined bracket BEFORE matches attachment:', bracketQuery.data);
+  console.log('🔍 usePlayoffViewModel - Matches to attach:', matchesQuery.data);
+  console.log('🔍 usePlayoffViewModel - Combined bracket AFTER matches attachment:', combinedBracket);
   console.log('🔍 usePlayoffViewModel - Combined bracket matches length:', combinedBracket?.matches?.length);
   
   // Process bracket data to separate winners, losers and finals matches
@@ -57,12 +68,15 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   // Refetch function that triggers all related queries
   const refetch = async () => {
     try {
+      console.log('🔍 usePlayoffViewModel - Starting refetch...');
       await Promise.all([
         bracketQuery.refetch(),
         matchesQuery.refetch(),
         teamsQuery.refetch()
       ]);
+      console.log('🔍 usePlayoffViewModel - Refetch completed successfully');
     } catch (err) {
+      console.error('🔍 usePlayoffViewModel - Refetch error:', err);
       logError(err, "usePlayoffViewModel refetch");
       throw new Error(getUIErrorMessage(err, "Failed to refresh data"));
     }
@@ -89,6 +103,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   };
   
   console.log('🔍 usePlayoffViewModel - Final result:', result);
+  console.log('🔍 usePlayoffViewModel - Final result bracket matches:', result.bracket?.matches?.length);
   
   return result;
 }
