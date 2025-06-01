@@ -13,7 +13,7 @@ interface BracketViewProps {
 }
 
 /**
- * Unified bracket view component with backward compatibility
+ * Simplified bracket view component - no more complex data transformations
  */
 const BracketView: React.FC<BracketViewProps> = ({
   bracketId,
@@ -27,7 +27,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     hasLegacyTeams: !!legacyTeams
   });
   
-  // Use new simplified hook when bracketId is provided
+  // Use direct data hook when bracketId is provided
   const { data: bracket, isLoading, error } = useBracketData(bracketId);
 
   // Use legacy data if provided, otherwise use new data
@@ -42,6 +42,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     error: error?.message
   });
 
+  // Simple loading state
   if (isLoading && !legacyBracket) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -53,6 +54,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
+  // Simple error state
   if (error && !legacyBracket) {
     return (
       <Alert variant="destructive">
@@ -64,6 +66,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
+  // No bracket state
   if (!displayBracket) {
     return (
       <div className="text-center p-8">

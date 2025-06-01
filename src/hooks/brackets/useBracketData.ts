@@ -31,7 +31,7 @@ export interface SimpleBracketData {
 
 export const useBracketData = (bracketId: string | null) => {
   return useQuery({
-    queryKey: ['simple-bracket', bracketId],
+    queryKey: ['bracket-data', bracketId],
     queryFn: async (): Promise<SimpleBracketData | null> => {
       console.log('🎯 useBracketData: Fetching bracket data for:', bracketId);
       
@@ -57,7 +57,7 @@ export const useBracketData = (bracketId: string | null) => {
         return null;
       }
 
-      // Get matches for this bracket
+      // Get matches ONLY from playoff_matches table - no more dual table confusion
       const { data: matches, error: matchesError } = await supabase
         .from('playoff_matches')
         .select(`
@@ -115,7 +115,9 @@ export const useBracketData = (bracketId: string | null) => {
       };
     },
     enabled: !!bracketId,
-    staleTime: 1000 * 30, // 30 seconds
-    retry: 1
+    staleTime: 1000 * 60 * 5, // 5 minutes - no more aggressive polling
+    retry: 1, // Simple retry only
+    refetchOnMount: false, // Manual refresh only
+    refetchOnWindowFocus: false // No automatic refresh
   });
 };

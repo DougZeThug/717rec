@@ -20,7 +20,7 @@ export interface PlayoffPageData {
   selectedBracketId: string | null;
   setSelectedBracketId: (id: string | null) => void;
   
-  // Enhanced error states - all strings for consistency
+  // Simple error states
   error: string | null;
   divisionsError: string | null;
   bracketsError: string | null;
@@ -41,13 +41,13 @@ export interface PlayoffPageData {
   handleTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;
   refetchBrackets: () => Promise<any>;
   
-  // NEW: Compatibility properties for current selected bracket
+  // Simplified bracket data
   bracket: any;
   teams: any[];
   teamsLoading: boolean;
   deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
   
-  // Simplified loading state
+  // Simple loading state
   isLoading: boolean;
 }
 
@@ -59,55 +59,46 @@ export function usePlayoffPageData(): PlayoffPageData {
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
 
-  // Enhanced setSelectedBracketId that updates both state and URL
+  // Simple bracket ID management
   const setSelectedBracketId = (id: string | null) => {
     console.log('🎯 setSelectedBracketId called with:', id);
     setSelectedBracketIdState(id);
     
     if (id) {
-      // Update URL parameters to include the bracket ID
       const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.set('bracket', id);
       setSearchParams(newSearchParams);
-      console.log('🎯 Updated URL with bracket parameter:', id);
     } else {
-      // Remove bracket parameter from URL
       const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.delete('bracket');
       setSearchParams(newSearchParams);
-      console.log('🎯 Removed bracket parameter from URL');
     }
   };
 
   // Handle URL parameters for bracket selection
   useEffect(() => {
     const bracketParam = searchParams.get('bracket');
-    console.log('🎯 URL bracket parameter:', bracketParam);
-    console.log('🎯 Current selectedBracketId:', selectedBracketId);
-    
     if (bracketParam && bracketParam !== selectedBracketId) {
-      console.log('🎯 Setting selected bracket from URL:', bracketParam);
       setSelectedBracketIdState(bracketParam);
     } else if (!bracketParam && selectedBracketId) {
-      console.log('🎯 No URL bracket parameter, clearing selection');
       setSelectedBracketIdState(null);
     }
   }, [searchParams, selectedBracketId]);
 
-  // NEW: Use simplified bracket data hook for selected bracket
+  // Direct bracket data with simplified hook
   const { data: selectedBracket, isLoading: selectedBracketLoading, error: selectedBracketError } = useBracketData(selectedBracketId);
   
-  // NEW: Use teams hook
+  // Teams data
   const { data: teamsData, isLoading: teamsLoading } = usePlayoffTeams();
 
-  // Fetch divisions with enhanced error handling
+  // Divisions
   const { 
     divisions, 
     isLoading: divisionsLoading,
     error: divisionsError 
   } = useDivisions();
   
-  // Setup for divisions and brackets lists with error handling
+  // Brackets overview data
   const {
     brackets: allBrackets,
     bracketsLoading,
@@ -119,7 +110,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: bracketsDataError
   } = usePlayoffData();
   
-  // NEW: Delete bracket function
+  // Simple delete function
   const deleteBracket = async (bracketId: string, bracketName: string) => {
     console.log('🎯 usePlayoffPageData: Deleting bracket:', bracketId, bracketName);
     
@@ -142,20 +133,13 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   };
   
-  // Simplified bracket creation handler
+  // Simple bracket creation handler - no complex loops
   const handleBracketCreated = async () => {
     console.log('🎯 usePlayoffPageData: handleBracketCreated called');
     
     try {
-      // Call the original handler
       await originalHandleBracketCreated();
-      console.log('🎯 usePlayoffPageData: Original bracket creation handler completed');
-      
-      // Single refetch
-      console.log('🎯 usePlayoffPageData: Triggering single bracket refetch');
       await refetchBrackets();
-      console.log('🎯 usePlayoffPageData: Bracket refetch completed');
-      
     } catch (error) {
       console.error('🎯 usePlayoffPageData: Error in handleBracketCreated:', error);
       const errorMessage = getUIErrorMessage(error, "Failed to create bracket");
@@ -164,7 +148,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   };
 
-  // Create typesafe version of bracketsByDivision with error handling
+  // Simple bracket processing
   const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
   try {
     if (bracketsByDivision) {
@@ -189,7 +173,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     setError(errorMessage);
   }
 
-  // Enhanced loading state
+  // Simple loading state
   const isLoading = bracketsLoading || divisionsLoading;
   
   const allBracketsData = (() => {
@@ -226,7 +210,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   })();
 
-  // Safely convert error types to strings for UI display using new utility
+  // Convert error types to strings
   const finalDivisionsError = convertErrorToString(divisionsError);
   const finalBracketsError = convertErrorToString(bracketsDataError);
 
@@ -239,7 +223,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     selectedBracketId,
     setSelectedBracketId,
     
-    // Enhanced error states - all properly converted to strings
+    // Simple error states
     error,
     divisionsError: finalDivisionsError,
     bracketsError: finalBracketsError,
@@ -260,13 +244,13 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets,
     
-    // NEW: Compatibility properties
+    // Simplified bracket data
     bracket: selectedBracket,
     teams: teamsData || [],
     teamsLoading,
     deleteBracket,
     
-    // Simplified loading state
+    // Simple loading state
     isLoading
   };
 }

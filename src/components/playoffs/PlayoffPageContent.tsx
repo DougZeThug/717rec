@@ -21,7 +21,7 @@ interface PlayoffPageContentProps {
   onDeleteBracket?: (id: string, name: string) => void;
   onRefreshData?: () => Promise<void>;
   
-  // NEW: Additional props for compatibility
+  // Additional props for compatibility
   bracket?: any;
   teams?: any[];
   bracketLoading?: boolean;
@@ -47,6 +47,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 
   console.log('🎯 PlayoffPageContent: Rendering with selectedBracketId:', selectedBracketId);
 
+  // Simple manual refresh handler - no complex loops
   const handleRefreshClick = async () => {
     if (!onRefreshData || isRefreshing) return;
     
@@ -65,6 +66,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   // Use bracketLoading if provided, otherwise fall back to general isLoading
   const displayLoading = bracketLoading !== undefined ? bracketLoading : isLoading;
 
+  // Simple loading state
   if (displayLoading && !allBracketsData.length) {
     return (
       <div className="flex flex-col items-center">
@@ -81,7 +83,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         <ChallongeFallback />
       </div>
 
-      {/* Header with refresh button */}
+      {/* Header with manual refresh button only */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Tournament Brackets</h2>
         {onRefreshData && (
@@ -98,6 +100,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         )}
       </div>
 
+      {/* Division cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {availableDivisions.map((division) => (
           <DivisionBracketsCard 
@@ -110,7 +113,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         ))}
       </div>
       
-      {/* Selected bracket view - supports both new and legacy patterns */}
+      {/* Selected bracket view - direct display */}
       {selectedBracketId && (
         <div className="mt-8">
           <BracketView 
@@ -122,6 +125,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         </div>
       )}
       
+      {/* Empty state */}
       {allBracketsData.length === 0 && !displayLoading && (
         <EmptyBracketState onCreateBracket={onCreateBracket} />
       )}

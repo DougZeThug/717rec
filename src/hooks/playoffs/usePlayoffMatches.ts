@@ -7,17 +7,13 @@ export const usePlayoffMatches = (bracketId: string | null) => {
   return useQuery({
     queryKey: ['playoff-matches', bracketId],
     queryFn: async (): Promise<PlayoffMatch[]> => {
-      console.log('🔄 usePlayoffMatches: Starting query for bracketId:', bracketId);
-      console.log('🔄 usePlayoffMatches: Query executing at timestamp:', new Date().toISOString());
+      console.log('🔄 usePlayoffMatches: Fetching matches for bracketId:', bracketId);
       
       if (!bracketId) {
         console.log('🔄 usePlayoffMatches: No bracketId provided, returning empty array');
         return [];
       }
       
-      console.log('🔄 usePlayoffMatches: Fetching matches from playoff_matches table...');
-      
-      // Single query approach - try the full query with JOINs
       const { data, error } = await supabase
         .from('playoff_matches')
         .select(`
@@ -31,28 +27,23 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         .order('position');
         
       if (error) {
-        console.error('🔄 usePlayoffMatches: Database error with JOINs:', error);
+        console.error('🔄 usePlayoffMatches: Database error:', error);
         throw error;
       }
       
-      console.log('🔄 usePlayoffMatches: Query successful - Raw database result:', data);
       console.log('🔄 usePlayoffMatches: Found', data?.length || 0, 'matches');
       
       if (!data || data.length === 0) {
-        console.log('🔄 usePlayoffMatches: No matches found for bracketId:', bracketId);
         return [];
       }
       
-      // Transform to PlayoffMatch format
+      // Simple transformation without complex logic
       const transformedMatches = data.map(match => {
-        console.log('🔄 usePlayoffMatches: Transforming match:', match.id);
-        
-        // Calculate game wins from playoff_games if available
         const games = match.playoff_games || [];
         const team1GameWins = games.filter(game => game.winner_id === match.team1_id).length;
         const team2GameWins = games.filter(game => game.winner_id === match.team2_id).length;
         
-        const transformedMatch = {
+        return {
           id: match.id,
           bracket_id: match.bracket_id,
           round: match.round,
@@ -82,22 +73,15 @@ export const usePlayoffMatches = (bracketId: string | null) => {
             winner: game.winner_id
           }))
         };
-        
-        console.log('🔄 usePlayoffMatches: Transformed match:', transformedMatch);
-        return transformedMatch;
       }) as PlayoffMatch[];
       
-      console.log('🔄 usePlayoffMatches: Final transformed matches:', transformedMatches);
       console.log('🔄 usePlayoffMatches: Returning', transformedMatches.length, 'matches');
-      
       return transformedMatches;
     },
     enabled: !!bracketId,
-    staleTime: 1000 * 10, // 10 seconds - reduced from 30 to get fresher data
-    gcTime: 1000 * 60 * 2, // Cache for 2 minutes - reduced from 5 minutes
-    refetchOnMount: true,
-    refetchOnWindowFocus: false,
-    retry: 2, // Reduced from 5 attempts
-    retryDelay: 1000, // Fixed 1 second delay instead of exponential backoff
+    staleTime: 1000 * 60 * 5, // 5 minutes - no more frequent polling
+    retry: 1, // Single retry only
+    refetchOnMount: false, // Manual refresh only
+    refetchOnWindowFocus: false // No automatic refresh
   });
 };
