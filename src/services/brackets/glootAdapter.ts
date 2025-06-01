@@ -32,11 +32,13 @@ export function adaptPlayoffMatchesToGloot(
   teams: Team[],
   bracketTitle: string = "Tournament"
 ): GlootTournament {
-  console.log('adaptPlayoffMatchesToGloot: Converting matches:', matches);
-  console.log('adaptPlayoffMatchesToGloot: Available teams:', teams);
+  console.log('🏆 adaptPlayoffMatchesToGloot: Starting conversion');
+  console.log('🏆 adaptPlayoffMatchesToGloot: Input matches:', matches);
+  console.log('🏆 adaptPlayoffMatchesToGloot: Input teams:', teams);
+  console.log('🏆 adaptPlayoffMatchesToGloot: Bracket title:', bracketTitle);
   
   if (!Array.isArray(matches) || matches.length === 0) {
-    console.log('adaptPlayoffMatchesToGloot: No matches to convert');
+    console.log('🏆 adaptPlayoffMatchesToGloot: No matches to convert');
     return {
       type: 'DOUBLE_ELIMINATION',
       title: bracketTitle,
@@ -45,13 +47,16 @@ export function adaptPlayoffMatchesToGloot(
   }
   
   const teamMap = new Map(teams.map(team => [team.id, team]));
+  console.log('🏆 adaptPlayoffMatchesToGloot: Team map:', teamMap);
   
-  const glootMatches: GlootMatch[] = matches.map(match => {
-    console.log('adaptPlayoffMatchesToGloot: Processing match:', match);
+  const glootMatches: GlootMatch[] = matches.map((match, index) => {
+    console.log(`🏆 adaptPlayoffMatchesToGloot: Processing match ${index + 1}/${matches.length}:`, match);
     
     // Use conditional logic instead of empty string fallback
     const team1 = match.team1Id ? teamMap.get(match.team1Id) : undefined;
     const team2 = match.team2Id ? teamMap.get(match.team2Id) : undefined;
+    
+    console.log(`🏆 adaptPlayoffMatchesToGloot: Match ${match.id} teams:`, { team1, team2 });
     
     // Determine match state
     let state: GlootMatch['state'] = 'NO_PARTY';
@@ -109,15 +114,18 @@ export function adaptPlayoffMatchesToGloot(
       participants
     };
     
-    console.log('adaptPlayoffMatchesToGloot: Created gloot match:', glootMatch);
+    console.log(`🏆 adaptPlayoffMatchesToGloot: Created gloot match ${index + 1}:`, glootMatch);
     return glootMatch;
   });
   
-  console.log('adaptPlayoffMatchesToGloot: Final gloot matches:', glootMatches);
-  
-  return {
-    type: 'DOUBLE_ELIMINATION',
+  const result = {
+    type: 'DOUBLE_ELIMINATION' as const,
     title: bracketTitle,
     matches: glootMatches
   };
+  
+  console.log('🏆 adaptPlayoffMatchesToGloot: Final result:', result);
+  console.log('🏆 adaptPlayoffMatchesToGloot: Total matches converted:', glootMatches.length);
+  
+  return result;
 }

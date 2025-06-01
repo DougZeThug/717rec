@@ -24,11 +24,19 @@ const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
  * Unified hook for playoff bracket data and management
  */
 export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel {
+  console.log('🔍 usePlayoffViewModel called with bracketId:', bracketId);
+  
   // Use the focused hooks
   const bracketQuery = usePlayoffBracketData(bracketId);
   const matchesQuery = usePlayoffMatches(bracketId);
   const teamsQuery = usePlayoffTeams();
   const actions = usePlayoffActions();
+  
+  // Debug the raw data from each query
+  console.log('🔍 usePlayoffViewModel - Raw bracket data:', bracketQuery.data);
+  console.log('🔍 usePlayoffViewModel - Raw matches data:', matchesQuery.data);
+  console.log('🔍 usePlayoffViewModel - Matches data length:', matchesQuery.data?.length);
+  console.log('🔍 usePlayoffViewModel - Teams data:', teamsQuery.data);
   
   // Combine bracket data with matches data
   const combinedBracket = bracketQuery.data ? {
@@ -36,10 +44,15 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     matches: matchesQuery.data || []
   } : null;
   
+  console.log('🔍 usePlayoffViewModel - Combined bracket:', combinedBracket);
+  console.log('🔍 usePlayoffViewModel - Combined bracket matches length:', combinedBracket?.matches?.length);
+  
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: BracketMatchesByType | null = matchesQuery.data
     ? groupBracketMatchesByType(matchesQuery.data)
     : null;
+  
+  console.log('🔍 usePlayoffViewModel - Bracket matches by type:', bracketMatchesByType);
   
   // Refetch function that triggers all related queries
   const refetch = async () => {
@@ -58,7 +71,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   // Safely convert error to string for consistent interface
   const processedError = convertErrorToString(bracketQuery.error || matchesQuery.error);
   
-  return {
+  const result = {
     // Bracket data with matches combined
     bracket: combinedBracket,
     isLoading: bracketQuery.isLoading || matchesQuery.isLoading,
@@ -74,6 +87,10 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     deleteBracket: actions.deleteBracket,
     updateMatchResult: actions.updateMatchResult
   };
+  
+  console.log('🔍 usePlayoffViewModel - Final result:', result);
+  
+  return result;
 }
 
 // Re-export the component hooks for direct use
