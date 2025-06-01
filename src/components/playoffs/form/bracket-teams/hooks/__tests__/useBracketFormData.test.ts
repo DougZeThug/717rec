@@ -16,6 +16,16 @@ import { useTeams } from '@/hooks/useTeams';
 // Create properly typed mock
 const mockUseTeams = vi.mocked(useTeams);
 
+// Create proper interfaces for mock data
+interface MockTeamsHookReturn {
+  teams: Team[];
+  isLoading: boolean;
+  fetchTeams: ReturnType<typeof vi.fn>;
+  createTeam: ReturnType<typeof vi.fn>;
+  updateTeam: ReturnType<typeof vi.fn>;
+  deleteTeam: ReturnType<typeof vi.fn>;
+}
+
 describe('useBracketFormData', () => {
   let queryClient: QueryClient;
 
@@ -45,14 +55,15 @@ describe('useBracketFormData', () => {
   );
 
   it('should return provided teams when teamsProp is given', async () => {
-    mockUseTeams.mockReturnValue({
+    const mockReturn: MockTeamsHookReturn = {
       teams: [],
       isLoading: false,
       fetchTeams: vi.fn(),
       createTeam: vi.fn(),
       updateTeam: vi.fn(),
       deleteTeam: vi.fn()
-    });
+    };
+    mockUseTeams.mockReturnValue(mockReturn);
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, mockTeams),
@@ -86,14 +97,15 @@ describe('useBracketFormData', () => {
   });
 
   it('should fetch teams when teamsProp is not provided', async () => {
-    mockUseTeams.mockReturnValue({
+    const mockReturn: MockTeamsHookReturn = {
       teams: mockTeams,
       isLoading: false,
       fetchTeams: vi.fn(),
       createTeam: vi.fn(),
       updateTeam: vi.fn(),
       deleteTeam: vi.fn()
-    });
+    };
+    mockUseTeams.mockReturnValue(mockReturn);
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, undefined),
@@ -124,14 +136,15 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle loading state', async () => {
-    mockUseTeams.mockReturnValue({
+    const mockReturn: MockTeamsHookReturn = {
       teams: [],
       isLoading: true,
       fetchTeams: vi.fn(),
       createTeam: vi.fn(),
       updateTeam: vi.fn(),
       deleteTeam: vi.fn()
-    });
+    };
+    mockUseTeams.mockReturnValue(mockReturn);
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, undefined),
@@ -143,14 +156,15 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle error state when no teams are fetched', async () => {
-    mockUseTeams.mockReturnValue({
+    const mockReturn: MockTeamsHookReturn = {
       teams: [],
       isLoading: false,
       fetchTeams: vi.fn(),
       createTeam: vi.fn(),
       updateTeam: vi.fn(),
       deleteTeam: vi.fn()
-    });
+    };
+    mockUseTeams.mockReturnValue(mockReturn);
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, undefined),
@@ -165,14 +179,15 @@ describe('useBracketFormData', () => {
   });
 
   it('should return empty teams array when no teams are available but maintain ready state', async () => {
-    mockUseTeams.mockReturnValue({
+    const mockReturn: MockTeamsHookReturn = {
       teams: [],
       isLoading: false,
       fetchTeams: vi.fn(),
       createTeam: vi.fn(),
       updateTeam: vi.fn(),
       deleteTeam: vi.fn()
-    });
+    };
+    mockUseTeams.mockReturnValue(mockReturn);
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, []), // Provide empty array as teams prop
@@ -187,12 +202,19 @@ describe('useBracketFormData', () => {
   });
 
   it('should handle invalid team data gracefully', async () => {
-    const invalidTeams = [
+    // Define a proper interface for test data
+    interface TestTeamData {
+      id?: string;
+      name?: string;
+      division_id?: string;
+    }
+
+    const invalidTeams: (TestTeamData | null)[] = [
       { id: 'team1', name: 'Team 1', division_id: 'div1' },
       null, // Invalid team
       { name: 'Team without ID' }, // Missing required fields
       { id: 'team3', name: 'Team 3', division_id: 'div2' }
-    ] as any[];
+    ];
 
     const { result } = renderHook(
       () => useBracketFormData(mockDivisions, invalidTeams),

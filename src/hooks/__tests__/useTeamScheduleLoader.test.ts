@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 import { mockTeams, mockDate } from '@/utils/test/autoSchedule/mockData';
 import * as teamLoaderUtils from '@/utils/autoSchedule/teamLoaderUtils';
@@ -12,17 +12,26 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: vi.fn()
 }));
 
+// Create properly typed mocks
+const mockTeamLoaderUtils = vi.mocked(teamLoaderUtils);
+const mockUseToast = vi.mocked(useToast);
+
+interface MockToast {
+  toast: ReturnType<typeof vi.fn>;
+}
+
 describe('useTeamScheduleLoader', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     
-    // Mock toast
-    vi.mocked(useToast).mockReturnValue({
+    // Mock toast with proper typing
+    const mockToast: MockToast = {
       toast: vi.fn(),
-    } as any);
+    };
+    mockUseToast.mockReturnValue(mockToast);
     
     // Mock getTeamsByTimeBlock
-    vi.mocked(teamLoaderUtils.getTeamsByTimeBlock).mockImplementation(
+    mockTeamLoaderUtils.getTeamsByTimeBlock.mockImplementation(
       (date, timeBlock) => {
         if (timeBlock === '6:30') return Promise.resolve([mockTeams[0], mockTeams[1]]);
         if (timeBlock === '7:30') return Promise.resolve([mockTeams[2], mockTeams[3]]);
@@ -43,13 +52,13 @@ describe('useTeamScheduleLoader', () => {
   it('should load teams for each time block', async () => {
     const { result } = renderHook(() => useTeamScheduleLoader());
     
-    let teamsData;
+    let teamsData: Record<string, unknown[]> | null = null;
     await act(async () => {
       teamsData = await result.current.loadTeamsForDate(mockDate);
     });
     
     expect(result.current.isLoading).toBe(false);
-    expect(teamLoaderUtils.getTeamsByTimeBlock).toHaveBeenCalledTimes(3); // For 3 time blocks
+    expect(mockTeamLoaderUtils.getTeamsByTimeBlock).toHaveBeenCalledTimes(3); // For 3 time blocks
     
     // Should have teams loaded for each time block
     expect(teamsData).toHaveProperty('6:30');
@@ -63,18 +72,18 @@ describe('useTeamScheduleLoader', () => {
 
   it('should handle errors when loading teams', async () => {
     // Mock error response
-    vi.mocked(teamLoaderUtils.getTeamsByTimeBlock).mockRejectedValueOnce(new Error('API error'));
+    mockTeamLoaderUtils.getTeamsByTimeBlock.mockRejectedValueOnce(new Error('API error'));
     
     const { result } = renderHook(() => useTeamScheduleLoader());
-    const toast = vi.mocked(useToast()).toast;
+    const mockToast = mockUseToast().toast;
     
-    let teamsData;
+    let teamsData: Record<string, unknown[]> | null = null;
     await act(async () => {
       teamsData = await result.current.loadTeamsForDate(mockDate);
     });
     
     // Should show error toast
-    expect(toast).toHaveBeenCalledWith({
+    expect(mockToast).toHaveBeenCalledWith({
       title: "Error",
       description: "Failed to load teams. Please try again.",
       variant: "destructive"
@@ -93,7 +102,7 @@ describe('useTeamScheduleLoader', () => {
     // Load teams that include blocks with even and odd numbers
     await act(async () => {
       // Mock implementation for this test
-      vi.mocked(teamLoaderUtils.getTeamsByTimeBlock).mockImplementation(
+      mockTeamLoaderUtils.getTeamsByTimeBlock.mockImplementation(
         (date, timeBlock) => {
           if (timeBlock === '6:30') return Promise.resolve([mockTeams[0], mockTeams[1]]); // Even (2)
           if (timeBlock === '7:30') return Promise.resolve([mockTeams[2], mockTeams[3]]); // Even (2)

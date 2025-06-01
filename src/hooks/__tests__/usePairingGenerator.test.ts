@@ -1,6 +1,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { usePairingGenerator } from '../usePairingGenerator';
 import { mockTeams, mockTimeBlockTeams, mockDate } from '@/utils/test/autoSchedule/mockData';
 import * as compatibilityUtils from '@/utils/autoSchedule/compatibilityUtils';
@@ -12,18 +12,27 @@ vi.mock('@/hooks/use-toast', () => ({
   useToast: vi.fn()
 }));
 
+// Create properly typed mocks
+const mockCompatibilityUtils = vi.mocked(compatibilityUtils);
+const mockUseToast = vi.mocked(useToast);
+
+interface MockToast {
+  toast: ReturnType<typeof vi.fn>;
+}
+
 describe('usePairingGenerator', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     
-    // Mock toast
-    vi.mocked(useToast).mockReturnValue({
+    // Mock toast with proper typing
+    const mockToast: MockToast = {
       toast: vi.fn(),
-    } as any);
+    };
+    mockUseToast.mockReturnValue(mockToast);
     
     // Mock utility functions
-    vi.mocked(compatibilityUtils.calculateTeamCompatibility).mockReturnValue(8.5);
-    vi.mocked(compatibilityUtils.haveTeamsPlayed).mockResolvedValue(false);
+    mockCompatibilityUtils.calculateTeamCompatibility.mockReturnValue(8.5);
+    mockCompatibilityUtils.haveTeamsPlayed.mockResolvedValue(false);
   });
 
   it('should initialize with empty state', () => {
@@ -37,7 +46,7 @@ describe('usePairingGenerator', () => {
   it('should generate pairings for valid time blocks', async () => {
     const { result } = renderHook(() => usePairingGenerator());
     
-    let pairings;
+    let pairings: Record<string, unknown[]> | null = null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
     });
@@ -55,7 +64,7 @@ describe('usePairingGenerator', () => {
     expect(pairings?.['8:30']).toHaveLength(0);
     
     // Pairings should have the expected properties
-    const firstPairing = pairings?.['6:30'][0];
+    const firstPairing = pairings?.['6:30'][0] as Record<string, unknown>;
     expect(firstPairing).toHaveProperty('team1');
     expect(firstPairing).toHaveProperty('team2');
     expect(firstPairing).toHaveProperty('compatibilityScore');
@@ -71,7 +80,7 @@ describe('usePairingGenerator', () => {
     
     const { result } = renderHook(() => usePairingGenerator());
     
-    let pairings;
+    let pairings: Record<string, unknown[]> | null = null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, oddBlocksData);
     });
@@ -83,20 +92,20 @@ describe('usePairingGenerator', () => {
 
   it('should handle errors during pairing generation', async () => {
     // Mock error in compatibility function
-    vi.mocked(compatibilityUtils.calculateTeamCompatibility).mockImplementation(() => {
+    mockCompatibilityUtils.calculateTeamCompatibility.mockImplementation(() => {
       throw new Error('Calculation error');
     });
     
     const { result } = renderHook(() => usePairingGenerator());
-    const toast = vi.mocked(useToast()).toast;
+    const mockToast = mockUseToast().toast;
     
-    let pairings;
+    let pairings: Record<string, unknown[]> | null = null;
     await act(async () => {
       pairings = await result.current.generateMatchPairings(mockDate, mockTimeBlockTeams);
     });
     
     // Should show error toast
-    expect(toast).toHaveBeenCalledWith({
+    expect(mockToast).toHaveBeenCalledWith({
       title: "Error",
       description: "Failed to generate match pairings. Please try again.",
       variant: "destructive"

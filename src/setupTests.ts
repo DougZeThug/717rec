@@ -1,15 +1,33 @@
 
 import '@testing-library/jest-dom';
-import '@testing-library/react/dont-cleanup-after-each';
 import { configure } from '@testing-library/react';
 
 // Configure testing library
 configure({ 
-  // Use a supported configuration property
   testIdAttribute: 'data-testid' 
 });
 
-// Add any global test setup here
-
-// This makes "screen" available in tests
+// This makes "screen" available in tests and ensures proper React 18+ testing
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+// Mock next-themes to prevent SSR hydration issues in tests
+globalThis.matchMedia = globalThis.matchMedia || function(query) {
+  return {
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => {},
+  };
+};
+
+// Mock IntersectionObserver for better test compatibility
+globalThis.IntersectionObserver = globalThis.IntersectionObserver || class IntersectionObserver {
+  constructor() {}
+  observe() { return null; }
+  disconnect() { return null; }
+  unobserve() { return null; }
+};

@@ -27,5 +27,13 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-explicit-any": "error",
     },
+  },
+  // More lenient rules for test files
+  {
+    files: ["**/__tests__/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn", // Allow any in tests but warn
+      "@typescript-eslint/no-unused-vars": "off",
+    },
   }
 );
