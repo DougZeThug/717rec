@@ -23,7 +23,7 @@ interface PlayoffDialogsProps {
   teams: Team[];
   onBracketCreated: () => void;
 
-  // Match score editor
+  // Match score editor - Updated to include refetchBrackets parameter
   editingMatch: PlayoffMatch | null;
   isQuickEdit: boolean;
   onCloseMatchEditor: () => void;
@@ -33,7 +33,8 @@ interface PlayoffDialogsProps {
     team2Score: number,
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
-    team2GameWins: number
+    team2GameWins: number,
+    refetchBrackets: () => Promise<any>
   ) => Promise<void>;
 
   // Delete bracket dialog

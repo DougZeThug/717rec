@@ -12,7 +12,8 @@ interface UseScoreSubmissionProps {
     team2Score: number,
     games: { team1Score: number; team2Score: number }[],
     team1GameWins: number,
-    team2GameWins: number
+    team2GameWins: number,
+    refetchBrackets: () => Promise<any>
   ) => void;
   setIsSubmitting: (value: boolean) => void;
   setSelectedOption: (value: string | null) => void;
@@ -35,6 +36,9 @@ export const useScoreSubmission = ({
       // Generate mock game data based on the score pattern
       const games = generateGameData(option);
       
+      // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
+      const dummyRefetch = async () => {};
+      
       // Save the match score
       await onSave(
         match.id,
@@ -42,7 +46,8 @@ export const useScoreSubmission = ({
         option.team2GameWins > option.team1GameWins ? 1 : 0, // Binary match score
         games,
         option.team1GameWins,
-        option.team2GameWins
+        option.team2GameWins,
+        dummyRefetch
       );
     } catch (error) {
       console.error("Error saving quick score:", error);

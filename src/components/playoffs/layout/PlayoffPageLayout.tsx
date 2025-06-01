@@ -29,6 +29,26 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
     }
   }, [lastUpdatedMatch, data.refetchBrackets, data.selectedBracketId]);
 
+  // Create a wrapper function that includes refetchBrackets
+  const handleSaveMatchScore = React.useCallback(async (
+    matchId: string,
+    team1Score: number,
+    team2Score: number,
+    games: { team1Score: number; team2Score: number }[],
+    team1GameWins: number,
+    team2GameWins: number
+  ) => {
+    await handlers.handleSaveMatchScore(
+      matchId,
+      team1Score,
+      team2Score,
+      games,
+      team1GameWins,
+      team2GameWins,
+      data.refetchBrackets
+    );
+  }, [handlers.handleSaveMatchScore, data.refetchBrackets]);
+
   return (
     <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
@@ -63,7 +83,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
         editingMatch={handlers.editingMatch}
         isQuickEdit={handlers.isQuickEdit}
         onCloseMatchEditor={handlers.handleCloseMatchEditor}
-        onSaveMatchScore={handlers.handleSaveMatchScore}
+        onSaveMatchScore={handleSaveMatchScore}
         
         // Delete bracket props
         deletingBracket={view.deletingBracket}

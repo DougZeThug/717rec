@@ -12,7 +12,8 @@ interface MatchScoreEditorWrapperProps {
     team2Score: number,
     games: { team1Score: number; team2Score: number; }[],
     team1GameWins: number,
-    team2GameWins: number
+    team2GameWins: number,
+    refetchBrackets: () => Promise<any>
   ) => Promise<void>;
   onCancel: () => void;
 }
@@ -37,13 +38,17 @@ const MatchScoreEditorWrapper: React.FC<MatchScoreEditorWrapperProps> = ({
     const team1Score = match.team1Id === winnerId ? 1 : 0;
     const team2Score = match.team2Id === winnerId ? 1 : 0;
     
+    // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
+    const dummyRefetch = async () => {};
+    
     await onSave(
       matchId,
       team1Score,
       team2Score,
       games,
       team1GameWins,
-      team2GameWins
+      team2GameWins,
+      dummyRefetch
     );
   };
 
