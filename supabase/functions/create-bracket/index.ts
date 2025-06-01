@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -70,54 +71,12 @@ class BracketGenerator {
       }
     }
     
-    // Create first round matches
-    const firstRoundMatches = Math.pow(2, rounds - 1);
-    for (let i = 0; i < firstRoundMatches; i++) {
-      const matchPosition = i;
-      const team1Index = i * 2;
-      const team2Index = i * 2 + 1;
-      const matchId = matchIdMap.get(`1-${i}`)!;
-      
-      // Determine next match ID if not final round
-      let nextWinMatchId = null;
-      if (rounds > 1) {
-        const nextRound = 2;
-        const nextPosition = Math.floor(i / 2);
-        nextWinMatchId = matchIdMap.get(`${nextRound}-${nextPosition}`) || null;
-      }
-      
-      const match = {
-        id: matchId,
-        bracket_id: bracketId,
-        round: 1,
-        position: matchPosition,
-        match_type: 'winners',
-        team1_id: team1Index < sortedTeams.length ? sortedTeams[team1Index].id : null,
-        team2_id: team2Index < sortedTeams.length ? sortedTeams[team2Index].id : null,
-        team1_seed: team1Index < sortedTeams.length ? sortedTeams[team1Index].seed || (team1Index + 1) : null,
-        team2_seed: team2Index < sortedTeams.length ? sortedTeams[team2Index].seed || (team2Index + 1) : null,
-        next_win_match_id: nextWinMatchId,
-        best_of: 3,
-        status: 'pending'
-      };
-      
-      matches.push(match);
-    }
-    
-    // Create subsequent rounds
-    for (let round = 2; round <= rounds; round++) {
+    // Create all matches with NULL foreign key references initially
+    for (let round = 1; round <= rounds; round++) {
       const matchesInRound = Math.pow(2, rounds - round);
       
       for (let i = 0; i < matchesInRound; i++) {
         const matchId = matchIdMap.get(`${round}-${i}`)!;
-        
-        // Determine next match ID if not final round
-        let nextWinMatchId = null;
-        if (round < rounds) {
-          const nextRound = round + 1;
-          const nextPosition = Math.floor(i / 2);
-          nextWinMatchId = matchIdMap.get(`${nextRound}-${nextPosition}`) || null;
-        }
         
         const match = {
           id: matchId,
@@ -125,11 +84,12 @@ class BracketGenerator {
           round: round,
           position: i,
           match_type: round === rounds ? 'finals' : 'winners',
-          team1_id: null,
-          team2_id: null,
-          team1_seed: null,
-          team2_seed: null,
-          next_win_match_id: nextWinMatchId,
+          team1_id: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].id : null,
+          team2_id: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].id : null,
+          team1_seed: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].seed || (i * 2 + 1) : null,
+          team2_seed: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].seed || (i * 2 + 2) : null,
+          next_win_match_id: null, // Will be set in second pass
+          next_lose_match_id: null, // Not used in single elimination
           best_of: 3,
           status: 'pending'
         };
@@ -138,7 +98,7 @@ class BracketGenerator {
       }
     }
     
-    return matches;
+    return { matches, matchIdMap };
   }
 
   static generateDoubleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
@@ -161,13 +121,22 @@ class BracketGenerator {
       }
     }
     
-    // Generate loser bracket match IDs
-    const losersRounds = (rounds - 1) * 2;
+    // Generate loser bracket match IDs - corrected calculation
+    const losersRounds = Math.max(1, (rounds - 1) * 2);
     for (let round = 1; round <= losersRounds; round++) {
       const isEvenRound = round % 2 === 0;
-      const matchesInRound = isEvenRound ? 
-        Math.pow(2, rounds - Math.ceil(round / 2) - 1) : 
-        Math.pow(2, rounds - Math.ceil(round / 2));
+      let matchesInRound;
+      
+      if (round === 1) {
+        // First round of losers bracket gets all first-round losers
+        matchesInRound = Math.pow(2, rounds - 2);
+      } else if (isEvenRound) {
+        // Even rounds have merges from winners bracket
+        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
+      } else {
+        // Odd rounds (after first) continue from previous round
+        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2));
+      }
       
       for (let position = 0; position < matchesInRound; position++) {
         const key = `l-${round}-${position}`;
@@ -175,35 +144,12 @@ class BracketGenerator {
       }
     }
     
-    // Generate winners bracket matches (same logic as single elimination)
+    // Generate winners bracket matches with NULL foreign keys initially
     for (let round = 1; round <= rounds; round++) {
       const matchesInRound = Math.pow(2, rounds - round);
       
       for (let i = 0; i < matchesInRound; i++) {
         const matchId = winnersMatchIds.get(`w-${round}-${i}`)!;
-        
-        // Determine next win match
-        let nextWinMatchId = null;
-        if (round < rounds) {
-          const nextRound = round + 1;
-          const nextPosition = Math.floor(i / 2);
-          nextWinMatchId = winnersMatchIds.get(`w-${nextRound}-${nextPosition}`) || null;
-        } else {
-          // Finals winner goes to grand finals
-          nextWinMatchId = grandFinalsId;
-        }
-        
-        // For losers bracket routing (elimination from winners bracket)
-        let nextLoseMatchId = null;
-        if (round === 1) {
-          // First round losers go to first round of losers bracket
-          nextLoseMatchId = losersMatchIds.get(`l-1-${i}`) || null;
-        } else if (round > 1) {
-          // Later round losers go to specific losers bracket positions
-          const losersRound = (round - 1) * 2;
-          const losersPosition = i;
-          nextLoseMatchId = losersMatchIds.get(`l-${losersRound}-${losersPosition}`) || null;
-        }
         
         const match = {
           id: matchId,
@@ -215,8 +161,8 @@ class BracketGenerator {
           team2_id: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].id : null,
           team1_seed: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].seed || (i * 2 + 1) : null,
           team2_seed: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].seed || (i * 2 + 2) : null,
-          next_win_match_id: nextWinMatchId,
-          next_lose_match_id: nextLoseMatchId,
+          next_win_match_id: null, // Will be set in second pass
+          next_lose_match_id: null, // Will be set in third pass
           best_of: 3,
           status: 'pending'
         };
@@ -225,26 +171,21 @@ class BracketGenerator {
       }
     }
     
-    // Generate losers bracket matches
+    // Generate losers bracket matches with NULL foreign keys initially
     for (let round = 1; round <= losersRounds; round++) {
       const isEvenRound = round % 2 === 0;
-      const matchesInRound = isEvenRound ? 
-        Math.pow(2, rounds - Math.ceil(round / 2) - 1) : 
-        Math.pow(2, rounds - Math.ceil(round / 2));
+      let matchesInRound;
+      
+      if (round === 1) {
+        matchesInRound = Math.pow(2, rounds - 2);
+      } else if (isEvenRound) {
+        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
+      } else {
+        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2));
+      }
       
       for (let i = 0; i < matchesInRound; i++) {
         const matchId = losersMatchIds.get(`l-${round}-${i}`)!;
-        
-        // Determine next win match
-        let nextWinMatchId = null;
-        if (round < losersRounds) {
-          const nextRound = round + 1;
-          const nextPosition = isEvenRound ? i : Math.floor(i / 2);
-          nextWinMatchId = losersMatchIds.get(`l-${nextRound}-${nextPosition}`) || null;
-        } else {
-          // Losers bracket finals winner goes to grand finals
-          nextWinMatchId = grandFinalsId;
-        }
         
         const match = {
           id: matchId,
@@ -256,7 +197,7 @@ class BracketGenerator {
           team2_id: null,
           team1_seed: null,
           team2_seed: null,
-          next_win_match_id: nextWinMatchId,
+          next_win_match_id: null, // Will be set in second pass
           next_lose_match_id: null, // Losers bracket eliminations
           best_of: 3,
           status: 'pending'
@@ -266,7 +207,7 @@ class BracketGenerator {
       }
     }
     
-    // Generate grand finals
+    // Generate grand finals with NULL foreign keys initially
     const grandFinals = {
       id: grandFinalsId,
       bracket_id: bracketId,
@@ -285,7 +226,7 @@ class BracketGenerator {
     
     matches.push(grandFinals);
     
-    return matches;
+    return { matches, winnersMatchIds, losersMatchIds, grandFinalsId };
   }
 }
 
@@ -490,49 +431,200 @@ serve(async (req) => {
       console.log('[DATABASE] Created participant records for all teams');
     }
 
-    // Generate and insert playoff matches using two-pass approach
+    // Generate and insert playoff matches using three-pass approach
     console.log('[MATCHES] Generating playoff match structure...');
     
-    let playoffMatches: any[] = [];
-    
     try {
+      let bracketResult: any;
+      
       if (payload.format === 'singleElim') {
-        playoffMatches = BracketGenerator.generateSingleElimination(payload.teams, bracketData.id);
-        console.log(`[MATCHES] Generated ${playoffMatches.length} single elimination matches`);
+        bracketResult = BracketGenerator.generateSingleElimination(payload.teams, bracketData.id);
+        console.log(`[MATCHES] Generated ${bracketResult.matches.length} single elimination matches`);
       } else if (payload.format === 'doubleElim') {
-        playoffMatches = BracketGenerator.generateDoubleElimination(payload.teams, bracketData.id);
-        console.log(`[MATCHES] Generated ${playoffMatches.length} double elimination matches`);
+        bracketResult = BracketGenerator.generateDoubleElimination(payload.teams, bracketData.id);
+        console.log(`[MATCHES] Generated ${bracketResult.matches.length} double elimination matches`);
       }
 
-      if (playoffMatches.length > 0) {
-        console.log('[MATCHES] Inserting playoff matches into database...');
+      if (bracketResult?.matches?.length > 0) {
+        console.log('[MATCHES] Starting three-pass insertion process...');
         
-        // Sort matches to insert those with no dependencies first (reverse round order)
-        const sortedMatches = [...playoffMatches].sort((a, b) => {
-          // Insert finals/later rounds first (they have no next_win_match_id dependencies from other matches)
-          if (a.match_type === 'finals' && b.match_type !== 'finals') return -1;
-          if (b.match_type === 'finals' && a.match_type !== 'finals') return 1;
-          // Then sort by round descending (later rounds first)
-          return b.round - a.round;
-        });
+        // PASS 1: Insert all matches with NULL foreign key references
+        console.log('[MATCHES] Pass 1: Inserting all matches with NULL references...');
+        const { error: insertError } = await supabaseAdmin
+          .from('playoff_matches')
+          .insert(bracketResult.matches);
         
-        // Insert matches in batches to avoid large transaction issues
-        const batchSize = 10;
-        for (let i = 0; i < sortedMatches.length; i += batchSize) {
-          const batch = sortedMatches.slice(i, i + batchSize);
-          console.log(`[MATCHES] Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(sortedMatches.length/batchSize)} (${batch.length} matches)`);
+        if (insertError) {
+          console.error('[MATCHES] Failed to insert matches in pass 1:', insertError);
+          throw new Error(`Failed to insert playoff matches: ${insertError.message}`);
+        }
+        
+        console.log(`[MATCHES] Pass 1 completed: Inserted ${bracketResult.matches.length} matches`);
+        
+        // PASS 2: Update next_win_match_id references
+        console.log('[MATCHES] Pass 2: Updating next_win_match_id references...');
+        
+        if (payload.format === 'singleElim') {
+          const { matchIdMap } = bracketResult;
+          const rounds = BracketGenerator.calculateRounds(BracketGenerator.calculateBracketSize(payload.teams.length));
           
-          const { error: batchError } = await supabaseAdmin
-            .from('playoff_matches')
-            .insert(batch);
+          for (let round = 1; round < rounds; round++) {
+            const matchesInRound = Math.pow(2, rounds - round);
+            
+            for (let i = 0; i < matchesInRound; i++) {
+              const currentMatchId = matchIdMap.get(`${round}-${i}`);
+              const nextRound = round + 1;
+              const nextPosition = Math.floor(i / 2);
+              const nextMatchId = matchIdMap.get(`${nextRound}-${nextPosition}`);
+              
+              if (currentMatchId && nextMatchId) {
+                const { error: updateError } = await supabaseAdmin
+                  .from('playoff_matches')
+                  .update({ next_win_match_id: nextMatchId })
+                  .eq('id', currentMatchId);
+                
+                if (updateError) {
+                  console.error('[MATCHES] Failed to update next_win_match_id:', updateError);
+                  throw new Error(`Failed to update match references: ${updateError.message}`);
+                }
+              }
+            }
+          }
+        } else if (payload.format === 'doubleElim') {
+          const { winnersMatchIds, losersMatchIds, grandFinalsId } = bracketResult;
+          const rounds = BracketGenerator.calculateRounds(BracketGenerator.calculateBracketSize(payload.teams.length));
           
-          if (batchError) {
-            console.error(`[MATCHES] Failed to insert batch ${Math.floor(i/batchSize) + 1}:`, batchError);
-            throw new Error(`Failed to create playoff matches batch: ${batchError.message}`);
+          // Update winners bracket next_win_match_id
+          for (let round = 1; round < rounds; round++) {
+            const matchesInRound = Math.pow(2, rounds - round);
+            
+            for (let i = 0; i < matchesInRound; i++) {
+              const currentMatchId = winnersMatchIds.get(`w-${round}-${i}`);
+              const nextRound = round + 1;
+              const nextPosition = Math.floor(i / 2);
+              const nextMatchId = winnersMatchIds.get(`w-${nextRound}-${nextPosition}`);
+              
+              if (currentMatchId && nextMatchId) {
+                const { error: updateError } = await supabaseAdmin
+                  .from('playoff_matches')
+                  .update({ next_win_match_id: nextMatchId })
+                  .eq('id', currentMatchId);
+                
+                if (updateError) {
+                  console.error('[MATCHES] Failed to update winners next_win_match_id:', updateError);
+                  throw new Error(`Failed to update winners match references: ${updateError.message}`);
+                }
+              }
+            }
+          }
+          
+          // Update final winners bracket match to point to grand finals
+          const finalMatchId = winnersMatchIds.get(`w-${rounds}-0`);
+          if (finalMatchId) {
+            const { error: updateError } = await supabaseAdmin
+              .from('playoff_matches')
+              .update({ next_win_match_id: grandFinalsId })
+              .eq('id', finalMatchId);
+            
+            if (updateError) {
+              console.error('[MATCHES] Failed to update final match to grand finals:', updateError);
+              throw new Error(`Failed to update final match reference: ${updateError.message}`);
+            }
+          }
+          
+          // Update losers bracket next_win_match_id
+          const losersRounds = Math.max(1, (rounds - 1) * 2);
+          for (let round = 1; round < losersRounds; round++) {
+            const isEvenRound = round % 2 === 0;
+            let matchesInRound;
+            
+            if (round === 1) {
+              matchesInRound = Math.pow(2, rounds - 2);
+            } else if (isEvenRound) {
+              matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
+            } else {
+              matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2));
+            }
+            
+            for (let i = 0; i < matchesInRound; i++) {
+              const currentMatchId = losersMatchIds.get(`l-${round}-${i}`);
+              const nextRound = round + 1;
+              const nextPosition = isEvenRound ? i : Math.floor(i / 2);
+              const nextMatchId = losersMatchIds.get(`l-${nextRound}-${nextPosition}`);
+              
+              if (currentMatchId && nextMatchId) {
+                const { error: updateError } = await supabaseAdmin
+                  .from('playoff_matches')
+                  .update({ next_win_match_id: nextMatchId })
+                  .eq('id', currentMatchId);
+                
+                if (updateError) {
+                  console.error('[MATCHES] Failed to update losers next_win_match_id:', updateError);
+                  throw new Error(`Failed to update losers match references: ${updateError.message}`);
+                }
+              }
+            }
+          }
+          
+          // Update final losers bracket match to point to grand finals
+          const finalLosersMatchId = losersMatchIds.get(`l-${losersRounds}-0`);
+          if (finalLosersMatchId) {
+            const { error: updateError } = await supabaseAdmin
+              .from('playoff_matches')
+              .update({ next_win_match_id: grandFinalsId })
+              .eq('id', finalLosersMatchId);
+            
+            if (updateError) {
+              console.error('[MATCHES] Failed to update final losers match to grand finals:', updateError);
+              throw new Error(`Failed to update final losers match reference: ${updateError.message}`);
+            }
           }
         }
         
-        console.log(`[MATCHES] Successfully inserted all ${playoffMatches.length} playoff matches`);
+        console.log('[MATCHES] Pass 2 completed: Updated all next_win_match_id references');
+        
+        // PASS 3: Update next_lose_match_id references (only for double elimination)
+        if (payload.format === 'doubleElim') {
+          console.log('[MATCHES] Pass 3: Updating next_lose_match_id references...');
+          
+          const { winnersMatchIds, losersMatchIds } = bracketResult;
+          const rounds = BracketGenerator.calculateRounds(BracketGenerator.calculateBracketSize(payload.teams.length));
+          
+          // Update winners bracket next_lose_match_id
+          for (let round = 1; round <= rounds; round++) {
+            const matchesInRound = Math.pow(2, rounds - round);
+            
+            for (let i = 0; i < matchesInRound; i++) {
+              const currentMatchId = winnersMatchIds.get(`w-${round}-${i}`);
+              let losersMatchId = null;
+              
+              if (round === 1) {
+                // First round losers go to first round of losers bracket
+                losersMatchId = losersMatchIds.get(`l-1-${i}`);
+              } else if (round > 1) {
+                // Later round losers go to specific losers bracket positions
+                const losersRound = (round - 1) * 2;
+                losersMatchId = losersMatchIds.get(`l-${losersRound}-${i}`);
+              }
+              
+              if (currentMatchId && losersMatchId) {
+                const { error: updateError } = await supabaseAdmin
+                  .from('playoff_matches')
+                  .update({ next_lose_match_id: losersMatchId })
+                  .eq('id', currentMatchId);
+                
+                if (updateError) {
+                  console.error('[MATCHES] Failed to update next_lose_match_id:', updateError);
+                  throw new Error(`Failed to update lose match references: ${updateError.message}`);
+                }
+              }
+            }
+          }
+          
+          console.log('[MATCHES] Pass 3 completed: Updated all next_lose_match_id references');
+        }
+        
+        console.log(`[MATCHES] Successfully completed three-pass insertion for ${bracketResult.matches.length} playoff matches`);
       }
     } catch (matchError) {
       console.error('[MATCHES] Error generating or inserting matches:', matchError);
@@ -556,7 +648,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         bracket: bracketRecord,
-        matches_generated: playoffMatches.length
+        matches_generated: bracketResult?.matches?.length || 0
       }),
       { 
         headers: { 
