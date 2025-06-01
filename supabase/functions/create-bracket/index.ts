@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -36,6 +37,179 @@ async function challongeFetch(
   }
   
   return await res.json();
+}
+
+// Tournament bracket generation utilities
+class BracketGenerator {
+  static calculateBracketSize(teamCount: number): number {
+    let power = 1;
+    while (power < teamCount) {
+      power *= 2;
+    }
+    return power;
+  }
+
+  static calculateRounds(teamCount: number): number {
+    return Math.ceil(Math.log2(teamCount));
+  }
+
+  static generateSingleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
+    const sortedTeams = teams.sort((a, b) => (a.seed || 999) - (b.seed || 999));
+    const bracketSize = this.calculateBracketSize(teams.length);
+    const rounds = this.calculateRounds(bracketSize);
+    const matches: any[] = [];
+    
+    let matchId = 1;
+    
+    // Generate all rounds structure first
+    const roundMatches: number[][] = [];
+    for (let round = 1; round <= rounds; round++) {
+      const matchesInRound = Math.pow(2, rounds - round);
+      roundMatches[round] = [];
+      for (let i = 0; i < matchesInRound; i++) {
+        roundMatches[round].push(matchId++);
+      }
+    }
+    
+    // Create first round matches
+    const firstRoundMatches = roundMatches[1];
+    for (let i = 0; i < firstRoundMatches.length; i++) {
+      const matchPosition = i;
+      const team1Index = i * 2;
+      const team2Index = i * 2 + 1;
+      
+      const match = {
+        id: crypto.randomUUID(),
+        bracket_id: bracketId,
+        round: 1,
+        position: matchPosition,
+        match_type: 'winners',
+        team1_id: team1Index < sortedTeams.length ? sortedTeams[team1Index].id : null,
+        team2_id: team2Index < sortedTeams.length ? sortedTeams[team2Index].id : null,
+        team1_seed: team1Index < sortedTeams.length ? sortedTeams[team1Index].seed || (team1Index + 1) : null,
+        team2_seed: team2Index < sortedTeams.length ? sortedTeams[team2Index].seed || (team2Index + 1) : null,
+        next_win_match_id: rounds > 1 ? crypto.randomUUID() : null,
+        best_of: 3,
+        status: 'pending'
+      };
+      
+      matches.push(match);
+    }
+    
+    // Create subsequent rounds
+    for (let round = 2; round <= rounds; round++) {
+      const matchesInRound = roundMatches[round];
+      const prevRoundMatches = matches.filter(m => m.round === round - 1);
+      
+      for (let i = 0; i < matchesInRound.length; i++) {
+        const match = {
+          id: crypto.randomUUID(),
+          bracket_id: bracketId,
+          round: round,
+          position: i,
+          match_type: round === rounds ? 'finals' : 'winners',
+          team1_id: null,
+          team2_id: null,
+          team1_seed: null,
+          team2_seed: null,
+          next_win_match_id: round < rounds ? crypto.randomUUID() : null,
+          best_of: 3,
+          status: 'pending'
+        };
+        
+        matches.push(match);
+        
+        // Update previous round matches to point to this match
+        const prevMatch1 = prevRoundMatches[i * 2];
+        const prevMatch2 = prevRoundMatches[i * 2 + 1];
+        
+        if (prevMatch1) {
+          prevMatch1.next_win_match_id = match.id;
+        }
+        if (prevMatch2) {
+          prevMatch2.next_win_match_id = match.id;
+        }
+      }
+    }
+    
+    return matches;
+  }
+
+  static generateDoubleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
+    const sortedTeams = teams.sort((a, b) => (a.seed || 999) - (b.seed || 999));
+    const bracketSize = this.calculateBracketSize(teams.length);
+    const rounds = this.calculateRounds(bracketSize);
+    const matches: any[] = [];
+    
+    // Generate winners bracket (same as single elimination)
+    const winnersMatches = this.generateSingleElimination(teams, bracketId);
+    matches.push(...winnersMatches);
+    
+    // Generate losers bracket
+    const losersRounds = (rounds - 1) * 2;
+    
+    for (let round = 1; round <= losersRounds; round++) {
+      const isEvenRound = round % 2 === 0;
+      const matchesInRound = isEvenRound ? 
+        Math.pow(2, rounds - Math.ceil(round / 2) - 1) : 
+        Math.pow(2, rounds - Math.ceil(round / 2));
+      
+      for (let i = 0; i < matchesInRound; i++) {
+        const match = {
+          id: crypto.randomUUID(),
+          bracket_id: bracketId,
+          round: round,
+          position: i,
+          match_type: 'losers',
+          team1_id: null,
+          team2_id: null,
+          team1_seed: null,
+          team2_seed: null,
+          next_win_match_id: round < losersRounds ? crypto.randomUUID() : null,
+          next_lose_match_id: null, // Losers bracket eliminations
+          best_of: 3,
+          status: 'pending'
+        };
+        
+        matches.push(match);
+      }
+    }
+    
+    // Generate grand finals
+    const grandFinals = {
+      id: crypto.randomUUID(),
+      bracket_id: bracketId,
+      round: 1,
+      position: 0,
+      match_type: 'finals',
+      team1_id: null, // Winners bracket champion
+      team2_id: null, // Losers bracket champion
+      team1_seed: null,
+      team2_seed: null,
+      next_win_match_id: null,
+      next_lose_match_id: null,
+      best_of: 5, // Grand finals typically best of 5
+      status: 'pending'
+    };
+    
+    matches.push(grandFinals);
+    
+    // Link losers bracket eliminations to winners bracket
+    winnersMatches.forEach((winnersMatch, index) => {
+      if (winnersMatch.round > 1) {
+        // Find corresponding losers bracket match to receive eliminated team
+        const correspondingLosersMatch = matches.find(m => 
+          m.match_type === 'losers' && 
+          m.round === (winnersMatch.round - 1) * 2 - 1
+        );
+        if (correspondingLosersMatch) {
+          winnersMatch.next_lose_match_id = correspondingLosersMatch.id;
+        }
+      }
+    });
+    
+    return matches;
+  }
 }
 
 interface CreateBracketPayload {
@@ -197,7 +371,7 @@ serve(async (req) => {
 
     console.log('[DATABASE] Inserting bracket record...');
 
-    // Insert bracket record into Supabase - REMOVED redundant participants JSON storage
+    // Insert bracket record into Supabase
     const { data: bracketData, error: insertError } = await supabaseAdmin
       .from('brackets')
       .insert({
@@ -239,6 +413,40 @@ serve(async (req) => {
       console.log('[DATABASE] Created participant records for all teams');
     }
 
+    // Generate and insert playoff matches
+    console.log('[MATCHES] Generating playoff match structure...');
+    
+    let playoffMatches: any[] = [];
+    
+    try {
+      if (payload.format === 'singleElim') {
+        playoffMatches = BracketGenerator.generateSingleElimination(payload.teams, bracketData.id);
+        console.log(`[MATCHES] Generated ${playoffMatches.length} single elimination matches`);
+      } else if (payload.format === 'doubleElim') {
+        playoffMatches = BracketGenerator.generateDoubleElimination(payload.teams, bracketData.id);
+        console.log(`[MATCHES] Generated ${playoffMatches.length} double elimination matches`);
+      }
+
+      if (playoffMatches.length > 0) {
+        console.log('[MATCHES] Inserting playoff matches into database...');
+        
+        const { error: matchesError } = await supabaseAdmin
+          .from('playoff_matches')
+          .insert(playoffMatches);
+        
+        if (matchesError) {
+          console.error('[MATCHES] Failed to insert playoff matches:', matchesError);
+          throw new Error(`Failed to create playoff matches: ${matchesError.message}`);
+        } else {
+          console.log(`[MATCHES] Successfully inserted ${playoffMatches.length} playoff matches`);
+        }
+      }
+    } catch (matchError) {
+      console.error('[MATCHES] Error generating or inserting matches:', matchError);
+      // Don't fail the entire bracket creation, but log the issue
+      console.log('[MATCHES] Bracket created but match generation failed - matches can be generated later');
+    }
+
     console.log('[BRACKET] Bracket creation completed successfully:', bracketData.id);
 
     const bracketRecord: BracketRecord = {
@@ -252,7 +460,11 @@ serve(async (req) => {
     };
 
     return new Response(
-      JSON.stringify({ success: true, bracket: bracketRecord }),
+      JSON.stringify({ 
+        success: true, 
+        bracket: bracketRecord,
+        matches_generated: playoffMatches.length
+      }),
       { 
         headers: { 
           ...corsHeaders, 
