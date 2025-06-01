@@ -71,6 +71,14 @@ const BracketForm: React.FC<BracketFormProps> = ({
     [onTeamsValidityChange]
   );
 
+  // Handle division change
+  const handleDivisionChange = React.useCallback((divisionId: string) => {
+    // Clear selected teams when division changes
+    setSelectedTeams([]);
+    setTeamsValidationState(false);
+    onTeamsValidityChange?.(false);
+  }, [onTeamsValidityChange]);
+
   // EXPLICIT form submission handler - NO AUTO-SUBMISSION
   const onFormSubmit = (data: BracketFormValues) => {
     console.log("BracketForm: Explicit form submission triggered", data);
@@ -101,13 +109,17 @@ const BracketForm: React.FC<BracketFormProps> = ({
     <Form {...form}>
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
         {/* Form Title */}
-        <BracketFormTitle />
+        <BracketFormTitle form={form} />
 
         {/* Division Selection */}
-        <BracketFormDivision divisions={divisions} />
+        <BracketFormDivision 
+          form={form}
+          divisions={divisions || []} 
+          onDivisionChange={handleDivisionChange}
+        />
 
         {/* Format Selection */}
-        <BracketFormFormat />
+        <BracketFormFormat form={form} />
 
         {/* Team Selection */}
         <div className="space-y-2">
