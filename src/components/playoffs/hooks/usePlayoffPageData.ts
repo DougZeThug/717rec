@@ -1,6 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
 import { useDivisions } from "@/hooks/useDivisions";
@@ -55,25 +56,32 @@ export function usePlayoffPageData(): PlayoffPageData {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedBracketId, setSelectedBracketIdState] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   
   const { profile } = useAuth();
   const isAdmin = profile?.is_admin || false;
 
-  // Simple bracket ID management
-  const setSelectedBracketId = (id: string | null) => {
-    console.log('🎯 PHASE 2 FIX: setSelectedBracketId called with:', id);
+  // PHASE 3 FIX: Enhanced bracket ID management with cache invalidation
+  const setSelectedBracketId = useCallback((id: string | null) => {
+    console.log('🎯 PHASE 3 FIX: setSelectedBracketId called with:', id);
     setSelectedBracketIdState(id);
     
     if (id) {
       const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.set('bracket', id);
       setSearchParams(newSearchParams);
+      
+      // PHASE 3 FIX: Preload bracket data for better UX
+      queryClient.prefetchQuery({
+        queryKey: ['bracket-data', id],
+        staleTime: 1000 * 60 * 2 // 2 minutes
+      });
     } else {
       const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.delete('bracket');
       setSearchParams(newSearchParams);
     }
-  };
+  }, [searchParams, setSearchParams, queryClient]);
 
   // Handle URL parameters for bracket selection
   useEffect(() => {
@@ -85,10 +93,15 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   }, [searchParams, selectedBracketId]);
 
-  // PHASE 2 FIX: Direct bracket data with proper logging
-  const { data: selectedBracket, isLoading: selectedBracketLoading, error: selectedBracketError } = useBracketData(selectedBracketId);
+  // PHASE 3 FIX: Enhanced bracket data with optimistic updates and error recovery
+  const { 
+    data: selectedBracket, 
+    isLoading: selectedBracketLoading, 
+    error: selectedBracketError,
+    refetch: refetchSelectedBracket
+  } = useBracketData(selectedBracketId);
   
-  console.log('🎯 PHASE 2 FIX: usePlayoffPageData bracket data state:', {
+  console.log('🎯 PHASE 3 FIX: usePlayoffPageData bracket data state:', {
     selectedBracketId,
     selectedBracket: selectedBracket ? {
       id: selectedBracket.id,
@@ -118,13 +131,13 @@ export function usePlayoffPageData(): PlayoffPageData {
     bracketsByDivision,
     handleBracketCreated: originalHandleBracketCreated,
     handleTeamDivisionChange,
-    refetchBrackets,
+    refetchBrackets: originalRefetchBrackets,
     error: bracketsDataError
   } = usePlayoffData();
   
-  // Simple delete function
-  const deleteBracket = async (bracketId: string, bracketName: string) => {
-    console.log('🎯 PHASE 2 FIX: Deleting bracket:', bracketId, bracketName);
+  // PHASE 3 FIX: Enhanced delete function with proper cache invalidation
+  const deleteBracket = useCallback(async (bracketId: string, bracketName: string) => {
+    console.log('🎯 PHASE 3 FIX: Deleting bracket:', bracketId, bracketName);
     
     try {
       const { error } = await supabase
@@ -136,31 +149,86 @@ export function usePlayoffPageData(): PlayoffPageData {
         throw error;
       }
       
-      console.log('🎯 PHASE 2 FIX: Bracket deleted successfully');
+      // PHASE 3 FIX: Comprehensive cache invalidation
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] }),
+        queryClient.invalidateQueries({ queryKey: ['playoff-matches', bracketId] }),
+        queryClient.removeQueries({ queryKey: ['bracket-data', bracketId] })
+      ]);
+      
+      // If deleted bracket was selected, clear selection
+      if (selectedBracketId === bracketId) {
+        setSelectedBracketId(null);
+      }
+      
+      console.log('🎯 PHASE 3 FIX: Bracket deleted successfully with cache invalidation');
     } catch (error) {
-      console.error('🎯 PHASE 2 FIX: Error deleting bracket:', error);
+      console.error('🎯 PHASE 3 FIX: Error deleting bracket:', error);
       const errorMessage = getUIErrorMessage(error, "Failed to delete bracket");
       logError(error, "deleteBracket");
       throw new Error(errorMessage);
     }
-  };
+  }, [queryClient, selectedBracketId, setSelectedBracketId]);
   
-  // Simple bracket creation handler - no complex loops
-  const handleBracketCreated = async () => {
-    console.log('🎯 PHASE 2 FIX: handleBracketCreated called');
+  // PHASE 3 FIX: Enhanced bracket creation handler with comprehensive cache management
+  const handleBracketCreated = useCallback(async () => {
+    console.log('🎯 PHASE 3 FIX: handleBracketCreated called');
     
     try {
       await originalHandleBracketCreated();
-      await refetchBrackets();
+      
+      // PHASE 3 FIX: Comprehensive cache invalidation and refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoff-data'] }),
+        queryClient.invalidateQueries({ queryKey: ['divisions'] }),
+        originalRefetchBrackets()
+      ]);
+      
+      console.log('🎯 PHASE 3 FIX: Bracket creation completed with cache refresh');
     } catch (error) {
-      console.error('🎯 PHASE 2 FIX: Error in handleBracketCreated:', error);
+      console.error('🎯 PHASE 3 FIX: Error in handleBracketCreated:', error);
       const errorMessage = getUIErrorMessage(error, "Failed to create bracket");
       logError(error, "handleBracketCreated");
       setError(errorMessage);
     }
-  };
+  }, [originalHandleBracketCreated, originalRefetchBrackets, queryClient]);
 
-  // Simple bracket processing
+  // PHASE 3 FIX: Enhanced refetch function with optimistic updates
+  const refetchBrackets = useCallback(async () => {
+    console.log('🎯 PHASE 3 FIX: refetchBrackets called');
+    
+    try {
+      // Parallel refetch for better performance
+      const refetchPromises = [
+        originalRefetchBrackets(),
+        queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoff-data'] })
+      ];
+      
+      // If we have a selected bracket, also refetch its data
+      if (selectedBracketId) {
+        refetchPromises.push(
+          queryClient.invalidateQueries({ queryKey: ['bracket-data', selectedBracketId] }),
+          refetchSelectedBracket()
+        );
+      }
+      
+      await Promise.all(refetchPromises);
+      
+      console.log('🎯 PHASE 3 FIX: All data refetched successfully');
+      return true;
+    } catch (error) {
+      console.error('🎯 PHASE 3 FIX: Error in refetchBrackets:', error);
+      const errorMessage = getUIErrorMessage(error, "Failed to refresh data");
+      logError(error, "refetchBrackets");
+      setError(errorMessage);
+      throw error;
+    }
+  }, [originalRefetchBrackets, queryClient, selectedBracketId, refetchSelectedBracket]);
+
+  // Simple bracket processing with error recovery
   const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
   try {
     if (bracketsByDivision) {
@@ -226,8 +294,8 @@ export function usePlayoffPageData(): PlayoffPageData {
   const finalDivisionsError = convertErrorToString(divisionsError);
   const finalBracketsError = convertErrorToString(bracketsDataError);
 
-  // PHASE 2 FIX: Log the final return object
-  console.log('🎯 PHASE 2 FIX: usePlayoffPageData returning:', {
+  // PHASE 3 FIX: Log the final return object with cache status
+  console.log('🎯 PHASE 3 FIX: usePlayoffPageData returning:', {
     selectedBracketId,
     bracket: selectedBracket ? {
       id: selectedBracket.id,
@@ -235,7 +303,12 @@ export function usePlayoffPageData(): PlayoffPageData {
       matchesCount: selectedBracket.matches?.length || 0
     } : null,
     teamsCount: teamsData?.length || 0,
-    isLoading
+    isLoading,
+    cacheStatus: {
+      selectedBracketLoading,
+      hasSelectedBracket: !!selectedBracket,
+      hasError: !!selectedBracketError
+    }
   });
 
   return {
@@ -268,7 +341,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets,
     
-    // PHASE 2 FIX: Direct bracket data with matches
+    // PHASE 3 FIX: Direct bracket data with matches
     bracket: selectedBracket,
     teams: teamsData || [],
     teamsLoading,
