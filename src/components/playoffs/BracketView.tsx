@@ -1,147 +1,64 @@
 
 import React from "react";
-import { PlayoffBracket, Team } from "@/types/playoffs";
-import { ChallongeMatch, ChallongeParticipant } from "@/services/challonge/types";
-import { SingleEliminationBracket, Match } from "@g-loot/react-tournament-brackets";
-import { adaptChallongeMatches } from "@/utils/adaptChallongeMatches";
-import GlootBracket from "./GlootBracket";
-
-export interface Participant { 
-  id: number; 
-  name: string; 
-}
+import { useBracketData } from "@/hooks/brackets/useBracketData";
+import SimpleBracket from "@/components/brackets/SimpleBracket";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface BracketViewProps {
-  bracket?: PlayoffBracket;
-  teams?: Team[];
-  matches?: ChallongeMatch[];
-  participants?: ChallongeParticipant[];
+  bracketId: string | null;
   onEditMatch?: (matchId: string) => void;
 }
 
 /**
- * Main bracket view component that uses @g-loot bracket renderer
+ * Simplified bracket view component
  */
 const BracketView: React.FC<BracketViewProps> = ({
-  bracket,
-  teams,
-  matches,
-  participants,
+  bracketId,
   onEditMatch
 }) => {
-  console.log('🎯 BracketView rendered with props:');
-  console.log('  - bracket:', bracket);
-  console.log('  - bracket.matches:', bracket?.matches);
-  console.log('  - bracket.matches.length:', bracket?.matches?.length);
-  console.log('  - teams:', teams);
-  console.log('  - teams.length:', teams?.length);
-  console.log('  - challonge matches:', matches);
-  console.log('  - challonge participants:', participants);
+  console.log('🎯 BracketView: Rendering with bracketId:', bracketId);
+  
+  const { data: bracket, isLoading, error } = useBracketData(bracketId);
 
-  // Handle Challonge bracket display
-  if (matches && participants) {
-    console.log('🎯 BracketView: Rendering Challonge bracket');
-    const playerMap = Object.fromEntries(
-      participants.map(p => [p.id, p.name])
-    );
-    const adapted = adaptChallongeMatches(matches, playerMap);
-    
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Tournament Bracket</h2>
-          <div className="text-sm text-gray-500">
-            Challonge Tournament
-          </div>
-        </div>
-        
-        <div className="w-full overflow-auto">
-          <div className="min-w-max p-4">
-            <SingleEliminationBracket
-              matches={adapted}
-              matchComponent={Match}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Handle local bracket display
-  if (!bracket) {
-    console.log('🎯 BracketView: No bracket data available');
-    return <div>No bracket data available</div>;
-  }
-
-  console.log('🎯 BracketView: Processing local bracket');
-  console.log('🎯 BracketView: Bracket matches check:', {
-    hasMatches: !!bracket.matches,
-    isArray: Array.isArray(bracket.matches),
-    length: bracket.matches?.length || 0,
-    matches: bracket.matches
+  console.log('🎯 BracketView: Hook results:', {
+    bracket: bracket?.name,
+    matchesCount: bracket?.matches?.length,
+    isLoading,
+    error: error?.message
   });
 
-  // Enhanced validation with better loading state handling
-  const hasValidMatches = bracket.matches && 
-                         Array.isArray(bracket.matches) && 
-                         bracket.matches.length > 0;
-
-  console.log('🎯 BracketView: hasValidMatches result:', hasValidMatches);
-
-  if (!hasValidMatches) {
-    console.log('🎯 BracketView: No valid matches found in bracket');
-    console.log('🎯 BracketView: Debug info:', {
-      bracketExists: !!bracket,
-      matchesExists: !!bracket.matches,
-      matchesIsArray: Array.isArray(bracket.matches),
-      matchesLength: bracket.matches?.length || 0,
-      rawMatches: bracket.matches,
-      matchesType: typeof bracket.matches
-    });
-    
+  if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
-          <div className="text-sm text-gray-500">
-            {bracket.format} • {bracket.state}
-          </div>
-        </div>
-        <div className="text-center p-8 text-gray-500">
-          <div className="mb-4">
-            <div className="w-12 h-12 bg-blue-500 rounded-full mx-auto mb-2 animate-pulse"></div>
-            <p className="text-lg font-semibold">Loading bracket matches...</p>
-          </div>
-          <p className="text-sm">The bracket structure is being generated. This may take a few moments.</p>
-          <div className="text-xs mt-4 space-y-1 bg-gray-100 dark:bg-gray-800 p-3 rounded">
-            <p><strong>Bracket ID:</strong> {bracket.id}</p>
-            <p><strong>Matches loaded:</strong> {bracket.matches?.length || 0}</p>
-            <p><strong>Expected:</strong> Should have 15 matches for 8 teams</p>
-          </div>
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+          <p>Loading bracket data...</p>
         </div>
       </div>
     );
   }
 
-  console.log('🎯 BracketView: Rendering GlootBracket with', bracket.matches.length, 'matches');
-  console.log('🎯 BracketView: Sample matches data:', bracket.matches.slice(0, 2));
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load bracket: {error.message}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{bracket.name || "Tournament Bracket"}</h2>
-        <div className="text-sm text-gray-500">
-          {bracket.format} • {bracket.state} • {bracket.matches.length} matches loaded
-        </div>
+  if (!bracket) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-gray-500">No bracket selected</p>
       </div>
-      
-      <GlootBracket 
-        bracket={bracket}
-        teams={teams || []}
-        onEditMatch={onEditMatch}
-      />
-    </div>
-  );
+    );
+  }
+
+  return <SimpleBracket bracket={bracket} onMatchClick={onEditMatch} />;
 };
 
 export default BracketView;

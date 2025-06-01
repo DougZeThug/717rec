@@ -1,10 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
-import { usePlayoffViewModel } from "@/hooks/playoffs/usePlayoffViewModel";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
-import { useChallongePublicBracket } from "@/hooks/useChallongePublicBracket";
 import { useDivisions } from "@/hooks/useDivisions";
 import { PlayoffBracket, BracketFormat, BracketState } from "@/utils/playoffs/playoffTypes";
 import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
@@ -19,18 +17,9 @@ export interface PlayoffPageData {
   selectedBracketId: string | null;
   setSelectedBracketId: (id: string | null) => void;
   
-  // Current bracket data
-  bracket: any;
-  isLoading: boolean;
-  teams: any[];
-  teamsLoading: boolean;
-  bracketMatchesByType: any;
-  deleteBracket: (bracketId: string, bracketName: string) => Promise<void>;
-  
   // Enhanced error states - all strings for consistency
   error: string | null;
   divisionsError: string | null;
-  teamsError: string | null;
   bracketsError: string | null;
   
   // Divisions data
@@ -49,17 +38,12 @@ export interface PlayoffPageData {
   handleTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;
   refetchBrackets: () => Promise<any>;
   
-  // Challonge data
-  challongeBracket: {
-    matches: any;
-    participants: any;
-    isLoading: boolean;
-  };
+  // Simplified loading state
+  isLoading: boolean;
 }
 
 export function usePlayoffPageData(): PlayoffPageData {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [selectedBracketId, setSelectedBracketIdState] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
@@ -101,38 +85,6 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
   }, [searchParams, selectedBracketId]);
 
-  // Enhanced data fetching with error handling
-  const {
-    bracket,
-    isLoading: bracketLoading,
-    teams,
-    teamsLoading,
-    bracketMatchesByType,
-    deleteBracket,
-    error: bracketError,
-    refetch: refetchCurrentBracket
-  } = usePlayoffViewModel(selectedBracketId);
-  
-  // Add debugging for the bracket data flow
-  console.log('🎯 usePlayoffPageData - Selected bracket ID:', selectedBracketId);
-  console.log('🎯 usePlayoffPageData - Bracket from usePlayoffViewModel:', bracket);
-  console.log('🎯 usePlayoffPageData - Bracket matches:', bracket?.matches);
-  console.log('🎯 usePlayoffPageData - Bracket matches length:', bracket?.matches?.length);
-  console.log('🎯 usePlayoffPageData - Teams from usePlayoffViewModel:', teams);
-  console.log('🎯 usePlayoffPageData - bracketMatchesByType:', bracketMatchesByType);
-  console.log('🎯 usePlayoffPageData - bracketLoading:', bracketLoading);
-  console.log('🎯 usePlayoffPageData - bracketError:', bracketError);
-  
-  // REMOVED: The problematic automatic refetch logic that was causing the infinite loop
-  // The code that was causing issues:
-  // if (bracket && selectedBracketId) {
-  //   if (!bracket.matches || bracket.matches.length === 0) {
-  //     setTimeout(() => {
-  //       refetchCurrentBracket();
-  //     }, 1000);
-  //   }
-  // }
-  
   // Fetch divisions with enhanced error handling
   const { 
     divisions, 
@@ -152,7 +104,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: bracketsDataError
   } = usePlayoffData();
   
-  // Simplified bracket creation handler - no automatic navigation to prevent loops
+  // Simplified bracket creation handler
   const handleBracketCreated = async () => {
     console.log('🎯 usePlayoffPageData: handleBracketCreated called');
     
@@ -161,7 +113,7 @@ export function usePlayoffPageData(): PlayoffPageData {
       await originalHandleBracketCreated();
       console.log('🎯 usePlayoffPageData: Original bracket creation handler completed');
       
-      // Single refetch - no loops
+      // Single refetch
       console.log('🎯 usePlayoffPageData: Triggering single bracket refetch');
       await refetchBrackets();
       console.log('🎯 usePlayoffPageData: Bracket refetch completed');
@@ -173,11 +125,6 @@ export function usePlayoffPageData(): PlayoffPageData {
       setError(errorMessage);
     }
   };
-
-  // Handle Challonge bracket display
-  const challongeBracket = useChallongePublicBracket(
-    bracket?.challonge_tournament_id ? String(bracket.challonge_tournament_id) : "0"
-  );
 
   // Create typesafe version of bracketsByDivision with error handling
   const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
@@ -204,8 +151,8 @@ export function usePlayoffPageData(): PlayoffPageData {
     setError(errorMessage);
   }
 
-  // Enhanced loading and error states
-  const isLoading = bracketsLoading || divisionsLoading || teamsLoading || bracketLoading;
+  // Enhanced loading state
+  const isLoading = bracketsLoading || divisionsLoading;
   
   const allBracketsData = (() => {
     try {
@@ -242,7 +189,6 @@ export function usePlayoffPageData(): PlayoffPageData {
   })();
 
   // Safely convert error types to strings for UI display using new utility
-  const teamsError = convertErrorToString(bracketError);
   const finalDivisionsError = convertErrorToString(divisionsError);
   const finalBracketsError = convertErrorToString(bracketsDataError);
 
@@ -255,18 +201,9 @@ export function usePlayoffPageData(): PlayoffPageData {
     selectedBracketId,
     setSelectedBracketId,
     
-    // Current bracket data
-    bracket,
-    isLoading: bracketLoading,
-    teams: Array.isArray(teams) ? teams : [],
-    teamsLoading,
-    bracketMatchesByType,
-    deleteBracket,
-    
     // Enhanced error states - all properly converted to strings
     error,
     divisionsError: finalDivisionsError,
-    teamsError,
     bracketsError: finalBracketsError,
     
     // Divisions data
@@ -285,7 +222,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets,
     
-    // Challonge data
-    challongeBracket
+    // Simplified loading state
+    isLoading
   };
 }

@@ -3,19 +3,15 @@ import React from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
-import BracketDetail from "@/components/playoffs/BracketDetail";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
 import { ChallongeFallback } from "@/components/playoffs/embeds/ChallongeFallback";
-import { PlayoffBracket, Team } from "@/types/playoffs";
+import { PlayoffBracket } from "@/types/playoffs";
 import BracketView from "./BracketView";
 
 interface PlayoffPageContentProps {
   availableDivisions: string[];
   bracketsByDivision: Record<string, Partial<PlayoffBracket>[]>;
   selectedBracketId: string | null;
-  bracket: PlayoffBracket | null;
-  teams: Team[];
-  bracketLoading: boolean;
   allBracketsData: Partial<PlayoffBracket>[];
   isLoading: boolean;
   onCreateBracket: () => void;
@@ -30,9 +26,6 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   availableDivisions,
   bracketsByDivision,
   selectedBracketId,
-  bracket,
-  teams,
-  bracketLoading,
   allBracketsData,
   isLoading,
   onCreateBracket,
@@ -44,9 +37,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
-  console.log('🎯 PlayoffPageContent: Rendering with bracket:', bracket);
-  console.log('🎯 PlayoffPageContent: Bracket matches:', bracket?.matches);
-  console.log('🎯 PlayoffPageContent: Bracket loading:', bracketLoading);
+  console.log('🎯 PlayoffPageContent: Rendering with selectedBracketId:', selectedBracketId);
 
   const handleRefreshClick = async () => {
     if (!onRefreshData || isRefreshing) return;
@@ -108,13 +99,12 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         ))}
       </div>
       
-      {/* Selected bracket view */}
-      {bracket && (
+      {/* Selected bracket view - now using simplified architecture */}
+      {selectedBracketId && (
         <div className="mt-8">
           <BracketView 
-            bracket={bracket} 
-            teams={teams} 
-            onEditMatch={onEditMatch} 
+            bracketId={selectedBracketId}
+            onEditMatch={onEditMatch}
           />
         </div>
       )}
