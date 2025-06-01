@@ -34,6 +34,7 @@ const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
  */
 export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel {
   console.log('🔍 usePlayoffViewModel called with bracketId:', bracketId);
+  console.log('🔍 usePlayoffViewModel: Timestamp:', new Date().toISOString());
   
   // Use the focused hooks
   const bracketQuery = usePlayoffBracketData(bracketId);
@@ -45,6 +46,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Raw bracket data:', bracketQuery.data);
   console.log('🔍 usePlayoffViewModel - Raw matches data:', matchesQuery.data);
   console.log('🔍 usePlayoffViewModel - Matches data length:', matchesQuery.data?.length);
+  console.log('🔍 usePlayoffViewModel - Matches query loading:', matchesQuery.isLoading);
+  console.log('🔍 usePlayoffViewModel - Matches query error:', matchesQuery.error);
   console.log('🔍 usePlayoffViewModel - Teams data:', teamsQuery.data);
   
   // CRITICAL FIX: Properly combine bracket data with matches data
@@ -57,6 +60,21 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Matches to attach:', matchesQuery.data);
   console.log('🔍 usePlayoffViewModel - Combined bracket AFTER matches attachment:', combinedBracket);
   console.log('🔍 usePlayoffViewModel - Combined bracket matches length:', combinedBracket?.matches?.length);
+  
+  // CRITICAL: Additional validation
+  if (combinedBracket && matchesQuery.data) {
+    console.log('🔍 usePlayoffViewModel - VALIDATION: Bracket exists:', !!combinedBracket);
+    console.log('🔍 usePlayoffViewModel - VALIDATION: Matches exist:', !!matchesQuery.data);
+    console.log('🔍 usePlayoffViewModel - VALIDATION: Matches count:', matchesQuery.data.length);
+    console.log('🔍 usePlayoffViewModel - VALIDATION: Combined bracket matches count:', combinedBracket.matches.length);
+    
+    // Ensure matches are properly attached
+    if (matchesQuery.data.length > 0 && combinedBracket.matches.length === 0) {
+      console.error('🔍 usePlayoffViewModel - CRITICAL ERROR: Matches exist but not attached to bracket!');
+      combinedBracket.matches = matchesQuery.data;
+      console.log('🔍 usePlayoffViewModel - FIXED: Manually attached matches to bracket');
+    }
+  }
   
   // Additional debugging for the matches structure
   if (combinedBracket?.matches && combinedBracket.matches.length > 0) {
@@ -71,10 +89,20 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   
   console.log('🔍 usePlayoffViewModel - Bracket matches by type:', bracketMatchesByType);
   
-  // Refetch function that triggers all related queries
+  // Refetch function that triggers all related queries and invalidates cache
   const refetch = async () => {
     try {
       console.log('🔍 usePlayoffViewModel - Starting refetch...');
+      console.log('🔍 usePlayoffViewModel - Invalidating React Query cache for bracket:', bracketId);
+      
+      // Force invalidate cache first
+      const queryClient = matchesQuery.queryClient || (window as any).queryClient;
+      if (queryClient) {
+        await queryClient.invalidateQueries({ queryKey: ['playoff-matches', bracketId] });
+        await queryClient.invalidateQueries({ queryKey: ['bracket', bracketId] });
+        console.log('🔍 usePlayoffViewModel - Cache invalidated');
+      }
+      
       await Promise.all([
         bracketQuery.refetch(),
         matchesQuery.refetch(),
@@ -110,6 +138,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   
   console.log('🔍 usePlayoffViewModel - Final result:', result);
   console.log('🔍 usePlayoffViewModel - Final result bracket matches:', result.bracket?.matches?.length);
+  console.log('🔍 usePlayoffViewModel - Final result isLoading:', result.isLoading);
   
   return result;
 }

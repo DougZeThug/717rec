@@ -33,6 +33,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   console.log('  - bracket:', bracket);
   console.log('  - bracket.matches:', bracket?.matches);
   console.log('  - bracket.matches.length:', bracket?.matches?.length);
+  console.log('  - bracket.matches detailed:', JSON.stringify(bracket?.matches, null, 2));
   console.log('  - teams:', teams);
   console.log('  - teams.length:', teams?.length);
   console.log('  - challonge matches:', matches);
@@ -81,10 +82,12 @@ const BracketView: React.FC<BracketViewProps> = ({
     matches: bracket.matches
   });
 
-  // ENHANCED: Better validation for matches data
+  // ENHANCED: Better validation for matches data with more detailed logging
   const hasValidMatches = bracket.matches && 
                          Array.isArray(bracket.matches) && 
                          bracket.matches.length > 0;
+
+  console.log('🎯 BracketView: hasValidMatches result:', hasValidMatches);
 
   if (!hasValidMatches) {
     console.log('🎯 BracketView: No valid matches found in bracket');
@@ -93,8 +96,17 @@ const BracketView: React.FC<BracketViewProps> = ({
       matchesExists: !!bracket.matches,
       matchesIsArray: Array.isArray(bracket.matches),
       matchesLength: bracket.matches?.length || 0,
-      rawMatches: bracket.matches
+      rawMatches: bracket.matches,
+      matchesType: typeof bracket.matches
     });
+    
+    // ENHANCED: More detailed debugging information
+    if (bracket.matches) {
+      console.log('🎯 BracketView: Matches exists but invalid format');
+      console.log('🎯 BracketView: Matches content:', JSON.stringify(bracket.matches, null, 2));
+    } else {
+      console.log('🎯 BracketView: Matches property is null/undefined');
+    }
     
     return (
       <div className="space-y-4">
@@ -114,7 +126,18 @@ const BracketView: React.FC<BracketViewProps> = ({
             <p>Matches is array: {Array.isArray(bracket.matches) ? 'Yes' : 'No'}</p>
             <p>Matches length: {bracket.matches?.length || 0}</p>
             <p>Raw matches type: {typeof bracket.matches}</p>
+            {/* Additional debugging to see what's actually in the matches */}
+            {bracket.matches && (
+              <p>Matches JSON: {JSON.stringify(bracket.matches).substring(0, 200)}...</p>
+            )}
           </div>
+          {/* Manual refresh button for debugging */}
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );

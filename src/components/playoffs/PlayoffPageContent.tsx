@@ -44,14 +44,20 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
+  console.log('🎯 PlayoffPageContent: Rendering with bracket:', bracket);
+  console.log('🎯 PlayoffPageContent: Bracket matches:', bracket?.matches);
+  console.log('🎯 PlayoffPageContent: Bracket loading:', bracketLoading);
+
   const handleRefreshClick = async () => {
     if (!onRefreshData || isRefreshing) return;
     
     setIsRefreshing(true);
     try {
+      console.log('🎯 PlayoffPageContent: Manual refresh triggered');
       await onRefreshData();
+      console.log('🎯 PlayoffPageContent: Manual refresh completed');
     } catch (error) {
-      console.error("Failed to refresh data:", error);
+      console.error("🎯 PlayoffPageContent: Failed to refresh data:", error);
     } finally {
       setIsRefreshing(false);
     }

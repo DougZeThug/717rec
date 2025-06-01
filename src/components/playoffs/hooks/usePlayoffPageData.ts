@@ -109,7 +109,8 @@ export function usePlayoffPageData(): PlayoffPageData {
     teamsLoading,
     bracketMatchesByType,
     deleteBracket,
-    error: bracketError
+    error: bracketError,
+    refetch: refetchCurrentBracket
   } = usePlayoffViewModel(selectedBracketId);
   
   // Add debugging for the bracket data flow
@@ -119,6 +120,24 @@ export function usePlayoffPageData(): PlayoffPageData {
   console.log('🎯 usePlayoffPageData - Bracket matches length:', bracket?.matches?.length);
   console.log('🎯 usePlayoffPageData - Teams from usePlayoffViewModel:', teams);
   console.log('🎯 usePlayoffPageData - bracketMatchesByType:', bracketMatchesByType);
+  console.log('🎯 usePlayoffPageData - bracketLoading:', bracketLoading);
+  console.log('🎯 usePlayoffPageData - bracketError:', bracketError);
+  
+  // CRITICAL: Validate bracket matches data
+  if (bracket && selectedBracketId) {
+    console.log('🎯 usePlayoffPageData - VALIDATION: Bracket exists for ID:', selectedBracketId);
+    console.log('🎯 usePlayoffPageData - VALIDATION: Bracket.matches exists:', !!bracket.matches);
+    console.log('🎯 usePlayoffPageData - VALIDATION: Bracket.matches.length:', bracket.matches?.length || 0);
+    
+    if (!bracket.matches || bracket.matches.length === 0) {
+      console.warn('🎯 usePlayoffPageData - WARNING: Bracket exists but has no matches!');
+      console.log('🎯 usePlayoffPageData - Triggering refetch to get matches...');
+      // Trigger a refetch to try to get the matches
+      setTimeout(() => {
+        refetchCurrentBracket();
+      }, 1000);
+    }
+  }
   
   // Fetch divisions with enhanced error handling
   const { 
@@ -139,7 +158,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: bracketsDataError
   } = usePlayoffData();
   
-  // Enhanced bracket creation handler with navigation
+  // Enhanced bracket creation handler with navigation and cache invalidation
   const handleBracketCreated = async () => {
     console.log('🎯 usePlayoffPageData: handleBracketCreated called');
     
@@ -156,6 +175,12 @@ export function usePlayoffPageData(): PlayoffPageData {
       console.log('🎯 usePlayoffPageData: Triggering additional bracket refetch');
       await refetchBrackets();
       console.log('🎯 usePlayoffPageData: Additional bracket refetch completed');
+      
+      // Force refetch current bracket data as well
+      if (selectedBracketId) {
+        console.log('🎯 usePlayoffPageData: Refreshing current bracket data');
+        await refetchCurrentBracket();
+      }
       
       // After successful creation and refresh, check if we have new brackets
       // and automatically navigate to the most recently created one
