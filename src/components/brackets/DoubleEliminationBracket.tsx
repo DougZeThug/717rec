@@ -88,10 +88,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
           {/* Winners Bracket */}
           {winnerRounds.length > 0 && (
             <div className="mb-8">
-              <div 
-                className="flex justify-between items-start w-full"
-                style={{ minWidth: `${(winnerRounds.length + (finalMatches.length > 0 ? 1 : 0)) * 220}px` }}
-              >
+              <div className="flex gap-16 items-start">
                 {/* Winners Rounds */}
                 {winnerRounds.map((round, roundIndex) => {
                   const roundMatches = winnersByRound[round].sort((a, b) => a.position - b.position);
@@ -136,10 +133,11 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                             {/* Horizontal connecting lines */}
                             {!isLastRound && finalMatches.length === 0 && (
                               <div
-                                className="absolute left-full top-1/2 w-8 h-0.5 -translate-y-1/2 pointer-events-none"
+                                className="absolute left-full top-1/2 h-0.5 -translate-y-1/2 pointer-events-none"
                                 style={{ 
                                   backgroundColor: lineColor,
-                                  transition: 'background-color 0.3s'
+                                  transition: 'background-color 0.3s',
+                                  width: '64px'
                                 }}
                               />
                             )}
@@ -147,10 +145,11 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                             {/* Connect to Finals if this is the last winners round */}
                             {isLastRound && finalMatches.length > 0 && (
                               <div
-                                className="absolute left-full top-1/2 w-8 h-0.5 -translate-y-1/2 pointer-events-none"
+                                className="absolute left-full top-1/2 h-0.5 -translate-y-1/2 pointer-events-none"
                                 style={{ 
                                   backgroundColor: lineColor,
-                                  transition: 'background-color 0.3s'
+                                  transition: 'background-color 0.3s',
+                                  width: '64px'
                                 }}
                               />
                             )}
@@ -159,8 +158,13 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
                         {/* Vertical connecting lines for bracket tree */}
                         {roundIndex < winnerRounds.length - 1 && roundMatches.length > 1 && (
-                          <div className="absolute left-full top-0 w-8 pointer-events-none"
-                               style={{ height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))` }}>
+                          <div className="absolute pointer-events-none"
+                               style={{ 
+                                 left: 'calc(100% + 32px)',
+                                 top: '0',
+                                 width: '32px',
+                                 height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))`
+                               }}>
                             {roundMatches.map((_, index) => {
                               if (index % 2 === 1) return null;
                               
@@ -172,21 +176,24 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                                 <div key={index} className="relative">
                                   {/* Vertical line */}
                                   <div
-                                    className="absolute w-0.5"
+                                    className="absolute"
                                     style={{
                                       backgroundColor: lineColor,
-                                      left: '32px',
+                                      left: '0',
                                       top: match1Y,
+                                      width: '2px',
                                       height: 'var(--match-gap)'
                                     }}
                                   />
                                   {/* Horizontal connector to next round */}
                                   <div
-                                    className="absolute h-0.5 w-2"
+                                    className="absolute"
                                     style={{
                                       backgroundColor: lineColor,
-                                      left: '32px',
-                                      top: midY
+                                      left: '0',
+                                      top: midY,
+                                      width: '32px',
+                                      height: '2px'
                                     }}
                                   />
                                 </div>
@@ -238,10 +245,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
           {/* Losers Bracket */}
           {loserRounds.length > 0 && (
             <div style={{ marginTop: '40px' }}>
-              <div 
-                className="flex justify-between items-start w-full"
-                style={{ minWidth: `${loserRounds.length * 220}px` }}
-              >
+              <div className="flex gap-16 items-start">
                 {loserRounds.map((round, roundIndex) => {
                   const roundMatches = losersByRound[round].sort((a, b) => a.position - b.position);
                   const isLastRound = round === Math.max(...loserRounds);
@@ -285,10 +289,11 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                             {/* Horizontal connecting lines */}
                             {!isLastRound && (
                               <div
-                                className="absolute left-full top-1/2 w-8 h-0.5 -translate-y-1/2 pointer-events-none"
+                                className="absolute left-full top-1/2 h-0.5 -translate-y-1/2 pointer-events-none"
                                 style={{ 
                                   backgroundColor: lineColor,
-                                  transition: 'background-color 0.3s'
+                                  transition: 'background-color 0.3s',
+                                  width: '64px'
                                 }}
                               />
                             )}
@@ -297,8 +302,13 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
                         {/* Vertical connecting lines for bracket tree */}
                         {roundIndex < loserRounds.length - 1 && roundMatches.length > 1 && (
-                          <div className="absolute left-full top-0 w-8 pointer-events-none"
-                               style={{ height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))` }}>
+                          <div className="absolute pointer-events-none"
+                               style={{ 
+                                 left: 'calc(100% + 32px)',
+                                 top: '0',
+                                 width: '32px',
+                                 height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))`
+                               }}>
                             {roundMatches.map((_, index) => {
                               if (index % 2 === 1) return null;
                               
@@ -309,20 +319,23 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                               return (
                                 <div key={index} className="relative">
                                   <div
-                                    className="absolute w-0.5"
+                                    className="absolute"
                                     style={{
                                       backgroundColor: lineColor,
-                                      left: '32px',
+                                      left: '0',
                                       top: match1Y,
+                                      width: '2px',
                                       height: 'var(--match-gap)'
                                     }}
                                   />
                                   <div
-                                    className="absolute h-0.5 w-2"
+                                    className="absolute"
                                     style={{
                                       backgroundColor: lineColor,
-                                      left: '32px',
-                                      top: midY
+                                      left: '0',
+                                      top: midY,
+                                      width: '32px',
+                                      height: '2px'
                                     }}
                                   />
                                 </div>
