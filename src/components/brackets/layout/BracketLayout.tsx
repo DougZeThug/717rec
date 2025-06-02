@@ -18,9 +18,18 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
   showConnectors = true,
   className = ""
 }) => {
+  console.log('🔍 BracketLayout: Rendering with data:', data);
+  
   const winnersSection = data.sections.find(s => s.type === 'winners');
   const losersSection = data.sections.find(s => s.type === 'losers');
   const finalsSection = data.sections.find(s => s.type === 'finals');
+
+  console.log('🔍 BracketLayout: Sections found:', {
+    winners: !!winnersSection,
+    losers: !!losersSection,
+    finals: !!finalsSection,
+    finalsRounds: finalsSection?.rounds.length || 0
+  });
 
   return (
     <div 
@@ -30,66 +39,83 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
         color: '#ffffff'
       }}
     >
-      {/* Main container with horizontal scrolling */}
       <div className="overflow-x-auto overflow-y-hidden min-h-screen">
-        <div className="min-w-max p-8" style={{ minWidth: '1400px' }}>
+        <div className="min-w-max p-8 relative" style={{ minWidth: '1400px' }}>
           
-          {/* Winners Bracket - Top Section */}
-          {winnersSection && winnersSection.rounds.length > 0 && (
-            <div className="mb-16">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-center text-blue-400">
-                  Winners Bracket
-                </h2>
-              </div>
-              <BracketSection
-                section={winnersSection}
-                theme={theme}
-                onMatchClick={onMatchClick}
-                connections={showConnectors ? data.connections.filter(c => c.type === 'winners') : []}
-              />
+          {/* Three-column layout for double elimination */}
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-8 relative">
+            
+            {/* Left Column: Winners Bracket */}
+            <div className="winners-column">
+              {winnersSection && winnersSection.rounds.length > 0 ? (
+                <div className="mb-6">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-center text-blue-400">
+                      Winners Bracket
+                    </h2>
+                  </div>
+                  <BracketSection
+                    section={winnersSection}
+                    theme={theme}
+                    onMatchClick={onMatchClick}
+                    connections={showConnectors ? data.connections.filter(c => c.type === 'winners') : []}
+                  />
+                </div>
+              ) : (
+                <div className="text-center text-gray-500">No winners matches</div>
+              )}
             </div>
-          )}
-          
-          {/* Losers Bracket - Bottom Section */}
-          {losersSection && losersSection.rounds.length > 0 && (
-            <div className="mb-16">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-center text-orange-400">
-                  Losers Bracket
-                </h2>
-              </div>
-              <BracketSection
-                section={losersSection}
-                theme={theme}
-                onMatchClick={onMatchClick}
-                connections={showConnectors ? data.connections.filter(c => c.type === 'losers') : []}
-              />
+            
+            {/* Center Column: Finals */}
+            <div className="finals-column flex flex-col items-center justify-start">
+              {finalsSection && finalsSection.rounds.length > 0 ? (
+                <div className="mb-6">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-center text-yellow-400">
+                      Grand Finals
+                    </h2>
+                  </div>
+                  <BracketSection
+                    section={finalsSection}
+                    theme={theme}
+                    onMatchClick={onMatchClick}
+                    connections={showConnectors ? data.connections.filter(c => c.type === 'finals') : []}
+                  />
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 mt-20">
+                  <p>No finals matches</p>
+                  <p className="text-xs mt-1">Finals will appear when bracket progresses</p>
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* Grand Finals - Right Side */}
-          {finalsSection && finalsSection.rounds.length > 0 && (
-            <div className="absolute top-8 right-8">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-center text-yellow-400">
-                  Grand Finals
-                </h2>
-              </div>
-              <BracketSection
-                section={finalsSection}
-                theme={theme}
-                onMatchClick={onMatchClick}
-                connections={showConnectors ? data.connections.filter(c => c.type === 'finals') : []}
-              />
+            
+            {/* Right Column: Losers Bracket */}
+            <div className="losers-column">
+              {losersSection && losersSection.rounds.length > 0 ? (
+                <div className="mb-6">
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-center text-orange-400">
+                      Losers Bracket
+                    </h2>
+                  </div>
+                  <BracketSection
+                    section={losersSection}
+                    theme={theme}
+                    onMatchClick={onMatchClick}
+                    connections={showConnectors ? data.connections.filter(c => c.type === 'losers') : []}
+                  />
+                </div>
+              ) : (
+                <div className="text-center text-gray-500">No losers matches</div>
+              )}
             </div>
-          )}
+          </div>
           
           {/* Cross-bracket connectors */}
           {showConnectors && (
             <div className="absolute inset-0 pointer-events-none">
               <svg className="w-full h-full" style={{ overflow: 'visible' }}>
-                {/* Cross-bracket connections */}
                 {data.connections
                   .filter(c => c.type === 'cross-bracket')
                   .map((connection, index) => (

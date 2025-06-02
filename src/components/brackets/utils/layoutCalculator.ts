@@ -5,35 +5,43 @@ export const calculateLayout = (
   data: ProcessedBracketData,
   theme: BracketTheme
 ): ProcessedBracketData => {
-  const { matchWidth, matchHeight, columnGap } = theme.spacing;
+  console.log('🔍 layoutCalculator: Starting layout calculation');
+  const { matchWidth, matchHeight } = theme.spacing;
   
   const winnersSection = data.sections.find(s => s.type === 'winners');
   const losersSection = data.sections.find(s => s.type === 'losers');
   const finalsSection = data.sections.find(s => s.type === 'finals');
 
-  // Calculate Winners section layout
+  console.log('🔍 layoutCalculator: Processing sections:', {
+    winners: !!winnersSection,
+    losers: !!losersSection,
+    finals: !!finalsSection
+  });
+
+  // Calculate Winners section layout (left column)
   if (winnersSection) {
-    calculateChallongeLayout(winnersSection, 0, 100, theme);
+    calculateColumnLayout(winnersSection, 0, 100, theme, 'left');
   }
 
-  // Calculate Losers section layout
-  if (losersSection) {
-    const losersStartY = winnersSection ? 500 : 100; // Position below winners
-    calculateChallongeLayout(losersSection, 0, losersStartY, theme);
-  }
-
-  // Calculate Finals section layout  
+  // Calculate Finals section layout (center column)
   if (finalsSection) {
-    const finalsX = Math.max(
-      (winnersSection?.rounds.length || 0) * 240,
-      (losersSection?.rounds.length || 0) * 240,
-      960 // Minimum right position
-    );
-    calculateChallongeLayout(finalsSection, finalsX, 300, theme);
+    const finalsX = winnersSection ? (winnersSection.rounds.length * 240) + 100 : 400;
+    calculateColumnLayout(finalsSection, finalsX, 300, theme, 'center');
+    console.log('🔍 layoutCalculator: Finals section positioned at x:', finalsX);
   }
 
-  // Calculate connections
-  const connections = calculateChallongeConnections(data, theme);
+  // Calculate Losers section layout (right column)  
+  if (losersSection) {
+    const losersX = Math.max(
+      (winnersSection?.rounds.length || 0) * 240 + 400,
+      (finalsSection ? 600 : 400)
+    );
+    calculateColumnLayout(losersSection, losersX, 500, theme, 'right');
+  }
+
+  // Calculate connections with proper cross-bracket support
+  const connections = calculateConnections(data, theme);
+  console.log('🔍 layoutCalculator: Generated connections:', connections.length);
 
   return {
     ...data,
@@ -45,24 +53,28 @@ export const calculateLayout = (
   };
 };
 
-const calculateChallongeLayout = (
+const calculateColumnLayout = (
   section: any,
   startX: number,
   startY: number,
-  theme: BracketTheme
+  theme: BracketTheme,
+  alignment: 'left' | 'center' | 'right'
 ) => {
   const { matchWidth, matchHeight } = theme.spacing;
-  const roundGap = 240; // Fixed gap between rounds like Challonge
+  const roundGap = 240;
 
   section.rounds.forEach((round: any, roundIndex: number) => {
     const x = startX + (roundIndex * roundGap);
     
-    // Calculate vertical spacing that increases each round
-    const baseSpacing = 40;
-    const spacingMultiplier = Math.pow(2, roundIndex);
-    const verticalSpacing = baseSpacing * spacingMultiplier;
+    // Calculate vertical spacing that increases each round for winners/losers
+    // Finals matches should be centered
+    let verticalSpacing = 40;
+    if (section.type !== 'finals') {
+      const spacingMultiplier = Math.pow(2, roundIndex);
+      verticalSpacing = 40 * spacingMultiplier;
+    }
     
-    // Center matches vertically in available space
+    // Center matches vertically
     const totalHeight = (round.matches.length * matchHeight) + 
                        ((round.matches.length - 1) * verticalSpacing);
     const roundStartY = startY;
@@ -86,14 +98,14 @@ const calculateChallongeLayout = (
   });
 };
 
-const calculateChallongeConnections = (
+const calculateConnections = (
   data: ProcessedBracketData,
   theme: BracketTheme
 ): BracketConnection[] => {
   const connections: BracketConnection[] = [];
   const { matchWidth, matchHeight } = theme.spacing;
   
-  // Regular bracket connections within each section
+  // Generate connections within each section
   data.sections.forEach(section => {
     section.rounds.forEach((round, roundIndex) => {
       if (roundIndex < section.rounds.length - 1) {
@@ -104,14 +116,12 @@ const calculateChallongeConnections = (
           const nextMatch = nextRound.matches[nextMatchIndex];
           
           if (nextMatch && match.position && nextMatch.position) {
-            // Challonge-style L-shaped connectors
             const fromX = match.position.x + matchWidth;
             const fromY = match.position.y + (matchHeight / 2);
             const toX = nextMatch.position.x;
             const toY = nextMatch.position.y + (matchHeight / 2);
             
-            const midX = fromX + 60; // Horizontal segment length
-            
+            const midX = fromX + 60;
             const path = `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
             
             connections.push({
@@ -119,39 +129,7 @@ const calculateChallongeConnections = (
               fromMatch: match.id,
               toMatch: nextMatch.id,
               path,
-              type: section.type,
-              positioning: {
-                path,
-                segments: [
-                  {
-                    type: 'horizontal' as const,
-                    x1: fromX,
-                    y1: fromY,
-                    x2: midX,
-                    y2: fromY
-                  },
-                  {
-                    type: 'vertical' as const,
-                    x1: midX,
-                    y1: fromY,
-                    x2: midX,
-                    y2: toY
-                  },
-                  {
-                    type: 'horizontal' as const,
-                    x1: midX,
-                    y1: toY,
-                    x2: toX,
-                    y2: toY
-                  }
-                ],
-                fromPoint: { x: fromX, y: fromY },
-                toPoint: { x: toX, y: toY },
-                midPoint: { x: midX, y: (fromY + toY) / 2 },
-                roundIndex,
-                matchIndex,
-                sectionType: section.type
-              }
+              type: section.type
             });
           }
         });
@@ -159,37 +137,41 @@ const calculateChallongeConnections = (
     });
   });
 
-  // Add cross-bracket connections
+  // Add cross-bracket connections (winners to losers)
   const winnersSection = data.sections.find(s => s.type === 'winners');
   const losersSection = data.sections.find(s => s.type === 'losers');
-  const finalsSection = data.sections.find(s => s.type === 'finals');
-
-  // Example cross-bracket connection from winners to losers
-  if (winnersSection && losersSection && winnersSection.rounds.length > 0 && losersSection.rounds.length > 0) {
-    const lastWinnersRound = winnersSection.rounds[winnersSection.rounds.length - 1];
-    const firstLosersRound = losersSection.rounds[0];
-    
-    if (lastWinnersRound.matches[0] && firstLosersRound.matches[0]) {
-      const fromMatch = lastWinnersRound.matches[0];
-      const toMatch = firstLosersRound.matches[0];
-      
-      if (fromMatch.position && toMatch.position) {
-        const fromX = fromMatch.position.x + matchWidth;
-        const fromY = fromMatch.position.y + (matchHeight / 2);
-        const toX = toMatch.position.x;
-        const toY = toMatch.position.y + (matchHeight / 2);
-        
-        const path = `M ${fromX} ${fromY} L ${(fromX + toX) / 2} ${fromY} L ${(fromX + toX) / 2} ${toY} L ${toX} ${toY}`;
-        
-        connections.push({
-          id: `cross-${fromMatch.id}-to-${toMatch.id}`,
-          fromMatch: fromMatch.id,
-          toMatch: toMatch.id,
-          path,
-          type: 'cross-bracket'
-        });
-      }
-    }
+  
+  if (winnersSection && losersSection) {
+    winnersSection.rounds.forEach(winnersRound => {
+      winnersRound.matches.forEach(winnersMatch => {
+        if (winnersMatch.nextLoseMatchId) {
+          // Find the corresponding losers match
+          for (const losersRound of losersSection.rounds) {
+            const loserMatch = losersRound.matches.find(m => m.id === winnersMatch.nextLoseMatchId);
+            if (loserMatch && winnersMatch.position && loserMatch.position) {
+              const fromX = winnersMatch.position.x + matchWidth;
+              const fromY = winnersMatch.position.y + matchHeight;
+              const toX = loserMatch.position.x;
+              const toY = loserMatch.position.y + (matchHeight / 2);
+              
+              const midX = (fromX + toX) / 2;
+              const midY = fromY + 50;
+              
+              const path = `M ${fromX} ${fromY} L ${fromX + 30} ${fromY} L ${fromX + 30} ${midY} L ${toX - 30} ${midY} L ${toX - 30} ${toY} L ${toX} ${toY}`;
+              
+              connections.push({
+                id: `cross-${winnersMatch.id}-to-${loserMatch.id}`,
+                fromMatch: winnersMatch.id,
+                toMatch: loserMatch.id,
+                path,
+                type: 'cross-bracket'
+              });
+              break;
+            }
+          }
+        }
+      });
+    });
   }
 
   return connections;
