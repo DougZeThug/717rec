@@ -52,7 +52,7 @@ const DoubleElimBracket: React.FC<DoubleElimBracketProps> = ({
   return (
     <div className="overflow-auto my-4 relative">
       <div className={cn(
-        "flex flex-col space-y-6 min-w-max p-6 rounded-lg",
+        "flex flex-col space-y-6 p-6 rounded-lg",
         isLight 
           ? "bg-gradient-to-br from-white to-blue-50/10" 
           : "bg-gradient-to-br from-gray-900/80 to-gray-800/80"
