@@ -8,41 +8,15 @@ interface ConnectorLinesProps {
   className?: string;
 }
 
+// Simplified connector lines component - now mostly handled by CSS in BracketSection
 const ConnectorLines: React.FC<ConnectorLinesProps> = ({
   connections,
   theme,
   className = ""
 }) => {
-  const getStrokeColor = (type: BracketConnection['type']) => {
-    switch (type) {
-      case 'winners':
-        return theme.colors.winners;
-      case 'losers':
-        return theme.colors.losers;
-      case 'finals':
-        return theme.colors.finals;
-      default:
-        return theme.colors.border;
-    }
-  };
-
-  return (
-    <svg 
-      className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
-      style={{ overflow: 'visible' }}
-    >
-      {connections.map(connection => (
-        <path
-          key={connection.id}
-          d={connection.path}
-          stroke={getStrokeColor(connection.type)}
-          strokeWidth="2"
-          fill="none"
-          className="transition-colors duration-300"
-        />
-      ))}
-    </svg>
-  );
+  // For now, return null as we're using CSS-based connectors
+  // This component is kept for future enhancements or complex bracket types
+  return null;
 };
 
 export default ConnectorLines;

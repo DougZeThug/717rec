@@ -21,30 +21,26 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
 }) => {
   return (
     <div 
-      className={`bracket-layout relative ${className}`}
+      className={`bracket-layout overflow-x-auto ${className}`}
       style={{
         backgroundColor: theme.colors.background,
-        minWidth: data.dimensions.width,
-        minHeight: data.dimensions.height,
         color: theme.colors.text
       }}
     >
-      {/* Bracket Sections */}
-      <div className="bracket-sections flex flex-col gap-8 p-6">
-        {data.sections.map(section => (
-          <BracketSection
-            key={`${section.type}-section`}
-            section={section}
-            theme={theme}
-            onMatchClick={onMatchClick}
-          />
-        ))}
+      {/* Horizontal scrolling container for mobile */}
+      <div className="min-w-max px-4 py-6">
+        {/* Bracket Sections - horizontal flow */}
+        <div className="space-y-12">
+          {data.sections.map(section => (
+            <BracketSection
+              key={`${section.type}-section`}
+              section={section}
+              theme={theme}
+              onMatchClick={onMatchClick}
+            />
+          ))}
+        </div>
       </div>
-      
-      {/* Connector Lines */}
-      {showConnectors && data.connections.length > 0 && (
-        <ConnectorLines connections={data.connections} theme={theme} />
-      )}
     </div>
   );
 };

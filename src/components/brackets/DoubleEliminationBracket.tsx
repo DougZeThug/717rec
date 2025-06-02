@@ -23,7 +23,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  // Get theme configuration
+  // Get theme configuration with mobile detection
   const theme = useMemo(() => {
     const themeName = styleProps.theme?.name || (isDark ? 'default' : 'light');
     return styleProps.theme || getTheme(themeName, styleProps.size);
@@ -45,26 +45,26 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
   return (
     <div className={cn(
-      "w-full min-h-screen transition-colors duration-300",
-      styleProps.responsive !== false && "overflow-x-auto"
+      "w-full transition-colors duration-300",
+      "overflow-hidden" // Remove auto scroll, let layout handle it
     )}>
       {/* Header */}
-      <div className="mb-8 p-6">
-        <h2 className="text-2xl font-bold mb-2" style={{ color: theme.colors.text }}>
+      <div className="mb-6 px-4">
+        <h2 className="text-xl md:text-2xl font-bold mb-2" style={{ color: theme.colors.text }}>
           {bracket.name}
         </h2>
-        <p className="text-sm opacity-70" style={{ color: theme.colors.text }}>
+        <p className="text-xs md:text-sm opacity-70" style={{ color: theme.colors.text }}>
           {bracket.format} • {bracket.state}
         </p>
       </div>
 
-      {/* Bracket */}
+      {/* Bracket - Mobile-first design */}
       <BracketLayout
         data={processedData}
         theme={theme}
         onMatchClick={onMatchClick}
         showConnectors={styleProps.showConnectors}
-        className={styleProps.responsive !== false ? "min-w-max" : ""}
+        className="bracket-container"
       />
     </div>
   );

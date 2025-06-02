@@ -7,6 +7,7 @@ interface BracketColumnProps {
   round: BracketRound;
   theme: BracketTheme;
   onMatchClick?: (matchId: string) => void;
+  roundIndex: number;
   className?: string;
 }
 
@@ -14,30 +15,47 @@ const BracketColumn: React.FC<BracketColumnProps> = ({
   round,
   theme,
   onMatchClick,
+  roundIndex,
   className = ""
 }) => {
   return (
-    <div className={`bracket-column ${className}`} style={{ minWidth: theme.spacing.matchWidth }}>
+    <div 
+      className={`bracket-column ${className}`}
+      style={{ 
+        width: theme.spacing.matchWidth,
+        minHeight: '100%'
+      }}
+    >
       {/* Round Header */}
       <div 
-        className="text-xs font-medium mb-3 text-center px-2"
+        className="text-xs font-medium mb-4 text-center px-2"
         style={{ 
-          width: theme.spacing.matchWidth,
-          color: theme.colors.text 
+          color: theme.colors.text,
+          height: '32px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
         {round.title}
       </div>
       
-      {/* Matches */}
-      <div className="flex flex-col" style={{ gap: theme.spacing.rowGap }}>
-        {round.matches.map((match, index) => (
+      {/* Matches Container - CSS Grid for even spacing */}
+      <div 
+        className="matches-container"
+        style={{
+          display: 'grid',
+          gridTemplateRows: `repeat(${round.matches.length}, ${theme.spacing.matchHeight}px)`,
+          gap: `${theme.spacing.rowGap}px 0`,
+          alignContent: 'start'
+        }}
+      >
+        {round.matches.map((match) => (
           <div
             key={match.id}
             style={{
               width: theme.spacing.matchWidth,
-              height: theme.spacing.matchHeight,
-              marginTop: index > 0 ? theme.spacing.rowGap * Math.pow(2, round.matches.length > 2 ? 0 : 1) : 0
+              height: theme.spacing.matchHeight
             }}
           >
             <TournamentMatchCard
