@@ -1,3 +1,4 @@
+
 import { ProcessedBracketData, BracketConnection, BracketTheme } from "../types/bracketTypes";
 
 export const calculateLayout = (
@@ -6,45 +7,51 @@ export const calculateLayout = (
 ): ProcessedBracketData => {
   const { matchWidth, matchHeight, columnGap, rowGap } = theme.spacing;
   
-  let winnersWidth = 0;
-  const winnersY = 80;
-  const losersY = 500;
-  const finalsY = 150; // Adjusted to accommodate two finals rounds
+  // Challonge-style horizontal layout positioning
+  const winnersY = 60;
+  const losersY = 400;
+  const finalsX = 800; // Position finals to the right
+  const finalsY = 180; // Center finals between winners and losers
 
-  // Calculate Winners section layout
+  let winnersWidth = 0;
+  let losersWidth = 0;
+
+  // Calculate Winners section layout (top row, flows left to right)
   const winnersSection = data.sections.find(s => s.type === 'winners');
   if (winnersSection) {
-    calculateWinnersSectionLayout(winnersSection, 0, winnersY, theme);
+    calculateHorizontalSectionLayout(winnersSection, 40, winnersY, theme);
     winnersWidth = winnersSection.rounds.length * (matchWidth + columnGap);
   }
 
-  // Calculate Losers section layout
+  // Calculate Losers section layout (bottom row, flows left to right)
   const losersSection = data.sections.find(s => s.type === 'losers');
   if (losersSection) {
-    calculateLosersSectionLayout(losersSection, 0, losersY, theme);
+    calculateHorizontalSectionLayout(losersSection, 40, losersY, theme);
+    losersWidth = losersSection.rounds.length * (matchWidth + columnGap);
   }
 
-  // Calculate Finals section layout - handle both rounds
+  // Calculate Finals section layout (positioned to the right)
   const finalsSection = data.sections.find(s => s.type === 'finals');
   if (finalsSection) {
-    const finalsX = winnersWidth + columnGap;
     calculateFinalsSectionLayout(finalsSection, finalsX, finalsY, theme);
   }
 
-  // Calculate connections with unified positioning logic
-  const connections = calculateUnifiedConnections(data, theme);
+  // Calculate connections ONLY within each bracket section (no cross-bracket connectors)
+  const connections = calculateInternalConnections(data, theme);
+
+  const totalWidth = Math.max(winnersWidth, losersWidth, finalsX + matchWidth + 100);
 
   return {
     ...data,
     connections,
     dimensions: {
-      width: Math.max(1200, winnersWidth + matchWidth + columnGap * 2),
-      height: 700
+      width: totalWidth,
+      height: 650
     }
   };
 };
 
-const calculateWinnersSectionLayout = (
+const calculateHorizontalSectionLayout = (
   section: any,
   startX: number,
   startY: number,
@@ -56,27 +63,7 @@ const calculateWinnersSectionLayout = (
     const x = startX + (roundIndex * (matchWidth + columnGap));
     
     round.matches.forEach((match: any, matchIndex: number) => {
-      const y = calculateMatchY(startY, roundIndex, matchIndex, matchHeight, rowGap);
-      match.position = { x, y, width: matchWidth, height: matchHeight };
-    });
-    
-    round.position = { x, y: startY, width: matchWidth, height: 0 };
-  });
-};
-
-const calculateLosersSectionLayout = (
-  section: any,
-  startX: number,
-  startY: number,
-  theme: BracketTheme
-) => {
-  const { matchWidth, matchHeight, columnGap, rowGap } = theme.spacing;
-  
-  section.rounds.forEach((round: any, roundIndex: number) => {
-    const x = startX + (roundIndex * (matchWidth + columnGap));
-    
-    round.matches.forEach((match: any, matchIndex: number) => {
-      const y = calculateMatchY(startY, roundIndex, matchIndex, matchHeight, rowGap);
+      const y = calculateHorizontalMatchY(startY, roundIndex, matchIndex, matchHeight, rowGap);
       match.position = { x, y, width: matchWidth, height: matchHeight };
     });
     
@@ -94,17 +81,17 @@ const calculateFinalsSectionLayout = (
   
   section.rounds.forEach((round: any, roundIndex: number) => {
     round.matches.forEach((match: any, matchIndex: number) => {
-      // Stack finals rounds vertically with proper spacing
-      const y = startY + (roundIndex * (matchHeight + 60)); // Extra spacing between rounds
+      // Stack finals rounds vertically with spacing
+      const y = startY + (roundIndex * (matchHeight + 50));
       match.position = { x: startX, y, width: matchWidth, height: matchHeight };
     });
     
-    round.position = { x: startX, y: startY + (roundIndex * (matchHeight + 60)), width: matchWidth, height: matchHeight };
+    round.position = { x: startX, y: startY + (roundIndex * (matchHeight + 50)), width: matchWidth, height: matchHeight };
   });
 };
 
-// Unified function for calculating match Y positions
-const calculateMatchY = (
+// Calculate match Y positions for horizontal flow
+const calculateHorizontalMatchY = (
   baseY: number,
   roundIndex: number,
   matchIndex: number,
@@ -122,12 +109,13 @@ const calculateMatchY = (
   }
 };
 
-// Unified connector calculation that uses the same positioning logic as matches
-const calculateUnifiedConnections = (data: ProcessedBracketData, theme: BracketTheme): BracketConnection[] => {
+// Calculate connections ONLY within each bracket section
+const calculateInternalConnections = (data: ProcessedBracketData, theme: BracketTheme): BracketConnection[] => {
   const connections: BracketConnection[] = [];
   const { matchWidth, matchHeight, columnGap } = theme.spacing;
   
   data.sections.forEach(section => {
+    // Only create connectors within each section, not between sections
     section.rounds.forEach((round, roundIndex) => {
       if (roundIndex < section.rounds.length - 1) {
         const nextRound = section.rounds[roundIndex + 1];
@@ -136,15 +124,12 @@ const calculateUnifiedConnections = (data: ProcessedBracketData, theme: BracketT
           const nextMatchIndex = Math.floor(matchIndex / 2);
           const nextMatch = nextRound.matches[nextMatchIndex];
           
-          // Add safety checks for position objects
           if (nextMatch && match.position && nextMatch.position) {
-            // Calculate exact center points using the same logic as match positioning
             const fromCenterX = match.position.x + matchWidth;
             const fromCenterY = match.position.y + (matchHeight / 2);
             const toCenterX = nextMatch.position.x;
             const toCenterY = nextMatch.position.y + (matchHeight / 2);
             
-            // Create connector with precise positioning
             const connectorData = createConnectorData(
               fromCenterX,
               fromCenterY,
@@ -162,7 +147,6 @@ const calculateUnifiedConnections = (data: ProcessedBracketData, theme: BracketT
               toMatch: nextMatch.id,
               path: connectorData.path,
               type: section.type,
-              // Store detailed positioning data for rendering
               positioning: connectorData
             });
           }
@@ -171,78 +155,8 @@ const calculateUnifiedConnections = (data: ProcessedBracketData, theme: BracketT
     });
   });
 
-  // Add connections from winners final and losers final to grand finals
-  const winnersSection = data.sections.find(s => s.type === 'winners');
-  const losersSection = data.sections.find(s => s.type === 'losers');
+  // Add connection from grand finals R1 to R2 (conditional reset match) ONLY
   const finalsSection = data.sections.find(s => s.type === 'finals');
-  
-  if (winnersSection && finalsSection && winnersSection.rounds.length > 0 && finalsSection.rounds.length > 0) {
-    const winnersFinal = winnersSection.rounds[winnersSection.rounds.length - 1].matches[0];
-    const grandFinalsR1 = finalsSection.rounds[0].matches[0];
-    
-    // Add safety checks for position objects
-    if (winnersFinal && grandFinalsR1 && winnersFinal.position && grandFinalsR1.position) {
-      const fromCenterX = winnersFinal.position.x + matchWidth;
-      const fromCenterY = winnersFinal.position.y + (matchHeight / 2);
-      const toCenterX = grandFinalsR1.position.x;
-      const toCenterY = grandFinalsR1.position.y + (matchHeight / 2);
-      
-      const connectorData = createConnectorData(
-        fromCenterX,
-        fromCenterY,
-        toCenterX,
-        toCenterY,
-        columnGap,
-        0,
-        0,
-        'finals'
-      );
-      
-      connections.push({
-        id: `${winnersFinal.id}-to-grand-final-r1`,
-        fromMatch: winnersFinal.id,
-        toMatch: grandFinalsR1.id,
-        path: connectorData.path,
-        type: 'finals',
-        positioning: connectorData
-      });
-    }
-  }
-
-  // Add connection from losers final to grand finals R1
-  if (losersSection && finalsSection && losersSection.rounds.length > 0 && finalsSection.rounds.length > 0) {
-    const losersFinal = losersSection.rounds[losersSection.rounds.length - 1].matches[0];
-    const grandFinalsR1 = finalsSection.rounds[0].matches[0];
-    
-    if (losersFinal && grandFinalsR1 && losersFinal.position && grandFinalsR1.position) {
-      const fromCenterX = losersFinal.position.x + matchWidth;
-      const fromCenterY = losersFinal.position.y + (matchHeight / 2);
-      const toCenterX = grandFinalsR1.position.x;
-      const toCenterY = grandFinalsR1.position.y + (matchHeight / 2);
-      
-      const connectorData = createConnectorData(
-        fromCenterX,
-        fromCenterY,
-        toCenterX,
-        toCenterY,
-        columnGap,
-        0,
-        0,
-        'finals'
-      );
-      
-      connections.push({
-        id: `${losersFinal.id}-to-grand-final-r1`,
-        fromMatch: losersFinal.id,
-        toMatch: grandFinalsR1.id,
-        path: connectorData.path,
-        type: 'finals',
-        positioning: connectorData
-      });
-    }
-  }
-
-  // Add connection from grand finals R1 to R2 (conditional reset match)
   if (finalsSection && finalsSection.rounds.length >= 2) {
     const grandFinalsR1 = finalsSection.rounds[0].matches[0];
     const grandFinalsR2 = finalsSection.rounds[1].matches[0];
