@@ -21,7 +21,7 @@ export interface BracketMatch {
   status: string;
   matchType: 'winners' | 'losers' | 'finals';
   round: number;
-  position: number;
+  position?: BracketPosition;
 }
 
 export interface BracketRound {

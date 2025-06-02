@@ -1,4 +1,3 @@
-
 import { SimpleBracketData } from "@/hooks/brackets/useBracketData";
 import { BracketMatch, BracketSection, ProcessedBracketData, BracketRound } from "../types/bracketTypes";
 

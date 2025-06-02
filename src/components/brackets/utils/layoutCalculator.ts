@@ -137,6 +137,7 @@ const calculateUnifiedConnections = (data: ProcessedBracketData, theme: BracketT
           const nextMatchIndex = Math.floor(matchIndex / 2);
           const nextMatch = nextRound.matches[nextMatchIndex];
           
+          // Add safety checks for position objects
           if (nextMatch && match.position && nextMatch.position) {
             // Calculate exact center points using the same logic as match positioning
             const fromCenterX = match.position.x + matchWidth;
@@ -179,6 +180,7 @@ const calculateUnifiedConnections = (data: ProcessedBracketData, theme: BracketT
     const winnersFinal = winnersSection.rounds[winnersSection.rounds.length - 1].matches[0];
     const grandFinal = finalsSection.rounds[0].matches[0];
     
+    // Add safety checks for position objects
     if (winnersFinal && grandFinal && winnersFinal.position && grandFinal.position) {
       const fromCenterX = winnersFinal.position.x + matchWidth;
       const fromCenterY = winnersFinal.position.y + (matchHeight / 2);
