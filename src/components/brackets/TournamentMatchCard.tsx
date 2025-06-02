@@ -24,13 +24,15 @@ interface TournamentMatchCardProps {
   onMatchClick?: (matchId: string) => void;
   showSeeds?: boolean;
   bracketType?: "winners" | "losers" | "finals" | "single";
+  fixedHeight?: boolean;
 }
 
 const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({ 
   match, 
   onMatchClick,
   showSeeds = false,
-  bracketType = "single"
+  bracketType = "single",
+  fixedHeight = false
 }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -96,17 +98,20 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
     <div 
       className={cn(
         "border rounded-lg overflow-hidden shadow-sm transition-all duration-300",
-        "w-48",
+        "w-48 box-border",
+        fixedHeight ? "h-20" : "",
         getBracketStyling(),
         isClickable && "hover:shadow-md cursor-pointer",
         isClickable && isDark && "hover:bg-gray-700",
         isClickable && !isDark && "hover:bg-gray-50"
       )}
+      style={fixedHeight ? { height: '80px', margin: 0, padding: '8px' } : {}}
       onClick={handleClick}
     >
       {/* Team 1 */}
       <div className={cn(
         "flex items-center justify-between px-3 py-2 border-b transition-colors duration-300",
+        fixedHeight ? "h-1/2 py-1" : "",
         isDark ? "border-gray-600" : "border-gray-100",
         team1Won && getWinnerStyling(true)
       )}>
@@ -123,11 +128,11 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
             <img 
               src={match.team1Logo} 
               alt={`${match.team1Name} logo`}
-              className="w-5 h-5 rounded object-cover flex-shrink-0"
+              className="w-4 h-4 rounded object-cover flex-shrink-0"
             />
           )}
           <span className={cn(
-            "text-sm font-medium truncate transition-colors duration-300",
+            "text-xs font-medium truncate transition-colors duration-300",
             team1Won 
               ? (isDark ? "text-green-300" : "text-green-800")
               : (isDark ? "text-gray-200" : "text-gray-900")
@@ -136,7 +141,7 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
           </span>
         </div>
         <span className={cn(
-          "text-sm font-bold ml-2 w-6 text-center transition-colors duration-300",
+          "text-xs font-bold ml-2 w-6 text-center transition-colors duration-300",
           team1Won 
             ? (isDark ? "text-green-300" : "text-green-800")
             : (isDark ? "text-gray-300" : "text-gray-700")
@@ -148,6 +153,7 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
       {/* Team 2 */}
       <div className={cn(
         "flex items-center justify-between px-3 py-2 transition-colors duration-300",
+        fixedHeight ? "h-1/2 py-1" : "",
         team2Won && getWinnerStyling(true)
       )}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -163,11 +169,11 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
             <img 
               src={match.team2Logo} 
               alt={`${match.team2Name} logo`}
-              className="w-5 h-5 rounded object-cover flex-shrink-0"
+              className="w-4 h-4 rounded object-cover flex-shrink-0"
             />
           )}
           <span className={cn(
-            "text-sm font-medium truncate transition-colors duration-300",
+            "text-xs font-medium truncate transition-colors duration-300",
             team2Won 
               ? (isDark ? "text-green-300" : "text-green-800")
               : (isDark ? "text-gray-200" : "text-gray-900")
@@ -176,7 +182,7 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
           </span>
         </div>
         <span className={cn(
-          "text-sm font-bold ml-2 w-6 text-center transition-colors duration-300",
+          "text-xs font-bold ml-2 w-6 text-center transition-colors duration-300",
           team2Won 
             ? (isDark ? "text-green-300" : "text-green-800")
             : (isDark ? "text-gray-300" : "text-gray-700")
@@ -184,23 +190,6 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
           {match.team2Score ?? '-'}
         </span>
       </div>
-
-      {/* Status indicator for pending matches */}
-      {!isComplete && match.team1Id && match.team2Id && (
-        <div className={cn(
-          "px-3 py-1 border-t transition-colors duration-300",
-          isDark 
-            ? "bg-gray-700 border-gray-600" 
-            : "bg-gray-50 border-gray-100"
-        )}>
-          <span className={cn(
-            "text-xs transition-colors duration-300",
-            isDark ? "text-gray-400" : "text-gray-500"
-          )}>
-            Pending
-          </span>
-        </div>
-      )}
     </div>
   );
 };

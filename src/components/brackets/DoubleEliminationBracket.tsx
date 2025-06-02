@@ -28,20 +28,16 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
     match.matchType === 'finals' || match.matchType === 'final'
   );
 
-  // Combine winners and finals for the main bracket flow
-  const mainBracketMatches = [...winnerMatches, ...finalMatches];
-
-  // Group main bracket matches by round for horizontal flow
-  const mainBracketByRound = mainBracketMatches.reduce((acc, match) => {
+  // Group matches by round
+  const winnersByRound = winnerMatches.reduce((acc, match) => {
     if (!acc[match.round]) {
       acc[match.round] = [];
     }
     acc[match.round].push(match);
     return acc;
-  }, {} as Record<number, typeof mainBracketMatches>);
+  }, {} as Record<number, typeof winnerMatches>);
 
-  // Group losers matches by round
-  const losersBracketByRound = loserMatches.reduce((acc, match) => {
+  const losersByRound = loserMatches.reduce((acc, match) => {
     if (!acc[match.round]) {
       acc[match.round] = [];
     }
@@ -49,24 +45,18 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
     return acc;
   }, {} as Record<number, typeof loserMatches>);
 
-  const mainRounds = Object.keys(mainBracketByRound)
+  const winnerRounds = Object.keys(winnersByRound)
     .map(Number)
     .sort((a, b) => a - b);
 
-  const losersRounds = Object.keys(losersBracketByRound)
+  const loserRounds = Object.keys(losersByRound)
     .map(Number)
     .sort((a, b) => a - b);
 
   // Get round names for main bracket
-  const getMainRoundName = (round: number, totalRounds: number) => {
-    if (round === totalRounds) return "Finals";
-    if (round === totalRounds - 1) return "Semifinals";
+  const getWinnerRoundName = (round: number, totalRounds: number) => {
+    if (round === totalRounds) return "Semifinals";
     return `Round ${round}`;
-  };
-
-  // Get round names for losers bracket
-  const getLosersRoundName = (round: number) => {
-    return `Losers Round ${round}`;
   };
 
   const lineColor = isDark ? "#6b7280" : "#9ca3af";
@@ -93,212 +83,258 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
         </p>
       </div>
 
-      <div className="space-y-8 overflow-x-auto">
-        {/* Main Bracket (Winners + Finals) */}
-        {mainRounds.length > 0 && (
-          <div className="relative">
-            <div className="flex gap-8 items-start min-w-max">
-              {mainRounds.map((round, roundIndex) => {
-                const roundMatches = mainBracketByRound[round].sort((a, b) => a.position - b.position);
-                const isLastRound = round === Math.max(...mainRounds);
-                
-                return (
-                  <div key={round} className="relative">
-                    {/* Round Header */}
-                    <div className="text-center mb-3">
-                      <h3 className={cn(
-                        "text-sm font-semibold transition-colors duration-300",
-                        isDark ? "text-blue-300" : "text-blue-800"
-                      )}>
-                        {getMainRoundName(round, mainRounds.length)}
-                      </h3>
-                    </div>
+      <div className="overflow-x-auto">
+        <div className="min-w-max">
+          {/* Winners Bracket Grid */}
+          {winnerRounds.length > 0 && (
+            <div className="mb-8">
+              <div 
+                className="grid gap-0 relative"
+                style={{ 
+                  gridTemplateColumns: `repeat(${winnerRounds.length}, 1fr)`,
+                  minWidth: `${winnerRounds.length * 220}px`
+                }}
+              >
+                {winnerRounds.map((round, roundIndex) => {
+                  const roundMatches = winnersByRound[round].sort((a, b) => a.position - b.position);
+                  const isLastRound = round === Math.max(...winnerRounds);
+                  
+                  // Calculate top margin for vertical alignment
+                  const getTopMargin = () => {
+                    if (roundIndex === 0) return 0;
+                    const prevRoundsMatches = roundIndex === 1 ? 1 : Math.pow(2, roundIndex - 1);
+                    return `${prevRoundsMatches * 48}px`; // 80px match height - 32px for better alignment
+                  };
 
-                    {/* Matches Column */}
-                    <div className={cn(
-                      "flex flex-col",
-                      roundIndex === 0 ? "space-y-2" : "space-y-6"
-                    )}>
-                      {roundMatches.map((match, matchIndex) => (
-                        <div key={match.id} className="relative">
-                          <TournamentMatchCard
-                            match={match}
-                            onMatchClick={onMatchClick}
-                            showSeeds={roundIndex === 0}
-                            bracketType="winners"
-                          />
-                          
-                          {/* Horizontal connecting lines to next round */}
-                          {!isLastRound && (
-                            <svg 
-                              className="absolute left-full top-1/2 -translate-y-1/2 pointer-events-none"
-                              width="32" 
-                              height="2"
-                            >
-                              <line 
-                                x1="0" 
-                                y1="1" 
-                                x2="32" 
-                                y2="1" 
-                                stroke={lineColor}
-                                strokeWidth="2"
-                                className="transition-colors duration-300"
-                              />
-                            </svg>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                  return (
+                    <div key={round} className="relative p-2">
+                      {/* Round Header */}
+                      <div className="text-center mb-4">
+                        <h3 className={cn(
+                          "text-sm font-semibold transition-colors duration-300",
+                          isDark ? "text-blue-300" : "text-blue-800"
+                        )}>
+                          {getWinnerRoundName(round, winnerRounds.length)}
+                        </h3>
+                      </div>
 
-                    {/* Vertical connecting lines for bracket tree structure */}
-                    {roundIndex < mainRounds.length - 1 && roundMatches.length > 1 && (
-                      <svg 
-                        className="absolute left-full top-0 pointer-events-none"
-                        width="32"
-                        height="100%"
-                        style={{ height: `${roundMatches.length * (roundIndex === 0 ? 56 : 80)}px` }}
+                      {/* Matches Container */}
+                      <div 
+                        className="relative"
+                        style={{ marginTop: getTopMargin() }}
                       >
-                        {roundMatches.map((_, index) => {
-                          if (index % 2 === 1) return null;
-                          
-                          const match1Y = (index * (roundIndex === 0 ? 56 : 80)) + 28;
-                          const match2Y = ((index + 1) * (roundIndex === 0 ? 56 : 80)) + 28;
-                          const midY = (match1Y + match2Y) / 2;
-                          
-                          return (
-                            <g key={index}>
-                              <line 
-                                x1="32" 
-                                y1={match1Y} 
-                                x2="32" 
-                                y2={match2Y} 
-                                stroke={lineColor}
-                                strokeWidth="2"
-                                className="transition-colors duration-300"
+                        {roundMatches.map((match, matchIndex) => (
+                          <div 
+                            key={match.id} 
+                            className="relative mb-4"
+                            style={{ height: '80px' }}
+                          >
+                            <TournamentMatchCard
+                              match={match}
+                              onMatchClick={onMatchClick}
+                              showSeeds={roundIndex === 0}
+                              bracketType="winners"
+                              fixedHeight={true}
+                            />
+                            
+                            {/* Horizontal connecting lines */}
+                            {!isLastRound && (
+                              <div
+                                className="absolute left-full top-1/2 w-8 h-0.5 -translate-y-1/2 pointer-events-none"
+                                style={{ 
+                                  backgroundColor: lineColor,
+                                  transition: 'background-color 0.3s'
+                                }}
                               />
-                              <line 
-                                x1="32" 
-                                y1={midY} 
-                                x2="40" 
-                                y2={midY} 
-                                stroke={lineColor}
-                                strokeWidth="2"
-                                className="transition-colors duration-300"
-                              />
-                            </g>
-                          );
-                        })}
-                      </svg>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                            )}
+                          </div>
+                        ))}
 
-        {/* Losers Bracket */}
-        {losersRounds.length > 0 && (
-          <div className="relative">
-            <div className="flex gap-8 items-start min-w-max">
-              {losersRounds.map((round, roundIndex) => {
-                const roundMatches = losersBracketByRound[round].sort((a, b) => a.position - b.position);
-                const isLastRound = round === Math.max(...losersRounds);
-                
-                return (
-                  <div key={round} className="relative">
-                    {/* Round Header */}
-                    <div className="text-center mb-3">
-                      <h3 className={cn(
-                        "text-sm font-semibold transition-colors duration-300",
-                        isDark ? "text-orange-300" : "text-orange-800"
-                      )}>
-                        {getLosersRoundName(round)}
-                      </h3>
+                        {/* Vertical connecting lines for bracket tree */}
+                        {roundIndex < winnerRounds.length - 1 && roundMatches.length > 1 && (
+                          <div className="absolute left-full top-0 w-8 h-full pointer-events-none">
+                            {roundMatches.map((_, index) => {
+                              if (index % 2 === 1) return null;
+                              
+                              const match1Y = index * 84 + 40; // 80px height + 4px margin + center offset
+                              const match2Y = (index + 1) * 84 + 40;
+                              const midY = (match1Y + match2Y) / 2;
+                              
+                              return (
+                                <div key={index} className="relative">
+                                  {/* Vertical line */}
+                                  <div
+                                    className="absolute w-0.5"
+                                    style={{
+                                      backgroundColor: lineColor,
+                                      left: '32px',
+                                      top: `${match1Y}px`,
+                                      height: `${match2Y - match1Y}px`
+                                    }}
+                                  />
+                                  {/* Horizontal connector to next round */}
+                                  <div
+                                    className="absolute h-0.5 w-2"
+                                    style={{
+                                      backgroundColor: lineColor,
+                                      left: '32px',
+                                      top: `${midY}px`
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-                    {/* Matches Column */}
-                    <div className={cn(
-                      "flex flex-col",
-                      roundIndex === 0 ? "space-y-2" : "space-y-6"
+          {/* Finals Section */}
+          {finalMatches.length > 0 && (
+            <div className="mb-8">
+              <div className="grid grid-cols-1 gap-0 w-56 mx-auto">
+                <div className="relative p-2">
+                  <div className="text-center mb-4">
+                    <h3 className={cn(
+                      "text-sm font-semibold transition-colors duration-300",
+                      isDark ? "text-purple-300" : "text-purple-800"
                     )}>
-                      {roundMatches.map((match, matchIndex) => (
-                        <div key={match.id} className="relative">
-                          <TournamentMatchCard
-                            match={match}
-                            onMatchClick={onMatchClick}
-                            showSeeds={false}
-                            bracketType="losers"
-                          />
-                          
-                          {/* Horizontal connecting lines to next round */}
-                          {!isLastRound && (
-                            <svg 
-                              className="absolute left-full top-1/2 -translate-y-1/2 pointer-events-none"
-                              width="32" 
-                              height="2"
-                            >
-                              <line 
-                                x1="0" 
-                                y1="1" 
-                                x2="32" 
-                                y2="1" 
-                                stroke={lineColor}
-                                strokeWidth="2"
-                                className="transition-colors duration-300"
-                              />
-                            </svg>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Vertical connecting lines for bracket tree structure */}
-                    {roundIndex < losersRounds.length - 1 && roundMatches.length > 1 && (
-                      <svg 
-                        className="absolute left-full top-0 pointer-events-none"
-                        width="32"
-                        height="100%"
-                        style={{ height: `${roundMatches.length * (roundIndex === 0 ? 56 : 80)}px` }}
-                      >
-                        {roundMatches.map((_, index) => {
-                          if (index % 2 === 1) return null;
-                          
-                          const match1Y = (index * (roundIndex === 0 ? 56 : 80)) + 28;
-                          const match2Y = ((index + 1) * (roundIndex === 0 ? 56 : 80)) + 28;
-                          const midY = (match1Y + match2Y) / 2;
-                          
-                          return (
-                            <g key={index}>
-                              <line 
-                                x1="32" 
-                                y1={match1Y} 
-                                x2="32" 
-                                y2={match2Y} 
-                                stroke={lineColor}
-                                strokeWidth="2"
-                                className="transition-colors duration-300"
-                              />
-                              <line 
-                                x1="32" 
-                                y1={midY} 
-                                x2="40" 
-                                y2={midY} 
-                                stroke={lineColor}
-                                strokeWidth="2"
-                                className="transition-colors duration-300"
-                              />
-                            </g>
-                          );
-                        })}
-                      </svg>
-                    )}
+                      Finals
+                    </h3>
                   </div>
-                );
-              })}
+                  <div className="relative">
+                    {finalMatches.map((match) => (
+                      <div 
+                        key={match.id} 
+                        className="relative"
+                        style={{ height: '80px' }}
+                      >
+                        <TournamentMatchCard
+                          match={match}
+                          onMatchClick={onMatchClick}
+                          showSeeds={false}
+                          bracketType="finals"
+                          fixedHeight={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Losers Bracket Grid */}
+          {loserRounds.length > 0 && (
+            <div>
+              <div 
+                className="grid gap-0 relative"
+                style={{ 
+                  gridTemplateColumns: `repeat(${loserRounds.length}, 1fr)`,
+                  minWidth: `${loserRounds.length * 220}px`
+                }}
+              >
+                {loserRounds.map((round, roundIndex) => {
+                  const roundMatches = losersByRound[round].sort((a, b) => a.position - b.position);
+                  const isLastRound = round === Math.max(...loserRounds);
+                  
+                  // Calculate top margin for losers bracket alignment
+                  const getTopMargin = () => {
+                    if (roundIndex === 0) return 0;
+                    return `${roundIndex * 48}px`; // Progressive margin for losers rounds
+                  };
+
+                  return (
+                    <div key={round} className="relative p-2">
+                      {/* Round Header */}
+                      <div className="text-center mb-4">
+                        <h3 className={cn(
+                          "text-sm font-semibold transition-colors duration-300",
+                          isDark ? "text-orange-300" : "text-orange-800"
+                        )}>
+                          Losers Round {round}
+                        </h3>
+                      </div>
+
+                      {/* Matches Container */}
+                      <div 
+                        className="relative"
+                        style={{ marginTop: getTopMargin() }}
+                      >
+                        {roundMatches.map((match, matchIndex) => (
+                          <div 
+                            key={match.id} 
+                            className="relative mb-4"
+                            style={{ height: '80px' }}
+                          >
+                            <TournamentMatchCard
+                              match={match}
+                              onMatchClick={onMatchClick}
+                              showSeeds={false}
+                              bracketType="losers"
+                              fixedHeight={true}
+                            />
+                            
+                            {/* Horizontal connecting lines */}
+                            {!isLastRound && (
+                              <div
+                                className="absolute left-full top-1/2 w-8 h-0.5 -translate-y-1/2 pointer-events-none"
+                                style={{ 
+                                  backgroundColor: lineColor,
+                                  transition: 'background-color 0.3s'
+                                }}
+                              />
+                            )}
+                          </div>
+                        ))}
+
+                        {/* Vertical connecting lines for bracket tree */}
+                        {roundIndex < loserRounds.length - 1 && roundMatches.length > 1 && (
+                          <div className="absolute left-full top-0 w-8 h-full pointer-events-none">
+                            {roundMatches.map((_, index) => {
+                              if (index % 2 === 1) return null;
+                              
+                              const match1Y = index * 84 + 40;
+                              const match2Y = (index + 1) * 84 + 40;
+                              const midY = (match1Y + match2Y) / 2;
+                              
+                              return (
+                                <div key={index} className="relative">
+                                  <div
+                                    className="absolute w-0.5"
+                                    style={{
+                                      backgroundColor: lineColor,
+                                      left: '32px',
+                                      top: `${match1Y}px`,
+                                      height: `${match2Y - match1Y}px`
+                                    }}
+                                  />
+                                  <div
+                                    className="absolute h-0.5 w-2"
+                                    style={{
+                                      backgroundColor: lineColor,
+                                      left: '32px',
+                                      top: `${midY}px`
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
