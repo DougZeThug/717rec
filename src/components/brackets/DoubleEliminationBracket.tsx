@@ -60,87 +60,191 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
   const COLUMN_GAP = 64; // gap-16 = 64px
   const MATCH_HEIGHT = 80; // --match-height
   const MATCH_GAP = 16; // --match-gap
+  const HEADER_HEIGHT = 60; // Header + margin
 
   // Helper function to create L-shaped connectors between rounds
-  const createLShapedConnectors = (matches: any[], roundIndex: number, isLastRound: boolean, startX: number) => {
-    if (isLastRound || matches.length <= 1) return [];
-
+  const createWinnersConnectors = () => {
     const connectors = [];
-    for (let i = 0; i < matches.length; i += 2) {
-      if (i + 1 < matches.length) {
-        // Calculate vertical positions for the two matches
-        const verticalOffset = roundIndex === 0 ? 0 : Math.pow(2, roundIndex - 1) * (MATCH_HEIGHT + MATCH_GAP);
-        const gapMultiplier = Math.pow(2, roundIndex);
-        
-        const match1Y = verticalOffset + i * (MATCH_HEIGHT + MATCH_GAP * gapMultiplier) + MATCH_HEIGHT / 2;
-        const match2Y = verticalOffset + (i + 1) * (MATCH_HEIGHT + MATCH_GAP * gapMultiplier) + MATCH_HEIGHT / 2;
-        const midY = (match1Y + match2Y) / 2;
-        
-        // Calculate horizontal positions
-        const matchEndX = startX + MATCH_WIDTH;
-        const horizontalExtend = COLUMN_GAP / 2;
-        const nextMatchStartX = startX + MATCH_WIDTH + COLUMN_GAP;
-        
-        connectors.push(
-          <g key={`connector-${roundIndex}-${i}`}>
-            {/* Horizontal line from first match */}
-            <line
-              x1={matchEndX}
-              y1={match1Y}
-              x2={matchEndX + horizontalExtend}
-              y2={match1Y}
-              stroke={lineColor}
-              strokeWidth="2"
-            />
-            {/* Horizontal line from second match */}
-            <line
-              x1={matchEndX}
-              y1={match2Y}
-              x2={matchEndX + horizontalExtend}
-              y2={match2Y}
-              stroke={lineColor}
-              strokeWidth="2"
-            />
-            {/* Vertical connecting line */}
-            <line
-              x1={matchEndX + horizontalExtend}
-              y1={match1Y}
-              x2={matchEndX + horizontalExtend}
-              y2={match2Y}
-              stroke={lineColor}
-              strokeWidth="2"
-            />
-            {/* Horizontal line to next round */}
-            <line
-              x1={matchEndX + horizontalExtend}
-              y1={midY}
-              x2={nextMatchStartX}
-              y2={midY}
-              stroke={lineColor}
-              strokeWidth="2"
-            />
-          </g>
-        );
+    
+    for (let roundIndex = 0; roundIndex < winnerRounds.length - 1; roundIndex++) {
+      const currentRound = winnerRounds[roundIndex];
+      const currentMatches = winnersByRound[currentRound].sort((a, b) => a.position - b.position);
+      
+      // Calculate positions for current round
+      const currentX = roundIndex * (MATCH_WIDTH + COLUMN_GAP);
+      const nextX = (roundIndex + 1) * (MATCH_WIDTH + COLUMN_GAP);
+      
+      // Group matches in pairs for connections
+      for (let i = 0; i < currentMatches.length; i += 2) {
+        if (i + 1 < currentMatches.length) {
+          const match1 = currentMatches[i];
+          const match2 = currentMatches[i + 1];
+          
+          // Calculate vertical positions
+          const baseOffset = roundIndex === 0 ? 0 : Math.pow(2, roundIndex - 1) * (MATCH_HEIGHT + MATCH_GAP);
+          const gapMultiplier = Math.pow(2, roundIndex);
+          
+          const match1Y = HEADER_HEIGHT + baseOffset + i * (MATCH_HEIGHT + MATCH_GAP * gapMultiplier) + MATCH_HEIGHT / 2;
+          const match2Y = HEADER_HEIGHT + baseOffset + (i + 1) * (MATCH_HEIGHT + MATCH_GAP * gapMultiplier) + MATCH_HEIGHT / 2;
+          const midY = (match1Y + match2Y) / 2;
+          
+          // Draw connecting lines
+          const horizontalExtend = COLUMN_GAP / 2;
+          
+          connectors.push(
+            <g key={`winners-connector-${roundIndex}-${i}`}>
+              {/* Horizontal line from first match */}
+              <line
+                x1={currentX + MATCH_WIDTH}
+                y1={match1Y}
+                x2={currentX + MATCH_WIDTH + horizontalExtend}
+                y2={match1Y}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+              {/* Horizontal line from second match */}
+              <line
+                x1={currentX + MATCH_WIDTH}
+                y1={match2Y}
+                x2={currentX + MATCH_WIDTH + horizontalExtend}
+                y2={match2Y}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+              {/* Vertical connecting line */}
+              <line
+                x1={currentX + MATCH_WIDTH + horizontalExtend}
+                y1={match1Y}
+                x2={currentX + MATCH_WIDTH + horizontalExtend}
+                y2={match2Y}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+              {/* Horizontal line to next round */}
+              <line
+                x1={currentX + MATCH_WIDTH + horizontalExtend}
+                y1={midY}
+                x2={nextX}
+                y2={midY}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+            </g>
+          );
+        }
       }
     }
+    
     return connectors;
   };
 
-  // Calculate all connector lines for winners bracket
-  const winnersConnectors = winnerRounds.flatMap((round, roundIndex) => {
-    const roundMatches = winnersByRound[round].sort((a, b) => a.position - b.position);
-    const isLastRound = roundIndex === winnerRounds.length - 1;
-    const startX = roundIndex * (MATCH_WIDTH + COLUMN_GAP);
-    return createLShapedConnectors(roundMatches, roundIndex, isLastRound, startX);
-  });
+  // Helper function to create losers bracket connectors
+  const createLosersConnectors = () => {
+    const connectors = [];
+    const losersStartY = winnerRounds.length > 0 ? 380 : 60;
+    
+    for (let roundIndex = 0; roundIndex < loserRounds.length - 1; roundIndex++) {
+      const currentRound = loserRounds[roundIndex];
+      const currentMatches = losersByRound[currentRound].sort((a, b) => a.position - b.position);
+      
+      // Calculate positions for current round
+      const currentX = roundIndex * (MATCH_WIDTH + COLUMN_GAP);
+      const nextX = (roundIndex + 1) * (MATCH_WIDTH + COLUMN_GAP);
+      
+      // Losers bracket has different staggering pattern
+      for (let i = 0; i < currentMatches.length; i += 2) {
+        if (i + 1 < currentMatches.length) {
+          const stagger = Math.floor(roundIndex / 2);
+          const baseOffset = stagger * (MATCH_HEIGHT + MATCH_GAP);
+          const gapSize = roundIndex % 2 === 0 ? 2 * MATCH_GAP : MATCH_GAP;
+          
+          const match1Y = losersStartY + HEADER_HEIGHT + baseOffset + i * (MATCH_HEIGHT + gapSize) + MATCH_HEIGHT / 2;
+          const match2Y = losersStartY + HEADER_HEIGHT + baseOffset + (i + 1) * (MATCH_HEIGHT + gapSize) + MATCH_HEIGHT / 2;
+          const midY = (match1Y + match2Y) / 2;
+          
+          // Draw connecting lines
+          const horizontalExtend = COLUMN_GAP / 2;
+          
+          connectors.push(
+            <g key={`losers-connector-${roundIndex}-${i}`}>
+              {/* Horizontal line from first match */}
+              <line
+                x1={currentX + MATCH_WIDTH}
+                y1={match1Y}
+                x2={currentX + MATCH_WIDTH + horizontalExtend}
+                y2={match1Y}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+              {/* Horizontal line from second match */}
+              <line
+                x1={currentX + MATCH_WIDTH}
+                y1={match2Y}
+                x2={currentX + MATCH_WIDTH + horizontalExtend}
+                y2={match2Y}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+              {/* Vertical connecting line */}
+              <line
+                x1={currentX + MATCH_WIDTH + horizontalExtend}
+                y1={match1Y}
+                x2={currentX + MATCH_WIDTH + horizontalExtend}
+                y2={match2Y}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+              {/* Horizontal line to next round */}
+              <line
+                x1={currentX + MATCH_WIDTH + horizontalExtend}
+                y1={midY}
+                x2={nextX}
+                y2={midY}
+                stroke={lineColor}
+                strokeWidth="2"
+              />
+            </g>
+          );
+        }
+      }
+    }
+    
+    return connectors;
+  };
 
-  // Calculate all connector lines for losers bracket
-  const losersConnectors = loserRounds.flatMap((round, roundIndex) => {
-    const roundMatches = losersByRound[round].sort((a, b) => a.position - b.position);
-    const isLastRound = roundIndex === loserRounds.length - 1;
-    const startX = roundIndex * (MATCH_WIDTH + COLUMN_GAP);
-    return createLShapedConnectors(roundMatches, roundIndex, isLastRound, startX);
-  });
+  // Connect winners bracket to finals
+  const createFinalsConnectors = () => {
+    if (winnerRounds.length === 0 || finalMatches.length === 0) return [];
+    
+    const connectors = [];
+    const winnersLastRound = winnerRounds[winnerRounds.length - 1];
+    const winnersLastMatches = winnersByRound[winnersLastRound];
+    const finalsX = winnerRounds.length * (MATCH_WIDTH + COLUMN_GAP);
+    
+    if (winnersLastMatches.length > 0) {
+      const lastMatchY = HEADER_HEIGHT + 
+        Math.pow(2, winnerRounds.length - 2) * (MATCH_HEIGHT + MATCH_GAP) + 
+        MATCH_HEIGHT / 2;
+      const finalsY = HEADER_HEIGHT + 
+        Math.pow(2, winnerRounds.length - 1) * (MATCH_HEIGHT + MATCH_GAP) + 
+        MATCH_HEIGHT / 2;
+      
+      connectors.push(
+        <g key="winners-to-finals">
+          <line
+            x1={(winnerRounds.length - 1) * (MATCH_WIDTH + COLUMN_GAP) + MATCH_WIDTH}
+            y1={lastMatchY}
+            x2={finalsX}
+            y2={finalsY}
+            stroke={lineColor}
+            strokeWidth="2"
+          />
+        </g>
+      );
+    }
+    
+    return connectors;
+  };
 
   return (
     <div 
@@ -179,7 +283,6 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                 {/* Winners Rounds */}
                 {winnerRounds.map((round, roundIndex) => {
                   const roundMatches = winnersByRound[round].sort((a, b) => a.position - b.position);
-                  const isLastRound = round === Math.max(...winnerRounds);
                   
                   // Calculate vertical offset
                   const getMarginTop = () => {
@@ -324,14 +427,13 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
             }}
           >
             {/* Winners bracket connectors */}
-            <g transform="translate(0, 60)">
-              {winnersConnectors}
-            </g>
+            {createWinnersConnectors()}
             
             {/* Losers bracket connectors */}
-            <g transform={`translate(0, ${winnerRounds.length > 0 ? 380 : 60})`}>
-              {losersConnectors}
-            </g>
+            {createLosersConnectors()}
+            
+            {/* Finals connectors */}
+            {createFinalsConnectors()}
           </svg>
         </div>
       </div>
