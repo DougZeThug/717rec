@@ -1,3 +1,4 @@
+
 import { SimpleBracketData } from "@/hooks/brackets/useBracketData";
 import { BracketMatch, BracketSection, ProcessedBracketData, BracketRound } from "../types/bracketTypes";
 
@@ -94,15 +95,18 @@ const getRoundTitle = (type: 'winners' | 'losers' | 'finals', round: number, mat
   
   if (type === 'losers') {
     // More descriptive losers bracket naming
-    if (totalRounds === 1) return 'Losers Finals';
+    if (round === totalRounds && matchCount === 1) return 'Losers Finals';
     return `LR${round}`;
   }
   
-  // Winners bracket titles - fixed logic
-  if (totalRounds === 1) return 'Winners Finals';
-  if (round === totalRounds && matchCount === 1) return 'Winners Finals';
-  if (round === totalRounds - 1 && matchCount === 2) return 'Semifinals';
-  if (round === totalRounds - 2 && matchCount === 4) return 'Quarterfinals';
+  // Fixed Winners bracket titles - properly identify semifinals and finals
+  if (type === 'winners') {
+    if (round === totalRounds && matchCount === 1) return 'Winners Finals';
+    if (round === totalRounds - 1 && matchCount === 2) return 'Semifinals';
+    if (round === totalRounds - 2 && matchCount === 4) return 'Quarterfinals';
+    
+    return `Round ${round}`;
+  }
   
   return `Round ${round}`;
 };

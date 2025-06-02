@@ -106,6 +106,8 @@ class BracketGenerator {
     const rounds = this.calculateRounds(bracketSize);
     const matches: any[] = [];
     
+    console.log(`[BRACKET] Generating double elimination for ${teams.length} teams, ${rounds} winners rounds`);
+    
     // Create match ID mappings for both brackets
     const winnersMatchIds = new Map<string, string>();
     const losersMatchIds = new Map<string, string>();
@@ -120,22 +122,26 @@ class BracketGenerator {
       }
     }
     
-    // Generate loser bracket match IDs - corrected calculation
-    const losersRounds = Math.max(1, (rounds - 1) * 2);
+    // Fixed losers bracket round calculation
+    const losersRounds = (rounds - 1) * 2; // Correct formula without Math.max
+    console.log(`[BRACKET] Losers bracket will have ${losersRounds} rounds`);
+    
+    // Generate loser bracket match IDs with corrected logic
     for (let round = 1; round <= losersRounds; round++) {
-      const isEvenRound = round % 2 === 0;
       let matchesInRound;
       
       if (round === 1) {
-        // First round of losers bracket gets all first-round losers
+        // LR1: First round losers only
         matchesInRound = Math.pow(2, rounds - 2);
-      } else if (isEvenRound) {
-        // Even rounds have merges from winners bracket
+      } else if (round % 2 === 0) {
+        // Even rounds (LR2, LR4, etc.): Merge with winners bracket losers
         matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
       } else {
-        // Odd rounds (after first) continue from previous round
-        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2));
+        // Odd rounds after LR1 (LR3, LR5, etc.): Consolidation only
+        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
       }
+      
+      console.log(`[BRACKET] Losers Round ${round}: ${matchesInRound} matches`);
       
       for (let position = 0; position < matchesInRound; position++) {
         const key = `l-${round}-${position}`;
@@ -143,7 +149,7 @@ class BracketGenerator {
       }
     }
     
-    // Generate winners bracket matches with NULL foreign keys initially
+    // Generate winners bracket matches - ALL should be type 'winners', never 'finals'
     for (let round = 1; round <= rounds; round++) {
       const matchesInRound = Math.pow(2, rounds - round);
       
@@ -155,7 +161,7 @@ class BracketGenerator {
           bracket_id: bracketId,
           round: round,
           position: i,
-          match_type: round === rounds ? 'finals' : 'winners',
+          match_type: 'winners', // Fixed: All winners bracket matches are type 'winners'
           team1_id: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].id : null,
           team2_id: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].id : null,
           team1_seed: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].seed || (i * 2 + 1) : null,
@@ -172,15 +178,14 @@ class BracketGenerator {
     
     // Generate losers bracket matches with NULL foreign keys initially
     for (let round = 1; round <= losersRounds; round++) {
-      const isEvenRound = round % 2 === 0;
       let matchesInRound;
       
       if (round === 1) {
         matchesInRound = Math.pow(2, rounds - 2);
-      } else if (isEvenRound) {
+      } else if (round % 2 === 0) {
         matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
       } else {
-        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2));
+        matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
       }
       
       for (let i = 0; i < matchesInRound; i++) {
@@ -212,7 +217,7 @@ class BracketGenerator {
       bracket_id: bracketId,
       round: 1,
       position: 0,
-      match_type: 'finals',
+      match_type: 'finals', // Only grand finals should be type 'finals'
       team1_id: null, // Winners bracket champion
       team2_id: null, // Losers bracket champion
       team1_seed: null,
@@ -224,6 +229,8 @@ class BracketGenerator {
     };
     
     matches.push(grandFinals);
+    
+    console.log(`[BRACKET] Generated ${matches.length} total matches`);
     
     return { matches, winnersMatchIds, losersMatchIds, grandFinalsId };
   }
@@ -461,7 +468,7 @@ serve(async (req) => {
         
         console.log(`[MATCHES] Pass 1 completed: Inserted ${bracketResult.matches.length} matches`);
         
-        // PASS 2: Update next_win_match_id references
+        // PASS 2: Update next_win_match_id references with fixed logic
         console.log('[MATCHES] Pass 2: Updating next_win_match_id references...');
         
         if (payload.format === 'singleElim') {
@@ -495,14 +502,22 @@ serve(async (req) => {
           const rounds = BracketGenerator.calculateRounds(BracketGenerator.calculateBracketSize(payload.teams.length));
           
           // Update winners bracket next_win_match_id
-          for (let round = 1; round < rounds; round++) {
+          for (let round = 1; round <= rounds; round++) {
             const matchesInRound = Math.pow(2, rounds - round);
             
             for (let i = 0; i < matchesInRound; i++) {
               const currentMatchId = winnersMatchIds.get(`w-${round}-${i}`);
-              const nextRound = round + 1;
-              const nextPosition = Math.floor(i / 2);
-              const nextMatchId = winnersMatchIds.get(`w-${nextRound}-${nextPosition}`);
+              let nextMatchId = null;
+              
+              if (round < rounds) {
+                // Normal advancement within winners bracket
+                const nextRound = round + 1;
+                const nextPosition = Math.floor(i / 2);
+                nextMatchId = winnersMatchIds.get(`w-${nextRound}-${nextPosition}`);
+              } else {
+                // Winners final goes to grand finals
+                nextMatchId = grandFinalsId;
+              }
               
               if (currentMatchId && nextMatchId) {
                 const { error: updateError } = await supabaseAdmin
@@ -518,39 +533,32 @@ serve(async (req) => {
             }
           }
           
-          // Update final winners bracket match to point to grand finals
-          const finalMatchId = winnersMatchIds.get(`w-${rounds}-0`);
-          if (finalMatchId) {
-            const { error: updateError } = await supabaseAdmin
-              .from('playoff_matches')
-              .update({ next_win_match_id: grandFinalsId })
-              .eq('id', finalMatchId);
-            
-            if (updateError) {
-              console.error('[MATCHES] Failed to update final match to grand finals:', updateError);
-              throw new Error(`Failed to update final match reference: ${updateError.message}`);
-            }
-          }
-          
           // Update losers bracket next_win_match_id
-          const losersRounds = Math.max(1, (rounds - 1) * 2);
-          for (let round = 1; round < losersRounds; round++) {
-            const isEvenRound = round % 2 === 0;
+          const losersRounds = (rounds - 1) * 2;
+          for (let round = 1; round <= losersRounds; round++) {
             let matchesInRound;
             
             if (round === 1) {
               matchesInRound = Math.pow(2, rounds - 2);
-            } else if (isEvenRound) {
+            } else if (round % 2 === 0) {
               matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
             } else {
-              matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2));
+              matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
             }
             
             for (let i = 0; i < matchesInRound; i++) {
               const currentMatchId = losersMatchIds.get(`l-${round}-${i}`);
-              const nextRound = round + 1;
-              const nextPosition = isEvenRound ? i : Math.floor(i / 2);
-              const nextMatchId = losersMatchIds.get(`l-${nextRound}-${nextPosition}`);
+              let nextMatchId = null;
+              
+              if (round < losersRounds) {
+                // Normal advancement within losers bracket
+                const nextRound = round + 1;
+                const nextPosition = round % 2 === 0 ? i : Math.floor(i / 2);
+                nextMatchId = losersMatchIds.get(`l-${nextRound}-${nextPosition}`);
+              } else {
+                // Losers final goes to grand finals
+                nextMatchId = grandFinalsId;
+              }
               
               if (currentMatchId && nextMatchId) {
                 const { error: updateError } = await supabaseAdmin
@@ -565,20 +573,6 @@ serve(async (req) => {
               }
             }
           }
-          
-          // Update final losers bracket match to point to grand finals
-          const finalLosersMatchId = losersMatchIds.get(`l-${losersRounds}-0`);
-          if (finalLosersMatchId) {
-            const { error: updateError } = await supabaseAdmin
-              .from('playoff_matches')
-              .update({ next_win_match_id: grandFinalsId })
-              .eq('id', finalLosersMatchId);
-            
-            if (updateError) {
-              console.error('[MATCHES] Failed to update final losers match to grand finals:', updateError);
-              throw new Error(`Failed to update final losers match reference: ${updateError.message}`);
-            }
-          }
         }
         
         console.log('[MATCHES] Pass 2 completed: Updated all next_win_match_id references');
@@ -590,7 +584,7 @@ serve(async (req) => {
           const { winnersMatchIds, losersMatchIds } = bracketResult;
           const rounds = BracketGenerator.calculateRounds(BracketGenerator.calculateBracketSize(payload.teams.length));
           
-          // Update winners bracket next_lose_match_id
+          // Update winners bracket next_lose_match_id with corrected logic
           for (let round = 1; round <= rounds; round++) {
             const matchesInRound = Math.pow(2, rounds - round);
             
@@ -600,9 +594,10 @@ serve(async (req) => {
               
               if (round === 1) {
                 // First round losers go to first round of losers bracket
-                losersMatchId = losersMatchIds.get(`l-1-${i}`);
-              } else if (round > 1) {
-                // Later round losers go to specific losers bracket positions
+                const losersPosition = Math.floor(i / 2);
+                losersMatchId = losersMatchIds.get(`l-1-${losersPosition}`);
+              } else {
+                // Later round losers go to appropriate losers bracket round
                 const losersRound = (round - 1) * 2;
                 losersMatchId = losersMatchIds.get(`l-${losersRound}-${i}`);
               }
