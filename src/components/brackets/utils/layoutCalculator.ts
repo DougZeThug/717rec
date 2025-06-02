@@ -56,8 +56,6 @@ const calculateWinnersSectionLayout = (
     const x = startX + (roundIndex * (matchWidth + columnGap));
     
     round.matches.forEach((match: any, matchIndex: number) => {
-      // Improved vertical spacing calculation for proper bracket flow
-      const matchesInRound = round.matches.length;
       let y = startY;
       
       if (roundIndex === 0) {
@@ -65,12 +63,13 @@ const calculateWinnersSectionLayout = (
         const baseSpacing = matchHeight + rowGap;
         y += matchIndex * baseSpacing;
       } else {
-        // Later rounds: exponentially increasing spacing to center between source matches
-        const baseSpacing = (matchHeight + rowGap) * Math.pow(2, roundIndex);
-        y += matchIndex * baseSpacing;
+        // Later rounds: use the same logic as connectors for perfect alignment
+        const baseSpacing = roundIndex === 1 ? 
+          (matchHeight + rowGap) * 2 : 
+          (matchHeight + rowGap) * Math.pow(2, roundIndex);
         
-        // Add offset to center the match between its source pair
-        y += baseSpacing / 4;
+        // Position matches exactly where connectors point
+        y += matchIndex * baseSpacing + (baseSpacing / 4);
       }
       
       match.position = { x, y, width: matchWidth, height: matchHeight };
