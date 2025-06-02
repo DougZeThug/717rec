@@ -55,6 +55,62 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
   const lineColor = isDark ? "#6b7280" : "#9ca3af";
 
+  // Helper function to create L-shaped connectors between rounds
+  const createLShapedConnectors = (matches: any[], roundIndex: number, isLastRound: boolean) => {
+    if (isLastRound || matches.length <= 1) return null;
+
+    const connectors = [];
+    for (let i = 0; i < matches.length; i += 2) {
+      if (i + 1 < matches.length) {
+        const match1Y = `calc(${i} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
+        const match2Y = `calc(${i + 1} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
+        const midY = `calc(${i} * (var(--match-height) + var(--match-gap)) + var(--match-height) + var(--match-gap) / 2)`;
+        
+        connectors.push(
+          <g key={`connector-${i}`}>
+            {/* Horizontal line from first match */}
+            <line
+              x1="100%"
+              y1={match1Y}
+              x2="calc(100% + 32px)"
+              y2={match1Y}
+              stroke={lineColor}
+              strokeWidth="2"
+            />
+            {/* Horizontal line from second match */}
+            <line
+              x1="100%"
+              y1={match2Y}
+              x2="calc(100% + 32px)"
+              y2={match2Y}
+              stroke={lineColor}
+              strokeWidth="2"
+            />
+            {/* Vertical connecting line */}
+            <line
+              x1="calc(100% + 32px)"
+              y1={match1Y}
+              x2="calc(100% + 32px)"
+              y2={match2Y}
+              stroke={lineColor}
+              strokeWidth="2"
+            />
+            {/* Horizontal line to next round */}
+            <line
+              x1="calc(100% + 32px)"
+              y1={midY}
+              x2="calc(100% + 64px)"
+              y2={midY}
+              stroke={lineColor}
+              strokeWidth="2"
+            />
+          </g>
+        );
+      }
+    }
+    return connectors;
+  };
+
   return (
     <div 
       className={cn(
@@ -88,7 +144,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
           {/* Winners Bracket */}
           {winnerRounds.length > 0 && (
             <div className="mb-8">
-              <div className="flex gap-16 items-start">
+              <div className="flex gap-16 items-start relative">
                 {/* Winners Rounds */}
                 {winnerRounds.map((round, roundIndex) => {
                   const roundMatches = winnersByRound[round].sort((a, b) => a.position - b.position);
@@ -97,7 +153,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                   // Calculate vertical offset
                   const getMarginTop = () => {
                     if (roundIndex === 0) return '0px';
-                    return `calc(${roundIndex} * (var(--match-height) + var(--match-gap)))`;
+                    return `calc(${Math.pow(2, roundIndex - 1)} * (var(--match-height) + var(--match-gap)))`;
                   };
 
                   return (
@@ -117,7 +173,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                         className="relative flex flex-col"
                         style={{ 
                           marginTop: getMarginTop(),
-                          gap: 'var(--match-gap)'
+                          gap: `calc(${Math.pow(2, roundIndex)} * var(--match-gap))`
                         }}
                       >
                         {roundMatches.map((match, matchIndex) => (
@@ -129,84 +185,28 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                               bracketType="winners"
                               fixedHeight={true}
                             />
-                            
-                            {/* Horizontal connecting lines */}
-                            {!isLastRound && finalMatches.length === 0 && (
-                              <div
-                                className="absolute left-full top-1/2 h-0.5 -translate-y-1/2 pointer-events-none"
-                                style={{ 
-                                  backgroundColor: lineColor,
-                                  transition: 'background-color 0.3s',
-                                  width: '64px'
-                                }}
-                              />
-                            )}
-
-                            {/* Connect to Finals if this is the last winners round */}
-                            {isLastRound && finalMatches.length > 0 && (
-                              <div
-                                className="absolute left-full top-1/2 h-0.5 -translate-y-1/2 pointer-events-none"
-                                style={{ 
-                                  backgroundColor: lineColor,
-                                  transition: 'background-color 0.3s',
-                                  width: '64px'
-                                }}
-                              />
-                            )}
                           </div>
                         ))}
 
-                        {/* Vertical connecting lines for bracket tree */}
-                        {roundIndex < winnerRounds.length - 1 && roundMatches.length > 1 && (
-                          <div className="absolute pointer-events-none"
-                               style={{ 
-                                 left: 'calc(100% + 32px)',
-                                 top: '0',
-                                 width: '32px',
-                                 height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))`
-                               }}>
-                            {roundMatches.map((_, index) => {
-                              if (index % 2 === 1) return null;
-                              
-                              const match1Y = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
-                              const match2Y = `calc(${index + 1} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
-                              const midY = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) + var(--match-gap) / 2)`;
-                              
-                              return (
-                                <div key={index} className="relative">
-                                  {/* Vertical line */}
-                                  <div
-                                    className="absolute"
-                                    style={{
-                                      backgroundColor: lineColor,
-                                      left: '0',
-                                      top: match1Y,
-                                      width: '2px',
-                                      height: 'var(--match-gap)'
-                                    }}
-                                  />
-                                  {/* Horizontal connector to next round */}
-                                  <div
-                                    className="absolute"
-                                    style={{
-                                      backgroundColor: lineColor,
-                                      left: '0',
-                                      top: midY,
-                                      width: '32px',
-                                      height: '2px'
-                                    }}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                        {/* SVG overlay for connecting lines */}
+                        <svg 
+                          className="absolute inset-0 w-full h-full pointer-events-none z-0"
+                          style={{ 
+                            left: '0',
+                            top: '0',
+                            width: '100%',
+                            height: '100%',
+                            overflow: 'visible'
+                          }}
+                        >
+                          {createLShapedConnectors(roundMatches, roundIndex, isLastRound)}
+                        </svg>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Finals Column (integrated with Winners) */}
+                {/* Finals Column */}
                 {finalMatches.length > 0 && (
                   <div className="relative flex flex-col items-center">
                     <div className="text-center mb-4">
@@ -220,7 +220,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                     <div 
                       className="relative flex flex-col"
                       style={{ 
-                        marginTop: `calc(${winnerRounds.length} * (var(--match-height) + var(--match-gap)))`,
+                        marginTop: `calc(${Math.pow(2, winnerRounds.length - 1)} * (var(--match-height) + var(--match-gap)))`,
                         gap: 'var(--match-gap)'
                       }}
                     >
@@ -245,7 +245,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
           {/* Losers Bracket */}
           {loserRounds.length > 0 && (
             <div style={{ marginTop: '40px' }}>
-              <div className="flex gap-16 items-start">
+              <div className="flex gap-16 items-start relative">
                 {loserRounds.map((round, roundIndex) => {
                   const roundMatches = losersByRound[round].sort((a, b) => a.position - b.position);
                   const isLastRound = round === Math.max(...loserRounds);
@@ -253,7 +253,9 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                   // Calculate staggered vertical offset for losers rounds
                   const getMarginTop = () => {
                     if (roundIndex === 0) return '0px';
-                    return `calc(${roundIndex} * (var(--match-height) + var(--match-gap)))`;
+                    // Alternate pattern for losers bracket positioning
+                    const stagger = Math.floor(roundIndex / 2);
+                    return `calc(${stagger} * (var(--match-height) + var(--match-gap)))`;
                   };
 
                   return (
@@ -273,7 +275,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                         className="relative flex flex-col"
                         style={{ 
                           marginTop: getMarginTop(),
-                          gap: 'var(--match-gap)'
+                          gap: roundIndex % 2 === 0 ? 'calc(2 * var(--match-gap))' : 'var(--match-gap)'
                         }}
                       >
                         {roundMatches.map((match, matchIndex) => (
@@ -285,64 +287,22 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                               bracketType="losers"
                               fixedHeight={true}
                             />
-                            
-                            {/* Horizontal connecting lines */}
-                            {!isLastRound && (
-                              <div
-                                className="absolute left-full top-1/2 h-0.5 -translate-y-1/2 pointer-events-none"
-                                style={{ 
-                                  backgroundColor: lineColor,
-                                  transition: 'background-color 0.3s',
-                                  width: '64px'
-                                }}
-                              />
-                            )}
                           </div>
                         ))}
 
-                        {/* Vertical connecting lines for bracket tree */}
-                        {roundIndex < loserRounds.length - 1 && roundMatches.length > 1 && (
-                          <div className="absolute pointer-events-none"
-                               style={{ 
-                                 left: 'calc(100% + 32px)',
-                                 top: '0',
-                                 width: '32px',
-                                 height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))`
-                               }}>
-                            {roundMatches.map((_, index) => {
-                              if (index % 2 === 1) return null;
-                              
-                              const match1Y = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
-                              const match2Y = `calc(${index + 1} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
-                              const midY = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) + var(--match-gap) / 2)`;
-                              
-                              return (
-                                <div key={index} className="relative">
-                                  <div
-                                    className="absolute"
-                                    style={{
-                                      backgroundColor: lineColor,
-                                      left: '0',
-                                      top: match1Y,
-                                      width: '2px',
-                                      height: 'var(--match-gap)'
-                                    }}
-                                  />
-                                  <div
-                                    className="absolute"
-                                    style={{
-                                      backgroundColor: lineColor,
-                                      left: '0',
-                                      top: midY,
-                                      width: '32px',
-                                      height: '2px'
-                                    }}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                        {/* SVG overlay for connecting lines */}
+                        <svg 
+                          className="absolute inset-0 w-full h-full pointer-events-none z-0"
+                          style={{ 
+                            left: '0',
+                            top: '0',
+                            width: '100%',
+                            height: '100%',
+                            overflow: 'visible'
+                          }}
+                        >
+                          {createLShapedConnectors(roundMatches, roundIndex, isLastRound)}
+                        </svg>
                       </div>
                     </div>
                   );
