@@ -1,4 +1,3 @@
-
 import { ProcessedBracketData, BracketConnection, BracketTheme } from "../types/bracketTypes";
 
 export const calculateLayout = (
@@ -57,12 +56,22 @@ const calculateWinnersSectionLayout = (
     const x = startX + (roundIndex * (matchWidth + columnGap));
     
     round.matches.forEach((match: any, matchIndex: number) => {
-      // Improved vertical spacing calculation
+      // Improved vertical spacing calculation for proper bracket flow
       const matchesInRound = round.matches.length;
-      const verticalSpacing = Math.max(matchHeight + rowGap, 120); // Minimum spacing
-      const startOffset = startY + (matchesInRound > 1 ? 0 : 60); // Center single matches
+      let y = startY;
       
-      const y = startOffset + (matchIndex * verticalSpacing * Math.pow(2, roundIndex));
+      if (roundIndex === 0) {
+        // First round: standard spacing
+        const baseSpacing = matchHeight + rowGap;
+        y += matchIndex * baseSpacing;
+      } else {
+        // Later rounds: exponentially increasing spacing to center between source matches
+        const baseSpacing = (matchHeight + rowGap) * Math.pow(2, roundIndex);
+        y += matchIndex * baseSpacing;
+        
+        // Add offset to center the match between its source pair
+        y += baseSpacing / 4;
+      }
       
       match.position = { x, y, width: matchWidth, height: matchHeight };
     });

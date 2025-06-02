@@ -61,7 +61,7 @@ const BracketSection: React.FC<BracketSectionProps> = ({
           />
         ))}
         
-        {/* Improved CSS-based connector lines - positioned outside match cards */}
+        {/* Improved CSS-based connector lines with fixed bracket logic */}
         {section.rounds.length > 1 && (
           <div className="absolute inset-0 pointer-events-none">
             {section.rounds.slice(0, -1).map((round, roundIndex) => (
@@ -70,14 +70,31 @@ const BracketSection: React.FC<BracketSectionProps> = ({
                   const nextRound = section.rounds[roundIndex + 1];
                   if (!nextRound) return null;
                   
+                  // Improved connection calculation for proper bracket flow
                   const targetMatchIndex = Math.floor(matchIndex / 2);
                   const targetMatch = nextRound.matches[targetMatchIndex];
                   
                   if (!targetMatch) return null;
                   
-                  // Calculate positions using match center points
-                  const sourceY = (matchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
-                  const targetY = (targetMatchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
+                  // Validate that this connection makes sense
+                  // Only connect if we're connecting pairs (0,1 -> 0), (2,3 -> 1), etc.
+                  const expectedPair = Math.floor(matchIndex / 2) * 2;
+                  const isValidConnection = matchIndex === expectedPair || matchIndex === expectedPair + 1;
+                  
+                  if (!isValidConnection) return null;
+                  
+                  // Calculate positions using match center points with improved spacing
+                  const verticalSpacing = roundIndex === 0 ? 
+                    (theme.spacing.matchHeight + theme.spacing.rowGap) : 
+                    (theme.spacing.matchHeight + theme.spacing.rowGap) * Math.pow(2, roundIndex);
+                  
+                  const sourceY = (matchIndex * verticalSpacing) + (theme.spacing.matchHeight / 2) + 40;
+                  
+                  // Position target matches to be centered between their source pairs
+                  const targetBaseSpacing = roundIndex === 0 ? 
+                    (theme.spacing.matchHeight + theme.spacing.rowGap) * 2 : 
+                    verticalSpacing * 2;
+                  const targetY = (targetMatchIndex * targetBaseSpacing) + (theme.spacing.matchHeight / 2) + 40 + (targetBaseSpacing / 4);
                   
                   // Position connector container to start from right edge of current round
                   const containerLeft = (roundIndex + 1) * (theme.spacing.matchWidth + theme.spacing.columnGap) - theme.spacing.columnGap;
@@ -113,9 +130,9 @@ const BracketSection: React.FC<BracketSectionProps> = ({
                           style={{
                             position: 'absolute',
                             left: theme.spacing.columnGap / 2 - 1, // Center the vertical line
-                            top: Math.min(sourceY, sourceY - (theme.spacing.matchHeight + theme.spacing.rowGap)),
+                            top: Math.min(sourceY, sourceY - verticalSpacing),
                             width: '2px',
-                            height: Math.abs(theme.spacing.matchHeight + theme.spacing.rowGap) + 2,
+                            height: Math.abs(verticalSpacing) + 2,
                             backgroundColor: getSectionColor(),
                             opacity: 0.7
                           }}
