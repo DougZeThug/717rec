@@ -1,4 +1,5 @@
 
+
 import { ProcessedBracketData, BracketConnection, BracketTheme } from "../types/bracketTypes";
 
 export const calculateLayout = (
@@ -125,7 +126,7 @@ const calculateMatchY = (
 // Unified connector calculation that uses the same positioning logic as matches
 const calculateUnifiedConnections = (data: ProcessedBracketData, theme: BracketTheme): BracketConnection[] => {
   const connections: BracketConnection[] = [];
-  const { matchWidth, matchHeight, columnGap, rowGap } = theme.spacing;
+  const { matchWidth, matchHeight, columnGap } = theme.spacing;
   
   data.sections.forEach(section => {
     section.rounds.forEach((round, roundIndex) => {
@@ -226,7 +227,7 @@ const createConnectorData = (
     path: `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`,
     segments: [
       {
-        type: 'horizontal',
+        type: 'horizontal' as const,
         x1: fromX,
         y1: fromY,
         x2: midX,
@@ -234,7 +235,7 @@ const createConnectorData = (
         isFirstSegment: true
       },
       {
-        type: 'vertical',
+        type: 'vertical' as const,
         x1: midX,
         y1: fromY,
         x2: midX,
@@ -242,7 +243,7 @@ const createConnectorData = (
         isConnector: true
       },
       {
-        type: 'horizontal',
+        type: 'horizontal' as const,
         x1: midX,
         y1: toY,
         x2: toX,
@@ -258,3 +259,4 @@ const createConnectorData = (
     sectionType
   };
 };
+
