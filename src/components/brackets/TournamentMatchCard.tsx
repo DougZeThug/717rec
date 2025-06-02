@@ -99,8 +99,8 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
     }
   };
 
-  const getWinnerStyling = (isWinner: boolean) => {
-    if (!isWinner) return "";
+  const getWinnerStyling = (isWinner: boolean): React.CSSProperties => {
+    if (!isWinner) return {};
     
     if (theme) {
       return {
@@ -108,6 +108,12 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
         borderColor: theme.colors.completed
       };
     }
+    
+    return {};
+  };
+
+  const getWinnerClasses = (isWinner: boolean) => {
+    if (!isWinner || theme) return "";
     
     return cn(
       "transition-colors duration-300",
@@ -129,25 +135,34 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
   const cardStyle = theme ? getBracketStyling() : {};
   const cardClasses = theme ? "border rounded-lg overflow-hidden shadow-sm transition-all duration-300" : getBracketStyling();
 
+  const getFixedHeightStyle = (): React.CSSProperties => {
+    if (!fixedHeight) return {};
+    
+    const baseStyle: React.CSSProperties = {
+      height: theme?.spacing.matchHeight || 70,
+      margin: '0',
+      padding: '8px',
+      boxSizing: 'border-box'
+    };
+
+    if (theme && typeof cardStyle === 'object') {
+      return { ...baseStyle, ...cardStyle };
+    }
+    
+    return baseStyle;
+  };
+
   return (
     <div 
       className={cn(
-        theme ? cardClasses : cardClasses,
+        typeof cardClasses === 'string' ? cardClasses : "border rounded-lg overflow-hidden shadow-sm transition-all duration-300",
         "w-full box-border",
         getSizeClasses(),
         isClickable && "hover:shadow-md cursor-pointer",
         isClickable && !theme && isDark && "hover:bg-gray-700",
         isClickable && !theme && !isDark && "hover:bg-gray-50"
       )}
-      style={{
-        ...cardStyle,
-        ...(fixedHeight ? { 
-          height: theme?.spacing.matchHeight || 70,
-          margin: '0',
-          padding: '8px',
-          boxSizing: 'border-box'
-        } : {})
-      }}
+      style={getFixedHeightStyle()}
       onClick={handleClick}
     >
       {/* Team 1 */}
@@ -155,11 +170,11 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
         "flex items-center justify-between px-3 py-2 border-b transition-colors duration-300",
         fixedHeight ? "h-1/2 py-1" : "",
         theme ? "" : (isDark ? "border-gray-600" : "border-gray-100"),
-        team1Won && (theme ? "" : getWinnerStyling(true))
+        team1Won && !theme && getWinnerClasses(true)
       )}
       style={{
         ...(theme && team1Won ? getWinnerStyling(true) : {}),
-        borderBottomColor: theme?.colors.border
+        ...(theme ? { borderBottomColor: theme.colors.border } : {})
       }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {showSeeds && match.team1Seed && (
@@ -207,7 +222,7 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
       <div className={cn(
         "flex items-center justify-between px-3 py-2 transition-colors duration-300",
         fixedHeight ? "h-1/2 py-1" : "",
-        team2Won && (theme ? "" : getWinnerStyling(true))
+        team2Won && !theme && getWinnerClasses(true)
       )}
       style={theme && team2Won ? getWinnerStyling(true) : {}}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
