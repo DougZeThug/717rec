@@ -2,6 +2,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { BracketTheme } from "./types/bracketTypes";
 
 interface TournamentMatch {
   id: string;
@@ -25,6 +26,8 @@ interface TournamentMatchCardProps {
   showSeeds?: boolean;
   bracketType?: "winners" | "losers" | "finals" | "single";
   fixedHeight?: boolean;
+  theme?: BracketTheme;
+  size?: 'compact' | 'normal' | 'large';
 }
 
 const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({ 
@@ -32,7 +35,9 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
   onMatchClick,
   showSeeds = false,
   bracketType = "single",
-  fixedHeight = false
+  fixedHeight = false,
+  theme,
+  size = 'normal'
 }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -49,8 +54,17 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
     }
   };
 
-  // Get bracket-specific styling
+  // Use theme colors if provided
   const getBracketStyling = () => {
+    if (theme) {
+      const bracketColor = theme.colors[bracketType] || theme.colors.border;
+      return {
+        borderColor: bracketColor,
+        backgroundColor: theme.colors.background
+      };
+    }
+
+    // Fallback to existing logic
     const baseClasses = isDark 
       ? "bg-gray-800 border-gray-600" 
       : "bg-white border-gray-200";
@@ -88,43 +102,72 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
   const getWinnerStyling = (isWinner: boolean) => {
     if (!isWinner) return "";
     
+    if (theme) {
+      return {
+        backgroundColor: `${theme.colors.completed}20`,
+        borderColor: theme.colors.completed
+      };
+    }
+    
     return cn(
       "transition-colors duration-300",
       isDark ? "bg-green-900/30 border-green-600" : "bg-green-50 border-green-200"
     );
   };
 
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'compact':
+        return "text-xs";
+      case 'large':
+        return "text-sm";
+      default:
+        return "text-xs";
+    }
+  };
+
+  const cardStyle = theme ? getBracketStyling() : {};
+  const cardClasses = theme ? "border rounded-lg overflow-hidden shadow-sm transition-all duration-300" : getBracketStyling();
+
   return (
     <div 
       className={cn(
-        "border rounded-lg overflow-hidden shadow-sm transition-all duration-300",
-        "w-48 box-border",
-        getBracketStyling(),
+        theme ? cardClasses : cardClasses,
+        "w-full box-border",
+        getSizeClasses(),
         isClickable && "hover:shadow-md cursor-pointer",
-        isClickable && isDark && "hover:bg-gray-700",
-        isClickable && !isDark && "hover:bg-gray-50"
+        isClickable && !theme && isDark && "hover:bg-gray-700",
+        isClickable && !theme && !isDark && "hover:bg-gray-50"
       )}
-      style={fixedHeight ? { 
-        height: 'var(--match-height)', 
-        margin: '0',
-        padding: '8px',
-        boxSizing: 'border-box'
-      } : {}}
+      style={{
+        ...cardStyle,
+        ...(fixedHeight ? { 
+          height: theme?.spacing.matchHeight || 70,
+          margin: '0',
+          padding: '8px',
+          boxSizing: 'border-box'
+        } : {})
+      }}
       onClick={handleClick}
     >
       {/* Team 1 */}
       <div className={cn(
         "flex items-center justify-between px-3 py-2 border-b transition-colors duration-300",
         fixedHeight ? "h-1/2 py-1" : "",
-        isDark ? "border-gray-600" : "border-gray-100",
-        team1Won && getWinnerStyling(true)
-      )}>
+        theme ? "" : (isDark ? "border-gray-600" : "border-gray-100"),
+        team1Won && (theme ? "" : getWinnerStyling(true))
+      )}
+      style={{
+        ...(theme && team1Won ? getWinnerStyling(true) : {}),
+        borderBottomColor: theme?.colors.border
+      }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {showSeeds && match.team1Seed && (
             <span className={cn(
-              "text-xs font-semibold w-6 text-center transition-colors duration-300",
-              isDark ? "text-gray-400" : "text-gray-500"
-            )}>
+              "font-semibold w-6 text-center transition-colors duration-300",
+              theme ? "" : (isDark ? "text-gray-400" : "text-gray-500")
+            )}
+            style={{ color: theme?.colors.text }}>
               {match.team1Seed}
             </span>
           )}
@@ -136,20 +179,26 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
             />
           )}
           <span className={cn(
-            "text-xs font-medium truncate transition-colors duration-300",
-            team1Won 
+            "font-medium truncate transition-colors duration-300",
+            theme ? "" : (team1Won 
               ? (isDark ? "text-green-300" : "text-green-800")
-              : (isDark ? "text-gray-200" : "text-gray-900")
-          )}>
+              : (isDark ? "text-gray-200" : "text-gray-900"))
+          )}
+          style={{ 
+            color: theme ? (team1Won ? theme.colors.completed : theme.colors.text) : undefined
+          }}>
             {match.team1Name || 'TBD'}
           </span>
         </div>
         <span className={cn(
-          "text-xs font-bold ml-2 w-6 text-center transition-colors duration-300",
-          team1Won 
+          "font-bold ml-2 w-6 text-center transition-colors duration-300",
+          theme ? "" : (team1Won 
             ? (isDark ? "text-green-300" : "text-green-800")
-            : (isDark ? "text-gray-300" : "text-gray-700")
-        )}>
+            : (isDark ? "text-gray-300" : "text-gray-700"))
+        )}
+        style={{ 
+          color: theme ? (team1Won ? theme.colors.completed : theme.colors.text) : undefined
+        }}>
           {match.team1Score ?? '-'}
         </span>
       </div>
@@ -158,14 +207,16 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
       <div className={cn(
         "flex items-center justify-between px-3 py-2 transition-colors duration-300",
         fixedHeight ? "h-1/2 py-1" : "",
-        team2Won && getWinnerStyling(true)
-      )}>
+        team2Won && (theme ? "" : getWinnerStyling(true))
+      )}
+      style={theme && team2Won ? getWinnerStyling(true) : {}}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {showSeeds && match.team2Seed && (
             <span className={cn(
-              "text-xs font-semibold w-6 text-center transition-colors duration-300",
-              isDark ? "text-gray-400" : "text-gray-500"
-            )}>
+              "font-semibold w-6 text-center transition-colors duration-300",
+              theme ? "" : (isDark ? "text-gray-400" : "text-gray-500")
+            )}
+            style={{ color: theme?.colors.text }}>
               {match.team2Seed}
             </span>
           )}
@@ -177,20 +228,26 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
             />
           )}
           <span className={cn(
-            "text-xs font-medium truncate transition-colors duration-300",
-            team2Won 
+            "font-medium truncate transition-colors duration-300",
+            theme ? "" : (team2Won 
               ? (isDark ? "text-green-300" : "text-green-800")
-              : (isDark ? "text-gray-200" : "text-gray-900")
-          )}>
+              : (isDark ? "text-gray-200" : "text-gray-900"))
+          )}
+          style={{ 
+            color: theme ? (team2Won ? theme.colors.completed : theme.colors.text) : undefined
+          }}>
             {match.team2Name || 'TBD'}
           </span>
         </div>
         <span className={cn(
-          "text-xs font-bold ml-2 w-6 text-center transition-colors duration-300",
-          team2Won 
+          "font-bold ml-2 w-6 text-center transition-colors duration-300",
+          theme ? "" : (team2Won 
             ? (isDark ? "text-green-300" : "text-green-800")
-            : (isDark ? "text-gray-300" : "text-gray-700")
-        )}>
+            : (isDark ? "text-gray-300" : "text-gray-700"))
+        )}
+        style={{ 
+          color: theme ? (team2Won ? theme.colors.completed : theme.colors.text) : undefined
+        }}>
           {match.team2Score ?? '-'}
         </span>
       </div>
