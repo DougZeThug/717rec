@@ -1,8 +1,13 @@
 
 import React, { useEffect, useRef } from 'react';
-import { BracketsViewer } from 'brackets-viewer';
 import { SimpleBracketData } from '@/hooks/brackets/useBracketData';
 import { useTheme } from 'next-themes';
+
+// Import the brackets-viewer using require to handle potential module issues
+const BracketsViewer = (window as any).bracketsViewer?.BracketsViewer || (() => {
+  console.warn('BracketsViewer not available');
+  return null;
+});
 
 interface BracketsViewerComponentProps {
   bracket: SimpleBracketData;
@@ -81,7 +86,7 @@ const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = ({
   onMatchClick
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<BracketsViewer | null>(null);
+  const viewerRef = useRef<any>(null);
   const { resolvedTheme } = useTheme();
 
   // Transform our bracket data to brackets-viewer format
@@ -208,7 +213,7 @@ const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = ({
   };
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !BracketsViewer) return;
 
     try {
       // Clear any existing viewer
@@ -275,6 +280,58 @@ const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = ({
     };
   }, [bracket, onMatchClick, resolvedTheme]);
 
+  // Dynamically inject CSS styles for brackets-viewer
+  useEffect(() => {
+    const styleId = 'brackets-viewer-styles';
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      .brackets-viewer-container .bracket {
+        font-family: inherit;
+      }
+      
+      .brackets-viewer-container .match {
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      .brackets-viewer-container .match:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      
+      .brackets-viewer-container .participant {
+        font-size: 14px;
+      }
+      
+      ${resolvedTheme === 'dark' ? `
+        .brackets-viewer-container .match {
+          background-color: #374151 !important;
+          border-color: #4B5563 !important;
+          color: #F9FAFB !important;
+        }
+        
+        .brackets-viewer-container .participant {
+          color: #F9FAFB !important;
+        }
+        
+        .brackets-viewer-container .connector {
+          stroke: #6B7280 !important;
+        }
+      ` : ''}
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      const existingStyle = document.getElementById(styleId);
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    };
+  }, [resolvedTheme]);
+
   return (
     <div className="w-full">
       {/* Header */}
@@ -293,43 +350,6 @@ const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = ({
         className="brackets-viewer-container w-full overflow-auto bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4"
         style={{ minHeight: '400px' }}
       />
-
-      {/* Custom CSS for brackets-viewer styling */}
-      <style jsx>{`
-        .brackets-viewer-container :global(.bracket) {
-          font-family: inherit;
-        }
-        
-        .brackets-viewer-container :global(.match) {
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        
-        .brackets-viewer-container :global(.match:hover) {
-          transform: scale(1.02);
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .brackets-viewer-container :global(.participant) {
-          font-size: 14px;
-        }
-        
-        ${resolvedTheme === 'dark' ? `
-          .brackets-viewer-container :global(.match) {
-            background-color: #374151 !important;
-            border-color: #4B5563 !important;
-            color: #F9FAFB !important;
-          }
-          
-          .brackets-viewer-container :global(.participant) {
-            color: #F9FAFB !important;
-          }
-          
-          .brackets-viewer-container :global(.connector) {
-            stroke: #6B7280 !important;
-          }
-        ` : ''}
-      `}</style>
     </div>
   );
 };
