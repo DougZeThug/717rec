@@ -63,13 +63,20 @@ const calculateWinnersSectionLayout = (
         const baseSpacing = matchHeight + rowGap;
         y += matchIndex * baseSpacing;
       } else {
-        // Later rounds: use the same logic as connectors for perfect alignment
-        const baseSpacing = roundIndex === 1 ? 
-          (matchHeight + rowGap) * 2 : 
+        // Later rounds: calculate the same way as connectors do
+        const verticalSpacing = roundIndex === 0 ? 
+          (matchHeight + rowGap) : 
           (matchHeight + rowGap) * Math.pow(2, roundIndex);
         
-        // Position matches exactly where connectors point
-        y += matchIndex * baseSpacing + (baseSpacing / 4);
+        const targetBaseSpacing = roundIndex === 0 ? 
+          (matchHeight + rowGap) * 2 : 
+          verticalSpacing * 2;
+        
+        // Position match so its center aligns with where connectors point
+        const targetY = (matchIndex * targetBaseSpacing) + (matchHeight / 2) + 40 + (targetBaseSpacing / 4);
+        
+        // Subtract half the match height so the match center aligns with the target
+        y = targetY - (matchHeight / 2);
       }
       
       match.position = { x, y, width: matchWidth, height: matchHeight };
