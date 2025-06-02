@@ -2,6 +2,7 @@
 import React from "react";
 import { SimpleBracketData } from "@/hooks/brackets/useBracketData";
 import TournamentBracket from "./TournamentBracket";
+import DoubleEliminationBracket from "./DoubleEliminationBracket";
 
 interface SimpleBracketProps {
   bracket: SimpleBracketData;
@@ -60,11 +61,33 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
     );
   }
 
-  console.log('SimpleBracket matches validation passed, rendering TournamentBracket');
+  // Detect if this is a double elimination bracket
+  const hasWinnersMatches = bracket.matches.some(match => 
+    match.matchType === 'winners' || match.matchType === 'winner'
+  );
+  const hasLosersMatches = bracket.matches.some(match => 
+    match.matchType === 'losers' || match.matchType === 'loser'
+  );
+  
+  const isDoubleElimination = hasWinnersMatches || hasLosersMatches || 
+    bracket.format?.toLowerCase().includes('double');
+
+  console.log('SimpleBracket bracket type detection:', {
+    hasWinnersMatches,
+    hasLosersMatches,
+    format: bracket.format,
+    isDoubleElimination
+  });
+
+  console.log('SimpleBracket matches validation passed, rendering bracket component');
 
   return (
     <div className="overflow-x-auto">
-      <TournamentBracket bracket={bracket} onMatchClick={onMatchClick} />
+      {isDoubleElimination ? (
+        <DoubleEliminationBracket bracket={bracket} onMatchClick={onMatchClick} />
+      ) : (
+        <TournamentBracket bracket={bracket} onMatchClick={onMatchClick} />
+      )}
     </div>
   );
 };
