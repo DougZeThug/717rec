@@ -18,30 +18,29 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
   showConnectors = true,
   className = ""
 }) => {
-  // Separate sections for Challonge-style horizontal layout
   const winnersSection = data.sections.find(s => s.type === 'winners');
   const losersSection = data.sections.find(s => s.type === 'losers');
   const finalsSection = data.sections.find(s => s.type === 'finals');
 
   return (
     <div 
-      className={`bracket-layout overflow-x-auto ${className}`}
+      className={`bracket-layout min-h-screen ${className}`}
       style={{
-        backgroundColor: theme.colors.background,
-        color: theme.colors.text
+        backgroundColor: '#2a2a2a',
+        color: '#ffffff'
       }}
     >
-      {/* Horizontal scrolling container */}
-      <div className="min-w-max px-6 py-8">
-        <div className="relative" style={{ width: data.dimensions.width, height: data.dimensions.height }}>
+      {/* Main container with horizontal scrolling */}
+      <div className="overflow-x-auto overflow-y-hidden min-h-screen">
+        <div className="min-w-max p-8" style={{ minWidth: '1400px' }}>
           
-          {/* Winners Bracket - Dynamic Top Position */}
-          {winnersSection && (
-            <div className="absolute" style={{ left: 0, top: 0 }}>
+          {/* Winners Bracket - Top Section */}
+          {winnersSection && winnersSection.rounds.length > 0 && (
+            <div className="mb-16">
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-center" style={{ color: theme.colors.winners }}>
+                <h2 className="text-2xl font-bold text-center text-blue-400">
                   Winners Bracket
-                </h3>
+                </h2>
               </div>
               <BracketSection
                 section={winnersSection}
@@ -52,16 +51,13 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
             </div>
           )}
           
-          {/* Losers Bracket - Dynamic Bottom Position */}
+          {/* Losers Bracket - Bottom Section */}
           {losersSection && losersSection.rounds.length > 0 && (
-            <div className="absolute" style={{ 
-              left: 0, 
-              top: winnersSection ? winnersSection.rounds[0]?.position?.y + 280 || 400 : 60 
-            }}>
+            <div className="mb-16">
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-center" style={{ color: theme.colors.losers }}>
+                <h2 className="text-2xl font-bold text-center text-orange-400">
                   Losers Bracket
-                </h3>
+                </h2>
               </div>
               <BracketSection
                 section={losersSection}
@@ -72,20 +68,13 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
             </div>
           )}
           
-          {/* Grand Finals - Right Side with Dynamic Position */}
+          {/* Grand Finals - Right Side */}
           {finalsSection && finalsSection.rounds.length > 0 && (
-            <div className="absolute" style={{ 
-              left: Math.max(
-                (winnersSection?.rounds.length || 0) * (theme.spacing.matchWidth + theme.spacing.columnGap) + 100,
-                (losersSection?.rounds.length || 0) * (theme.spacing.matchWidth + theme.spacing.columnGap) + 100,
-                800
-              ), 
-              top: finalsSection.rounds[0]?.position?.y || 120 
-            }}>
+            <div className="absolute top-8 right-8">
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-center" style={{ color: theme.colors.finals }}>
+                <h2 className="text-2xl font-bold text-center text-yellow-400">
                   Grand Finals
-                </h3>
+                </h2>
               </div>
               <BracketSection
                 section={finalsSection}
@@ -96,20 +85,27 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
             </div>
           )}
           
-          {/* Visual flow indicators */}
-          <div className="absolute inset-0 pointer-events-none">
-            <svg className="w-full h-full" style={{ overflow: 'visible' }}>
-              {/* Subtle visual flow indicators */}
-              {winnersSection && finalsSection && (
-                <defs>
-                  <marker id="arrowhead" markerWidth="10" markerHeight="7" 
-                   refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill={theme.colors.text} opacity="0.3" />
-                  </marker>
-                </defs>
-              )}
-            </svg>
-          </div>
+          {/* Cross-bracket connectors */}
+          {showConnectors && (
+            <div className="absolute inset-0 pointer-events-none">
+              <svg className="w-full h-full" style={{ overflow: 'visible' }}>
+                {/* Cross-bracket connections */}
+                {data.connections
+                  .filter(c => c.type === 'cross-bracket')
+                  .map((connection, index) => (
+                    <path
+                      key={`cross-${index}`}
+                      d={connection.path}
+                      fill="none"
+                      stroke="#6b7280"
+                      strokeWidth="2"
+                      strokeDasharray="4,4"
+                      opacity={0.6}
+                    />
+                  ))}
+              </svg>
+            </div>
+          )}
         </div>
       </div>
     </div>

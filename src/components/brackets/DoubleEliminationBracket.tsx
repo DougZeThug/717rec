@@ -1,70 +1,57 @@
 
-import React, { useMemo } from "react";
+import React from "react";
 import { SimpleBracketData } from "@/hooks/brackets/useBracketData";
-import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
 import { processBracketData } from "./utils/bracketDataProcessor";
 import { calculateLayout } from "./utils/layoutCalculator";
-import { getTheme } from "./styles/bracketThemes";
 import BracketLayout from "./layout/BracketLayout";
-import { BracketStyleProps } from "./types/bracketTypes";
+import { challongeTheme } from "./styles/bracketThemes";
 
 interface DoubleEliminationBracketProps {
   bracket: SimpleBracketData;
   onMatchClick?: (matchId: string) => void;
-  styleProps?: BracketStyleProps;
 }
 
-const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({ 
-  bracket, 
-  onMatchClick,
-  styleProps = {}
+const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
+  bracket,
+  onMatchClick
 }) => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  console.log('DoubleEliminationBracket rendering with:', {
+    bracketId: bracket.id,
+    matchesCount: bracket.matches?.length,
+    teamsCount: bracket.teams?.length
+  });
 
-  // Get theme configuration with mobile detection
-  const theme = useMemo(() => {
-    const themeName = styleProps.theme?.name || (isDark ? 'default' : 'light');
-    return styleProps.theme || getTheme(themeName, styleProps.size);
-  }, [isDark, styleProps.theme, styleProps.size]);
-
-  // Process and layout bracket data
-  const processedData = useMemo(() => {
-    const processed = processBracketData(bracket);
-    return calculateLayout(processed, theme);
-  }, [bracket, theme]);
-
-  if (!bracket.matches || bracket.matches.length === 0) {
+  if (!bracket.matches || !Array.isArray(bracket.matches)) {
     return (
-      <div className="text-center p-8">
-        <p className="text-gray-500">No matches found in this bracket</p>
+      <div className="text-center p-8" style={{ backgroundColor: '#2a2a2a', color: '#ffffff' }}>
+        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
+        <p className="text-gray-400">No matches data available</p>
       </div>
     );
   }
 
-  return (
-    <div className={cn(
-      "w-full transition-colors duration-300",
-      "overflow-hidden" // Remove auto scroll, let layout handle it
-    )}>
-      {/* Header */}
-      <div className="mb-6 px-4">
-        <h2 className="text-xl md:text-2xl font-bold mb-2" style={{ color: theme.colors.text }}>
-          {bracket.name}
-        </h2>
-        <p className="text-xs md:text-sm opacity-70" style={{ color: theme.colors.text }}>
-          {bracket.format} • {bracket.state}
-        </p>
+  if (bracket.matches.length === 0) {
+    return (
+      <div className="text-center p-8" style={{ backgroundColor: '#2a2a2a', color: '#ffffff' }}>
+        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
+        <p className="text-gray-400">No matches in this bracket yet</p>
       </div>
+    );
+  }
 
-      {/* Bracket - Mobile-first design */}
+  // Process the bracket data
+  const processedData = processBracketData(bracket);
+  
+  // Calculate layout with Challonge theme
+  const layoutData = calculateLayout(processedData, challongeTheme);
+
+  return (
+    <div className="double-elimination-bracket">
       <BracketLayout
-        data={processedData}
-        theme={theme}
+        data={layoutData}
+        theme={challongeTheme}
         onMatchClick={onMatchClick}
-        showConnectors={styleProps.showConnectors}
-        className="bracket-container"
+        showConnectors={true}
       />
     </div>
   );

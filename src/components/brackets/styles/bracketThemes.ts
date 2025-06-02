@@ -1,93 +1,47 @@
 
 import { BracketTheme } from "../types/bracketTypes";
 
-export const defaultTheme: BracketTheme = {
-  name: 'default',
+export const challongeTheme: BracketTheme = {
+  name: "Challonge Dark",
   colors: {
-    background: '#1f2937',
-    winners: '#3b82f6',
-    losers: '#f97316',
-    finals: '#a855f7',
-    completed: '#10b981',
-    pending: '#6b7280',
-    text: '#ffffff',
-    border: '#374151'
+    background: "#2a2a2a",
+    winners: "#60a5fa",
+    losers: "#fb923c", 
+    finals: "#fbbf24",
+    completed: "#10b981",
+    pending: "#6b7280",
+    text: "#ffffff",
+    border: "#404040"
   },
   spacing: {
     matchWidth: 200,
     matchHeight: 80,
-    columnGap: 80, // Increased for better connector visibility
-    rowGap: 32    // Increased for better vertical spacing
-  }
-};
-
-export const lightTheme: BracketTheme = {
-  name: 'light',
-  colors: {
-    background: '#ffffff',
-    winners: '#2563eb',
-    losers: '#ea580c',
-    finals: '#9333ea',
-    completed: '#059669',
-    pending: '#6b7280',
-    text: '#111827',
-    border: '#e5e7eb'
-  },
-  spacing: {
-    matchWidth: 200,
-    matchHeight: 80,
-    columnGap: 80,
-    rowGap: 32
-  }
-};
-
-export const compactTheme: BracketTheme = {
-  ...defaultTheme,
-  name: 'compact',
-  spacing: {
-    matchWidth: 180,
-    matchHeight: 70,
-    columnGap: 60,
-    rowGap: 24
-  }
-};
-
-export const largeTheme: BracketTheme = {
-  ...defaultTheme,
-  name: 'large',
-  spacing: {
-    matchWidth: 240,
-    matchHeight: 100,
-    columnGap: 100,
+    columnGap: 120,
     rowGap: 40
   }
 };
 
-// Mobile-optimized theme with improved spacing
-export const mobileTheme: BracketTheme = {
-  ...defaultTheme,
-  name: 'mobile',
+export const defaultTheme: BracketTheme = {
+  name: "Default",
+  colors: {
+    background: "#ffffff",
+    winners: "#3b82f6",
+    losers: "#ef4444",
+    finals: "#8b5cf6",
+    completed: "#10b981",
+    pending: "#6b7280",
+    text: "#1f2937",
+    border: "#e5e7eb"
+  },
   spacing: {
-    matchWidth: 160,
-    matchHeight: 70,
-    columnGap: 60, // Adequate for mobile connectors
-    rowGap: 20
+    matchWidth: 200,
+    matchHeight: 80,
+    columnGap: 120,
+    rowGap: 40
   }
 };
 
-export const getTheme = (themeName: string, size?: 'compact' | 'normal' | 'large'): BracketTheme => {
-  let theme = themeName === 'light' ? lightTheme : defaultTheme;
-  
-  // Auto-detect mobile and use mobile theme
-  if (typeof window !== 'undefined' && window.innerWidth < 768) {
-    theme = { ...theme, spacing: mobileTheme.spacing };
-  } else {
-    if (size === 'compact') {
-      theme = { ...theme, spacing: compactTheme.spacing };
-    } else if (size === 'large') {
-      theme = { ...theme, spacing: largeTheme.spacing };
-    }
-  }
-  
-  return theme;
+export const bracketThemes = {
+  challonge: challongeTheme,
+  default: defaultTheme
 };
