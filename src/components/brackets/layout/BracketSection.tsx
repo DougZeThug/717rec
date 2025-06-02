@@ -61,7 +61,7 @@ const BracketSection: React.FC<BracketSectionProps> = ({
           />
         ))}
         
-        {/* Improved CSS-based connector lines */}
+        {/* Improved CSS-based connector lines - positioned outside match cards */}
         {section.rounds.length > 1 && (
           <div className="absolute inset-0 pointer-events-none">
             {section.rounds.slice(0, -1).map((round, roundIndex) => (
@@ -78,23 +78,23 @@ const BracketSection: React.FC<BracketSectionProps> = ({
                   // Calculate positions using match center points
                   const sourceY = (matchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
                   const targetY = (targetMatchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
-                  const sourceX = theme.spacing.matchWidth;
-                  const targetX = theme.spacing.matchWidth + theme.spacing.columnGap;
-                  const midX = sourceX + (theme.spacing.columnGap / 2);
+                  
+                  // Position connector container to start from right edge of current round
+                  const containerLeft = (roundIndex + 1) * (theme.spacing.matchWidth + theme.spacing.columnGap) - theme.spacing.columnGap;
                   
                   return (
                     <div
                       key={`connector-${roundIndex}-${matchIndex}`}
                       className="absolute"
                       style={{
-                        left: roundIndex * (theme.spacing.matchWidth + theme.spacing.columnGap),
+                        left: containerLeft,
                         top: 0,
                         width: theme.spacing.columnGap,
                         height: '100%',
                         pointerEvents: 'none'
                       }}
                     >
-                      {/* Horizontal line from match center */}
+                      {/* Horizontal line from match center to connector midpoint */}
                       <div
                         style={{
                           position: 'absolute',
@@ -107,22 +107,22 @@ const BracketSection: React.FC<BracketSectionProps> = ({
                         }}
                       />
                       
-                      {/* Vertical connector line - only for odd-indexed matches */}
+                      {/* Vertical connector line - only for the second match in each pair */}
                       {matchIndex % 2 === 1 && (
                         <div
                           style={{
                             position: 'absolute',
-                            left: theme.spacing.columnGap / 2,
+                            left: theme.spacing.columnGap / 2 - 1, // Center the vertical line
                             top: Math.min(sourceY, sourceY - (theme.spacing.matchHeight + theme.spacing.rowGap)),
                             width: '2px',
-                            height: Math.abs(theme.spacing.matchHeight + theme.spacing.rowGap),
+                            height: Math.abs(theme.spacing.matchHeight + theme.spacing.rowGap) + 2,
                             backgroundColor: getSectionColor(),
                             opacity: 0.7
                           }}
                         />
                       )}
                       
-                      {/* Horizontal line to target match center */}
+                      {/* Horizontal line from connector midpoint to target match center */}
                       {matchIndex % 2 === 1 && (
                         <div
                           style={{
