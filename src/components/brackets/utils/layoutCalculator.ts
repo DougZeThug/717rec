@@ -93,6 +93,7 @@ const calculateChallongeConnections = (
   const connections: BracketConnection[] = [];
   const { matchWidth, matchHeight } = theme.spacing;
   
+  // Regular bracket connections within each section
   data.sections.forEach(section => {
     section.rounds.forEach((round, roundIndex) => {
       if (roundIndex < section.rounds.length - 1) {
@@ -157,6 +158,39 @@ const calculateChallongeConnections = (
       }
     });
   });
+
+  // Add cross-bracket connections
+  const winnersSection = data.sections.find(s => s.type === 'winners');
+  const losersSection = data.sections.find(s => s.type === 'losers');
+  const finalsSection = data.sections.find(s => s.type === 'finals');
+
+  // Example cross-bracket connection from winners to losers
+  if (winnersSection && losersSection && winnersSection.rounds.length > 0 && losersSection.rounds.length > 0) {
+    const lastWinnersRound = winnersSection.rounds[winnersSection.rounds.length - 1];
+    const firstLosersRound = losersSection.rounds[0];
+    
+    if (lastWinnersRound.matches[0] && firstLosersRound.matches[0]) {
+      const fromMatch = lastWinnersRound.matches[0];
+      const toMatch = firstLosersRound.matches[0];
+      
+      if (fromMatch.position && toMatch.position) {
+        const fromX = fromMatch.position.x + matchWidth;
+        const fromY = fromMatch.position.y + (matchHeight / 2);
+        const toX = toMatch.position.x;
+        const toY = toMatch.position.y + (matchHeight / 2);
+        
+        const path = `M ${fromX} ${fromY} L ${(fromX + toX) / 2} ${fromY} L ${(fromX + toX) / 2} ${toY} L ${toX} ${toY}`;
+        
+        connections.push({
+          id: `cross-${fromMatch.id}-to-${toMatch.id}`,
+          fromMatch: fromMatch.id,
+          toMatch: toMatch.id,
+          path,
+          type: 'cross-bracket'
+        });
+      }
+    }
+  }
 
   return connections;
 };
