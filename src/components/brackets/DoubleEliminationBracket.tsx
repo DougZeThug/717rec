@@ -55,11 +55,11 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
   const lineColor = isDark ? "#6b7280" : "#9ca3af";
 
-  // Constants for layout calculations - adjusted for reference image
+  // Constants for layout calculations
   const MATCH_WIDTH = 192; // w-48 = 192px
-  const COLUMN_GAP = 48; // Reduced gap for tighter spacing
+  const COLUMN_GAP = 48; // Gap between columns
   const MATCH_HEIGHT = 80; // --match-height
-  const MATCH_GAP = 20; // Reduced gap for closer match spacing
+  const MATCH_GAP = 20; // Gap between matches
   const HEADER_HEIGHT = 60; // Header + margin
 
   // Helper function to create direct edge-to-edge connectors between rounds
@@ -86,7 +86,6 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
           
           const match1Y = HEADER_HEIGHT + i * roundSpacing + MATCH_HEIGHT / 2;
           const match2Y = HEADER_HEIGHT + (i + 1) * roundSpacing + MATCH_HEIGHT / 2;
-          const midY = (match1Y + match2Y) / 2;
           
           // Calculate target match Y position
           const targetSpacing = Math.pow(2, roundIndex + 1) * spacing;
@@ -143,7 +142,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
   // Helper function to create losers bracket connectors
   const createLosersConnectors = () => {
     const connectors = [];
-    const losersStartY = winnerRounds.length > 0 ? 400 : 60; // Positioned below winners
+    const losersStartY = 300; // Position losers bracket below winners
     
     for (let roundIndex = 0; roundIndex < loserRounds.length - 1; roundIndex++) {
       const currentRound = loserRounds[roundIndex];
@@ -218,9 +217,9 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
     if (finalMatches.length === 0) return connectors;
     
     const finalsX = winnerRounds.length * (MATCH_WIDTH + COLUMN_GAP);
-    const finalsY = HEADER_HEIGHT + MATCH_HEIGHT * 2 + MATCH_GAP + MATCH_HEIGHT / 2;
+    const finalsY = HEADER_HEIGHT + MATCH_HEIGHT + MATCH_GAP + MATCH_HEIGHT / 2; // Position finals higher
     
-    // Connect winners bracket final to finals
+    // Connect winners bracket semifinal to finals
     if (winnerRounds.length > 0) {
       const winnersLastRound = winnerRounds[winnerRounds.length - 1];
       const winnersLastMatches = winnersByRound[winnersLastRound];
@@ -251,7 +250,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
       
       if (losersLastMatches.length > 0) {
         const losersLastX = (loserRounds.length - 1) * (MATCH_WIDTH + COLUMN_GAP);
-        const losersStartY = winnerRounds.length > 0 ? 400 : 60;
+        const losersStartY = 300; // Match the losers bracket start position
         const losersLastY = losersStartY + HEADER_HEIGHT + MATCH_HEIGHT / 2;
         
         connectors.push(
@@ -267,45 +266,6 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
           </g>
         );
       }
-    }
-    
-    return connectors;
-  };
-
-  // Create cross-bracket connectors (winners losers drop to losers bracket)
-  const createCrossBracketConnectors = () => {
-    const connectors = [];
-    const losersStartY = winnerRounds.length > 0 ? 400 : 60;
-    
-    // Connect winners round losers to losers bracket entries
-    for (let roundIndex = 0; roundIndex < winnerRounds.length; roundIndex++) {
-      const currentRound = winnerRounds[roundIndex];
-      const currentMatches = winnersByRound[currentRound].sort((a, b) => a.position - b.position);
-      
-      currentMatches.forEach((match, matchIndex) => {
-        const currentX = roundIndex * (MATCH_WIDTH + COLUMN_GAP);
-        const spacing = MATCH_HEIGHT + MATCH_GAP;
-        const roundSpacing = Math.pow(2, roundIndex) * spacing;
-        const matchY = HEADER_HEIGHT + matchIndex * roundSpacing + MATCH_HEIGHT / 2;
-        
-        // Calculate corresponding losers bracket position
-        const losersY = losersStartY + HEADER_HEIGHT + matchIndex * (MATCH_HEIGHT + MATCH_GAP / 2) + MATCH_HEIGHT / 2;
-        
-        // Dashed line to show loser destination
-        connectors.push(
-          <line
-            key={`cross-${roundIndex}-${matchIndex}`}
-            x1={currentX + MATCH_WIDTH / 2}
-            y1={matchY + MATCH_HEIGHT / 2}
-            x2={currentX + MATCH_WIDTH / 2}
-            y2={losersY - MATCH_HEIGHT / 2}
-            stroke={lineColor}
-            strokeWidth="1"
-            strokeDasharray="4,4"
-            opacity="0.5"
-          />
-        );
-      });
     }
     
     return connectors;
@@ -403,7 +363,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                     <div 
                       className="relative flex gap-4"
                       style={{ 
-                        marginTop: `${MATCH_HEIGHT * 2 + MATCH_GAP}px`
+                        marginTop: `${MATCH_HEIGHT + MATCH_GAP}px` // Position finals higher
                       }}
                     >
                       {finalMatches.map((match) => (
@@ -489,9 +449,6 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
             
             {/* Finals connectors */}
             {createFinalsConnectors()}
-            
-            {/* Cross-bracket connectors */}
-            {createCrossBracketConnectors()}
           </svg>
         </div>
       </div>
