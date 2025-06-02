@@ -37,10 +37,18 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   
+  console.log('🔍 DesktopLayout - Rendering with:', {
+    winnersRounds: winners.length,
+    losersRounds: losers.length,
+    finalsMatches: finals.length,
+    finalsData: finals
+  });
+  
   // Only render the grid if at least one section has matches
   const hasContent = winners.length > 0 || losers.length > 0 || finals.length > 0;
   
   if (!hasContent) {
+    console.log('🔍 DesktopLayout - No content to display');
     return null;
   }
   
@@ -72,7 +80,9 @@ const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         />
       ) : (
         /* Empty column placeholder to maintain grid layout */
-        <div />
+        <div className="flex items-center justify-center">
+          <div className="text-gray-500 text-sm">No finals matches</div>
+        </div>
       )}
       
       {/* Right Column: Losers Bracket */}

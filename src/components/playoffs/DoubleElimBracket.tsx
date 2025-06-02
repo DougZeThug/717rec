@@ -33,6 +33,16 @@ const DoubleElimBracket: React.FC<DoubleElimBracketProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   
+  // Debug logging to track bracket data
+  console.log('🔍 DoubleElimBracket - Bracket data:', {
+    winnersRounds: winners.length,
+    winnersMatches: winners.flatMap(round => round).length,
+    losersRounds: losers.length,
+    losersMatches: losers.flatMap(round => round).length,
+    finalsMatches: finals.length,
+    finalsData: finals
+  });
+  
   // Get champion display data and UI
   const { championDisplay } = useChampionDisplay(finals, teams);
   
