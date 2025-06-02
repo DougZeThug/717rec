@@ -17,7 +17,8 @@ export const transformMatch = (match: any): BracketMatch => ({
   status: match.status || 'pending',
   matchType: match.matchType === 'winner' ? 'winners' : match.matchType,
   round: match.round || 1,
-  position: match.position || 0
+  order: match.position || 0, // Use the original position value for ordering
+  position: undefined // Layout position will be calculated later
 });
 
 export const processBracketData = (bracket: SimpleBracketData): ProcessedBracketData => {
@@ -82,7 +83,7 @@ const groupMatchesByRound = (matches: BracketMatch[], type: 'winners' | 'losers'
     .map(([roundNumber, roundMatches], index) => ({
       id: `${type}-round-${roundNumber}`,
       title: getRoundTitle(type, roundNumber, roundMatches.length, roundsMap.size),
-      matches: roundMatches.sort((a, b) => a.position - b.position),
+      matches: roundMatches.sort((a, b) => a.order - b.order), // Now using the order field for sorting
       position: { x: 0, y: 0, width: 0, height: 0 },
       matchType: type
     }));
