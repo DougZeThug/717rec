@@ -1,3 +1,4 @@
+
 export interface BracketPosition {
   x: number;
   y: number;
@@ -23,8 +24,6 @@ export interface BracketMatch {
   round: number;
   order: number; // For sorting matches within rounds
   position?: BracketPosition; // For layout coordinates
-  nextWinMatchId?: string | null;
-  nextLoseMatchId?: string | null;
 }
 
 export interface BracketRound {

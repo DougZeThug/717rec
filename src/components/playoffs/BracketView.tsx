@@ -37,7 +37,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   console.log('useBracketData result:', {
     fetchedBracket: fetchedBracket ? {
       id: fetchedBracket.id,
-      name: fetchedBracket.title || fetchedBracket.name,
+      name: fetchedBracket.name,
       matchesCount: fetchedBracket.matches?.length || 0
     } : null,
     isLoading,
@@ -52,7 +52,7 @@ const BracketView: React.FC<BracketViewProps> = ({
       usingFetched: !!fetchedBracket,
       finalResult: result ? {
         id: result.id,
-        name: result.title || result.name,
+        name: result.name,
         matchesCount: result.matches?.length || 0
       } : null
     });
@@ -164,7 +164,7 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   console.log('About to render SimpleBracket with:', {
     bracketId: displayBracket.id,
-    bracketName: displayBracket.title || displayBracket.name,
+    bracketName: displayBracket.name,
     matchesCount: displayBracket.matches.length
   });
 

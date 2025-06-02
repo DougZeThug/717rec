@@ -20,8 +20,8 @@ export const transformMatch = (match: any): BracketMatch => ({
   round: match.round || 1,
   order: match.position || 0,
   position: undefined,
-  nextWinMatchId: match.next_win_match_id || match.nextWinMatchId,
-  nextLoseMatchId: match.next_lose_match_id || match.nextLoseMatchId
+  nextWinMatchId: match.nextWinMatchId,
+  nextLoseMatchId: match.nextLoseMatchId
 });
 
 export const processBracketData = (bracket: SimpleBracketData): ProcessedBracketData => {

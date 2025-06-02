@@ -18,13 +18,13 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
   console.log('DoubleEliminationBracket rendering with:', {
     bracketId: bracket.id,
     matchesCount: bracket.matches?.length,
-    teamsCount: bracket.teams?.length || 0
+    teamsCount: bracket.teams?.length
   });
 
   if (!bracket.matches || !Array.isArray(bracket.matches)) {
     return (
       <div className="text-center p-8" style={{ backgroundColor: '#2a2a2a', color: '#ffffff' }}>
-        <h3 className="text-xl font-semibold mb-2">{bracket.title || bracket.name}</h3>
+        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
         <p className="text-gray-400">No matches data available</p>
       </div>
     );
@@ -33,7 +33,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
   if (bracket.matches.length === 0) {
     return (
       <div className="text-center p-8" style={{ backgroundColor: '#2a2a2a', color: '#ffffff' }}>
-        <h3 className="text-xl font-semibold mb-2">{bracket.title || bracket.name}</h3>
+        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
         <p className="text-gray-400">No matches in this bracket yet</p>
       </div>
     );
