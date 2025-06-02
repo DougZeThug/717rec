@@ -1,4 +1,3 @@
-
 export interface BracketPosition {
   x: number;
   y: number;
@@ -54,7 +53,26 @@ export interface BracketConnection {
   fromMatch: string;
   toMatch: string;
   path: string;
-  type: 'winners' | 'losers' | 'cross' | 'finals';
+  type: 'winners' | 'losers' | 'finals';
+  positioning?: {
+    path: string;
+    segments: Array<{
+      type: 'horizontal' | 'vertical';
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      isFirstSegment?: boolean;
+      isLastSegment?: boolean;
+      isConnector?: boolean;
+    }>;
+    fromPoint: { x: number; y: number };
+    toPoint: { x: number; y: number };
+    midPoint: { x: number; y: number };
+    roundIndex: number;
+    matchIndex: number;
+    sectionType: string;
+  };
 }
 
 export interface BracketTheme {

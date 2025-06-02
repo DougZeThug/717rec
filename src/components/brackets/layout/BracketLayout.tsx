@@ -42,27 +42,17 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
                 section={winnersSection}
                 theme={theme}
                 onMatchClick={onMatchClick}
+                connections={showConnectors ? data.connections : []}
               />
             )}
             
             {finalsSection && (
               <div className="relative">
-                {/* Connection line from winners to finals */}
-                {winnersSection && showConnectors && (
-                  <div 
-                    className="absolute left-0 top-12 w-8 h-0.5 -translate-x-8"
-                    style={{ 
-                      backgroundColor: theme.colors.finals,
-                      opacity: 0.7,
-                      top: `${theme.spacing.matchHeight / 2 + 40}px`
-                    }}
-                  />
-                )}
-                
                 <BracketSection
                   section={finalsSection}
                   theme={theme}
                   onMatchClick={onMatchClick}
+                  connections={showConnectors ? data.connections : []}
                 />
               </div>
             )}
@@ -74,6 +64,7 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
               section={losersSection}
               theme={theme}
               onMatchClick={onMatchClick}
+              connections={showConnectors ? data.connections : []}
             />
           )}
         </div>
