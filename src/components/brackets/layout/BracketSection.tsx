@@ -61,80 +61,83 @@ const BracketSection: React.FC<BracketSectionProps> = ({
           />
         ))}
         
-        {/* CSS-based connector lines */}
+        {/* Improved CSS-based connector lines */}
         {section.rounds.length > 1 && (
           <div className="absolute inset-0 pointer-events-none">
             {section.rounds.slice(0, -1).map((round, roundIndex) => (
               <div key={`connectors-${roundIndex}`}>
                 {round.matches.map((match, matchIndex) => {
-                  const nextRoundMatches = section.rounds[roundIndex + 1]?.matches || [];
-                  const targetMatchIndex = Math.floor(matchIndex / 2);
+                  const nextRound = section.rounds[roundIndex + 1];
+                  if (!nextRound) return null;
                   
-                  if (targetMatchIndex < nextRoundMatches.length) {
-                    const sourceY = (matchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
-                    const targetY = (targetMatchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
-                    const sourceX = theme.spacing.matchWidth;
-                    const targetX = theme.spacing.matchWidth + theme.spacing.columnGap;
-                    const midX = sourceX + (theme.spacing.columnGap / 2);
-                    
-                    return (
+                  const targetMatchIndex = Math.floor(matchIndex / 2);
+                  const targetMatch = nextRound.matches[targetMatchIndex];
+                  
+                  if (!targetMatch) return null;
+                  
+                  // Calculate positions using match center points
+                  const sourceY = (matchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
+                  const targetY = (targetMatchIndex * (theme.spacing.matchHeight + theme.spacing.rowGap)) + (theme.spacing.matchHeight / 2) + 40;
+                  const sourceX = theme.spacing.matchWidth;
+                  const targetX = theme.spacing.matchWidth + theme.spacing.columnGap;
+                  const midX = sourceX + (theme.spacing.columnGap / 2);
+                  
+                  return (
+                    <div
+                      key={`connector-${roundIndex}-${matchIndex}`}
+                      className="absolute"
+                      style={{
+                        left: roundIndex * (theme.spacing.matchWidth + theme.spacing.columnGap),
+                        top: 0,
+                        width: theme.spacing.columnGap,
+                        height: '100%',
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      {/* Horizontal line from match center */}
                       <div
-                        key={`connector-${roundIndex}-${matchIndex}`}
-                        className="absolute"
                         style={{
-                          left: roundIndex * (theme.spacing.matchWidth + theme.spacing.columnGap),
-                          top: 0,
-                          width: theme.spacing.columnGap,
-                          height: '100%',
-                          pointerEvents: 'none'
+                          position: 'absolute',
+                          left: 0,
+                          top: sourceY,
+                          width: theme.spacing.columnGap / 2,
+                          height: '2px',
+                          backgroundColor: getSectionColor(),
+                          opacity: 0.7
                         }}
-                      >
-                        {/* Horizontal line from match */}
+                      />
+                      
+                      {/* Vertical connector line - only for odd-indexed matches */}
+                      {matchIndex % 2 === 1 && (
                         <div
                           style={{
                             position: 'absolute',
-                            left: 0,
-                            top: sourceY,
+                            left: theme.spacing.columnGap / 2,
+                            top: Math.min(sourceY, sourceY - (theme.spacing.matchHeight + theme.spacing.rowGap)),
+                            width: '2px',
+                            height: Math.abs(theme.spacing.matchHeight + theme.spacing.rowGap),
+                            backgroundColor: getSectionColor(),
+                            opacity: 0.7
+                          }}
+                        />
+                      )}
+                      
+                      {/* Horizontal line to target match center */}
+                      {matchIndex % 2 === 1 && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: theme.spacing.columnGap / 2,
+                            top: targetY,
                             width: theme.spacing.columnGap / 2,
                             height: '2px',
                             backgroundColor: getSectionColor(),
-                            opacity: 0.6
+                            opacity: 0.7
                           }}
                         />
-                        
-                        {/* Vertical connector line */}
-                        {matchIndex % 2 === 1 && (
-                          <div
-                            style={{
-                              position: 'absolute',
-                              left: theme.spacing.columnGap / 2,
-                              top: Math.min(sourceY, sourceY - (theme.spacing.matchHeight + theme.spacing.rowGap)),
-                              width: '2px',
-                              height: theme.spacing.matchHeight + theme.spacing.rowGap,
-                              backgroundColor: getSectionColor(),
-                              opacity: 0.6
-                            }}
-                          />
-                        )}
-                        
-                        {/* Horizontal line to target */}
-                        {matchIndex % 2 === 1 && (
-                          <div
-                            style={{
-                              position: 'absolute',
-                              left: theme.spacing.columnGap / 2,
-                              top: targetY,
-                              width: theme.spacing.columnGap / 2,
-                              height: '2px',
-                              backgroundColor: getSectionColor(),
-                              opacity: 0.6
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
-                  }
-                  return null;
+                      )}
+                    </div>
+                  );
                 })}
               </div>
             ))}

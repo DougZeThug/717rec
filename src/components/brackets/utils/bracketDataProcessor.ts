@@ -35,10 +35,10 @@ export const processBracketData = (bracket: SimpleBracketData): ProcessedBracket
     .filter(match => match.matchType === 'finals' || match.matchType === 'final')
     .map(transformMatch);
 
-  // Group matches into rounds
+  // Group matches into rounds with improved logic
   const winnersSection = createSection('winners', 'Winners Bracket', winnerMatches);
   const losersSection = createSection('losers', 'Losers Bracket', loserMatches);
-  const finalsSection = createSection('finals', 'Finals', finalMatches);
+  const finalsSection = createSection('finals', 'Grand Finals', finalMatches);
 
   const sections = [winnersSection, losersSection, finalsSection].filter(s => s.rounds.length > 0);
 
@@ -82,19 +82,27 @@ const groupMatchesByRound = (matches: BracketMatch[], type: 'winners' | 'losers'
     .sort(([a], [b]) => a - b)
     .map(([roundNumber, roundMatches], index) => ({
       id: `${type}-round-${roundNumber}`,
-      title: getRoundTitle(type, roundNumber, roundMatches.length),
+      title: getRoundTitle(type, roundNumber, roundMatches.length, roundsMap.size),
       matches: roundMatches.sort((a, b) => a.position - b.position),
       position: { x: 0, y: 0, width: 0, height: 0 },
       matchType: type
     }));
 };
 
-const getRoundTitle = (type: 'winners' | 'losers' | 'finals', round: number, matchCount: number): string => {
-  if (type === 'finals') return 'Grand Final';
-  if (type === 'losers') return `LR${round}`;
+const getRoundTitle = (type: 'winners' | 'losers' | 'finals', round: number, matchCount: number, totalRounds: number): string => {
+  if (type === 'finals') return 'Grand Finals';
   
-  // Winners bracket titles
-  if (matchCount === 1) return 'Winners Final';
-  if (matchCount === 2) return 'Semifinals';
+  if (type === 'losers') {
+    // More descriptive losers bracket naming
+    if (totalRounds === 1) return 'Losers Finals';
+    return `LR${round}`;
+  }
+  
+  // Winners bracket titles - fixed logic
+  if (totalRounds === 1) return 'Winners Finals';
+  if (round === totalRounds && matchCount === 1) return 'Winners Finals';
+  if (round === totalRounds - 1 && matchCount === 2) return 'Semifinals';
+  if (round === totalRounds - 2 && matchCount === 4) return 'Quarterfinals';
+  
   return `Round ${round}`;
 };

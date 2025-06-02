@@ -7,32 +7,40 @@ export const calculateLayout = (
 ): ProcessedBracketData => {
   const { matchWidth, matchHeight, columnGap, rowGap } = theme.spacing;
   
-  let currentX = 0;
+  let winnersWidth = 0;
   const winnersY = 80;
-  const losersY = 400;
-  const finalsY = 240;
+  const losersY = 500; // Move losers bracket lower
+  const finalsY = 200; // Position finals to align with winners final
 
-  // Calculate positions for each section
-  data.sections.forEach(section => {
-    if (section.type === 'winners') {
-      calculateWinnersSectionLayout(section, currentX, winnersY, theme);
-      currentX += (section.rounds.length * (matchWidth + columnGap));
-    } else if (section.type === 'losers') {
-      calculateLosersSectionLayout(section, 0, losersY, theme);
-    } else if (section.type === 'finals') {
-      calculateFinalsSectionLayout(section, currentX + columnGap, finalsY, theme);
-    }
-  });
+  // Calculate Winners section layout
+  const winnersSection = data.sections.find(s => s.type === 'winners');
+  if (winnersSection) {
+    calculateWinnersSectionLayout(winnersSection, 0, winnersY, theme);
+    winnersWidth = winnersSection.rounds.length * (matchWidth + columnGap);
+  }
 
-  // Calculate connections
+  // Calculate Losers section layout
+  const losersSection = data.sections.find(s => s.type === 'losers');
+  if (losersSection) {
+    calculateLosersSectionLayout(losersSection, 0, losersY, theme);
+  }
+
+  // Calculate Finals section layout - positioned to flow from winners
+  const finalsSection = data.sections.find(s => s.type === 'finals');
+  if (finalsSection) {
+    const finalsX = winnersWidth + columnGap; // Continue from winners bracket
+    calculateFinalsSectionLayout(finalsSection, finalsX, finalsY, theme);
+  }
+
+  // Calculate connections with improved logic
   const connections = calculateConnections(data);
 
   return {
     ...data,
     connections,
     dimensions: {
-      width: Math.max(1200, currentX + matchWidth + 100),
-      height: 600
+      width: Math.max(1200, winnersWidth + matchWidth + columnGap * 2),
+      height: 700
     }
   };
 };
@@ -49,8 +57,12 @@ const calculateWinnersSectionLayout = (
     const x = startX + (roundIndex * (matchWidth + columnGap));
     
     round.matches.forEach((match: any, matchIndex: number) => {
-      const verticalSpacing = Math.pow(2, roundIndex) * (matchHeight + rowGap);
-      const y = startY + (matchIndex * verticalSpacing);
+      // Improved vertical spacing calculation
+      const matchesInRound = round.matches.length;
+      const verticalSpacing = Math.max(matchHeight + rowGap, 120); // Minimum spacing
+      const startOffset = startY + (matchesInRound > 1 ? 0 : 60); // Center single matches
+      
+      const y = startOffset + (matchIndex * verticalSpacing * Math.pow(2, roundIndex));
       
       match.position = { x, y, width: matchWidth, height: matchHeight };
     });
@@ -73,12 +85,14 @@ const calculateLosersSectionLayout = (
     round.matches.forEach((match: any, matchIndex: number) => {
       let y = startY;
       
-      // Adjust Y position based on round pattern
-      if (roundIndex % 2 === 1) {
-        y -= 45; // Offset alternating rounds
-      }
+      // Improved losers bracket positioning
+      const baseSpacing = matchHeight + rowGap;
+      y += matchIndex * baseSpacing;
       
-      y += matchIndex * (matchHeight + rowGap * 2);
+      // Add staggered positioning for visual clarity
+      if (roundIndex % 2 === 1) {
+        y += baseSpacing / 2;
+      }
       
       match.position = { x, y, width: matchWidth, height: matchHeight };
     });
@@ -95,9 +109,11 @@ const calculateFinalsSectionLayout = (
 ) => {
   const { matchWidth, matchHeight } = theme.spacing;
   
-  section.rounds.forEach((round: any) => {
-    round.matches.forEach((match: any) => {
-      match.position = { x: startX, y: startY, width: matchWidth, height: matchHeight };
+  section.rounds.forEach((round: any, index: number) => {
+    round.matches.forEach((match: any, matchIndex: number) => {
+      // Position finals to align with winners bracket flow
+      const y = startY + (matchIndex * (matchHeight + 40));
+      match.position = { x: startX, y, width: matchWidth, height: matchHeight };
     });
     
     round.position = { x: startX, y: startY, width: matchWidth, height: matchHeight };
@@ -107,7 +123,6 @@ const calculateFinalsSectionLayout = (
 const calculateConnections = (data: ProcessedBracketData): BracketConnection[] => {
   const connections: BracketConnection[] = [];
   
-  // Basic connector logic - can be enhanced later
   data.sections.forEach(section => {
     section.rounds.forEach((round, roundIndex) => {
       if (roundIndex < section.rounds.length - 1) {
@@ -130,16 +145,37 @@ const calculateConnections = (data: ProcessedBracketData): BracketConnection[] =
       }
     });
   });
+
+  // Add connection from winners final to grand final
+  const winnersSection = data.sections.find(s => s.type === 'winners');
+  const finalsSection = data.sections.find(s => s.type === 'finals');
+  
+  if (winnersSection && finalsSection && winnersSection.rounds.length > 0 && finalsSection.rounds.length > 0) {
+    const winnersFinal = winnersSection.rounds[winnersSection.rounds.length - 1].matches[0];
+    const grandFinal = finalsSection.rounds[0].matches[0];
+    
+    if (winnersFinal && grandFinal) {
+      connections.push({
+        id: `${winnersTitle}-to-grand-final`,
+        fromMatch: winnersTitle.id,
+        toMatch: grandFinal.id,
+        path: generateConnectorPath(winnersTitle.position, grandFinal.position),
+        type: 'finals'
+      });
+    }
+  }
   
   return connections;
 };
 
 const generateConnectorPath = (from: any, to: any): string => {
-  const fromX = from.x + from.width;
-  const fromY = from.y + from.height / 2;
-  const toX = to.x;
-  const toY = to.y + to.height / 2;
-  const midX = fromX + (toX - fromX) / 2;
+  // Calculate center points for proper alignment
+  const fromCenterX = from.x + from.width;
+  const fromCenterY = from.y + from.height / 2;
+  const toCenterX = to.x;
+  const toCenterY = to.y + to.height / 2;
+  const midX = fromCenterX + (toCenterX - fromCenterX) / 2;
   
-  return `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
+  // Create straight connector path
+  return `M ${fromCenterX} ${fromCenterY} L ${midX} ${fromCenterY} L ${midX} ${toCenterY} L ${toCenterX} ${toCenterY}`;
 };
