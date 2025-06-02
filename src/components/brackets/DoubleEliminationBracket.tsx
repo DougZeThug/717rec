@@ -26,11 +26,12 @@ interface TournamentMatch {
   status: string;
 }
 
-// Exact Challonge layout constants
-const MATCH_WIDTH = 190;
-const MATCH_HEIGHT = 80;
-const HORIZONTAL_GAP = 140;
-const VERTICAL_BASE_GAP = 100;
+// Exact Challonge layout dimensions
+const MATCH_WIDTH = 180;
+const MATCH_HEIGHT = 70;
+const COLUMN_WIDTH = 220;
+const WINNERS_START_Y = 80;
+const LOSERS_START_Y = 400;
 
 const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({ 
   bracket, 
@@ -67,164 +68,103 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
     match.matchType === 'finals' || match.matchType === 'final'
   );
 
-  // Group matches by round
-  const winnersByRound = winnerMatches.reduce((acc, match) => {
-    if (!acc[match.round]) acc[match.round] = [];
-    acc[match.round].push(match);
-    return acc;
-  }, {} as Record<number, typeof winnerMatches>);
-
-  const losersByRound = loserMatches.reduce((acc, match) => {
-    if (!acc[match.round]) acc[match.round] = [];
-    acc[match.round].push(match);
-    return acc;
-  }, {} as Record<number, typeof loserMatches>);
-
-  // Define exact Challonge layout positions
-  const generateChallongeLayout = () => {
-    const winnerRounds = Object.keys(winnersByRound).map(Number).sort();
-    const loserRounds = Object.keys(losersByRound).map(Number).sort();
-    
+  // Hardcoded Challonge layout structure
+  const getChallongeLayout = () => {
     const layout = {
-      winners: [] as Array<{
-        round: number;
-        title: string;
-        x: number;
-        y: number;
-        matches: Array<{ match: any; x: number; y: number }>;
-      }>,
-      losers: [] as Array<{
-        round: number;
-        title: string;
-        x: number;
-        y: number;
-        matches: Array<{ match: any; x: number; y: number }>;
-      }>,
-      finals: null as { match: any; x: number; y: number; title: string } | null,
-      connectors: [] as Array<{ x1: number; y1: number; x2: number; y2: number; midX?: number; midY?: number }>
+      winners: [
+        // Round 1 - 4 matches
+        { matches: [], x: 0, y: WINNERS_START_Y, title: "Round 1", spacing: 90 },
+        // Round 2 - 2 matches  
+        { matches: [], x: COLUMN_WIDTH, y: WINNERS_START_Y + 45, title: "Semifinals", spacing: 180 },
+        // Round 3 - 1 match
+        { matches: [], x: COLUMN_WIDTH * 2, y: WINNERS_START_Y + 90, title: "Winners Final", spacing: 0 },
+      ],
+      losers: [
+        // Losers Round 1 - 2 matches
+        { matches: [], x: 0, y: LOSERS_START_Y, title: "LR1", spacing: 180 },
+        // Losers Round 2 - 2 matches
+        { matches: [], x: COLUMN_WIDTH, y: LOSERS_START_Y - 45, title: "LR2", spacing: 180 },
+        // Losers Round 3 - 1 match
+        { matches: [], x: COLUMN_WIDTH * 2, y: LOSERS_START_Y, title: "LR3", spacing: 0 },
+        // Losers Final
+        { matches: [], x: COLUMN_WIDTH * 3, y: LOSERS_START_Y - 45, title: "Losers Final", spacing: 0 },
+      ],
+      finals: {
+        x: COLUMN_WIDTH * 4,
+        y: WINNERS_START_Y + 135,
+        title: "Grand Final"
+      }
     };
 
-    // Calculate winners bracket positions (Challonge style)
-    winnerRounds.forEach((round, roundIndex) => {
-      const matches = winnersByRound[round].sort((a, b) => a.position - b.position);
-      const x = roundIndex * (MATCH_WIDTH + HORIZONTAL_GAP);
-      
-      // Challonge vertical spacing - each round doubles the gap
-      const verticalGap = VERTICAL_BASE_GAP * Math.pow(2, roundIndex);
-      const totalHeight = (matches.length - 1) * verticalGap;
-      const startY = 50 - totalHeight / 2; // Center vertically at y=50
-      
-      const roundMatches = matches.map((match, index) => ({
-        match,
-        x,
-        y: startY + index * verticalGap
-      }));
-
-      layout.winners.push({
-        round,
-        title: getRoundTitle(roundIndex, winnerRounds.length, 'winners'),
-        x,
-        y: 10, // Header position
-        matches: roundMatches
+    // Map winner matches to layout positions
+    const sortedWinners = winnerMatches.sort((a, b) => a.round - b.round || a.position - b.position);
+    let winnerIndex = 0;
+    
+    // Round 1: 4 matches
+    for (let i = 0; i < 4 && winnerIndex < sortedWinners.length; i++) {
+      if (sortedWinners[winnerIndex]) {
+        layout.winners[0].matches.push({
+          match: sortedWinners[winnerIndex],
+          x: 0,
+          y: WINNERS_START_Y + (i * 90)
+        });
+        winnerIndex++;
+      }
+    }
+    
+    // Round 2: 2 matches
+    for (let i = 0; i < 2 && winnerIndex < sortedWinners.length; i++) {
+      if (sortedWinners[winnerIndex]) {
+        layout.winners[1].matches.push({
+          match: sortedWinners[winnerIndex],
+          x: COLUMN_WIDTH,
+          y: WINNERS_START_Y + 45 + (i * 180)
+        });
+        winnerIndex++;
+      }
+    }
+    
+    // Round 3: 1 match
+    if (winnerIndex < sortedWinners.length && sortedWinners[winnerIndex]) {
+      layout.winners[2].matches.push({
+        match: sortedWinners[winnerIndex],
+        x: COLUMN_WIDTH * 2,
+        y: WINNERS_START_Y + 90
       });
-    });
-
-    // Calculate losers bracket positions (below winners)
-    const losersStartY = 300;
-    loserRounds.forEach((round, roundIndex) => {
-      const matches = losersByRound[round].sort((a, b) => a.position - b.position);
-      const x = roundIndex * (MATCH_WIDTH + HORIZONTAL_GAP);
-      
-      // Losers bracket has tighter spacing
-      const verticalGap = 120;
-      const totalHeight = (matches.length - 1) * verticalGap;
-      const startY = losersStartY - totalHeight / 2;
-      
-      const roundMatches = matches.map((match, index) => ({
-        match,
-        x,
-        y: startY + index * verticalGap
-      }));
-
-      layout.losers.push({
-        round,
-        title: getRoundTitle(roundIndex, loserRounds.length, 'losers'),
-        x,
-        y: 260, // Header position
-        matches: roundMatches
-      });
-    });
-
-    // Finals position (center between brackets)
-    if (finalMatches.length > 0) {
-      const maxRounds = Math.max(winnerRounds.length, loserRounds.length);
-      layout.finals = {
-        match: finalMatches[0],
-        x: maxRounds * (MATCH_WIDTH + HORIZONTAL_GAP),
-        y: 175, // Centered between winners and losers
-        title: 'Grand Finals'
-      };
     }
 
-    // Generate simple L-shaped connectors
-    layout.winners.forEach((round, roundIndex) => {
-      if (roundIndex < layout.winners.length - 1) {
-        const nextRound = layout.winners[roundIndex + 1];
-        
-        for (let i = 0; i < round.matches.length; i += 2) {
-          if (i + 1 < round.matches.length && Math.floor(i / 2) < nextRound.matches.length) {
-            const match1 = round.matches[i];
-            const match2 = round.matches[i + 1];
-            const targetMatch = nextRound.matches[Math.floor(i / 2)];
-            
-            const sourceX = match1.x + MATCH_WIDTH;
-            const targetX = targetMatch.x;
-            const midX = sourceX + HORIZONTAL_GAP / 2;
-            
-            // Horizontal lines from both matches
-            layout.connectors.push(
-              { x1: sourceX, y1: match1.y + MATCH_HEIGHT / 2, x2: midX, y2: match1.y + MATCH_HEIGHT / 2 },
-              { x1: sourceX, y1: match2.y + MATCH_HEIGHT / 2, x2: midX, y2: match2.y + MATCH_HEIGHT / 2 }
-            );
-            
-            // Vertical connector
-            layout.connectors.push({
-              x1: midX, y1: match1.y + MATCH_HEIGHT / 2,
-              x2: midX, y2: match2.y + MATCH_HEIGHT / 2
-            });
-            
-            // Line to target
-            layout.connectors.push({
-              x1: midX, y1: targetMatch.y + MATCH_HEIGHT / 2,
-              x2: targetX, y2: targetMatch.y + MATCH_HEIGHT / 2
-            });
-          }
-        }
+    // Map loser matches to layout positions
+    const sortedLosers = loserMatches.sort((a, b) => a.round - b.round || a.position - b.position);
+    let loserIndex = 0;
+    
+    // Losers Round 1: 2 matches
+    for (let i = 0; i < 2 && loserIndex < sortedLosers.length; i++) {
+      if (sortedLosers[loserIndex]) {
+        layout.losers[0].matches.push({
+          match: sortedLosers[loserIndex],
+          x: 0,
+          y: LOSERS_START_Y + (i * 180)
+        });
+        loserIndex++;
       }
-    });
-
-    // Similar connectors for losers bracket
-    layout.losers.forEach((round, roundIndex) => {
-      if (roundIndex < layout.losers.length - 1) {
-        const nextRound = layout.losers[roundIndex + 1];
-        
-        for (let i = 0; i < round.matches.length; i += 2) {
-          if (i + 1 < round.matches.length && Math.floor(i / 2) < nextRound.matches.length) {
-            const match1 = round.matches[i];
-            const match2 = round.matches[i + 1];
-            const targetMatch = nextRound.matches[Math.floor(i / 2)];
-            
-            const sourceX = match1.x + MATCH_WIDTH;
-            const targetX = targetMatch.x;
-            const midX = sourceX + HORIZONTAL_GAP / 2;
-            
-            layout.connectors.push(
-              { x1: sourceX, y1: match1.y + MATCH_HEIGHT / 2, x2: midX, y2: match1.y + MATCH_HEIGHT / 2 },
-              { x1: sourceX, y1: match2.y + MATCH_HEIGHT / 2, x2: midX, y2: match2.y + MATCH_HEIGHT / 2 },
-              { x1: midX, y1: match1.y + MATCH_HEIGHT / 2, x2: midX, y2: match2.y + MATCH_HEIGHT / 2 },
-              { x1: midX, y1: targetMatch.y + MATCH_HEIGHT / 2, x2: targetX, y2: targetMatch.y + MATCH_HEIGHT / 2 }
-            );
-          }
+    }
+    
+    // Continue mapping remaining loser rounds...
+    const loserRounds = [
+      { roundIndex: 1, count: 2, yOffset: -45 },
+      { roundIndex: 2, count: 1, yOffset: 0 },
+      { roundIndex: 3, count: 1, yOffset: -45 }
+    ];
+    
+    loserRounds.forEach(({ roundIndex, count, yOffset }) => {
+      for (let i = 0; i < count && loserIndex < sortedLosers.length; i++) {
+        if (sortedLosers[loserIndex]) {
+          layout.losers[roundIndex].matches.push({
+            match: sortedLosers[loserIndex],
+            x: COLUMN_WIDTH * roundIndex,
+            y: LOSERS_START_Y + yOffset + (i * 180)
+          });
+          loserIndex++;
         }
       }
     });
@@ -232,188 +172,176 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
     return layout;
   };
 
-  // Round title helper
-  const getRoundTitle = (roundIndex: number, totalRounds: number, type: string) => {
-    if (type === 'winners') {
-      if (roundIndex === totalRounds - 1) return 'Winners Finals';
-      if (roundIndex === totalRounds - 2) return 'Winners Semis';
-      return `WB Round ${roundIndex + 1}`;
-    } else {
-      if (roundIndex === totalRounds - 1) return 'Losers Finals';
-      if (roundIndex === totalRounds - 2) return 'Losers Semis';
-      return `LB Round ${roundIndex + 1}`;
-    }
-  };
-
-  const layout = generateChallongeLayout();
-  const lineColor = isDark ? "#6b7280" : "#9ca3af";
-
-  // Calculate total dimensions
-  const allXPositions = [
-    ...layout.winners.flatMap(round => round.matches.map(m => m.x)),
-    ...layout.losers.flatMap(round => round.matches.map(m => m.x)),
-    ...(layout.finals ? [layout.finals.x] : [])
-  ];
-  const totalWidth = Math.max(...allXPositions, 0) + MATCH_WIDTH + 100;
-  const totalHeight = 500;
+  const layout = getChallongeLayout();
 
   return (
-    <div 
-      className={cn(
-        "w-full rounded-lg p-6 transition-colors duration-300",
-        isDark 
-          ? "bg-gray-900 border border-gray-700" 
-          : "bg-white border border-gray-200"
-      )}
-    >
-      <div className="mb-6">
-        <h2 className={cn(
-          "text-2xl font-bold transition-colors duration-300",
-          isDark ? "text-white" : "text-gray-900"
-        )}>
+    <div className={cn(
+      "w-full min-h-screen p-6 transition-colors duration-300",
+      "bg-gray-900 text-white" // Challonge dark theme
+    )}>
+      {/* Header */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-white mb-2">
           {bracket.name}
         </h2>
-        <p className={cn(
-          "text-sm mt-1 transition-colors duration-300",
-          isDark ? "text-gray-400" : "text-gray-600"
-        )}>
+        <p className="text-gray-400 text-sm">
           {bracket.format} • {bracket.state}
         </p>
       </div>
 
-      <div className="overflow-auto">
-        <div 
-          className="relative"
-          style={{ 
-            width: `${totalWidth}px`, 
-            height: `${totalHeight}px`,
-            minWidth: 'max-content'
-          }}
-        >
-          {/* Winners Bracket */}
-          {layout.winners.map((round) => (
-            <div key={`winners-${round.round}`}>
-              {/* Round Header */}
-              <div
-                className={cn(
-                  "absolute text-sm font-semibold text-center",
-                  isDark ? "text-blue-300" : "text-blue-800"
-                )}
-                style={{
-                  left: `${round.x}px`,
-                  top: `${round.y}px`,
-                  width: `${MATCH_WIDTH}px`
-                }}
-              >
-                {round.title}
-              </div>
-              
-              {/* Matches */}
-              {round.matches.map(({ match, x, y }) => (
-                <div
-                  key={match.id}
-                  className="absolute"
-                  style={{ left: `${x}px`, top: `${y}px` }}
-                >
-                  <TournamentMatchCard
-                    match={transformMatch(match)}
-                    onMatchClick={onMatchClick}
-                    showSeeds={true}
-                    bracketType="winners"
-                    fixedHeight={true}
-                  />
-                </div>
-              ))}
+      {/* Bracket Container */}
+      <div className="relative" style={{ 
+        width: `${COLUMN_WIDTH * 5}px`, 
+        height: '600px',
+        minWidth: 'max-content'
+      }}>
+        
+        {/* Winners Bracket */}
+        {layout.winners.map((round, roundIndex) => (
+          <div key={`winners-${roundIndex}`}>
+            {/* Round Header */}
+            <div
+              className="absolute text-sm font-semibold text-white text-center"
+              style={{
+                left: `${round.x}px`,
+                top: `${round.y - 30}px`,
+                width: `${MATCH_WIDTH}px`
+              }}
+            >
+              {round.title}
             </div>
-          ))}
-
-          {/* Losers Bracket */}
-          {layout.losers.map((round) => (
-            <div key={`losers-${round.round}`}>
-              {/* Round Header */}
+            
+            {/* Matches */}
+            {round.matches.map(({ match, x, y }, matchIndex) => (
               <div
-                className={cn(
-                  "absolute text-sm font-semibold text-center",
-                  isDark ? "text-orange-300" : "text-orange-800"
-                )}
-                style={{
-                  left: `${round.x}px`,
-                  top: `${round.y}px`,
-                  width: `${MATCH_WIDTH}px`
-                }}
-              >
-                {round.title}
-              </div>
-              
-              {/* Matches */}
-              {round.matches.map(({ match, x, y }) => (
-                <div
-                  key={match.id}
-                  className="absolute"
-                  style={{ left: `${x}px`, top: `${y}px` }}
-                >
-                  <TournamentMatchCard
-                    match={transformMatch(match)}
-                    onMatchClick={onMatchClick}
-                    showSeeds={true}
-                    bracketType="losers"
-                    fixedHeight={true}
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
-
-          {/* Finals */}
-          {layout.finals && (
-            <div>
-              <div
-                className={cn(
-                  "absolute text-sm font-semibold text-center",
-                  isDark ? "text-purple-300" : "text-purple-800"
-                )}
-                style={{
-                  left: `${layout.finals.x}px`,
-                  top: `135px`,
-                  width: `${MATCH_WIDTH}px`
-                }}
-              >
-                {layout.finals.title}
-              </div>
-              
-              <div
+                key={match.id}
                 className="absolute"
-                style={{ left: `${layout.finals.x}px`, top: `${layout.finals.y}px` }}
+                style={{ 
+                  left: `${x}px`, 
+                  top: `${y}px`,
+                  width: `${MATCH_WIDTH}px`,
+                  height: `${MATCH_HEIGHT}px`
+                }}
               >
                 <TournamentMatchCard
-                  match={transformMatch(layout.finals.match)}
+                  match={transformMatch(match)}
                   onMatchClick={onMatchClick}
                   showSeeds={true}
-                  bracketType="finals"
+                  bracketType="winners"
                   fixedHeight={true}
                 />
               </div>
-            </div>
-          )}
-
-          {/* SVG Connectors */}
-          <svg 
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            style={{ overflow: 'visible' }}
-          >
-            {layout.connectors.map((connector, index) => (
-              <line
-                key={index}
-                x1={connector.x1}
-                y1={connector.y1}
-                x2={connector.x2}
-                y2={connector.y2}
-                stroke={lineColor}
-                strokeWidth="2"
-              />
             ))}
-          </svg>
-        </div>
+          </div>
+        ))}
+
+        {/* Losers Bracket */}
+        {layout.losers.map((round, roundIndex) => (
+          <div key={`losers-${roundIndex}`}>
+            {/* Round Header */}
+            <div
+              className="absolute text-sm font-semibold text-orange-400 text-center"
+              style={{
+                left: `${round.x}px`,
+                top: `${round.y - 30}px`,
+                width: `${MATCH_WIDTH}px`
+              }}
+            >
+              {round.title}
+            </div>
+            
+            {/* Matches */}
+            {round.matches.map(({ match, x, y }, matchIndex) => (
+              <div
+                key={match.id}
+                className="absolute"
+                style={{ 
+                  left: `${x}px`, 
+                  top: `${y}px`,
+                  width: `${MATCH_WIDTH}px`,
+                  height: `${MATCH_HEIGHT}px`
+                }}
+              >
+                <TournamentMatchCard
+                  match={transformMatch(match)}
+                  onMatchClick={onMatchClick}
+                  showSeeds={true}
+                  bracketType="losers"
+                  fixedHeight={true}
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+
+        {/* Finals */}
+        {finalMatches.length > 0 && (
+          <div>
+            <div
+              className="absolute text-sm font-semibold text-purple-400 text-center"
+              style={{
+                left: `${layout.finals.x}px`,
+                top: `${layout.finals.y - 30}px`,
+                width: `${MATCH_WIDTH}px`
+              }}
+            >
+              {layout.finals.title}
+            </div>
+            
+            <div
+              className="absolute"
+              style={{ 
+                left: `${layout.finals.x}px`, 
+                top: `${layout.finals.y}px`,
+                width: `${MATCH_WIDTH}px`,
+                height: `${MATCH_HEIGHT}px`
+              }}
+            >
+              <TournamentMatchCard
+                match={transformMatch(finalMatches[0])}
+                onMatchClick={onMatchClick}
+                showSeeds={true}
+                bracketType="finals"
+                fixedHeight={true}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Simple L-shaped connectors */}
+        <svg 
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          style={{ overflow: 'visible' }}
+        >
+          {/* Winners bracket connectors */}
+          {/* Round 1 to Round 2 */}
+          <g stroke="#6b7280" strokeWidth="2" fill="none">
+            {/* Match 1&2 to Semi 1 */}
+            <path d={`M ${MATCH_WIDTH} ${WINNERS_START_Y + 35} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 35} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 80} L ${COLUMN_WIDTH} ${WINNERS_START_Y + 80}`} />
+            <path d={`M ${MATCH_WIDTH} ${WINNERS_START_Y + 125} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 125} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 80} L ${COLUMN_WIDTH} ${WINNERS_START_Y + 80}`} />
+            
+            {/* Match 3&4 to Semi 2 */}
+            <path d={`M ${MATCH_WIDTH} ${WINNERS_START_Y + 215} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 215} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 260} L ${COLUMN_WIDTH} ${WINNERS_START_Y + 260}`} />
+            <path d={`M ${MATCH_WIDTH} ${WINNERS_START_Y + 305} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 305} L ${COLUMN_WIDTH - 20} ${WINNERS_START_Y + 260} L ${COLUMN_WIDTH} ${WINNERS_START_Y + 260}`} />
+            
+            {/* Semis to Final */}
+            <path d={`M ${COLUMN_WIDTH + MATCH_WIDTH} ${WINNERS_START_Y + 80} L ${COLUMN_WIDTH * 2 - 20} ${WINNERS_START_Y + 80} L ${COLUMN_WIDTH * 2 - 20} ${WINNERS_START_Y + 125} L ${COLUMN_WIDTH * 2} ${WINNERS_START_Y + 125}`} />
+            <path d={`M ${COLUMN_WIDTH + MATCH_WIDTH} ${WINNERS_START_Y + 260} L ${COLUMN_WIDTH * 2 - 20} ${WINNERS_START_Y + 260} L ${COLUMN_WIDTH * 2 - 20} ${WINNERS_START_Y + 125} L ${COLUMN_WIDTH * 2} ${WINNERS_START_Y + 125}`} />
+          </g>
+          
+          {/* Losers bracket connectors */}
+          <g stroke="#f97316" strokeWidth="2" fill="none">
+            {/* Basic losers connections */}
+            <path d={`M ${MATCH_WIDTH} ${LOSERS_START_Y + 35} L ${COLUMN_WIDTH} ${LOSERS_START_Y - 10}`} />
+            <path d={`M ${MATCH_WIDTH} ${LOSERS_START_Y + 215} L ${COLUMN_WIDTH} ${LOSERS_START_Y + 170}`} />
+          </g>
+          
+          {/* Finals connector */}
+          <g stroke="#a855f7" strokeWidth="2" fill="none">
+            <path d={`M ${COLUMN_WIDTH * 3 + MATCH_WIDTH} ${LOSERS_START_Y - 10} L ${COLUMN_WIDTH * 4} ${WINNERS_START_Y + 170}`} />
+            <path d={`M ${COLUMN_WIDTH * 2 + MATCH_WIDTH} ${WINNERS_START_Y + 125} L ${COLUMN_WIDTH * 4} ${WINNERS_START_Y + 170}`} />
+          </g>
+        </svg>
       </div>
     </div>
   );
