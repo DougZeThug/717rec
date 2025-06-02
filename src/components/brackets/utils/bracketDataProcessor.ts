@@ -91,7 +91,12 @@ const groupMatchesByRound = (matches: BracketMatch[], type: 'winners' | 'losers'
 };
 
 const getRoundTitle = (type: 'winners' | 'losers' | 'finals', round: number, matchCount: number, totalRounds: number): string => {
-  if (type === 'finals') return 'Grand Finals';
+  if (type === 'finals') {
+    // Handle two finals rounds for double elimination
+    if (round === 1) return 'Grand Finals';
+    if (round === 2) return 'Grand Finals (Reset)';
+    return 'Grand Finals';
+  }
   
   if (type === 'losers') {
     // More descriptive losers bracket naming

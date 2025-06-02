@@ -111,7 +111,8 @@ class BracketGenerator {
     // Create match ID mappings for both brackets
     const winnersMatchIds = new Map<string, string>();
     const losersMatchIds = new Map<string, string>();
-    const grandFinalsId = crypto.randomUUID();
+    const grandFinalsR1Id = crypto.randomUUID();
+    const grandFinalsR2Id = crypto.randomUUID(); // Reset match
     
     // Generate winner bracket match IDs
     for (let round = 1; round <= rounds; round++) {
@@ -211,28 +212,45 @@ class BracketGenerator {
       }
     }
     
-    // Generate grand finals with NULL foreign keys initially
-    const grandFinals = {
-      id: grandFinalsId,
+    // Generate BOTH grand finals matches
+    const grandFinalsR1 = {
+      id: grandFinalsR1Id,
       bracket_id: bracketId,
       round: 1,
       position: 0,
-      match_type: 'finals', // Only grand finals should be type 'finals'
+      match_type: 'finals',
       team1_id: null, // Winners bracket champion
       team2_id: null, // Losers bracket champion
       team1_seed: null,
       team2_seed: null,
-      next_win_match_id: null,
-      next_lose_match_id: null,
+      next_win_match_id: null, // Tournament ends if winners bracket team wins
+      next_lose_match_id: grandFinalsR2Id, // Reset match if losers bracket team wins
       best_of: 5, // Grand finals typically best of 5
       status: 'pending'
     };
     
-    matches.push(grandFinals);
+    const grandFinalsR2 = {
+      id: grandFinalsR2Id,
+      bracket_id: bracketId,
+      round: 2,
+      position: 0,
+      match_type: 'finals',
+      team1_id: null, // Will be populated when R1 is complete
+      team2_id: null, // Will be populated when R1 is complete
+      team1_seed: null,
+      team2_seed: null,
+      next_win_match_id: null, // Tournament ends
+      next_lose_match_id: null, // Tournament ends
+      best_of: 5,
+      status: 'pending'
+    };
+    
+    matches.push(grandFinalsR1);
+    matches.push(grandFinalsR2);
     
     console.log(`[BRACKET] Generated ${matches.length} total matches`);
     
-    return { matches, winnersMatchIds, losersMatchIds, grandFinalsId };
+    return { matches, winnersMatchIds, losersMatchIds, grandFinalsR1Id, grandFinalsR2Id };
   }
 }
 
@@ -498,7 +516,7 @@ serve(async (req) => {
             }
           }
         } else if (payload.format === 'doubleElim') {
-          const { winnersMatchIds, losersMatchIds, grandFinalsId } = bracketResult;
+          const { winnersMatchIds, losersMatchIds, grandFinalsR1Id, grandFinalsR2Id } = bracketResult;
           const rounds = BracketGenerator.calculateRounds(BracketGenerator.calculateBracketSize(payload.teams.length));
           
           // Update winners bracket next_win_match_id
@@ -515,8 +533,8 @@ serve(async (req) => {
                 const nextPosition = Math.floor(i / 2);
                 nextMatchId = winnersMatchIds.get(`w-${nextRound}-${nextPosition}`);
               } else {
-                // Winners final goes to grand finals
-                nextMatchId = grandFinalsId;
+                // Winners final goes to grand finals R1
+                nextMatchId = grandFinalsR1Id;
               }
               
               if (currentMatchId && nextMatchId) {
@@ -556,8 +574,8 @@ serve(async (req) => {
                 const nextPosition = round % 2 === 0 ? i : Math.floor(i / 2);
                 nextMatchId = losersMatchIds.get(`l-${nextRound}-${nextPosition}`);
               } else {
-                // Losers final goes to grand finals
-                nextMatchId = grandFinalsId;
+                // Losers final goes to grand finals R1
+                nextMatchId = grandFinalsR1Id;
               }
               
               if (currentMatchId && nextMatchId) {
