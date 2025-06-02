@@ -156,10 +156,10 @@ const calculateConnections = (data: ProcessedBracketData): BracketConnection[] =
     
     if (winnersFinal && grandFinal) {
       connections.push({
-        id: `${winnersTitle}-to-grand-final`,
-        fromMatch: winnersTitle.id,
+        id: `${winnersFinal.id}-to-grand-final`,
+        fromMatch: winnersFinal.id,
         toMatch: grandFinal.id,
-        path: generateConnectorPath(winnersTitle.position, grandFinal.position),
+        path: generateConnectorPath(winnersFinal.position, grandFinal.position),
         type: 'finals'
       });
     }
