@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 export interface SimpleBracketData {
   id: string;
   title: string;
+  name?: string; // For backward compatibility, maps to title
   format: string;
+  state?: string; // From brackets table
+  teams?: any[]; // For legacy component compatibility
   matches: Array<{
     id: string;
     team1Name?: string;
@@ -36,10 +39,10 @@ export const useBracketData = (bracketId: string) => {
     queryFn: async (): Promise<SimpleBracketData> => {
       console.log('🔍 useBracketData: Fetching bracket data for ID:', bracketId);
       
-      // Fetch bracket info
+      // Fetch bracket info including state
       const { data: bracket, error: bracketError } = await supabase
         .from('brackets')
-        .select('id, title, format')
+        .select('id, title, format, state')
         .eq('id', bracketId)
         .single();
 
@@ -109,7 +112,10 @@ export const useBracketData = (bracketId: string) => {
       return {
         id: bracket.id,
         title: bracket.title,
+        name: bracket.title, // Map title to name for backward compatibility
         format: bracket.format,
+        state: bracket.state,
+        teams: [], // Empty array for legacy compatibility
         matches: transformedMatches
       };
     },

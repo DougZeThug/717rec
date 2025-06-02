@@ -13,9 +13,9 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
   console.log('SimpleBracket rendering with bracket:', {
     bracketExists: !!bracket,
     bracketId: bracket?.id,
-    bracketName: bracket?.name,
+    bracketName: bracket?.title || bracket?.name,
     matchesCount: bracket?.matches?.length,
-    teamsCount: bracket?.teams?.length
+    teamsCount: bracket?.teams?.length || 0
   });
 
   // Enhanced matches validation
@@ -35,10 +35,10 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
     });
     return (
       <div className="text-center p-8">
-        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
+        <h3 className="text-xl font-semibold mb-2">{bracket.title || bracket.name}</h3>
         <p className="text-red-500">Error: Matches property is missing</p>
         <div className="text-sm text-gray-400 mt-2">
-          Bracket ID: {bracket.id} | State: {bracket.state}
+          Bracket ID: {bracket.id} | State: {bracket.state || 'unknown'}
         </div>
       </div>
     );
@@ -52,7 +52,7 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
     });
     return (
       <div className="text-center p-8">
-        <h3 className="text-xl font-semibold mb-2">{bracket.name}</h3>
+        <h3 className="text-xl font-semibold mb-2">{bracket.title || bracket.name}</h3>
         <p className="text-red-500">Error: Matches data is not an array</p>
         <div className="text-sm text-gray-400 mt-2">
           Bracket ID: {bracket.id} | Type: {typeof bracket.matches}

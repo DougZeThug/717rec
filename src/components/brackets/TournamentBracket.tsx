@@ -1,4 +1,3 @@
-
 import React from "react";
 import { SimpleBracketData } from "@/hooks/brackets/useBracketData";
 import TournamentMatchCard from "./TournamentMatchCard";
@@ -22,7 +21,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({
   console.log('TournamentBracket rendering with bracket:', {
     bracketExists: !!bracket,
     bracketId: bracket?.id,
-    bracketName: bracket?.name,
+    bracketName: bracket?.title || bracket?.name,
     matchesCount: bracket?.matches?.length,
     bracketType
   });
@@ -47,7 +46,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({
           "text-xl font-semibold mb-2 transition-colors duration-300",
           isDark ? "text-white" : "text-gray-900"
         )}>
-          {bracket.name}
+          {bracket.title || bracket.name}
         </h3>
         <p className={cn(
           "transition-colors duration-300",
