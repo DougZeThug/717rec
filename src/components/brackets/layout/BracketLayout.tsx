@@ -35,10 +35,10 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
       <div className="min-w-max px-6 py-8">
         <div className="relative" style={{ width: data.dimensions.width, height: data.dimensions.height }}>
           
-          {/* Winners Bracket - Top Row */}
+          {/* Winners Bracket - Dynamic Top Position */}
           {winnersSection && (
             <div className="absolute" style={{ left: 0, top: 0 }}>
-              <div className="mb-4">
+              <div className="mb-6">
                 <h3 className="text-lg font-bold text-center" style={{ color: theme.colors.winners }}>
                   Winners Bracket
                 </h3>
@@ -52,10 +52,13 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
             </div>
           )}
           
-          {/* Losers Bracket - Bottom Row */}
-          {losersSection && (
-            <div className="absolute" style={{ left: 0, top: 340 }}>
-              <div className="mb-4">
+          {/* Losers Bracket - Dynamic Bottom Position */}
+          {losersSection && losersSection.rounds.length > 0 && (
+            <div className="absolute" style={{ 
+              left: 0, 
+              top: winnersSection ? winnersSection.rounds[0]?.position?.y + 280 || 400 : 60 
+            }}>
+              <div className="mb-6">
                 <h3 className="text-lg font-bold text-center" style={{ color: theme.colors.losers }}>
                   Losers Bracket
                 </h3>
@@ -69,10 +72,17 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
             </div>
           )}
           
-          {/* Grand Finals - Right Side */}
-          {finalsSection && (
-            <div className="absolute" style={{ left: 800, top: 120 }}>
-              <div className="mb-4">
+          {/* Grand Finals - Right Side with Dynamic Position */}
+          {finalsSection && finalsSection.rounds.length > 0 && (
+            <div className="absolute" style={{ 
+              left: Math.max(
+                (winnersSection?.rounds.length || 0) * (theme.spacing.matchWidth + theme.spacing.columnGap) + 100,
+                (losersSection?.rounds.length || 0) * (theme.spacing.matchWidth + theme.spacing.columnGap) + 100,
+                800
+              ), 
+              top: finalsSection.rounds[0]?.position?.y || 120 
+            }}>
+              <div className="mb-6">
                 <h3 className="text-lg font-bold text-center" style={{ color: theme.colors.finals }}>
                   Grand Finals
                 </h3>
@@ -86,10 +96,10 @@ const BracketLayout: React.FC<BracketLayoutProps> = ({
             </div>
           )}
           
-          {/* Visual flow indicators (subtle arrows or spacing) */}
+          {/* Visual flow indicators */}
           <div className="absolute inset-0 pointer-events-none">
             <svg className="w-full h-full" style={{ overflow: 'visible' }}>
-              {/* Subtle visual flow indicators without actual connectors */}
+              {/* Subtle visual flow indicators */}
               {winnersSection && finalsSection && (
                 <defs>
                   <marker id="arrowhead" markerWidth="10" markerHeight="7" 

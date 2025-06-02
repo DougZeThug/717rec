@@ -7,48 +7,83 @@ export const calculateLayout = (
 ): ProcessedBracketData => {
   const { matchWidth, matchHeight, columnGap, rowGap } = theme.spacing;
   
-  // Challonge-style horizontal layout positioning
-  const winnersY = 60;
-  const losersY = 400;
-  const finalsX = 800; // Position finals to the right
-  const finalsY = 180; // Center finals between winners and losers
+  // Calculate dynamic section positioning
+  const winnersSection = data.sections.find(s => s.type === 'winners');
+  const losersSection = data.sections.find(s => s.type === 'losers');
+  const finalsSection = data.sections.find(s => s.type === 'finals');
 
+  let winnersHeight = 0;
   let winnersWidth = 0;
+  let losersHeight = 0;
   let losersWidth = 0;
 
-  // Calculate Winners section layout (top row, flows left to right)
-  const winnersSection = data.sections.find(s => s.type === 'winners');
+  // Calculate Winners section layout with proper spacing
   if (winnersSection) {
-    calculateHorizontalSectionLayout(winnersSection, 40, winnersY, theme);
+    const winnersStartY = 80; // Header space
+    calculateHorizontalSectionLayout(winnersSection, 40, winnersStartY, theme);
     winnersWidth = winnersSection.rounds.length * (matchWidth + columnGap);
+    winnersHeight = calculateSectionHeight(winnersSection, matchHeight, rowGap);
   }
 
-  // Calculate Losers section layout (bottom row, flows left to right)
-  const losersSection = data.sections.find(s => s.type === 'losers');
+  // Calculate Losers section layout with dynamic Y position
   if (losersSection) {
-    calculateHorizontalSectionLayout(losersSection, 40, losersY, theme);
+    const losersStartY = winnersHeight + 180; // Dynamic gap below winners
+    calculateHorizontalSectionLayout(losersSection, 40, losersStartY, theme);
     losersWidth = losersSection.rounds.length * (matchWidth + columnGap);
+    losersHeight = calculateSectionHeight(losersSection, matchHeight, rowGap);
   }
 
-  // Calculate Finals section layout (positioned to the right)
-  const finalsSection = data.sections.find(s => s.type === 'finals');
+  // Calculate Finals section layout - centered between brackets
   if (finalsSection) {
-    calculateFinalsSectionLayout(finalsSection, finalsX, finalsY, theme);
+    const finalsX = Math.max(winnersWidth, losersWidth) + 100;
+    const totalBracketHeight = winnersHeight + losersHeight + 180;
+    const finalsY = (totalBracketHeight / 2) - (finalsSection.rounds.length * (matchHeight + 50) / 2);
+    calculateFinalsSectionLayout(finalsSection, finalsX, Math.max(finalsY, 120), theme);
   }
 
-  // Calculate connections ONLY within each bracket section (no cross-bracket connectors)
+  // Calculate connections with proper attachment points
   const connections = calculateInternalConnections(data, theme);
 
-  const totalWidth = Math.max(winnersWidth, losersWidth, finalsX + matchWidth + 100);
+  const totalWidth = Math.max(winnersWidth, losersWidth) + (finalsSection ? 200 : 0) + matchWidth;
+  const totalHeight = Math.max(winnersHeight + losersHeight + 200, 650);
 
   return {
     ...data,
     connections,
     dimensions: {
       width: totalWidth,
-      height: 650
+      height: totalHeight
     }
   };
+};
+
+// Calculate the total height needed for a section
+const calculateSectionHeight = (section: any, matchHeight: number, rowGap: number): number => {
+  let maxHeight = 0;
+  
+  section.rounds.forEach((round: any, roundIndex: number) => {
+    const roundHeight = calculateRoundHeight(round.matches.length, roundIndex, matchHeight, rowGap);
+    maxHeight = Math.max(maxHeight, roundHeight);
+  });
+  
+  return maxHeight + 100; // Add padding
+};
+
+// Calculate the height needed for a specific round
+const calculateRoundHeight = (matchCount: number, roundIndex: number, matchHeight: number, rowGap: number): number => {
+  if (matchCount === 0) return 0;
+  
+  // Calculate spacing between matches in this round
+  const verticalSpacing = calculateVerticalSpacing(roundIndex, matchHeight, rowGap);
+  return (matchCount * matchHeight) + ((matchCount - 1) * verticalSpacing);
+};
+
+// Calculate appropriate vertical spacing based on round index
+const calculateVerticalSpacing = (roundIndex: number, matchHeight: number, rowGap: number): number => {
+  // Earlier rounds need more spacing, later rounds need less
+  const baseSpacing = rowGap;
+  const multiplier = Math.pow(2, roundIndex);
+  return Math.max(baseSpacing * multiplier, baseSpacing);
 };
 
 const calculateHorizontalSectionLayout = (
@@ -62,12 +97,20 @@ const calculateHorizontalSectionLayout = (
   section.rounds.forEach((round: any, roundIndex: number) => {
     const x = startX + (roundIndex * (matchWidth + columnGap));
     
+    // Calculate the total height needed for this round
+    const totalMatches = round.matches.length;
+    const verticalSpacing = calculateVerticalSpacing(roundIndex, matchHeight, rowGap);
+    const totalRoundHeight = (totalMatches * matchHeight) + ((totalMatches - 1) * verticalSpacing);
+    
+    // Center the round vertically within the available space
+    const roundStartY = startY;
+    
     round.matches.forEach((match: any, matchIndex: number) => {
-      const y = calculateHorizontalMatchY(startY, roundIndex, matchIndex, matchHeight, rowGap);
+      const y = roundStartY + (matchIndex * (matchHeight + verticalSpacing));
       match.position = { x, y, width: matchWidth, height: matchHeight };
     });
     
-    round.position = { x, y: startY, width: matchWidth, height: 0 };
+    round.position = { x, y: roundStartY, width: matchWidth, height: totalRoundHeight };
   });
 };
 
@@ -81,41 +124,26 @@ const calculateFinalsSectionLayout = (
   
   section.rounds.forEach((round: any, roundIndex: number) => {
     round.matches.forEach((match: any, matchIndex: number) => {
-      // Stack finals rounds vertically with spacing
-      const y = startY + (roundIndex * (matchHeight + 50));
+      // Stack finals rounds vertically with proper spacing
+      const y = startY + (roundIndex * (matchHeight + 60));
       match.position = { x: startX, y, width: matchWidth, height: matchHeight };
     });
     
-    round.position = { x: startX, y: startY + (roundIndex * (matchHeight + 50)), width: matchWidth, height: matchHeight };
+    round.position = { 
+      x: startX, 
+      y: startY + (roundIndex * (matchHeight + 60)), 
+      width: matchWidth, 
+      height: matchHeight 
+    };
   });
 };
 
-// Calculate match Y positions for horizontal flow
-const calculateHorizontalMatchY = (
-  baseY: number,
-  roundIndex: number,
-  matchIndex: number,
-  matchHeight: number,
-  rowGap: number
-): number => {
-  if (roundIndex === 0) {
-    // First round: standard spacing
-    return baseY + (matchIndex * (matchHeight + rowGap));
-  } else {
-    // Later rounds: exponential spacing to center between previous round matches
-    const verticalSpacing = (matchHeight + rowGap) * Math.pow(2, roundIndex);
-    const targetY = baseY + (matchIndex * verticalSpacing) + (matchHeight / 2) + (verticalSpacing / 4);
-    return targetY - (matchHeight / 2);
-  }
-};
-
-// Calculate connections ONLY within each bracket section
+// Calculate connections with precise attachment points
 const calculateInternalConnections = (data: ProcessedBracketData, theme: BracketTheme): BracketConnection[] => {
   const connections: BracketConnection[] = [];
   const { matchWidth, matchHeight, columnGap } = theme.spacing;
   
   data.sections.forEach(section => {
-    // Only create connectors within each section, not between sections
     section.rounds.forEach((round, roundIndex) => {
       if (roundIndex < section.rounds.length - 1) {
         const nextRound = section.rounds[roundIndex + 1];
@@ -125,10 +153,11 @@ const calculateInternalConnections = (data: ProcessedBracketData, theme: Bracket
           const nextMatch = nextRound.matches[nextMatchIndex];
           
           if (nextMatch && match.position && nextMatch.position) {
-            const fromCenterX = match.position.x + matchWidth;
-            const fromCenterY = match.position.y + (matchHeight / 2);
-            const toCenterX = nextMatch.position.x;
-            const toCenterY = nextMatch.position.y + (matchHeight / 2);
+            // Calculate precise attachment points
+            const fromCenterX = match.position.x + matchWidth; // Right edge of source match
+            const fromCenterY = match.position.y + (matchHeight / 2); // Vertical center
+            const toCenterX = nextMatch.position.x; // Left edge of target match
+            const toCenterY = nextMatch.position.y + (matchHeight / 2); // Vertical center
             
             const connectorData = createConnectorData(
               fromCenterX,
@@ -196,7 +225,7 @@ const calculateInternalConnections = (data: ProcessedBracketData, theme: Bracket
   return connections;
 };
 
-// Create detailed connector data with precise positioning
+// Create connector data with improved path calculation
 const createConnectorData = (
   fromX: number,
   fromY: number,
@@ -209,8 +238,11 @@ const createConnectorData = (
 ) => {
   const midX = fromX + (columnGap / 2);
   
+  // Create a clean L-shaped connector path
+  const path = `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`;
+  
   return {
-    path: `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`,
+    path,
     segments: [
       {
         type: 'horizontal' as const,
