@@ -73,12 +73,12 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
   return (
     <div className={cn(
-      "w-full rounded-lg p-6 transition-colors duration-300",
+      "w-full rounded-lg p-4 transition-colors duration-300",
       isDark 
         ? "bg-gray-900 border border-gray-700" 
         : "bg-white border border-gray-200"
     )}>
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className={cn(
           "text-2xl font-bold transition-colors duration-300",
           isDark ? "text-white" : "text-gray-900"
@@ -93,11 +93,11 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
         </p>
       </div>
 
-      <div className="space-y-12 overflow-x-auto">
+      <div className="space-y-8 overflow-x-auto">
         {/* Main Bracket (Winners + Finals) */}
         {mainRounds.length > 0 && (
           <div className="relative">
-            <div className="flex gap-16 items-start min-w-max">
+            <div className="flex gap-8 items-start min-w-max">
               {mainRounds.map((round, roundIndex) => {
                 const roundMatches = mainBracketByRound[round].sort((a, b) => a.position - b.position);
                 const isLastRound = round === Math.max(...mainRounds);
@@ -105,9 +105,9 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                 return (
                   <div key={round} className="relative">
                     {/* Round Header */}
-                    <div className="text-center mb-6">
+                    <div className="text-center mb-3">
                       <h3 className={cn(
-                        "text-lg font-semibold transition-colors duration-300",
+                        "text-sm font-semibold transition-colors duration-300",
                         isDark ? "text-blue-300" : "text-blue-800"
                       )}>
                         {getMainRoundName(round, mainRounds.length)}
@@ -117,7 +117,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                     {/* Matches Column */}
                     <div className={cn(
                       "flex flex-col",
-                      roundIndex === 0 ? "space-y-4" : "space-y-8"
+                      roundIndex === 0 ? "space-y-2" : "space-y-6"
                     )}>
                       {roundMatches.map((match, matchIndex) => (
                         <div key={match.id} className="relative">
@@ -132,13 +132,13 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                           {!isLastRound && (
                             <svg 
                               className="absolute left-full top-1/2 -translate-y-1/2 pointer-events-none"
-                              width="64" 
+                              width="32" 
                               height="2"
                             >
                               <line 
                                 x1="0" 
                                 y1="1" 
-                                x2="64" 
+                                x2="32" 
                                 y2="1" 
                                 stroke={lineColor}
                                 strokeWidth="2"
@@ -154,32 +154,32 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                     {roundIndex < mainRounds.length - 1 && roundMatches.length > 1 && (
                       <svg 
                         className="absolute left-full top-0 pointer-events-none"
-                        width="64"
+                        width="32"
                         height="100%"
-                        style={{ height: `${roundMatches.length * (roundIndex === 0 ? 80 : 120)}px` }}
+                        style={{ height: `${roundMatches.length * (roundIndex === 0 ? 56 : 80)}px` }}
                       >
                         {roundMatches.map((_, index) => {
                           if (index % 2 === 1) return null;
                           
-                          const match1Y = (index * (roundIndex === 0 ? 80 : 120)) + 40;
-                          const match2Y = ((index + 1) * (roundIndex === 0 ? 80 : 120)) + 40;
+                          const match1Y = (index * (roundIndex === 0 ? 56 : 80)) + 28;
+                          const match2Y = ((index + 1) * (roundIndex === 0 ? 56 : 80)) + 28;
                           const midY = (match1Y + match2Y) / 2;
                           
                           return (
                             <g key={index}>
                               <line 
-                                x1="64" 
+                                x1="32" 
                                 y1={match1Y} 
-                                x2="64" 
+                                x2="32" 
                                 y2={match2Y} 
                                 stroke={lineColor}
                                 strokeWidth="2"
                                 className="transition-colors duration-300"
                               />
                               <line 
-                                x1="64" 
+                                x1="32" 
                                 y1={midY} 
-                                x2="80" 
+                                x2="40" 
                                 y2={midY} 
                                 stroke={lineColor}
                                 strokeWidth="2"
@@ -200,7 +200,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
         {/* Losers Bracket */}
         {losersRounds.length > 0 && (
           <div className="relative">
-            <div className="flex gap-16 items-start min-w-max">
+            <div className="flex gap-8 items-start min-w-max">
               {losersRounds.map((round, roundIndex) => {
                 const roundMatches = losersBracketByRound[round].sort((a, b) => a.position - b.position);
                 const isLastRound = round === Math.max(...losersRounds);
@@ -208,9 +208,9 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                 return (
                   <div key={round} className="relative">
                     {/* Round Header */}
-                    <div className="text-center mb-6">
+                    <div className="text-center mb-3">
                       <h3 className={cn(
-                        "text-lg font-semibold transition-colors duration-300",
+                        "text-sm font-semibold transition-colors duration-300",
                         isDark ? "text-orange-300" : "text-orange-800"
                       )}>
                         {getLosersRoundName(round)}
@@ -220,7 +220,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                     {/* Matches Column */}
                     <div className={cn(
                       "flex flex-col",
-                      roundIndex === 0 ? "space-y-4" : "space-y-8"
+                      roundIndex === 0 ? "space-y-2" : "space-y-6"
                     )}>
                       {roundMatches.map((match, matchIndex) => (
                         <div key={match.id} className="relative">
@@ -235,13 +235,13 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                           {!isLastRound && (
                             <svg 
                               className="absolute left-full top-1/2 -translate-y-1/2 pointer-events-none"
-                              width="64" 
+                              width="32" 
                               height="2"
                             >
                               <line 
                                 x1="0" 
                                 y1="1" 
-                                x2="64" 
+                                x2="32" 
                                 y2="1" 
                                 stroke={lineColor}
                                 strokeWidth="2"
@@ -257,32 +257,32 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                     {roundIndex < losersRounds.length - 1 && roundMatches.length > 1 && (
                       <svg 
                         className="absolute left-full top-0 pointer-events-none"
-                        width="64"
+                        width="32"
                         height="100%"
-                        style={{ height: `${roundMatches.length * (roundIndex === 0 ? 80 : 120)}px` }}
+                        style={{ height: `${roundMatches.length * (roundIndex === 0 ? 56 : 80)}px` }}
                       >
                         {roundMatches.map((_, index) => {
                           if (index % 2 === 1) return null;
                           
-                          const match1Y = (index * (roundIndex === 0 ? 80 : 120)) + 40;
-                          const match2Y = ((index + 1) * (roundIndex === 0 ? 80 : 120)) + 40;
+                          const match1Y = (index * (roundIndex === 0 ? 56 : 80)) + 28;
+                          const match2Y = ((index + 1) * (roundIndex === 0 ? 56 : 80)) + 28;
                           const midY = (match1Y + match2Y) / 2;
                           
                           return (
                             <g key={index}>
                               <line 
-                                x1="64" 
+                                x1="32" 
                                 y1={match1Y} 
-                                x2="64" 
+                                x2="32" 
                                 y2={match2Y} 
                                 stroke={lineColor}
                                 strokeWidth="2"
                                 className="transition-colors duration-300"
                               />
                               <line 
-                                x1="64" 
+                                x1="32" 
                                 y1={midY} 
-                                x2="80" 
+                                x2="40" 
                                 y2={midY} 
                                 stroke={lineColor}
                                 strokeWidth="2"
