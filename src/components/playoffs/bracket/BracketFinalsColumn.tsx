@@ -20,10 +20,10 @@ const BracketFinalsColumn: React.FC<BracketFinalsColumnProps> = ({
   getNextMatch,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-start relative">
+    <div className="flex flex-col items-center justify-end relative">
       <h3 className="text-lg font-bold mb-4">Finals</h3>
       {matches.length > 0 && (
-        <div className="flex justify-center relative">
+        <div className="flex justify-center relative mt-auto">
           <RoundColumn
             key="finals"
             round="Finals"

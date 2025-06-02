@@ -20,14 +20,6 @@ export const getNextMatch = (
   losers: PlayoffMatch[][],
   finals: PlayoffMatch[]
 ): PlayoffMatch | null => {
-  // 1️⃣ If this match feeds into the losers bracket, resolve that first.
-  if (match.nextLoseMatchId) {
-    for (const round of losers) {
-      const target = round.find(m => m.id === match.nextLoseMatchId);
-      if (target) return target;
-    }
-  }
-
   // First check in winners bracket
   for (const round of winners) {
     const nextMatch = round.find(m => m.id === match.nextWinMatchId);

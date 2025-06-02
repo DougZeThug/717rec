@@ -21,13 +21,13 @@ const BracketSection: React.FC<BracketSectionProps> = ({
   const getSectionColor = () => {
     switch (section.type) {
       case 'winners':
-        return '#60a5fa'; // blue-400
+        return theme.colors.winners;
       case 'losers':
-        return '#fb923c'; // orange-400
+        return theme.colors.losers;
       case 'finals':
-        return '#fbbf24'; // yellow-400
+        return theme.colors.finals;
       default:
-        return '#9ca3af'; // gray-400
+        return theme.colors.border;
     }
   };
 
@@ -35,10 +35,14 @@ const BracketSection: React.FC<BracketSectionProps> = ({
 
   return (
     <div className={`bracket-section relative ${className}`}>
-      {/* Rounds Container - Clean Horizontal Flow */}
+      {/* Rounds Container - Horizontal flow */}
       <div 
-        className="flex items-start relative"
-        style={{ gap: '120px' }} // Fixed gap between rounds
+        className="bracket-rounds-grid relative"
+        style={{
+          display: 'flex',
+          gap: `${theme.spacing.columnGap}px`,
+          alignItems: 'flex-start'
+        }}
       >
         {section.rounds.map((round, roundIndex) => (
           <BracketColumn
@@ -47,32 +51,24 @@ const BracketSection: React.FC<BracketSectionProps> = ({
             theme={theme}
             onMatchClick={onMatchClick}
             roundIndex={roundIndex}
-            sectionType={section.type}
           />
         ))}
         
-        {/* Section connectors */}
+        {/* Internal connectors only (no cross-bracket lines) */}
         {connections.length > 0 && (
           <div className="absolute inset-0 pointer-events-none">
-            <svg 
-              className="w-full h-full" 
-              style={{ 
-                overflow: 'visible',
-                position: 'absolute',
-                top: 0,
-                left: 0
-              }}
-            >
+            <svg className="w-full h-full" style={{ overflow: 'visible' }}>
               {connections.map((connection, index) => (
-                <path
-                  key={`${section.type}-connector-${index}`}
-                  d={connection.path}
-                  fill="none"
-                  stroke={getSectionColor()}
-                  strokeWidth="2"
-                  opacity={0.8}
-                  className="transition-colors duration-300"
-                />
+                <g key={`${section.type}-connector-${index}`}>
+                  <path
+                    d={connection.path}
+                    fill="none"
+                    stroke={getSectionColor()}
+                    strokeWidth="2"
+                    opacity={0.7}
+                    className="transition-colors duration-300"
+                  />
+                </g>
               ))}
             </svg>
           </div>

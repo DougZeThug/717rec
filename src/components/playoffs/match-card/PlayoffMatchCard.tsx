@@ -50,7 +50,6 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
 
   return (
     <div
-      data-match-id={match.id}
       role={isInteractive ? "button" : undefined}
       tabIndex={isInteractive ? 0 : undefined}
       onClick={handleCardClick}

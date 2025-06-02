@@ -32,12 +32,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   losersConnectorPaths,
   finalsConnectorPaths
 }) => {
-  console.log('🔍 MobileLayout - Rendering with:', {
-    winnersRounds: winners.length,
-    losersRounds: losers.length,
-    finalsMatches: finals.length
-  });
-
   return (
     <div className="block sm:hidden space-y-10">
       {/* Winners Bracket Section - only render if there are matches */}
@@ -71,12 +65,12 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         />
       )}
       
-      {/* Divider - only show if there are finals matches */}
-      {(winners.length > 0 || losers.length > 0) && finals.length > 0 && (
+      {/* Divider - only show if there are both losers and finals matches */}
+      {losers.length > 0 && finals.length > 0 && (
         <div className="border-t border-dashed border-gray-300 dark:border-gray-600 my-4"></div>
       )}
       
-      {/* Finals Section - Fix: pass finals as single round, not wrapped in array */}
+      {/* Finals Section */}
       {finals.length > 0 && (
         <BracketSection
           title="Finals"

@@ -1,4 +1,3 @@
-
 export interface BracketPosition {
   x: number;
   y: number;
@@ -55,7 +54,7 @@ export interface BracketConnection {
   fromMatch: string;
   toMatch: string;
   path: string;
-  type: 'winners' | 'losers' | 'finals' | 'cross-bracket';
+  type: 'winners' | 'losers' | 'finals';
   positioning?: {
     path: string;
     segments: Array<{

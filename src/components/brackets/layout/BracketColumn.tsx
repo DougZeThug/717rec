@@ -8,7 +8,6 @@ interface BracketColumnProps {
   theme: BracketTheme;
   onMatchClick?: (matchId: string) => void;
   roundIndex: number;
-  sectionType?: 'winners' | 'losers' | 'finals';
   className?: string;
 }
 
@@ -17,55 +16,41 @@ const BracketColumn: React.FC<BracketColumnProps> = ({
   theme,
   onMatchClick,
   roundIndex,
-  sectionType = 'winners',
   className = ""
 }) => {
-  const getRoundHeaderColor = () => {
-    switch (sectionType) {
-      case 'winners':
-        return '#60a5fa'; // blue-400
-      case 'losers':
-        return '#fb923c'; // orange-400
-      case 'finals':
-        return '#fbbf24'; // yellow-400
-      default:
-        return '#9ca3af'; // gray-400
-    }
-  };
-
-  const getVerticalSpacing = () => {
-    // Increase spacing for later rounds
-    return Math.pow(2, roundIndex) * 20 + 20;
-  };
-
   return (
     <div 
-      className={`bracket-column flex flex-col ${className}`}
+      className={`bracket-column ${className}`}
       style={{ 
         width: theme.spacing.matchWidth,
-        minWidth: theme.spacing.matchWidth
+        minHeight: '100%'
       }}
     >
-      {/* Prominent Round Header */}
+      {/* Round Header */}
       <div 
-        className="text-center mb-8 p-3 rounded-lg"
+        className="text-xs font-medium mb-4 text-center px-2"
         style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          border: `2px solid ${getRoundHeaderColor()}`,
-          color: getRoundHeaderColor()
+          color: theme.colors.text,
+          height: '32px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
-        <div className="font-bold text-lg">
-          {round.title}
-        </div>
+        {round.title}
       </div>
       
-      {/* Matches Container with Dynamic Spacing */}
+      {/* Matches Container - CSS Grid for even spacing */}
       <div 
-        className="flex flex-col"
-        style={{ gap: `${getVerticalSpacing()}px` }}
+        className="matches-container"
+        style={{
+          display: 'grid',
+          gridTemplateRows: `repeat(${round.matches.length}, ${theme.spacing.matchHeight}px)`,
+          gap: `${theme.spacing.rowGap}px 0`,
+          alignContent: 'start'
+        }}
       >
-        {round.matches.map((match, matchIndex) => (
+        {round.matches.map((match) => (
           <div
             key={match.id}
             style={{

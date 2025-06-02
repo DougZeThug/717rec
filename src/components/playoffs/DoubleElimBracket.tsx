@@ -33,16 +33,6 @@ const DoubleElimBracket: React.FC<DoubleElimBracketProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   
-  // Debug logging to track bracket data
-  console.log('🔍 DoubleElimBracket - Bracket data:', {
-    winnersRounds: winners.length,
-    winnersMatches: winners.flatMap(round => round).length,
-    losersRounds: losers.length,
-    losersMatches: losers.flatMap(round => round).length,
-    finalsMatches: finals.length,
-    finalsData: finals
-  });
-  
   // Get champion display data and UI
   const { championDisplay } = useChampionDisplay(finals, teams);
   
@@ -62,7 +52,7 @@ const DoubleElimBracket: React.FC<DoubleElimBracketProps> = ({
   return (
     <div className="overflow-auto my-4 relative">
       <div className={cn(
-        "flex flex-col space-y-6 p-6 rounded-lg",
+        "flex flex-col space-y-6 min-w-max p-6 rounded-lg",
         isLight 
           ? "bg-gradient-to-br from-white to-blue-50/10" 
           : "bg-gradient-to-br from-gray-900/80 to-gray-800/80"
