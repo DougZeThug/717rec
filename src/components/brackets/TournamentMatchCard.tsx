@@ -99,13 +99,17 @@ const TournamentMatchCard: React.FC<TournamentMatchCardProps> = ({
       className={cn(
         "border rounded-lg overflow-hidden shadow-sm transition-all duration-300",
         "w-48 box-border",
-        fixedHeight ? "h-20" : "",
         getBracketStyling(),
         isClickable && "hover:shadow-md cursor-pointer",
         isClickable && isDark && "hover:bg-gray-700",
         isClickable && !isDark && "hover:bg-gray-50"
       )}
-      style={fixedHeight ? { height: '80px', margin: 0, padding: '8px' } : {}}
+      style={fixedHeight ? { 
+        height: 'var(--match-height)', 
+        margin: '0',
+        padding: '8px',
+        boxSizing: 'border-box'
+      } : {}}
       onClick={handleClick}
     >
       {/* Team 1 */}

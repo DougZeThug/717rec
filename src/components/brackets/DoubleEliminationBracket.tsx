@@ -53,21 +53,21 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
     .map(Number)
     .sort((a, b) => a - b);
 
-  // Get round names for main bracket
-  const getWinnerRoundName = (round: number, totalRounds: number) => {
-    if (round === totalRounds) return "Semifinals";
-    return `Round ${round}`;
-  };
-
   const lineColor = isDark ? "#6b7280" : "#9ca3af";
 
   return (
-    <div className={cn(
-      "w-full rounded-lg p-4 transition-colors duration-300",
-      isDark 
-        ? "bg-gray-900 border border-gray-700" 
-        : "bg-white border border-gray-200"
-    )}>
+    <div 
+      className={cn(
+        "w-full rounded-lg p-4 transition-colors duration-300",
+        isDark 
+          ? "bg-gray-900 border border-gray-700" 
+          : "bg-white border border-gray-200"
+      )}
+      style={{
+        '--match-height': '80px',
+        '--match-gap': '16px'
+      } as React.CSSProperties}
+    >
       <div className="mb-4">
         <h2 className={cn(
           "text-2xl font-bold transition-colors duration-300",
@@ -85,50 +85,46 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
       <div className="overflow-x-auto">
         <div className="min-w-max">
-          {/* Winners Bracket Grid */}
+          {/* Winners Bracket */}
           {winnerRounds.length > 0 && (
             <div className="mb-8">
               <div 
-                className="grid gap-0 relative"
-                style={{ 
-                  gridTemplateColumns: `repeat(${winnerRounds.length}, 1fr)`,
-                  minWidth: `${winnerRounds.length * 220}px`
-                }}
+                className="flex justify-between items-start w-full"
+                style={{ minWidth: `${(winnerRounds.length + (finalMatches.length > 0 ? 1 : 0)) * 220}px` }}
               >
+                {/* Winners Rounds */}
                 {winnerRounds.map((round, roundIndex) => {
                   const roundMatches = winnersByRound[round].sort((a, b) => a.position - b.position);
                   const isLastRound = round === Math.max(...winnerRounds);
                   
-                  // Calculate top margin for vertical alignment
-                  const getTopMargin = () => {
-                    if (roundIndex === 0) return 0;
-                    const prevRoundsMatches = roundIndex === 1 ? 1 : Math.pow(2, roundIndex - 1);
-                    return `${prevRoundsMatches * 48}px`; // 80px match height - 32px for better alignment
+                  // Calculate vertical offset
+                  const getMarginTop = () => {
+                    if (roundIndex === 0) return '0px';
+                    return `calc(${roundIndex} * (var(--match-height) + var(--match-gap)))`;
                   };
 
                   return (
-                    <div key={round} className="relative p-2">
+                    <div key={round} className="relative flex flex-col items-center">
                       {/* Round Header */}
                       <div className="text-center mb-4">
                         <h3 className={cn(
                           "text-sm font-semibold transition-colors duration-300",
                           isDark ? "text-blue-300" : "text-blue-800"
                         )}>
-                          {getWinnerRoundName(round, winnerRounds.length)}
+                          {roundIndex === winnerRounds.length - 1 ? "Semifinals" : `Round ${round}`}
                         </h3>
                       </div>
 
                       {/* Matches Container */}
                       <div 
-                        className="relative"
-                        style={{ marginTop: getTopMargin() }}
+                        className="relative flex flex-col"
+                        style={{ 
+                          marginTop: getMarginTop(),
+                          gap: 'var(--match-gap)'
+                        }}
                       >
                         {roundMatches.map((match, matchIndex) => (
-                          <div 
-                            key={match.id} 
-                            className="relative mb-4"
-                            style={{ height: '80px' }}
-                          >
+                          <div key={match.id} className="relative">
                             <TournamentMatchCard
                               match={match}
                               onMatchClick={onMatchClick}
@@ -138,7 +134,18 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                             />
                             
                             {/* Horizontal connecting lines */}
-                            {!isLastRound && (
+                            {!isLastRound && finalMatches.length === 0 && (
+                              <div
+                                className="absolute left-full top-1/2 w-8 h-0.5 -translate-y-1/2 pointer-events-none"
+                                style={{ 
+                                  backgroundColor: lineColor,
+                                  transition: 'background-color 0.3s'
+                                }}
+                              />
+                            )}
+
+                            {/* Connect to Finals if this is the last winners round */}
+                            {isLastRound && finalMatches.length > 0 && (
                               <div
                                 className="absolute left-full top-1/2 w-8 h-0.5 -translate-y-1/2 pointer-events-none"
                                 style={{ 
@@ -152,13 +159,14 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
                         {/* Vertical connecting lines for bracket tree */}
                         {roundIndex < winnerRounds.length - 1 && roundMatches.length > 1 && (
-                          <div className="absolute left-full top-0 w-8 h-full pointer-events-none">
+                          <div className="absolute left-full top-0 w-8 pointer-events-none"
+                               style={{ height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))` }}>
                             {roundMatches.map((_, index) => {
                               if (index % 2 === 1) return null;
                               
-                              const match1Y = index * 84 + 40; // 80px height + 4px margin + center offset
-                              const match2Y = (index + 1) * 84 + 40;
-                              const midY = (match1Y + match2Y) / 2;
+                              const match1Y = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
+                              const match2Y = `calc(${index + 1} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
+                              const midY = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) + var(--match-gap) / 2)`;
                               
                               return (
                                 <div key={index} className="relative">
@@ -168,8 +176,8 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                                     style={{
                                       backgroundColor: lineColor,
                                       left: '32px',
-                                      top: `${match1Y}px`,
-                                      height: `${match2Y - match1Y}px`
+                                      top: match1Y,
+                                      height: 'var(--match-gap)'
                                     }}
                                   />
                                   {/* Horizontal connector to next round */}
@@ -178,7 +186,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                                     style={{
                                       backgroundColor: lineColor,
                                       left: '32px',
-                                      top: `${midY}px`
+                                      top: midY
                                     }}
                                   />
                                 </div>
@@ -190,67 +198,62 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                     </div>
                   );
                 })}
+
+                {/* Finals Column (integrated with Winners) */}
+                {finalMatches.length > 0 && (
+                  <div className="relative flex flex-col items-center">
+                    <div className="text-center mb-4">
+                      <h3 className={cn(
+                        "text-sm font-semibold transition-colors duration-300",
+                        isDark ? "text-purple-300" : "text-purple-800"
+                      )}>
+                        Finals
+                      </h3>
+                    </div>
+                    <div 
+                      className="relative flex flex-col"
+                      style={{ 
+                        marginTop: `calc(${winnerRounds.length} * (var(--match-height) + var(--match-gap)))`,
+                        gap: 'var(--match-gap)'
+                      }}
+                    >
+                      {finalMatches.map((match) => (
+                        <div key={match.id} className="relative">
+                          <TournamentMatchCard
+                            match={match}
+                            onMatchClick={onMatchClick}
+                            showSeeds={false}
+                            bracketType="finals"
+                            fixedHeight={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Finals Section */}
-          {finalMatches.length > 0 && (
-            <div className="mb-8">
-              <div className="grid grid-cols-1 gap-0 w-56 mx-auto">
-                <div className="relative p-2">
-                  <div className="text-center mb-4">
-                    <h3 className={cn(
-                      "text-sm font-semibold transition-colors duration-300",
-                      isDark ? "text-purple-300" : "text-purple-800"
-                    )}>
-                      Finals
-                    </h3>
-                  </div>
-                  <div className="relative">
-                    {finalMatches.map((match) => (
-                      <div 
-                        key={match.id} 
-                        className="relative"
-                        style={{ height: '80px' }}
-                      >
-                        <TournamentMatchCard
-                          match={match}
-                          onMatchClick={onMatchClick}
-                          showSeeds={false}
-                          bracketType="finals"
-                          fixedHeight={true}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Losers Bracket Grid */}
+          {/* Losers Bracket */}
           {loserRounds.length > 0 && (
-            <div>
+            <div style={{ marginTop: '40px' }}>
               <div 
-                className="grid gap-0 relative"
-                style={{ 
-                  gridTemplateColumns: `repeat(${loserRounds.length}, 1fr)`,
-                  minWidth: `${loserRounds.length * 220}px`
-                }}
+                className="flex justify-between items-start w-full"
+                style={{ minWidth: `${loserRounds.length * 220}px` }}
               >
                 {loserRounds.map((round, roundIndex) => {
                   const roundMatches = losersByRound[round].sort((a, b) => a.position - b.position);
                   const isLastRound = round === Math.max(...loserRounds);
                   
-                  // Calculate top margin for losers bracket alignment
-                  const getTopMargin = () => {
-                    if (roundIndex === 0) return 0;
-                    return `${roundIndex * 48}px`; // Progressive margin for losers rounds
+                  // Calculate staggered vertical offset for losers rounds
+                  const getMarginTop = () => {
+                    if (roundIndex === 0) return '0px';
+                    return `calc(${roundIndex} * (var(--match-height) + var(--match-gap)))`;
                   };
 
                   return (
-                    <div key={round} className="relative p-2">
+                    <div key={round} className="relative flex flex-col items-center">
                       {/* Round Header */}
                       <div className="text-center mb-4">
                         <h3 className={cn(
@@ -263,15 +266,14 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
                       {/* Matches Container */}
                       <div 
-                        className="relative"
-                        style={{ marginTop: getTopMargin() }}
+                        className="relative flex flex-col"
+                        style={{ 
+                          marginTop: getMarginTop(),
+                          gap: 'var(--match-gap)'
+                        }}
                       >
                         {roundMatches.map((match, matchIndex) => (
-                          <div 
-                            key={match.id} 
-                            className="relative mb-4"
-                            style={{ height: '80px' }}
-                          >
+                          <div key={match.id} className="relative">
                             <TournamentMatchCard
                               match={match}
                               onMatchClick={onMatchClick}
@@ -295,13 +297,14 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
 
                         {/* Vertical connecting lines for bracket tree */}
                         {roundIndex < loserRounds.length - 1 && roundMatches.length > 1 && (
-                          <div className="absolute left-full top-0 w-8 h-full pointer-events-none">
+                          <div className="absolute left-full top-0 w-8 pointer-events-none"
+                               style={{ height: `calc(${roundMatches.length} * (var(--match-height) + var(--match-gap)) - var(--match-gap))` }}>
                             {roundMatches.map((_, index) => {
                               if (index % 2 === 1) return null;
                               
-                              const match1Y = index * 84 + 40;
-                              const match2Y = (index + 1) * 84 + 40;
-                              const midY = (match1Y + match2Y) / 2;
+                              const match1Y = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
+                              const match2Y = `calc(${index + 1} * (var(--match-height) + var(--match-gap)) + var(--match-height) / 2)`;
+                              const midY = `calc(${index} * (var(--match-height) + var(--match-gap)) + var(--match-height) + var(--match-gap) / 2)`;
                               
                               return (
                                 <div key={index} className="relative">
@@ -310,8 +313,8 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                                     style={{
                                       backgroundColor: lineColor,
                                       left: '32px',
-                                      top: `${match1Y}px`,
-                                      height: `${match2Y - match1Y}px`
+                                      top: match1Y,
+                                      height: 'var(--match-gap)'
                                     }}
                                   />
                                   <div
@@ -319,7 +322,7 @@ const DoubleEliminationBracket: React.FC<DoubleEliminationBracketProps> = ({
                                     style={{
                                       backgroundColor: lineColor,
                                       left: '32px',
-                                      top: `${midY}px`
+                                      top: midY
                                     }}
                                   />
                                 </div>
