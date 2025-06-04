@@ -20,10 +20,18 @@ const BracketView: React.FC<BracketViewProps> = ({
   teams: legacyTeams,
   onEditMatch
 }) => {
-  console.log('BracketView rendering with:', {
+  console.log('🖼️ DEBUG: BracketView rendering with props:', {
     bracketId,
+    bracketIdType: typeof bracketId,
+    bracketIdValid: !!bracketId,
     hasLegacyBracket: !!legacyBracket,
-    hasLegacyTeams: !!legacyTeams
+    hasLegacyTeams: !!legacyTeams,
+    legacyBracketInfo: legacyBracket ? {
+      id: legacyBracket.id,
+      name: legacyBracket.name,
+      matchesCount: legacyBracket.matches?.length
+    } : null,
+    timestamp: new Date().toISOString()
   });
   
   // Enhanced data hook with refetch capability
@@ -34,27 +42,33 @@ const BracketView: React.FC<BracketViewProps> = ({
     refetch: refetchBracket
   } = useBracketData(bracketId);
 
-  console.log('useBracketData result:', {
+  console.log('🖼️ DEBUG: useBracketData hook result:', {
     fetchedBracket: fetchedBracket ? {
       id: fetchedBracket.id,
       name: fetchedBracket.name,
-      matchesCount: fetchedBracket.matches?.length || 0
+      matchesCount: fetchedBracket.matches?.length || 0,
+      matchesIsArray: Array.isArray(fetchedBracket.matches),
+      teamsCount: fetchedBracket.teams?.length || 0
     } : null,
     isLoading,
-    error: error?.message
+    error: error?.message,
+    timestamp: new Date().toISOString()
   });
 
   // Memoized data selection for performance
   const displayBracket = useMemo(() => {
     const result = legacyBracket || fetchedBracket;
-    console.log('displayBracket selection:', {
+    console.log('🖼️ DEBUG: displayBracket selection:', {
       usingLegacy: !!legacyBracket,
       usingFetched: !!fetchedBracket,
       finalResult: result ? {
         id: result.id,
         name: result.name,
-        matchesCount: result.matches?.length || 0
-      } : null
+        matchesCount: result.matches?.length || 0,
+        matchesIsArray: Array.isArray(result.matches),
+        hasValidStructure: !!(result.id && result.name && Array.isArray(result.matches))
+      } : null,
+      timestamp: new Date().toISOString()
     });
     return result;
   }, [legacyBracket, fetchedBracket]);
@@ -65,16 +79,18 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   // Optimistic retry handler
   const handleRetry = useCallback(async () => {
-    console.log('Retrying bracket data fetch');
+    console.log('🔄 DEBUG: Manual retry triggered for bracket:', bracketId);
     try {
       await refetchBracket();
+      console.log('🔄 DEBUG: Manual retry completed successfully');
     } catch (retryError) {
-      console.error('Retry failed:', retryError);
+      console.error('🔄 DEBUG: Manual retry failed:', retryError);
     }
-  }, [refetchBracket]);
+  }, [refetchBracket, bracketId]);
 
   // Enhanced loading state with better UX
   if (isLoading && !legacyBracket) {
+    console.log('🖼️ DEBUG: Showing loading state');
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center space-y-3">
@@ -93,6 +109,7 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   // Enhanced error state with retry functionality
   if (error && !legacyBracket) {
+    console.log('🖼️ DEBUG: Showing error state:', error.message);
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
@@ -123,6 +140,7 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   // Enhanced empty state with more context
   if (!displayBracket) {
+    console.log('🖼️ DEBUG: Showing empty state - no bracket data');
     return (
       <div className="text-center p-8 space-y-3">
         <div className="space-y-2">
@@ -141,10 +159,12 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   // Critical check before rendering SimpleBracket
   if (!displayBracket.matches || !Array.isArray(displayBracket.matches)) {
-    console.error('CRITICAL - Bracket exists but matches is not an array!', {
+    console.error('🚨 DEBUG: CRITICAL - Bracket exists but matches is not an array!', {
       bracket: displayBracket,
       matchesProperty: displayBracket.matches,
-      typeOfMatches: typeof displayBracket.matches
+      typeOfMatches: typeof displayBracket.matches,
+      bracketKeys: Object.keys(displayBracket),
+      timestamp: new Date().toISOString()
     });
     
     return (
@@ -162,10 +182,13 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  console.log('About to render SimpleBracket with:', {
+  console.log('🖼️ DEBUG: About to render SimpleBracket with valid data:', {
     bracketId: displayBracket.id,
     bracketName: displayBracket.name,
-    matchesCount: displayBracket.matches.length
+    matchesCount: displayBracket.matches.length,
+    matchesIsArray: Array.isArray(displayBracket.matches),
+    teamsCount: displayBracket.teams?.length || 0,
+    timestamp: new Date().toISOString()
   });
 
   // Return SimpleBracket with enhanced error boundary

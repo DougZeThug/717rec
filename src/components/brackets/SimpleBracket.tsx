@@ -10,17 +10,21 @@ interface SimpleBracketProps {
 }
 
 const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) => {
-  console.log('SimpleBracket rendering with bracket:', {
+  console.log('🏆 DEBUG: SimpleBracket rendering with bracket:', {
     bracketExists: !!bracket,
     bracketId: bracket?.id,
     bracketName: bracket?.name,
+    bracketFormat: bracket?.format,
+    bracketState: bracket?.state,
     matchesCount: bracket?.matches?.length,
-    teamsCount: bracket?.teams?.length
+    matchesIsArray: Array.isArray(bracket?.matches),
+    teamsCount: bracket?.teams?.length,
+    timestamp: new Date().toISOString()
   });
 
   // Enhanced matches validation
   if (!bracket) {
-    console.error('No bracket prop provided to SimpleBracket!');
+    console.error('🚨 DEBUG: No bracket prop provided to SimpleBracket!');
     return (
       <div className="text-center p-8">
         <p className="text-red-500">Error: No bracket data provided</p>
@@ -29,9 +33,10 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
   }
 
   if (!bracket.matches) {
-    console.error('bracket.matches is null/undefined!', {
+    console.error('🚨 DEBUG: bracket.matches is null/undefined!', {
       bracket,
-      matchesProperty: bracket.matches
+      matchesProperty: bracket.matches,
+      bracketKeys: Object.keys(bracket)
     });
     return (
       <div className="text-center p-8">
@@ -45,7 +50,7 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
   }
 
   if (!Array.isArray(bracket.matches)) {
-    console.error('bracket.matches is not an array!', {
+    console.error('🚨 DEBUG: bracket.matches is not an array!', {
       bracket,
       matchesProperty: bracket.matches,
       matchesType: typeof bracket.matches
@@ -72,14 +77,19 @@ const SimpleBracket: React.FC<SimpleBracketProps> = ({ bracket, onMatchClick }) 
   const isDoubleElimination = hasWinnersMatches || hasLosersMatches || 
     bracket.format?.toLowerCase().includes('double');
 
-  console.log('SimpleBracket bracket type detection:', {
+  console.log('🏆 DEBUG: SimpleBracket bracket type detection:', {
     hasWinnersMatches,
     hasLosersMatches,
     format: bracket.format,
-    isDoubleElimination
+    isDoubleElimination,
+    matchTypeBreakdown: {
+      winners: bracket.matches.filter(m => m.matchType === 'winners' || m.matchType === 'winner').length,
+      losers: bracket.matches.filter(m => m.matchType === 'losers' || m.matchType === 'loser').length,
+      finals: bracket.matches.filter(m => m.matchType === 'finals' || m.matchType === 'final').length
+    }
   });
 
-  console.log('SimpleBracket matches validation passed, rendering bracket component');
+  console.log('🏆 DEBUG: SimpleBracket matches validation passed, rendering bracket component');
 
   return (
     <div className="overflow-x-auto">

@@ -1,4 +1,5 @@
 
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,16 +41,21 @@ export const useBracketData = (bracketId: string | null) => {
   return useQuery({
     queryKey: ['bracket-data', bracketId],
     queryFn: async (): Promise<SimpleBracketData | null> => {
-      console.log('Starting bracket data fetch for:', bracketId);
+      console.log('🎯 DEBUG: useBracketData queryFn called:', {
+        bracketId,
+        bracketIdType: typeof bracketId,
+        bracketIdValid: !!bracketId,
+        timestamp: new Date().toISOString()
+      });
       
       if (!bracketId) {
-        console.log('No bracketId provided');
+        console.log('🎯 DEBUG: No bracketId provided, returning null');
         return null;
       }
 
       try {
         // Step 1: Get bracket info with state field
-        console.log('Fetching bracket info...');
+        console.log('🎯 DEBUG: Step 1 - Fetching bracket info for ID:', bracketId);
         const { data: bracket, error: bracketError } = await supabase
           .from('brackets')
           .select('id, title, format, state, division_id')
@@ -57,24 +63,25 @@ export const useBracketData = (bracketId: string | null) => {
           .single();
 
         if (bracketError) {
-          console.error('Bracket query error:', bracketError);
+          console.error('🎯 DEBUG: Bracket query error:', bracketError);
           throw bracketError;
         }
 
         if (!bracket) {
-          console.log('No bracket found with ID:', bracketId);
+          console.log('🎯 DEBUG: No bracket found with ID:', bracketId);
           return null;
         }
 
-        console.log('Bracket found:', {
+        console.log('🎯 DEBUG: Step 1 Complete - Bracket found:', {
           id: bracket.id,
           title: bracket.title,
           division_id: bracket.division_id,
-          state: bracket.state
+          state: bracket.state,
+          format: bracket.format
         });
 
         // Step 2: Get ALL playoff matches with relationship fields
-        console.log('Fetching playoff matches with relationships...');
+        console.log('🎯 DEBUG: Step 2 - Fetching playoff matches for bracket:', bracketId);
         const { data: rawMatches, error: matchesError } = await supabase
           .from('playoff_matches')
           .select(`
@@ -98,33 +105,46 @@ export const useBracketData = (bracketId: string | null) => {
           .order('position', { ascending: true });
 
         if (matchesError) {
-          console.error('Matches query error:', matchesError);
+          console.error('🎯 DEBUG: Matches query error:', matchesError);
           throw matchesError;
         }
 
-        console.log('Raw matches from DB:', {
+        console.log('🎯 DEBUG: Step 2 Complete - Raw matches from DB:', {
           totalMatches: rawMatches?.length || 0,
-          isArray: Array.isArray(rawMatches)
+          isArray: Array.isArray(rawMatches),
+          sampleMatch: rawMatches?.[0] ? {
+            id: rawMatches[0].id,
+            round: rawMatches[0].round,
+            position: rawMatches[0].position,
+            matchType: rawMatches[0].match_type,
+            hasNextWin: !!rawMatches[0].next_win_match_id,
+            hasNextLose: !!rawMatches[0].next_lose_match_id
+          } : null
         });
         
         if (!rawMatches || rawMatches.length === 0) {
-          console.warn('No matches found in database for bracket:', bracketId);
+          console.warn('🎯 DEBUG: No matches found in database for bracket:', bracketId);
         }
 
         // Step 3: Get teams for the division
-        console.log('Fetching division teams...');
+        console.log('🎯 DEBUG: Step 3 - Fetching teams for division:', bracket.division_id);
         const { data: teams, error: teamsError } = await supabase
           .from('teams')
           .select('id, name, logo_url, image_url')
           .eq('division_id', bracket.division_id);
 
         if (teamsError) {
-          console.error('Teams query error:', teamsError);
+          console.error('🎯 DEBUG: Teams query error:', teamsError);
           throw teamsError;
         }
 
-        console.log('Teams found:', {
-          teamsCount: teams?.length || 0
+        console.log('🎯 DEBUG: Step 3 Complete - Teams found:', {
+          teamsCount: teams?.length || 0,
+          sampleTeam: teams?.[0] ? {
+            id: teams[0].id,
+            name: teams[0].name,
+            hasLogo: !!(teams[0].logo_url || teams[0].image_url)
+          } : null
         });
 
         // Step 4: Create team lookup map
@@ -133,12 +153,14 @@ export const useBracketData = (bracketId: string | null) => {
           teamLookup.set(team.id, team);
         });
 
+        console.log('🎯 DEBUG: Step 4 - Team lookup map created with', teamLookup.size, 'teams');
+
         // Step 5: Transform matches with team data and relationship fields
         const transformedMatches = (rawMatches || []).map((match) => {
           const team1 = match.team1_id ? teamLookup.get(match.team1_id) : null;
           const team2 = match.team2_id ? teamLookup.get(match.team2_id) : null;
           
-          return {
+          const transformed = {
             id: match.id,
             round: match.round,
             position: match.position,
@@ -158,13 +180,20 @@ export const useBracketData = (bracketId: string | null) => {
             team1Seed: match.team1_seed,
             team2Seed: match.team2_seed
           };
+
+          return transformed;
         });
 
-        console.log('Transformed matches with relationships:', {
+        console.log('🎯 DEBUG: Step 5 Complete - Transformed matches:', {
           originalMatchesCount: rawMatches?.length || 0,
           transformedMatchesCount: transformedMatches.length,
           matchesWithNextWin: transformedMatches.filter(m => m.nextWinMatchId).length,
-          matchesWithNextLose: transformedMatches.filter(m => m.nextLoseMatchId).length
+          matchesWithNextLose: transformedMatches.filter(m => m.nextLoseMatchId).length,
+          matchTypeBreakdown: {
+            winners: transformedMatches.filter(m => m.matchType === 'winners').length,
+            losers: transformedMatches.filter(m => m.matchType === 'losers').length,
+            finals: transformedMatches.filter(m => m.matchType === 'finals').length
+          }
         });
 
         // Step 6: Build final result with backward compatibility
@@ -179,28 +208,40 @@ export const useBracketData = (bracketId: string | null) => {
           teams: teams || []
         };
 
-        console.log('Final result with relationships:', {
+        console.log('🎯 DEBUG: Step 6 Complete - Final result built:', {
           bracketId: result.id,
           bracketName: result.name,
+          bracketFormat: result.format,
+          bracketState: result.state,
           matchesInResult: result.matches?.length || 0,
           matchesIsArray: Array.isArray(result.matches),
-          teamsCount: result.teams.length
+          teamsCount: result.teams.length,
+          hasValidData: !!(result.id && result.name && Array.isArray(result.matches))
         });
 
         return result;
 
       } catch (error) {
-        console.error('CRITICAL ERROR in useBracketData:', error);
+        console.error('🚨 DEBUG: CRITICAL ERROR in useBracketData:', {
+          bracketId,
+          error: error.message,
+          stack: error.stack,
+          timestamp: new Date().toISOString()
+        });
         throw error;
       }
     },
     enabled: !!bracketId,
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: (failureCount, error) => {
-      console.log(`Query retry attempt ${failureCount} for bracket ${bracketId}:`, error);
+      console.log(`🔄 DEBUG: Query retry attempt ${failureCount} for bracket ${bracketId}:`, {
+        error: error?.message,
+        willRetry: failureCount < 2
+      });
       return failureCount < 2; // Retry up to 2 times
     },
     refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 };
+
