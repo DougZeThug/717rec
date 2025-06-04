@@ -1,3 +1,4 @@
+
 import { SimpleBracketData } from "@/hooks/brackets/useBracketData";
 import { BracketMatch, BracketSection, ProcessedBracketData, BracketRound } from "../types/bracketTypes";
 
@@ -17,7 +18,7 @@ export const transformMatch = (match: any): BracketMatch => ({
   status: match.status || 'pending',
   matchType: match.matchType === 'winner' ? 'winners' : match.matchType,
   round: match.round || 1,
-  order: match.position || 0, // Use the database position field for ordering
+  order: match.position || 0, // Use database position field for ordering
   position: undefined, // Layout position will be calculated later
   nextWinMatchId: match.nextWinMatchId, // Map database relationship field
   nextLoseMatchId: match.nextLoseMatchId // Map database relationship field
