@@ -1,4 +1,3 @@
-
 import { SimpleBracketData } from "@/hooks/brackets/useBracketData";
 import { BracketMatch, BracketSection, ProcessedBracketData, BracketRound } from "../types/bracketTypes";
 
@@ -18,23 +17,40 @@ export const transformMatch = (match: any): BracketMatch => ({
   status: match.status || 'pending',
   matchType: match.matchType === 'winner' ? 'winners' : match.matchType,
   round: match.round || 1,
-  order: match.position || 0, // Use the original position value for ordering
-  position: undefined // Layout position will be calculated later
+  order: match.position || 0, // Use the database position field for ordering
+  position: undefined, // Layout position will be calculated later
+  nextWinMatchId: match.nextWinMatchId, // Map database relationship field
+  nextLoseMatchId: match.nextLoseMatchId // Map database relationship field
 });
 
 export const processBracketData = (bracket: SimpleBracketData): ProcessedBracketData => {
-  // Separate matches by type
+  console.log('Processing bracket data with relationships:', {
+    totalMatches: bracket.matches?.length || 0,
+    matchesWithNextWin: bracket.matches?.filter(m => m.nextWinMatchId).length || 0,
+    matchesWithNextLose: bracket.matches?.filter(m => m.nextLoseMatchId).length || 0
+  });
+
+  // Separate matches by type and ensure proper sorting by position
   const winnerMatches = bracket.matches
     .filter(match => match.matchType === 'winners' || match.matchType === 'winner')
+    .sort((a, b) => a.position - b.position) // Sort by database position field
     .map(transformMatch);
   
   const loserMatches = bracket.matches
     .filter(match => match.matchType === 'losers' || match.matchType === 'loser')
+    .sort((a, b) => a.position - b.position) // Sort by database position field
     .map(transformMatch);
   
   const finalMatches = bracket.matches
     .filter(match => match.matchType === 'finals' || match.matchType === 'final')
+    .sort((a, b) => a.position - b.position) // Sort by database position field
     .map(transformMatch);
+
+  console.log('Matches sorted by position:', {
+    winners: winnerMatches.length,
+    losers: loserMatches.length,
+    finals: finalMatches.length
+  });
 
   // Group matches into rounds with improved logic
   const winnersSection = createSection('winners', 'Winners Bracket', winnerMatches);
@@ -45,7 +61,7 @@ export const processBracketData = (bracket: SimpleBracketData): ProcessedBracket
 
   return {
     sections,
-    connections: [], // Will be calculated by layout calculator
+    connections: [], // Will be calculated by layout calculator using relationship fields
     dimensions: {
       width: 1200, // Will be calculated dynamically
       height: 800
@@ -84,7 +100,7 @@ const groupMatchesByRound = (matches: BracketMatch[], type: 'winners' | 'losers'
     .map(([roundNumber, roundMatches], index) => ({
       id: `${type}-round-${roundNumber}`,
       title: getRoundTitle(type, roundNumber, roundMatches.length, roundsMap.size),
-      matches: roundMatches.sort((a, b) => a.order - b.order), // Now using the order field for sorting
+      matches: roundMatches.sort((a, b) => a.order - b.order), // Sort by position field from database
       position: { x: 0, y: 0, width: 0, height: 0 },
       matchType: type
     }));

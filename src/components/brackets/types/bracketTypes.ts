@@ -23,6 +23,8 @@ export interface BracketMatch {
   round: number;
   order: number; // For sorting matches within rounds
   position?: BracketPosition; // For layout coordinates
+  nextWinMatchId?: string | null; // Database relationship field
+  nextLoseMatchId?: string | null; // Database relationship field
 }
 
 export interface BracketRound {
