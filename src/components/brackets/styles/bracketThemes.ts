@@ -16,8 +16,8 @@ export const defaultTheme: BracketTheme = {
   spacing: {
     matchWidth: 200,
     matchHeight: 80,
-    columnGap: 80, // Increased for better connector visibility
-    rowGap: 32    // Increased for better vertical spacing
+    columnGap: 120, // Increased for better connector visibility and spacing
+    rowGap: 40     // Increased base spacing for simple exponential calculation
   }
 };
 
@@ -36,8 +36,8 @@ export const lightTheme: BracketTheme = {
   spacing: {
     matchWidth: 200,
     matchHeight: 80,
-    columnGap: 80,
-    rowGap: 32
+    columnGap: 120,
+    rowGap: 40
   }
 };
 
@@ -47,8 +47,8 @@ export const compactTheme: BracketTheme = {
   spacing: {
     matchWidth: 180,
     matchHeight: 70,
-    columnGap: 60,
-    rowGap: 24
+    columnGap: 100,
+    rowGap: 30
   }
 };
 
@@ -58,20 +58,20 @@ export const largeTheme: BracketTheme = {
   spacing: {
     matchWidth: 240,
     matchHeight: 100,
-    columnGap: 100,
-    rowGap: 40
+    columnGap: 150,
+    rowGap: 50
   }
 };
 
-// Mobile-optimized theme with improved spacing
+// Mobile-optimized theme with simplified spacing
 export const mobileTheme: BracketTheme = {
   ...defaultTheme,
   name: 'mobile',
   spacing: {
     matchWidth: 160,
     matchHeight: 70,
-    columnGap: 60, // Adequate for mobile connectors
-    rowGap: 20
+    columnGap: 80,
+    rowGap: 25
   }
 };
 
