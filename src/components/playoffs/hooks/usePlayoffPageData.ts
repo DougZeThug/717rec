@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from "@tanstack/react-query";
@@ -182,7 +183,7 @@ export function usePlayoffPageData(): PlayoffPageData {
       allBrackets: allBrackets ? {
         count: allBrackets.length,
         ids: allBrackets.map(b => b.id),
-        names: allBrackets.map(b => b.name || b.title)
+        names: allBrackets.map(b => b.name)
       } : null,
       bracketsLoading,
       teamsByDivision: teamsByDivision ? Object.keys(teamsByDivision) : null,
