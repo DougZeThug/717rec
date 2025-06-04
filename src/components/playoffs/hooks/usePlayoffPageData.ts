@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from "@tanstack/react-query";
@@ -197,7 +196,68 @@ export function usePlayoffPageData(): PlayoffPageData {
     });
   }, [allBrackets, bracketsLoading, teamsByDivision, bracketsByDivision, bracketsDataError]);
   
-  // Enhanced delete function with proper cache invalidation
+  // Simple bracket processing with error recovery
+  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
+  try {
+    if (bracketsByDivision) {
+      Object.keys(bracketsByDivision).forEach(div => {
+        const divisionBrackets = bracketsByDivision[div];
+        if (Array.isArray(divisionBrackets)) {
+          typesafeBracketsByDivision[div] = divisionBrackets.map(b => ({
+            ...b,
+            matches: Array.isArray(b.matches) ? b.matches : [],
+            id: b.id || crypto.randomUUID(), 
+            state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
+            format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
+          }));
+        } else {
+          typesafeBracketsByDivision[div] = [];
+        }
+      });
+    }
+  } catch (err) {
+    const errorMessage = getUIErrorMessage(err, "Failed to process bracket data");
+    logError(err, "typesafeBracketsByDivision processing");
+    setError(errorMessage);
+  }
+
+  // Simple loading state
+  const isLoading = bracketsLoading || divisionsLoading;
+  
+  const allBracketsData = (() => {
+    try {
+      if (!Array.isArray(allBrackets)) {
+        return [];
+      }
+      return allBrackets.map(b => ({
+        ...b,
+        matches: Array.isArray(b.matches) ? b.matches : [],
+        id: b.id || crypto.randomUUID(),
+        state: (b.state || BRACKET_STATES.PENDING) as BracketState,
+        format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
+      }));
+    } catch (err) {
+      const errorMessage = getUIErrorMessage(err, "Failed to process all brackets data");
+      logError(err, "allBracketsData processing");
+      setError(errorMessage);
+      return [];
+    }
+  })();
+  
+  const availableDivisions = (() => {
+    try {
+      if (!Array.isArray(divisions)) {
+        return [];
+      }
+      return divisions.map(div => div.name).filter(Boolean);
+    } catch (err) {
+      const errorMessage = getUIErrorMessage(err, "Failed to process divisions data");
+      logError(err, "availableDivisions processing");
+      setError(errorMessage);
+      return [];
+    }
+  })();
+
   const deleteBracket = useCallback(async (bracketId: string, bracketName: string) => {
     console.log('🗑️ DEBUG: Deleting bracket:', { bracketId, bracketName });
     
@@ -293,68 +353,6 @@ export function usePlayoffPageData(): PlayoffPageData {
       throw error;
     }
   }, [originalRefetchBrackets, queryClient, selectedBracketId, refetchSelectedBracket]);
-
-  // Simple bracket processing with error recovery
-  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
-  try {
-    if (bracketsByDivision) {
-      Object.keys(bracketsByDivision).forEach(div => {
-        const divisionBrackets = bracketsByDivision[div];
-        if (Array.isArray(divisionBrackets)) {
-          typesafeBracketsByDivision[div] = divisionBrackets.map(b => ({
-            ...b,
-            matches: Array.isArray(b.matches) ? b.matches : [],
-            id: b.id || crypto.randomUUID(), 
-            state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
-            format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
-          }));
-        } else {
-          typesafeBracketsByDivision[div] = [];
-        }
-      });
-    }
-  } catch (err) {
-    const errorMessage = getUIErrorMessage(err, "Failed to process bracket data");
-    logError(err, "typesafeBracketsByDivision processing");
-    setError(errorMessage);
-  }
-
-  // Simple loading state
-  const isLoading = bracketsLoading || divisionsLoading;
-  
-  const allBracketsData = (() => {
-    try {
-      if (!Array.isArray(allBrackets)) {
-        return [];
-      }
-      return allBrackets.map(b => ({
-        ...b,
-        matches: Array.isArray(b.matches) ? b.matches : [],
-        id: b.id || crypto.randomUUID(),
-        state: (b.state || BRACKET_STATES.PENDING) as BracketState,
-        format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat
-      }));
-    } catch (err) {
-      const errorMessage = getUIErrorMessage(err, "Failed to process all brackets data");
-      logError(err, "allBracketsData processing");
-      setError(errorMessage);
-      return [];
-    }
-  })();
-  
-  const availableDivisions = (() => {
-    try {
-      if (!Array.isArray(divisions)) {
-        return [];
-      }
-      return divisions.map(div => div.name).filter(Boolean);
-    } catch (err) {
-      const errorMessage = getUIErrorMessage(err, "Failed to process divisions data");
-      logError(err, "availableDivisions processing");
-      setError(errorMessage);
-      return [];
-    }
-  })();
 
   // Convert error types to strings
   const finalDivisionsError = convertErrorToString(divisionsError);
