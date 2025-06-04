@@ -189,9 +189,9 @@ const createSimpleConnection = (
   const path = `M ${fromCenterX} ${fromCenterY} L ${midX} ${fromCenterY} L ${midX} ${toCenterY} L ${toCenterX} ${toCenterY}`;
   
   const segments = [
-    { type: 'horizontal', x1: fromCenterX, y1: fromCenterY, x2: midX, y2: fromCenterY },
-    { type: 'vertical', x1: midX, y1: fromCenterY, x2: midX, y2: toCenterY },
-    { type: 'horizontal', x1: midX, y1: toCenterY, x2: toCenterX, y2: toCenterY }
+    { type: 'horizontal' as const, x1: fromCenterX, y1: fromCenterY, x2: midX, y2: fromCenterY },
+    { type: 'vertical' as const, x1: midX, y1: fromCenterY, x2: midX, y2: toCenterY },
+    { type: 'horizontal' as const, x1: midX, y1: toCenterY, x2: toCenterX, y2: toCenterY }
   ];
 
   return {
