@@ -35,10 +35,10 @@ export const useScoreSubmission = ({
     try {
       // Generate mock game data based on the score pattern
       const games = generateGameData(option);
-      
+
       // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
       const dummyRefetch = async () => {};
-      
+
       // Save the match score
       await onSave(
         match.id,
@@ -49,6 +49,10 @@ export const useScoreSubmission = ({
         option.team2GameWins,
         dummyRefetch
       );
+
+      // Reset UI state after saving
+      setIsSubmitting(false);
+      setSelectedOption(null);
     } catch (error) {
       console.error("Error saving quick score:", error);
       setIsSubmitting(false);
