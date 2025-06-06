@@ -1,11 +1,12 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Trophy, Calendar } from "lucide-react";
+import { ChevronDown, Trophy, Calendar, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import DivisionPanel from "./DivisionPanel";
 import SeasonMetaBar from "./SeasonMetaBar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface Season {
@@ -36,52 +37,73 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
   return useQuery({
     queryKey: ['season-data', seasonId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('team_season_stats')
-        .select(`
-          team_id,
-          season_id,
-          match_wins,
-          match_losses,
-          game_wins,
-          game_losses,
-          sos,
-          power_score,
-          champion,
-          division_name,
-          teams:team_id (
-            name,
-            logo_url,
-            image_url
-          )
-        `)
-        .eq('season_id', seasonId)
-        .order('division_name', { ascending: true })
-        .order('match_wins', { ascending: false });
+      console.log(`🔍 Season ${seasonId}: Starting season data query...`);
+      
+      try {
+        const { data, error } = await supabase
+          .from('team_season_stats')
+          .select(`
+            team_id,
+            season_id,
+            match_wins,
+            match_losses,
+            game_wins,
+            game_losses,
+            sos,
+            power_score,
+            champion,
+            division_name,
+            teams:team_id (
+              name,
+              logo_url,
+              image_url
+            )
+          `)
+          .eq('season_id', seasonId)
+          .order('division_name', { ascending: true })
+          .order('match_wins', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching season data:', error);
-        throw error;
+        console.log(`📊 Season ${seasonId}: Query completed`);
+        console.log(`📊 Season ${seasonId}: Raw data:`, data);
+        console.log(`❌ Season ${seasonId}: Error (if any):`, error);
+
+        if (error) {
+          console.error(`❌ Season ${seasonId}: Database error:`, {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
+          throw error;
+        }
+
+        // Transform the data structure
+        const transformedData = (data || []).map((item: any) => ({
+          team_id: item.team_id,
+          season_id: item.season_id,
+          match_wins: item.match_wins,
+          match_losses: item.match_losses,
+          game_wins: item.game_wins,
+          game_losses: item.game_losses,
+          sos: item.sos,
+          power_score: item.power_score,
+          champion: item.champion,
+          division_name: item.division_name,
+          team_name: item.teams?.name || 'Unknown Team',
+          team_logo_url: item.teams?.logo_url,
+          team_image_url: item.teams?.image_url,
+        })) as SeasonData[];
+
+        console.log(`✅ Season ${seasonId}: Transformed ${transformedData.length} team records`);
+        return transformedData;
+      } catch (err) {
+        console.error(`💥 Season ${seasonId}: Exception in query:`, err);
+        throw err;
       }
-
-      // Transform the data structure
-      return (data || []).map((item: any) => ({
-        team_id: item.team_id,
-        season_id: item.season_id,
-        match_wins: item.match_wins,
-        match_losses: item.match_losses,
-        game_wins: item.game_wins,
-        game_losses: item.game_losses,
-        sos: item.sos,
-        power_score: item.power_score,
-        champion: item.champion,
-        division_name: item.division_name,
-        team_name: item.teams?.name || 'Unknown Team',
-        team_logo_url: item.teams?.logo_url,
-        team_image_url: item.teams?.image_url,
-      })) as SeasonData[];
     },
     enabled,
+    retry: 2,
+    retryDelay: 1000,
   });
 };
 
@@ -91,9 +113,12 @@ interface SeasonAccordionProps {
 
 const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: seasonData, isLoading, error } = useSeasonData(season.id, isExpanded);
+  const { data: seasonData, isLoading, error, refetch, isRefetching } = useSeasonData(season.id, isExpanded);
+
+  console.log(`🎯 Season ${season.name}: Accordion state - expanded: ${isExpanded}, loading: ${isLoading}, hasData: ${!!seasonData}`);
 
   const handleToggle = () => {
+    console.log(`🎯 Season ${season.name}: Toggling accordion from ${isExpanded} to ${!isExpanded}`);
     setIsExpanded(!isExpanded);
   };
 
@@ -101,7 +126,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
     
-    return seasonData.reduce((acc, team) => {
+    const grouped = seasonData.reduce((acc, team) => {
       const division = team.division_name || 'No Division';
       if (!acc[division]) {
         acc[division] = [];
@@ -109,7 +134,10 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
       acc[division].push(team);
       return acc;
     }, {} as Record<string, SeasonData[]>);
-  }, [seasonData]);
+
+    console.log(`📊 Season ${season.name}: Grouped data by divisions:`, Object.keys(grouped));
+    return grouped;
+  }, [seasonData, season.name]);
 
   const hasChampions = seasonData?.some(team => team.champion) || false;
 
@@ -176,8 +204,24 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                   ))}
                 </div>
               ) : error ? (
-                <div className="text-center py-8 text-red-600 dark:text-red-400">
-                  <p>Failed to load season data</p>
+                <div className="text-center py-8">
+                  <div className="text-red-600 dark:text-red-400 mb-4">
+                    <Trophy className="w-8 h-8 mx-auto mb-2" />
+                    <p className="font-medium">Failed to load season data</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {error instanceof Error ? error.message : 'An unexpected error occurred'}
+                    </p>
+                    <Button 
+                      onClick={() => refetch()} 
+                      disabled={isRefetching}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+                      {isRefetching ? 'Retrying...' : 'Try Again'}
+                    </Button>
+                  </div>
                 </div>
               ) : season.is_active && (!seasonData || seasonData.length === 0) ? (
                 <div className="text-center py-8 text-gray-600 dark:text-gray-400">
