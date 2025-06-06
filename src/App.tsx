@@ -53,6 +53,9 @@ const AppContent = () => {
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/stats" element={<Stats />} />
               <Route path="/playoffs" element={<Playoffs />} />
+              <Route path="/history" element={
+                <React.lazy(() => import("./pages/History"))
+              } />
               <Route path="/timeslots" element={<Timeslots />} />
               <Route path="/admin" element={
                 <ProtectedAdminRoute>

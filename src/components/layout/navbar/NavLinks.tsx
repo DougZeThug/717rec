@@ -1,93 +1,49 @@
-
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { RouterLink } from "@/components/navigation";
-import { useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { Home, Users, Calendar, BarChart3, Trophy, Clock, CalendarClock, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNavigation } from "@/contexts/NavigationContext";
-
-interface NavLinkItem {
-  label: string;
-  href: string;
-  isAdmin?: boolean;
-}
 
 interface NavLinksProps {
-  items: NavLinkItem[];
   isMobile?: boolean;
-  onNavItemClick?: () => void;
+  onLinkClick?: () => void;
 }
 
-const NavLinks: React.FC<NavLinksProps> = ({ 
-  items, 
-  isMobile = false,
-  onNavItemClick 
-}) => {
-  const location = useLocation();
-  const { navigateWithTransition } = useNavigation();
+const NavLinks: React.FC<NavLinksProps> = ({ isMobile = false, onLinkClick }) => {
+  const activeClass = "bg-gray-100 dark:bg-slate-700";
+  const baseClass =
+    "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-4";
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
-  // Special handler for admin navigation to ensure it works correctly
-  const handleNavigation = (href: string, e?: React.MouseEvent) => {
-    if (e) e.preventDefault();
-    
-    // Special handling for admin route
-    if (href === "/admin") {
-      console.log("Navbar: Admin link clicked");
+  const handleLinkClick = () => {
+    if (onLinkClick) {
+      onLinkClick();
     }
-    
-    console.log(`Navbar: Navigating to: ${href} using navigateWithTransition`);
-    navigateWithTransition(href);
-    
-    if (onNavItemClick) onNavItemClick();
   };
+
+  const navItems = [
+    { href: "/", label: "Home", icon: Home },
+    { href: "/teams", label: "Teams", icon: Users },
+    { href: "/schedule", label: "Schedule", icon: Calendar },
+    { href: "/stats", label: "Stats", icon: BarChart3 },
+    { href: "/playoffs", label: "Playoffs", icon: Trophy },
+    { href: "/history", label: "History", icon: Clock },
+    { href: "/timeslots", label: "Timeslots", icon: CalendarClock },
+    { href: "/message-board", label: "Messages", icon: MessageSquare },
+  ];
 
   return (
     <>
-      {items.map(item => (
-        <div key={item.href} className={cn("block touch-manipulation", isMobile && "w-full")}>
-          {item.label === "Admin" ? (
-            <Button 
-              variant={isActive(item.href) ? "secondary" : "ghost"} 
-              className={cn(
-                isActive(item.href) 
-                  ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
-                  : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
-                "min-h-11",
-                isMobile && "w-full justify-start py-3",
-                !isMobile && "px-4"
-              )}
-              onClick={(e) => handleNavigation(item.href, e)}
-            >
-              {item.label}
-            </Button>
-          ) : (
-            <RouterLink 
-              to={item.href} 
-              onClick={() => {
-                if (onNavItemClick) onNavItemClick();
-              }} 
-              className="block"
-            >
-              <Button 
-                variant={isActive(item.href) ? "secondary" : "ghost"} 
-                className={cn(
-                  isActive(item.href) 
-                    ? "bg-white text-cornhole-navy hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600" 
-                    : "text-white hover:bg-cornhole-navy-light dark:hover:bg-gray-800",
-                  "min-h-11",
-                  isMobile && "w-full justify-start py-3",
-                  !isMobile && "px-4"
-                )}
-              >
-                {item.label}
-              </Button>
-            </RouterLink>
-          )}
-        </div>
+      {navItems.map((item) => (
+        <NavLink
+          key={item.label}
+          to={item.href}
+          onClick={handleLinkClick}
+          className={({ isActive }) =>
+            cn(baseClass, isActive ? activeClass : undefined)
+          }
+        >
+          <item.icon className="mr-2 h-4 w-4" />
+          {isMobile ? null : item.label}
+        </NavLink>
       ))}
     </>
   );
