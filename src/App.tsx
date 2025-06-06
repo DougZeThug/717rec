@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ import ProfileSetup from "./pages/ProfileSetup";
 import MessageBoard from "./pages/MessageBoard";
 import MyTeam from "./pages/MyTeam";
 import NotFound from "./pages/NotFound";
+import History from "./pages/History";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import AppNavigation from "./components/navigation/AppNavigation";
@@ -53,9 +55,7 @@ const AppContent = () => {
               <Route path="/schedule" element={<Schedule />} />
               <Route path="/stats" element={<Stats />} />
               <Route path="/playoffs" element={<Playoffs />} />
-              <Route path="/history" element={
-                <React.lazy(() => import("./pages/History"))
-              } />
+              <Route path="/history" element={<History />} />
               <Route path="/timeslots" element={<Timeslots />} />
               <Route path="/admin" element={
                 <ProtectedAdminRoute>
