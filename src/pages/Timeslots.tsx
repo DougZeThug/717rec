@@ -8,12 +8,32 @@ import TimeslotAssignment from "@/components/timeslots/TimeslotAssignment";
 import TimeslotList from "@/components/timeslots/TimeslotList";
 import { useTimeslots } from "@/hooks/useTimeslots";
 import { useTeamData } from "@/hooks/useTeamData";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { Navigate } from "react-router-dom";
 
 export default function Timeslots() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { data: teams, isLoading: isLoadingTeams } = useTeamData();
   const { timeslots, isLoading, addTimeslot, deleteTimeslot, batchAssignTimeslots } = useTimeslots(selectedDate);
   const { toast } = useToast();
+  const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();
+  
+  // Show loading while checking admin access
+  if (isAdminLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4 flex items-center justify-center h-[60vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Checking access...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Redirect non-admin users
+  if (!isAdminAccessGranted) {
+    return <Navigate to="/" replace />;
+  }
   
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {

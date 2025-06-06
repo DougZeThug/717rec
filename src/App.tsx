@@ -56,7 +56,11 @@ const AppContent = () => {
               <Route path="/stats" element={<Stats />} />
               <Route path="/playoffs" element={<Playoffs />} />
               <Route path="/history" element={<History />} />
-              <Route path="/timeslots" element={<Timeslots />} />
+              <Route path="/timeslots" element={
+                <ProtectedAdminRoute>
+                  <Timeslots />
+                </ProtectedAdminRoute>
+              } />
               <Route path="/admin" element={
                 <ProtectedAdminRoute>
                   <AdminDashboard />

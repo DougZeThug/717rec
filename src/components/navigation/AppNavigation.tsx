@@ -1,3 +1,4 @@
+
 import React from "react";
 import BottomNav from "./BottomNav";
 import DesktopNav from "./DesktopNav";
@@ -14,6 +15,7 @@ export const AppNavigation: React.FC = () => {
     { href: "/stats", label: "Stats", icon: BarChart3 },
     { href: "/playoffs", label: "Playoffs", icon: Trophy },
     { href: "/history", label: "History", icon: Clock },
+    // Note: Timeslots is not included in bottom/desktop nav as it's admin-only
   ];
 
   return (
