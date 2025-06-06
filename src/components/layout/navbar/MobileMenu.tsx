@@ -14,12 +14,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { isAdminAccessGranted } = useAdminAccess();
   
-  // Add Admin link only for users with admin access
-  const allNavItems = [
-    ...navItems,
-    ...(isAdminAccessGranted ? [{ label: "Admin", href: "/admin" }] : [])
-  ];
-  
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
@@ -41,9 +35,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
       {isOpen && (
         <div className="md:hidden pt-2 pb-3 space-y-1">
           <NavLinks 
-            items={allNavItems} 
             isMobile={true} 
-            onNavItemClick={() => setIsOpen(false)}
+            onLinkClick={() => setIsOpen(false)}
           />
         </div>
       )}

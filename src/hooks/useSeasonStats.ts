@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 export interface SeasonStat {
-  id: string;
   season_id: string;
   team_id: string;
   match_wins: number;
@@ -25,9 +24,8 @@ export function useSeasonStats() {
   const fetchSeasons = async () => {
     setIsLoading(true);
     try {
-      // Fix: Remove .distinct() and use array methods instead to get unique values
       const { data, error } = await supabase
-        .from('season_stats')
+        .from('team_season_stats')
         .select('season_id')
         .order('season_id');
 
@@ -56,9 +54,8 @@ export function useSeasonStats() {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('season_stats')
+        .from('team_season_stats')
         .select(`
-          id,
           season_id,
           team_id,
           match_wins,

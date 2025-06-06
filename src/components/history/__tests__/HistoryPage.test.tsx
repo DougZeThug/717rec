@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
-import { vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import HistoryPageContent from '../HistoryPageContent';
 
 // Mock the supabase client

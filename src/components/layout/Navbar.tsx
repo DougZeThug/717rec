@@ -30,12 +30,6 @@ const Navbar: React.FC = () => {
     { label: "Playoffs", href: "/playoffs" },
   ];
   
-  // Add Admin link only for users with admin access
-  const allNavItems = [
-    ...navItems,
-    ...(isAdminAccessGranted ? [{ label: "Admin", href: "/admin" }] : [])
-  ];
-  
   return (
     <nav className={cn(
       "text-white shadow-lg sticky top-0 z-50 safe-area-top",
@@ -49,7 +43,7 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-1">
-            <NavLinks items={allNavItems} />
+            <NavLinks />
             
             {/* Add desktop nav actions with proper spacing */}
             <NavActions className="ml-4" />

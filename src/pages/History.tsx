@@ -18,8 +18,7 @@ const History: React.FC = () => {
       <PageTransition animation="fadeInSlideDown">
         <PageHeader
           title="Season History"
-          subtitle="Explore past seasons, champions, and standings"
-          icon="📚"
+          description="Explore past seasons, champions, and standings"
         />
       </PageTransition>
       

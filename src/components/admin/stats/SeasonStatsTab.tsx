@@ -62,7 +62,7 @@ const SeasonStatsTab = () => {
     try {
       // Check if entries for this season already exist
       const { data: existingEntries, error: checkError } = await supabase
-        .from('season_stats')
+        .from('team_season_stats')
         .select('team_id')
         .eq('season_id', values.seasonId);
       
@@ -74,11 +74,9 @@ const SeasonStatsTab = () => {
         toast({
           title: "Warning",
           description: `Entries for ${existingEntries.length} teams already exist for season "${values.seasonId}". Only new teams will be added.`,
-          // Fix: Use 'default' instead of 'warning' as variant
           variant: "default",
         });
 
-        // Fix: Create a filtered copy instead of modifying the original teams array
         const teamsToProcess = teams.filter(team => !existingTeams.includes(team.id));
         
         if (teamsToProcess.length === 0) {
@@ -103,7 +101,7 @@ const SeasonStatsTab = () => {
         }));
 
         const { error } = await supabase
-          .from('season_stats')
+          .from('team_season_stats')
           .insert(entries);
 
         if (error) throw error;
@@ -126,7 +124,7 @@ const SeasonStatsTab = () => {
         }));
 
         const { error } = await supabase
-          .from('season_stats')
+          .from('team_season_stats')
           .insert(entries);
 
         if (error) throw error;
