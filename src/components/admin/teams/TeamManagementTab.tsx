@@ -1,0 +1,263 @@
+
+import React, { useState } from "react";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Edit, Trash2, Plus, Users, Settings } from "lucide-react";
+import TeamForm from "@/components/teams/TeamForm";
+import { Team } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import { useTeams } from "@/hooks/useTeams";
+import { useTeamData } from "@/hooks/useTeamData";
+import { useDivisions } from "@/hooks/useDivisions";
+import { updateTeamApi } from "@/services/TeamService";
+
+const TeamManagementTab = () => {
+  const { toast } = useToast();
+  const { createTeam } = useTeams();
+  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamData();
+  const { divisions, isLoading: isLoadingDivisions } = useDivisions();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDivision, setSelectedDivision] = useState("all");
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
+
+  const handleTeamSubmit = async (teamData: Omit<Team, "id" | "created_at">) => {
+    try {
+      const newTeam = await createTeam(teamData);
+      toast({
+        title: "Team Created",
+        description: `${newTeam.name} has been successfully created.`,
+      });
+      refetchTeams();
+    } catch (error) {
+      console.error("Error creating team:", error);
+    }
+  };
+
+  const handleDivisionChange = async (teamId: string, newDivisionId: string | null) => {
+    setIsUpdating(teamId);
+    try {
+      const team = teams?.find(t => t.id === teamId);
+      if (!team) return;
+
+      await updateTeamApi(teamId, {
+        ...team,
+        division_id: newDivisionId,
+      });
+
+      toast({
+        title: "Division Updated",
+        description: `Team division has been updated successfully.`,
+      });
+      refetchTeams();
+    } catch (error) {
+      console.error("Error updating team division:", error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update team division. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const filteredTeams = teams?.filter(team => {
+    const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDivision = selectedDivision === "all" || 
+      (selectedDivision === "unassigned" && !team.division_id) ||
+      team.division_id === selectedDivision;
+    return matchesSearch && matchesDivision;
+  }) || [];
+
+  const teamStats = {
+    total: teams?.length || 0,
+    withDivisions: teams?.filter(t => t.division_id).length || 0,
+    unassigned: teams?.filter(t => !t.division_id).length || 0,
+  };
+
+  if (isLoadingTeams || isLoadingDivisions) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4 flex items-center space-x-2">
+            <Users className="h-8 w-8 text-primary" />
+            <div>
+              <p className="text-2xl font-bold">{teamStats.total}</p>
+              <p className="text-sm text-muted-foreground">Total Teams</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center space-x-2">
+            <Settings className="h-8 w-8 text-green-600" />
+            <div>
+              <p className="text-2xl font-bold">{teamStats.withDivisions}</p>
+              <p className="text-sm text-muted-foreground">Assigned to Divisions</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center space-x-2">
+            <Edit className="h-8 w-8 text-orange-600" />
+            <div>
+              <p className="text-2xl font-bold">{teamStats.unassigned}</p>
+              <p className="text-sm text-muted-foreground">Unassigned</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="manage" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="manage">Manage Teams</TabsTrigger>
+          <TabsTrigger value="create">Create Team</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="manage" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Team Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Filters */}
+              <div className="flex gap-4 items-center">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search teams..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={selectedDivision} onValueChange={setSelectedDivision}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by division" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Divisions</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {divisions.map((division) => (
+                      <SelectItem key={division.id} value={division.id}>
+                        {division.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Teams Table */}
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Team Name</TableHead>
+                      <TableHead>Record</TableHead>
+                      <TableHead>Division</TableHead>
+                      <TableHead>Players</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTeams.map((team) => (
+                      <TableRow key={team.id}>
+                        <TableCell className="font-medium">{team.name}</TableCell>
+                        <TableCell>
+                          <span className="text-sm">
+                            {team.wins}-{team.losses} ({team.game_wins}-{team.game_losses})
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={team.division_id || "unassigned"}
+                            onValueChange={(value) => 
+                              handleDivisionChange(team.id, value === "unassigned" ? null : value)
+                            }
+                            disabled={isUpdating === team.id}
+                          >
+                            <SelectTrigger className="w-40">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">
+                                <Badge variant="secondary">Unassigned</Badge>
+                              </SelectItem>
+                              {divisions.map((division) => (
+                                <SelectItem key={division.id} value={division.id}>
+                                  {division.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-muted-foreground">
+                            {team.players?.length || 0} players
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingTeam(team)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {filteredTeams.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No teams found matching your criteria.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="create">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                Create New Team
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TeamForm 
+                onSubmit={handleTeamSubmit}
+                onCancel={() => {}}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default TeamManagementTab;

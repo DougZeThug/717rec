@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import TeamsTab from "@/components/admin/teams/TeamsTab";
+import TeamManagementTab from "@/components/admin/teams/TeamManagementTab";
 import TimeslotsTab from "@/components/admin/timeslots/TimeslotsTab";
 import BatchMatchCreationTab from "@/components/admin/batch-matches/BatchMatchCreationTab";
 import MassScoresTab from "@/components/admin/scores/MassScoresTab";
@@ -12,7 +12,7 @@ const AdminTabs = () => {
   return (
     <Tabs defaultValue="teams" className="space-y-4">
       <TabsList className="flex flex-wrap md:flex-nowrap gap-2 h-auto md:h-10">
-        <TabsTrigger value="teams">Teams</TabsTrigger>
+        <TabsTrigger value="teams">Team Management</TabsTrigger>
         <TabsTrigger value="scores">Mass Scores</TabsTrigger>
         <TabsTrigger value="batch-matches">Batch Matches</TabsTrigger>
         <TabsTrigger value="auto-schedule">Auto Schedule</TabsTrigger>
@@ -21,7 +21,7 @@ const AdminTabs = () => {
       </TabsList>
 
       <TabsContent value="teams" className="space-y-4">
-        <TeamsTab />
+        <TeamManagementTab />
       </TabsContent>
 
       <TabsContent value="scores" className="space-y-4">

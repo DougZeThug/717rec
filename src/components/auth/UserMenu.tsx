@@ -10,8 +10,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "react-router-dom";
-import { User, LogOut, Settings, LogIn } from "lucide-react";
+import { User, LogOut, Settings, LogIn, Shield } from "lucide-react";
 import { useTeamMembership } from "@/hooks/useTeamMembership";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 interface UserMenuProps {
   className?: string;
@@ -20,6 +21,7 @@ interface UserMenuProps {
 const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
   const { user, profile, signOut } = useAuth();
   const { membership, isFetching } = useTeamMembership();
+  const { isAdminAccessGranted } = useAdminAccess();
   const navigate = useNavigate();
 
   if (!user) {
@@ -56,6 +58,18 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           </p>
         </div>
         <DropdownMenuSeparator />
+        
+        {isAdminAccessGranted && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link to="/admin" className="cursor-pointer flex items-center">
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Panel
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         
         {membership && membership.team ? (
           <DropdownMenuItem asChild>
