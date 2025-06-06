@@ -136,7 +136,7 @@ const ChampionsCard: React.FC = () => {
         "animate-pulse"
       )}>
         <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-48"></div>
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-3">
               <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
@@ -188,7 +188,7 @@ const ChampionsCard: React.FC = () => {
         Spring 2025 Playoff Results
       </h2>
       
-      <div className="space-y-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {data.divisions.map((division) => {
           const winner = data.teams.find((t) => t.id === division.winner_id);
           const runnerUp = data.teams.find((t) => t.id === division.runner_up_id);
