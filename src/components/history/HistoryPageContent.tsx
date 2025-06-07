@@ -33,7 +33,6 @@ interface Season {
 
 const HistoryPageContent: React.FC = () => {
   const [seasons, setSeasons] = useState<Season[]>([]);
-  const [seasonData, setSeasonData] = useState<Record<string, SeasonData[]>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -43,7 +42,7 @@ const HistoryPageContent: React.FC = () => {
 
   const fetchHistoricalData = async () => {
     try {
-      console.log("Fetching historical seasons and team data...");
+      console.log("Fetching historical seasons...");
 
       // Fetch all seasons
       const { data: seasonsData, error: seasonsError } = await supabase
@@ -63,59 +62,6 @@ const HistoryPageContent: React.FC = () => {
 
       console.log("Seasons fetched:", seasonsData);
       setSeasons(seasonsData || []);
-
-      // Fetch team season stats with team details including runner_up field
-      const { data: statsData, error: statsError } = await supabase
-        .from('team_season_stats')
-        .select(`
-          *,
-          teams:team_id (
-            name,
-            logo_url,
-            image_url
-          )
-        `)
-        .order('season_id');
-
-      if (statsError) {
-        console.error("Error fetching team season stats:", statsError);
-        toast({
-          title: "Error", 
-          description: "Failed to fetch team statistics",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log("Team season stats fetched:", statsData);
-
-      // Group data by season
-      const groupedData: Record<string, SeasonData[]> = {};
-      statsData?.forEach((stat) => {
-        if (!groupedData[stat.season_id]) {
-          groupedData[stat.season_id] = [];
-        }
-        
-        groupedData[stat.season_id].push({
-          team_id: stat.team_id,
-          season_id: stat.season_id,
-          match_wins: stat.match_wins,
-          match_losses: stat.match_losses,
-          game_wins: stat.game_wins,
-          game_losses: stat.game_losses,
-          sos: stat.sos,
-          power_score: stat.power_score,
-          champion: stat.champion,
-          runner_up: stat.runner_up, // Include the new runner_up field
-          division_name: stat.division_name,
-          team_name: stat.teams?.name || 'Unknown Team',
-          team_logo_url: stat.teams?.logo_url || null,
-          team_image_url: stat.teams?.image_url || null,
-        });
-      });
-
-      console.log("Grouped season data:", groupedData);
-      setSeasonData(groupedData);
 
     } catch (error) {
       console.error("Unexpected error fetching historical data:", error);
@@ -168,7 +114,6 @@ const HistoryPageContent: React.FC = () => {
           <SeasonAccordion
             key={season.id}
             season={season}
-            teams={seasonData[season.id] || []}
           />
         ))}
       </div>

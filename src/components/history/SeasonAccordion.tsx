@@ -27,6 +27,7 @@ interface SeasonData {
   sos: number | null;
   power_score: number | null;
   champion: boolean;
+  runner_up: boolean;
   division_name: string | null;
   team_name: string;
   team_logo_url: string | null;
@@ -52,6 +53,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
             sos,
             power_score,
             champion,
+            runner_up,
             division_name,
             teams:team_id (
               name,
@@ -88,6 +90,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           sos: item.sos,
           power_score: item.power_score,
           champion: item.champion,
+          runner_up: item.runner_up,
           division_name: item.division_name,
           team_name: item.teams?.name || 'Unknown Team',
           team_logo_url: item.teams?.logo_url,
