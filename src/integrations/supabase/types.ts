@@ -1573,6 +1573,7 @@ export type Database = {
           playoff_rank: number | null
           power_score: number | null
           recorded_at: string | null
+          runner_up: boolean
           season_id: string
           sos: number | null
           team_id: string
@@ -1587,6 +1588,7 @@ export type Database = {
           playoff_rank?: number | null
           power_score?: number | null
           recorded_at?: string | null
+          runner_up?: boolean
           season_id: string
           sos?: number | null
           team_id: string
@@ -1601,6 +1603,7 @@ export type Database = {
           playoff_rank?: number | null
           power_score?: number | null
           recorded_at?: string | null
+          runner_up?: boolean
           season_id?: string
           sos?: number | null
           team_id?: string

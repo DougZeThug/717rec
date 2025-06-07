@@ -1,6 +1,7 @@
 
 import React from "react";
 import ChampionCard from "./ChampionCard";
+import RunnerUpCard from "./RunnerUpCard";
 import HistoricalStandingsTable from "./HistoricalStandingsTable";
 
 interface SeasonData {
@@ -13,6 +14,7 @@ interface SeasonData {
   sos: number | null;
   power_score: number | null;
   champion: boolean;
+  runner_up: boolean;
   division_name: string | null;
   team_name: string;
   team_logo_url: string | null;
@@ -26,10 +28,19 @@ interface DivisionPanelProps {
 
 const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
   const champion = teams.find(team => team.champion);
+  const runnerUp = teams.find(team => team.runner_up);
+  
+  // Sort teams: Champions first, then runners-up, then by wins
   const sortedTeams = [...teams].sort((a, b) => {
-    // Champions first, then by wins
+    // Champions always first
     if (a.champion && !b.champion) return -1;
     if (!a.champion && b.champion) return 1;
+    
+    // Runners-up always second (after champions)
+    if (a.runner_up && !b.runner_up && !b.champion) return -1;
+    if (!a.runner_up && b.runner_up && !a.champion) return 1;
+    
+    // For teams with same status, sort by wins
     return b.match_wins - a.match_wins;
   });
 
@@ -41,6 +52,10 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
       
       {champion && (
         <ChampionCard team={champion} />
+      )}
+      
+      {runnerUp && (
+        <RunnerUpCard team={runnerUp} />
       )}
       
       <HistoricalStandingsTable teams={sortedTeams} />

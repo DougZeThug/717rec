@@ -1,11 +1,27 @@
 
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import SeasonAccordion from "./SeasonAccordion";
-import LoadingState from "@/components/ui/loading-state";
-import { Trophy, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+interface SeasonData {
+  team_id: string;
+  season_id: string;
+  match_wins: number;
+  match_losses: number;
+  game_wins: number;
+  game_losses: number;
+  sos: number | null;
+  power_score: number | null;
+  champion: boolean;
+  runner_up: boolean;
+  division_name: string | null;
+  team_name: string;
+  team_logo_url: string | null;
+  team_image_url: string | null;
+}
 
 interface Season {
   id: string;
@@ -15,118 +31,147 @@ interface Season {
   is_active: boolean;
 }
 
-const useSeasonHistory = () => {
-  return useQuery({
-    queryKey: ['season-history'],
-    queryFn: async () => {
-      console.log('🔍 History: Starting season history query...');
-      
-      try {
-        const { data, error } = await supabase
-          .from('seasons')
-          .select('id, name, start_date, end_date, is_active')
-          .order('start_date', { ascending: false });
-
-        console.log('📊 History: Supabase query completed');
-        console.log('📊 History: Raw data received:', data);
-        console.log('❌ History: Error (if any):', error);
-
-        if (error) {
-          console.error('❌ History: Database error details:', {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          });
-          throw error;
-        }
-
-        console.log(`✅ History: Successfully fetched ${data?.length || 0} seasons`);
-        return data as Season[];
-      } catch (err) {
-        console.error('💥 History: Exception in query function:', err);
-        throw err;
-      }
-    },
-    retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
-};
-
 const HistoryPageContent: React.FC = () => {
-  console.log('🎯 History: HistoryPageContent component rendering...');
-  
-  const { data: seasons, isLoading, error, refetch, isRefetching } = useSeasonHistory();
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [seasonData, setSeasonData] = useState<Record<string, SeasonData[]>>({});
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  console.log('📊 History: Query state:', {
-    isLoading,
-    isRefetching,
-    hasData: !!seasons,
-    dataLength: seasons?.length,
-    hasError: !!error
-  });
+  useEffect(() => {
+    fetchHistoricalData();
+  }, []);
 
-  if (isLoading) {
-    console.log('⏳ History: Showing loading state');
-    return <LoadingState fullscreen message="Loading season history..." size="lg" />;
-  }
+  const fetchHistoricalData = async () => {
+    try {
+      console.log("Fetching historical seasons and team data...");
 
-  if (error) {
-    console.error('❌ History: Displaying error state:', error);
+      // Fetch all seasons
+      const { data: seasonsData, error: seasonsError } = await supabase
+        .from('seasons')
+        .select('*')
+        .order('start_date', { ascending: false });
+
+      if (seasonsError) {
+        console.error("Error fetching seasons:", seasonsError);
+        toast({
+          title: "Error",
+          description: "Failed to fetch seasons data",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log("Seasons fetched:", seasonsData);
+      setSeasons(seasonsData || []);
+
+      // Fetch team season stats with team details including runner_up field
+      const { data: statsData, error: statsError } = await supabase
+        .from('team_season_stats')
+        .select(`
+          *,
+          teams:team_id (
+            name,
+            logo_url,
+            image_url
+          )
+        `)
+        .order('season_id');
+
+      if (statsError) {
+        console.error("Error fetching team season stats:", statsError);
+        toast({
+          title: "Error", 
+          description: "Failed to fetch team statistics",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log("Team season stats fetched:", statsData);
+
+      // Group data by season
+      const groupedData: Record<string, SeasonData[]> = {};
+      statsData?.forEach((stat) => {
+        if (!groupedData[stat.season_id]) {
+          groupedData[stat.season_id] = [];
+        }
+        
+        groupedData[stat.season_id].push({
+          team_id: stat.team_id,
+          season_id: stat.season_id,
+          match_wins: stat.match_wins,
+          match_losses: stat.match_losses,
+          game_wins: stat.game_wins,
+          game_losses: stat.game_losses,
+          sos: stat.sos,
+          power_score: stat.power_score,
+          champion: stat.champion,
+          runner_up: stat.runner_up, // Include the new runner_up field
+          division_name: stat.division_name,
+          team_name: stat.teams?.name || 'Unknown Team',
+          team_logo_url: stat.teams?.logo_url || null,
+          team_image_url: stat.teams?.image_url || null,
+        });
+      });
+
+      console.log("Grouped season data:", groupedData);
+      setSeasonData(groupedData);
+
+    } catch (error) {
+      console.error("Unexpected error fetching historical data:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="text-red-600 dark:text-red-400 mb-4">
-          <Trophy className="w-12 h-12 mx-auto mb-2" />
-          <h3 className="text-lg font-semibold">Unable to load season history</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {error instanceof Error ? error.message : 'An unexpected error occurred'}
-          </p>
-          <Button 
-            onClick={() => refetch()} 
-            disabled={isRefetching}
-            variant="outline"
-            className="gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
-            {isRefetching ? 'Retrying...' : 'Try Again'}
-          </Button>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="flex items-center justify-center h-64">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading historical data...</span>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  if (!seasons || seasons.length === 0) {
-    console.log('📭 History: No seasons found, showing empty state');
+  if (seasons.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Trophy className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-        <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
-          No seasons available yet
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Check back once the first season concludes.
-        </p>
-        <Button 
-          onClick={() => refetch()} 
-          disabled={isRefetching}
-          variant="outline"
-          className="gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
-          {isRefetching ? 'Checking...' : 'Check Again'}
-        </Button>
-      </div>
+      <Card>
+        <CardContent className="text-center py-8">
+          <p className="text-muted-foreground">No historical seasons found.</p>
+        </CardContent>
+      </Card>
     );
   }
 
-  console.log(`✅ History: Rendering ${seasons.length} season accordions`);
   return (
-    <div className="space-y-4">
-      {seasons.map((season) => {
-        console.log(`🎯 History: Rendering season: ${season.name} (${season.id})`);
-        return <SeasonAccordion key={season.id} season={season} />;
-      })}
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Season History
+        </h2>
+        <p className="text-muted-foreground">
+          Explore past seasons, champions, runners-up, and standings
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {seasons.map((season) => (
+          <SeasonAccordion
+            key={season.id}
+            season={season}
+            teams={seasonData[season.id] || []}
+          />
+        ))}
+      </div>
     </div>
   );
 };

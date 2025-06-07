@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Crown } from "lucide-react";
+import { Crown, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -14,6 +14,7 @@ interface SeasonData {
   sos: number | null;
   power_score: number | null;
   champion: boolean;
+  runner_up: boolean;
   division_name: string | null;
   team_name: string;
   team_logo_url: string | null;
@@ -43,7 +44,8 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
               key={team.team_id}
               className={cn(
                 "bg-gray-50 dark:bg-slate-700/50 rounded-lg p-3",
-                team.champion && "ring-2 ring-yellow-400 dark:ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20"
+                team.champion && "ring-2 ring-yellow-400 dark:ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20",
+                team.runner_up && "ring-2 ring-gray-400 dark:ring-gray-500 bg-gray-100 dark:bg-gray-900/20"
               )}
             >
               <div className="flex items-center justify-between mb-2">
@@ -53,6 +55,9 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                   </span>
                   {team.champion && (
                     <Crown className="w-4 h-4 text-yellow-500" />
+                  )}
+                  {team.runner_up && (
+                    <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   )}
                   <span className="font-semibold text-slate-900 dark:text-white">
                     {team.team_name}
@@ -126,7 +131,8 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                 key={team.team_id}
                 className={cn(
                   "border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50",
-                  team.champion && "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+                  team.champion && "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30",
+                  team.runner_up && "bg-gray-100 dark:bg-gray-900/20 hover:bg-gray-200 dark:hover:bg-gray-900/30"
                 )}
               >
                 <td className="py-2 px-3 text-gray-600 dark:text-gray-300">#{index + 1}</td>
@@ -134,6 +140,9 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                   <div className="flex items-center gap-2">
                     {team.champion && (
                       <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                    )}
+                    {team.runner_up && (
+                      <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300 flex-shrink-0" />
                     )}
                     <span className="font-medium text-slate-900 dark:text-white">
                       {team.team_name}
