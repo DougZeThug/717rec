@@ -64,7 +64,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           `)
           .eq('season_id', seasonId)
           .order('division_name', { ascending: true })
-          .order('playoff_rank', { ascending: true, nullsLast: true });
+          .order('playoff_rank', { ascending: true, nullsFirst: false });
 
         console.log(`📊 Season ${seasonId}: Query completed`);
         console.log(`📊 Season ${seasonId}: Raw data:`, data);
