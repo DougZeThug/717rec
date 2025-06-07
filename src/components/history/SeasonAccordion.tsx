@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Trophy, Calendar, RefreshCw } from "lucide-react";
@@ -168,10 +167,6 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               </h3>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Calendar className="w-4 h-4" />
-                <span>
-                  {new Date(season.start_date).toLocaleDateString()}
-                  {season.end_date && ` - ${new Date(season.end_date).toLocaleDateString()}`}
-                </span>
                 {season.is_active && (
                   <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-medium">
                     Active
