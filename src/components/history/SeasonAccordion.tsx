@@ -28,6 +28,7 @@ interface SeasonData {
   champion: boolean;
   runner_up: boolean;
   division_name: string | null;
+  playoff_rank: number | null;
   team_name: string;
   team_logo_url: string | null;
   team_image_url: string | null;
@@ -54,6 +55,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
             champion,
             runner_up,
             division_name,
+            playoff_rank,
             teams:team_id (
               name,
               logo_url,
@@ -62,7 +64,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           `)
           .eq('season_id', seasonId)
           .order('division_name', { ascending: true })
-          .order('match_wins', { ascending: false });
+          .order('playoff_rank', { ascending: true, nullsLast: true });
 
         console.log(`📊 Season ${seasonId}: Query completed`);
         console.log(`📊 Season ${seasonId}: Raw data:`, data);
@@ -91,6 +93,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           champion: item.champion,
           runner_up: item.runner_up,
           division_name: item.division_name,
+          playoff_rank: item.playoff_rank,
           team_name: item.teams?.name || 'Unknown Team',
           team_logo_url: item.teams?.logo_url,
           team_image_url: item.teams?.image_url,

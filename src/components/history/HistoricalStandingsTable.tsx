@@ -19,6 +19,7 @@ interface SeasonData {
   team_name: string;
   team_logo_url: string | null;
   team_image_url: string | null;
+  playoff_rank: number | null;
 }
 
 interface HistoricalStandingsTableProps {
@@ -31,7 +32,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
   if (isMobile) {
     return (
       <div className="space-y-3">
-        {teams.map((team, index) => {
+        {teams.map((team) => {
           const winPercentage = team.match_wins + team.match_losses > 0 
             ? (team.match_wins / (team.match_wins + team.match_losses)) * 100 
             : 0;
@@ -51,7 +52,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-6">
-                    #{index + 1}
+                    #{team.playoff_rank || '-'}
                   </span>
                   {team.champion && (
                     <Crown className="w-4 h-4 text-yellow-500" />
@@ -118,7 +119,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
           </tr>
         </thead>
         <tbody>
-          {teams.map((team, index) => {
+          {teams.map((team) => {
             const winPercentage = team.match_wins + team.match_losses > 0 
               ? (team.match_wins / (team.match_wins + team.match_losses)) * 100 
               : 0;
@@ -135,7 +136,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                   team.runner_up && "bg-gray-100 dark:bg-gray-900/20 hover:bg-gray-200 dark:hover:bg-gray-900/30"
                 )}
               >
-                <td className="py-2 px-3 text-gray-600 dark:text-gray-300">#{index + 1}</td>
+                <td className="py-2 px-3 text-gray-600 dark:text-gray-300">#{team.playoff_rank || '-'}</td>
                 <td className="py-2 px-3">
                   <div className="flex items-center gap-2">
                     {team.champion && (

@@ -18,6 +18,7 @@ interface SeasonData {
   team_name: string;
   team_logo_url: string | null;
   team_image_url: string | null;
+  playoff_rank: number | null;
 }
 
 interface DivisionPanelProps {
@@ -28,17 +29,18 @@ interface DivisionPanelProps {
 const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
   const champion = teams.find(team => team.champion);
   
-  // Sort teams: Champions first, then runners-up, then by wins
+  // Sort teams by playoff_rank (1st, 2nd, 3rd, etc.) with fallback to match wins
   const sortedTeams = [...teams].sort((a, b) => {
-    // Champions always first
-    if (a.champion && !b.champion) return -1;
-    if (!a.champion && b.champion) return 1;
+    // If both teams have playoff ranks, sort by playoff rank (lower is better)
+    if (a.playoff_rank !== null && b.playoff_rank !== null) {
+      return a.playoff_rank - b.playoff_rank;
+    }
     
-    // Runners-up always second (after champions)
-    if (a.runner_up && !b.runner_up && !b.champion) return -1;
-    if (!a.runner_up && b.runner_up && !a.champion) return 1;
+    // If only one team has a playoff rank, it should come first
+    if (a.playoff_rank !== null && b.playoff_rank === null) return -1;
+    if (a.playoff_rank === null && b.playoff_rank !== null) return 1;
     
-    // For teams with same status, sort by wins
+    // If neither has a playoff rank, fallback to sorting by match wins
     return b.match_wins - a.match_wins;
   });
 
