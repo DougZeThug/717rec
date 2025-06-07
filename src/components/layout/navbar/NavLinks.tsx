@@ -1,7 +1,7 @@
 
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Home, Users, Calendar, BarChart3, Trophy, Clock, CalendarClock, MessageSquare } from "lucide-react";
+import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 
@@ -30,8 +30,6 @@ const NavLinks: React.FC<NavLinksProps> = ({ isMobile = false, onLinkClick }) =>
     { href: "/stats", label: "Stats", icon: BarChart3 },
     { href: "/playoffs", label: "Playoffs", icon: Trophy },
     { href: "/history", label: "History", icon: Clock },
-    // Only show timeslots for admin users
-    ...(isAdminAccessGranted ? [{ href: "/timeslots", label: "Timeslots", icon: CalendarClock }] : []),
     { href: "/message-board", label: "Messages", icon: MessageSquare },
   ];
 
