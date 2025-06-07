@@ -22,12 +22,14 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     throw new Error(`Team with ID ${teamId} not found.`);
   }
   
+  let divisionName = null;
+  
   // If division_id is provided, validate it exists in the divisions table
   // (Skip validation if division_id is null - meaning no division assigned)
   if (teamData.division_id !== null) {
     const { data: divisionExists, error: divCheckError } = await supabase
       .from('divisions')
-      .select('id')
+      .select('id, name')
       .eq('id', teamData.division_id)
       .single();
     
@@ -35,8 +37,11 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
       console.error("Division not found or error checking division:", divCheckError);
       throw new Error(`Division with ID ${teamData.division_id} not found.`);
     }
+    
+    divisionName = divisionExists.name;
   }
   
+  // Update the team
   const { data, error } = await supabase
     .from('teams')
     .update({
@@ -56,6 +61,23 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
   }
 
   console.log("Team updated successfully:", data);
+
+  // Update team_season_stats division_name for this team
+  console.log("Updating team_season_stats division_name to:", divisionName);
+  const { error: seasonStatsError } = await supabase
+    .from('team_season_stats')
+    .update({
+      division_name: divisionName
+    })
+    .eq('team_id', teamId);
+
+  if (seasonStatsError) {
+    console.error("Error updating team_season_stats division_name:", seasonStatsError);
+    // Don't throw here as the main team update succeeded
+    // Just log the error for debugging
+  } else {
+    console.log("Successfully updated team_season_stats division_name");
+  }
 
   // The database response doesn't include wins/losses fields, so we need to use
   // the values passed in teamData or default to 0
