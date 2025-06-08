@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Edit, Trash2, Plus, Users, Settings } from "lucide-react";
+import { Search, Edit, Trash2, Plus, Users, Settings, Eye, EyeOff } from "lucide-react";
 import TeamForm from "@/components/teams/TeamForm";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -15,14 +15,16 @@ import { useTeams } from "@/hooks/useTeams";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import { updateTeamApi } from "@/services/TeamService";
+import { toggleTeamHiddenStatus } from "@/services/TeamService";
 
 const TeamManagementTab = () => {
   const { toast } = useToast();
   const { createTeam } = useTeams();
-  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamData();
+  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamData(null, true); // Include hidden teams in admin
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("all");
+  const [selectedVisibility, setSelectedVisibility] = useState("all");
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
@@ -67,18 +69,44 @@ const TeamManagementTab = () => {
     }
   };
 
+  const handleToggleHidden = async (teamId: string, currentHidden: boolean) => {
+    setIsUpdating(teamId);
+    try {
+      await toggleTeamHiddenStatus(teamId, !currentHidden);
+      
+      toast({
+        title: currentHidden ? "Team Shown" : "Team Hidden",
+        description: `Team has been ${currentHidden ? 'shown in' : 'hidden from'} the frontend.`,
+      });
+      refetchTeams();
+    } catch (error) {
+      console.error("Error toggling team visibility:", error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update team visibility. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
   const filteredTeams = teams?.filter(team => {
     const matchesSearch = team.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDivision = selectedDivision === "all" || 
       (selectedDivision === "unassigned" && !team.division_id) ||
       team.division_id === selectedDivision;
-    return matchesSearch && matchesDivision;
+    const matchesVisibility = selectedVisibility === "all" ||
+      (selectedVisibility === "visible" && !team.hidden) ||
+      (selectedVisibility === "hidden" && team.hidden);
+    return matchesSearch && matchesDivision && matchesVisibility;
   }) || [];
 
   const teamStats = {
     total: teams?.length || 0,
     withDivisions: teams?.filter(t => t.division_id).length || 0,
     unassigned: teams?.filter(t => !t.division_id).length || 0,
+    hidden: teams?.filter(t => t.hidden).length || 0,
   };
 
   if (isLoadingTeams || isLoadingDivisions) {
@@ -92,7 +120,7 @@ const TeamManagementTab = () => {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center space-x-2">
             <Users className="h-8 w-8 text-primary" />
@@ -117,6 +145,15 @@ const TeamManagementTab = () => {
             <div>
               <p className="text-2xl font-bold">{teamStats.unassigned}</p>
               <p className="text-sm text-muted-foreground">Unassigned</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center space-x-2">
+            <EyeOff className="h-8 w-8 text-red-600" />
+            <div>
+              <p className="text-2xl font-bold">{teamStats.hidden}</p>
+              <p className="text-sm text-muted-foreground">Hidden from Frontend</p>
             </div>
           </CardContent>
         </Card>
@@ -162,6 +199,16 @@ const TeamManagementTab = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <Select value={selectedVisibility} onValueChange={setSelectedVisibility}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Teams</SelectItem>
+                    <SelectItem value="visible">Visible Teams</SelectItem>
+                    <SelectItem value="hidden">Hidden Teams</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Teams Table */}
@@ -172,6 +219,7 @@ const TeamManagementTab = () => {
                       <TableHead>Team Name</TableHead>
                       <TableHead>Record</TableHead>
                       <TableHead>Division</TableHead>
+                      <TableHead>Visibility</TableHead>
                       <TableHead>Players</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -209,6 +257,19 @@ const TeamManagementTab = () => {
                           </Select>
                         </TableCell>
                         <TableCell>
+                          {team.hidden ? (
+                            <Badge variant="destructive" className="gap-1">
+                              <EyeOff className="h-3 w-3" />
+                              Hidden
+                            </Badge>
+                          ) : (
+                            <Badge variant="default" className="gap-1">
+                              <Eye className="h-3 w-3" />
+                              Visible
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <span className="text-sm text-muted-foreground">
                             {team.players?.length || 0} players
                           </span>
@@ -221,6 +282,14 @@ const TeamManagementTab = () => {
                               onClick={() => setEditingTeam(team)}
                             >
                               <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleToggleHidden(team.id, team.hidden || false)}
+                              disabled={isUpdating === team.id}
+                            >
+                              {team.hidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                             </Button>
                           </div>
                         </TableCell>

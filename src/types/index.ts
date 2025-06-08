@@ -1,4 +1,3 @@
-
 // Team related types
 export interface Team {
   id: string;
@@ -21,6 +20,7 @@ export interface Team {
   game_win_percentage?: number;
   created_at?: string;
   close_match_losses?: number;
+  hidden?: boolean;
 }
 
 // Match related types

@@ -270,7 +270,6 @@ export type Database = {
       matches: {
         Row: {
           best_of: number | null
-          bracket_id: string | null
           created_at: string | null
           date: string | null
           id: string
@@ -279,10 +278,6 @@ export type Database = {
           loser_id: string | null
           match_type: Database["public"]["Enums"]["match_type"] | null
           metadata: Json | null
-          next_loser_match_id: string | null
-          next_match_id: string | null
-          position: number | null
-          round_number: number
           season_id: string | null
           team1_game_wins: number | null
           team1_id: string | null
@@ -294,7 +289,6 @@ export type Database = {
         }
         Insert: {
           best_of?: number | null
-          bracket_id?: string | null
           created_at?: string | null
           date?: string | null
           id?: string
@@ -303,10 +297,6 @@ export type Database = {
           loser_id?: string | null
           match_type?: Database["public"]["Enums"]["match_type"] | null
           metadata?: Json | null
-          next_loser_match_id?: string | null
-          next_match_id?: string | null
-          position?: number | null
-          round_number: number
           season_id?: string | null
           team1_game_wins?: number | null
           team1_id?: string | null
@@ -318,7 +308,6 @@ export type Database = {
         }
         Update: {
           best_of?: number | null
-          bracket_id?: string | null
           created_at?: string | null
           date?: string | null
           id?: string
@@ -327,10 +316,6 @@ export type Database = {
           loser_id?: string | null
           match_type?: Database["public"]["Enums"]["match_type"] | null
           metadata?: Json | null
-          next_loser_match_id?: string | null
-          next_match_id?: string | null
-          position?: number | null
-          round_number?: number
           season_id?: string | null
           team1_game_wins?: number | null
           team1_id?: string | null
@@ -341,13 +326,6 @@ export type Database = {
           winner_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "matches_bracket_id_fkey"
-            columns: ["bracket_id"]
-            isOneToOne: false
-            referencedRelation: "brackets"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "matches_team1_id_fkey"
             columns: ["team1_id"]
@@ -496,6 +474,69 @@ export type Database = {
             referencedColumns: ["team_id"]
           },
         ]
+      }
+      matches_archive: {
+        Row: {
+          archived_at: string | null
+          best_of: number | null
+          created_at: string | null
+          date: string | null
+          id: string
+          iscompleted: boolean | null
+          location: string | null
+          loser_id: string | null
+          match_type: Database["public"]["Enums"]["match_type"] | null
+          metadata: Json | null
+          season_id: string | null
+          team1_game_wins: number | null
+          team1_id: string | null
+          team1_score: number | null
+          team2_game_wins: number | null
+          team2_id: string | null
+          team2_score: number | null
+          winner_id: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          best_of?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          iscompleted?: boolean | null
+          location?: string | null
+          loser_id?: string | null
+          match_type?: Database["public"]["Enums"]["match_type"] | null
+          metadata?: Json | null
+          season_id?: string | null
+          team1_game_wins?: number | null
+          team1_id?: string | null
+          team1_score?: number | null
+          team2_game_wins?: number | null
+          team2_id?: string | null
+          team2_score?: number | null
+          winner_id?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          best_of?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          iscompleted?: boolean | null
+          location?: string | null
+          loser_id?: string | null
+          match_type?: Database["public"]["Enums"]["match_type"] | null
+          metadata?: Json | null
+          season_id?: string | null
+          team1_game_wins?: number | null
+          team1_id?: string | null
+          team1_score?: number | null
+          team2_game_wins?: number | null
+          team2_id?: string | null
+          team2_score?: number | null
+          winner_id?: string | null
+        }
+        Relationships: []
       }
       message_reactions: {
         Row: {

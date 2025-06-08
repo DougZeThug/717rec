@@ -3,14 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
-export const useTeamData = (divisionId?: string | null) => {
+export const useTeamData = (divisionId?: string | null, includeHidden: boolean = false) => {
   const query = useQuery<Team[], Error>({
-    queryKey: ['teams', divisionId],
+    queryKey: ['teams', divisionId, includeHidden],
     queryFn: async () => {
       let query = supabase
-        .from('v_team_details')
+        .from('teams')
         .select(`
-          team_id,
+          id,
           name,
           logo_url,
           image_url,
@@ -19,19 +19,21 @@ export const useTeamData = (divisionId?: string | null) => {
           game_wins,
           game_losses,
           division_id,
-          divisionname,
-          sos,
-          power_score,
-          win_percentage,
-          game_win_percentage,
+          hidden,
           players,
           created_at,
-          close_match_losses
+          close_match_losses,
+          divisions(name)
         `)
         .order('name');
       
       if (divisionId) {
         query = query.eq('division_id', divisionId);
+      }
+
+      // Filter out hidden teams unless explicitly requested
+      if (!includeHidden) {
+        query = query.eq('hidden', false);
       }
       
       const { data, error } = await query;
@@ -41,26 +43,16 @@ export const useTeamData = (divisionId?: string | null) => {
         throw error;
       }
       
-      // Create a Map to store unique teams by ID
-      const uniqueTeamsMap = new Map<string, any>();
-      
-      (data || []).forEach(team => {
-        if (!uniqueTeamsMap.has(team.team_id)) {
-          uniqueTeamsMap.set(team.team_id, team);
-        }
-      });
-      
-      const uniqueTeamsArray = Array.from(uniqueTeamsMap.values());
-      
       // Enhanced logging to debug division assignments
-      console.log("useTeamData - Teams with divisions:", uniqueTeamsArray.map(team => ({
-        id: team.team_id,
+      console.log("useTeamData - Teams with divisions:", data?.map(team => ({
+        id: team.id,
         name: team.name,
-        division_id: team.division_id
+        division_id: team.division_id,
+        hidden: team.hidden
       })));
       
-      return uniqueTeamsArray.map((team): Team => ({
-        id: team.team_id,
+      return (data || []).map((team): Team => ({
+        id: team.id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
         imageUrl: team.image_url || null,
@@ -70,14 +62,15 @@ export const useTeamData = (divisionId?: string | null) => {
         game_wins: team.game_wins || 0,
         game_losses: team.game_losses || 0,
         created_at: team.created_at || new Date().toISOString(),
-        division_id: team.division_id || null, // Keep division_id as is without renaming
-        division: team.division_id || null, // Keep division for backward compatibility
-        divisionName: team.divisionname || null,
-        sos: typeof team.sos === 'number' ? team.sos : 0.5,
-        power_score: typeof team.power_score === 'number' ? team.power_score : 0,
-        win_percentage: team.win_percentage || 0,
-        game_win_percentage: team.game_win_percentage || 0,
-        close_match_losses: team.close_match_losses
+        division_id: team.division_id || null,
+        division: team.division_id || null,
+        divisionName: (team.divisions as any)?.name || null,
+        hidden: team.hidden || false,
+        sos: 0.5, // Default SOS since view is not updated
+        power_score: 0, // Default power score
+        win_percentage: team.wins + team.losses > 0 ? team.wins / (team.wins + team.losses) : 0,
+        game_win_percentage: team.game_wins + team.game_losses > 0 ? team.game_wins / (team.game_wins + team.game_losses) : 0,
+        close_match_losses: team.close_match_losses || 0
       }));
     },
     staleTime: 10000,

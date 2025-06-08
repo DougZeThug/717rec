@@ -4,7 +4,7 @@ import { Team } from "@/types";
 import { fetchTeamsFromApi } from "@/services/teams/TeamFetchService";
 import { useToast } from "@/hooks/use-toast";
 
-export function useTeamsData() {
+export function useTeamsData(includeHidden: boolean = false) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
@@ -12,11 +12,11 @@ export function useTeamsData() {
   const fetchTeams = async () => {
     try {
       setIsLoading(true);
-      const teamsData = await fetchTeamsFromApi();
+      const teamsData = await fetchTeamsFromApi(includeHidden);
       
-      // Enhanced logging to verify power score and SOS values
       console.log("Teams data loaded in useTeamsData:", teamsData.map(t => ({
         name: t.name,
+        hidden: t.hidden,
         power_score: t.power_score,
         sos: t.sos,
         win_percentage: t.win_percentage,
@@ -48,7 +48,7 @@ export function useTeamsData() {
 
   useEffect(() => {
     fetchTeams();
-  }, []);
+  }, [includeHidden]);
 
   return {
     teams,
