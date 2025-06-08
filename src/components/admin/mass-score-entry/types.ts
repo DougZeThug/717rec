@@ -19,12 +19,11 @@ export interface MatchWithTeams extends Match {
   isValid?: boolean;
   winnerId?: string | null;
   loserId?: string | null;
-  round_number?: number;
-  position?: number;
-  bracket_id?: string;
+  // Removed properties that don't exist in matches table:
+  // round_number, position, bracket_id
 }
 
 export interface FilterState {
   date?: Date;
-  bracketId?: string;
+  bracketId?: string; // Keep for UI compatibility even though not used for matches
 }

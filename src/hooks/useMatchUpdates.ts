@@ -36,7 +36,10 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
           winner_id: matchData.winnerId,
           loser_id: matchData.loserId,
           team1_game_wins: matchData.team1_game_wins || 0,
-          team2_game_wins: matchData.team2_game_wins || 0
+          team2_game_wins: matchData.team2_game_wins || 0,
+          best_of: matchData.best_of,
+          match_type: matchData.match_type,
+          season_id: matchData.season_id
         })
         .eq('id', editingMatch.id)
         .select()
@@ -58,7 +61,9 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         loserId: data.loser_id,
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
-        round_number: data.round_number
+        best_of: data.best_of,
+        match_type: data.match_type,
+        season_id: data.season_id
       };
       
       // Update the matches state

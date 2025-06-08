@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,10 +46,10 @@ export const useScoreEntryData = () => {
                    .lt('date', `${dateStr}T23:59:59`);
     }
 
-    // Apply bracket filter if selected
-    if (filters.bracketId) {
-      query = query.eq('bracket_id', filters.bracketId);
-    }
+    // Apply bracket filter if selected - note: removed since matches table doesn't have bracket_id
+    // if (filters.bracketId) {
+    //   query = query.eq('bracket_id', filters.bracketId);
+    // }
 
     try {
       const { data, error } = await query;
@@ -69,14 +68,13 @@ export const useScoreEntryData = () => {
           iscompleted: match.iscompleted,
           winnerId: match.winner_id,
           loserId: match.loser_id,
-          round_number: match.round_number,
-          position: match.position,
-          bracket_id: match.bracket_id,
-          match_type: match.match_type,
-          next_match_id: match.next_match_id,
-          next_loser_match_id: match.next_loser_match_id,
           best_of: match.best_of,
           created_at: match.created_at,
+          match_type: match.match_type,
+          season_id: match.season_id,
+          metadata: match.metadata,
+          team1_game_wins: match.team1_game_wins,
+          team2_game_wins: match.team2_game_wins,
           // Map the team relation data
           team1: match.team1 ? {
             id: match.team1.id,

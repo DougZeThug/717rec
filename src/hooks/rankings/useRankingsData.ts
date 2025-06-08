@@ -29,13 +29,10 @@ export const useRankingsData = () => {
         loserId: match.loser_id,
         team1_game_wins: match.team1_game_wins,
         team2_game_wins: match.team2_game_wins,
-        round_number: match.round_number,
-        position: match.position,
-        bracket_id: match.bracket_id,
+        best_of: match.best_of,
         match_type: match.match_type,
-        next_match_id: match.next_match_id,
-        next_loser_match_id: match.next_loser_match_id,
-        best_of: match.best_of
+        season_id: match.season_id,
+        metadata: match.metadata
       }));
     },
     staleTime: 10000,

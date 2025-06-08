@@ -32,15 +32,16 @@ export const useMatchesFetching = () => {
                  .lte('date', endDate.toISOString());
     }
 
-    if (filters.bracketId) {
-      query = query.eq('bracket_id', filters.bracketId);
-    }
+    // Note: Removed bracket filtering since matches table doesn't have bracket_id
+    // if (filters.bracketId) {
+    //   query = query.eq('bracket_id', filters.bracketId);
+    // }
 
     try {
       const { data, error } = await query;
       if (error) throw error;
 
-      return data.map(transformDatabaseMatchToMatchWithTeams) as MatchWithTeams[];
+      return data.map(transformDatabaseMatchToMatchWithTeams);
     } catch (error: any) {
       console.error("Error fetching matches:", error.message);
       toast({
