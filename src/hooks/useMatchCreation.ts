@@ -37,9 +37,7 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
           loser_id: matchData.loserId,
           team1_game_wins: matchData.team1_game_wins || 0,
           team2_game_wins: matchData.team2_game_wins || 0,
-          best_of: matchData.best_of || 1,
-          match_type: matchData.match_type,
-          season_id: matchData.season_id
+          round_number: 0 // Adding required field with default value
         })
         .select()
         .single();
@@ -60,9 +58,7 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         loserId: data.loser_id,
         team1_game_wins: data.team1_game_wins,
         team2_game_wins: data.team2_game_wins,
-        best_of: data.best_of,
-        match_type: data.match_type,
-        season_id: data.season_id,
+        round_number: data.round_number,
         timeSlot: matchData.timeSlot // Preserve the timeSlot for UI purposes
       };
       

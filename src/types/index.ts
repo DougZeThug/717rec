@@ -14,17 +14,16 @@ export interface Team {
   logoUrl?: string;
   players?: string[];
   seed?: number;
-  challonge_participant_id?: number;
+  challongeParticipantId?: number;
   power_score?: number;
   sos?: number;
   win_percentage?: number;
   game_win_percentage?: number;
   created_at?: string;
   close_match_losses?: number;
-  hidden?: boolean;
 }
 
-// Match related types - Updated to match actual database schema
+// Match related types
 export interface Match {
   id: string;
   team1Id: string;
@@ -36,15 +35,18 @@ export interface Match {
   date?: string;
   location?: string;
   iscompleted?: boolean;
+  round_number?: number;
+  position?: number;
+  bracket_id?: string;
+  match_type?: string;
+  next_match_id?: string;
+  next_loser_match_id?: string;
   best_of?: number;
   team1_game_wins?: number;
   team2_game_wins?: number;
   created_at?: string;
   status?: "postponed" | "canceled" | null;
   timeSlot?: string | null;
-  match_type?: string;
-  season_id?: string;
-  metadata?: any;
   team1Details?: {
     team_id: string;
     name: string;
