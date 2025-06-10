@@ -1866,6 +1866,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "team_season_opt_out_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
+          },
+          {
+            foreignKeyName: "team_season_opt_out_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_season_agg"
+            referencedColumns: ["season_id"]
+          },
+          {
             foreignKeyName: "team_season_opt_out_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
@@ -1976,6 +1990,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "seasons"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_season_stats_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
+          },
+          {
+            foreignKeyName: "team_season_stats_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_season_agg"
+            referencedColumns: ["season_id"]
           },
           {
             foreignKeyName: "team_season_stats_team_id_fkey"
