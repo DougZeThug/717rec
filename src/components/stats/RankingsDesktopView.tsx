@@ -26,21 +26,24 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
-  // Split into divisions or display unified
+  
+  // Split into display divisions or display unified - using divisionName which now contains display_division
   const rankingsByDivision = showUnified 
     ? { "All Teams": rankings }
     : rankings.reduce((acc, ranking) => {
-        const divisionName = ranking.divisionName || "Unassigned";
-        if (!acc[divisionName]) acc[divisionName] = [];
-        acc[divisionName].push(ranking);
+        // Use divisionName which now contains the display_division value
+        const displayDivision = ranking.divisionName || "Unassigned";
+        if (!acc[displayDivision]) acc[displayDivision] = [];
+        acc[displayDivision].push(ranking);
         return acc;
       }, {} as Record<string, Ranking[]>);
+      
   return (
     <div className="font-inter">
-      {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
+      {Object.entries(rankingsByDivision).map(([displayDivision, divisionRankings]) => (
         <DivisionRankingsSection
-          key={divisionName}
-          divisionName={divisionName}
+          key={displayDivision}
+          divisionName={displayDivision}
           rankings={divisionRankings}
           allRankings={rankings}
           expandedTeam={expandedTeam}
@@ -56,4 +59,3 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 };
 
 export default RankingsDesktopView;
-
