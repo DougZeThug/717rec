@@ -29,7 +29,7 @@ FROM teams t
 LEFT JOIN divisions d ON t.division_id = d.id
 LEFT JOIN v_team_match_stats stats ON t.id = stats.team_id
 LEFT JOIN (
-    -- Weighted win percentage calculation using division weights
+    -- ... keep existing code (weighted win percentage calculation using division weights) the same ...
     SELECT 
         t.id as team_id,
         CASE 
@@ -64,12 +64,12 @@ LEFT JOIN (
     GROUP BY t.id
 ) weighted_stats ON t.id = weighted_stats.team_id
 LEFT JOIN (
-    -- Enhanced SOS calculation using weighted opponent win percentages
+    -- DIVISION-BASED SOS: Average of opponent division weights
     SELECT 
         t.id as team_id,
         CASE 
             WHEN COUNT(DISTINCT opp.id) = 0 THEN 0.5
-            ELSE GREATEST(0.1, LEAST(1.0, AVG(COALESCE(opp_weighted.weighted_win_percentage, 0.5))))
+            ELSE GREATEST(0.1, LEAST(1.0, AVG(COALESCE(d_opp.division_weight, 0.85))))
         END as sos
     FROM teams t
     LEFT JOIN matches m ON (t.id = m.team1_id OR t.id = m.team2_id) AND m.iscompleted = true
@@ -79,28 +79,7 @@ LEFT JOIN (
             WHEN m.team2_id = t.id THEN m.team1_id 
         END = opp.id
     )
-    LEFT JOIN (
-        -- Recursive weighted win percentage for opponents
-        SELECT 
-            t.id as team_id,
-            CASE 
-                WHEN COUNT(m.*) = 0 THEN 0.5
-                ELSE GREATEST(0.1, LEAST(1.0, (
-                    SUM(CASE WHEN m.winner_id = t.id THEN d_opp.division_weight ELSE 0 END) / 
-                    NULLIF(SUM(d_opp.division_weight), 0)
-                )))
-            END as weighted_win_percentage
-        FROM teams t
-        LEFT JOIN matches m ON (t.id = m.team1_id OR t.id = m.team2_id) AND m.iscompleted = true
-        LEFT JOIN teams t_opp ON (
-            CASE 
-                WHEN m.team1_id = t.id THEN m.team2_id 
-                WHEN m.team2_id = t.id THEN m.team1_id 
-            END = t_opp.id
-        )
-        LEFT JOIN divisions d_opp ON t_opp.division_id = d_opp.id
-        GROUP BY t.id
-    ) opp_weighted ON opp.id = opp_weighted.team_id
+    LEFT JOIN divisions d_opp ON opp.division_id = d_opp.id
     GROUP BY t.id
 ) sos_calc ON t.id = sos_calc.team_id
 LEFT JOIN (
@@ -116,6 +95,7 @@ LEFT JOIN (
     FROM teams t
     LEFT JOIN v_team_match_stats base_stats ON t.id = base_stats.team_id
     LEFT JOIN (
+        -- ... keep existing code (weighted performance calculation) the same ...
         SELECT 
             t.id as team_id,
             CASE 
@@ -137,11 +117,12 @@ LEFT JOIN (
         GROUP BY t.id
     ) weighted_perf ON t.id = weighted_perf.team_id
     LEFT JOIN (
+        -- Division-based SOS component for power score
         SELECT 
             t.id as team_id,
             CASE 
                 WHEN COUNT(DISTINCT opp.id) = 0 THEN 0.5
-                ELSE GREATEST(0.1, LEAST(1.0, AVG(COALESCE(opp_weighted.weighted_win_percentage, 0.5))))
+                ELSE GREATEST(0.1, LEAST(1.0, AVG(COALESCE(d_opp.division_weight, 0.85))))
             END as sos
         FROM teams t
         LEFT JOIN matches m ON (t.id = m.team1_id OR t.id = m.team2_id) AND m.iscompleted = true
@@ -151,34 +132,14 @@ LEFT JOIN (
                 WHEN m.team2_id = t.id THEN m.team1_id 
             END = opp.id
         )
-        LEFT JOIN (
-            SELECT 
-                t.id as team_id,
-                CASE 
-                    WHEN COUNT(m.*) = 0 THEN 0.5
-                    ELSE GREATEST(0.1, LEAST(1.0, (
-                        SUM(CASE WHEN m.winner_id = t.id THEN d_opp.division_weight ELSE 0 END) / 
-                        NULLIF(SUM(d_opp.division_weight), 0)
-                    )))
-                END as weighted_win_percentage
-            FROM teams t
-            LEFT JOIN matches m ON (t.id = m.team1_id OR t.id = m.team2_id) AND m.iscompleted = true
-            LEFT JOIN teams t_opp ON (
-                CASE 
-                    WHEN m.team1_id = t.id THEN m.team2_id 
-                    WHEN m.team2_id = t.id THEN m.team1_id 
-                END = t_opp.id
-            )
-            LEFT JOIN divisions d_opp ON t_opp.division_id = d_opp.id
-            GROUP BY t.id
-        ) opp_weighted ON opp.id = opp_weighted.team_id
+        LEFT JOIN divisions d_opp ON opp.division_id = d_opp.id
         GROUP BY t.id
     ) sos_component ON t.id = sos_component.team_id
     GROUP BY t.id, base_stats.win_percentage, base_stats.game_win_percentage, weighted_perf.weighted_win_percentage, sos_component.sos
 ) power_calc ON t.id = power_calc.team_id
 ORDER BY t.name;
 
--- Recreate the dependent views that were dropped
+-- ... keep existing code (recreate dependent views) the same ...
 
 -- v_team_details_with_season
 CREATE VIEW public.v_team_details_with_season AS
