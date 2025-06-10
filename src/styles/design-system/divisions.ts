@@ -1,6 +1,6 @@
 
 /**
- * Extended division color system
+ * Extended division color system - now uses display_division for consistent grouping
  */
 export const divisionColors = {
   competitive: {
@@ -39,9 +39,13 @@ export const divisionColors = {
 };
 
 /**
- * Get division-specific styling (text color, background, etc)
+ * Get division-specific styling using display_division for consistent grouping
+ * Now works with both display_division and legacy divisionName fields
  */
-export function getDivisionStyles(divisionName: string | null | undefined, type: 'text' | 'bg' | 'border' | 'hover' | 'bgLight' | 'textLight' = 'text') {
+export function getDivisionStyles(
+  divisionName: string | null | undefined, 
+  type: 'text' | 'bg' | 'border' | 'hover' | 'bgLight' | 'textLight' = 'text'
+) {
   if (!divisionName) return "";
   
   const lowerDivName = divisionName.toLowerCase();
@@ -59,8 +63,8 @@ export function getDivisionStyles(divisionName: string | null | undefined, type:
 }
 
 /**
- * Helper to get division-specific gradient
- * Renamed from getDivisionGradient to getDivisionGradientClass to avoid conflict
+ * Helper to get division-specific gradient using display_division
+ * Now supports both "Competitive High" and "Competitive" mapping to same style
  */
 export function getDivisionGradientClass(division: string): string {
   const lowerDivName = division.toLowerCase();
@@ -78,3 +82,19 @@ export function getDivisionGradientClass(division: string): string {
   return "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900";
 }
 
+/**
+ * Get the display division name from either display_division field or derive from name
+ * This ensures consistent grouping for visual purposes
+ */
+export function getDisplayDivision(division: { display_division?: string; name?: string } | string): string {
+  if (typeof division === 'string') {
+    const lowerName = division.toLowerCase();
+    if (lowerName.includes('competitive')) return 'Competitive';
+    if (lowerName.includes('intermediate')) return 'Intermediate';
+    if (lowerName.includes('recreational')) return 'Recreational';
+    return 'Recreational'; // fallback
+  }
+  
+  // Use display_division if available, otherwise derive from name
+  return division.display_division || getDisplayDivision(division.name || '');
+}

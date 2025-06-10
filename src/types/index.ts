@@ -1,4 +1,3 @@
-
 // Team related types
 export interface Team {
   id: string;
@@ -114,11 +113,12 @@ export type {
   MatchType,
 } from './bracket';
 
-// Division type
+// Division type - updated to include display_division
 export interface Division {
   id: string;
   name: string;
   division_weight?: number;
+  display_division?: string;
   created_at?: string;
 }
 
