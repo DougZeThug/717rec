@@ -1,4 +1,3 @@
-
 import { Ranking } from "@/types";
 
 /**
@@ -89,6 +88,25 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
     
     return ranking;
   });
+};
+
+/**
+ * Combined function that sorts rankings and updates rank changes
+ * This is the main function used by useRankings hook
+ */
+export const sortAndUpdateRankings = (
+  rankings: Ranking[], 
+  previousRankings: Record<string, number>,
+  sortBy: string = 'powerScore',
+  sortDirection: 'asc' | 'desc' = 'desc'
+): Ranking[] => {
+  // First, sort the rankings by the specified criteria
+  const sortedRankings = sortRankings(rankings, sortBy, sortDirection);
+  
+  // Then, update the rank changes based on previous rankings
+  const updatedRankings = updateRankChanges(sortedRankings);
+  
+  return updatedRankings;
 };
 
 /**
