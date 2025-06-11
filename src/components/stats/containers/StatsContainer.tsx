@@ -1,14 +1,14 @@
 
-import React, { useRef } from "react";
-import { useTeamRankings } from "@/hooks/useTeamRankings";
-import { useTeamData } from "@/hooks/useTeamData";
+import React, { useState } from "react";
 import { Match } from "@/types";
-import StatsErrorState from "../StatsErrorState";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart3, Flame, Trophy } from "lucide-react";
 import StatsPageHeader from "./StatsPageHeader";
 import StatsSummarySection from "./StatsSummarySection";
 import StatsChartsSection from "./StatsChartsSection";
 import FullRankingsSection from "./FullRankingsSection";
 import LoadingStateContainer from "./LoadingStateContainer";
+import { WeeklyHeatIndex } from "@/components/stats/weekly";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -16,81 +16,66 @@ interface StatsContainerProps {
   matchesError: Error | null;
 }
 
-const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
-  const [selectedDivision, setSelectedDivision] = React.useState<string | null>(null);
-  const { 
-    data: teams, 
-    isLoading: isLoadingTeams, 
-    error: teamsError 
-  } = useTeamData(selectedDivision);
-  const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
-  const fullRankingsRef = useRef<HTMLDivElement>(null);
+const StatsContainer: React.FC<StatsContainerProps> = ({
+  matches,
+  isLoadingMatches,
+  matchesError,
+}) => {
+  const [activeTab, setActiveTab] = useState("standings");
 
-  const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;
-  const hasError = teamsError || matchesError;
-
-  const scrollToFullRankings = () => {
-    if (fullRankingsRef.current) {
-      fullRankingsRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  if (hasError) {
-    return <StatsErrorState teamsError={teamsError} matchesError={matchesError} />;
-  }
-
-  if (isLoading) {
+  if (isLoadingMatches) {
     return <LoadingStateContainer />;
   }
 
+  if (matchesError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center text-red-600">
+          Error loading matches: {matchesError.message}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent px-2 sm:px-4">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       <StatsPageHeader />
       
-      <div className="font-inter">
-        {rankings.length > 0 ? (
-          <>
-            <StatsSummarySection 
-              rankings={rankings} 
-              scrollToFullRankings={scrollToFullRankings} 
-            />
-            
-            <StatsChartsSection rankings={rankings} />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="standings" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Standings & Stats
+          </TabsTrigger>
+          <TabsTrigger value="weekly-heat" className="flex items-center gap-2">
+            <Flame className="h-4 w-4" />
+            Weekly Heat Index
+          </TabsTrigger>
+          <TabsTrigger value="playoffs" className="flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
+            Playoff Picture
+          </TabsTrigger>
+        </TabsList>
 
-            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
-              <FullRankingsSection rankings={rankings} />
-            </div>
-          </>
-        ) : (
-          <NoTeamsAvailable />
-        )}
-      </div>
+        <TabsContent value="standings" className="space-y-6">
+          <StatsSummarySection matches={matches} />
+          <StatsChartsSection matches={matches} />
+          <FullRankingsSection matches={matches} />
+        </TabsContent>
+
+        <TabsContent value="weekly-heat" className="space-y-6">
+          <WeeklyHeatIndex />
+        </TabsContent>
+
+        <TabsContent value="playoffs" className="space-y-6">
+          <div className="text-center text-muted-foreground py-12">
+            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Playoff standings and seeding information coming soon!</p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
-
-const NoTeamsAvailable = () => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  
-  return (
-    <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] font-inter">
-      <CardHeader>
-        <CardTitle className="text-[#1a1a1a] dark:text-white font-bold">No Teams Available</CardTitle>
-        <CardDescription className="text-gray-600 dark:text-gray-400 font-light">
-          There are no teams in the selected division or no teams have been added yet.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-700 dark:text-gray-300 font-inter">
-          Try selecting a different division or add teams to view statistics.
-        </p>
-      </CardContent>
-    </Card>
-  );
-};
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTheme } from "next-themes";
 
 export default StatsContainer;
