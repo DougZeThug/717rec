@@ -1,67 +1,61 @@
 
 import React from "react";
-import PageLayout from "@/components/layout/PageLayout";
-import HeroSection from "@/components/home/HeroSection";
-import RecentMatches from "@/components/home/RecentMatches";
+import { useTeams } from "@/hooks/useTeams";
 import TopTeams from "@/components/home/TopTeams";
+import CallToAction from "@/components/home/CallToAction";
+import HeroSection from "@/components/home/HeroSection";
 import ChampionsCard from "@/components/home/ChampionsCard";
-import PlayoffsAnnouncementBanner from "@/components/home/PlayoffsAnnouncementBanner";
-import WeeklyHeatTeaser from "@/components/home/WeeklyHeatTeaser";
-import { useScheduleData } from "@/hooks/useScheduleData";
-import { useTeamFetching } from "@/hooks/useTeamFetching";
+import LeagueHistoryBar from "@/components/home/LeagueHistoryBar";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import LoadingState from "@/components/ui/loading-state";
+import { useIsMobile } from "@/hooks/use-mobile";
+import PageTransition from "@/components/transitions/PageTransition";
 
-const Index = () => {
-  const { completedMatches, matchesLoading } = useScheduleData();
-  const { teams: teamsMap, isLoading: teamsLoading } = useTeamFetching();
-
-  // Convert teams map to array and get top teams by power score
-  const teamsArray = Object.values(teamsMap);
-  const topTeams = teamsArray
-    .sort((a, b) => (b.power_score || 0) - (a.power_score || 0))
-    .slice(0, 8);
-
-  // Helper functions for date/time formatting
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  // Helper function to get team by ID
-  const getTeamById = (id: string) => {
-    return teamsMap[id];
-  };
-
-  // Get recent completed matches (limit to 6 for display)
-  const recentCompletedMatches = completedMatches.slice(0, 6);
-
+const Index: React.FC = () => {
+  const { teams, isLoading: teamsLoading } = useTeams();
+  const isMobile = useIsMobile();
+  
+  const isLoading = teamsLoading;
+  
+  // Top teams by power score
+  const topTeams = React.useMemo(() => {
+    if (!teams?.length) return [];
+    return [...teams]
+      .sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0))
+      .slice(0, 4);
+  }, [teams]);
+  
+  if (isLoading) {
+    return <LoadingState fullscreen message="Loading league data..." size="lg" />;
+  }
+  
   return (
-    <PageLayout>
-      <div className="space-y-8">
+    <PageLayout 
+      className="flex flex-col gap-4 md:gap-8" 
+      compact={isMobile}
+      gradientVariant="blueOrange"
+    >
+      <PageTransition animation="fadeInSlideDown">
         <HeroSection />
-        <PlayoffsAnnouncementBanner />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <RecentMatches 
-              completedMatches={recentCompletedMatches}
-              getTeamById={getTeamById}
-              formatDate={formatDate}
-              formatTime={formatTime}
-              isLoading={matchesLoading}
-            />
-          </div>
-          <div className="space-y-6">
-            <WeeklyHeatTeaser />
-            <TopTeams teams={topTeams} />
-            <ChampionsCard />
-          </div>
-        </div>
+      </PageTransition>
+      
+      <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
+        <PageTransition animation="fadeInSlideUp" delay="short">
+          <LeagueHistoryBar />
+        </PageTransition>
+
+        <PageTransition animation="fadeInSlideUp" delay="medium">
+          <ChampionsCard />
+        </PageTransition>
+
+        <PageTransition animation="fadeInSlideUp" delay="medium">
+          <TopTeams teams={topTeams} />
+        </PageTransition>
+
+        <PageTransition animation="fadeIn" delay="long">
+          <CallToAction />
+        </PageTransition>
       </div>
     </PageLayout>
   );
