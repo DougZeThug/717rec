@@ -58,9 +58,9 @@ const StatsContainer: React.FC<StatsContainerProps> = ({
         </TabsList>
 
         <TabsContent value="standings" className="space-y-6">
-          <StatsSummarySection />
-          <StatsChartsSection />
-          <FullRankingsSection />
+          <StatsSummarySection matches={matches} />
+          <StatsChartsSection matches={matches} />
+          <FullRankingsSection matches={matches} />
         </TabsContent>
 
         <TabsContent value="weekly-heat" className="space-y-6">

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Flame, TrendingUp, ArrowRight } from 'lucide-react';
 import { useLatestWeeklyDigest } from '@/hooks/weekly';
 import { RouterLink } from '@/components/navigation';
+import TeamLogo from '@/components/shared/TeamLogo';
 
 const WeeklyHeatTeaser = () => {
   const { data: digest, isLoading } = useLatestWeeklyDigest();
