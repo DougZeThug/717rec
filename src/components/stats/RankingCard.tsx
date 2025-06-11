@@ -1,180 +1,116 @@
 
 import React from "react";
-import { Ranking } from "@/types";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
-import RankTrendIndicator from "./RankTrendIndicator";
-import { getSosColor } from "@/utils/colors";
-import { Link } from "react-router-dom";
-import { useTheme } from "next-themes";
-import { TeamLogo } from "@/components/ui/team/TeamLogo";
 import { cn } from "@/lib/utils";
-import { gradients } from "@/styles/design-system";
+import { Ranking } from "@/types";
+import { Link } from "react-router-dom";
+import { TeamLogo } from "@/components/shared/TeamLogo";
+import { RankTrendIndicator } from "./RankTrendIndicator";
+import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
+import { getPowerScoreColor, getSosColor } from "@/utils/colors";
 
 interface RankingCardProps {
   ranking: Ranking;
   index: number;
-  expandedTeam: string | null;
-  onToggleExpand: (teamId: string) => void;
-  compactView: boolean;
-  showDivision?: boolean;
+  showRankChange?: boolean;
 }
 
-const RankingCard: React.FC<RankingCardProps> = ({
-  ranking,
-  index,
-  expandedTeam,
-  onToggleExpand,
-  compactView,
-  showDivision = false
+const RankingCard: React.FC<RankingCardProps> = ({ 
+  ranking, 
+  index, 
+  showRankChange = true 
 }) => {
-  const isExpanded = expandedTeam === ranking.teamId;
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-
-  // Get appropriate gradient for top positions
-  const getPositionGradient = () => {
-    if (index === 0) return "bg-gradient-to-r from-amber-100 to-amber-200/80 dark:from-amber-900/30 dark:to-amber-800/20";
-    if (index === 1) return "bg-gradient-to-r from-gray-100 to-blue-100/80 dark:from-gray-800/60 dark:to-blue-900/20"; 
-    if (index === 2) return "bg-gradient-to-r from-orange-100/90 to-orange-200/70 dark:from-orange-900/30 dark:to-orange-800/20";
-    return "";
-  };
-
-  // Enhanced card styling
-  const cardStyle = cn(
-    "border rounded-lg overflow-hidden transition-all duration-200",
-    isLight ? gradients.card.statHighlight : "bg-gray-800 dark:border-gray-700 hover:bg-gray-800/80",
-    index < 3 ? getPositionGradient() : "",
-    isExpanded && "shadow-md border-blue-200 dark:border-blue-800/50"
-  );
+  const rank = index + 1;
+  const winPercentage = ranking.winPercentage * 100;
+  const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
 
   return (
-    <div className={cardStyle}>
-      <div
-        className={cn(
-          compactView ? 'p-2' : 'p-4', 
-          "cursor-pointer",
-          "hover:bg-gradient-to-br hover:from-blue-50/30 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5"
-        )}
-        onClick={() => onToggleExpand(ranking.teamId)}
-      >
-        <div className={`flex flex-col ${compactView ? 'gap-1' : 'gap-2'}`}>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className={cn(
-                "font-mono text-lg font-bold shrink-0",
-                "flex items-center justify-center rounded-full size-6",
-                index < 3 ? "bg-gradient-to-br from-blue-100 to-orange-100/70 dark:from-blue-900/30 dark:to-orange-900/20 text-blue-900 dark:text-blue-100" : 
-                "text-gray-900 dark:text-white"
-              )}>
-                {index + 1}
-              </span>
-              {ranking.divisionRank && !showDivision && (
-                <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
-                  ({ranking.divisionRank})
-                </span>
-              )}
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                {!compactView && (
-                  <div className="w-8 h-8 shrink-0">
-                    <TeamLogo
-                      imageUrl={ranking.logoUrl || ranking.imageUrl}
-                      teamName={ranking.teamName}
-                      size="sm"
-                      className="w-8 h-8"
-                    />
-                  </div>
-                )}
-                <Link
-                  to={`/teams/${ranking.teamId}`}
-                  className="font-bebas tracking-wide text-lg hover:text-blue-600 dark:text-white dark:hover:text-blue-400 block truncate"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {ranking.teamName}
-                </Link>
-              </div>
-            </div>
-          </div>
-          
-          {compactView ? (
-            <div className="flex items-center justify-between mt-1">
-              <div className="flex items-center space-x-4">
-                <span className="font-mono text-sm text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
-                <span className={cn(
-                  `font-mono text-sm ${getPowerScoreColor(ranking.powerScore)}`,
-                  "bg-gradient-to-r from-transparent to-blue-50/50 dark:to-blue-900/10 px-1 rounded"
-                )}>
-                  {formatPowerScore(ranking.powerScore)}
-                </span>
-                <span className="font-mono text-sm text-gray-900 dark:text-white">{ranking.streak || "-"}</span>
-              </div>
-              <div className="shrink-0">
-                <RankTrendIndicator rankChange={ranking.rankChange} />
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-1">
-              <span className={cn(
-                `font-mono text-base font-medium ${getPowerScoreColor(ranking.powerScore)}`,
-                "bg-gradient-to-r from-transparent to-blue-50/70 dark:to-blue-900/20 px-2 py-0.5 rounded"
-              )}>
-                {formatPowerScore(ranking.powerScore)}
-              </span>
-              <div className="shrink-0 flex items-center justify-end min-w-[50px]">
-                <RankTrendIndicator rankChange={ranking.rankChange} />
-              </div>
-            </div>
+    <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-bold text-slate-900 dark:text-white">
+            #{rank}
+          </span>
+          {showRankChange && (
+            <RankTrendIndicator rankChange={ranking.rankChange} />
           )}
         </div>
-
-        {!compactView && (
-          <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
-            <div>
-              <span className="text-gray-500 dark:text-gray-400">Record:</span>{" "}
-              <span className="font-mono text-gray-900 dark:text-white">{`${ranking.wins}-${ranking.losses}`}</span>
-            </div>
-            <div>
-              <span className="text-gray-500 dark:text-gray-400">Win %:</span>{" "}
-              <span className="font-mono text-gray-900 dark:text-white">
-                {(ranking.winPercentage * 100).toFixed(1)}%
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-500 dark:text-gray-400">SOS:</span>{" "}
-              <span className={`font-mono ${getSosColor(ranking.sos)}`}>
-                {ranking.sos.toFixed(3)}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-500 dark:text-gray-400">Streak:</span>{" "}
-              <span className="font-mono text-gray-900 dark:text-white">{ranking.streak || "-"}</span>
-            </div>
-            {showDivision && (
-              <div className="col-span-2">
-                <span className="text-gray-500 dark:text-gray-400">Division:</span>{" "}
-                <span className="italic text-gray-900 dark:text-white">{ranking.divisionName || "Unassigned"}</span>
-              </div>
-            )}
-          </div>
-        )}
+        <TeamBadgeCollection 
+          teamId={ranking.teamId}
+          size="sm"
+          maxDisplay={3}
+        />
       </div>
-
-      {isExpanded && (
-        <div className="bg-gradient-to-br from-blue-50/50 to-orange-50/30 dark:from-gray-800/40 dark:to-gray-900/60 p-4 border-t dark:border-gray-700">
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <h4 className="font-medium mb-1 text-gray-800 dark:text-gray-300">Games</h4>
-              <p className="font-mono text-gray-900 dark:text-white">
-                {ranking.gamesWon}-{ranking.gamesLost} (
-                {(ranking.gameWinPercentage * 100).toFixed(1)}%)
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-1 text-gray-800 dark:text-gray-300">Close Losses</h4>
-              <p className="font-mono text-gray-900 dark:text-white">{ranking.closeMatchLosses}</p>
-            </div>
-          </div>
+      
+      <Link 
+        to={`/teams/${ranking.teamId}`}
+        className="flex items-center gap-3 mb-4 group"
+      >
+        <TeamLogo
+          imageUrl={ranking.logoUrl || ranking.imageUrl}
+          teamName={ranking.teamName}
+          size="md"
+          className="flex-shrink-0"
+        />
+        <div className="min-w-0">
+          <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+            {ranking.teamName}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {ranking.divisionName}
+          </p>
         </div>
-      )}
+      </Link>
+
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Record</p>
+          <p className="text-slate-900 dark:text-white font-bold">
+            {ranking.wins}-{ranking.losses}
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Win %</p>
+          <p className={cn(
+            "font-bold",
+            winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
+            winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
+            winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
+            "text-red-600 dark:text-red-500"
+          )}>
+            {winPercentage.toFixed(1)}%
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Games</p>
+          <p className="text-slate-900 dark:text-white font-bold">
+            {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Game %</p>
+          <p className={cn(
+            "font-bold",
+            gameWinPercentage >= 75 ? "text-green-600 dark:text-green-500" :
+            gameWinPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
+            gameWinPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
+            "text-red-600 dark:text-red-500"
+          )}>
+            {gameWinPercentage.toFixed(1)}%
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Power</p>
+          <p className={cn("font-bold", getPowerScoreColor(ranking.powerScore))}>
+            {ranking.powerScore.toFixed(1)}
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">SOS</p>
+          <p className={cn("font-bold", getSosColor(ranking.sos || 0))}>
+            {(ranking.sos || 0).toFixed(3)}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

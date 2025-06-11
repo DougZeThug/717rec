@@ -127,6 +127,7 @@ export type Database = {
           team1_score: number | null
           team2_game_wins: number | null
           team2_score: number | null
+          user_id: string | null
         }
         Insert: {
           id?: string
@@ -136,6 +137,7 @@ export type Database = {
           team1_score?: number | null
           team2_game_wins?: number | null
           team2_score?: number | null
+          user_id?: string | null
         }
         Update: {
           id?: string
@@ -145,6 +147,7 @@ export type Database = {
           team1_score?: number | null
           team2_game_wins?: number | null
           team2_score?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1691,6 +1694,117 @@ export type Database = {
           },
         ]
       }
+      team_badge_events: {
+        Row: {
+          awarded_at: string
+          badge_type: Database["public"]["Enums"]["badge_type"]
+          created_at: string
+          id: string
+          is_active: boolean
+          metadata: Json | null
+          season_id: string | null
+          team_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_type: Database["public"]["Enums"]["badge_type"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          season_id?: string | null
+          team_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_type?: Database["public"]["Enums"]["badge_type"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          season_id?: string | null
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_badge_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_season_agg"
+            referencedColumns: ["season_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_season_agg"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_badge_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_details_archive: {
         Row: {
           close_match_losses: number | null
@@ -2534,12 +2648,10 @@ export type Database = {
     }
     Functions: {
       get_participants: {
-        Args: { p_tournament_id: string }
+        Args: Record<PropertyKey, never> | { p_tournament_id: string }
         Returns: {
-          id: string
-          name: string
-          tournament_id: string
-          team_position: number
+          participant_id: number
+          participant_name: string
         }[]
       }
       get_team_division_weight: {
@@ -2576,6 +2688,21 @@ export type Database = {
       }
     }
     Enums: {
+      badge_type:
+        | "recreational_champion"
+        | "intermediate_champion"
+        | "competitive_champion"
+        | "recreational_runner_up"
+        | "intermediate_runner_up"
+        | "competitive_runner_up"
+        | "recreational_third_place"
+        | "intermediate_third_place"
+        | "competitive_third_place"
+        | "king_slayer"
+        | "clutch_performer"
+        | "consistent_performer"
+        | "hot_streak"
+        | "cold_streak"
       match_type: "winners" | "losers" | "finals"
       playoff_match_type:
         | "winners"
@@ -2698,6 +2825,22 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      badge_type: [
+        "recreational_champion",
+        "intermediate_champion",
+        "competitive_champion",
+        "recreational_runner_up",
+        "intermediate_runner_up",
+        "competitive_runner_up",
+        "recreational_third_place",
+        "intermediate_third_place",
+        "competitive_third_place",
+        "king_slayer",
+        "clutch_performer",
+        "consistent_performer",
+        "hot_streak",
+        "cold_streak",
+      ],
       match_type: ["winners", "losers", "finals"],
       playoff_match_type: [
         "winners",
