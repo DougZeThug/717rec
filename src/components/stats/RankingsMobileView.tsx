@@ -146,10 +146,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     key={ranking.teamId}
                     ranking={ranking}
                     index={globalIndex}
-                    expandedTeam={expandedTeam}
-                    onToggleExpand={toggleExpand}
-                    compactView={!detailedView}
-                    showDivision={showUnified}
                   />
                 );
               })}
