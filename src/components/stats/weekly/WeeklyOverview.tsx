@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Flame, Trophy, TrendingUp, Target } from 'lucide-react';
 import { WeeklyDigest } from '@/hooks/weekly';
-import TeamLogo from '@/components/shared/TeamLogo';
+import { TeamLogo } from '@/components/shared/TeamLogo';
 
 interface WeeklyOverviewProps {
   digest: WeeklyDigest;

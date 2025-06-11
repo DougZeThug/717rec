@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Flame, TrendingUp, TrendingDown } from 'lucide-react';
 import { WeeklyHeatRanking } from '@/hooks/weekly';
-import TeamLogo from '@/components/shared/TeamLogo';
+import { TeamLogo } from '@/components/shared/TeamLogo';
 
 interface WeeklyHeatRankingsTableProps {
   rankings: WeeklyHeatRanking[];
