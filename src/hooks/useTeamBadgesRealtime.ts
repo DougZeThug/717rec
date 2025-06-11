@@ -4,6 +4,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamBadgeEvent } from '@/types/badges';
 
+interface RealtimePayload {
+  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+  new?: TeamBadgeEvent;
+  old?: TeamBadgeEvent;
+}
+
 export const useTeamBadgesRealtime = (teamId?: string) => {
   const queryClient = useQueryClient();
 
@@ -30,7 +36,7 @@ export const useTeamBadgesRealtime = (teamId?: string) => {
           queryClient.invalidateQueries({ queryKey: ['all-team-badges'] });
           
           // Optionally show a toast notification
-          if (payload.eventType === 'INSERT') {
+          if (payload.eventType === 'INSERT' && payload.new) {
             const newBadge = payload.new as TeamBadgeEvent;
             console.log(`New badge awarded: ${newBadge.badge_type} for team ${teamId}`);
           }
@@ -62,8 +68,9 @@ export const useTeamBadgesRealtime = (teamId?: string) => {
           queryClient.invalidateQueries({ queryKey: ['all-team-badges'] });
           
           // Invalidate specific team badges if we have the team ID
-          if (payload.new?.team_id) {
-            queryClient.invalidateQueries({ queryKey: ['team-badges', payload.new.team_id] });
+          const newBadge = payload.new as TeamBadgeEvent | undefined;
+          if (newBadge?.team_id) {
+            queryClient.invalidateQueries({ queryKey: ['team-badges', newBadge.team_id] });
           }
         }
       )
