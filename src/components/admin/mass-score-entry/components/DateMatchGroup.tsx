@@ -1,35 +1,30 @@
 
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MatchWithTeams } from "../types";
-import { motion } from "framer-motion";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger
-} from "@/components/ui/collapsible";
-import { groupMatchesByTimeSlot, sortTimeSlots } from "../utils/timeGrouping";
-import TimeSlotMatchGroup from "./TimeSlotMatchGroup";
+import MatchScoreRow from "./MatchScoreRow";
 
 interface DateMatchGroupProps {
   date: Date;
-  matches: MatchWithTeams[];
-  defaultExpanded?: boolean;
+  matches: (MatchWithTeams & { originalIndex: number })[];
+  defaultExpanded: boolean;
   onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
   onGameWinsChange: (index: number, team1GameWins: number, team2GameWins: number) => void;
   onMarkCompleted: (index: number, checked: boolean) => void;
-  submitting?: boolean;
-  failedMatches?: string[];
-  errorMessages?: Record<string, string>;
+  submitting: boolean;
+  failedMatches: string[];
+  errorMessages: Record<string, string>;
   onClearError?: (matchId: string) => void;
 }
 
-const DateMatchGroup: React.FC<DateMatchGroupProps> = ({ 
-  date, 
-  matches, 
-  defaultExpanded = false,
+const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
+  date,
+  matches,
+  defaultExpanded,
   onScoreChange,
   onGameWinsChange,
   onMarkCompleted,
@@ -38,65 +33,68 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   errorMessages,
   onClearError
 }) => {
-  const [isOpen, setIsOpen] = useState(defaultExpanded);
-  const formattedDate = format(date, "EEEE, MMMM d, yyyy");
-  
-  // Group matches by time slot for this date
-  const matchesByTimeSlot = groupMatchesByTimeSlot(matches);
-  const sortedTimeSlots = sortTimeSlots(Object.keys(matchesByTimeSlot));
-  
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const editedCount = matches.filter(m => m.isEdited).length;
+  const completedCount = matches.filter(m => m.iscompleted).length;
+
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className="mb-4 overflow-hidden bg-card"
-    >
-      <CollapsibleTrigger 
-        className={cn(
-          "flex w-full items-center justify-between p-4 text-left transition-all",
-          "hover:bg-accent hover:text-accent-foreground",
-          "border-b text-sm font-semibold"
-        )}
+    <Card className="overflow-hidden">
+      <CardHeader
+        className="p-3 sm:p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
       >
-        <span>{formattedDate}</span>
-        <ChevronDown 
-          className={cn(
-            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
-            isOpen && "rotate-180"
-          )}
-        />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-          className="p-4 space-y-4"
-        >
-          {sortedTimeSlots.length > 0 ? (
-            sortedTimeSlots.map(timeSlot => (
-              <TimeSlotMatchGroup
-                key={timeSlot}
-                timeSlot={timeSlot}
-                matches={matchesByTimeSlot[timeSlot]} 
-                onScoreChange={onScoreChange}
-                onGameWinsChange={onGameWinsChange}
-                onMarkCompleted={onMarkCompleted}
-                submitting={submitting}
-                failedMatches={failedMatches}
-                errorMessages={errorMessages}
-                onClearError={onClearError}
-                defaultOpen={matches.length <= 5}
-              />
-            ))
-          ) : (
-            <div className="text-center p-4 text-muted-foreground">
-              No matches found for this date.
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-4 w-4 text-primary" />
+            <div>
+              <h3 className="font-semibold text-base">
+                {format(date, "EEEE, MMMM d, yyyy")}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {matches.length} matches • {editedCount} edited • {completedCount} completed
+              </p>
             </div>
-          )}
-        </motion.div>
-      </CollapsibleContent>
-    </Collapsible>
+          </div>
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </motion.div>
+        </div>
+      </CardHeader>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <CardContent className="p-0">
+              <div className="space-y-1">
+                {matches.map((match) => (
+                  <MatchScoreRow
+                    key={match.id}
+                    match={match}
+                    index={match.originalIndex} // Use the original index
+                    onScoreChange={onScoreChange}
+                    onGameWinsChange={onGameWinsChange}
+                    onMarkCompleted={onMarkCompleted}
+                    submitting={submitting}
+                    hasError={failedMatches.includes(match.id)}
+                    errorMessage={errorMessages[match.id]}
+                    onClearError={onClearError}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </Card>
   );
 };
 
