@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Trophy, Calendar, RefreshCw } from "lucide-react";
@@ -29,7 +28,6 @@ interface SeasonData {
   champion: boolean;
   runner_up: boolean;
   division_name: string | null;
-  display_division: string | null;
   playoff_rank: number | null;
   team_name: string;
   team_logo_url: string | null;
@@ -61,11 +59,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
             teams:team_id (
               name,
               logo_url,
-              image_url,
-              division_id,
-              divisions:division_id (
-                display_division
-              )
+              image_url
             )
           `)
           .eq('season_id', seasonId)
@@ -99,7 +93,6 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           champion: item.champion,
           runner_up: item.runner_up,
           division_name: item.division_name,
-          display_division: item.teams?.divisions?.display_division || 'Recreational',
           playoff_rank: item.playoff_rank,
           team_name: item.teams?.name || 'Unknown Team',
           team_logo_url: item.teams?.logo_url,
@@ -134,20 +127,20 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
     setIsExpanded(!isExpanded);
   };
 
-  // Group data by display division instead of actual division name
+  // Group data by division
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
     
     const grouped = seasonData.reduce((acc, team) => {
-      const displayDivision = team.display_division || 'Recreational';
-      if (!acc[displayDivision]) {
-        acc[displayDivision] = [];
+      const division = team.division_name || 'No Division';
+      if (!acc[division]) {
+        acc[division] = [];
       }
-      acc[displayDivision].push(team);
+      acc[division].push(team);
       return acc;
     }, {} as Record<string, SeasonData[]>);
 
-    console.log(`📊 Season ${season.name}: Grouped data by display divisions:`, Object.keys(grouped));
+    console.log(`📊 Season ${season.name}: Grouped data by divisions:`, Object.keys(grouped));
     return grouped;
   }, [seasonData, season.name]);
 
@@ -239,10 +232,10 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               ) : (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {Object.entries(divisionData).map(([displayDivision, teams]) => (
+                    {Object.entries(divisionData).map(([divisionName, teams]) => (
                       <DivisionPanel
-                        key={displayDivision}
-                        divisionName={displayDivision}
+                        key={divisionName}
+                        divisionName={divisionName}
                         teams={teams}
                       />
                     ))}

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
@@ -14,11 +15,10 @@ import { Clock } from "lucide-react";
 import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { normalizeDate } from "@/utils/dateNormalization";
-import { getDefaultScheduleTab } from "@/utils/scheduleUtils";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState(getDefaultScheduleTab());
+  const [activeTab, setActiveTab] = useState("completed");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { resolvedTheme } = useTheme();
   
