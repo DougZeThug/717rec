@@ -61,9 +61,10 @@ export const useTeamBadgesRealtime = (teamId?: string) => {
           // Invalidate all badge-related queries
           queryClient.invalidateQueries({ queryKey: ['all-team-badges'] });
           
-          // Invalidate specific team badges if we have the team ID
-          if (payload.new?.team_id) {
-            queryClient.invalidateQueries({ queryKey: ['team-badges', payload.new.team_id] });
+          // Invalidate specific team badges if we have the team ID with proper type checking
+          if (payload.new && typeof payload.new === 'object' && 'team_id' in payload.new) {
+            const teamBadgeData = payload.new as { team_id: string };
+            queryClient.invalidateQueries({ queryKey: ['team-badges', teamBadgeData.team_id] });
           }
         }
       )
