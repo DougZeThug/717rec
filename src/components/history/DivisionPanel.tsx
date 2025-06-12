@@ -15,6 +15,7 @@ interface SeasonData {
   champion: boolean;
   runner_up: boolean;
   division_name: string | null;
+  display_division: string | null;
   team_name: string;
   team_logo_url: string | null;
   team_image_url: string | null;
