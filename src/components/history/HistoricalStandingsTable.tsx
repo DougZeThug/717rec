@@ -3,8 +3,6 @@ import React from "react";
 import { Crown, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TeamLogo } from "@/components/shared/TeamLogo";
-import { getPowerScoreColor, getSosColor } from "@/utils/colors";
 
 interface SeasonData {
   team_id: string;
@@ -21,19 +19,11 @@ interface SeasonData {
   team_name: string;
   team_logo_url: string | null;
   team_image_url: string | null;
-  playoff_rank: number | null;
 }
 
 interface HistoricalStandingsTableProps {
   teams: SeasonData[];
 }
-
-const getWinPercentageColor = (percentage: number): string => {
-  if (percentage >= 75) return 'text-green-600 dark:text-green-500';
-  if (percentage >= 60) return 'text-blue-600 dark:text-blue-500';
-  if (percentage >= 40) return 'text-orange-500 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-500';
-};
 
 const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ teams }) => {
   const isMobile = useIsMobile();
@@ -41,7 +31,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
   if (isMobile) {
     return (
       <div className="space-y-3">
-        {teams.map((team) => {
+        {teams.map((team, index) => {
           const winPercentage = team.match_wins + team.match_losses > 0 
             ? (team.match_wins / (team.match_wins + team.match_losses)) * 100 
             : 0;
@@ -61,7 +51,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-6">
-                    #{team.playoff_rank || '-'}
+                    #{index + 1}
                   </span>
                   {team.champion && (
                     <Crown className="w-4 h-4 text-yellow-500" />
@@ -69,12 +59,6 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                   {team.runner_up && (
                     <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   )}
-                  <TeamLogo
-                    imageUrl={team.team_logo_url || team.team_image_url}
-                    teamName={team.team_name}
-                    size="sm"
-                    className="flex-shrink-0"
-                  />
                   <span className="font-semibold text-slate-900 dark:text-white">
                     {team.team_name}
                   </span>
@@ -84,20 +68,20 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600 dark:text-gray-300">Record:</span>
-                  <span className={cn("ml-2 font-medium", getWinPercentageColor(winPercentage))}>
+                  <span className="ml-2 font-medium text-slate-900 dark:text-white">
                     {team.match_wins}-{team.match_losses} ({winPercentage.toFixed(1)}%)
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600 dark:text-gray-300">Games:</span>
-                  <span className={cn("ml-2 font-medium", getWinPercentageColor(gameWinPercentage))}>
+                  <span className="ml-2 font-medium text-slate-900 dark:text-white">
                     {team.game_wins}-{team.game_losses} ({gameWinPercentage.toFixed(1)}%)
                   </span>
                 </div>
                 {team.power_score !== null && (
                   <div>
                     <span className="text-gray-600 dark:text-gray-300">Power Score:</span>
-                    <span className={cn("ml-2 font-medium", getPowerScoreColor(team.power_score))}>
+                    <span className="ml-2 font-medium text-slate-900 dark:text-white">
                       {team.power_score.toFixed(2)}
                     </span>
                   </div>
@@ -105,7 +89,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                 {team.sos !== null && (
                   <div>
                     <span className="text-gray-600 dark:text-gray-300">SOS:</span>
-                    <span className={cn("ml-2 font-medium", getSosColor(team.sos))}>
+                    <span className="ml-2 font-medium text-slate-900 dark:text-white">
                       {team.sos.toFixed(3)}
                     </span>
                   </div>
@@ -134,7 +118,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
           </tr>
         </thead>
         <tbody>
-          {teams.map((team) => {
+          {teams.map((team, index) => {
             const winPercentage = team.match_wins + team.match_losses > 0 
               ? (team.match_wins / (team.match_wins + team.match_losses)) * 100 
               : 0;
@@ -151,7 +135,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                   team.runner_up && "bg-gray-100 dark:bg-gray-900/20 hover:bg-gray-200 dark:hover:bg-gray-900/30"
                 )}
               >
-                <td className="py-2 px-3 text-gray-600 dark:text-gray-300">#{team.playoff_rank || '-'}</td>
+                <td className="py-2 px-3 text-gray-600 dark:text-gray-300">#{index + 1}</td>
                 <td className="py-2 px-3">
                   <div className="flex items-center gap-2">
                     {team.champion && (
@@ -160,12 +144,6 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                     {team.runner_up && (
                       <Medal className="w-4 h-4 text-gray-600 dark:text-gray-300 flex-shrink-0" />
                     )}
-                    <TeamLogo
-                      imageUrl={team.team_logo_url || team.team_image_url}
-                      teamName={team.team_name}
-                      size="sm"
-                      className="flex-shrink-0"
-                    />
                     <span className="font-medium text-slate-900 dark:text-white">
                       {team.team_name}
                     </span>
@@ -174,19 +152,19 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                 <td className="py-2 px-3 text-center font-medium text-slate-900 dark:text-white">
                   {team.match_wins}-{team.match_losses}
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getWinPercentageColor(winPercentage))}>
+                <td className="py-2 px-3 text-center text-slate-900 dark:text-white">
                   {winPercentage.toFixed(1)}%
                 </td>
                 <td className="py-2 px-3 text-center font-medium text-slate-900 dark:text-white">
                   {team.game_wins}-{team.game_losses}
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getWinPercentageColor(gameWinPercentage))}>
+                <td className="py-2 px-3 text-center text-slate-900 dark:text-white">
                   {gameWinPercentage.toFixed(1)}%
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getPowerScoreColor(team.power_score))}>
+                <td className="py-2 px-3 text-center text-slate-900 dark:text-white">
                   {team.power_score?.toFixed(2) || '-'}
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getSosColor(team.sos))}>
+                <td className="py-2 px-3 text-center text-slate-900 dark:text-white">
                   {team.sos?.toFixed(3) || '-'}
                 </td>
               </tr>

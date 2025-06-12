@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Trophy, Calendar, RefreshCw } from "lucide-react";
@@ -28,7 +29,6 @@ interface SeasonData {
   champion: boolean;
   runner_up: boolean;
   division_name: string | null;
-  playoff_rank: number | null;
   team_name: string;
   team_logo_url: string | null;
   team_image_url: string | null;
@@ -55,7 +55,6 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
             champion,
             runner_up,
             division_name,
-            playoff_rank,
             teams:team_id (
               name,
               logo_url,
@@ -64,7 +63,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           `)
           .eq('season_id', seasonId)
           .order('division_name', { ascending: true })
-          .order('playoff_rank', { ascending: true, nullsFirst: false });
+          .order('match_wins', { ascending: false });
 
         console.log(`📊 Season ${seasonId}: Query completed`);
         console.log(`📊 Season ${seasonId}: Raw data:`, data);
@@ -93,7 +92,6 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           champion: item.champion,
           runner_up: item.runner_up,
           division_name: item.division_name,
-          playoff_rank: item.playoff_rank,
           team_name: item.teams?.name || 'Unknown Team',
           team_logo_url: item.teams?.logo_url,
           team_image_url: item.teams?.image_url,
@@ -170,6 +168,10 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               </h3>
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                 <Calendar className="w-4 h-4" />
+                <span>
+                  {new Date(season.start_date).toLocaleDateString()}
+                  {season.end_date && ` - ${new Date(season.end_date).toLocaleDateString()}`}
+                </span>
                 {season.is_active && (
                   <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-medium">
                     Active

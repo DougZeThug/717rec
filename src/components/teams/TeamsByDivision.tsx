@@ -7,12 +7,12 @@ import { ChevronsDown, ChevronsUp } from "lucide-react";
 
 interface TeamsByDivisionProps {
   teamsByDivision: Record<string, Team[]>;
-  getDivisionName: (displayDivision: string | undefined) => string;
+  getDivisionName: (divisionId: string | undefined) => string;
   onEditTeam: (team: Team) => void;
   onDeleteTeam: (teamId: string) => void;
   isLoading: boolean;
   viewMode: 'grid' | 'list';
-  sortMode: 'rank' | 'alpha';
+  sortMode: 'rank' | 'alpha'; // New prop
 }
 
 export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({ 
@@ -25,15 +25,15 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   sortMode
 }) => {
   const [expandedDivision, setExpandedDivision] = React.useState<string | null>(null);
-  const toggleDivision = (displayDivision: string) => {
+  const toggleDivision = (divisionId: string) => {
     setExpandedDivision(prevExpanded => 
-      prevExpanded === displayDivision ? null : displayDivision
+      prevExpanded === divisionId ? null : divisionId
     );
   };
 
   const expandAll = () => {
     const firstDivisionWithTeams = Object.keys(teamsByDivision).find(
-      displayDivision => teamsByDivision[displayDivision].length > 0
+      divId => teamsByDivision[divId].length > 0
     );
     setExpandedDivision(firstDivisionWithTeams || null);
   };
@@ -44,22 +44,22 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
 
   // Filter out empty divisions
   const nonEmptyDivisions = Object.keys(teamsByDivision)
-    .filter(displayDivision => teamsByDivision[displayDivision].length > 0);
+    .filter(divId => teamsByDivision[divId].length > 0);
 
   // Re-sort teams in each division appropriately
   const sortedTeamsByDivision = useMemo(() => {
     const sorted: Record<string, Team[]> = {};
-    for (const displayDivision of Object.keys(teamsByDivision)) {
-      const divisionTeams = teamsByDivision[displayDivision] || [];
+    for (const divId of Object.keys(teamsByDivision)) {
+      const divisionTeams = teamsByDivision[divId] || [];
       
       if (sortMode === "alpha") {
         // Sort alphabetically by team name
-        sorted[displayDivision] = [...divisionTeams].sort((a, b) => 
+        sorted[divId] = [...divisionTeams].sort((a, b) => 
           a.name.toLowerCase().localeCompare(b.name.toLowerCase())
         );
       } else {
         // Sort by power_score (descending)
-        sorted[displayDivision] = [...divisionTeams].sort((a, b) => 
+        sorted[divId] = [...divisionTeams].sort((a, b) => 
           (b.power_score ?? 0) - (a.power_score ?? 0)
         );
       }
@@ -98,19 +98,19 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
         </Button>
       </div>
 
-      {nonEmptyDivisions.map(displayDivision => {
-        const divisionTeams = sortedTeamsByDivision[displayDivision];
-        const divisionName = getDivisionName(displayDivision);
-        const isExpanded = expandedDivision === displayDivision;
+      {nonEmptyDivisions.map(divisionId => {
+        const divisionTeams = sortedTeamsByDivision[divisionId];
+        const divisionName = getDivisionName(divisionId === "unassigned" ? undefined : divisionId);
+        const isExpanded = expandedDivision === divisionId;
         
         return (
           <TeamsDivisionSection
-            key={displayDivision}
+            key={divisionId}
             divisionName={divisionName}
-            divisionId={displayDivision}
+            divisionId={divisionId}
             teams={divisionTeams}
             isExpanded={isExpanded}
-            onToggleExpand={() => toggleDivision(displayDivision)}
+            onToggleExpand={() => toggleDivision(divisionId)}
             onEditTeam={onEditTeam}
             onDeleteTeam={onDeleteTeam}
             isLoading={isLoading}

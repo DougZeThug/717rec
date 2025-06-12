@@ -5,105 +5,82 @@ export const useMatchScores = (
   matches: MatchWithTeams[],
   setMatches: (matches: MatchWithTeams[]) => void
 ) => {
-  const validateMatchScores = (match: MatchWithTeams): boolean => {
-    console.log(`🔍 Validating match ${match.id}:`, {
-      team1Score: match.team1Score,
-      team2Score: match.team2Score,
-      team1GameWins: match.team1_game_wins,
-      team2GameWins: match.team2_game_wins,
-      iscompleted: match.iscompleted
-    });
-
-    // Basic validation: scores must be numbers
-    const hasValidScores = 
-      match.team1Score !== null && 
-      match.team2Score !== null && 
-      !isNaN(Number(match.team1Score)) && 
-      !isNaN(Number(match.team2Score));
-
-    // Game wins validation
-    const hasValidGameWins = 
-      match.team1_game_wins !== null && 
-      match.team2_game_wins !== null && 
-      !isNaN(Number(match.team1_game_wins)) && 
-      !isNaN(Number(match.team2_game_wins));
-
-    const isValid = hasValidScores && hasValidGameWins;
-    console.log(`✅ Match ${match.id} validation result: ${isValid}`);
-    
-    return isValid;
+  const validateMatchScores = (score1?: number | null, score2?: number | null): boolean => {
+    return (score1 !== undefined && score1 !== null) && 
+           (score2 !== undefined && score2 !== null);
   };
 
   const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
-    console.log(`🎯 Score change for match at index ${index}:`, { team1Score, team2Score });
+    console.log(`useMatchScores.handleScoreChange for match at index ${index}:`, {
+      team1Score,
+      team2Score
+    });
     
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`❌ Match at index ${index} not found in array of ${matches.length} matches`);
+      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
     match.team1Score = team1Score;
     match.team2Score = team2Score;
     match.isEdited = true;
-    match.isValid = validateMatchScores(match);
+    match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
-    console.log(`📝 Updated match ${match.id}:`, {
-      team1Score: match.team1Score,
-      team2Score: match.team2Score,
-      isEdited: match.isEdited,
-      isValid: match.isValid
-    });
+    // Score is being manually set, we should consider auto-completing the match
+    // but we'll leave that as a separate step for clarity
     
     setMatches(newMatches);
   };
   
   const handleGameWinsChange = (index: number, team1GameWins: number, team2GameWins: number) => {
-    console.log(`🎯 Game wins change for match at index ${index}:`, { team1GameWins, team2GameWins });
+    console.log(`useMatchScores.handleGameWinsChange for match at index ${index}:`, {
+      team1GameWins,
+      team2GameWins
+    });
     
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`❌ Match at index ${index} not found in array of ${matches.length} matches`);
+      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
     match.team1_game_wins = team1GameWins;
     match.team2_game_wins = team2GameWins;
     match.isEdited = true;
-    match.isValid = validateMatchScores(match);
     
-    console.log(`📝 Updated match ${match.id} game wins:`, {
-      team1GameWins: match.team1_game_wins,
-      team2GameWins: match.team2_game_wins,
-      isEdited: match.isEdited,
-      isValid: match.isValid
-    });
+    // Update match validity based on game wins
+    match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
     setMatches(newMatches);
   };
   
   const handleMarkCompleted = (index: number, checked: boolean) => {
-    console.log(`🎯 Completion change for match at index ${index}:`, { checked });
+    console.log(`useMatchScores.handleMarkCompleted for match at index ${index}:`, {
+      checked,
+      matches: matches.length,
+      matchExists: Boolean(matches[index])
+    });
     
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`❌ Match at index ${index} not found in array of ${matches.length} matches`);
+      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
+    console.log(`Updating completion status for match ${match.id}`, {
+      before: match.iscompleted,
+      after: checked
+    });
+    
     match.iscompleted = checked;
     match.isEdited = true;
-    
-    console.log(`📝 Updated match ${match.id} completion:`, {
-      iscompleted: match.iscompleted,
-      isEdited: match.isEdited
-    });
     
     setMatches(newMatches);
   };

@@ -1,14 +1,13 @@
-
 import { Team, Match, Ranking } from "@/types";
 import { calculateSOS } from "./calculateSOS";
 import { calculateStreak } from "./calculateStreak";
 import { calculateHeadToHead } from "./calculateHeadToHead";
 import { calculateWinPercentage } from "./calculateWinPercentage";
 import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
+import { calculatePowerScore } from "@/utils/powerScore";
 
 /**
  * Create a ranking object for a team
- * Now uses the display_division from v_team_details for consistent grouping
  */
 export const createRankingObject = async (
   team: Team, 
@@ -39,9 +38,8 @@ export const createRankingObject = async (
     closeMatchLosses
   } = calculateGameStats(team.id, allMatches);
   
-  // Use power_score directly from the database view (v_team_details)
-  // which now includes the weighted calculation with division weights
-  const powerScore = team.power_score || 0;
+  // Calculate power score using the weighted formula
+  const powerScore = calculatePowerScore(winPercentage, sos, gameWinPercentage);
   
   console.log(`Team ${team.name} final stats: Record ${wins}-${losses}, Win% ${(winPercentage * 100).toFixed(1)}%, Games ${gamesWon}-${gamesLost}, Power ${powerScore.toFixed(1)}`);
   
@@ -53,7 +51,6 @@ export const createRankingObject = async (
     wins: wins,
     losses: losses,
     winPercentage,
-    // Use divisionName which now contains the display_division from the database
     divisionName: team.divisionName,
     sos,
     streak,

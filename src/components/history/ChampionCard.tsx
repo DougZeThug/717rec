@@ -2,7 +2,6 @@
 import React from "react";
 import { Crown, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getPowerScoreColor, getSosColor } from "@/utils/colors";
 
 interface SeasonData {
   team_id: string;
@@ -23,13 +22,6 @@ interface SeasonData {
 interface ChampionCardProps {
   team: SeasonData;
 }
-
-const getWinPercentageColor = (percentage: number): string => {
-  if (percentage >= 75) return 'text-green-600 dark:text-green-500';
-  if (percentage >= 60) return 'text-blue-600 dark:text-blue-500';
-  if (percentage >= 40) return 'text-orange-500 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-500';
-};
 
 const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
   const winPercentage = team.match_wins + team.match_losses > 0 
@@ -60,7 +52,7 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
               <img
                 src={team.team_logo_url || team.team_image_url || ''}
                 alt={`${team.team_name} logo`}
-                className="h-16 w-16 rounded-lg object-contain"
+                className="h-16 w-16 rounded-lg object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -101,33 +93,11 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
             </div>
             <div>
               <p className="text-gray-600 dark:text-gray-300 font-medium">Win %</p>
-              <p className={cn("font-bold", getWinPercentageColor(winPercentage))}>
+              <p className="text-slate-900 dark:text-white font-bold">
                 {winPercentage.toFixed(1)}%
               </p>
             </div>
           </div>
-          
-          {/* Additional stats if available */}
-          {(team.power_score !== null || team.sos !== null) && (
-            <div className="grid grid-cols-2 gap-4 text-sm mt-3 pt-3 border-t border-yellow-200 dark:border-yellow-700/50">
-              {team.power_score !== null && (
-                <div>
-                  <p className="text-gray-600 dark:text-gray-300 font-medium">Power Score</p>
-                  <p className={cn("font-bold", getPowerScoreColor(team.power_score))}>
-                    {team.power_score.toFixed(2)}
-                  </p>
-                </div>
-              )}
-              {team.sos !== null && (
-                <div>
-                  <p className="text-gray-600 dark:text-gray-300 font-medium">SOS</p>
-                  <p className={cn("font-bold", getSosColor(team.sos))}>
-                    {team.sos.toFixed(3)}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>

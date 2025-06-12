@@ -1,103 +1,141 @@
 
 import React from "react";
-import { cn } from "@/lib/utils";
+import { TableRow, TableCell } from "@/components/ui/table";
 import { Ranking } from "@/types";
 import { Link } from "react-router-dom";
-import { TeamLogo } from "@/components/shared/TeamLogo";
+import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
+import { getSosColor } from "@/utils/colors";
 import RankTrendIndicator from "./RankTrendIndicator";
-import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
-import { getPowerScoreColor, getSosColor } from "@/utils/colors";
+import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface RankingTableRowProps {
   ranking: Ranking;
   index: number;
-  showRankChange?: boolean;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  showDivision?: boolean;
+  rowIndex?: number;
 }
 
 const RankingTableRow: React.FC<RankingTableRowProps> = ({ 
   ranking, 
-  index, 
-  showRankChange = true 
+  index,
+  rowIndex = 0, 
+  isExpanded, 
+  onToggleExpand,
+  showDivision = false
 }) => {
-  const rank = index + 1;
-  const winPercentage = ranking.winPercentage * 100;
-  const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
+  
+  // Get appropriate styles based on ranking position
+  const getRankStyles = () => {
+    if (isLight) {
+      if (index === 0) return "bg-gradient-to-r from-amber-100 to-amber-200/80 font-bold text-gray-900";
+      if (index === 1) return "bg-gradient-to-r from-slate-100 to-blue-100/70 font-bold text-gray-900";
+      if (index === 2) return "bg-gradient-to-r from-orange-100/90 to-orange-200/70 font-bold text-gray-900";
+      return "font-mono font-bold";
+    } else {
+      if (index === 0) return "bg-gradient-to-r from-amber-900/30 to-amber-800/20 font-bold text-white";
+      if (index === 1) return "bg-gradient-to-r from-slate-800/30 to-blue-900/20 font-bold text-white";
+      if (index === 2) return "bg-gradient-to-r from-orange-900/30 to-orange-800/20 font-bold text-white";
+      return "font-mono font-bold";
+    }
+  };
+  
+  // Get row styling for alternating rows and highlights
+  const getRowStyles = () => {
+    let baseStyles = cn(
+      "cursor-pointer border-b hover:bg-blue-50/50 dark:hover:bg-blue-900/10",
+      isExpanded ? "bg-blue-50/80 dark:bg-blue-900/20" : "",
+      index < 3 ? "shadow-sm" : "",
+      index === 0 ? "border-l-4 border-amber-400 dark:border-amber-600" : "",
+      index === 1 ? "border-l-4 border-blue-400 dark:border-blue-600" : "",
+      index === 2 ? "border-l-4 border-orange-400 dark:border-orange-600" : "",
+    );
+    
+    // Add alternating row colors
+    if (rowIndex % 2 === 0) {
+      baseStyles = cn(baseStyles, isLight ? "bg-white" : "bg-gray-800/70");
+    } else {
+      baseStyles = cn(baseStyles, isLight ? "bg-blue-50/30" : "bg-gray-800/40");
+    }
+    
+    return baseStyles;
+  };
 
   return (
-    <tr className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-      <td className="py-3 px-3">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-slate-900 dark:text-white min-w-[2rem]">
-            #{rank}
-          </span>
-          {showRankChange && (
-            <RankTrendIndicator rankChange={ranking.rankChange} />
+    <TableRow 
+      className={getRowStyles()}
+      onClick={onToggleExpand}
+    >
+      <TableCell className={getRankStyles()}>
+        <div className={cn(
+          "w-8 h-8 flex items-center justify-center rounded-full",
+          index < 3 ? "shadow-inner" : ""
+        )}>
+          {index + 1}
+          {ranking.divisionRank && !showDivision && (
+            <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">
+              ({ranking.divisionRank})
+            </span>
           )}
         </div>
-      </td>
-      <td className="py-3 px-3">
+      </TableCell>
+      <TableCell>
         <Link 
           to={`/teams/${ranking.teamId}`}
-          className="flex items-center gap-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+          className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400"
+          onClick={(e) => e.stopPropagation()}
         >
-          <TeamLogo
-            imageUrl={ranking.logoUrl || ranking.imageUrl}
-            teamName={ranking.teamName}
-            size="sm"
-            className="flex-shrink-0"
-          />
-          <div className="flex flex-col min-w-0">
-            <span className="font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">
-              {ranking.teamName}
-            </span>
-            <TeamBadgeCollection 
-              teamId={ranking.teamId}
-              size="sm"
-              maxDisplay={4}
-              className="mt-1"
+          {ranking.logoUrl || ranking.imageUrl ? (
+            <img 
+              src={ranking.logoUrl || ranking.imageUrl} 
+              alt={ranking.teamName} 
+              className={cn(
+                "w-6 h-6 object-contain",
+                "border border-gray-200 dark:border-gray-700 rounded-md",
+                "bg-white dark:bg-gray-800"
+              )}
             />
-          </div>
+          ) : null}
+          <span className={cn(
+            "font-bebas tracking-wide",
+            index < 3 ? "text-lg" : "text-base"
+          )}>
+            {ranking.teamName}
+          </span>
         </Link>
-      </td>
-      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">
-        {ranking.wins}-{ranking.losses}
-      </td>
-      <td className="py-3 px-3 text-center">
+      </TableCell>
+      {showDivision && (
+        <TableCell>{ranking.divisionName || "Unassigned"}</TableCell>
+      )}
+      <TableCell className="text-center">
         <span className={cn(
-          "font-medium",
-          winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
-          winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
-          winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
-          "text-red-600 dark:text-red-500"
+          getPowerScoreColor(ranking.powerScore),
+          index < 3 ? "px-2 py-0.5 rounded bg-gradient-to-r from-transparent to-blue-50/70 dark:to-blue-900/10" : "",
         )}>
-          {winPercentage.toFixed(1)}%
+          {formatPowerScore(ranking.powerScore)}
         </span>
-      </td>
-      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">
-        {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
-      </td>
-      <td className="py-3 px-3 text-center">
+      </TableCell>
+      <TableCell className="text-center font-mono">{`${ranking.wins}-${ranking.losses}`}</TableCell>
+      <TableCell className="text-center font-mono">{(ranking.winPercentage * 100).toFixed(1)}%</TableCell>
+      <TableCell className="text-center font-mono hidden md:table-cell">{`${ranking.gamesWon}-${ranking.gamesLost}`}</TableCell>
+      <TableCell className="text-center font-mono hidden lg:table-cell">{(ranking.gameWinPercentage * 100).toFixed(1)}%</TableCell>
+      <TableCell className="text-center">
         <span className={cn(
-          "font-medium",
-          gameWinPercentage >= 75 ? "text-green-600 dark:text-green-500" :
-          gameWinPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
-          gameWinPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
-          "text-red-600 dark:text-red-500"
+          getSosColor(ranking.sos),
+          index < 3 ? "px-2 py-0.5 rounded bg-gradient-to-r from-transparent to-orange-50/70 dark:to-orange-900/10" : "",
         )}>
-          {gameWinPercentage.toFixed(1)}%
+          {ranking.sos.toFixed(3)}
         </span>
-      </td>
-      <td className="py-3 px-3 text-center">
-        <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
-          {ranking.powerScore.toFixed(1)}
-        </span>
-      </td>
-      <td className="py-3 px-3 text-center">
-        <span className={cn("font-medium", getSosColor(ranking.sos || 0))}>
-          {(ranking.sos || 0).toFixed(3)}
-        </span>
-      </td>
-    </tr>
+      </TableCell>
+      <TableCell className="text-center font-mono">{ranking.streak || "-"}</TableCell>
+      <TableCell className="text-center">
+        <RankTrendIndicator rankChange={ranking.rankChange} />
+      </TableCell>
+    </TableRow>
   );
 };
 
