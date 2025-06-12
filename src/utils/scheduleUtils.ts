@@ -34,3 +34,24 @@ export const filterAndSortMatches = (
       return dateA - dateB;
     });
 };
+
+/**
+ * Determines the default tab for the schedule page based on the current day
+ * Returns "upcoming" on Thursdays (when new matches are scheduled), "completed" otherwise
+ */
+export const getDefaultScheduleTab = (): string => {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 4 = Thursday, 6 = Saturday
+  
+  const isThursday = dayOfWeek === 4;
+  const defaultTab = isThursday ? "upcoming" : "completed";
+  
+  console.log("Schedule tab selection:", {
+    today: today.toLocaleDateString(),
+    dayOfWeek,
+    isThursday,
+    defaultTab
+  });
+  
+  return defaultTab;
+};
