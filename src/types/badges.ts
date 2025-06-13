@@ -1,5 +1,6 @@
 
 import { LucideIcon } from 'lucide-react';
+import { Json } from '@/integrations/supabase/types';
 
 export type BadgeType = 
   | 'recreational_champion'
@@ -23,7 +24,7 @@ export interface TeamBadgeEvent {
   badge_type: BadgeType;
   season_id: string | null;
   awarded_at: string;
-  metadata: Record<string, any>;
+  metadata: Json;
   is_active: boolean;
   created_at: string;
 }
