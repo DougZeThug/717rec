@@ -51,17 +51,17 @@ export const calculateStreak = (teamId: string, matches: Match[]): string => {
   const teamMatches = matches
     .filter(match => 
       match.iscompleted && 
-      (match.team1_id === teamId || match.team2_id === teamId)
+      (match.team1Id === teamId || match.team2Id === teamId)
     )
     .sort((a, b) => new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime());
 
   if (teamMatches.length === 0) return 'N/A';
 
   let streak = 0;
-  let isWinStreak = teamMatches[0].winner_id === teamId;
+  let isWinStreak = teamMatches[0].winnerId === teamId;
   
   for (const match of teamMatches) {
-    const isWin = match.winner_id === teamId;
+    const isWin = match.winnerId === teamId;
     if (isWin === isWinStreak) {
       streak++;
     } else {

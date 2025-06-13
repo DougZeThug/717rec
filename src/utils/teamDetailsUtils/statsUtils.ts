@@ -1,6 +1,6 @@
 
 import { Team, Match } from "@/types";
-import { calculateSOS } from "@/utils/rankingUtils";
+import { calculateSOS } from "@/utils/rankingUtils/calculateSOS";
 import { calculateWinPercentage as calculateWinPercentageUtil } from "@/utils/rankingUtils/calculateWinPercentage";
 
 /**
