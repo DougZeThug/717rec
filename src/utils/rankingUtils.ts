@@ -45,33 +45,6 @@ export const sortRankings = (rankings: Ranking[], sortField: string, direction: 
   });
 };
 
-export const calculateStreak = (teamId: string, matches: Match[]): string => {
-  if (!matches || matches.length === 0) return 'N/A';
-  
-  const teamMatches = matches
-    .filter(match => 
-      match.iscompleted && 
-      (match.team1Id === teamId || match.team2Id === teamId)
-    )
-    .sort((a, b) => new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime());
-
-  if (teamMatches.length === 0) return 'N/A';
-
-  let streak = 0;
-  let isWinStreak = teamMatches[0].winnerId === teamId;
-  
-  for (const match of teamMatches) {
-    const isWin = match.winnerId === teamId;
-    if (isWin === isWinStreak) {
-      streak++;
-    } else {
-      break;
-    }
-  }
-
-  return `${isWinStreak ? 'W' : 'L'}${streak}`;
-};
-
 export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
   return rankings.map((ranking, index) => {
     const currentRank = index + 1;

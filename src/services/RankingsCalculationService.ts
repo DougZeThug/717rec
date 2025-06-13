@@ -1,6 +1,6 @@
 
 import { Team, Match, Ranking } from "@/types";
-import { createRankingObject } from "@/utils/rankingUtils";
+import { createRankingObject } from "@/utils/rankingUtils/createRankingObject";
 import { sortRankings, updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
 
 export const calculateRankings = async (
