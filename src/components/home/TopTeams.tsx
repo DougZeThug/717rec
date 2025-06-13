@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy } from "lucide-react";
 import TeamCard from "./TeamCard";
+import { Team } from "@/types";
 
 const TopTeams: React.FC = () => {
   const { data: teams, isLoading } = useQuery({
@@ -17,7 +18,27 @@ const TopTeams: React.FC = () => {
         .limit(5);
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform database response to Team type
+      return data?.map((team): Team => ({
+        id: team.team_id || '',
+        name: team.name || '',
+        wins: team.wins || 0,
+        losses: team.losses || 0,
+        game_wins: team.game_wins || 0,
+        game_losses: team.game_losses || 0,
+        divisionName: team.divisionname,
+        division_id: team.division_id,
+        imageUrl: team.image_url,
+        logoUrl: team.logo_url,
+        players: team.players || [],
+        power_score: team.power_score || 0,
+        sos: team.sos || 0,
+        win_percentage: team.win_percentage || 0,
+        game_win_percentage: team.game_win_percentage || 0,
+        created_at: team.created_at,
+        close_match_losses: team.close_match_losses || 0
+      })) || [];
     }
   });
 
@@ -58,7 +79,7 @@ const TopTeams: React.FC = () => {
       <CardContent>
         <div className="space-y-3">
           {teams?.map((team, index) => (
-            <TeamCard key={team.team_id} team={team} rank={index + 1} />
+            <TeamCard key={team.id} team={team} rank={index + 1} />
           ))}
           {(!teams || teams.length === 0) && (
             <div className="text-center text-muted-foreground py-4">

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import MatchCard from "./MatchCard";
 import RecentMatchesSkeleton from "./RecentMatchesSkeleton";
+import { Match } from "@/types";
 
 const RecentMatches: React.FC = () => {
   const { data: matches, isLoading } = useQuery({
@@ -23,7 +24,43 @@ const RecentMatches: React.FC = () => {
         .limit(6);
 
       if (error) throw error;
-      return data || [];
+      
+      // Transform database response to Match type
+      return data?.map((match): Match => ({
+        id: match.id,
+        team1Id: match.team1_id || '',
+        team2Id: match.team2_id || '',
+        team1Score: match.team1_score,
+        team2Score: match.team2_score,
+        date: match.date || match.created_at,
+        location: match.location || '',
+        iscompleted: match.iscompleted || false,
+        winnerId: match.winner_id,
+        loserId: match.loser_id,
+        round_number: match.round_number,
+        position: match.position,
+        bracket_id: match.bracket_id,
+        match_type: match.match_type,
+        next_match_id: match.next_match_id,
+        next_loser_match_id: match.next_loser_match_id,
+        best_of: match.best_of,
+        team1_game_wins: match.team1_game_wins,
+        team2_game_wins: match.team2_game_wins,
+        team1Details: match.team1 ? {
+          team_id: match.team1.id,
+          name: match.team1.name,
+          image_url: null,
+          logo_url: match.team1.logo_url,
+          divisionName: null
+        } : null,
+        team2Details: match.team2 ? {
+          team_id: match.team2.id,
+          name: match.team2.name,
+          image_url: null,
+          logo_url: match.team2.logo_url,
+          divisionName: null
+        } : null
+      })) || [];
     }
   });
 
@@ -33,11 +70,6 @@ const RecentMatches: React.FC = () => {
 
   const formatTime = (dateString: string) => {
     return format(new Date(dateString), 'h:mm a');
-  };
-
-  const getTeamById = (id: string) => {
-    // This would normally come from a teams query, but for now we'll use the embedded data
-    return undefined;
   };
 
   if (isLoading) {
@@ -52,14 +84,14 @@ const RecentMatches: React.FC = () => {
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {matches?.map((match) => {
-            if (!match.team1 || !match.team2) return null;
+            if (!match.team1Details || !match.team2Details) return null;
             
             return (
               <MatchCard 
                 key={match.id} 
                 match={match} 
-                team1={match.team1} 
-                team2={match.team2} 
+                team1={match.team1Details} 
+                team2={match.team2Details} 
                 formatDate={formatDate} 
                 formatTime={formatTime}
               />

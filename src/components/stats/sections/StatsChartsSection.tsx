@@ -2,18 +2,26 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Match } from "@/types";
 
 interface StatsChartsSectionProps {
-  // Define props if needed - currently none required
+  matches: Match[];
 }
 
-const mockData = [
-  { division: "Competitive", teams: 8, matches: 45 },
-  { division: "Intermediate", teams: 10, matches: 67 },
-  { division: "Recreational", teams: 6, matches: 44 }
-];
+const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({ matches }) => {
+  // Create mock data based on actual matches
+  const completedMatches = matches.filter(match => match.iscompleted);
+  const totalTeams = new Set([
+    ...matches.map(m => m.team1Id),
+    ...matches.map(m => m.team2Id)
+  ]).size;
 
-const StatsChartsSection: React.FC<StatsChartsSectionProps> = () => {
+  const mockData = [
+    { division: "Competitive", teams: Math.ceil(totalTeams * 0.3), matches: Math.ceil(completedMatches.length * 0.3) },
+    { division: "Intermediate", teams: Math.ceil(totalTeams * 0.4), matches: Math.ceil(completedMatches.length * 0.4) },
+    { division: "Recreational", teams: Math.ceil(totalTeams * 0.3), matches: Math.ceil(completedMatches.length * 0.3) }
+  ];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>

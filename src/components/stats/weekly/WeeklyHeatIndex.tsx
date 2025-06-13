@@ -17,7 +17,6 @@ const WeeklyHeatIndex = () => {
 
   // Use latest week if no week selected
   const currentWeek = selectedWeek || latestDigest?.week_of;
-  const currentDigest = selectedWeek ? undefined : latestDigest;
 
   if (isLoadingDigest && !selectedWeek) {
     return (
@@ -57,9 +56,7 @@ const WeeklyHeatIndex = () => {
       </div>
 
       {/* Overview Section */}
-      {currentDigest && (
-        <WeeklyOverview digest={currentDigest} />
-      )}
+      <WeeklyOverview />
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="rankings" className="space-y-6">
@@ -89,7 +86,7 @@ const WeeklyHeatIndex = () => {
         <TabsContent value="highlights" className="space-y-6">
           <WeeklyHighlights 
             weekOf={currentWeek}
-            digest={currentDigest}
+            digest={latestDigest}
           />
         </TabsContent>
 

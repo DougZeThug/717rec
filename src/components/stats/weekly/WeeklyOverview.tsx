@@ -3,11 +3,11 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Trophy, Target, Calendar } from "lucide-react";
-import { useWeeklyDigest } from "@/hooks/weekly";
+import { useLatestWeeklyDigest } from "@/hooks/weekly";
 import { TeamLogo } from "@/components/shared/TeamLogo";
 
 const WeeklyOverview: React.FC = () => {
-  const { data: digest, isLoading, error } = useWeeklyDigest();
+  const { data: digest, isLoading, error } = useLatestWeeklyDigest();
 
   if (isLoading) {
     return (
@@ -43,6 +43,8 @@ const WeeklyOverview: React.FC = () => {
     );
   }
 
+  const digestData = digest.digest_data;
+
   return (
     <Card>
       <CardHeader>
@@ -66,35 +68,35 @@ const WeeklyOverview: React.FC = () => {
 
         {/* Hottest & Coolest Teams */}
         <div className="space-y-4">
-          {digest.hottest_team && (
+          {digestData.hottest_team && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/20">
               <TrendingUp className="w-5 h-5 text-red-500" />
               <TeamLogo 
-                imageUrl={digest.hottest_team.logo_url} 
-                teamName={digest.hottest_team.name} 
+                imageUrl={null} 
+                teamName={digestData.hottest_team.name} 
                 size="sm" 
               />
               <div className="flex-1">
                 <div className="font-medium">Hottest Team</div>
                 <div className="text-sm text-muted-foreground">
-                  {digest.hottest_team.name} • {digest.hottest_team.heat_score?.toFixed(1)} heat
+                  {digestData.hottest_team.name} • {digestData.hottest_team.heat_score?.toFixed(1)} heat
                 </div>
               </div>
             </div>
           )}
 
-          {digest.coolest_team && (
+          {digestData.coolest_team && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
               <Target className="w-5 h-5 text-blue-500" />
               <TeamLogo 
-                imageUrl={digest.coolest_team.logo_url} 
-                teamName={digest.coolest_team.name} 
+                imageUrl={null} 
+                teamName={digestData.coolest_team.name} 
                 size="sm" 
               />
               <div className="flex-1">
                 <div className="font-medium">Coolest Team</div>
                 <div className="text-sm text-muted-foreground">
-                  {digest.coolest_team.name} • {digest.coolest_team.heat_score?.toFixed(1)} heat
+                  {digestData.coolest_team.name} • {digestData.coolest_team.heat_score?.toFixed(1)} heat
                 </div>
               </div>
             </div>
@@ -102,14 +104,14 @@ const WeeklyOverview: React.FC = () => {
         </div>
 
         {/* Highlights */}
-        {digest.highlights && digest.highlights.length > 0 && (
+        {digestData.highlights && digestData.highlights.length > 0 && (
           <div>
             <h4 className="font-medium mb-3 flex items-center gap-2">
               <Trophy className="w-4 h-4" />
               Week Highlights
             </h4>
             <div className="space-y-2">
-              {digest.highlights.slice(0, 3).map((highlight: any, index: number) => (
+              {digestData.highlights.slice(0, 3).map((highlight: any, index: number) => (
                 <div key={index} className="p-3 rounded-lg border bg-card">
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="outline" className="text-xs">

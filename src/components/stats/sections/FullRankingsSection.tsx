@@ -1,12 +1,13 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Match } from "@/types";
 
 interface FullRankingsSectionProps {
-  // Define props if needed - currently none required
+  matches: Match[];
 }
 
-const FullRankingsSection: React.FC<FullRankingsSectionProps> = () => {
+const FullRankingsSection: React.FC<FullRankingsSectionProps> = ({ matches }) => {
   return (
     <Card>
       <CardHeader>
@@ -15,6 +16,8 @@ const FullRankingsSection: React.FC<FullRankingsSectionProps> = () => {
       <CardContent>
         <div className="text-center text-muted-foreground py-8">
           Full rankings table will be implemented here
+          <br />
+          <span className="text-xs">Based on {matches.filter(m => m.iscompleted).length} completed matches</span>
         </div>
       </CardContent>
     </Card>
