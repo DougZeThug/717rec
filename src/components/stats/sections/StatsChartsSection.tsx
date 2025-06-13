@@ -2,24 +2,21 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Match } from "@/types";
+import { Ranking } from "@/types";
 
 interface StatsChartsSectionProps {
-  matches: Match[];
+  rankings: Ranking[];
 }
 
-const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({ matches }) => {
-  // Create mock data based on actual matches
-  const completedMatches = matches.filter(match => match.iscompleted);
-  const totalTeams = new Set([
-    ...matches.map(m => m.team1Id),
-    ...matches.map(m => m.team2Id)
-  ]).size;
+const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({ rankings }) => {
+  // Create mock division data based on rankings
+  const totalTeams = rankings.length;
+  const totalMatches = rankings.reduce((sum, team) => sum + team.wins + team.losses, 0) / 2;
 
   const mockData = [
-    { division: "Competitive", teams: Math.ceil(totalTeams * 0.3), matches: Math.ceil(completedMatches.length * 0.3) },
-    { division: "Intermediate", teams: Math.ceil(totalTeams * 0.4), matches: Math.ceil(completedMatches.length * 0.4) },
-    { division: "Recreational", teams: Math.ceil(totalTeams * 0.3), matches: Math.ceil(completedMatches.length * 0.3) }
+    { division: "Competitive", teams: Math.ceil(totalTeams * 0.3), matches: Math.ceil(totalMatches * 0.3) },
+    { division: "Intermediate", teams: Math.ceil(totalTeams * 0.4), matches: Math.ceil(totalMatches * 0.4) },
+    { division: "Recreational", teams: Math.ceil(totalTeams * 0.3), matches: Math.ceil(totalMatches * 0.3) }
   ];
 
   return (

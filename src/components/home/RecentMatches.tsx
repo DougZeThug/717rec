@@ -47,6 +47,7 @@ const RecentMatches: React.FC = () => {
         team1_game_wins: match.team1_game_wins,
         team2_game_wins: match.team2_game_wins,
         team1Details: match.team1 ? {
+          id: match.team1.id, // Add the required id property
           team_id: match.team1.id,
           name: match.team1.name,
           image_url: null,
@@ -54,6 +55,7 @@ const RecentMatches: React.FC = () => {
           divisionName: null
         } : null,
         team2Details: match.team2 ? {
+          id: match.team2.id, // Add the required id property
           team_id: match.team2.id,
           name: match.team2.name,
           image_url: null,

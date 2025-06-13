@@ -79,7 +79,14 @@ const TopTeams: React.FC = () => {
       <CardContent>
         <div className="space-y-3">
           {teams?.map((team, index) => (
-            <TeamCard key={team.id} team={team} rank={index + 1} />
+            <div key={team.id} className="flex items-center gap-3">
+              <div className="w-8 h-8 flex items-center justify-center bg-yellow-100 dark:bg-yellow-900 rounded-full text-sm font-bold text-yellow-700 dark:text-yellow-300">
+                {index + 1}
+              </div>
+              <div className="flex-1">
+                <TeamCard team={team} />
+              </div>
+            </div>
           ))}
           {(!teams || teams.length === 0) && (
             <div className="text-center text-muted-foreground py-4">
