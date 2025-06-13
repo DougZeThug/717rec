@@ -20,13 +20,15 @@ export const getPowerScoreColor = (score: number | null | undefined): string => 
   return "text-red-600 dark:text-red-500";                       // Below average
 };
 
+// FIXED: Corrected SOS color mapping - higher SOS (harder schedule) = red, lower SOS (easier schedule) = green
 export const getSosColor = (sos: number | null | undefined): string => {
   if (sos === null || sos === undefined) {
     return "text-gray-400 dark:text-gray-500";
   }
   
-  if (sos >= 0.75) return "text-green-600 dark:text-green-500";
-  if (sos >= 0.60) return "text-blue-600 dark:text-blue-500";
-  if (sos >= 0.40) return "text-orange-500 dark:text-orange-400";
-  return "text-red-600 dark:text-red-500";
+  // Higher SOS means tougher schedule (red), lower means easier (green)
+  if (sos >= 0.875) return "text-red-700 dark:text-red-500";      // Very hard schedule
+  if (sos >= 0.750) return "text-red-500 dark:text-red-400";      // Hard schedule
+  if (sos >= 0.550) return "text-orange-500 dark:text-orange-400"; // Moderate schedule
+  return "text-green-600 dark:text-green-500";                    // Easy schedule
 };

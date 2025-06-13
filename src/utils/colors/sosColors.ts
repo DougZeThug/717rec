@@ -1,18 +1,3 @@
 
-import { sosThresholds } from './thresholds';
-
-/**
- * Get appropriate Tailwind color class for a Strength of Schedule (SOS) value
- * Higher SOS means tougher schedule (red), lower means easier (green)
- * 
- * @param sos The strength of schedule value to evaluate
- * @returns A Tailwind CSS color class based on the SOS threshold
- */
-export const getSosColor = (sos: number | undefined): string => {
-  if (sos === undefined) return 'text-gray-500 dark:text-gray-400';
-  
-  if (sos >= sosThresholds.veryHard) return 'text-red-700 dark:text-red-500';
-  if (sos >= sosThresholds.hard) return 'text-red-500 dark:text-red-400';
-  if (sos >= sosThresholds.moderate) return 'text-orange-500 dark:text-orange-400';
-  return 'text-green-600 dark:text-green-500';
-};
+// Re-export from main colors file for consistency
+export { getSosColor } from '@/utils/colors';
