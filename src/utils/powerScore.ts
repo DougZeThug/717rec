@@ -1,15 +1,23 @@
 
-// Power score utilities - now using corrected database-calculated values
+// Power score utilities - now handling NULL values for teams with no matches
+// Teams with 0 wins and 0 losses will have NULL power scores instead of 50.0
 // The power score calculation is handled in v_team_details using the CORRECTED 40/40/20 formula:
 // - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches (FIXED)
 // - 40% Strength of Schedule = average opponent division weight  
 // - 20% Weighted Game Win % = (game_wins × opponent_weights) / total_games (FIXED)
 
-export const formatPowerScore = (score: number): string => {
+export const formatPowerScore = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return "N/A";
+  }
   return score.toFixed(1);
 };
 
-export const getPowerScoreColor = (score: number): string => {
+export const getPowerScoreColor = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return "text-gray-400 dark:text-gray-500"; // Neutral color for no data
+  }
+  
   // Color coding based on 0-100 scale with corrected baselines:
   // After fix: Rec teams ~35-55, Int teams ~45-65, Comp teams ~55-85
   if (score >= 70) return "text-green-600 dark:text-green-500";   // Elite performance

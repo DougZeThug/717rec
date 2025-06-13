@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Ranking } from "@/types";
@@ -6,7 +5,7 @@ import { Link } from "react-router-dom";
 import { TeamLogo } from "@/components/shared/TeamLogo";
 import RankTrendIndicator from "./RankTrendIndicator";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
-import { getPowerScoreColor, getSosColor } from "@/utils/colors";
+import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
 
 interface RankingTableRowProps {
   ranking: Ranking;
@@ -82,7 +81,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       )}
       <td className="py-3 px-3 text-center">
         <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
-          {ranking.powerScore.toFixed(1)}
+          {formatPowerScore(ranking.powerScore)}
         </span>
       </td>
       <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">

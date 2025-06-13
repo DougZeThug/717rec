@@ -1,7 +1,7 @@
 
 import { Team, Match, Ranking } from "@/types";
 
-// Ranking utilities - now uses corrected database-calculated power scores
+// Ranking utilities - now handles NULL power scores for teams with no matches
 // The power score calculation is handled in v_team_details using the FIXED 40/40/20 formula:
 // - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches (CORRECTED)
 // - 40% Strength of Schedule = average opponent division weight
@@ -9,13 +9,13 @@ import { Team, Match, Ranking } from "@/types";
 
 export const sortRankings = (rankings: Ranking[], sortField: string, direction: 'asc' | 'desc'): Ranking[] => {
   return [...rankings].sort((a, b) => {
-    let valueA: number | string;
-    let valueB: number | string;
+    let valueA: number | string | null;
+    let valueB: number | string | null;
 
     switch (sortField) {
       case 'powerScore':
-        valueA = a.powerScore || 0;
-        valueB = b.powerScore || 0;
+        valueA = a.powerScore;
+        valueB = b.powerScore;
         break;
       case 'winPercentage':
         valueA = a.winPercentage || 0;
@@ -34,8 +34,15 @@ export const sortRankings = (rankings: Ranking[], sortField: string, direction: 
         valueB = b.teamName;
         break;
       default:
-        valueA = a.powerScore || 0;
-        valueB = b.powerScore || 0;
+        valueA = a.powerScore;
+        valueB = b.powerScore;
+    }
+
+    // Handle NULL values for power score - put them at the end regardless of direction
+    if (sortField === 'powerScore') {
+      if (valueA === null && valueB === null) return 0;
+      if (valueA === null) return 1;  // NULL values go to the end
+      if (valueB === null) return -1; // NULL values go to the end
     }
 
     if (typeof valueA === 'string' && typeof valueB === 'string') {

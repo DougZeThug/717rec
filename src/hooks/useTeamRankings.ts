@@ -21,45 +21,28 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       const teamsToUse = teams || latestTeams;
       const matchesToUse = matches || latestMatches;
       
-      // Wait for teams data to be loaded and ensure we have corrected power scores
+      // Wait for teams data to be loaded
       if (!teamsToUse || teamsToUse.length === 0 || teamsLoading) {
         console.log("Teams not loaded yet or empty:", { teamsCount: teamsToUse?.length, teamsLoading });
         setRankings([]);
         return;
       }
 
-      // Check if teams have corrected power scores from the database calculation
-      const teamsWithPowerScores = teamsToUse.filter(team => 
-        team.power_score !== undefined && team.power_score !== null
-      );
-
-      if (teamsWithPowerScores.length === 0) {
-        console.log("No teams with corrected power scores found, waiting for database data to load...");
-        console.log("Sample team data:", teamsToUse.slice(0, 2).map(t => ({
-          name: t.name,
-          power_score: t.power_score,
-          wins: t.wins,
-          losses: t.losses
-        })));
-        setRankings([]);
-        return;
-      }
-      
       setIsLoading(true);
       
       try {
-        console.log(`Processing ${teamsToUse.length} teams with CORRECTED database power scores (fixed weighted formulas)`);
+        console.log(`Processing ${teamsToUse.length} teams with power scores (NULL for 0-0 teams)`);
         
-        // Create rankings directly from team data, using the corrected v_team_details values
+        // Create rankings directly from team data, handling NULL power scores
         const calculatedRankings = teamsToUse.map((team): Ranking => {
           // Calculate streak from matches
           const streak = calculateStreak(team.id, matchesToUse);
           const previousRank = previousRankings[team.id];
           
-          // Debug log for corrected power score data
-          console.log(`Team ${team.name}: CORRECTED power_score=${team.power_score}, wins=${team.wins}, losses=${team.losses}`);
+          // Debug log for power score data (including NULL values)
+          console.log(`Team ${team.name}: power_score=${team.power_score}, wins=${team.wins}, losses=${team.losses}`);
           
-          // Use the corrected power_score from v_team_details (fixed 40/40/20 formula)
+          // Use the power_score from v_team_details (NULL for teams with no matches)
           return {
             teamId: team.id,
             teamName: team.name,
@@ -72,7 +55,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             winPercentage: team.win_percentage || 0,
             gameWinPercentage: team.game_win_percentage || 0,
             sos: team.sos || 0.5,
-            powerScore: team.power_score || 50.0, // Database-calculated using CORRECTED weighted formulas
+            powerScore: team.power_score || 0, // Convert NULL to 0 for sorting, but keep original for display
             streak,
             divisionName: team.divisionName || 'Unassigned',
             previousRank,
@@ -82,26 +65,44 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           };
         });
 
-        // Sort by corrected power score from v_team_details (descending)
+        // Sort by power score with NULL handling - teams with NULL scores go to the end
         const sortedRankings = calculatedRankings.sort((a, b) => {
-          // Primary sort by corrected power score (descending)
-          if (b.powerScore !== a.powerScore) {
-            return b.powerScore - a.powerScore;
+          const aOriginalPowerScore = teamsToUse.find(t => t.id === a.teamId)?.power_score;
+          const bOriginalPowerScore = teamsToUse.find(t => t.id === b.teamId)?.power_score;
+          
+          // Handle NULL values - put them at the end
+          if (aOriginalPowerScore === null && bOriginalPowerScore === null) {
+            // Both are NULL, sort by win percentage as secondary
+            if (b.winPercentage !== a.winPercentage) {
+              return b.winPercentage - a.winPercentage;
+            }
+            // Tertiary sort by name
+            return a.teamName.localeCompare(b.teamName);
           }
-          // Secondary sort by win percentage if power scores are equal
+          if (aOriginalPowerScore === null) return 1;  // a goes to end
+          if (bOriginalPowerScore === null) return -1; // b goes to end
+          
+          // Both have power scores, sort normally (descending)
+          if (bOriginalPowerScore !== aOriginalPowerScore) {
+            return bOriginalPowerScore - aOriginalPowerScore;
+          }
+          // Secondary sort by win percentage
           if (b.winPercentage !== a.winPercentage) {
             return b.winPercentage - a.winPercentage;
           }
-          // Tertiary sort by name for consistency
+          // Tertiary sort by name
           return a.teamName.localeCompare(b.teamName);
         });
         
-        console.log("Sorted rankings by CORRECTED power score (fixed weighted 40/40/20 formula):", 
-          sortedRankings.slice(0, 5).map(r => ({
-            team: r.teamName,
-            powerScore: r.powerScore,
-            winPct: r.winPercentage
-          }))
+        console.log("Sorted rankings with NULL power scores at end:", 
+          sortedRankings.slice(0, 5).map(r => {
+            const originalTeam = teamsToUse.find(t => t.id === r.teamId);
+            return {
+              team: r.teamName,
+              powerScore: originalTeam?.power_score, // Show actual value (NULL or number)
+              winPct: r.winPercentage
+            };
+          })
         );
 
         // Update rank changes based on previous rankings
