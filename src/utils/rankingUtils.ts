@@ -1,8 +1,11 @@
 
 import { Team, Match, Ranking } from "@/types";
 
-// Ranking utilities - now uses database-calculated power scores
-// The power score calculation is handled in v_team_details using the correct 40/40/20 formula
+// Ranking utilities - now uses corrected database-calculated power scores
+// The power score calculation is handled in v_team_details using the FIXED 40/40/20 formula:
+// - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches (CORRECTED)
+// - 40% Strength of Schedule = average opponent division weight
+// - 20% Weighted Game Win % = (game_wins × opponent_weights) / total_games (CORRECTED)
 
 export const sortRankings = (rankings: Ranking[], sortField: string, direction: 'asc' | 'desc'): Ranking[] => {
   return [...rankings].sort((a, b) => {

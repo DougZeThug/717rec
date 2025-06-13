@@ -1,9 +1,11 @@
 
 import { Team } from "@/types";
 
-// Team calculation service - now primarily uses database-calculated values
-// The power score calculation has been moved to the database view v_team_details
-// using the correct 40/40/20 weighted formula
+// Team calculation service - now uses database-calculated values exclusively
+// The power score calculation is handled in v_team_details using the corrected 40/40/20 formula:
+// - 40% Weighted Match Win % = (sum of wins × opponent_weights) / total_matches  
+// - 40% Strength of Schedule = average opponent division weight
+// - 20% Weighted Game Win % = (sum of game_wins × opponent_weights) / total_games
 
 export const calculateTeamStats = (team: Team) => {
   const totalMatches = (team.wins || 0) + (team.losses || 0);
@@ -14,15 +16,15 @@ export const calculateTeamStats = (team: Team) => {
     gameWinPercentage: totalGames > 0 ? (team.game_wins || 0) / totalGames : 0,
     totalMatches,
     totalGames,
-    // Power score is now calculated in the database using the correct formula
+    // Power score uses corrected weighted formulas from database
     powerScore: team.power_score || 50.0,
-    // SOS is calculated in the database using opponent division weights
+    // SOS calculated in database using opponent division weights
     sos: team.sos || 0.5
   };
 };
 
 export const getTeamRank = (teams: Team[], teamId: string): number => {
-  // Sort teams by power score (database-calculated) descending
+  // Sort teams by corrected power score (database-calculated) descending
   const sortedTeams = [...teams].sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
   const rank = sortedTeams.findIndex(team => team.id === teamId) + 1;
   return rank > 0 ? rank : teams.length;

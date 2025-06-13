@@ -1,37 +1,37 @@
 
-// Power score utilities - now using database-calculated values
-// The actual power score calculation is now handled in the database view v_team_details
-// using the correct 40/40/20 formula (40% Weighted Match Win, 40% SOS, 20% Weighted Game Win)
+// Power score utilities - now using corrected database-calculated values
+// The power score calculation is handled in v_team_details using the CORRECTED 40/40/20 formula:
+// - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches (FIXED)
+// - 40% Strength of Schedule = average opponent division weight  
+// - 20% Weighted Game Win % = (game_wins × opponent_weights) / total_games (FIXED)
 
 export const formatPowerScore = (score: number): string => {
   return score.toFixed(1);
 };
 
 export const getPowerScoreColor = (score: number): string => {
-  // Color coding based on 0-100 scale with proper baselines:
-  // Rec perfect season ~60-70, Int perfect ~75-85, Comp perfect ~90-100
-  if (score >= 85) return "text-green-600 dark:text-green-500";
-  if (score >= 70) return "text-blue-600 dark:text-blue-500"; 
-  if (score >= 55) return "text-orange-500 dark:text-orange-400";
-  return "text-red-600 dark:text-red-500";
+  // Color coding based on 0-100 scale with corrected baselines:
+  // After fix: Rec teams ~35-55, Int teams ~45-65, Comp teams ~55-85
+  if (score >= 70) return "text-green-600 dark:text-green-500";   // Elite performance
+  if (score >= 60) return "text-blue-600 dark:text-blue-500";    // Strong performance
+  if (score >= 50) return "text-orange-500 dark:text-orange-400"; // Average performance
+  return "text-red-600 dark:text-red-500";                       // Below average
 };
 
-// Legacy function kept for compatibility - now just returns the database value
+// Deprecated function - power scores are now calculated correctly in the database
 export const calculatePowerScore = (
   wins: number,
   losses: number,
   sos: number,
   divisionWeight: number = 0.85
 ): number => {
-  // This function is deprecated - power scores are now calculated in the database
-  // using the correct 40/40/20 weighted formula
-  console.warn('calculatePowerScore is deprecated - power scores are now calculated in the database');
+  console.warn('calculatePowerScore is deprecated - power scores are now calculated in the database using corrected weighted formulas');
   
-  // Return a reasonable fallback for teams with no data
+  // Return baseline for teams with no data
   if (wins === 0 && losses === 0) {
     return 50.0; // Baseline for new teams
   }
   
-  // For existing data, this should not be used as the database provides the correct value
+  // Database provides the correct value using fixed weighted formulas
   return 50.0;
 };

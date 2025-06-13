@@ -21,20 +21,20 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       const teamsToUse = teams || latestTeams;
       const matchesToUse = matches || latestMatches;
       
-      // Wait for teams data to be loaded and ensure we have power scores
+      // Wait for teams data to be loaded and ensure we have corrected power scores
       if (!teamsToUse || teamsToUse.length === 0 || teamsLoading) {
         console.log("Teams not loaded yet or empty:", { teamsCount: teamsToUse?.length, teamsLoading });
         setRankings([]);
         return;
       }
 
-      // Check if teams have power scores from the corrected database calculation
+      // Check if teams have corrected power scores from the database calculation
       const teamsWithPowerScores = teamsToUse.filter(team => 
         team.power_score !== undefined && team.power_score !== null
       );
 
       if (teamsWithPowerScores.length === 0) {
-        console.log("No teams with power scores found, waiting for database data to load...");
+        console.log("No teams with corrected power scores found, waiting for database data to load...");
         console.log("Sample team data:", teamsToUse.slice(0, 2).map(t => ({
           name: t.name,
           power_score: t.power_score,
@@ -48,7 +48,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       setIsLoading(true);
       
       try {
-        console.log(`Processing ${teamsToUse.length} teams with corrected database power scores`);
+        console.log(`Processing ${teamsToUse.length} teams with CORRECTED database power scores (fixed weighted formulas)`);
         
         // Create rankings directly from team data, using the corrected v_team_details values
         const calculatedRankings = teamsToUse.map((team): Ranking => {
@@ -57,9 +57,9 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           const previousRank = previousRankings[team.id];
           
           // Debug log for corrected power score data
-          console.log(`Team ${team.name}: corrected power_score=${team.power_score}, wins=${team.wins}, losses=${team.losses}`);
+          console.log(`Team ${team.name}: CORRECTED power_score=${team.power_score}, wins=${team.wins}, losses=${team.losses}`);
           
-          // Use the corrected power_score directly from v_team_details (40/40/20 formula)
+          // Use the corrected power_score from v_team_details (fixed 40/40/20 formula)
           return {
             teamId: team.id,
             teamName: team.name,
@@ -72,7 +72,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             winPercentage: team.win_percentage || 0,
             gameWinPercentage: team.game_win_percentage || 0,
             sos: team.sos || 0.5,
-            powerScore: team.power_score || 50.0, // Database-calculated using correct 40/40/20 formula
+            powerScore: team.power_score || 50.0, // Database-calculated using CORRECTED weighted formulas
             streak,
             divisionName: team.divisionName || 'Unassigned',
             previousRank,
@@ -96,7 +96,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           return a.teamName.localeCompare(b.teamName);
         });
         
-        console.log("Sorted rankings by corrected power score (40/40/20 formula):", 
+        console.log("Sorted rankings by CORRECTED power score (fixed weighted 40/40/20 formula):", 
           sortedRankings.slice(0, 5).map(r => ({
             team: r.teamName,
             powerScore: r.powerScore,
