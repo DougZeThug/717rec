@@ -1,28 +1,45 @@
 
-import { powerScoreThresholds } from './thresholds';
+// Power score color utilities for the corrected 0-100 scale
+// Now properly aligned with the 40/40/20 database calculation
 
-/**
- * Get appropriate Tailwind color class for a power score based on thresholds
- * 
- * @param powerScore The power score value to evaluate
- * @returns A Tailwind CSS color class based on the power score threshold
- */
-export const getPowerScoreColor = (powerScore: number | undefined): string => {
-  if (powerScore === undefined) return 'text-gray-500 dark:text-gray-400';
-  
-  if (powerScore >= powerScoreThresholds.excellent) return 'text-green-600 dark:text-green-500';
-  if (powerScore >= powerScoreThresholds.good) return 'text-blue-600 dark:text-blue-500';
-  if (powerScore >= powerScoreThresholds.average) return 'text-orange-500 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-500';
+export const formatPowerScore = (score: number): string => {
+  return score.toFixed(1);
 };
 
-/**
- * Format power score to always show 2 decimal places
- * 
- * @param powerScore The power score to format
- * @returns A formatted string representation of the power score
- */
-export const formatPowerScore = (powerScore: number | undefined): string => {
-  if (powerScore === undefined) return "N/A";
-  return powerScore.toFixed(2);
+export const getPowerScoreColor = (score: number): string => {
+  // Updated color thresholds for the corrected 0-100 scale:
+  // - Perfect Competitive teams: ~90-100 (green)
+  // - Perfect Intermediate teams: ~75-85 (blue)  
+  // - Perfect Recreational teams: ~60-70 (orange)
+  // - Below average performance: <55 (red)
+  
+  if (score >= 85) return "text-green-600 dark:text-green-500";
+  if (score >= 70) return "text-blue-600 dark:text-blue-500";
+  if (score >= 55) return "text-orange-500 dark:text-orange-400";
+  return "text-red-600 dark:text-red-500";
+};
+
+export const getPowerScoreBackgroundColor = (score: number): string => {
+  if (score >= 85) return "bg-green-100 dark:bg-green-900/20";
+  if (score >= 70) return "bg-blue-100 dark:bg-blue-900/20";
+  if (score >= 55) return "bg-orange-100 dark:bg-orange-900/20";
+  return "bg-red-100 dark:bg-red-900/20";
+};
+
+export const getPowerScoreBorderColor = (score: number): string => {
+  if (score >= 85) return "border-green-300 dark:border-green-700";
+  if (score >= 70) return "border-blue-300 dark:border-blue-700";
+  if (score >= 55) return "border-orange-300 dark:border-orange-700";
+  return "border-red-300 dark:border-red-700";
+};
+
+// Power score interpretation helper
+export const getPowerScoreDescription = (score: number): string => {
+  if (score >= 90) return "Elite Performance";
+  if (score >= 85) return "Excellent";
+  if (score >= 75) return "Very Good";
+  if (score >= 65) return "Above Average";
+  if (score >= 55) return "Average";
+  if (score >= 45) return "Below Average";
+  return "Needs Improvement";
 };
