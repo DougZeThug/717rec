@@ -8,18 +8,23 @@ export const useTeamBadges = (teamId: string) => {
     queryKey: ['team-badges', teamId],
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
-        .from('team_badge_events')
-        .select('*')
-        .eq('team_id', teamId)
-        .eq('is_active', true)
-        .order('awarded_at', { ascending: false });
+        .rpc('get_team_badges', { p_team_id: teamId });
 
       if (error) {
         console.error('Error fetching team badges:', error);
         throw error;
       }
 
-      return data || [];
+      return (data || []).map((badge: any): TeamBadgeEvent => ({
+        id: badge.id,
+        team_id: badge.team_id,
+        badge_type: badge.badge_type,
+        season_id: badge.season_id,
+        awarded_at: badge.awarded_at,
+        metadata: badge.metadata || {},
+        is_active: badge.is_active,
+        created_at: badge.created_at
+      }));
     },
     enabled: !!teamId
   });
@@ -30,17 +35,23 @@ export const useAllTeamBadges = () => {
     queryKey: ['all-team-badges'],
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
-        .from('team_badge_events')
-        .select('*')
-        .eq('is_active', true)
-        .order('awarded_at', { ascending: false });
+        .rpc('get_all_team_badges');
 
       if (error) {
         console.error('Error fetching all team badges:', error);
         throw error;
       }
 
-      return data || [];
+      return (data || []).map((badge: any): TeamBadgeEvent => ({
+        id: badge.id,
+        team_id: badge.team_id,
+        badge_type: badge.badge_type,
+        season_id: badge.season_id,
+        awarded_at: badge.awarded_at,
+        metadata: badge.metadata || {},
+        is_active: badge.is_active,
+        created_at: badge.created_at
+      }));
     }
   });
 };
@@ -50,18 +61,23 @@ export const useSeasonBadges = (seasonId: string) => {
     queryKey: ['season-badges', seasonId],
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
-        .from('team_badge_events')
-        .select('*')
-        .eq('season_id', seasonId)
-        .eq('is_active', true)
-        .order('awarded_at', { ascending: false });
+        .rpc('get_season_badges', { p_season_id: seasonId });
 
       if (error) {
         console.error('Error fetching season badges:', error);
         throw error;
       }
 
-      return data || [];
+      return (data || []).map((badge: any): TeamBadgeEvent => ({
+        id: badge.id,
+        team_id: badge.team_id,
+        badge_type: badge.badge_type,
+        season_id: badge.season_id,
+        awarded_at: badge.awarded_at,
+        metadata: badge.metadata || {},
+        is_active: badge.is_active,
+        created_at: badge.created_at
+      }));
     },
     enabled: !!seasonId
   });
