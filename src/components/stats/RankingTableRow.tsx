@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Ranking } from "@/types";
 import { Link } from "react-router-dom";
 import { TeamLogo } from "@/components/shared/TeamLogo";
-import RankTrendIndicator from "./RankTrendIndicator";
+import { RankTrendIndicator } from "./RankTrendIndicator";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { getPowerScoreColor, getSosColor } from "@/utils/colors";
 

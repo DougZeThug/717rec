@@ -1,101 +1,66 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Trophy } from "lucide-react";
-import TeamCard from "./TeamCard";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Team } from "@/types";
+import TeamCard from "./TeamCard";
+import { cn } from "@/lib/utils";
+import { gradients, animations } from "@/styles/design-system";
 
-const TopTeams: React.FC = () => {
-  const { data: teams, isLoading } = useQuery({
-    queryKey: ['top-teams'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('v_team_details')
-        .select('*')
-        .order('power_score', { ascending: false })
-        .limit(5);
+interface TopTeamsProps {
+  teams: Team[];
+}
 
-      if (error) throw error;
-      
-      // Transform database response to Team type
-      return data?.map((team): Team => ({
-        id: team.team_id || '',
-        name: team.name || '',
-        wins: team.wins || 0,
-        losses: team.losses || 0,
-        game_wins: team.game_wins || 0,
-        game_losses: team.game_losses || 0,
-        divisionName: team.divisionname,
-        division_id: team.division_id,
-        imageUrl: team.image_url,
-        logoUrl: team.logo_url,
-        players: team.players || [],
-        power_score: team.power_score || 0,
-        sos: team.sos || 0,
-        win_percentage: team.win_percentage || 0,
-        game_win_percentage: team.game_win_percentage || 0,
-        created_at: team.created_at,
-        close_match_losses: team.close_match_losses || 0
-      })) || [];
-    }
-  });
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            Top Teams
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
+const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-500" />
-          Top Teams
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {teams?.map((team, index) => (
-            <div key={team.id} className="flex items-center gap-3">
-              <div className="w-8 h-8 flex items-center justify-center bg-yellow-100 dark:bg-yellow-900 rounded-full text-sm font-bold text-yellow-700 dark:text-yellow-300">
-                {index + 1}
-              </div>
-              <div className="flex-1">
-                <TeamCard team={team} />
-              </div>
-            </div>
-          ))}
-          {(!teams || teams.length === 0) && (
-            <div className="text-center text-muted-foreground py-4">
-              No team rankings available
-            </div>
-          )}
+    <section id="top-teams-section" className={cn(
+      "py-6 md:py-8 rounded-xl shadow-sm mb-4",
+      "bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30",
+      "dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80",
+      animations.fadeIn
+    )}>
+      <div className="flex flex-wrap justify-between items-center px-3 md:px-0 mb-4">
+        <div>
+          <h2 className={cn(
+            "text-2xl md:text-3xl font-bold text-cornhole-navy dark:text-white font-sans",
+            "bg-gradient-to-r from-cornhole-navy to-blue-600/90 dark:from-blue-400 dark:to-blue-500/90",
+            "bg-clip-text text-transparent"
+          )}>
+            Top Teams
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-sans">Based on highest power score ranking</p>
         </div>
-      </CardContent>
-    </Card>
+        <Button 
+          asChild 
+          variant="blueOrange"
+          className="shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+        >
+          <Link to="/teams">View All</Link>
+        </Button>
+      </div>
+      <div className="flex flex-col space-y-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:space-y-0 px-3 md:px-0">
+        {teams.map((team, index) => (
+          <div 
+            key={team.id} 
+            className={cn(
+              "rounded-xl shadow-sm border border-gray-200 dark:border-gray-700",
+              "bg-gradient-to-br from-white via-white to-gray-50 dark:from-[#1E1E1E] dark:via-gray-800/90 dark:to-gray-900",
+              "hover:bg-gradient-to-br hover:from-white hover:via-blue-50/10 hover:to-orange-50/20",
+              "dark:hover:from-gray-800/90 dark:hover:via-gray-800/80 dark:hover:to-gray-900",
+              "transition-all duration-300",
+              animations.fadeInSlideUp,
+              // Stagger the animation delay
+              index === 0 ? "" : 
+              index === 1 ? animations.delay.short :
+              index === 2 ? animations.delay.medium : 
+              animations.delay.long
+            )}
+          >
+            <TeamCard team={team} />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 };
 

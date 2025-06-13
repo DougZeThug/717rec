@@ -23,7 +23,7 @@ export interface TeamBadgeEvent {
   badge_type: BadgeType;
   season_id: string | null;
   awarded_at: string;
-  metadata: any; // Changed from Record<string, any> to any to match Supabase Json type
+  metadata: Record<string, any>;
   is_active: boolean;
   created_at: string;
 }

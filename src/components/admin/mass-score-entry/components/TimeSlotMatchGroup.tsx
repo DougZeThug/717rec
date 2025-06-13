@@ -44,6 +44,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
       matches.map((m, idx) => ({
         id: m.id,
         localIndex: idx,
+        globalIndex: parseInt(m.id.split("-index-")[1] || "0", 10),
         teams: `${m.team1?.name || 'Unknown'} vs ${m.team2?.name || 'Unknown'}`
       }))
     );
@@ -82,9 +83,13 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
           className="pt-2 grid grid-cols-1 md:grid-cols-2 gap-4"
         >
           {matches.map((match, localIndex) => {
+            // Extract the global index from the match ID
+            const globalIndex = parseInt(match.id.split("-index-")[1] || "0", 10);
+            
             console.log(`Rendering match at timeslot "${timeSlot}":`, {
               id: match.id,
               localIndex,
+              globalIndex,
               isCompleted: match.iscompleted
             });
             
@@ -92,21 +97,22 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
               <div key={match.id} className="relative">
                 <MatchRow
                   match={match}
-                  index={localIndex} // Use local index for now
+                  index={globalIndex} // Use the global index for parent callbacks
                   isSubmitting={submitting}
                   hasError={failedMatches?.includes(match.id)}
                   errorMessage={errorMessages?.[match.id]}
                   onScoreChange={(team1Score, team2Score) => 
-                    onScoreChange(localIndex, team1Score, team2Score)
+                    onScoreChange(globalIndex, team1Score, team2Score)
                   }
                   onGameWinsChange={(team1GameWins, team2GameWins) => 
-                    onGameWinsChange(localIndex, team1GameWins, team2GameWins)
+                    onGameWinsChange(globalIndex, team1GameWins, team2GameWins)
                   }
                   onMarkCompleted={(checked) => {
                     console.log(`TimeSlotMatchGroup: Marking match ${match.id} as ${checked ? 'completed' : 'incomplete'}`, {
+                      globalIndex,
                       localIndex
                     });
-                    onMarkCompleted(localIndex, checked);
+                    onMarkCompleted(globalIndex, checked);
                   }}
                   onClearError={onClearError}
                 />

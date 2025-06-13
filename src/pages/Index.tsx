@@ -1,30 +1,61 @@
 
 import React from "react";
-import PageLayout from "@/components/layout/PageLayout";
-import HeroSection from "@/components/home/HeroSection";
-import RecentMatches from "@/components/home/RecentMatches";
+import { useTeams } from "@/hooks/useTeams";
 import TopTeams from "@/components/home/TopTeams";
+import CallToAction from "@/components/home/CallToAction";
+import HeroSection from "@/components/home/HeroSection";
 import ChampionsCard from "@/components/home/ChampionsCard";
-import PlayoffsAnnouncementBanner from "@/components/home/PlayoffsAnnouncementBanner";
-import WeeklyHeatTeaser from "@/components/home/WeeklyHeatTeaser";
+import LeagueHistoryBar from "@/components/home/LeagueHistoryBar";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import LoadingState from "@/components/ui/loading-state";
+import { useIsMobile } from "@/hooks/use-mobile";
+import PageTransition from "@/components/transitions/PageTransition";
 
-const Index = () => {
+const Index: React.FC = () => {
+  const { teams, isLoading: teamsLoading } = useTeams();
+  const isMobile = useIsMobile();
+  
+  const isLoading = teamsLoading;
+  
+  // Top teams by power score
+  const topTeams = React.useMemo(() => {
+    if (!teams?.length) return [];
+    return [...teams]
+      .sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0))
+      .slice(0, 4);
+  }, [teams]);
+  
+  if (isLoading) {
+    return <LoadingState fullscreen message="Loading league data..." size="lg" />;
+  }
+  
   return (
-    <PageLayout>
-      <div className="space-y-8">
+    <PageLayout 
+      className="flex flex-col gap-4 md:gap-8" 
+      compact={isMobile}
+      gradientVariant="blueOrange"
+    >
+      <PageTransition animation="fadeInSlideDown">
         <HeroSection />
-        <PlayoffsAnnouncementBanner />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <RecentMatches />
-          </div>
-          <div className="space-y-6">
-            <WeeklyHeatTeaser />
-            <TopTeams />
-            <ChampionsCard />
-          </div>
-        </div>
+      </PageTransition>
+      
+      <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
+        <PageTransition animation="fadeInSlideUp" delay="short">
+          <LeagueHistoryBar />
+        </PageTransition>
+
+        <PageTransition animation="fadeInSlideUp" delay="medium">
+          <ChampionsCard />
+        </PageTransition>
+
+        <PageTransition animation="fadeInSlideUp" delay="medium">
+          <TopTeams teams={topTeams} />
+        </PageTransition>
+
+        <PageTransition animation="fadeIn" delay="long">
+          <CallToAction />
+        </PageTransition>
       </div>
     </PageLayout>
   );
