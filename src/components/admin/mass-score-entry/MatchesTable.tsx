@@ -29,9 +29,16 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   errorMessages = {},
   onClearError
 }) => {
-  // Create a stable mapping of matches to their original indices
+  // Add index reference to each match for stable references
+  const indexedMatches = useMemo(() => {
+    return matches.map((match, index) => ({
+      ...match,
+      id: `${match.id}-index-${index}` // Store original index in ID for reference
+    }));
+  }, [matches]);
+
   const matchesByDate = useMemo(() => {
-    const groups = matches.reduce((acc, match, originalIndex) => {
+    const groups = indexedMatches.reduce((acc, match) => {
       if (!match.date) return acc;
       const dateKey = format(new Date(match.date), "yyyy-MM-dd");
       if (!acc[dateKey]) {
@@ -40,15 +47,14 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
           matches: []
         };
       }
-      // Store the original index with each match
-      acc[dateKey].matches.push({ ...match, originalIndex });
+      acc[dateKey].matches.push(match);
       return acc;
-    }, {} as Record<string, { date: Date; matches: (MatchWithTeams & { originalIndex: number })[] }>);
+    }, {} as Record<string, { date: Date; matches: MatchWithTeams[] }>);
 
     return Object.values(groups).sort((a, b) => 
       a.date.getTime() - b.date.getTime()
     );
-  }, [matches]);
+  }, [indexedMatches]);
 
   if (loading) {
     return (

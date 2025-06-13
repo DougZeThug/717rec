@@ -15,7 +15,7 @@ import TimeSlotMatchGroup from "./TimeSlotMatchGroup";
 
 interface DateMatchGroupProps {
   date: Date;
-  matches: (MatchWithTeams & { originalIndex: number })[];
+  matches: MatchWithTeams[];
   defaultExpanded?: boolean;
   onScoreChange: (index: number, team1Score: number, team2Score: number) => void;
   onGameWinsChange: (index: number, team1GameWins: number, team2GameWins: number) => void;

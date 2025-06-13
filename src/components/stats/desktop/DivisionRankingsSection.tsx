@@ -169,10 +169,6 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                   key={ranking.teamId}
                   ranking={ranking}
                   index={globalIndex}
-                  isExpanded={expandedTeam === ranking.teamId}
-                  onToggleExpand={() => toggleExpand(ranking.teamId)}
-                  showDivision={showUnified}
-                  rowIndex={index}
                 />
               );
             })}

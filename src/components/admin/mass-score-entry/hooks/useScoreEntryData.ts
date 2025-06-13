@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -83,38 +82,21 @@ export const useScoreEntryData = () => {
       match.isEdited && match.isValid && match.iscompleted
     );
 
-    console.log(`Found ${validMatches.length} valid matches to submit:`, {
-      totalMatches: matches.length,
-      editedMatches: matches.filter(m => m.isEdited).length,
-      validMatches: matches.filter(m => m.isValid).length,
-      completedMatches: matches.filter(m => m.iscompleted).length,
-      validMatchIds: validMatches.map(m => m.id)
-    });
-
     if (validMatches.length === 0) {
       toast({
         title: "No Changes",
-        description: "Please mark matches as completed and ensure they have valid scores.",
+        description: "There are no valid matches to submit.",
       });
       return;
     }
 
+    console.log(`Found ${validMatches.length} valid matches to submit`);
     setSubmitting(true);
-    clearErrors();
 
     try {
       let successCount = 0;
-      let failCount = 0;
 
       for (const match of validMatches) {
-        console.log(`Submitting match ${match.id}:`, {
-          team1Score: match.team1Score,
-          team2Score: match.team2Score,
-          team1GameWins: match.team1_game_wins,
-          team2GameWins: match.team2_game_wins,
-          completed: match.iscompleted
-        });
-
         const success = await handleSubmitScore({
           matchId: match.id,
           team1Score: match.team1Score ?? 0,
@@ -123,29 +105,21 @@ export const useScoreEntryData = () => {
           team2GameWins: match.team2_game_wins ?? 0
         });
 
-        if (success) {
-          successCount++;
-          console.log(`Successfully submitted match ${match.id}`);
-        } else {
-          failCount++;
-          console.error(`Failed to submit match ${match.id}`);
-        }
+        if (success) successCount++;
       }
 
       if (successCount > 0) {
         toast({
           title: "✅ Matches Submitted",
-          description: `${successCount} match(es) successfully submitted${failCount > 0 ? `. ${failCount} failed.` : '.'}`,
-          variant: successCount === validMatches.length ? "default" : "destructive"
+          description: `${successCount} match(es) successfully submitted.`
         });
 
         await invalidateMatchRelatedQueries(queryClient);
-        const refreshedMatches = await fetchMatches(filters);
-        setMatches(refreshedMatches);
+        await fetchMatches(filters);
       } else {
         toast({
           title: "Error",
-          description: "Failed to submit any matches. Please check the console for details.",
+          description: "Failed to submit matches. Please try again.",
           variant: "destructive"
         });
       }

@@ -67,14 +67,16 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     localStorage.setItem("rankingsDetailedView", String(checked));
   };
 
+  // Group by display divisions using divisionName which now contains display_division
   const rankingsByDivision = showUnified
     ? { "All Teams": rankings }
     : rankings.reduce((acc, ranking) => {
-        const divisionName = ranking.divisionName || "Unassigned";
-        if (!acc[divisionName]) {
-          acc[divisionName] = [];
+        // Use divisionName which now contains the display_division value
+        const displayDivision = ranking.divisionName || "Unassigned";
+        if (!acc[displayDivision]) {
+          acc[displayDivision] = [];
         }
-        acc[divisionName].push(ranking);
+        acc[displayDivision].push(ranking);
         return acc;
       }, {} as Record<string, Ranking[]>);
 
@@ -122,15 +124,15 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
         </div>
       </div>
       <div className="space-y-2">
-        {Object.entries(rankingsByDivision).map(([divisionName, divisionRankings]) => (
-          <div key={divisionName} className="space-y-1">
+        {Object.entries(rankingsByDivision).map(([displayDivision, divisionRankings]) => (
+          <div key={displayDivision} className="space-y-1">
             {!showUnified && (
               <h3 className={cn(
                 "text-lg font-medium flex items-center font-inter text-gray-900 dark:text-white",
                 "border-l-4 border-blue-500 dark:border-blue-700 pl-2",
                 "bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent"
               )}>
-                {divisionName}{" "}
+                {displayDivision}{" "}
                 <span className="ml-2 text-xs text-gray-600 dark:text-gray-400 font-inter">
                   ({divisionRankings.length})
                 </span>
@@ -144,10 +146,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     key={ranking.teamId}
                     ranking={ranking}
                     index={globalIndex}
-                    expandedTeam={expandedTeam}
-                    onToggleExpand={toggleExpand}
-                    compactView={!detailedView}
-                    showDivision={showUnified}
                   />
                 );
               })}

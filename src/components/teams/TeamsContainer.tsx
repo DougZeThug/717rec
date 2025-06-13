@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
@@ -10,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from 'framer-motion';
 import TeamsSortToggle, { SortMode } from './TeamsSortToggle';
 import { DisplayMode } from "./TeamsPageContainer";
+import { groupTeamsByDisplayDivision } from "@/utils/teamGrouping";
 
 const SORT_MODES = [
   { key: 'rank', label: 'Rank' },
@@ -67,24 +69,9 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
     return Array.from(uniqueTeamMap.values());
   }, [teams]);
   
-  const teamsByDivision = useMemo(() => {
-    const grouped: Record<string, Team[]> = {
-      unassigned: []
-    };
-    divisions.forEach(division => {
-      grouped[division.id] = [];
-    });
-    uniqueTeams.forEach(team => {
-      if (!team.division) {
-        grouped.unassigned.push(team);
-      } else {
-        if (!grouped[team.division]) {
-          grouped[team.division] = [];
-        }
-        grouped[team.division].push(team);
-      }
-    });
-    return grouped;
+  // Group teams by display division instead of actual division_id
+  const teamsByDisplayDivision = useMemo(() => {
+    return groupTeamsByDisplayDivision(uniqueTeams, divisions);
   }, [uniqueTeams, divisions]);
 
   const sortTeams = (arr: Team[]) => {
@@ -98,18 +85,18 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
 
   const sortedTeamsByDivision = useMemo(() => {
     const sorted: Record<string, Team[]> = {};
-    for (const divId of Object.keys(teamsByDivision)) {
-      sorted[divId] = sortTeams(teamsByDivision[divId]);
+    for (const displayDivision of Object.keys(teamsByDisplayDivision)) {
+      sorted[displayDivision] = sortTeams(teamsByDisplayDivision[displayDivision]);
     }
     return sorted;
-  }, [teamsByDivision, sortMode]);
+  }, [teamsByDisplayDivision, sortMode]);
 
   const sortedAllTeams = useMemo(() => sortTeams(uniqueTeams), [uniqueTeams, sortMode]);
   
-  const getDivisionName = (divisionId: string | undefined): string => {
-    if (!divisionId || divisionId === "unassigned") return "Unassigned Division";
-    const division = divisions.find(d => d.id === divisionId);
-    return division ? division.name : "Unknown Division";
+  // Updated to work with display divisions
+  const getDivisionName = (displayDivision: string | undefined): string => {
+    if (!displayDivision) return "Unassigned Division";
+    return `${displayDivision} Division`;
   };
 
   return (

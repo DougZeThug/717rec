@@ -6,6 +6,7 @@ interface Division {
   id: string;
   name: string;
   division_weight: number;
+  display_division: string;
   created_at: string;
 }
 
@@ -16,12 +17,18 @@ export const useDivisions = () => {
       const { data, error } = await supabase
         .from('divisions')
         .select('*')
-        .order('name');
+        .order('division_weight', { ascending: false }); // Order by weight (highest first)
       
       if (error) {
         console.error('Error fetching divisions:', error);
         throw error;
       }
+      
+      console.log('Divisions loaded with display_division:', data?.map(d => ({
+        name: d.name,
+        weight: d.division_weight,
+        display: d.display_division
+      })));
       
       return data || [];
     },

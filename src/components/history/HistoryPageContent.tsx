@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -99,24 +98,13 @@ const HistoryPageContent: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Season History
-        </h2>
-        <p className="text-muted-foreground">
-          Explore past seasons, champions, runners-up, and standings
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        {seasons.map((season) => (
-          <SeasonAccordion
-            key={season.id}
-            season={season}
-          />
-        ))}
-      </div>
+    <div className="space-y-4">
+      {seasons.map((season) => (
+        <SeasonAccordion
+          key={season.id}
+          season={season}
+        />
+      ))}
     </div>
   );
 };
