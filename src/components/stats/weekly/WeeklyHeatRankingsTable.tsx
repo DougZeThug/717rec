@@ -1,54 +1,32 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Flame, TrendingUp, TrendingDown } from 'lucide-react';
-import { WeeklyHeatRanking } from '@/hooks/weekly';
-import TeamLogo from '@/components/shared/TeamLogo';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useWeeklyHeatRankings } from "@/hooks/weekly";
+import { TeamLogo } from "@/components/shared/TeamLogo";
 
-interface WeeklyHeatRankingsTableProps {
-  rankings: WeeklyHeatRanking[];
-  isLoading?: boolean;
-  weekOf?: string;
-}
+const WeeklyHeatRankingsTable: React.FC = () => {
+  const { data: rankings, isLoading, error } = useWeeklyHeatRankings();
 
-const getHeatColor = (score: number) => {
-  if (score >= 8) return 'text-red-600 bg-red-50';
-  if (score >= 5) return 'text-orange-600 bg-orange-50';
-  if (score >= 2) return 'text-yellow-600 bg-yellow-50';
-  if (score >= 0) return 'text-blue-600 bg-blue-50';
-  return 'text-gray-600 bg-gray-50';
-};
-
-const getStreakIcon = (streakType: string, streakCount: number) => {
-  if (streakCount < 2) return null;
-  
-  return streakType === 'win' ? (
-    <TrendingUp className="h-4 w-4 text-green-500" />
-  ) : (
-    <TrendingDown className="h-4 w-4 text-red-500" />
-  );
-};
-
-const WeeklyHeatRankingsTable: React.FC<WeeklyHeatRankingsTableProps> = ({
-  rankings,
-  isLoading,
-  weekOf
-}) => {
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-orange-500" />
-            Weekly Heat Rankings
-          </CardTitle>
+          <CardTitle>Weekly Heat Rankings</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
             {[...Array(10)].map((_, i) => (
-              <div key={i} className="h-12 bg-muted rounded" />
+              <div key={i} className="flex items-center space-x-4">
+                <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                </div>
+                <div className="w-16 h-6 bg-gray-200 rounded"></div>
+              </div>
             ))}
           </div>
         </CardContent>
@@ -56,17 +34,29 @@ const WeeklyHeatRankingsTable: React.FC<WeeklyHeatRankingsTableProps> = ({
     );
   }
 
-  if (!rankings.length) {
+  if (error) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-orange-500" />
-            Weekly Heat Rankings
-          </CardTitle>
+          <CardTitle>Weekly Heat Rankings</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-center py-8">
+          <p className="text-center text-muted-foreground">
+            Unable to load heat rankings. Please try again later.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!rankings || rankings.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Weekly Heat Rankings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-muted-foreground">
             No heat rankings available for this week.
           </p>
         </CardContent>
@@ -74,104 +64,74 @@ const WeeklyHeatRankingsTable: React.FC<WeeklyHeatRankingsTableProps> = ({
     );
   }
 
+  const getHeatTrend = (score: number) => {
+    if (score > 5) return { icon: TrendingUp, color: "text-red-500", bg: "bg-red-50" };
+    if (score > 0) return { icon: TrendingUp, color: "text-orange-500", bg: "bg-orange-50" };
+    if (score < -2) return { icon: TrendingDown, color: "text-blue-500", bg: "bg-blue-50" };
+    return { icon: Minus, color: "text-gray-500", bg: "bg-gray-50" };
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Flame className="h-5 w-5 text-orange-500" />
+          <TrendingUp className="w-5 h-5 text-orange-500" />
           Weekly Heat Rankings
-          {weekOf && (
-            <span className="text-sm font-normal text-muted-foreground">
-              Week of {new Date(weekOf).toLocaleDateString()}
-            </span>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">#</TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead className="text-center">Heat Score</TableHead>
-              <TableHead className="text-center">Record</TableHead>
-              <TableHead className="text-center">Upsets</TableHead>
-              <TableHead className="text-center">Streak</TableHead>
-              <TableHead className="text-center">Bonus</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rankings.map((ranking, index) => (
-              <TableRow key={ranking.id}>
-                <TableCell className="font-bold text-muted-foreground">
-                  {index + 1}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <TeamLogo 
-                      logoUrl={ranking.team?.logo_url}
-                      teamName={ranking.team?.name || 'Unknown'}
-                      size="sm"
-                    />
-                    <div>
-                      <div className="font-medium">{ranking.team?.name}</div>
-                      {ranking.team?.divisionName && (
-                        <div className="text-xs text-muted-foreground">
-                          {ranking.team.divisionName}
-                        </div>
+        <div className="space-y-3">
+          {rankings.map((ranking, index) => {
+            const trend = getHeatTrend(ranking.heat_score);
+            const TrendIcon = trend.icon;
+            
+            return (
+              <div
+                key={ranking.team_id}
+                className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-bold">
+                    {index + 1}
+                  </div>
+                  
+                  <TeamLogo 
+                    imageUrl={ranking.team?.logo_url || ranking.team?.image_url} 
+                    teamName={ranking.team?.name || 'Unknown'} 
+                    size="sm" 
+                  />
+                  
+                  <div>
+                    <div className="font-medium">{ranking.team?.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {ranking.wins}W-{ranking.losses}L
+                      {ranking.upsets > 0 && (
+                        <span className="ml-2 text-amber-600">
+                          • {ranking.upsets} upset{ranking.upsets !== 1 ? 's' : ''}
+                        </span>
                       )}
                     </div>
                   </div>
-                </TableCell>
-                <TableCell className="text-center">
-                  <Badge 
-                    variant="secondary" 
-                    className={`font-bold ${getHeatColor(ranking.heat_score)}`}
-                  >
-                    {ranking.heat_score.toFixed(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="text-sm">
-                    <span className="text-green-600 font-medium">{ranking.wins}</span>
-                    <span className="text-muted-foreground mx-1">-</span>
-                    <span className="text-red-600 font-medium">{ranking.losses}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">
-                  {ranking.upsets > 0 ? (
-                    <Badge variant="destructive" className="text-xs">
-                      {ranking.upsets}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {ranking.current_streak > 2 && (
+                    <Badge variant="outline" className="text-xs">
+                      {ranking.current_streak}{ranking.streak_type?.charAt(0).toUpperCase()}
                     </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
                   )}
-                </TableCell>
-                <TableCell className="text-center">
-                  {ranking.current_streak >= 2 ? (
-                    <div className="flex items-center justify-center gap-1">
-                      {getStreakIcon(ranking.streak_type, ranking.current_streak)}
-                      <span className="text-sm font-medium">
-                        {ranking.current_streak}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-center">
-                  {ranking.streak_bonus > 0 ? (
-                    <span className="text-xs text-green-600 font-medium">
-                      +{ranking.streak_bonus.toFixed(1)}
+                  
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${trend.bg}`}>
+                    <TrendIcon className={`w-4 h-4 ${trend.color}`} />
+                    <span className={`font-bold text-sm ${trend.color}`}>
+                      {ranking.heat_score.toFixed(1)}
                     </span>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );

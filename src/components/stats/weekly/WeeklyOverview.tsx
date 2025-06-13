@@ -1,98 +1,129 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Flame, Trophy, TrendingUp, Target } from 'lucide-react';
-import { WeeklyDigest } from '@/hooks/weekly';
-import TeamLogo from '@/components/shared/TeamLogo';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Trophy, Target, Calendar } from "lucide-react";
+import { useWeeklyDigest } from "@/hooks/weekly";
+import { TeamLogo } from "@/components/shared/TeamLogo";
 
-interface WeeklyOverviewProps {
-  digest: WeeklyDigest;
-}
+const WeeklyOverview: React.FC = () => {
+  const { data: digest, isLoading, error } = useWeeklyDigest();
 
-const WeeklyOverview: React.FC<WeeklyOverviewProps> = ({ digest }) => {
-  const { digest_data } = digest;
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Weekly Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-16 bg-gray-200 rounded"></div>
+              <div className="h-16 bg-gray-200 rounded"></div>
+            </div>
+            <div className="h-24 bg-gray-200 rounded"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || !digest) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Weekly Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-muted-foreground">
+            Unable to load weekly overview. Please try again later.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Total Matches */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
-          <Target className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{digest_data.total_matches}</div>
-          <p className="text-xs text-muted-foreground">
-            Week of {new Date(digest_data.week_of).toLocaleDateString()}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Total Upsets */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Upsets</CardTitle>
-          <Trophy className="h-4 w-4 text-orange-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-orange-600">
-            {digest_data.total_upsets}
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-blue-500" />
+          Weekly Overview
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20">
+            <div className="text-2xl font-bold text-blue-600">{digest.total_matches}</div>
+            <div className="text-sm text-muted-foreground">Total Matches</div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Division weight differences
-          </p>
-        </CardContent>
-      </Card>
+          <div className="text-center p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20">
+            <div className="text-2xl font-bold text-amber-600">{digest.total_upsets}</div>
+            <div className="text-sm text-muted-foreground">Upsets</div>
+          </div>
+        </div>
 
-      {/* Hottest Team */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Hottest Team</CardTitle>
-          <Flame className="h-4 w-4 text-red-500" />
-        </CardHeader>
-        <CardContent>
-          {digest_data.hottest_team ? (
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="text-sm font-medium truncate">
-                  {digest_data.hottest_team.name}
+        {/* Hottest & Coolest Teams */}
+        <div className="space-y-4">
+          {digest.hottest_team && (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/20">
+              <TrendingUp className="w-5 h-5 text-red-500" />
+              <TeamLogo 
+                imageUrl={digest.hottest_team.logo_url} 
+                teamName={digest.hottest_team.name} 
+                size="sm" 
+              />
+              <div className="flex-1">
+                <div className="font-medium">Hottest Team</div>
+                <div className="text-sm text-muted-foreground">
+                  {digest.hottest_team.name} • {digest.hottest_team.heat_score?.toFixed(1)} heat
                 </div>
               </div>
-              <Badge variant="destructive" className="text-xs">
-                {digest_data.hottest_team.heat_score.toFixed(1)} heat
-              </Badge>
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No data</div>
           )}
-        </CardContent>
-      </Card>
 
-      {/* Coolest Team */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Coolest Team</CardTitle>
-          <TrendingUp className="h-4 w-4 text-blue-500" />
-        </CardHeader>
-        <CardContent>
-          {digest_data.coolest_team ? (
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="text-sm font-medium truncate">
-                  {digest_data.coolest_team.name}
+          {digest.coolest_team && (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
+              <Target className="w-5 h-5 text-blue-500" />
+              <TeamLogo 
+                imageUrl={digest.coolest_team.logo_url} 
+                teamName={digest.coolest_team.name} 
+                size="sm" 
+              />
+              <div className="flex-1">
+                <div className="font-medium">Coolest Team</div>
+                <div className="text-sm text-muted-foreground">
+                  {digest.coolest_team.name} • {digest.coolest_team.heat_score?.toFixed(1)} heat
                 </div>
               </div>
-              <Badge variant="secondary" className="text-xs">
-                {digest_data.coolest_team.heat_score.toFixed(1)} heat
-              </Badge>
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">No data</div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+
+        {/* Highlights */}
+        {digest.highlights && digest.highlights.length > 0 && (
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              Week Highlights
+            </h4>
+            <div className="space-y-2">
+              {digest.highlights.slice(0, 3).map((highlight: any, index: number) => (
+                <div key={index} className="p-3 rounded-lg border bg-card">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline" className="text-xs">
+                      {highlight.type.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                  <p className="text-sm">{highlight.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

@@ -29,16 +29,9 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   errorMessages = {},
   onClearError
 }) => {
-  // Add index reference to each match for stable references
-  const indexedMatches = useMemo(() => {
-    return matches.map((match, index) => ({
-      ...match,
-      id: `${match.id}-index-${index}` // Store original index in ID for reference
-    }));
-  }, [matches]);
-
+  // Group matches by date without modifying IDs
   const matchesByDate = useMemo(() => {
-    const groups = indexedMatches.reduce((acc, match) => {
+    const groups = matches.reduce((acc, match, index) => {
       if (!match.date) return acc;
       const dateKey = format(new Date(match.date), "yyyy-MM-dd");
       if (!acc[dateKey]) {
@@ -47,14 +40,15 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
           matches: []
         };
       }
-      acc[dateKey].matches.push(match);
+      // Store the original array index with each match for proper callback handling
+      acc[dateKey].matches.push({ ...match, originalIndex: index });
       return acc;
-    }, {} as Record<string, { date: Date; matches: MatchWithTeams[] }>);
+    }, {} as Record<string, { date: Date; matches: (MatchWithTeams & { originalIndex: number })[] }>);
 
     return Object.values(groups).sort((a, b) => 
       a.date.getTime() - b.date.getTime()
     );
-  }, [indexedMatches]);
+  }, [matches]);
 
   if (loading) {
     return (
@@ -88,9 +82,26 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
           date={date}
           matches={dateMatches}
           defaultExpanded={defaultExpanded}
-          onScoreChange={onScoreChange}
-          onGameWinsChange={onGameWinsChange}
-          onMarkCompleted={onMarkCompleted}
+          onScoreChange={(index, team1Score, team2Score) => {
+            // Use the original index from the full matches array
+            const match = dateMatches[index];
+            if (match && typeof match.originalIndex !== 'undefined') {
+              onScoreChange(match.originalIndex, team1Score, team2Score);
+            }
+          }}
+          onGameWinsChange={(index, team1GameWins, team2GameWins) => {
+            const match = dateMatches[index];
+            if (match && typeof match.originalIndex !== 'undefined') {
+              onGameWinsChange(match.originalIndex, team1GameWins, team2GameWins);
+            }
+          }}
+          onMarkCompleted={(index, checked) => {
+            const match = dateMatches[index];
+            if (match && typeof match.originalIndex !== 'undefined') {
+              console.log(`MatchesTable: Forwarding completion for match ${match.id} at original index ${match.originalIndex}`);
+              onMarkCompleted(match.originalIndex, checked);
+            }
+          }}
           submitting={submitting}
           failedMatches={failedMatches}
           errorMessages={errorMessages}

@@ -1,72 +1,73 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Flame, TrendingUp, ArrowRight } from 'lucide-react';
-import { useLatestWeeklyDigest } from '@/hooks/weekly';
-import { RouterLink } from '@/components/navigation';
-import TeamLogo from '@/components/shared/TeamLogo';
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useWeeklyHeatRankings } from "@/hooks/weekly";
+import { TeamLogo } from "@/components/shared/TeamLogo";
 
-const WeeklyHeatTeaser = () => {
-  const { data: digest, isLoading } = useLatestWeeklyDigest();
-
-  if (isLoading || !digest) {
-    return null;
+const WeeklyHeatTeaser: React.FC = () => {
+  const { data: rankings, isLoading } = useWeeklyHeatRankings();
+  
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-orange-500" />
+            Weekly Heat Index
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
-  const { digest_data } = digest;
+  const topTeams = rankings?.slice(0, 3) || [];
 
   return (
-    <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-orange-200 dark:border-orange-800">
+    <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
-          <Flame className="h-5 w-5" />
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-orange-500" />
           Weekly Heat Index
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          {/* Hottest Team */}
-          {digest_data.hottest_team && (
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                🔥 Hottest Team
+        <div className="space-y-2">
+          {topTeams.map((team, index) => (
+            <div key={team.team_id} className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900 text-xs font-bold">
+                {index + 1}
               </div>
-              <div className="flex items-center gap-2">
-                <div className="text-sm font-medium truncate">
-                  {digest_data.hottest_team.name}
+              <TeamLogo 
+                imageUrl={team.team?.logo_url || team.team?.image_url} 
+                teamName={team.team?.name || 'Unknown'} 
+                size="sm" 
+              />
+              <div className="flex-1">
+                <div className="font-medium text-sm">{team.team?.name}</div>
+                <div className="text-xs text-muted-foreground">
+                  Heat: {team.heat_score?.toFixed(1)}
                 </div>
               </div>
-              <Badge variant="destructive" className="text-xs">
-                {digest_data.hottest_team.heat_score.toFixed(1)} heat
-              </Badge>
             </div>
-          )}
-
-          {/* Key Stats */}
-          <div className="space-y-2">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              📊 This Week
-            </div>
-            <div className="space-y-1">
-              <div className="text-sm">
-                <span className="font-medium">{digest_data.total_matches}</span> matches
-              </div>
-              <div className="text-sm">
-                <span className="font-medium text-orange-600">{digest_data.total_upsets}</span> upsets
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
-
-        <div className="pt-2 border-t border-orange-200 dark:border-orange-800">
-          <RouterLink to="/stats">
-            <Button variant="ghost" size="sm" className="w-full justify-between text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/20">
+        
+        <div className="pt-2 border-t">
+          <Link to="/stats/weekly">
+            <Button variant="outline" size="sm" className="w-full">
+              <Calendar className="w-4 h-4 mr-2" />
               View Full Heat Rankings
-              <ArrowRight className="h-4 w-4" />
             </Button>
-          </RouterLink>
+          </Link>
         </div>
       </CardContent>
     </Card>
