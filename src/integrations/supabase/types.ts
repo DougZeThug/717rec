@@ -2647,6 +2647,19 @@ export type Database = {
       }
     }
     Functions: {
+      get_all_team_badges: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          team_id: string
+          badge_type: string
+          season_id: string
+          awarded_at: string
+          metadata: Json
+          is_active: boolean
+          created_at: string
+        }[]
+      }
       get_participants: {
         Args: { p_tournament_id: string }
         Returns: {
@@ -2654,6 +2667,32 @@ export type Database = {
           name: string
           tournament_id: string
           team_position: number
+        }[]
+      }
+      get_season_badges: {
+        Args: { p_season_id: string }
+        Returns: {
+          id: string
+          team_id: string
+          badge_type: string
+          season_id: string
+          awarded_at: string
+          metadata: Json
+          is_active: boolean
+          created_at: string
+        }[]
+      }
+      get_team_badges: {
+        Args: { p_team_id: string }
+        Returns: {
+          id: string
+          team_id: string
+          badge_type: string
+          season_id: string
+          awarded_at: string
+          metadata: Json
+          is_active: boolean
+          created_at: string
         }[]
       }
       get_team_division_weight: {

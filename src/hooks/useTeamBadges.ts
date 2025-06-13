@@ -8,7 +8,11 @@ export const useTeamBadges = (teamId: string) => {
     queryKey: ['team-badges', teamId],
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
-        .rpc('get_team_badges', { p_team_id: teamId });
+        .from('team_badge_events')
+        .select('*')
+        .eq('team_id', teamId)
+        .eq('is_active', true)
+        .order('awarded_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching team badges:', error);
@@ -35,7 +39,10 @@ export const useAllTeamBadges = () => {
     queryKey: ['all-team-badges'],
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
-        .rpc('get_all_team_badges');
+        .from('team_badge_events')
+        .select('*')
+        .eq('is_active', true)
+        .order('awarded_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching all team badges:', error);
@@ -61,7 +68,11 @@ export const useSeasonBadges = (seasonId: string) => {
     queryKey: ['season-badges', seasonId],
     queryFn: async (): Promise<TeamBadgeEvent[]> => {
       const { data, error } = await supabase
-        .rpc('get_season_badges', { p_season_id: seasonId });
+        .from('team_badge_events')
+        .select('*')
+        .eq('season_id', seasonId)
+        .eq('is_active', true)
+        .order('awarded_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching season badges:', error);
