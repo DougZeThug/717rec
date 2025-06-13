@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Ranking } from "@/types";
@@ -57,7 +56,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     >
       <td className="py-3 px-3">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-slate-900 dark:text-white min-w-[2rem]">
+          <span className="font-medium text-slate-900 dark:text-white min-w-[3rem] whitespace-nowrap">
             {formatRankDisplay()}
           </span>
           {showRankChange && (

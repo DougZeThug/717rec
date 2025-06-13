@@ -1,4 +1,3 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Ranking } from "@/types";
@@ -61,7 +60,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-slate-900 dark:text-white">
+            <span className="text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap">
               {formatRankDisplay()}
             </span>
             {showRankChange && (
@@ -138,7 +137,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-slate-900 dark:text-white">
+          <span className="text-lg font-bold text-slate-900 dark:text-white whitespace-nowrap">
             {formatRankDisplay()}
           </span>
           {showRankChange && (
