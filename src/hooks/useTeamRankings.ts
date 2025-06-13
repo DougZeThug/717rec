@@ -4,7 +4,7 @@ import { Team, Match, Ranking } from "@/types";
 import { useRankingsData } from "./rankings/useRankingsData";
 import { usePreviousRankings } from "./rankings/usePreviousRankings";
 import { updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
-import { calculateStreak } from "@/utils/rankingUtils";
+import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
 import { useTeams } from "./useTeams";
 
 export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
