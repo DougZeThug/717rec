@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { TeamLogo } from "@/components/shared/TeamLogo";
 import RankTrendIndicator from "./RankTrendIndicator";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
-import { getPowerScoreColor, getSosColor } from "@/utils/colors";
+import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -27,7 +27,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
   compactView = false,
   showDivision = false
 }) => {
-  const rank = index + 1;
+  const globalRank = index + 1;
+  const divisionRank = ranking.divisionRank;
   const winPercentage = ranking.winPercentage * 100;
   const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
   const isExpanded = expandedTeam === ranking.teamId;
@@ -35,6 +36,20 @@ const RankingCard: React.FC<RankingCardProps> = ({
   const handleToggleExpand = () => {
     if (onToggleExpand) {
       onToggleExpand(ranking.teamId);
+    }
+  };
+
+  // Format rank display based on view mode
+  const formatRankDisplay = () => {
+    if (showDivision) {
+      // Unified view: show only global rank
+      return `#${globalRank}`;
+    } else {
+      // Division view: show division rank with global rank in parentheses
+      if (divisionRank) {
+        return `#${divisionRank} (${globalRank})`;
+      }
+      return `#${globalRank}`;
     }
   };
 
@@ -47,7 +62,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-slate-900 dark:text-white">
-              #{rank}
+              {formatRankDisplay()}
             </span>
             {showRankChange && (
               <RankTrendIndicator rankChange={ranking.rankChange} />
@@ -87,7 +102,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             {ranking.wins}-{ranking.losses}
           </span>
           <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
-            {ranking.powerScore.toFixed(1)}
+            {formatPowerScore(ranking.powerScore)}
           </span>
         </div>
 
@@ -124,7 +139,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-slate-900 dark:text-white">
-            #{rank}
+            {formatRankDisplay()}
           </span>
           {showRankChange && (
             <RankTrendIndicator rankChange={ranking.rankChange} />
@@ -203,7 +218,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         <div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">Power</p>
           <p className={cn("font-bold", getPowerScoreColor(ranking.powerScore))}>
-            {ranking.powerScore.toFixed(1)}
+            {formatPowerScore(ranking.powerScore)}
           </p>
         </div>
         <div>

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Ranking } from "@/types";
@@ -26,9 +27,24 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   showDivision = false,
   rowIndex
 }) => {
-  const rank = index + 1;
+  const globalRank = index + 1;
+  const divisionRank = ranking.divisionRank;
   const winPercentage = ranking.winPercentage * 100;
   const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
+
+  // Format rank display based on view mode
+  const formatRankDisplay = () => {
+    if (showDivision) {
+      // Unified view: show only global rank
+      return `#${globalRank}`;
+    } else {
+      // Division view: show division rank with global rank in parentheses
+      if (divisionRank) {
+        return `#${divisionRank} (${globalRank})`;
+      }
+      return `#${globalRank}`;
+    }
+  };
 
   return (
     <tr 
@@ -42,7 +58,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <td className="py-3 px-3">
         <div className="flex items-center gap-2">
           <span className="font-medium text-slate-900 dark:text-white min-w-[2rem]">
-            #{rank}
+            {formatRankDisplay()}
           </span>
           {showRankChange && (
             <RankTrendIndicator rankChange={ranking.rankChange} />

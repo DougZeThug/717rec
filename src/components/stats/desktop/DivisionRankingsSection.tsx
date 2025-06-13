@@ -40,12 +40,8 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
     );
   };
 
-  const rankedDivisionTeams = useMemo(() => {
-    return rankings.map((team, index) => ({
-      ...team,
-      divisionRank: !showUnified ? index + 1 : undefined,
-    }));
-  }, [rankings, showUnified]);
+  // Use the rankings as-is since divisionRank is already calculated correctly in RankingsTable.tsx
+  const rankedDivisionTeams = rankings;
 
   // Add debug logging for each team's rank change
   React.useEffect(() => {
