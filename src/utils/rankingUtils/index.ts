@@ -1,5 +1,4 @@
 
-
 export * from './calculateSOS';
 export * from './calculateStreak';
 export * from './calculateHeadToHead';
@@ -18,4 +17,3 @@ export {
   saveRankingsToStorage, 
   loadRankingsFromStorage 
 } from '../rankingUtils';
-
