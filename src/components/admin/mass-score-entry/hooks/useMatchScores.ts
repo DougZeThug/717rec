@@ -10,17 +10,17 @@ export const useMatchScores = (
            (score2 !== undefined && score2 !== null);
   };
 
-  const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
-    console.log(`useMatchScores.handleScoreChange for match at index ${index}:`, {
+  const handleScoreChange = (originalIndex: number, team1Score: number, team2Score: number) => {
+    console.log(`useMatchScores.handleScoreChange for match at original index ${originalIndex}:`, {
       team1Score,
       team2Score
     });
     
     const newMatches = [...matches];
-    const match = newMatches[index];
+    const match = newMatches[originalIndex];
     
     if (!match) {
-      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
+      console.error(`Match at original index ${originalIndex} not found in array of ${matches.length} matches`);
       return;
     }
     
@@ -29,23 +29,22 @@ export const useMatchScores = (
     match.isEdited = true;
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
-    // Score is being manually set, we should consider auto-completing the match
-    // but we'll leave that as a separate step for clarity
+    console.log(`Updated match ${match.id} with scores: ${team1Score}-${team2Score}, valid: ${match.isValid}`);
     
     setMatches(newMatches);
   };
   
-  const handleGameWinsChange = (index: number, team1GameWins: number, team2GameWins: number) => {
-    console.log(`useMatchScores.handleGameWinsChange for match at index ${index}:`, {
+  const handleGameWinsChange = (originalIndex: number, team1GameWins: number, team2GameWins: number) => {
+    console.log(`useMatchScores.handleGameWinsChange for match at original index ${originalIndex}:`, {
       team1GameWins,
       team2GameWins
     });
     
     const newMatches = [...matches];
-    const match = newMatches[index];
+    const match = newMatches[originalIndex];
     
     if (!match) {
-      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
+      console.error(`Match at original index ${originalIndex} not found in array of ${matches.length} matches`);
       return;
     }
     
@@ -56,21 +55,23 @@ export const useMatchScores = (
     // Update match validity based on game wins
     match.isValid = validateMatchScores(match.team1Score, match.team2Score);
     
+    console.log(`Updated match ${match.id} game wins: ${team1GameWins}-${team2GameWins}`);
+    
     setMatches(newMatches);
   };
   
-  const handleMarkCompleted = (index: number, checked: boolean) => {
-    console.log(`useMatchScores.handleMarkCompleted for match at index ${index}:`, {
+  const handleMarkCompleted = (originalIndex: number, checked: boolean) => {
+    console.log(`useMatchScores.handleMarkCompleted for match at original index ${originalIndex}:`, {
       checked,
       matches: matches.length,
-      matchExists: Boolean(matches[index])
+      matchExists: Boolean(matches[originalIndex])
     });
     
     const newMatches = [...matches];
-    const match = newMatches[index];
+    const match = newMatches[originalIndex];
     
     if (!match) {
-      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
+      console.error(`Match at original index ${originalIndex} not found in array of ${matches.length} matches`);
       return;
     }
     
