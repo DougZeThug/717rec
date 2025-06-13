@@ -12,19 +12,34 @@ interface RankingTableRowProps {
   ranking: Ranking;
   index: number;
   showRankChange?: boolean;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+  showDivision?: boolean;
+  rowIndex?: number;
 }
 
 const RankingTableRow: React.FC<RankingTableRowProps> = ({ 
   ranking, 
   index, 
-  showRankChange = true 
+  showRankChange = true,
+  isExpanded = false,
+  onToggleExpand,
+  showDivision = false,
+  rowIndex
 }) => {
   const rank = index + 1;
   const winPercentage = ranking.winPercentage * 100;
   const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
 
   return (
-    <tr className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+    <tr 
+      className={cn(
+        "border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors",
+        isExpanded && "bg-blue-50 dark:bg-blue-900/20"
+      )}
+      onClick={onToggleExpand}
+      style={{ cursor: onToggleExpand ? 'pointer' : 'default' }}
+    >
       <td className="py-3 px-3">
         <div className="flex items-center gap-2">
           <span className="font-medium text-slate-900 dark:text-white min-w-[2rem]">
@@ -39,6 +54,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         <Link 
           to={`/teams/${ranking.teamId}`}
           className="flex items-center gap-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+          onClick={(e) => e.stopPropagation()}
         >
           <TeamLogo
             imageUrl={ranking.logoUrl || ranking.imageUrl}
@@ -59,6 +75,16 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           </div>
         </Link>
       </td>
+      {showDivision && (
+        <td className="py-3 px-3 text-center text-slate-900 dark:text-white">
+          {ranking.divisionName || 'N/A'}
+        </td>
+      )}
+      <td className="py-3 px-3 text-center">
+        <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
+          {ranking.powerScore.toFixed(1)}
+        </span>
+      </td>
       <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">
         {ranking.wins}-{ranking.losses}
       </td>
@@ -73,10 +99,10 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           {winPercentage.toFixed(1)}%
         </span>
       </td>
-      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">
+      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white hidden md:table-cell">
         {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
       </td>
-      <td className="py-3 px-3 text-center">
+      <td className="py-3 px-3 text-center hidden lg:table-cell">
         <span className={cn(
           "font-medium",
           gameWinPercentage >= 75 ? "text-green-600 dark:text-green-500" :
@@ -88,14 +114,17 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </span>
       </td>
       <td className="py-3 px-3 text-center">
-        <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
-          {ranking.powerScore.toFixed(1)}
-        </span>
-      </td>
-      <td className="py-3 px-3 text-center">
         <span className={cn("font-medium", getSosColor(ranking.sos || 0))}>
           {(ranking.sos || 0).toFixed(3)}
         </span>
+      </td>
+      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">
+        {ranking.streak || 'N/A'}
+      </td>
+      <td className="py-3 px-3 text-center">
+        {showRankChange && ranking.rankChange !== undefined && ranking.rankChange !== 0 && (
+          <RankTrendIndicator rankChange={ranking.rankChange} />
+        )}
       </td>
     </tr>
   );
