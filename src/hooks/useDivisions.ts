@@ -24,7 +24,7 @@ export const useDivisions = () => {
         throw error;
       }
       
-      console.log('Divisions loaded with display_division:', data?.map(d => ({
+      console.log('Divisions loaded with new divisions:', data?.map(d => ({
         name: d.name,
         weight: d.division_weight,
         display: d.display_division
