@@ -12,7 +12,7 @@ export { createRankingObject } from './createRankingObject';
 // Export individual functions from the main rankingUtils file
 export { 
   sortRankings, 
-  calculateStreak, 
+  calculateStreak as calculateStreakFromMain, 
   updateRankChanges, 
   saveRankingsToStorage, 
   loadRankingsFromStorage 
