@@ -43,22 +43,29 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
 
   const onSubmit = async (data: SeasonFormData) => {
     try {
-      const formattedData = {
-        ...data,
-        end_date: data.end_date || null,
-      };
-
       if (isEditing) {
-        await updateSeason.mutateAsync({
+        // Explicitly type the update data with all required fields
+        const updateData = {
           id: season.id,
-          ...formattedData,
-        });
+          name: data.name,
+          start_date: data.start_date,
+          end_date: data.end_date || null,
+        };
+        
+        await updateSeason.mutateAsync(updateData);
         toast({
           title: "Success",
           description: "Season updated successfully",
         });
       } else {
-        await createSeason.mutateAsync(formattedData);
+        // Explicitly type the create data with all required fields
+        const createData = {
+          name: data.name,
+          start_date: data.start_date,
+          end_date: data.end_date || null,
+        };
+        
+        await createSeason.mutateAsync(createData);
         toast({
           title: "Success",
           description: "Season created successfully",
