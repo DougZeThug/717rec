@@ -5,7 +5,6 @@ import TeamManagementTab from "@/components/admin/teams/TeamManagementTab";
 import TimeslotsTab from "@/components/admin/timeslots/TimeslotsTab";
 import BatchMatchCreationTab from "@/components/admin/batch-matches/BatchMatchCreationTab";
 import MassScoresTab from "@/components/admin/scores/MassScoresTab";
-import StatsTab from "@/components/admin/stats/StatsTab";
 import AutoScheduleTab from "@/components/admin/auto-schedule/AutoScheduleTab";
 import SeasonManagementTab from "@/components/admin/seasons/SeasonManagementTab";
 
@@ -19,7 +18,6 @@ const AdminTabs = () => {
         <TabsTrigger value="batch-matches">Batch Matches</TabsTrigger>
         <TabsTrigger value="auto-schedule">Auto Schedule</TabsTrigger>
         <TabsTrigger value="timeslots">Timeslots</TabsTrigger>
-        <TabsTrigger value="stats">Stats</TabsTrigger>
       </TabsList>
 
       <TabsContent value="teams" className="space-y-4">
@@ -44,10 +42,6 @@ const AdminTabs = () => {
 
       <TabsContent value="timeslots" className="space-y-4">
         <TimeslotsTab />
-      </TabsContent>
-
-      <TabsContent value="stats" className="space-y-4">
-        <StatsTab />
       </TabsContent>
     </Tabs>
   );
