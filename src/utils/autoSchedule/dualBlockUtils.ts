@@ -1,5 +1,6 @@
+
 import { Team } from "@/types";
-import { DualBlockConfig, TeamPairing, TimeBlockTeamsMap, PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
+import { DualBlockConfig, TeamPair, TimeBlockTeamsMap, PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
 import { NotificationCallback, DualBlockValidationResult, DualBlockPairingState } from "@/types/dualBlock";
 
 /**
@@ -80,11 +81,10 @@ export function handleOddTeamCount(
       removedTeam = adjustedTeams.shift() || null;
       break;
       
-    case 'manual':
-      // This would be handled elsewhere - just validate we have even count
-      if (adjustedTeams.length % 2 !== 0) {
-        throw new Error("Manual strategy selected but odd team count provided");
-      }
+    case 'highest-rank':
+      // Sort by power score descending and remove the highest
+      adjustedTeams.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
+      removedTeam = adjustedTeams.shift() || null;
       break;
       
     case 'random':
@@ -114,7 +114,7 @@ export function handleOddTeamCount(
  * play against different opponents in each block
  */
 export function createCrossBlockCompatibilityAdjuster(
-  pairings: TeamPairing[],
+  pairings: TeamPair[],
 ): (team1: Team, team2: Team) => number {
   // Create map of team ID to opponent ID for quick lookup
   const opponentMap = new Map<string, string>();

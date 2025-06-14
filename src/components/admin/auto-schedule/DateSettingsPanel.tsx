@@ -78,7 +78,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   const handleStrategyChange = (value: string) => {
     setDualBlockConfig(prev => ({
       ...prev,
-      unmatchedTeamStrategy: value as 'random' | 'lowest-rank' | 'manual'
+      unmatchedTeamStrategy: value as 'random' | 'lowest-rank' | 'highest-rank'
     }));
   };
 
@@ -205,8 +205,8 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="lowest-rank">Lowest Ranked Team</SelectItem>
+                      <SelectItem value="highest-rank">Highest Ranked Team</SelectItem>
                       <SelectItem value="random">Random Team</SelectItem>
-                      <SelectItem value="manual">Manual Assignment</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

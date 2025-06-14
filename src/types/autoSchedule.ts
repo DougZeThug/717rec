@@ -1,4 +1,5 @@
 
+
 import { Team } from "./index";
 
 export interface TeamPair {
@@ -111,4 +112,6 @@ export interface MatchConversionOptions {
   includeMetadata?: boolean;
   validateTeams?: boolean;
   defaultLocation?: string;
+  dualMatchMode?: boolean;
 }
+
