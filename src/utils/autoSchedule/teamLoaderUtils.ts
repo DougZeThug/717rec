@@ -1,27 +1,33 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 import { normalizeScheduleDate, validateScheduleDate, createSafeScheduleDate } from "./dateUtils";
 import { PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
+import { BACK_TO_BACK_PAIRS, getBackToBackPairName, getPairConfig } from "./constants";
 
 /**
- * Get teams by specific time block and date
- * Enhanced with unified date handling and better error handling
+ * Get teams by back-to-back pair name (e.g., 'Early', 'Mid', 'Late')
+ * Always loads teams for BOTH timeslots in the pair
  */
-export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promise<Team[]> => {
-  // Validate input date
-  if (!validateScheduleDate(date, `getTeamsByTimeBlock-${timeBlock}`)) {
-    console.error(`Invalid date provided to getTeamsByTimeBlock for ${timeBlock}`);
+export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Promise<Team[]> => {
+  if (!validateScheduleDate(date, `getTeamsByBackToBackPair-${pairName}`)) {
+    console.error(`Invalid date provided to getTeamsByBackToBackPair for ${pairName}`);
     return [];
   }
   
-  // Create a safe date and normalize it
-  const safeDate = createSafeScheduleDate(date);
-  const formattedDate = normalizeScheduleDate(safeDate, `getTeamsByTimeBlock-${timeBlock}`);
+  const pairConfig = getPairConfig(pairName);
+  if (!pairConfig) {
+    console.error(`Invalid pair name: ${pairName}`);
+    return [];
+  }
   
-  console.log(`Loading teams for ${timeBlock} block on date: ${formattedDate}`);
+  const safeDate = createSafeScheduleDate(date);
+  const formattedDate = normalizeScheduleDate(safeDate, `getTeamsByBackToBackPair-${pairName}`);
+  
+  console.log(`Loading teams for ${pairName} pair (${pairConfig.primary}-${pairConfig.secondary}) on date: ${formattedDate}`);
   
   try {
-    // Query team_timeslots table to find teams assigned to the given time block
+    // Query for teams in both timeslots of the pair
     const { data: timeslots, error } = await supabase
       .from('team_timeslots')
       .select(`
@@ -29,6 +35,9 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
         team_id,
         timeslot,
         match_date,
+        is_back_to_back,
+        pair_slot,
+        match_sequence,
         teams:team_id (
           id,
           name,
@@ -43,63 +52,48 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
         )
       `)
       .eq('match_date', formattedDate)
-      .eq('timeslot', timeBlock);
+      .in('timeslot', [pairConfig.primary, pairConfig.secondary])
+      .eq('is_back_to_back', true);
     
     if (error) {
-      console.error(`❌ Error fetching teams for ${timeBlock} on ${formattedDate}:`, error);
+      console.error(`❌ Error fetching teams for ${pairName} pair on ${formattedDate}:`, error);
       return [];
     }
 
-    console.log(`Found ${timeslots?.length || 0} timeslots for ${timeBlock} block on ${formattedDate}`);
-    
     if (!timeslots || timeslots.length === 0) {
-      console.warn(`⚠️ No teams found for ${timeBlock} block on ${formattedDate}`);
-      
-      // Log available dates for debugging
-      const { data: availableDates } = await supabase
-        .from('team_timeslots')
-        .select('match_date')
-        .order('match_date', { ascending: false })
-        .limit(10);
-        
-      console.log("Available recent dates in database:", availableDates);
-      
+      console.warn(`⚠️ No back-to-back teams found for ${pairName} pair on ${formattedDate}`);
       return [];
     }
     
-    // Extract teams from timeslots and restructure as Team objects
-    const teams: Team[] = [];
+    // Group timeslots by team_id to ensure each team has both timeslots
+    const teamSlotMap = new Map<string, { primary?: any, secondary?: any }>();
     
-    // Process each timeslot safely
-    for (const slot of timeslots) {
-      // Skip if no team data exists
-      if (!slot.teams) {
-        console.warn('Timeslot missing team data:', slot);
-        continue;
+    timeslots.forEach(slot => {
+      if (!slot.team_id || !slot.teams) return;
+      
+      const teamData = teamSlotMap.get(slot.team_id) || {};
+      
+      if (slot.match_sequence === 1) {
+        teamData.primary = slot;
+      } else if (slot.match_sequence === 2) {
+        teamData.secondary = slot;
       }
       
-      // Use type assertion to help TypeScript understand the structure
-      const teamData = slot.teams as {
-        id?: string;
-        name?: string;
-        logo_url?: string | null;
-        image_url?: string | null;
-        players?: any[];
-        wins?: number;
-        losses?: number;
-        game_wins?: number;
-        game_losses?: number;
-        division_id?: string;
-      };
-      
-      // Skip if we received invalid team data
-      if (!teamData.id) {
-        console.warn('Received invalid team data for timeslot:', slot);
-        continue;
+      teamSlotMap.set(slot.team_id, teamData);
+    });
+    
+    // Only include teams that have BOTH timeslots assigned
+    const validTeams: Team[] = [];
+    
+    teamSlotMap.forEach((slots, teamId) => {
+      if (!slots.primary || !slots.secondary) {
+        console.warn(`⚠️ Team ${teamId} missing complete back-to-back assignment for ${pairName} pair`);
+        return;
       }
       
-      // Create team object with safe property access using defaults
-      teams.push({
+      const teamData = slots.primary.teams;
+      
+      validTeams.push({
         id: teamData.id,
         name: teamData.name || 'Unknown Team',
         logoUrl: teamData.logo_url || null,
@@ -113,91 +107,106 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
         sos: 0.5, // Default SOS value
         division: teamData.division_id
       });
-    }
-      
-    console.log(`✅ Processed ${teams.length} teams for ${timeBlock} block`);
-    return teams;
+    });
+    
+    console.log(`✅ Loaded ${validTeams.length} teams for ${pairName} pair (all with complete back-to-back assignments)`);
+    return validTeams;
     
   } catch (error) {
-    console.error(`❌ Unexpected error fetching teams for ${timeBlock}:`, error);
+    console.error(`❌ Unexpected error fetching teams for ${pairName} pair:`, error);
     return [];
   }
 };
 
 /**
- * Get teams for a pair of time blocks
- * This loads teams for both blocks and creates a structure for dual block pairing
+ * Legacy function - now redirects to back-to-back pair loading
+ * @deprecated Use getTeamsByBackToBackPair instead
  */
-export const getTeamsByTimeBlockPair = async (
-  date: Date, 
-  primaryBlock: string, 
-  secondaryBlock: string
-): Promise<PairedTimeBlockTeamsMap> => {
-  console.log(`Loading teams for block pair: ${primaryBlock}/${secondaryBlock}`, {
-    date: date.toISOString()
+export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promise<Team[]> => {
+  console.warn(`⚠️ getTeamsByTimeBlock is deprecated. Converting ${timeBlock} to back-to-back pair.`);
+  
+  // Map legacy time blocks to pair names
+  const pairName = timeBlock === 'Early' ? 'Early' : 
+                   timeBlock === 'Mid' ? 'Mid' : 
+                   timeBlock === 'Late' ? 'Late' : null;
+  
+  if (!pairName) {
+    console.error(`Cannot map legacy time block ${timeBlock} to back-to-back pair`);
+    return [];
+  }
+  
+  return getTeamsByBackToBackPair(date, pairName);
+};
+
+/**
+ * Load teams for all back-to-back pairs
+ */
+export const getAllBackToBackTeams = async (date: Date): Promise<Record<string, Team[]>> => {
+  const results: Record<string, Team[]> = {};
+  
+  const pairNames = Object.keys(BACK_TO_BACK_PAIRS);
+  
+  // Load all pairs in parallel
+  const promises = pairNames.map(async (pairName) => {
+    const teams = await getTeamsByBackToBackPair(date, pairName);
+    return { pairName, teams };
   });
   
+  const pairResults = await Promise.all(promises);
+  
+  pairResults.forEach(({ pairName, teams }) => {
+    results[pairName] = teams;
+  });
+  
+  return results;
+};
+
+/**
+ * Validate that a team has complete back-to-back assignments
+ */
+export const validateTeamBackToBackAssignment = async (
+  date: Date, 
+  teamId: string, 
+  pairName: string
+): Promise<boolean> => {
+  const pairConfig = getPairConfig(pairName);
+  if (!pairConfig) return false;
+  
+  const formattedDate = normalizeScheduleDate(date, 'validateTeamBackToBackAssignment');
+  
   try {
-    // Load teams for both blocks in parallel for efficiency
-    const [primaryTeams, secondaryTeams] = await Promise.all([
-      getTeamsByTimeBlock(date, primaryBlock),
-      getTeamsByTimeBlock(date, secondaryBlock)
-    ]);
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select('timeslot, match_sequence')
+      .eq('match_date', formattedDate)
+      .eq('team_id', teamId)
+      .eq('is_back_to_back', true)
+      .in('timeslot', [pairConfig.primary, pairConfig.secondary]);
     
-    // Create a paired block structure
-    const blockPairKey = `${primaryBlock}-${secondaryBlock}`;
-    const pairedBlocks: PairedTimeBlockTeamsMap = {
-      [blockPairKey]: {
-        primaryBlock,
-        secondaryBlock,
-        primaryTeams,
-        secondaryTeams
-      }
-    };
+    if (error || !data) return false;
     
-    console.log(`Created block pair with ${primaryTeams.length} primary teams and ${secondaryTeams.length} secondary teams`);
+    // Check that team has both sequence 1 and sequence 2
+    const sequences = data.map(slot => slot.match_sequence);
+    return sequences.includes(1) && sequences.includes(2);
     
-    return pairedBlocks;
   } catch (error) {
-    console.error(`Error fetching teams for block pair ${primaryBlock}/${secondaryBlock}:`, error);
-    return {};
+    console.error('Error validating team back-to-back assignment:', error);
+    return false;
   }
 };
 
 /**
- * Find teams that are common between two time blocks
+ * Create a map of team availability across back-to-back pairs
  */
-export const findCommonTeamsBetweenBlocks = (
-  primaryTeams: Team[],
-  secondaryTeams: Team[]
-): Team[] => {
-  // Get set of primary team IDs for fast lookups
-  const primaryTeamIds = new Set(primaryTeams.map(team => team.id));
-  
-  // Filter secondary teams to only include those found in primary
-  const commonTeams = secondaryTeams.filter(team => primaryTeamIds.has(team.id));
-  
-  return commonTeams;
-};
-
-/**
- * Create a map of team availability across different time blocks
- * This is useful for understanding which teams are available in which blocks
- */
-export const createTeamAvailabilityMap = (
-  timeBlocks: Record<string, Team[]>
+export const createBackToBackAvailabilityMap = (
+  pairTeams: Record<string, Team[]>
 ): Map<string, string[]> => {
   const teamAvailabilityMap = new Map<string, string[]>();
   
-  // Process each time block
-  Object.entries(timeBlocks).forEach(([blockName, teams]) => {
-    // Process each team in the current block
+  Object.entries(pairTeams).forEach(([pairName, teams]) => {
     teams.forEach(team => {
-      // Get current availability list or create new one
       const currentAvailability = teamAvailabilityMap.get(team.id) || [];
-      
-      // Add current block to availability
-      teamAvailabilityMap.set(team.id, [...currentAvailability, blockName]);
+      teamAvailabilityMap.set(team.id, [...currentAvailability, pairName]);
     });
   });
   

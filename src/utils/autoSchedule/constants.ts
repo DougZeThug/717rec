@@ -1,21 +1,10 @@
 
 /**
  * Time block definitions for auto-scheduling
- * Updated to support back-to-back match pairs
+ * Updated for always back-to-back scheduling - teams ALWAYS play consecutive matches
  */
 
-// Individual time slots (30-minute intervals)
-export const TIME_SLOTS = {
-  '6:30 PM': '6:30 PM',
-  '7:00 PM': '7:00 PM', 
-  '7:30 PM': '7:30 PM',
-  '8:00 PM': '8:00 PM',
-  '8:30 PM': '8:30 PM',
-  '9:00 PM': '9:00 PM'
-  // Note: 9:30 PM removed as it has no valid back-to-back pair
-} as const;
-
-// Back-to-back time slot pairs (teams play consecutive 30-minute matches)
+// Back-to-back time slot pairs - the fundamental scheduling unit
 export const BACK_TO_BACK_PAIRS = {
   'Early': {
     primary: '6:30 PM',
@@ -34,20 +23,21 @@ export const BACK_TO_BACK_PAIRS = {
   }
 } as const;
 
-// Legacy TIME_BLOCKS maintained for backward compatibility
+// Individual time slots for reference only
+export const TIME_SLOTS = {
+  '6:30 PM': '6:30 PM',
+  '7:00 PM': '7:00 PM', 
+  '7:30 PM': '7:30 PM',
+  '8:00 PM': '8:00 PM',
+  '8:30 PM': '8:30 PM',
+  '9:00 PM': '9:00 PM'
+} as const;
+
+// Legacy TIME_BLOCKS - now mapped to back-to-back pairs
 export const TIME_BLOCKS = {
-  Early: {
-    main: '6:30 PM',
-    secondary: '7:00 PM'
-  },
-  Mid: {
-    main: '7:30 PM',
-    secondary: '8:00 PM'
-  },
-  Late: {
-    main: '8:30 PM',
-    secondary: '9:00 PM'
-  }
+  Early: BACK_TO_BACK_PAIRS.Early.primary,
+  Mid: BACK_TO_BACK_PAIRS.Mid.primary,
+  Late: BACK_TO_BACK_PAIRS.Late.primary
 } as const;
 
 // Utility functions for back-to-back scheduling
@@ -96,6 +86,16 @@ export const getMatchSequence = (timeSlot: string): number | null => {
     default:
       return null;
   }
+};
+
+// Get the pair configuration for a given pair name
+export const getPairConfig = (pairName: string) => {
+  return BACK_TO_BACK_PAIRS[pairName as keyof typeof BACK_TO_BACK_PAIRS];
+};
+
+// Get all valid pair names
+export const getAllPairNames = (): string[] => {
+  return Object.keys(BACK_TO_BACK_PAIRS);
 };
 
 // Validation constants

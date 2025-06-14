@@ -1,10 +1,10 @@
+
 import { useState, useCallback } from 'react';
 import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
-import { getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
-import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
+import { getAllBackToBackTeams, getTeamsByBackToBackPair } from '@/utils/autoSchedule/teamLoaderUtils';
+import { BACK_TO_BACK_PAIRS } from '@/utils/autoSchedule/constants';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
-import { createTimeBlockPairs } from '@/utils/autoSchedule/dualBlockUtils';
-import { balanceTeamsBetweenBlocks } from '@/utils/autoSchedule/dualBlock';
+import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
 
 export const useTeamOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,8 +12,8 @@ export const useTeamOperations = () => {
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
 
   /**
-   * Load teams for all time blocks for a specific date
-   * With unified date handling and enhanced validation
+   * Load teams for all back-to-back pairs for a specific date
+   * Now always loads teams as back-to-back pairs
    */
   const handleLoadTeams = useCallback(async (
     date: Date | null, 
@@ -25,7 +25,6 @@ export const useTeamOperations = () => {
       return {};
     }
     
-    // Validate the date before proceeding
     if (!validateScheduleDate(date, 'handleLoadTeams')) {
       console.error("❌ Invalid date provided to handleLoadTeams");
       return {};
@@ -34,61 +33,48 @@ export const useTeamOperations = () => {
     setIsLoading(true);
     
     try {
-      console.log("🔄 useTeamOperations - loadTeamsForDate called with:", {
+      console.log("🔄 useTeamOperations - Loading teams for back-to-back pairs:", {
         date: date.toISOString(),
         normalizedDate: normalizeScheduleDate(date, 'loadTeamsForDate'),
         dualBlockMode
       });
       
-      const timeBlocksData: TimeBlockTeamsMap = {};
-      
-      // Load teams for each time block concurrently for better performance
-      const timeBlockPromises = Object.keys(TIME_BLOCKS).map(async (block) => {
-        try {
-          const teams = await getTeamsByTimeBlock(date, block);
-          return { block, teams };
-        } catch (error) {
-          console.error(`❌ Error loading teams for block ${block}:`, error);
-          return { block, teams: [] };
-        }
-      });
-      
-      // Wait for all promises to resolve
-      const results = await Promise.all(timeBlockPromises);
-      
-      // Populate the time blocks data
-      results.forEach(({ block, teams }) => {
-        timeBlocksData[block] = teams;
-        console.log(`📊 Block ${block}: ${teams.length} teams loaded`);
-      });
+      // Load all back-to-back pairs
+      const backToBackTeams = await getAllBackToBackTeams(date);
       
       // Calculate total teams loaded
-      const totalTeams = Object.values(timeBlocksData).reduce((sum, teams) => sum + teams.length, 0);
-      console.log(`✅ Total teams loaded across all blocks: ${totalTeams}`);
+      const totalTeams = Object.values(backToBackTeams).reduce((sum, teams) => sum + teams.length, 0);
+      console.log(`✅ Total teams loaded across all back-to-back pairs: ${totalTeams}`);
+      
+      // Validate the loaded teams
+      const validation = validateBackToBackPairAssignments(backToBackTeams);
+      if (!validation.isValid) {
+        console.error('❌ Validation errors in back-to-back assignments:', validation.errors);
+      }
+      if (validation.warnings.length > 0) {
+        console.warn('⚠️ Validation warnings:', validation.warnings);
+      }
       
       // Warn if no teams were loaded
       if (totalTeams === 0) {
         console.warn(`⚠️ WARNING: No teams loaded for date ${normalizeScheduleDate(date, 'loadTeamsComplete')}. Check database and date format.`);
       }
       
-      // Update state with regular time block structure
-      setTimeBlockTeams(timeBlocksData);
+      // Update state with back-to-back structure
+      setTimeBlockTeams(backToBackTeams);
       
       // If dual block mode is enabled, create paired blocks structure
       if (dualBlockMode) {
-        const pairedBlocks = createTimeBlockPairs(timeBlocksData, dualBlockConfig);
+        const pairedBlocks = createPairedBlocksFromBackToBack(backToBackTeams, dualBlockConfig);
         setPairedTimeBlockTeams(pairedBlocks);
-        
-        console.log("Created paired time blocks:", pairedBlocks);
+        console.log("Created paired time blocks from back-to-back data:", pairedBlocks);
       } else {
-        // Reset paired blocks if not in dual mode
         setPairedTimeBlockTeams({});
       }
       
-      return timeBlocksData;
+      return backToBackTeams;
     } catch (error) {
-      console.error('❌ Error loading teams for date:', error);
-      // Return empty object on error
+      console.error('❌ Error loading back-to-back teams for date:', error);
       setTimeBlockTeams({});
       setPairedTimeBlockTeams({});
       return {};
@@ -98,46 +84,87 @@ export const useTeamOperations = () => {
   }, []);
   
   /**
-   * Balance team counts for dual block mode
+   * Load teams for a specific back-to-back pair
    */
-  const balanceDualBlockTeams = useCallback((
+  const loadTeamsForPair = useCallback(async (
+    date: Date,
+    pairName: string
+  ): Promise<Team[]> => {
+    if (!validateScheduleDate(date, `loadTeamsForPair-${pairName}`)) {
+      return [];
+    }
+    
+    try {
+      const teams = await getTeamsByBackToBackPair(date, pairName);
+      console.log(`Loaded ${teams.length} teams for ${pairName} pair`);
+      return teams;
+    } catch (error) {
+      console.error(`Error loading teams for ${pairName} pair:`, error);
+      return [];
+    }
+  }, []);
+  
+  /**
+   * Balance team counts for back-to-back pairs
+   * Ensures even numbers of teams in each pair
+   */
+  const balanceBackToBackTeams = useCallback((
     dualBlockConfig: DualBlockConfig = {}
   ): { 
     balancedTeams: TimeBlockTeamsMap, 
     unmatchedTeamIds: string[] 
   } => {
-    // Get block names from config or use defaults
-    const primaryBlock = dualBlockConfig.primaryBlock || 'Early';
-    const secondaryBlock = dualBlockConfig.secondaryBlock || 'Late';
+    const balancedTeams: TimeBlockTeamsMap = {};
+    const unmatchedTeamIds: string[] = [];
     
-    // Get teams from each block
-    const primaryTeams = timeBlockTeams[primaryBlock] || [];
-    const secondaryTeams = timeBlockTeams[secondaryBlock] || [];
-    
-    // Balance teams between blocks using the refactored function
-    const { 
-      primaryAdjusted, 
-      secondaryAdjusted, 
-      unmatchedTeamIds 
-    } = balanceTeamsBetweenBlocks(primaryTeams, secondaryTeams, dualBlockConfig);
-    
-    // Create balanced team block map
-    const balancedTeams = { ...timeBlockTeams };
-    balancedTeams[primaryBlock] = primaryAdjusted;
-    balancedTeams[secondaryBlock] = secondaryAdjusted;
+    Object.entries(timeBlockTeams).forEach(([pairName, teams]) => {
+      if (!teams || teams.length === 0) {
+        balancedTeams[pairName] = [];
+        return;
+      }
+      
+      if (teams.length % 2 === 0) {
+        // Even number - no balancing needed
+        balancedTeams[pairName] = [...teams];
+      } else {
+        // Odd number - remove one team based on strategy
+        const teamsCopy = [...teams];
+        let removedTeam: Team | undefined;
+        
+        switch (dualBlockConfig.unmatchedTeamStrategy) {
+          case 'lowest-rank':
+            teamsCopy.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
+            removedTeam = teamsCopy.shift();
+            break;
+          case 'highest-rank':
+            teamsCopy.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
+            removedTeam = teamsCopy.shift();
+            break;
+          case 'random':
+          default:
+            const randomIndex = Math.floor(Math.random() * teamsCopy.length);
+            removedTeam = teamsCopy.splice(randomIndex, 1)[0];
+        }
+        
+        if (removedTeam) {
+          unmatchedTeamIds.push(removedTeam.id);
+          console.log(`Removed team ${removedTeam.name} from ${pairName} pair to balance team count`);
+        }
+        
+        balancedTeams[pairName] = teamsCopy;
+      }
+    });
     
     return { balancedTeams, unmatchedTeamIds };
   }, [timeBlockTeams]);
 
   /**
-   * Get counts for all teams and blocks with odd number of teams
+   * Get counts for all teams and pairs with odd number of teams
    */
   const getTeamCountStatus = useCallback(() => {
-    // Count total teams across all time blocks
     const total = Object.values(timeBlockTeams)
       .reduce((sum, teams) => sum + (teams?.length || 0), 0);
     
-    // Count blocks with odd number of teams 
     const odd = Object.values(timeBlockTeams)
       .filter(teams => teams && teams.length % 2 !== 0)
       .length;
@@ -152,7 +179,33 @@ export const useTeamOperations = () => {
     setTimeBlockTeams,
     setPairedTimeBlockTeams,
     handleLoadTeams,
-    balanceDualBlockTeams,
+    loadTeamsForPair,
+    balanceBackToBackTeams,
     getTeamCountStatus
   };
 };
+
+/**
+ * Helper function to create paired blocks structure from back-to-back data
+ */
+function createPairedBlocksFromBackToBack(
+  backToBackTeams: TimeBlockTeamsMap,
+  dualBlockConfig: DualBlockConfig
+): PairedTimeBlockTeamsMap {
+  const primaryBlock = dualBlockConfig.primaryBlock || 'Early';
+  const secondaryBlock = dualBlockConfig.secondaryBlock || 'Late';
+  
+  const primaryTeams = backToBackTeams[primaryBlock] || [];
+  const secondaryTeams = backToBackTeams[secondaryBlock] || [];
+  
+  const pairKey = `${primaryBlock}-${secondaryBlock}`;
+  
+  return {
+    [pairKey]: {
+      primaryBlock,
+      secondaryBlock,
+      primaryTeams,
+      secondaryTeams
+    }
+  };
+}
