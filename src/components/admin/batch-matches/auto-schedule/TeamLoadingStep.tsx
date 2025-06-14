@@ -36,9 +36,18 @@ export const TeamLoadingStep: React.FC<TeamLoadingStepProps> = ({
   const { insufficientBlocks, hasOddBlocks } = validateTeamCounts(timeBlockTeams);
   
   // Get details about unmatched teams if we have odd blocks
-  const { unmatchedTeamDetails } = hasOddBlocks 
+  const { unmatchedTeamDetails: rawUnmatchedTeamDetails } = hasOddBlocks 
     ? handleOddTeams(timeBlockTeams)
     : { unmatchedTeamDetails: [] };
+    
+  // Transform unmatchedTeamDetails to match expected format
+  const unmatchedTeamDetails = rawUnmatchedTeamDetails.map(detail => ({
+    timeBlock: detail.block,
+    team: {
+      id: detail.teamId,
+      name: detail.teamName
+    }
+  }));
     
   // Generate distribution summary
   const distribution = generateTeamDistributionSummary(timeBlockTeams);

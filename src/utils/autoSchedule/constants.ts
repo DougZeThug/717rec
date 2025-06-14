@@ -1,4 +1,3 @@
-
 /**
  * Time block definitions for auto-scheduling
  * Updated for always back-to-back scheduling - teams ALWAYS play consecutive matches
@@ -33,11 +32,20 @@ export const TIME_SLOTS = {
   '9:00 PM': '9:00 PM'
 } as const;
 
-// Legacy TIME_BLOCKS - now mapped to back-to-back pairs
+// TIME_BLOCKS with structure expected by MatchPairingItem
 export const TIME_BLOCKS = {
-  Early: BACK_TO_BACK_PAIRS.Early.primary,
-  Mid: BACK_TO_BACK_PAIRS.Mid.primary,
-  Late: BACK_TO_BACK_PAIRS.Late.primary
+  Early: {
+    main: BACK_TO_BACK_PAIRS.Early.primary,
+    secondary: BACK_TO_BACK_PAIRS.Early.secondary
+  },
+  Mid: {
+    main: BACK_TO_BACK_PAIRS.Mid.primary,
+    secondary: BACK_TO_BACK_PAIRS.Mid.secondary
+  },
+  Late: {
+    main: BACK_TO_BACK_PAIRS.Late.primary,
+    secondary: BACK_TO_BACK_PAIRS.Late.secondary
+  }
 } as const;
 
 // Utility functions for back-to-back scheduling

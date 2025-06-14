@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
-import { getTeamsByTimeBlock, getTeamsByTimeBlockPair } from '@/utils/autoSchedule/teamLoaderUtils';
+import { getTeamsByTimeBlock, getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { normalizeDate } from '@/utils/dateNormalization';
 
@@ -46,27 +46,8 @@ export const useTeamScheduleLoader = () => {
         normalizedSafeDate: normalizeDate(safeDate, 'safeDate')
       });
       
-      const timeBlocksData: TimeBlockTeamsMap = {};
-      
-      // Load teams for each time block concurrently for better performance
-      const timeBlockPromises = Object.keys(TIME_BLOCKS).map(async (block) => {
-        const teams = await getTeamsByTimeBlock(safeDate, block);
-        return { block, teams };
-      });
-      
-      // Wait for all promises to resolve
-      const results = await Promise.all(timeBlockPromises);
-      
-      // Populate the time blocks data
-      results.forEach(({ block, teams }) => {
-        // Only include time blocks that have teams
-        if (teams && teams.length > 0) {
-          timeBlocksData[block] = teams;
-        } else {
-          // Include empty blocks too, for UI consistency
-          timeBlocksData[block] = [];
-        }
-      });
+      // Use the new back-to-back team loading function
+      const timeBlocksData = await getAllBackToBackTeams(safeDate);
       
       // Update state with standard time block format
       setTimeBlockTeams(timeBlocksData);
@@ -76,12 +57,19 @@ export const useTeamScheduleLoader = () => {
         const primaryBlock = dualBlockConfig.primaryBlock || 'Early';
         const secondaryBlock = dualBlockConfig.secondaryBlock || 'Late';
         
-        // Load paired blocks
-        const pairedBlocks = await getTeamsByTimeBlockPair(
-          safeDate, 
-          primaryBlock, 
-          secondaryBlock
-        );
+        // Create paired blocks from loaded data
+        const primaryTeams = timeBlocksData[primaryBlock] || [];
+        const secondaryTeams = timeBlocksData[secondaryBlock] || [];
+        
+        const pairKey = `${primaryBlock}-${secondaryBlock}`;
+        const pairedBlocks = {
+          [pairKey]: {
+            primaryBlock,
+            secondaryBlock,
+            primaryTeams,
+            secondaryTeams
+          }
+        };
         
         setPairedTimeBlockTeams(pairedBlocks);
         

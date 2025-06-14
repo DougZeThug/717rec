@@ -1,5 +1,6 @@
 
 import { useState, useCallback } from 'react';
+import { Team } from '@/types';
 import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
 import { getAllBackToBackTeams, getTeamsByBackToBackPair } from '@/utils/autoSchedule/teamLoaderUtils';
 import { BACK_TO_BACK_PAIRS } from '@/utils/autoSchedule/constants';
