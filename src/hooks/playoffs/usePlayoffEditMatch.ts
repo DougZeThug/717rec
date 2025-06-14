@@ -1,4 +1,5 @@
 
+
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,15 +53,15 @@ export const usePlayoffEditMatch = () => {
         loserId: matchData.loser_id,
         team1Score: matchData.team1_score,
         team2Score: matchData.team2_score,
-        team1GameWins: matchData.team1_game_wins,
-        team2GameWins: matchData.team2_game_wins,
+        team1GameWins: null, // These fields don't exist in playoff_matches table
+        team2GameWins: null, // Will be populated from playoff_games if needed
         matchType: matchData.match_type,
         bestOf: matchData.best_of || 3,
         team1Seed: matchData.team1_seed,
         team2Seed: matchData.team2_seed,
         nextWinMatchId: matchData.next_win_match_id,
         nextLoseMatchId: matchData.next_lose_match_id,
-        status: matchData.status || 'pending',
+        status: (matchData.status as "pending" | "in_progress" | "completed") || 'pending',
       };
 
       console.log('🎯 Successfully fetched match data:', playoffMatch);
@@ -219,3 +220,4 @@ export const usePlayoffEditMatch = () => {
     handleSaveMatchScore
   };
 };
+
