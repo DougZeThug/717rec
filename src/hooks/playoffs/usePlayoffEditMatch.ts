@@ -1,17 +1,83 @@
 
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { PlayoffMatch } from "@/types/playoffs";
 
 export const usePlayoffEditMatch = () => {
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);
   const [isQuickEdit, setIsQuickEdit] = useState(false);
+  const { toast } = useToast();
 
-  const handleEditMatch = useCallback((matchId: string, quickEdit: boolean = false) => {
+  const handleEditMatch = useCallback(async (matchId: string, quickEdit: boolean = false) => {
     console.log('🎯 handleEditMatch called with:', { matchId, quickEdit });
-    // TODO: Implement match editing functionality
-    setIsQuickEdit(quickEdit);
-  }, []);
+    
+    try {
+      // Fetch the match data from the database
+      const { data: matchData, error } = await supabase
+        .from('playoff_matches')
+        .select('*')
+        .eq('id', matchId)
+        .single();
+
+      if (error) {
+        console.error('🎯 Error fetching match:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load match data. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!matchData) {
+        console.error('🎯 No match found with ID:', matchId);
+        toast({
+          title: "Error", 
+          description: "Match not found.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Convert database match to PlayoffMatch format
+      const playoffMatch: PlayoffMatch = {
+        id: matchData.id,
+        bracket_id: matchData.bracket_id,
+        round: matchData.round,
+        position: matchData.position,
+        team1Id: matchData.team1_id,
+        team2Id: matchData.team2_id,
+        winnerId: matchData.winner_id,
+        loserId: matchData.loser_id,
+        team1Score: matchData.team1_score,
+        team2Score: matchData.team2_score,
+        team1GameWins: matchData.team1_game_wins,
+        team2GameWins: matchData.team2_game_wins,
+        matchType: matchData.match_type,
+        bestOf: matchData.best_of || 3,
+        team1Seed: matchData.team1_seed,
+        team2Seed: matchData.team2_seed,
+        nextWinMatchId: matchData.next_win_match_id,
+        nextLoseMatchId: matchData.next_lose_match_id,
+        status: matchData.status || 'pending',
+      };
+
+      console.log('🎯 Successfully fetched match data:', playoffMatch);
+      
+      // Set the editing state
+      setEditingMatch(playoffMatch);
+      setIsQuickEdit(quickEdit);
+      
+    } catch (error) {
+      console.error('🎯 Unexpected error in handleEditMatch:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   const handleCloseMatchEditor = useCallback(() => {
     console.log('🎯 handleCloseMatchEditor called');
@@ -124,11 +190,26 @@ export const usePlayoffEditMatch = () => {
         await refetchBrackets();
       }
 
+      // Close the editor after successful save
+      setEditingMatch(null);
+      setIsQuickEdit(false);
+
+      // Show success toast
+      toast({
+        title: "Success",
+        description: "Match score saved successfully.",
+      });
+
     } catch (error) {
       console.error('🎯 Error in handleSaveMatchScore:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save match score. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
-  }, []);
+  }, [toast]);
 
   return {
     editingMatch,
