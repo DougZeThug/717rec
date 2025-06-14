@@ -1,7 +1,7 @@
 
 import { TeamTimeslot } from '@/types/timeslots';
 import { format } from 'date-fns';
-import { TeamPairing, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { TeamPair, TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { Team, Match } from '@/types';
 
 /**
@@ -21,10 +21,14 @@ export function createMockTimeslot(overrides: Partial<TeamTimeslot> = {}): TeamT
     timeslot: '6:30 PM',
     team_id: 'team-1',
     created_at: '2023-06-10T10:00:00Z',
+    is_back_to_back: false,
+    pair_slot: null,
+    match_sequence: null,
     teams: {
       id: 'team-1',
       name: 'Mock Team',
       logo_url: '/mock-logo.png',
+      image_url: null,
       divisionName: 'Division A',
     },
     ...overrides
@@ -49,6 +53,7 @@ export function createMockTimeslotBlock(
       id: `team-${i + 1}`,
       name: `Team ${i + 1}`,
       logo_url: `/logo-${i + 1}.png`,
+      image_url: null,
       divisionName: 'Division A',
     }
   }));
@@ -93,7 +98,7 @@ export function createMockTimeBlockTeams(
 /**
  * Create a mock team pairing
  */
-export function createMockTeamPairing(overrides: Partial<TeamPairing> = {}): TeamPairing {
+export function createMockTeamPairing(overrides: Partial<TeamPair> = {}): TeamPair {
   return {
     team1: createMockTeam({ id: 'team-1', name: 'Team 1' }),
     team2: createMockTeam({ id: 'team-2', name: 'Team 2' }),

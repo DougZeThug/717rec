@@ -1,5 +1,5 @@
 
-import { TeamTimeslot } from "@/types/timeslots";
+import { TeamTimeslot, TimeslotGroup } from "@/types/timeslots";
 
 export class TimeslotTransformer {
   /**
@@ -36,6 +36,22 @@ export class TimeslotTransformer {
         divisionName: null // Will be populated separately if needed
       } : undefined
     };
+  }
+
+  /**
+   * Group timeslots by timeslot value (needed for backwards compatibility)
+   */
+  static groupByTimeslot(timeslots: TeamTimeslot[]): TimeslotGroup {
+    const grouped: TimeslotGroup = {};
+    
+    timeslots.forEach(slot => {
+      if (!grouped[slot.timeslot]) {
+        grouped[slot.timeslot] = [];
+      }
+      grouped[slot.timeslot].push(slot);
+    });
+    
+    return grouped;
   }
 
   /**

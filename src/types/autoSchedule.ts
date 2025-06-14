@@ -1,3 +1,4 @@
+
 import { Team } from "./index";
 
 export interface TeamPair {
@@ -6,6 +7,9 @@ export interface TeamPair {
   compatibilityScore: number;
   hasPlayedBefore: boolean;
 }
+
+// Add TeamPairing as an alias for backwards compatibility
+export type TeamPairing = TeamPair;
 
 export interface AutoScheduleMatch {
   id: string;
@@ -100,4 +104,11 @@ export interface PreviewResult {
 export interface BackToBackPairingResult extends PairingResult {
   backToBackPairs?: BackToBackTeamsMap;
   opponentDiversityScore?: number;
+}
+
+// Add missing MatchConversionOptions interface
+export interface MatchConversionOptions {
+  includeMetadata?: boolean;
+  validateTeams?: boolean;
+  defaultLocation?: string;
 }

@@ -1,6 +1,6 @@
 
 import { Team } from "@/types";
-import { TeamPairing, TimeBlockTeamsMap } from "@/types/autoSchedule";
+import { TeamPair, TimeBlockTeamsMap } from "@/types/autoSchedule";
 
 // Mock teams for testing
 export const mockTeams: Team[] = [
@@ -74,7 +74,7 @@ export const mockTimeBlockTeams: TimeBlockTeamsMap = {
 };
 
 // Mock team pairings for testing
-export const mockPairings: Record<string, TeamPairing[]> = {
+export const mockPairings: Record<string, TeamPair[]> = {
   "6:30": [
     {
       team1: mockTeams[0],
