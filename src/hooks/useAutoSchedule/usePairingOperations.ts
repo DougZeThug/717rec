@@ -1,18 +1,19 @@
-
 import { useState, useCallback } from 'react';
 import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, MatchQualityMetrics, AutoScheduleMatch } from '@/types/autoSchedule';
 import { usePairingGenerator } from '@/hooks/usePairingGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
+import { calculateComprehensiveQualityMetrics, logQualityAnalysis } from '@/utils/autoSchedule/qualityAnalysis';
 
 export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
+  const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
   const { isGenerating, generateMatchPairings } = usePairingGenerator();
   const { toast } = useToast();
 
   /**
-   * Generate match pairings with enhanced validation and error handling
+   * Generate match pairings with enhanced quality analysis
    */
   const handleGenerateClick = useCallback(async (
     selectedDate: Date | null,
@@ -52,6 +53,8 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       return;
     }
 
+    const startTime = performance.now();
+    
     console.log(`🎯 Starting pairing generation for ${totalTeams} teams with settings:`, {
       avoidRematches,
       prioritizeQuality,
@@ -77,21 +80,45 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       const result = await generateMatchPairings(selectedDate, timeBlockTeams, config);
       
       if (result) {
+        const generationTime = performance.now() - startTime;
+        
+        // Calculate comprehensive quality metrics
+        const algorithmsUsed = [
+          'standard',
+          ...(avoidRematches ? ['rematch-avoidance'] : []),
+          ...(prioritizeQuality ? ['quality-optimization'] : []),
+          ...(dualMatchMode ? ['dual-block'] : [])
+        ];
+        
+        const metrics = calculateComprehensiveQualityMetrics(
+          result.pairings,
+          generationTime,
+          algorithmsUsed
+        );
+        
+        // Log detailed analysis for debugging
+        logQualityAnalysis(metrics, 'Pairing Generation Results');
+        
         setGeneratedPairings(result.pairings);
         setUnmatchedTeamIds(result.unmatchedTeamIds);
+        setQualityMetrics(metrics);
         
-        // Calculate some basic metrics
-        const totalPairings = Object.values(result.pairings).reduce((sum, pairs) => sum + pairs.length, 0);
+        // Enhanced toast with quality information
+        const qualityInfo = metrics.qualityRating === 'Excellent' ? '🏆' :
+                           metrics.qualityRating === 'Good' ? '✅' :
+                           metrics.qualityRating === 'Fair' ? '⚠️' : '❌';
         
         console.log(`✅ Pairing generation complete:`, {
-          totalPairings,
+          totalPairings: metrics.totalMatches,
           unmatchedTeams: result.unmatchedTeamIds.length,
-          blocks: Object.keys(result.pairings)
+          blocks: Object.keys(result.pairings),
+          qualityRating: metrics.qualityRating,
+          diversityScore: metrics.opponentDiversity.diversityScore
         });
         
         toast({
-          title: "Schedule Generated",
-          description: `Generated ${totalPairings} matches across ${Object.keys(result.pairings).length} time blocks. ${result.unmatchedTeamIds.length} teams remain unmatched.`,
+          title: `Schedule Generated ${qualityInfo}`,
+          description: `Generated ${metrics.totalMatches} ${metrics.qualityRating.toLowerCase()} quality matches. ${result.unmatchedTeamIds.length} teams unmatched. Diversity: ${metrics.opponentDiversity.diversityScore}%`,
         });
         
         // Move to matches tab to show results
@@ -116,7 +143,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
   }, [generateMatchPairings, toast, setActiveTab]);
 
   /**
-   * Apply generated schedule with validation
+   * Apply generated schedule with enhanced metrics
    */
   const handleApplySchedule = useCallback((
     generatedPairings: TeamPairingMap,
@@ -170,21 +197,26 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
         });
       });
 
-      // Calculate quality metrics
-      const averageCompatibilityScore = pairingCount > 0 ? totalCompatibilityScore / pairingCount : 0;
-      const qualityRating = averageCompatibilityScore > 80 ? 'Excellent' : 
-                           averageCompatibilityScore > 60 ? 'Good' : 
-                           averageCompatibilityScore > 40 ? 'Fair' : 'Poor';
-
-      const metrics: MatchQualityMetrics = {
-        totalMatches: matches.length,
-        rematchCount,
-        averageCompatibilityScore,
-        qualityRating
-      };
+      // Use our comprehensive quality metrics if available
+      if (qualityMetrics) {
+        setMatchQualityMetrics(qualityMetrics);
+        logQualityAnalysis(qualityMetrics, 'Applied Schedule Quality');
+      } else {
+        // Fallback to basic metrics calculation
+        const metrics: MatchQualityMetrics = {
+          totalMatches: matches.length,
+          rematchCount,
+          averageCompatibilityScore,
+          qualityRating,
+          opponentDiversity: { duplicateOpponents: 0, uniqueOpponents: 0, diversityScore: 0 },
+          powerScoreAnalysis: { averagePowerScoreDifference: 0, balancedMatches: 0, unbalancedMatches: 0 },
+          performanceMetrics: { generationTimeMs: 0, algorithmsUsed: ['basic'], optimizationLevel: 'basic' },
+          feedback: { strengths: [], improvements: [], recommendations: [] }
+        };
+        setMatchQualityMetrics(metrics);
+      }
 
       setGeneratedMatches(matches);
-      setMatchQualityMetrics(metrics);
 
       console.log(`✅ Applied schedule:`, {
         totalMatches: matches.length,
@@ -203,12 +235,13 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       });
       return null;
     }
-  }, [toast]);
+  }, [toast, qualityMetrics]);
 
   return {
     isGenerating,
     generatedPairings,
     unmatchedTeamIds,
+    qualityMetrics,
     handleGenerateClick,
     handleApplySchedule
   };
