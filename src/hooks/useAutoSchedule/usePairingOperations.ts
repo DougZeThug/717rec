@@ -197,22 +197,19 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
         });
       });
 
+      // Calculate basic metrics
+      const averageCompatibilityScore = pairingCount > 0 ? totalCompatibilityScore / pairingCount : 0;
+      const qualityRating = averageCompatibilityScore >= 7 ? 'Excellent' :
+                           averageCompatibilityScore >= 5 ? 'Good' :
+                           averageCompatibilityScore >= 3 ? 'Fair' : 'Poor';
+
       // Use our comprehensive quality metrics if available
       if (qualityMetrics) {
         setMatchQualityMetrics(qualityMetrics);
         logQualityAnalysis(qualityMetrics, 'Applied Schedule Quality');
       } else {
-        // Fallback to basic metrics calculation
-        const metrics: MatchQualityMetrics = {
-          totalMatches: matches.length,
-          rematchCount,
-          averageCompatibilityScore,
-          qualityRating,
-          opponentDiversity: { duplicateOpponents: 0, uniqueOpponents: 0, diversityScore: 0 },
-          powerScoreAnalysis: { averagePowerScoreDifference: 0, balancedMatches: 0, unbalancedMatches: 0 },
-          performanceMetrics: { generationTimeMs: 0, algorithmsUsed: ['basic'], optimizationLevel: 'basic' },
-          feedback: { strengths: [], improvements: [], recommendations: [] }
-        };
+        // Fallback to basic metrics calculation using comprehensive function
+        const metrics = calculateComprehensiveQualityMetrics(generatedPairings, 0, ['basic']);
         setMatchQualityMetrics(metrics);
       }
 

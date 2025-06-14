@@ -1,6 +1,7 @@
 
 import { format } from 'date-fns';
 import { TeamPairingMap, MatchQualityMetrics, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { calculateComprehensiveQualityMetrics } from './qualityAnalysis';
 
 /**
  * Format date for display in schedule UI
@@ -46,31 +47,9 @@ export const getTimeBlocksStatistics = (timeBlockTeams: TimeBlockTeamsMap) => {
 };
 
 /**
- * Analyze match quality metrics
+ * Analyze match quality metrics using comprehensive analysis
  */
 export const analyzeMatchQuality = (generatedPairings: TeamPairingMap): MatchQualityMetrics => {
-  let totalMatches = 0;
-  let totalCompatibilityScore = 0;
-  let rematchCount = 0;
-  
-  Object.values(generatedPairings).forEach(blockPairings => {
-    totalMatches += blockPairings.length;
-    
-    blockPairings.forEach(pairing => {
-      totalCompatibilityScore += pairing.compatibilityScore;
-      if (pairing.hasPlayedBefore) rematchCount++;
-    });
-  });
-  
-  const averageCompatibilityScore = totalMatches > 0 
-    ? totalCompatibilityScore / totalMatches 
-    : 0;
-  
-  return {
-    totalMatches,
-    rematchCount,
-    averageCompatibilityScore,
-    qualityRating: averageCompatibilityScore >= 7 ? "Excellent" : 
-                   averageCompatibilityScore >= 5 ? "Good" : "Fair"
-  };
+  // Use the comprehensive quality metrics calculation
+  return calculateComprehensiveQualityMetrics(generatedPairings, 0, ['basic']);
 };
