@@ -2289,21 +2289,30 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          is_back_to_back: boolean
           match_date: string
+          match_sequence: number | null
+          pair_slot: string | null
           team_id: string | null
           timeslot: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
+          is_back_to_back?: boolean
           match_date: string
+          match_sequence?: number | null
+          pair_slot?: string | null
           team_id?: string | null
           timeslot?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
+          is_back_to_back?: boolean
           match_date?: string
+          match_sequence?: number | null
+          pair_slot?: string | null
           team_id?: string | null
           timeslot?: string | null
         }

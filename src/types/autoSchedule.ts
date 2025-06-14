@@ -1,33 +1,54 @@
-
 import { Team } from "./index";
 
-export interface TeamPairing {
+export interface TeamPair {
   team1: Team;
   team2: Team;
   compatibilityScore: number;
-  hasPlayedBefore?: boolean;
+  hasPlayedBefore: boolean;
 }
 
-export interface TimeBlockData {
-  main: string;
-  secondary: string;
+export interface AutoScheduleMatch {
+  id: string;
+  team1Id: string;
+  team2Id: string;
+  timeslot: string;
+  date: Date;
+  blockType?: 'primary' | 'secondary';
+}
+
+export interface CompatibilityWeights {
+  powerScoreWeight?: number;
+  sosWeight?: number;
+  recordWeight?: number;
+  gameRecordWeight?: number;
+}
+
+/**
+ * Enhanced configuration for dual block scheduling
+ * Now supports back-to-back pairs
+ */
+export interface DualBlockConfig {
+  avoidRematches?: boolean;
+  prioritizeQuality?: boolean;
+  dualMatchMode?: boolean;
+  primaryBlock?: string;
+  secondaryBlock?: string;
+  unmatchedTeamStrategy?: 'lowest-rank' | 'highest-rank' | 'random';
+  weights?: CompatibilityWeights;
+  // New back-to-back specific options
+  backToBackMode?: boolean;
+  backToBackPair?: 'Early' | 'Mid' | 'Late';
+  requireOpponentDiversity?: boolean; // Ensure different opponents in back-to-back matches
 }
 
 export interface TeamPairingMap {
-  [timeBlock: string]: TeamPairing[];
-}
-
-// Separate interface to hold pairings result with unmatchedTeamIds
-export interface PairingResult {
-  pairings: TeamPairingMap;
-  unmatchedTeamIds: string[];
+  [timeBlock: string]: TeamPair[];
 }
 
 export interface TimeBlockTeamsMap {
   [timeBlock: string]: Team[];
 }
 
-// New interface for paired blocks structure
 export interface PairedTimeBlockTeamsMap {
   [blockPairKey: string]: {
     primaryBlock: string;
@@ -37,82 +58,46 @@ export interface PairedTimeBlockTeamsMap {
   };
 }
 
-export interface PreviewResult {
-  date: Date;
-  timeBlocks: TimeBlockTeamsMap;
-  unmatchableBlocks: string[];
-}
-
-export interface AutoScheduleStepProps {
-  selectedDate: Date | null;
-  isGenerating: boolean;
-  onNext: () => void;
-  onPrevious?: () => void;
-}
-
-export interface AutoScheduleMatch {
-  id: string;
-  team1Id: string;
-  team2Id: string;
-  timeslot: string;
-  date?: Date;
-  blockType?: 'primary' | 'secondary'; // Added for dual block match identification
+/**
+ * New interface for back-to-back team grouping
+ */
+export interface BackToBackTeamsMap {
+  [pairName: string]: {
+    primary: Team[];
+    secondary: Team[];
+    pairLabel: string;
+  };
 }
 
 export interface AlgorithmConfig {
   avoidRematches?: boolean;
   prioritizeQuality?: boolean;
   dualMatchMode?: boolean;
-  weights?: {
-    powerScoreWeight?: number;
-    sosWeight?: number;
-    recordWeight?: number;
-    gameRecordWeight?: number;
-  };
-}
-
-// Add DualBlockConfig interface
-export interface DualBlockConfig extends AlgorithmConfig {
-  primaryBlock?: string;
-  secondaryBlock?: string;
-  unmatchedTeamStrategy?: 'random' | 'lowest-rank' | 'manual';
+  weights?: CompatibilityWeights;
 }
 
 export interface MatchQualityMetrics {
   totalMatches: number;
   rematchCount: number;
   averageCompatibilityScore: number;
-  qualityRating: string;
+  qualityRating: 'Excellent' | 'Good' | 'Fair' | 'Poor';
 }
 
-export interface TabProps {
-  selectedDate: Date | null;
-  timeBlockTeams?: TimeBlockTeamsMap;
-  generatedPairings?: TeamPairingMap;
-  isGenerating: boolean;
-  unmatchedTeamIds?: string[];
-  matchQualityMetrics?: MatchQualityMetrics | null;
+export interface PairingResult {
+  pairings: TeamPairingMap;
+  unmatchedTeamIds: string[];
 }
 
-// New interface for paired time blocks in dual match mode
-export interface TimeBlockPair {
-  primaryBlock: string;
-  secondaryBlock: string;
-  primaryTime: string;
-  secondaryTime: string;
-  teams?: Team[];
+export interface PreviewResult {
+  date: Date;
+  timeBlocks: TimeBlockTeamsMap;
+  unmatchableBlocks: string[];
 }
 
-// Interface for dual-match specific metrics
-export interface DualMatchMetrics {
-  teamsWithBothMatches: number;
-  teamsWithSingleMatch: number;
-  crossBlockCompatibility: number;
-}
-
-// New interface for dual match conversion options
-export interface MatchConversionOptions {
-  dualMatchMode?: boolean;
-  preserveBlockInfo?: boolean;
-  customBlockMapping?: Record<string, string>;
+/**
+ * Enhanced pairing result to include back-to-back information
+ */
+export interface BackToBackPairingResult extends PairingResult {
+  backToBackPairs?: BackToBackTeamsMap;
+  opponentDiversityScore?: number;
 }
