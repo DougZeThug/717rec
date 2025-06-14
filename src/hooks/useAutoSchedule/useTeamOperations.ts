@@ -1,9 +1,8 @@
-
 import { useState, useCallback } from 'react';
 import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/types/autoSchedule';
 import { getTeamsByTimeBlock } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
-import { normalizeDate } from '@/utils/dateNormalization';
+import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { createTimeBlockPairs } from '@/utils/autoSchedule/dualBlockUtils';
 import { balanceTeamsBetweenBlocks } from '@/utils/autoSchedule/dualBlock';
 
@@ -14,7 +13,7 @@ export const useTeamOperations = () => {
 
   /**
    * Load teams for all time blocks for a specific date
-   * With improved date handling and dual block support
+   * With unified date handling and enhanced validation
    */
   const handleLoadTeams = useCallback(async (
     date: Date | null, 
@@ -22,38 +21,36 @@ export const useTeamOperations = () => {
     dualBlockConfig: DualBlockConfig = {}
   ): Promise<TimeBlockTeamsMap> => {
     if (!date) {
-      console.warn("No date provided to handleLoadTeams");
+      console.error("❌ No date provided to handleLoadTeams");
+      return {};
+    }
+    
+    // Validate the date before proceeding
+    if (!validateScheduleDate(date, 'handleLoadTeams')) {
+      console.error("❌ Invalid date provided to handleLoadTeams");
       return {};
     }
     
     setIsLoading(true);
     
     try {
-      console.log("useTeamOperations - loadTeamsForDate called with:", {
-        date: date,
-        dateString: date.toString(),
-        dateIso: date.toISOString(),
-        normalizedDate: normalizeDate(date, 'loadTeamsForDate'),
+      console.log("🔄 useTeamOperations - loadTeamsForDate called with:", {
+        date: date.toISOString(),
+        normalizedDate: normalizeScheduleDate(date, 'loadTeamsForDate'),
         dualBlockMode
-      });
-      
-      // Ensure the date is properly formatted to prevent timezone issues
-      const safeDate = new Date(date);
-      safeDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
-      
-      console.log("Using safe date for team loading:", {
-        safeDate,
-        safeDateString: safeDate.toString(),
-        safeDateIso: safeDate.toISOString(),
-        normalizedSafeDate: normalizeDate(safeDate, 'safeDate')
       });
       
       const timeBlocksData: TimeBlockTeamsMap = {};
       
       // Load teams for each time block concurrently for better performance
       const timeBlockPromises = Object.keys(TIME_BLOCKS).map(async (block) => {
-        const teams = await getTeamsByTimeBlock(safeDate, block);
-        return { block, teams };
+        try {
+          const teams = await getTeamsByTimeBlock(date, block);
+          return { block, teams };
+        } catch (error) {
+          console.error(`❌ Error loading teams for block ${block}:`, error);
+          return { block, teams: [] };
+        }
       });
       
       // Wait for all promises to resolve
@@ -61,14 +58,18 @@ export const useTeamOperations = () => {
       
       // Populate the time blocks data
       results.forEach(({ block, teams }) => {
-        // Only include time blocks that have teams
-        if (teams && teams.length > 0) {
-          timeBlocksData[block] = teams;
-        } else {
-          // Include empty blocks too, for UI consistency
-          timeBlocksData[block] = [];
-        }
+        timeBlocksData[block] = teams;
+        console.log(`📊 Block ${block}: ${teams.length} teams loaded`);
       });
+      
+      // Calculate total teams loaded
+      const totalTeams = Object.values(timeBlocksData).reduce((sum, teams) => sum + teams.length, 0);
+      console.log(`✅ Total teams loaded across all blocks: ${totalTeams}`);
+      
+      // Warn if no teams were loaded
+      if (totalTeams === 0) {
+        console.warn(`⚠️ WARNING: No teams loaded for date ${normalizeScheduleDate(date, 'loadTeamsComplete')}. Check database and date format.`);
+      }
       
       // Update state with regular time block structure
       setTimeBlockTeams(timeBlocksData);
@@ -84,17 +85,9 @@ export const useTeamOperations = () => {
         setPairedTimeBlockTeams({});
       }
       
-      console.log("Team loading completed", {
-        date: safeDate,
-        normalizedDate: normalizeDate(safeDate, 'complete'),
-        timeBlockCount: Object.keys(timeBlocksData).length,
-        totalTeams: Object.values(timeBlocksData).flat().length,
-        dualBlockMode
-      });
-      
       return timeBlocksData;
     } catch (error) {
-      console.error('Error loading teams for date:', error);
+      console.error('❌ Error loading teams for date:', error);
       // Return empty object on error
       setTimeBlockTeams({});
       setPairedTimeBlockTeams({});

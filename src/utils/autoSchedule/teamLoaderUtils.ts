@@ -1,27 +1,24 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
-import { normalizeDate } from "@/utils/dateNormalization";
+import { normalizeScheduleDate, validateScheduleDate, createSafeScheduleDate } from "./dateUtils";
 import { PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
 
 /**
  * Get teams by specific time block and date
- * Enhanced with fallback mechanism and better error handling
+ * Enhanced with unified date handling and better error handling
  */
 export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promise<Team[]> => {
-  // Create a safe date at noon to prevent timezone issues
-  const safeDate = new Date(date);
-  safeDate.setHours(12, 0, 0, 0);
+  // Validate input date
+  if (!validateScheduleDate(date, `getTeamsByTimeBlock-${timeBlock}`)) {
+    console.error(`Invalid date provided to getTeamsByTimeBlock for ${timeBlock}`);
+    return [];
+  }
   
-  // Format date consistently 
-  const formattedDate = normalizeDate(safeDate, `getTeamsByTimeBlock-${timeBlock}`);
+  // Create a safe date and normalize it
+  const safeDate = createSafeScheduleDate(date);
+  const formattedDate = normalizeScheduleDate(safeDate, `getTeamsByTimeBlock-${timeBlock}`);
   
-  console.log(`Loading teams for ${timeBlock} block on date:`, {
-    original: date,
-    safeDate,
-    formattedDate,
-    timeBlock
-  });
+  console.log(`Loading teams for ${timeBlock} block on date: ${formattedDate}`);
   
   try {
     // Query team_timeslots table to find teams assigned to the given time block
@@ -42,33 +39,23 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
           losses,
           game_wins,
           game_losses,
-          division_id,
-          power_score,
-          sos
+          division_id
         )
       `)
       .eq('match_date', formattedDate)
       .eq('timeslot', timeBlock);
     
     if (error) {
-      console.error(`Error fetching teams for ${timeBlock} on ${formattedDate}:`, error);
+      console.error(`❌ Error fetching teams for ${timeBlock} on ${formattedDate}:`, error);
       return [];
     }
 
     console.log(`Found ${timeslots?.length || 0} timeslots for ${timeBlock} block on ${formattedDate}`);
     
     if (!timeslots || timeslots.length === 0) {
-      console.warn(`No teams found for ${timeBlock} block on ${formattedDate}, trying fallback...`);
+      console.warn(`⚠️ No teams found for ${timeBlock} block on ${formattedDate}`);
       
-      // Log what we're searching for to help with debugging
-      console.log("Checking raw date format in database", {
-        matchDate: formattedDate,
-        dateObject: typeof date,
-        dateStringValue: date.toString(),
-        timeBlock
-      });
-      
-      // Try a raw query to see what dates we actually have in the database
+      // Log available dates for debugging
       const { data: availableDates } = await supabase
         .from('team_timeslots')
         .select('match_date')
@@ -86,10 +73,12 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
     // Process each timeslot safely
     for (const slot of timeslots) {
       // Skip if no team data exists
-      if (!slot.teams) continue;
+      if (!slot.teams) {
+        console.warn('Timeslot missing team data:', slot);
+        continue;
+      }
       
-      // Instead of directly accessing properties, use type assertion
-      // to help TypeScript understand the structure
+      // Use type assertion to help TypeScript understand the structure
       const teamData = slot.teams as {
         id?: string;
         name?: string;
@@ -100,8 +89,6 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
         losses?: number;
         game_wins?: number;
         game_losses?: number;
-        power_score?: number;
-        sos?: number;
         division_id?: string;
       };
       
@@ -122,17 +109,17 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
         losses: teamData.losses || 0,
         game_wins: teamData.game_wins || 0,
         game_losses: teamData.game_losses || 0,
-        power_score: typeof teamData.power_score === 'number' ? teamData.power_score : 0,
-        sos: typeof teamData.sos === 'number' ? teamData.sos : 0.5,
+        power_score: 0, // Will be calculated separately
+        sos: 0.5, // Default SOS value
         division: teamData.division_id
       });
     }
       
-    console.log(`Processed ${teams.length} teams for ${timeBlock} block`);
+    console.log(`✅ Processed ${teams.length} teams for ${timeBlock} block`);
     return teams;
     
   } catch (error) {
-    console.error(`Unexpected error fetching teams for ${timeBlock}:`, error);
+    console.error(`❌ Unexpected error fetching teams for ${timeBlock}:`, error);
     return [];
   }
 };

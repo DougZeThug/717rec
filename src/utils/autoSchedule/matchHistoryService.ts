@@ -10,12 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): Promise<boolean> {
   try {
-    // Query the matches table to find if these teams have played against each other
+    console.log(`Checking match history between teams: ${team1Id} and ${team2Id}`);
+    
+    // Fixed SQL query: Check if these two teams have played each other
+    // Either team1_id=A AND team2_id=B OR team1_id=B AND team2_id=A
     const { count, error } = await supabase
       .from('matches')
       .select('id', { count: 'exact', head: true })
-      .or(`team1_id.eq.${team1Id},team2_id.eq.${team1Id}`)
-      .or(`team1_id.eq.${team2Id},team2_id.eq.${team2Id}`)
+      .or(`and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`)
       .eq('iscompleted', true);
     
     if (error) {
@@ -23,9 +25,12 @@ export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): P
       return false;
     }
     
-    return count !== null && count > 0;
+    const hasPlayed = count !== null && count > 0;
+    console.log(`Teams ${team1Id} vs ${team2Id}: ${hasPlayed ? 'HAVE' : 'HAVE NOT'} played before (${count} matches)`);
+    
+    return hasPlayed;
   } catch (error) {
-    console.error('Error checking if teams played before:', error);
+    console.error('Unexpected error checking if teams played before:', error);
     return false;
   }
 }

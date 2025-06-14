@@ -1,196 +1,209 @@
 
-import { useCallback } from 'react';
-import { usePairingGenerator } from '../usePairingGenerator';
-import { useSchedulePreview } from '../useSchedulePreview';
+import { useState, useCallback } from 'react';
+import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, MatchQualityMetrics, AutoScheduleMatch } from '@/types/autoSchedule';
+import { usePairingGenerator } from '@/hooks/usePairingGenerator';
 import { useToast } from '@/hooks/use-toast';
-import { AlgorithmConfig, TimeBlockTeamsMap, TeamPairingMap } from '@/types/autoSchedule';
-import { analyzeMatchQuality } from '@/utils/autoSchedule/scheduleUtils';
-import { validateDualBlockSchedule } from '@/utils/autoSchedule/dualBlock';
+import { validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 
 export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
-  const { 
-    isGenerating, 
-    generatedPairings, 
-    unmatchedTeamIds, 
-    generateMatchPairings 
-  } = usePairingGenerator();
-  
-  const { convertPairingsToMatches } = useSchedulePreview();
+  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
+  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
+  const { isGenerating, generateMatchPairings } = usePairingGenerator();
   const { toast } = useToast();
 
-  // Handle generating schedule
+  /**
+   * Generate match pairings with enhanced validation and error handling
+   */
   const handleGenerateClick = useCallback(async (
-    selectedDate: Date | null, 
-    timeBlockTeams: TimeBlockTeamsMap, 
+    selectedDate: Date | null,
+    timeBlockTeams: TimeBlockTeamsMap,
     avoidRematches: boolean,
     prioritizeQuality: boolean,
     dualMatchMode: boolean,
-    setIsProcessing: (isProcessing: boolean) => void
+    setIsProcessing: (loading: boolean) => void
   ) => {
+    // Validate inputs
     if (!selectedDate) {
       toast({
         title: "Error",
-        description: "Please select a date first",
+        description: "Please select a date first.",
         variant: "destructive"
       });
-      return null;
+      return;
     }
-    
+
+    if (!validateScheduleDate(selectedDate, 'handleGenerateClick')) {
+      toast({
+        title: "Error",
+        description: "Invalid date selected. Please choose a valid date.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if we have teams loaded
+    const totalTeams = Object.values(timeBlockTeams).reduce((sum, teams) => sum + teams.length, 0);
+    if (totalTeams === 0) {
+      toast({
+        title: "Error",
+        description: "No teams found for the selected date. Please load teams first or check if teams are assigned to time slots for this date.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log(`🎯 Starting pairing generation for ${totalTeams} teams with settings:`, {
+      avoidRematches,
+      prioritizeQuality,
+      dualMatchMode,
+      date: selectedDate.toISOString()
+    });
+
     setIsProcessing(true);
+    
     try {
-      // Performance tracking
-      const startTime = performance.now();
-      
-      // Configure algorithm based on settings
-      const algorithmConfig: AlgorithmConfig = {
+      const config: AlgorithmConfig = {
         avoidRematches,
         prioritizeQuality,
         dualMatchMode,
         weights: prioritizeQuality ? {
           powerScoreWeight: 5,
-          recordWeight: 3.5
+          sosWeight: 3,
+          recordWeight: 3.5,
+          gameRecordWeight: 2
         } : undefined
       };
+
+      const result = await generateMatchPairings(selectedDate, timeBlockTeams, config);
       
-      // Generate pairings
-      const result = await generateMatchPairings(selectedDate, timeBlockTeams, algorithmConfig);
-      
-      // Performance metrics
-      const endTime = performance.now();
-      console.log(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
-      
-      // Switch to matches tab to show results
-      setActiveTab("matches");
-      
-      return result ? result.pairings : null;
+      if (result) {
+        setGeneratedPairings(result.pairings);
+        setUnmatchedTeamIds(result.unmatchedTeamIds);
+        
+        // Calculate some basic metrics
+        const totalPairings = Object.values(result.pairings).reduce((sum, pairs) => sum + pairs.length, 0);
+        
+        console.log(`✅ Pairing generation complete:`, {
+          totalPairings,
+          unmatchedTeams: result.unmatchedTeamIds.length,
+          blocks: Object.keys(result.pairings)
+        });
+        
+        toast({
+          title: "Schedule Generated",
+          description: `Generated ${totalPairings} matches across ${Object.keys(result.pairings).length} time blocks. ${result.unmatchedTeamIds.length} teams remain unmatched.`,
+        });
+        
+        // Move to matches tab to show results
+        setActiveTab('matches');
+      } else {
+        toast({
+          title: "Generation Failed",
+          description: "Failed to generate schedule. Please check the console for details and try again.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
-      console.error("Error generating schedule:", error);
+      console.error('❌ Error during pairing generation:', error);
       toast({
         title: "Error",
-        description: "Failed to generate schedule. Please try again.",
+        description: "An unexpected error occurred while generating the schedule. Please try again.",
         variant: "destructive"
       });
-      return null;
     } finally {
       setIsProcessing(false);
     }
   }, [generateMatchPairings, toast, setActiveTab]);
 
-  // Handle applying schedule - Enhanced for dual match mode and validation
+  /**
+   * Apply generated schedule with validation
+   */
   const handleApplySchedule = useCallback((
-    generatedPairings: TeamPairingMap | null,
+    generatedPairings: TeamPairingMap,
     selectedDate: Date | null,
     dualMatchMode: boolean,
-    setGeneratedMatches: (matches: any[]) => void,
-    setMatchQualityMetrics: (metrics: any) => void
+    setGeneratedMatches: (matches: AutoScheduleMatch[]) => void,
+    setMatchQualityMetrics: (metrics: MatchQualityMetrics | null) => void
   ) => {
-    if (!generatedPairings || !selectedDate) {
+    if (!selectedDate) {
       toast({
         title: "Error",
-        description: "No schedule generated",
+        description: "No date selected for schedule application.",
         variant: "destructive"
       });
       return null;
     }
-    
-    try {
-      // For dual match mode, run validation first
-      if (dualMatchMode) {
-        const blocks = Object.keys(generatedPairings);
-        if (blocks.length >= 2) {
-          const primaryBlockPairings = generatedPairings[blocks[0]] || [];
-          const secondaryBlockPairings = generatedPairings[blocks[1]] || [];
-          
-          const validation = validateDualBlockSchedule(primaryBlockPairings, secondaryBlockPairings);
-          
-          // If validation has errors and overbookedTeams, show warning but still allow export
-          if (validation.overbookedTeams.length > 0) {
-            toast({
-              title: "Warning",
-              description: `${validation.overbookedTeams.length} team(s) are scheduled for overlapping time slots.`,
-              variant: "destructive"
-            });
-          }
-          
-          // If validation found teams with duplicate opponents, show warning but still allow export
-          if (validation.teamsWithDuplicateOpponents.length > 0) {
-            toast({
-              title: "Warning",
-              description: `${validation.teamsWithDuplicateOpponents.length} team(s) will face the same opponent in both blocks.`,
-              variant: "default"
-            });
-          }
-        }
-      }
-      
-      // Convert pairings to matches with dual match mode awareness
-      const matches = convertPairingsToMatches(generatedPairings, selectedDate, { 
-        dualMatchMode 
-      });
-      
-      // Log match conversion results
-      console.log(`Converted ${matches.length} matches ${dualMatchMode ? 'with dual match mode' : ''}`);
-      
-      // If in dual match mode, validate that teams have different opponents
-      if (dualMatchMode) {
-        // Check for teams with same opponent in both blocks
-        const teamOpponents: Record<string, Set<string>> = {};
-        
-        matches.forEach(match => {
-          // Track team1's opponents
-          if (!teamOpponents[match.team1Id]) {
-            teamOpponents[match.team1Id] = new Set();
-          }
-          teamOpponents[match.team1Id].add(match.team2Id);
-          
-          // Track team2's opponents
-          if (!teamOpponents[match.team2Id]) {
-            teamOpponents[match.team2Id] = new Set();
-          }
-          teamOpponents[match.team2Id].add(match.team1Id);
-        });
-        
-        // Count teams with duplicate opponents and teams with matches in both blocks
-        const teamsWithDuplicateOpponents = Object.entries(teamOpponents)
-          .filter(([_, opponents]) => opponents.size < 2 && opponents.size > 0)
-          .map(([teamId]) => teamId);
-          
-        const teamsWithBothMatches = Object.entries(teamOpponents)
-          .filter(([_, opponents]) => opponents.size === 2)
-          .length;
-          
-        if (teamsWithDuplicateOpponents.length > 0) {
-          console.warn(`${teamsWithDuplicateOpponents.length} teams have the same opponent in both blocks`);
-        }
-        
-        console.log(`${teamsWithBothMatches} teams have matches in both blocks`);
-      }
-      
-      setGeneratedMatches(matches);
-      
-      // Analyze match quality
-      const qualityMetrics = analyzeMatchQuality(generatedPairings);
-      setMatchQualityMetrics(qualityMetrics);
-      
-      // Show the export tab with the created matches
-      setActiveTab("export");
-      
+
+    if (!generatedPairings || Object.keys(generatedPairings).length === 0) {
       toast({
-        title: "Schedule created",
-        description: `${matches.length} matches ready for export${dualMatchMode ? ' in dual match mode' : ''}`
+        title: "Error",
+        description: "No generated schedule to apply. Please generate a schedule first.",
+        variant: "destructive"
       });
-      
+      return null;
+    }
+
+    try {
+      // Convert pairings to matches
+      const matches: AutoScheduleMatch[] = [];
+      let rematchCount = 0;
+      let totalCompatibilityScore = 0;
+      let pairingCount = 0;
+
+      Object.entries(generatedPairings).forEach(([timeBlock, pairings]) => {
+        pairings.forEach((pairing, index) => {
+          matches.push({
+            id: `${timeBlock}-${index}`,
+            team1Id: pairing.team1.id,
+            team2Id: pairing.team2.id,
+            timeslot: timeBlock,
+            date: selectedDate,
+            blockType: dualMatchMode ? 'primary' : undefined
+          });
+
+          // Track metrics
+          if (pairing.hasPlayedBefore) {
+            rematchCount++;
+          }
+          totalCompatibilityScore += pairing.compatibilityScore;
+          pairingCount++;
+        });
+      });
+
+      // Calculate quality metrics
+      const averageCompatibilityScore = pairingCount > 0 ? totalCompatibilityScore / pairingCount : 0;
+      const qualityRating = averageCompatibilityScore > 80 ? 'Excellent' : 
+                           averageCompatibilityScore > 60 ? 'Good' : 
+                           averageCompatibilityScore > 40 ? 'Fair' : 'Poor';
+
+      const metrics: MatchQualityMetrics = {
+        totalMatches: matches.length,
+        rematchCount,
+        averageCompatibilityScore,
+        qualityRating
+      };
+
+      setGeneratedMatches(matches);
+      setMatchQualityMetrics(metrics);
+
+      console.log(`✅ Applied schedule:`, {
+        totalMatches: matches.length,
+        rematchCount,
+        averageCompatibilityScore: averageCompatibilityScore.toFixed(2),
+        qualityRating
+      });
+
       return matches;
     } catch (error) {
-      console.error("Error applying schedule:", error);
+      console.error('❌ Error applying schedule:', error);
       toast({
         title: "Error",
-        description: "Failed to create match schedule. Please try again.",
+        description: "Failed to apply the generated schedule. Please try again.",
         variant: "destructive"
       });
       return null;
     }
-  }, [convertPairingsToMatches, toast, setActiveTab]);
+  }, [toast]);
 
   return {
     isGenerating,
