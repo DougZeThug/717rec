@@ -1493,6 +1493,7 @@ export type Database = {
           end_date: string | null
           id: string
           is_active: boolean
+          is_archived: boolean
           name: string
           runner_up_team_id: string | null
           start_date: string
@@ -1505,6 +1506,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_active?: boolean
+          is_archived?: boolean
           name: string
           runner_up_team_id?: string | null
           start_date?: string
@@ -1517,6 +1519,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_active?: boolean
+          is_archived?: boolean
           name?: string
           runner_up_team_id?: string | null
           start_date?: string
