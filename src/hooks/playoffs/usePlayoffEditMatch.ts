@@ -39,9 +39,34 @@ export const usePlayoffEditMatch = () => {
     });
 
     try {
-      // Determine winner and loser based on game wins
-      const winnerId = team1GameWins > team2GameWins ? 'team1' : 'team2';
-      const loserId = team1GameWins > team2GameWins ? 'team2' : 'team1';
+      // First, fetch the match to get the actual team IDs
+      const { data: matchData, error: fetchError } = await supabase
+        .from('playoff_matches')
+        .select('team1_id, team2_id')
+        .eq('id', matchId)
+        .single();
+
+      if (fetchError) {
+        console.error('🎯 Error fetching match data:', fetchError);
+        throw fetchError;
+      }
+
+      if (!matchData || !matchData.team1_id || !matchData.team2_id) {
+        throw new Error('Match data incomplete - missing team IDs');
+      }
+
+      // Determine winner and loser based on game wins using actual team IDs
+      const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
+      const loserId = team1GameWins > team2GameWins ? matchData.team2_id : matchData.team1_id;
+
+      console.log('🎯 Calculated winner/loser IDs:', {
+        team1_id: matchData.team1_id,
+        team2_id: matchData.team2_id,
+        team1GameWins,
+        team2GameWins,
+        winnerId,
+        loserId
+      });
 
       // Update the playoff match
       const { error: matchError } = await supabase
@@ -69,14 +94,18 @@ export const usePlayoffEditMatch = () => {
           .delete()
           .eq('match_id', matchId);
 
-        // Insert new games
-        const gameInserts = games.map((game, index) => ({
-          match_id: matchId,
-          game_number: index + 1,
-          team1_score: game.team1Score,
-          team2_score: game.team2Score,
-          winner_id: game.team1Score > game.team2Score ? 'team1' : 'team2'
-        }));
+        // Insert new games with correct winner IDs
+        const gameInserts = games.map((game, index) => {
+          const gameWinnerId = game.team1Score > game.team2Score ? matchData.team1_id : matchData.team2_id;
+          
+          return {
+            match_id: matchId,
+            game_number: index + 1,
+            team1_score: game.team1Score,
+            team2_score: game.team2Score,
+            winner_id: gameWinnerId
+          };
+        });
 
         const { error: gamesError } = await supabase
           .from('playoff_games')
@@ -88,7 +117,7 @@ export const usePlayoffEditMatch = () => {
         }
       }
 
-      console.log('🎯 Match score saved successfully');
+      console.log('🎯 Match score saved successfully with correct team IDs');
       
       // Call the refetch function to update the UI
       if (refetchBrackets) {
