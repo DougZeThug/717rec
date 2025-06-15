@@ -2675,6 +2675,17 @@ export type Database = {
       }
     }
     Functions: {
+      award_streak_badges: {
+        Args: { p_team_id: string }
+        Returns: Json
+      }
+      calculate_team_streak: {
+        Args: { p_team_id: string }
+        Returns: {
+          streak_type: string
+          streak_count: number
+        }[]
+      }
       get_all_team_badges: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2734,6 +2745,10 @@ export type Database = {
           p_team_position: number
         }
         Returns: undefined
+      }
+      process_match_badges: {
+        Args: { p_team1_id: string; p_team2_id: string }
+        Returns: Json
       }
       snapshot_current_season: {
         Args: Record<PropertyKey, never>

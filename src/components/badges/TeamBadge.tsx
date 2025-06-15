@@ -1,88 +1,85 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { TeamBadgeEvent } from '@/types/badges';
 import { getBadgeConfig } from '@/utils/badgeConfig';
-import { TeamBadgeEvent, BadgeType } from '@/types/badges';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface TeamBadgeProps {
-  badgeType: BadgeType;
-  badgeEvent?: TeamBadgeEvent;
+  badge: TeamBadgeEvent;
   size?: 'sm' | 'md' | 'lg';
-  showTooltip?: boolean;
+  showDescription?: boolean;
   className?: string;
 }
 
-const TeamBadge: React.FC<TeamBadgeProps> = ({ 
-  badgeType, 
-  badgeEvent,
-  size = 'md', 
-  showTooltip = true,
-  className 
+export const TeamBadge: React.FC<TeamBadgeProps> = ({
+  badge,
+  size = 'md',
+  showDescription = false,
+  className
 }) => {
-  const config = getBadgeConfig(badgeType);
+  const config = getBadgeConfig(badge.badge_type);
   const IconComponent = config.icon;
 
   const sizeClasses = {
-    sm: 'w-5 h-5',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+    sm: 'w-6 h-6 text-xs',
+    md: 'w-8 h-8 text-sm',
+    lg: 'w-10 h-10 text-base'
   };
 
-  const iconSizeClasses = {
+  const iconSizes = {
     sm: 'w-3 h-3',
     md: 'w-4 h-4',
     lg: 'w-5 h-5'
   };
 
-  const badge = (
+  // Extract streak count from metadata for streak badges
+  const getStreakCount = (): number | null => {
+    if (badge.badge_type === 'hot_streak' || badge.badge_type === 'cold_streak') {
+      return (badge.metadata as any)?.streak_count || null;
+    }
+    return null;
+  };
+
+  const streakCount = getStreakCount();
+
+  // Enhanced description for streak badges
+  const getEnhancedDescription = (): string => {
+    if (streakCount && (badge.badge_type === 'hot_streak' || badge.badge_type === 'cold_streak')) {
+      const streakType = badge.badge_type === 'hot_streak' ? 'winning' : 'losing';
+      return `Currently on a ${streakType} streak of ${streakCount} matches`;
+    }
+    return config.description;
+  };
+
+  return (
     <div
       className={cn(
-        'relative flex items-center justify-center rounded-lg shadow-sm border border-white/20',
-        'bg-gradient-to-br',
-        config.bgColor,
+        'relative inline-flex items-center justify-center rounded-full',
+        `bg-gradient-to-br ${config.gradient}`,
         sizeClasses[size],
+        'shadow-sm border-2 border-white',
+        'group cursor-help',
         className
       )}
+      title={showDescription ? getEnhancedDescription() : config.name}
     >
-      <div className={cn('absolute inset-0 rounded-lg bg-gradient-to-br opacity-80', config.gradient)} />
-      <IconComponent 
-        className={cn(
-          'relative z-10 text-white drop-shadow-sm',
-          iconSizeClasses[size]
-        )} 
-      />
-    </div>
-  );
-
-  if (!showTooltip) {
-    return badge;
-  }
-
-  const tooltipContent = (
-    <div className="text-center">
-      <div className="font-semibold">{config.name}</div>
-      <div className="text-sm text-muted-foreground">{config.description}</div>
-      {badgeEvent?.awarded_at && (
-        <div className="text-xs text-muted-foreground mt-1">
-          Earned: {new Date(badgeEvent.awarded_at).toLocaleDateString()}
+      <IconComponent className={cn('text-white', iconSizes[size])} />
+      
+      {/* Streak count indicator for streak badges */}
+      {streakCount && (
+        <div className="absolute -top-1 -right-1 bg-white text-gray-800 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-gray-200">
+          {streakCount}
+        </div>
+      )}
+      
+      {/* Tooltip for hover */}
+      {showDescription && (
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10 pointer-events-none">
+          <div className="font-semibold">{config.name}</div>
+          <div className="text-gray-300">{getEnhancedDescription()}</div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900"></div>
         </div>
       )}
     </div>
   );
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {badge}
-        </TooltipTrigger>
-        <TooltipContent>
-          {tooltipContent}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
 };
-
-export default TeamBadge;

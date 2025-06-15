@@ -1,139 +1,99 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { SubmitScoreParams } from "../types/matchSubmissionTypes";
+import { supabase } from '@/integrations/supabase/client';
+import { BadgeProcessingService } from '@/services/BadgeProcessingService';
+
+export interface UpdateMatchScoreParams {
+  matchId: string;
+  team1Score: number;
+  team2Score: number;
+  team1GameWins: number;
+  team2GameWins: number;
+}
+
+export interface UpdateMatchScoreResult {
+  data: any;
+  team1_id: string;
+  team2_id: string;
+  team1Win: boolean;
+}
 
 export const updateMatchScore = async ({
   matchId,
   team1Score,
   team2Score,
-  team1GameWins = 0,
-  team2GameWins = 0
-}: SubmitScoreParams) => {
-  // Log input parameters for comparison
-  console.log("🔍 DIAGNOSTIC: updateMatchScore input parameters:", {
+  team1GameWins,
+  team2GameWins
+}: UpdateMatchScoreParams): Promise<UpdateMatchScoreResult> => {
+  console.log('🎯 updateMatchScore called with:', {
     matchId,
     team1Score,
-    team1ScoreType: typeof team1Score,
     team2Score,
-    team2ScoreType: typeof team2Score,
     team1GameWins,
-    team1GameWinsType: typeof team1GameWins,
-    team2GameWins,
-    team2GameWinsType: typeof team2GameWins
+    team2GameWins
   });
 
-  // Fetch match data for validation
+  // First get the match to extract team IDs
   const { data: matchData, error: matchError } = await supabase
     .from('matches')
-    .select('team1_id, team2_id, date')
+    .select('team1_id, team2_id')
     .eq('id', matchId)
     .single();
-    
-  if (matchError) {
-    console.error(`Error fetching match ${matchId}:`, matchError);
-    throw matchError;
-  }
-  
-  if (!matchData) {
-    console.error(`No match found with ID ${matchId}`);
-    throw new Error(`No match found with ID ${matchId}`);
-  }
-  
-  console.log("🔍 DIAGNOSTIC: Raw match data from Supabase:", {
-    matchId,
-    matchData,
-    dateType: typeof matchData.date
-  });
-  
-  const { team1_id, team2_id, date } = matchData;
-  
-  // Normalize all numeric values
-  const normalizedTeam1Score = Number(team1Score);
-  const normalizedTeam2Score = Number(team2Score);
-  const normalizedTeam1GameWins = Number(team1GameWins ?? 0);
-  const normalizedTeam2GameWins = Number(team2GameWins ?? 0);
-  
-  console.log(`🔍 DIAGNOSTIC: Processing match ${matchId} from date: ${date}`, {
-    matchDate: date,
-    dateType: typeof date,
-    scores: {
-      team1: normalizedTeam1Score,
-      team2: normalizedTeam2Score
-    },
-    gameWins: {
-      team1: normalizedTeam1GameWins,
-      team2: normalizedTeam2GameWins
-    },
-    typesAfterNormalization: {
-      team1ScoreType: typeof normalizedTeam1Score,
-      team2ScoreType: typeof normalizedTeam2Score,
-      team1GameWinsType: typeof normalizedTeam1GameWins,
-      team2GameWinsType: typeof normalizedTeam2GameWins
-    }
-  });
-  
-  // Determine winner based on normalized scores
-  const team1Win = normalizedTeam1Score > normalizedTeam2Score;
-  
-  const updatePayload = {
-    team1_score: normalizedTeam1Score,
-    team2_score: normalizedTeam2Score,
-    team1_game_wins: normalizedTeam1GameWins,
-    team2_game_wins: normalizedTeam2GameWins,
-    iscompleted: true,
-    winner_id: team1Win ? team1_id : team2_id,
-    loser_id: team1Win ? team2_id : team1_id
-  };
 
-  console.log('🔍 DIAGNOSTIC: Final updatePayload to Supabase:', {
-    matchId,
-    date,
-    dateFormatted: new Date(date).toISOString(),
-    ...updatePayload,
-    team1_game_wins_type: typeof normalizedTeam1GameWins,
-    team2_game_wins_type: typeof normalizedTeam2GameWins,
-    fullPayload: JSON.stringify(updatePayload)
-  });
-
-  // Create debug entry for troubleshooting
-  try {
-    await supabase.from('debug_match_updates').insert({
-      match_id: matchId,
-      team1_score: normalizedTeam1Score,
-      team2_score: normalizedTeam2Score,
-      team1_game_wins: normalizedTeam1GameWins,
-      team2_game_wins: normalizedTeam2GameWins
-    });
-  } catch (debugError) {
-    console.warn("Could not create debug entry:", debugError);
+  if (matchError || !matchData) {
+    throw new Error(`Failed to fetch match data: ${matchError?.message}`);
   }
 
+  const { team1_id, team2_id } = matchData;
+  
+  // Determine winner based on scores
+  const team1Win = team1Score > team2Score;
+  const winnerId = team1Win ? team1_id : team2_id;
+  const loserId = team1Win ? team2_id : team1_id;
+
+  console.log('🏆 Match result:', {
+    team1Win,
+    winnerId,
+    loserId,
+    team1_id,
+    team2_id
+  });
+
+  // Update the match with scores and completion status
   const { data, error } = await supabase
     .from('matches')
-    .update(updatePayload)
+    .update({
+      team1_score: team1Score,
+      team2_score: team2Score,
+      team1_game_wins: team1GameWins,
+      team2_game_wins: team2GameWins,
+      winner_id: winnerId,
+      loser_id: loserId,
+      iscompleted: true
+    })
     .eq('id', matchId)
-    .select();
+    .select()
+    .single();
 
   if (error) {
-    console.error("🔍 DIAGNOSTIC: Supabase update error:", {
-      matchId,
-      date,
-      error: error.message,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('❌ Failed to update match:', error);
     throw error;
   }
-  
-  if (!data || data.length === 0) {
-    throw new Error(`No rows updated for match ${matchId}`);
+
+  console.log('✅ Match updated successfully:', data);
+
+  // Process streak badges for both teams after match completion
+  try {
+    const badgeResult = await BadgeProcessingService.processMatchBadges(team1_id, team2_id);
+    console.log('🏆 Badge processing completed:', badgeResult);
+  } catch (badgeError) {
+    console.warn('⚠️ Badge processing failed (non-critical):', badgeError);
+    // Don't throw here - badge processing failure shouldn't prevent match completion
   }
-  
-  console.log("🔍 DIAGNOSTIC: Supabase update success:", {
-    matchId,
-    date,
-    data: JSON.stringify(data)
-  });
-  
-  return { data, team1_id, team2_id, team1Win };
+
+  return {
+    data,
+    team1_id,
+    team2_id,
+    team1Win
+  };
 };
