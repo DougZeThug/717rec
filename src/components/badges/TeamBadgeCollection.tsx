@@ -75,8 +75,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
       {displayBadges.map((badgeEvent) => (
         <TeamBadge
           key={badgeEvent.id}
-          badgeType={badgeEvent.badge_type}
-          badgeEvent={badgeEvent}
+          badge={badgeEvent}
           size={size}
         />
       ))}
