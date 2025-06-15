@@ -28,7 +28,7 @@ export const fetchTeamsFromApi = async () => {
 
   // Enhanced logging to verify values for the corrected 40/40/20 power score formula
   if (data && data.length > 0) {
-    console.log("Corrected power scores from v_team_details with 40/40/20 formula:", data.slice(0, 3).map(t => ({
+    console.log("Power scores from v_team_details with preserved NULL values:", data.slice(0, 3).map(t => ({
       name: t.name,
       power_score: t.power_score,
       sos: t.sos,
@@ -59,9 +59,9 @@ export const fetchTeamsFromApi = async () => {
     division: team.division_id || null,        // legacy field - keep for existing code
     division_id: team.division_id || null,     // canonical field - NEW
     divisionName: team.divisionname || null,
-    // Use directly the SOS and power score calculated in the database view with corrected formula
-    sos: typeof team.sos === 'number' ? team.sos : 0.5,
-    power_score: typeof team.power_score === 'number' ? team.power_score : 50.0, // Corrected 40/40/20 calculation
+    // Preserve NULL/undefined values for SOS and power score instead of defaulting
+    sos: team.sos, // Preserve original value (can be null for 0-0 teams)
+    power_score: team.power_score, // Preserve original value (can be null for 0-0 teams)
     win_percentage: team.win_percentage || 0,
     game_win_percentage: team.game_win_percentage || 0,
     close_match_losses: team.close_match_losses
