@@ -56,9 +56,18 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     return null;
   };
 
+  // Extract teams beaten count for consistent performer badge
+  const getTeamsBeatenCount = (): number | null => {
+    if (badge.badge_type === 'consistent_performer') {
+      return (badge.metadata as any)?.teams_beaten_count || null;
+    }
+    return null;
+  };
+
   const streakCount = getStreakCount();
   const powerScoreDiff = getPowerScoreDiff();
   const clutchWinsCount = getClutchWinsCount();
+  const teamsBeatenCount = getTeamsBeatenCount();
 
   // Enhanced description for special badges
   const getEnhancedDescription = (): string => {
@@ -73,6 +82,10 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
 
     if (clutchWinsCount && badge.badge_type === 'clutch_performer') {
       return `Achieved ${clutchWinsCount} clutch victories (2-1 wins) this season`;
+    }
+
+    if (teamsBeatenCount && badge.badge_type === 'consistent_performer') {
+      return `Beat ${teamsBeatenCount} different teams within their division this season`;
     }
     
     return config.description;
@@ -110,6 +123,13 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       {clutchWinsCount && (
         <div className="absolute -top-1 -right-1 bg-white text-green-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-green-200">
           {clutchWinsCount}
+        </div>
+      )}
+
+      {/* Teams beaten count indicator for consistent performer badge */}
+      {teamsBeatenCount && (
+        <div className="absolute -top-1 -right-1 bg-white text-blue-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-blue-200">
+          {teamsBeatenCount}
         </div>
       )}
       

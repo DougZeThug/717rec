@@ -84,6 +84,30 @@ export class BadgeProcessingService {
   }
 
   /**
+   * Process consistent performer badge for a specific team after a win
+   */
+  static async processConsistentPerformerBadge(winnerId: string): Promise<any> {
+    try {
+      console.log('📈 Processing consistent performer badge for winner:', winnerId);
+      
+      const { data, error } = await supabase.rpc('award_consistent_performer_badge', {
+        p_team_id: winnerId
+      });
+
+      if (error) {
+        console.error('❌ Error processing consistent performer badge:', error);
+        throw error;
+      }
+
+      console.log('✅ Consistent performer badge processing result:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Consistent performer badge processing error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Calculate current streak for a specific team
    */
   static async calculateTeamStreak(teamId: string): Promise<{ streak_type: string; streak_count: number } | null> {

@@ -123,7 +123,7 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
   clutch_performer: {
     type: 'clutch_performer',
     name: 'Clutch Performer',
-    description: 'Won a close match (decided by 1 game)',
+    description: 'Won 5+ close matches (2-1 scores) this season',
     icon: Target,
     gradient: 'from-green-500 to-green-700',
     bgColor: 'bg-green-100',
@@ -134,7 +134,7 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
   consistent_performer: {
     type: 'consistent_performer',
     name: 'Consistent Performer',
-    description: 'Maintained high performance over multiple matches',
+    description: 'Beat 5+ different teams within the same division',
     icon: TrendingUp,
     gradient: 'from-blue-500 to-blue-700',
     bgColor: 'bg-blue-100',

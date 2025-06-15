@@ -94,6 +94,10 @@ export const updateMatchScore = async ({
     // Process clutch performer badge for the winner
     const clutchResult = await BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins);
     console.log('🎯 Clutch performer badge processing completed:', clutchResult);
+
+    // Process consistent performer badge for the winner
+    const consistentResult = await BadgeProcessingService.processConsistentPerformerBadge(winnerId);
+    console.log('📈 Consistent performer badge processing completed:', consistentResult);
   } catch (badgeError) {
     console.warn('⚠️ Badge processing failed (non-critical):', badgeError);
     // Don't throw here - badge processing failure shouldn't prevent match completion
