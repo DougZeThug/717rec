@@ -1,8 +1,21 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { TeamBadgeEvent } from '@/types/badges';
 import { getBadgeConfig } from '@/utils/badgeConfig';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface TeamBadgeProps {
   badge: TeamBadgeEvent;
@@ -19,17 +32,19 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
 }) => {
   const config = getBadgeConfig(badge.badge_type);
   const IconComponent = config.icon;
+  const isMobile = useIsMobile();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const sizeClasses = {
-    sm: 'w-6 h-6 text-xs',
-    md: 'w-8 h-8 text-sm',
-    lg: 'w-10 h-10 text-base'
+    sm: isMobile ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-xs',
+    md: isMobile ? 'w-10 h-10 text-sm' : 'w-8 h-8 text-sm',
+    lg: isMobile ? 'w-12 h-12 text-base' : 'w-10 h-10 text-base'
   };
 
   const iconSizes = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5'
+    sm: isMobile ? 'w-4 h-4' : 'w-3 h-3',
+    md: isMobile ? 'w-5 h-5' : 'w-4 h-4',
+    lg: isMobile ? 'w-6 h-6' : 'w-5 h-5'
   };
 
   // Extract streak count from metadata for streak badges
@@ -137,56 +152,90 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     return config.description;
   };
 
-  return (
+  const BadgeContent = (
     <div
       className={cn(
         'relative inline-flex items-center justify-center rounded-full',
         `bg-gradient-to-br ${config.gradient}`,
         sizeClasses[size],
         'shadow-sm border-2 border-white',
-        'group cursor-help',
+        isMobile ? 'cursor-pointer active:scale-95 transition-transform' : 'cursor-help',
         className
       )}
-      title={getEnhancedDescription()}
+      onClick={isMobile ? () => setIsDialogOpen(true) : undefined}
     >
       <IconComponent className={cn('text-white', iconSizes[size])} />
       
-      {/* Streak count indicator for streak badges */}
       {streakCount && (
         <div className="absolute -top-1 -right-1 bg-white text-gray-800 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-gray-200">
           {streakCount}
         </div>
       )}
       
-      {/* Power score difference indicator for kingslayer badge */}
       {powerScoreDiff && (
         <div className="absolute -top-1 -right-1 bg-white text-red-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-red-200">
           +{powerScoreDiff.toFixed(1)}
         </div>
       )}
 
-      {/* Clutch wins count indicator for clutch performer badge */}
       {clutchWinsCount && (
         <div className="absolute -top-1 -right-1 bg-white text-green-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-green-200">
           {clutchWinsCount}
         </div>
       )}
 
-      {/* Teams beaten count indicator for consistent performer badge */}
       {teamsBeatenCount && (
         <div className="absolute -top-1 -right-1 bg-white text-blue-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-blue-200">
           {teamsBeatenCount}
         </div>
       )}
-      
-      {/* Tooltip for hover */}
-      {showDescription && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10 pointer-events-none">
-          <div className="font-semibold">{config.name}</div>
-          <div className="text-gray-300">{getEnhancedDescription()}</div>
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-gray-900"></div>
-        </div>
-      )}
     </div>
+  );
+
+  // Mobile: Use dialog for tap interaction
+  if (isMobile) {
+    return (
+      <>
+        {BadgeContent}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <div
+                  className={cn(
+                    'relative inline-flex items-center justify-center rounded-full',
+                    `bg-gradient-to-br ${config.gradient}`,
+                    'w-16 h-16 shadow-lg border-2 border-white'
+                  )}
+                >
+                  <IconComponent className="text-white w-8 h-8" />
+                </div>
+              </div>
+              <DialogTitle className="text-lg font-semibold">
+                {config.name}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-600 mt-2">
+                {getEnhancedDescription()}
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  // Desktop: Use tooltip for hover interaction
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {BadgeContent}
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs">
+          <div className="font-semibold">{config.name}</div>
+          <div className="text-gray-300 text-xs mt-1">{getEnhancedDescription()}</div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
