@@ -48,8 +48,17 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     return null;
   };
 
+  // Extract clutch wins count for clutch performer badge
+  const getClutchWinsCount = (): number | null => {
+    if (badge.badge_type === 'clutch_performer') {
+      return (badge.metadata as any)?.clutch_wins_count || null;
+    }
+    return null;
+  };
+
   const streakCount = getStreakCount();
   const powerScoreDiff = getPowerScoreDiff();
+  const clutchWinsCount = getClutchWinsCount();
 
   // Enhanced description for special badges
   const getEnhancedDescription = (): string => {
@@ -60,6 +69,10 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     
     if (powerScoreDiff && badge.badge_type === 'king_slayer') {
       return `Defeated an opponent with ${powerScoreDiff.toFixed(1)} higher power score`;
+    }
+
+    if (clutchWinsCount && badge.badge_type === 'clutch_performer') {
+      return `Achieved ${clutchWinsCount} clutch victories (2-1 wins) this season`;
     }
     
     return config.description;
@@ -90,6 +103,13 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       {powerScoreDiff && (
         <div className="absolute -top-1 -right-1 bg-white text-red-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-red-200">
           +{powerScoreDiff.toFixed(1)}
+        </div>
+      )}
+
+      {/* Clutch wins count indicator for clutch performer badge */}
+      {clutchWinsCount && (
+        <div className="absolute -top-1 -right-1 bg-white text-green-600 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-green-200">
+          {clutchWinsCount}
         </div>
       )}
       

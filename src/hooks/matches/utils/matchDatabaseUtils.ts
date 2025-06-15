@@ -90,6 +90,10 @@ export const updateMatchScore = async ({
     // Process kingslayer badge separately
     const kingslayerResult = await BadgeProcessingService.processKingslayerBadge(winnerId, loserId);
     console.log('⚔️ Kingslayer badge processing completed:', kingslayerResult);
+
+    // Process clutch performer badge for the winner
+    const clutchResult = await BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins);
+    console.log('🎯 Clutch performer badge processing completed:', clutchResult);
   } catch (badgeError) {
     console.warn('⚠️ Badge processing failed (non-critical):', badgeError);
     // Don't throw here - badge processing failure shouldn't prevent match completion

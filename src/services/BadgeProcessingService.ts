@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export class BadgeProcessingService {
@@ -48,6 +47,38 @@ export class BadgeProcessingService {
       return data;
     } catch (error) {
       console.error('❌ Kingslayer badge processing error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process clutch performer badge for a specific team after a 2-1 match win
+   */
+  static async processClutchPerformerBadge(winnerId: string, team1GameWins: number, team2GameWins: number): Promise<any> {
+    try {
+      // Check if this was a 2-1 victory
+      const isClutchWin = (team1GameWins === 2 && team2GameWins === 1) || (team1GameWins === 1 && team2GameWins === 2);
+      
+      if (!isClutchWin) {
+        console.log('⏸️ Not a 2-1 match, skipping clutch performer badge processing');
+        return { awarded: false, reason: 'Not a 2-1 match' };
+      }
+
+      console.log('🎯 Processing clutch performer badge for winner:', winnerId);
+      
+      const { data, error } = await supabase.rpc('award_clutch_performer_badge', {
+        p_team_id: winnerId
+      });
+
+      if (error) {
+        console.error('❌ Error processing clutch performer badge:', error);
+        throw error;
+      }
+
+      console.log('✅ Clutch performer badge processing result:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Clutch performer badge processing error:', error);
       throw error;
     }
   }
