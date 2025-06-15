@@ -3,7 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { useTeamBadges } from '@/hooks/useTeamBadges';
 import { getBadgeConfig } from '@/utils/badgeConfig';
-import TeamBadge from './TeamBadge';
+import { TeamBadge } from './TeamBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface TeamBadgeCollectionProps {
