@@ -1882,24 +1882,40 @@ export type Database = {
       }
       team_memberships: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           id: string
+          is_approved: boolean
           joined_at: string | null
           team_id: string | null
           user_id: string | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           id?: string
+          is_approved?: boolean
           joined_at?: string | null
           team_id?: string | null
           user_id?: string | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           id?: string
+          is_approved?: boolean
           joined_at?: string | null
           team_id?: string | null
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "team_memberships_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "team_memberships_team_id_fkey"
             columns: ["team_id"]

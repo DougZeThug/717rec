@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +9,9 @@ interface TeamMembershipData {
   user_id: string;
   team_id: string;
   joined_at: string;
+  is_approved: boolean;
+  approved_by?: string;
+  approved_at?: string;
   team?: Team;
 }
 
@@ -40,6 +42,9 @@ export function useTeamMembership() {
           user_id,
           team_id,
           joined_at,
+          is_approved,
+          approved_by,
+          approved_at,
           team:teams(id, name, logo_url, image_url, division_id, wins, losses, game_wins, game_losses)
         `)
         .eq("user_id", user.id)
@@ -115,30 +120,39 @@ export function useTeamMembership() {
     try {
       setIsLoading(true);
       
-      // If already in a team, update the membership
+      // If already in a team, update the membership (but reset approval status)
       if (membership) {
         const { error } = await supabase
           .from("team_memberships")
-          .update({ team_id: teamId })
+          .update({ 
+            team_id: teamId,
+            is_approved: false,
+            approved_by: null,
+            approved_at: null
+          })
           .eq("user_id", user.id);
         
         if (error) throw error;
         
         toast({
-          title: "Team Updated",
-          description: "You've successfully changed teams",
+          title: "Team Request Submitted",
+          description: "Your request to change teams has been submitted for admin approval",
         });
       } else {
-        // Otherwise create a new membership
+        // Otherwise create a new membership (starts as unapproved)
         const { error } = await supabase
           .from("team_memberships")
-          .insert({ user_id: user.id, team_id: teamId });
+          .insert({ 
+            user_id: user.id, 
+            team_id: teamId,
+            is_approved: false
+          });
         
         if (error) throw error;
         
         toast({
-          title: "Team Joined",
-          description: "You've successfully joined the team",
+          title: "Team Request Submitted",
+          description: "Your request to join the team has been submitted for admin approval",
         });
       }
       
@@ -147,7 +161,7 @@ export function useTeamMembership() {
     } catch (error: any) {
       console.error("Error joining team:", error);
       toast({
-        title: "Failed to join team",
+        title: "Failed to submit request",
         description: error.message || "Please try again later",
         variant: "destructive",
       });
@@ -170,7 +184,7 @@ export function useTeamMembership() {
       
       setMembership(null);
       toast({
-        title: "Team Left",
+        title: "Left Team",
         description: "You've successfully left the team",
       });
     } catch (error: any) {
