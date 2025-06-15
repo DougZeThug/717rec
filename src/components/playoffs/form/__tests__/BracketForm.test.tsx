@@ -43,8 +43,9 @@ vi.mock('../BracketFormChallonge', () => ({
   BracketFormChallonge: () => <div data-testid="bracket-form-challonge">Challonge Component</div>,
 }));
 
-vi.mock('../BracketFormTeams', () => ({
-  BracketFormTeams: () => <div data-testid="bracket-form-teams">Teams Component</div>,
+// Updated to mock the new BracketFormTeamsContainer component
+vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
+  BracketFormTeamsContainer: () => <div data-testid="bracket-form-teams">Teams Component</div>,
 }));
 
 vi.mock('../BracketFormActions', () => ({

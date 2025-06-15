@@ -1,70 +1,68 @@
 
 # Bracket Form Teams Module
 
-This module provides a comprehensive team selection system for playoff bracket creation. It handles team data processing, filtering by division, seeding, and user interaction state management.
+## Overview
+
+This module provides components and utilities for team selection in bracket creation forms. It uses a simplified architecture with direct team selection management.
 
 ## Architecture
 
-```
-bracket-teams/
-├── components/          # UI Components
-├── hooks/              # Custom React Hooks
-├── types/              # TypeScript Interfaces
-├── utils/              # Utility Functions
-├── README.md           # Module Documentation
-├── IMPORT_GUIDELINES.md # Import Pattern Documentation
-└── index.ts            # Main Barrel Export
-```
+### Components
+
+- **BracketFormTeamsContainer**: Main container component that orchestrates team selection
+- **TeamSelectionForm**: Form component for displaying and selecting teams
+- **TeamSelectionLoading**: Loading state component
+- **TeamSelectionError**: Error state component with retry functionality
+- **TeamSelectionEmpty**: Empty state when no teams are available
+
+### Hooks
+
+- **useBracketFormData**: Handles team data fetching and processing
+- **useTeamSelectionState**: Manages team selection state and interactions
+- **useBracketFormValidation**: Provides form validation logic
+
+### Types
+
+- **BracketFormTeamsContainerProps**: Props for the main container component
+- **BracketFormStateResult**: State management result interface
+- **ProcessedTeam**: Enhanced team interface with additional playoff-specific data
 
 ## Usage
 
-```typescript
-import { BracketFormTeamsContainer } from '@/components/playoffs/form/bracket-teams';
-import { Division } from '@/types'; // Import core types directly
+```tsx
+import { BracketFormTeamsContainer } from './bracket-teams';
 
 <BracketFormTeamsContainer
-  divisionId="div-1"
+  divisionId={selectedDivisionId}
+  teams={teamsArray} // Optional - will fetch if not provided
   maxTeams={16}
-  onChange={handleTeamSelection}
-  divisions={divisions}
   minTeams={2}
+  divisions={availableDivisions}
+  onChange={({ ids, isValid }) => {
+    // Handle team selection changes
+  }}
 />
 ```
 
-## Import Guidelines
-
-**Important**: Always import core types like `Division` and `Team` directly from `@/types` to avoid circular dependencies. See [IMPORT_GUIDELINES.md](./IMPORT_GUIDELINES.md) for detailed patterns.
-
 ## Key Features
 
-- **Team Data Processing**: Converts rankings to seeded teams
-- **Division Filtering**: Filter teams by division
-- **State Management**: Handles selection state and validation
-- **Form Validation**: Real-time validation with progress tracking
-- **Error Handling**: Graceful error states and loading indicators
-
-## Components
-
-- `BracketFormTeamsContainer`: Main container component
-- `TeamSelectionForm`: Interactive team selection UI
-- `TeamSelectionError`: Error state display
-- `TeamSelectionLoading`: Loading state display
-- `TeamSelectionEmpty`: Empty state display
-
-## Hooks
-
-- `useBracketFormData`: Data fetching and processing
-- `useBracketFormState`: Consolidated state management
-- `useTeamSelectionState`: Team selection logic
-- `useFormValidation`: Form validation and progress
-- `useTeamDataProcessor`: Team data transformation
-- `useDivisionMapping`: Division name to ID mapping
-- `useTeamSelectionEffects`: Side effects management
+- **Type-safe**: Full TypeScript support with runtime validation
+- **Flexible data sources**: Can use provided teams or fetch from API
+- **Real-time validation**: Immediate feedback on selection validity
+- **Division filtering**: Automatic filtering by selected division
+- **Performance optimized**: Memoized computations and efficient re-renders
 
 ## Testing
 
-The module includes comprehensive test utilities in `utils/testDataFactory.ts` for creating mock data and test scenarios.
+The module includes comprehensive test coverage:
+- Unit tests for individual hooks
+- Integration tests for component interactions
+- Mock data factories for consistent testing
 
-## Type Safety
+## Migration Notes
 
-This module follows strict import guidelines to prevent circular dependencies. All core types are imported directly from `@/types`, while module-specific types are defined locally.
+This module replaces the deprecated `BracketFormTeams` component. All functionality has been preserved while improving:
+- Type safety
+- Performance
+- Maintainability
+- Test coverage
