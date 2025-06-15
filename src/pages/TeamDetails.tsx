@@ -8,8 +8,10 @@ import TeamHeader from "@/components/teams/TeamHeader";
 import StatBreakdown from "@/components/teams/StatBreakdown";
 import MatchList from "@/components/teams/MatchList";
 import PlayerList from "@/components/teams/PlayerList";
+import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { useTeamMatches } from "@/hooks/useTeamMatches";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
+import { Card } from "@/components/ui/card";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -66,6 +68,24 @@ const TeamDetails = () => {
       </Button>
       
       <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
+      
+      {/* Team Achievements Section */}
+      {teamId && (
+        <Card className="p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Team Achievements</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <TeamBadgeCollection
+              teamId={teamId}
+              size="lg"
+              maxDisplay={12}
+              orientation="horizontal"
+              className="gap-3"
+            />
+          </div>
+        </Card>
+      )}
       
       <StatBreakdown
         wins={team.wins}

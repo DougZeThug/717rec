@@ -3,6 +3,7 @@ import React from "react";
 import { Team } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { TeamLogo } from "@/components/ui/team/TeamLogo";
+import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { blueAmberHeading } from "@/styles/design-system/blueAmber";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +14,7 @@ interface TeamHeaderProps {
 
 const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center mb-8">
       <div className="flex justify-center mb-4 w-full">
         <TeamLogo
           imageUrl={team?.imageUrl || team?.logoUrl}
@@ -25,17 +26,30 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
       <div className="text-center">
         {/* Team Name with blue-amber gradient styling */}
         <h1 className={cn(
-          "font-bebas uppercase tracking-wide text-3xl sm:text-4xl font-normal",
+          "font-bebas uppercase tracking-wide text-3xl sm:text-4xl font-normal mb-2",
           blueAmberHeading()
         )}>
           {team.name}
         </h1>
-        <div className="flex flex-wrap justify-center items-center gap-2 mt-2">
+        
+        {/* Division Badge */}
+        <div className="flex flex-wrap justify-center items-center gap-2 mb-4">
           {team.divisionName && (
             <Badge variant="outline" className="font-inter uppercase font-medium tracking-widest text-xs sm:text-sm py-1 px-3">
               {team.divisionName}
             </Badge>
           )}
+        </div>
+        
+        {/* Team Badges - Trophy Case */}
+        <div className="flex justify-center">
+          <TeamBadgeCollection
+            teamId={team.id}
+            size="md"
+            maxDisplay={8}
+            orientation="horizontal"
+            className="gap-2"
+          />
         </div>
       </div>
     </div>
