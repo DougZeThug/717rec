@@ -2675,6 +2675,10 @@ export type Database = {
       }
     }
     Functions: {
+      award_kingslayer_badge: {
+        Args: { p_winner_id: string; p_loser_id: string }
+        Returns: Json
+      }
       award_streak_badges: {
         Args: { p_team_id: string }
         Returns: Json

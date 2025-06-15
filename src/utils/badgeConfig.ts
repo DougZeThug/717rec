@@ -1,5 +1,5 @@
 
-import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake } from 'lucide-react';
+import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake, Swords } from 'lucide-react';
 import { BadgeConfig, BadgeType } from '@/types/badges';
 
 export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
@@ -112,8 +112,8 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
   king_slayer: {
     type: 'king_slayer',
     name: 'King Slayer',
-    description: 'Defeated the #1 ranked team',
-    icon: Zap,
+    description: 'Defeated a team with significantly higher power score',
+    icon: Swords,
     gradient: 'from-red-500 to-red-700',
     bgColor: 'bg-red-100',
     textColor: 'text-red-800',

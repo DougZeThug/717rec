@@ -81,10 +81,15 @@ export const updateMatchScore = async ({
 
   console.log('✅ Match updated successfully:', data);
 
-  // Process streak badges for both teams after match completion
+  // Process all badges for both teams after match completion
   try {
+    // Process streak badges first
     const badgeResult = await BadgeProcessingService.processMatchBadges(team1_id, team2_id);
     console.log('🏆 Badge processing completed:', badgeResult);
+
+    // Process kingslayer badge separately
+    const kingslayerResult = await BadgeProcessingService.processKingslayerBadge(winnerId, loserId);
+    console.log('⚔️ Kingslayer badge processing completed:', kingslayerResult);
   } catch (badgeError) {
     console.warn('⚠️ Badge processing failed (non-critical):', badgeError);
     // Don't throw here - badge processing failure shouldn't prevent match completion

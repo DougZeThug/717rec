@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export class BadgeProcessingService {
   /**
-   * Process streak badges for both teams after a match is completed
+   * Process all badges for both teams after a match is completed
    */
   static async processMatchBadges(team1Id: string, team2Id: string): Promise<any> {
     try {
@@ -23,6 +23,31 @@ export class BadgeProcessingService {
       return data;
     } catch (error) {
       console.error('❌ Badge processing service error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Process kingslayer badge for a specific match
+   */
+  static async processKingslayerBadge(winnerId: string, loserId: string): Promise<any> {
+    try {
+      console.log('⚔️ Processing kingslayer badge:', { winnerId, loserId });
+      
+      const { data, error } = await supabase.rpc('award_kingslayer_badge', {
+        p_winner_id: winnerId,
+        p_loser_id: loserId
+      });
+
+      if (error) {
+        console.error('❌ Error processing kingslayer badge:', error);
+        throw error;
+      }
+
+      console.log('✅ Kingslayer badge processing result:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Kingslayer badge processing error:', error);
       throw error;
     }
   }

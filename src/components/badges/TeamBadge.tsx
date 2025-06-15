@@ -40,14 +40,28 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     return null;
   };
 
-  const streakCount = getStreakCount();
+  // Extract power score difference for kingslayer badge
+  const getPowerScoreDiff = (): number | null => {
+    if (badge.badge_type === 'king_slayer') {
+      return (badge.metadata as any)?.power_score_diff || null;
+    }
+    return null;
+  };
 
-  // Enhanced description for streak badges
+  const streakCount = getStreakCount();
+  const powerScoreDiff = getPowerScoreDiff();
+
+  // Enhanced description for special badges
   const getEnhancedDescription = (): string => {
     if (streakCount && (badge.badge_type === 'hot_streak' || badge.badge_type === 'cold_streak')) {
       const streakType = badge.badge_type === 'hot_streak' ? 'winning' : 'losing';
       return `Currently on a ${streakType} streak of ${streakCount} matches`;
     }
+    
+    if (powerScoreDiff && badge.badge_type === 'king_slayer') {
+      return `Defeated an opponent with ${powerScoreDiff.toFixed(1)} higher power score`;
+    }
+    
     return config.description;
   };
 
@@ -69,6 +83,13 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       {streakCount && (
         <div className="absolute -top-1 -right-1 bg-white text-gray-800 text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center border border-gray-200">
           {streakCount}
+        </div>
+      )}
+      
+      {/* Power score difference indicator for kingslayer badge */}
+      {powerScoreDiff && (
+        <div className="absolute -top-1 -right-1 bg-white text-red-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border border-red-200">
+          +{powerScoreDiff.toFixed(1)}
         </div>
       )}
       
