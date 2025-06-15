@@ -69,24 +69,6 @@ const TeamDetails = () => {
       
       <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
       
-      {/* Team Achievements Section */}
-      {teamId && (
-        <Card className="p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Team Achievements</h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <TeamBadgeCollection
-              teamId={teamId}
-              size="lg"
-              maxDisplay={12}
-              orientation="horizontal"
-              className="gap-3"
-            />
-          </div>
-        </Card>
-      )}
-      
       <StatBreakdown
         wins={team.wins}
         losses={team.losses}
@@ -103,6 +85,24 @@ const TeamDetails = () => {
       />
 
       <PlayerList players={team.players || []} />
+      
+      {/* Team Achievements Section - moved below PlayerList */}
+      {teamId && (
+        <Card className="p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Team Achievements</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <TeamBadgeCollection
+              teamId={teamId}
+              size="lg"
+              maxDisplay={12}
+              orientation="horizontal"
+              className="gap-3"
+            />
+          </div>
+        </Card>
+      )}
       
       <MatchList
         title="Match History"

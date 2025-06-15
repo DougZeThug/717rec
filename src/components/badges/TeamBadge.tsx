@@ -64,6 +64,43 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     return null;
   };
 
+  // Format championship badge description with season context
+  const getChampionshipDescription = (): string => {
+    const isChampionshipBadge = badge.badge_type.includes('champion') || 
+                               badge.badge_type.includes('runner_up') || 
+                               badge.badge_type.includes('third_place');
+    
+    if (!isChampionshipBadge) {
+      return config.description;
+    }
+
+    // Extract season and division info from badge metadata or awarded date
+    const seasonYear = new Date(badge.awarded_at).getFullYear();
+    const seasonName = `${seasonYear}`;
+    
+    // Parse division from badge type
+    let division = '';
+    let placement = '';
+    
+    if (badge.badge_type.includes('recreational')) {
+      division = 'Recreational';
+    } else if (badge.badge_type.includes('intermediate')) {
+      division = 'Intermediate';
+    } else if (badge.badge_type.includes('competitive')) {
+      division = 'Competitive';
+    }
+    
+    if (badge.badge_type.includes('champion')) {
+      placement = 'Champion';
+    } else if (badge.badge_type.includes('runner_up')) {
+      placement = 'Runner-up';
+    } else if (badge.badge_type.includes('third_place')) {
+      placement = 'Third Place';
+    }
+    
+    return `${seasonName} ${division} ${placement}`;
+  };
+
   const streakCount = getStreakCount();
   const powerScoreDiff = getPowerScoreDiff();
   const clutchWinsCount = getClutchWinsCount();
@@ -71,6 +108,15 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
 
   // Enhanced description for special badges
   const getEnhancedDescription = (): string => {
+    // For championship badges, show contextual season/division info
+    const isChampionshipBadge = badge.badge_type.includes('champion') || 
+                               badge.badge_type.includes('runner_up') || 
+                               badge.badge_type.includes('third_place');
+    
+    if (isChampionshipBadge) {
+      return getChampionshipDescription();
+    }
+
     if (streakCount && (badge.badge_type === 'hot_streak' || badge.badge_type === 'cold_streak')) {
       const streakType = badge.badge_type === 'hot_streak' ? 'winning' : 'losing';
       return `Currently on a ${streakType} streak of ${streakCount} matches`;
@@ -101,7 +147,7 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
         'group cursor-help',
         className
       )}
-      title={showDescription ? getEnhancedDescription() : config.name}
+      title={getEnhancedDescription()}
     >
       <IconComponent className={cn('text-white', iconSizes[size])} />
       
