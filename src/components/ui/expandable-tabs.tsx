@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
 interface Tab {
+  type: "tab";
   title: string;
   icon: LucideIcon;
-  type?: never;
 }
 
 interface Separator {
@@ -85,10 +85,11 @@ export function ExpandableTabs({
           return <Separator key={`separator-${index}`} />;
         }
 
-        const Icon = tab.icon;
+        // Now TypeScript knows tab is of type Tab
+        const { icon: Icon, title } = tab;
         return (
           <motion.button
-            key={tab.title}
+            key={title}
             variants={buttonVariants}
             initial={false}
             animate="animate"
@@ -113,7 +114,7 @@ export function ExpandableTabs({
                   transition={transition}
                   className="overflow-hidden"
                 >
-                  {tab.title}
+                  {title}
                 </motion.span>
               )}
             </AnimatePresence>
