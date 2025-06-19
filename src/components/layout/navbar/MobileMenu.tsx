@@ -2,20 +2,23 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import NavLinks from "./NavLinks";
+import NavExpandableTabs from "./NavExpandableTabs";
 import NavActions from "./NavActions";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 interface MobileMenuProps {
-  navItems: Array<{ label: string; href: string }>;
+  // Remove navItems prop since NavExpandableTabs has its own items
 }
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
+const MobileMenu: React.FC<MobileMenuProps> = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAdminAccessGranted } = useAdminAccess();
   
   const toggleMenu = () => {
     setIsOpen(!isOpen);
+  };
+
+  const handleTabChange = () => {
+    // Close menu when navigation occurs
+    setIsOpen(false);
   };
 
   return (
@@ -33,10 +36,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
       </div>
       
       {isOpen && (
-        <div className="md:hidden pt-2 pb-3 space-y-1">
-          <NavLinks 
-            isMobile={true} 
-            onLinkClick={() => setIsOpen(false)}
+        <div className="md:hidden pt-4 pb-3">
+          <NavExpandableTabs 
+            isMobile={true}
+            onChange={handleTabChange}
           />
         </div>
       )}

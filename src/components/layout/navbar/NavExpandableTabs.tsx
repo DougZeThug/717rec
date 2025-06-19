@@ -5,7 +5,15 @@ import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare } from "
 import { ExpandableTabs } from "@/components/ui/expandable-tabs";
 import { cn } from "@/lib/utils";
 
-const NavExpandableTabs: React.FC = () => {
+interface NavExpandableTabsProps {
+  isMobile?: boolean;
+  onChange?: (index: number | null) => void;
+}
+
+const NavExpandableTabs: React.FC<NavExpandableTabsProps> = ({ 
+  isMobile = false,
+  onChange 
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -27,6 +35,7 @@ const NavExpandableTabs: React.FC = () => {
   const handleTabChange = (index: number | null) => {
     if (index !== null && navItems[index]) {
       navigate(navItems[index].href);
+      onChange?.(index);
     }
   };
 
@@ -36,12 +45,19 @@ const NavExpandableTabs: React.FC = () => {
       activeColor="text-white dark:text-white"
       onChange={handleTabChange}
       className={cn(
+        // Base styling for both desktop and mobile
         "bg-white/10 dark:bg-gray-700/50 border-white/20 dark:border-gray-600/50",
         "[&>button]:text-white dark:[&>button]:text-white",
         "[&>button]:hover:text-white dark:[&>button]:hover:text-white",
         "[&>button]:hover:bg-white/20 dark:[&>button]:hover:bg-gray-600/50",
         "[&>button[data-state=active]]:bg-white/20 dark:[&>button[data-state=active]]:bg-gray-700",
-        "[&>button[data-state=active]]:text-white dark:[&>button[data-state=active]]:text-white"
+        "[&>button[data-state=active]]:text-white dark:[&>button[data-state=active]]:text-white",
+        // Mobile-specific styling
+        isMobile && [
+          "w-full justify-center",
+          "[&>button]:min-h-[48px] [&>button]:px-4",
+          "[&>button]:text-base [&>button]:font-medium",
+        ]
       )}
     />
   );
