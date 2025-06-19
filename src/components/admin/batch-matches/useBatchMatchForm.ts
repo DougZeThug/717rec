@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types";
@@ -41,8 +40,8 @@ export const useBatchMatchForm = (teams: Team[]) => {
   };
 
   const autoAssignTimeslots = () => {
-    // Use standard 12-hour format for consistency
-    const timeslots = ['6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
+    // Use standard 12-hour format for consistency - now includes 6:00 PM
+    const timeslots = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
     const updatedPairs = matchPairs.map((pair, index) => ({
       ...pair,
       timeslot: timeslots[index % timeslots.length]

@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Select,
@@ -20,6 +19,7 @@ interface MatchFormRowProps {
 }
 
 const timeSlots = [
+  "6:00 PM",
   "6:30 PM",
   "7:00 PM",
   "7:30 PM",
