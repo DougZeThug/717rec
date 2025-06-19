@@ -18,7 +18,15 @@ import { normalizeDate } from "@/utils/dateNormalization";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("completed");
+  
+  // Smart default tab based on day of week
+  const getDefaultTab = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
+    return dayOfWeek === 4 ? "upcoming" : "completed"; // Thursday = upcoming
+  };
+  
+  const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { resolvedTheme } = useTheme();
   
