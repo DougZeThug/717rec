@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Team } from "@/types";
 import { Trash, MoveVertical } from "lucide-react";
@@ -68,7 +69,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                     {pair.team1Id && (
                       <div className="flex items-center gap-2">
                         <TeamLogo 
-                          imageUrl={getTeamById(pair.team1Id)?.logoUrl || ''}
+                          imageUrl={getTeamById(pair.team1Id)?.imageUrl || ''}
                           teamName={getTeamById(pair.team1Id)?.name || ''}
                           className="h-4 w-4"
                         />
@@ -85,7 +86,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                         <SelectItem key={team.id} value={team.id}>
                           <div className="flex items-center gap-2">
                             <TeamLogo 
-                              imageUrl={team.logoUrl || ''}
+                              imageUrl={team.imageUrl || ''}
                               teamName={team.name}
                               className="h-4 w-4"
                             />
@@ -115,7 +116,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                     {pair.team2Id && (
                       <div className="flex items-center gap-2">
                         <TeamLogo 
-                          imageUrl={getTeamById(pair.team2Id)?.logoUrl || ''}
+                          imageUrl={getTeamById(pair.team2Id)?.imageUrl || ''}
                           teamName={getTeamById(pair.team2Id)?.name || ''}
                           className="h-4 w-4"
                         />
@@ -132,7 +133,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
                         <SelectItem key={team.id} value={team.id}>
                           <div className="flex items-center gap-2">
                             <TeamLogo 
-                              imageUrl={team.logoUrl || ''}
+                              imageUrl={team.imageUrl || ''}
                               teamName={team.name}
                               className="h-4 w-4"
                             />
