@@ -11,6 +11,17 @@ export const useMatchTimeslots = (date: Date | null) => {
   const [groupedTimeslots, setGroupedTimeslots] = useState<Record<string, TeamTimeslot[]>>({});
   const queryClient = useQueryClient();
   
+  // Filter function to show only primary timeslots for each team
+  const filterToPrimaryTimeslots = (data: TeamTimeslot[]): TeamTimeslot[] => {
+    return data.filter(timeslot => {
+      // Include legacy single timeslots (not back-to-back)
+      if (!timeslot.is_back_to_back) return true;
+      
+      // For back-to-back, only include the primary slot (sequence 1)
+      return timeslot.match_sequence === 1;
+    });
+  };
+  
   useEffect(() => {
     const loadTimeslots = async () => {
       if (!date) {
@@ -35,6 +46,8 @@ export const useMatchTimeslots = (date: Date | null) => {
             timeslot,
             team_id,
             created_at,
+            is_back_to_back,
+            match_sequence,
             teams:team_id (
               id, 
               name, 
@@ -66,10 +79,14 @@ export const useMatchTimeslots = (date: Date | null) => {
         
         console.log('Formatted timeslots data:', formattedData);
         
-        setTimeslots(formattedData);
+        // Filter to show only primary timeslots
+        const filteredData = filterToPrimaryTimeslots(formattedData);
+        console.log('Filtered timeslots (primary only):', filteredData);
+        
+        setTimeslots(filteredData);
         
         // Group timeslots by timeslot value
-        const grouped = formattedData.reduce((acc: Record<string, TeamTimeslot[]>, curr) => {
+        const grouped = filteredData.reduce((acc: Record<string, TeamTimeslot[]>, curr) => {
           if (!curr.timeslot) return acc;
           
           if (!acc[curr.timeslot]) {
@@ -116,6 +133,8 @@ export const useMatchTimeslots = (date: Date | null) => {
             timeslot,
             team_id,
             created_at,
+            is_back_to_back,
+            match_sequence,
             teams:team_id (
               id, 
               name, 
@@ -130,7 +149,7 @@ export const useMatchTimeslots = (date: Date | null) => {
               return;
             }
             
-            // Map and update the state
+            // Map and filter the data
             const formattedData = data?.map(item => ({
               ...item,
               teams: item.teams ? {
@@ -142,10 +161,13 @@ export const useMatchTimeslots = (date: Date | null) => {
               } : undefined
             })) || [];
             
-            setTimeslots(formattedData);
+            // Filter to show only primary timeslots
+            const filteredData = filterToPrimaryTimeslots(formattedData);
+            
+            setTimeslots(filteredData);
             
             // Group timeslots
-            const grouped = formattedData.reduce((acc: Record<string, TeamTimeslot[]>, curr) => {
+            const grouped = filteredData.reduce((acc: Record<string, TeamTimeslot[]>, curr) => {
               if (!curr.timeslot) return acc;
               
               if (!acc[curr.timeslot]) {
