@@ -24,15 +24,29 @@ const TimeslotsTab = () => {
   const { 
     timeslots, 
     isLoading: isLoadingTimeslots, 
+    addTimeslot, 
     deleteTimeslot,
     batchAssignTimeslots
   } = useTimeslots(selectedDate);
+
+  const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
+    try {
+      await addTimeslot(selectedDate, teamId, timeslot);
+      toast({
+        title: "Timeslot Assigned",
+        description: "Team timeslot has been successfully assigned.",
+      });
+    } catch (error) {
+      console.error("Error assigning timeslot:", error);
+      // Toast notification is handled in the hook
+    }
+  };
 
   const handleBatchTimeslotAssign = async (teamIds: string[], timeslot: string) => {
     try {
       console.log("Starting batch assignment for teams:", teamIds, "with timeslot:", timeslot);
       
-      // Use the batch assignment function
+      // Use the new batch assignment function
       await batchAssignTimeslots(selectedDate, teamIds, timeslot);
       
       toast({
@@ -86,7 +100,7 @@ const TimeslotsTab = () => {
       <CardContent>
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <h3 className="text-lg font-medium mb-4">Assign Timeslots</h3>
+            <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
             {isLoadingTeams ? (
               <p>Loading teams...</p>
             ) : (
@@ -94,6 +108,7 @@ const TimeslotsTab = () => {
                 selectedDate={selectedDate}
                 teams={teams}
                 existingTimeslots={timeslots}
+                onAssign={handleTimeslotAssign}
                 onBatchAssign={handleBatchTimeslotAssign}
               />
             )}
