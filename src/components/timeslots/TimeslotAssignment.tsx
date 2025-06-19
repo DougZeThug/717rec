@@ -28,6 +28,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   const [selectedTimeslot, setSelectedTimeslot] = useState<string>("");
   const [batchMode, setBatchMode] = useState<boolean>(false);
   
+  // Updated time slots to include 6:00 PM and all consecutive 30-minute slots
   const timeSlots = ["6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM"];
   
   // Filter out teams that already have a timeslot for this date

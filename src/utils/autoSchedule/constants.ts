@@ -1,62 +1,102 @@
+
 /**
  * Time block definitions for auto-scheduling
- * Updated for always back-to-back scheduling - teams ALWAYS play consecutive matches
+ * Updated for consecutive back-to-back scheduling - teams get selected time + next 30 minutes
  */
 
-// Back-to-back time slot pairs - the fundamental scheduling unit
+// Back-to-back time slot pairs - consecutive 30-minute slots
 export const BACK_TO_BACK_PAIRS = {
+  'SuperEarly': {
+    primary: '6:00 PM',
+    secondary: '6:30 PM',
+    label: 'Super Early Pair (6:00-6:30 PM)'
+  },
   'Early': {
     primary: '6:30 PM',
     secondary: '7:00 PM',
     label: 'Early Pair (6:30-7:00 PM)'
+  },
+  'MidEarly': {
+    primary: '7:00 PM',
+    secondary: '7:30 PM',
+    label: 'Mid Early Pair (7:00-7:30 PM)'
   },
   'Mid': {
     primary: '7:30 PM', 
     secondary: '8:00 PM',
     label: 'Mid Pair (7:30-8:00 PM)'
   },
+  'LateMid': {
+    primary: '8:00 PM',
+    secondary: '8:30 PM',
+    label: 'Late Mid Pair (8:00-8:30 PM)'
+  },
   'Late': {
     primary: '8:30 PM',
     secondary: '9:00 PM', 
     label: 'Late Pair (8:30-9:00 PM)'
+  },
+  'SuperLate': {
+    primary: '9:00 PM',
+    secondary: '9:30 PM',
+    label: 'Super Late Pair (9:00-9:30 PM)'
   }
 } as const;
 
-// Individual time slots for reference only
+// Individual time slots for reference
 export const TIME_SLOTS = {
+  '6:00 PM': '6:00 PM',
   '6:30 PM': '6:30 PM',
   '7:00 PM': '7:00 PM', 
   '7:30 PM': '7:30 PM',
   '8:00 PM': '8:00 PM',
   '8:30 PM': '8:30 PM',
-  '9:00 PM': '9:00 PM'
+  '9:00 PM': '9:00 PM',
+  '9:30 PM': '9:30 PM'
 } as const;
 
 // TIME_BLOCKS with structure expected by MatchPairingItem
 export const TIME_BLOCKS = {
+  SuperEarly: {
+    main: BACK_TO_BACK_PAIRS.SuperEarly.primary,
+    secondary: BACK_TO_BACK_PAIRS.SuperEarly.secondary
+  },
   Early: {
     main: BACK_TO_BACK_PAIRS.Early.primary,
     secondary: BACK_TO_BACK_PAIRS.Early.secondary
+  },
+  MidEarly: {
+    main: BACK_TO_BACK_PAIRS.MidEarly.primary,
+    secondary: BACK_TO_BACK_PAIRS.MidEarly.secondary
   },
   Mid: {
     main: BACK_TO_BACK_PAIRS.Mid.primary,
     secondary: BACK_TO_BACK_PAIRS.Mid.secondary
   },
+  LateMid: {
+    main: BACK_TO_BACK_PAIRS.LateMid.primary,
+    secondary: BACK_TO_BACK_PAIRS.LateMid.secondary
+  },
   Late: {
     main: BACK_TO_BACK_PAIRS.Late.primary,
     secondary: BACK_TO_BACK_PAIRS.Late.secondary
+  },
+  SuperLate: {
+    main: BACK_TO_BACK_PAIRS.SuperLate.primary,
+    secondary: BACK_TO_BACK_PAIRS.SuperLate.secondary
   }
 } as const;
 
-// Utility functions for back-to-back scheduling
+// Utility functions for consecutive back-to-back scheduling
 export const getBackToBackPair = (timeSlot: string): string | null => {
   switch (timeSlot) {
+    case '6:00 PM': return '6:30 PM';
     case '6:30 PM': return '7:00 PM';
-    case '7:00 PM': return '6:30 PM';
+    case '7:00 PM': return '7:30 PM';
     case '7:30 PM': return '8:00 PM';
-    case '8:00 PM': return '7:30 PM';
+    case '8:00 PM': return '8:30 PM';
     case '8:30 PM': return '9:00 PM';
-    case '9:00 PM': return '8:30 PM';
+    case '9:00 PM': return '9:30 PM';
     default: return null;
   }
 };
@@ -67,15 +107,20 @@ export const isValidBackToBackSlot = (timeSlot: string): boolean => {
 
 export const getBackToBackPairName = (timeSlot: string): string | null => {
   switch (timeSlot) {
+    case '6:00 PM':
+      return 'SuperEarly';
     case '6:30 PM':
-    case '7:00 PM':
       return 'Early';
+    case '7:00 PM':
+      return 'MidEarly';
     case '7:30 PM':
-    case '8:00 PM':
       return 'Mid';
+    case '8:00 PM':
+      return 'LateMid';
     case '8:30 PM':
-    case '9:00 PM':
       return 'Late';
+    case '9:00 PM':
+      return 'SuperLate';
     default:
       return null;
   }
@@ -83,14 +128,21 @@ export const getBackToBackPairName = (timeSlot: string): string | null => {
 
 export const getMatchSequence = (timeSlot: string): number | null => {
   switch (timeSlot) {
+    case '6:00 PM':
     case '6:30 PM':
-    case '7:30 PM':
-    case '8:30 PM':
-      return 1; // First match in the pair
     case '7:00 PM':
+    case '7:30 PM':
     case '8:00 PM':
+    case '8:30 PM':
     case '9:00 PM':
-      return 2; // Second match in the pair
+      return 1; // First match in the pair (primary slot)
+    case '7:00 PM':
+    case '7:30 PM':
+    case '8:00 PM':
+    case '8:30 PM':
+    case '9:00 PM':
+    case '9:30 PM':
+      return 2; // Second match in the pair (secondary slot)
     default:
       return null;
   }
