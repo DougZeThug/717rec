@@ -37,10 +37,11 @@ const NavExpandableTabs: React.FC = () => {
       onChange={handleTabChange}
       className={cn(
         "bg-white/10 dark:bg-gray-700/50 border-white/20 dark:border-gray-600/50",
-        "[&>button]:text-white/80 [&>button]:hover:text-white",
+        "[&>button]:text-white dark:[&>button]:text-white",
+        "[&>button]:hover:text-white dark:[&>button]:hover:text-white",
         "[&>button]:hover:bg-white/20 dark:[&>button]:hover:bg-gray-600/50",
         "[&>button[data-state=active]]:bg-white/20 dark:[&>button[data-state=active]]:bg-gray-700",
-        "[&>button[data-state=active]]:text-white"
+        "[&>button[data-state=active]]:text-white dark:[&>button[data-state=active]]:text-white"
       )}
     />
   );
