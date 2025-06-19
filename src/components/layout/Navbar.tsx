@@ -20,6 +20,15 @@ const Navbar: React.FC = () => {
     console.log("Navbar: User profile:", profile);
   }, [isAdminAccessGranted, profile]);
   
+  // Base nav items that everyone can see (for mobile menu)
+  const navItems = [
+    { label: "Home", href: "/" },
+    { label: "Teams", href: "/teams" },
+    { label: "Schedule", href: "/schedule" },
+    { label: "Standings", href: "/stats" },
+    { label: "Playoffs", href: "/playoffs" },
+  ];
+  
   return (
     <nav className={cn(
       "text-white shadow-lg sticky top-0 z-50 safe-area-top",
@@ -39,8 +48,8 @@ const Navbar: React.FC = () => {
             <NavActions className="ml-4" />
           </div>
 
-          {/* Mobile menu with hamburger - no longer needs navItems prop */}
-          <MobileMenu />
+          {/* Mobile menu with hamburger */}
+          <MobileMenu navItems={navItems} />
         </div>
       </div>
     </nav>
