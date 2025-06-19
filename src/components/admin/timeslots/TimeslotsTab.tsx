@@ -11,6 +11,7 @@ import TimeslotList from "@/components/timeslots/TimeslotList";
 import { useTimeslots } from "@/hooks/useTimeslots";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useToast } from "@/hooks/use-toast";
+import { ByeWeekService } from "@/services/timeslots/ByeWeekService";
 import { Team } from "@/types";
 
 const TimeslotsTab = () => {
@@ -31,14 +32,28 @@ const TimeslotsTab = () => {
 
   const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
     try {
-      await addTimeslot(selectedDate, teamId, timeslot);
-      toast({
-        title: "Timeslot Assigned",
-        description: "Team timeslot has been successfully assigned.",
-      });
+      if (timeslot === 'BYE') {
+        // Handle bye week assignment separately
+        await ByeWeekService.assignByeWeek(selectedDate, teamId);
+        toast({
+          title: "Bye Week Assigned",
+          description: "Team bye week has been successfully assigned.",
+        });
+      } else {
+        // Use existing timeslot service for regular timeslots
+        await addTimeslot(selectedDate, teamId, timeslot);
+        toast({
+          title: "Timeslot Assigned",
+          description: "Team timeslot has been successfully assigned.",
+        });
+      }
     } catch (error) {
       console.error("Error assigning timeslot:", error);
-      // Toast notification is handled in the hook
+      toast({
+        title: "Error",
+        description: "Failed to assign timeslot. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -46,29 +61,58 @@ const TimeslotsTab = () => {
     try {
       console.log("Starting batch assignment for teams:", teamIds, "with timeslot:", timeslot);
       
-      // Use the new batch assignment function
-      await batchAssignTimeslots(selectedDate, teamIds, timeslot);
-      
-      toast({
-        title: "Timeslots Assigned",
-        description: `${teamIds.length} team timeslots have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
-      });
+      if (timeslot === 'BYE') {
+        // Handle bye week batch assignment separately
+        await ByeWeekService.batchAssignByeWeeks(selectedDate, teamIds);
+        toast({
+          title: "Bye Weeks Assigned",
+          description: `${teamIds.length} team bye weeks have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+        });
+      } else {
+        // Use existing batch assignment function for regular timeslots
+        await batchAssignTimeslots(selectedDate, teamIds, timeslot);
+        toast({
+          title: "Timeslots Assigned",
+          description: `${teamIds.length} team timeslots have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+        });
+      }
     } catch (error) {
       console.error("Error during batch assignment:", error);
-      // Toast notification is handled in the hook
+      toast({
+        title: "Error",
+        description: "Failed to assign timeslots. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleTimeslotDelete = async (id: string) => {
     try {
-      await deleteTimeslot(id);
-      toast({
-        title: "Timeslot Removed",
-        description: "Timeslot assignment has been removed.",
-      });
+      // Check if this is a bye week by looking at the timeslot data
+      const timeslotToDelete = timeslots.find(ts => ts.id === id);
+      
+      if (timeslotToDelete?.timeslot === 'BYE') {
+        // Handle bye week deletion separately
+        await ByeWeekService.removeByeWeek(id);
+        toast({
+          title: "Bye Week Removed",
+          description: "Bye week assignment has been removed.",
+        });
+      } else {
+        // Use existing deletion service for regular timeslots
+        await deleteTimeslot(id);
+        toast({
+          title: "Timeslot Removed",
+          description: "Timeslot assignment has been removed.",
+        });
+      }
     } catch (error) {
       console.error("Error removing timeslot:", error);
-      // Toast notification is handled in the hook
+      toast({
+        title: "Error",
+        description: "Failed to remove timeslot. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 

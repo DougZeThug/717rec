@@ -1,12 +1,22 @@
+
 import { useState, useEffect } from "react";
 import { TeamTimeslot } from "@/types/timeslots";
 import { useTimeslotQuery } from "./useTimeslotQuery";
 import { useTimeslotMutation } from "./useTimeslotMutation";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 
 export const useTimeslots = (date: Date) => {
+  const queryClient = useQueryClient();
   const { timeslots, groupedTimeslots, isLoading, error } = useTimeslotQuery(date);
   const { isSubmitting, addTimeslot, deleteTimeslot, batchAssignTimeslots } = useTimeslotMutation();
   
+  // Function to refresh timeslots data (useful after bye week operations)
+  const refreshTimeslots = () => {
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
+  };
+
   // External API remains consistent with previous implementation
   return {
     timeslots,
@@ -15,6 +25,7 @@ export const useTimeslots = (date: Date) => {
     groupedTimeslots,
     addTimeslot,
     deleteTimeslot,
-    batchAssignTimeslots
+    batchAssignTimeslots,
+    refreshTimeslots
   };
 };

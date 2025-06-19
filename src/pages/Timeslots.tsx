@@ -10,11 +10,12 @@ import { useTimeslots } from "@/hooks/useTimeslots";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { Navigate } from "react-router-dom";
+import { ByeWeekService } from "@/services/timeslots/ByeWeekService";
 
 export default function Timeslots() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { data: teams, isLoading: isLoadingTeams } = useTeamData();
-  const { timeslots, isLoading, addTimeslot, deleteTimeslot, batchAssignTimeslots } = useTimeslots(selectedDate);
+  const { timeslots, isLoading, addTimeslot, deleteTimeslot, batchAssignTimeslots, refreshTimeslots } = useTimeslots(selectedDate);
   const { toast } = useToast();
   const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();
   
@@ -41,18 +42,84 @@ export default function Timeslots() {
     }
   };
 
+  const handleAssign = async (teamId: string, timeslot: string) => {
+    try {
+      if (timeslot === 'BYE') {
+        await ByeWeekService.assignByeWeek(selectedDate, teamId);
+        refreshTimeslots(); // Refresh the data
+        toast({
+          title: "Bye week assigned",
+          description: `Team bye week has been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+        });
+      } else {
+        await addTimeslot(selectedDate, teamId, timeslot);
+        toast({
+          title: "Timeslot assigned",
+          description: `Team timeslot has been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+        });
+      }
+    } catch (error) {
+      console.error("Error assigning timeslot:", error);
+      toast({
+        title: "Error",
+        description: "Failed to assign timeslot. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleBatchAssign = async (teamIds: string[], timeslot: string) => {
     try {
-      // Use the new batch assignment function instead of individual calls
-      await batchAssignTimeslots(selectedDate, teamIds, timeslot);
-      
-      toast({
-        title: "Timeslots assigned",
-        description: `${teamIds.length} team timeslots have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
-      });
+      if (timeslot === 'BYE') {
+        await ByeWeekService.batchAssignByeWeeks(selectedDate, teamIds);
+        refreshTimeslots(); // Refresh the data
+        toast({
+          title: "Bye weeks assigned",
+          description: `${teamIds.length} team bye weeks have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+        });
+      } else {
+        await batchAssignTimeslots(selectedDate, teamIds, timeslot);
+        toast({
+          title: "Timeslots assigned",
+          description: `${teamIds.length} team timeslots have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+        });
+      }
     } catch (error) {
       console.error("Error during batch assignment:", error);
-      // The toast notification is already shown in the hook
+      toast({
+        title: "Error",
+        description: "Failed to assign timeslots. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      // Check if this is a bye week
+      const timeslotToDelete = timeslots.find(ts => ts.id === id);
+      
+      if (timeslotToDelete?.timeslot === 'BYE') {
+        await ByeWeekService.removeByeWeek(id);
+        refreshTimeslots(); // Refresh the data
+        toast({
+          title: "Bye week removed",
+          description: "The bye week assignment has been removed",
+        });
+      } else {
+        await deleteTimeslot(id);
+        toast({
+          title: "Timeslot removed",
+          description: "The timeslot assignment has been removed",
+        });
+      }
+    } catch (error) {
+      console.error("Error removing timeslot:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove timeslot. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -93,13 +160,7 @@ export default function Timeslots() {
                   selectedDate={selectedDate}
                   teams={teams || []}
                   existingTimeslots={timeslots}
-                  onAssign={(teamId, timeslot) => {
-                    addTimeslot(selectedDate, teamId, timeslot);
-                    toast({
-                      title: "Timeslot assigned",
-                      description: `Team timeslot has been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
-                    });
-                  }}
+                  onAssign={handleAssign}
                   onBatchAssign={handleBatchAssign}
                 />
               )}
@@ -117,13 +178,7 @@ export default function Timeslots() {
                 <TimeslotList 
                   timeslots={timeslots}
                   teams={teams || []}
-                  onDelete={(id) => {
-                    deleteTimeslot(id);
-                    toast({
-                      title: "Timeslot removed",
-                      description: "The timeslot assignment has been removed",
-                    });
-                  }}
+                  onDelete={handleDelete}
                 />
               )}
             </CardContent>
