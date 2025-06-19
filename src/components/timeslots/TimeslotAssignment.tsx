@@ -26,7 +26,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   const [teamId, setTeamId] = useState<string>("");
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [selectedTimeslot, setSelectedTimeslot] = useState<string>("");
-  const [batchMode, setBatchMode] = useState<boolean>(false);
+  const [batchMode, setBatchMode] = useState<boolean>(true); // Default to true for batch mode
   
   // Updated time slots to include 6:00 PM and all consecutive 30-minute slots
   const timeSlots = ["6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM"];
@@ -77,6 +77,8 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Hide the mode toggle buttons - they are commented out but kept for later cleanup */}
+      {/*
       <div className="flex items-center gap-2 mb-4">
         <Button
           type="button"
@@ -101,6 +103,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
           Multiple Teams
         </Button>
       </div>
+      */}
 
       {!batchMode ? (
         <div className="space-y-2">
