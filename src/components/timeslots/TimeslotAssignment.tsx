@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,8 +27,8 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   const [selectedTimeslot, setSelectedTimeslot] = useState<string>("");
   const [batchMode, setBatchMode] = useState<boolean>(true); // Default to true for batch mode
   
-  // Updated time slots to include 6:00 PM and all consecutive 30-minute slots
-  const timeSlots = ["6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM"];
+  // Updated time slots to include BYE and all consecutive 30-minute slots
+  const timeSlots = ["BYE", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM"];
   
   // Filter out teams that already have a timeslot for this date
   const assignedTeamIds = existingTimeslots.map(ts => ts.team_id);
@@ -198,10 +197,17 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
               value={time} 
               className={`
                 px-4 py-2 transition-colors
-                ${selectedTimeslot === time ? 'bg-cornhole-navy text-white' : 'border-cornhole-navy text-cornhole-navy'}
+                ${time === "BYE" 
+                  ? selectedTimeslot === time 
+                    ? 'bg-orange-600 text-white' 
+                    : 'border-orange-600 text-orange-600 hover:bg-orange-50'
+                  : selectedTimeslot === time 
+                    ? 'bg-cornhole-navy text-white' 
+                    : 'border-cornhole-navy text-cornhole-navy'
+                }
               `}
             >
-              {time}
+              {time === "BYE" ? "BYE WEEK" : time}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
