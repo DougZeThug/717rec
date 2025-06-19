@@ -30,7 +30,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
         <Button
           variant="secondary"
           size="sm"
-          className="bg-cornhole-navy text-white dark:bg-gray-700 hover:bg-cornhole-navy-light dark:hover:bg-gray-600 whitespace-nowrap !flex !items-center px-2"
+          className="bg-white/20 dark:bg-gray-700 text-white dark:text-white hover:bg-white/10 dark:hover:bg-gray-600 whitespace-nowrap !flex !items-center px-2"
           onClick={() => navigate("/auth")}
         >
           <LogIn className="h-4 w-4 mr-1" />
