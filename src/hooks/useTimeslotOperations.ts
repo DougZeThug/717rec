@@ -27,6 +27,9 @@ export const useTimeslotOperations = () => {
           timeslot,
           team_id,
           created_at,
+          is_back_to_back,
+          pair_slot,
+          match_sequence,
           teams:team_id (
             id, 
             name, 
