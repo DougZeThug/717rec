@@ -1,4 +1,3 @@
-
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare } from "lucide-react";
@@ -12,7 +11,7 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = ({ isMobile = false, onLinkClick }) => {
   const { isAdminAccessGranted } = useAdminAccess();
-  const activeClass = "bg-gray-100 dark:bg-slate-700";
+  const activeClass = "bg-white/20 dark:bg-slate-700 text-white dark:text-white";
   const baseClass = isMobile
     ? "flex items-center w-full px-4 py-3 text-sm font-medium text-white hover:bg-white/10 rounded-md transition-colors"
     : "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-4";
