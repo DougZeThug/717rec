@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -163,7 +162,7 @@ const TimeslotsTab = () => {
             {isLoadingTimeslots ? (
               <p>Loading timeslots...</p>
             ) : (
-              <div className="bg-slate-50 p-4 rounded-md border">
+              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-md border">
                 <TimeslotList 
                   timeslots={timeslots} 
                   teams={teams}
