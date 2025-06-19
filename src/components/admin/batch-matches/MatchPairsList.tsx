@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Team } from "@/types";
 import { Trash, MoveVertical } from "lucide-react";
@@ -41,6 +40,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
   };
 
   const timeSlotOptions = [
+    '6:00 PM',
     '6:30 PM',
     '7:00 PM',
     '7:30 PM',
