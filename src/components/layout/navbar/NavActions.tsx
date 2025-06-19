@@ -40,8 +40,8 @@ const NavActions: React.FC<NavActionsProps> = ({
           "rounded-full text-white hover:bg-white/10 dark:hover:bg-gray-700/80",
           isActive("/message-board") 
             ? cn(
-                "bg-gradient-to-br from-white/10 to-amber-500/10",
-                "dark:from-gray-700 dark:to-amber-700/20"
+                "bg-white/20 text-white",
+                "dark:bg-gray-700 dark:text-white"
               ) 
             : ""
         )}
