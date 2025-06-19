@@ -3,12 +3,13 @@ import React, { useEffect } from "react";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { gradients } from "@/styles/design-system";
 
 // Import component files
 import NavBrand from "./navbar/NavBrand";
+import NavLinks from "./navbar/NavLinks";
 import NavActions from "./navbar/NavActions";
 import MobileMenu from "./navbar/MobileMenu";
-import NavExpandableTabs from "./navbar/NavExpandableTabs";
 
 const Navbar: React.FC = () => {
   const { user, profile } = useAuth();
@@ -20,7 +21,7 @@ const Navbar: React.FC = () => {
     console.log("Navbar: User profile:", profile);
   }, [isAdminAccessGranted, profile]);
   
-  // Base nav items that everyone can see (for mobile menu)
+  // Base nav items that everyone can see
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Teams", href: "/teams" },
@@ -42,7 +43,7 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-1">
-            <NavExpandableTabs />
+            <NavLinks />
             
             {/* Add desktop nav actions with proper spacing */}
             <NavActions className="ml-4" />
