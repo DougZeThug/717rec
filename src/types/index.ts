@@ -1,3 +1,4 @@
+
 // Team related types
 export interface Team {
   id: string;
@@ -122,13 +123,16 @@ export interface Division {
   created_at?: string;
 }
 
-// Types for team timeslots
+// Types for team timeslots - Updated with complete definition
 export interface TeamTimeslot {
   id: string;
   match_date: string;
   timeslot: string;
   team_id: string;
   created_at: string;
+  is_back_to_back: boolean;
+  pair_slot: string | null;
+  match_sequence: number | null;
   teams?: {
     id: string;
     name: string;
