@@ -62,8 +62,8 @@ export const formatTimeString = (hours: number, minutes: number, use24Hour: bool
  * This normalizes time display formats to match what's stored in the database
  */
 export const normalizeTimeString = (timeString: string): string => {
-  // List of allowed time formats in the database
-  const allowedTimes = ['6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
+  // List of allowed time formats in the database - UPDATED to include 6:00 PM
+  const allowedTimes = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
   
   if (!timeString) {
     return '';
@@ -141,8 +141,8 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
       output: formattedTime
     });
     
-    // Standard time slots
-    const timeSlots = ['6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
+    // UPDATED: Standard time slots now include 6:00 PM
+    const timeSlots = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
     
     // Find exact match first
     if (timeSlots.includes(formattedTime)) {
@@ -162,18 +162,19 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
     if (period === 'PM' && hours < 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
     
-    // Find closest match by minutes from 6:30 PM
+    // FIXED: Calculate minutes from 6:00 PM baseline instead of 6:30 PM
     const minutesFromBaseline = (hours - 18) * 60 + minutes;
     
-    // Map to standard time slots at 30-minute intervals
-    if (minutesFromBaseline < 15) return '6:30 PM';
-    else if (minutesFromBaseline < 45) return '7:00 PM';
-    else if (minutesFromBaseline < 75) return '7:30 PM';
-    else if (minutesFromBaseline < 105) return '8:00 PM';
-    else if (minutesFromBaseline < 135) return '8:30 PM';
-    else if (minutesFromBaseline < 165) return '9:00 PM';
-    else if (minutesFromBaseline < 195) return '9:30 PM';
-    else return '10:00 PM';
+    // UPDATED: Map to standard time slots at 30-minute intervals starting from 6:00 PM
+    if (minutesFromBaseline < 15) return '6:00 PM';      // 6:00-6:14 PM
+    else if (minutesFromBaseline < 45) return '6:30 PM'; // 6:15-6:44 PM
+    else if (minutesFromBaseline < 75) return '7:00 PM'; // 6:45-7:14 PM
+    else if (minutesFromBaseline < 105) return '7:30 PM'; // 7:15-7:44 PM
+    else if (minutesFromBaseline < 135) return '8:00 PM'; // 7:45-8:14 PM
+    else if (minutesFromBaseline < 165) return '8:30 PM'; // 8:15-8:44 PM
+    else if (minutesFromBaseline < 195) return '9:00 PM'; // 8:45-9:14 PM
+    else if (minutesFromBaseline < 225) return '9:30 PM'; // 9:15-9:44 PM
+    else return '10:00 PM'; // 9:45 PM and later
   } catch (error) {
     console.error('Error extracting time slot from UTC date:', error);
     return 'No Time';
