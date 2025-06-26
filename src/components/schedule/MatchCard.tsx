@@ -10,6 +10,7 @@ import { animations, gradients, typography, elevation } from "@/styles/design-sy
 import { Progress } from "@/components/ui/progress";
 import { TeamLogo } from "@/components/ui/team";
 import { MatchInteractions } from "@/components/matches";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 interface MatchCardProps {
   match: Match;
@@ -27,6 +28,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   showInteractions = true
 }) => {
   const { resolvedTheme } = useTheme();
+  const { isAdminAccessGranted } = useAdminAccess();
   const isLight = resolvedTheme === "light";
   const [scoreAnimation, setScoreAnimation] = useState(false);
   const [countdownText, setCountdownText] = useState("");
@@ -254,8 +256,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
           )}
 
-          {/* Action buttons for non-completed matches */}
-          {!isCompleted && (onEdit || onDelete) && (
+          {/* Action buttons for non-completed matches - NOW WITH ADMIN CHECK */}
+          {!isCompleted && (onEdit || onDelete) && isAdminAccessGranted && (
             <div className="flex justify-end gap-2 pt-2">
               {onEdit && (
                 <button
