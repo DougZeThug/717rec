@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,8 +86,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       
-      // Calculate percentage for progress bar (assuming 7 days max)
-      const maxDiff = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+      // Calculate percentage for progress bar (using 12 hours max for more responsive feedback)
+      const maxDiff = 12 * 60 * 60 * 1000; // 12 hours in ms
       const percentage = Math.max(0, Math.min(100, (diff / maxDiff) * 100));
       setCountdownPercent(100 - percentage); // Invert so it fills up as time gets closer
       
