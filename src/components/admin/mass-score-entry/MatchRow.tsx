@@ -44,6 +44,11 @@ const MatchRow: React.FC<MatchRowProps> = ({
     onMarkCompleted(checked);
   };
 
+  const handleAutoComplete = () => {
+    console.log(`MatchRow: Auto-completing match ${match.id} at index ${index}`);
+    onMarkCompleted(true);
+  };
+
   return (
     <div className={`p-4 rounded-lg bg-background border ${hasError ? 'border-destructive' : 'border-border'}`}>
       <div className="space-y-4">
@@ -58,6 +63,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           match={match}
           onScoreChange={(scores) => onScoreChange(scores.team1Score, scores.team2Score)}
           onGameWinsChange={(gameWins) => onGameWinsChange(gameWins.team1GameWins, gameWins.team2GameWins)}
+          onAutoComplete={handleAutoComplete}
           isSubmitting={isSubmitting}
           hasError={hasError}
           errorMessage={errorMessage}

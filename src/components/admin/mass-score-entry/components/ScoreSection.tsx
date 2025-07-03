@@ -10,6 +10,7 @@ interface ScoreSectionProps {
   match: MatchWithTeams;
   onScoreChange: (scores: { team1Score: number; team2Score: number }) => void;
   onGameWinsChange: (gameWins: { team1GameWins: number; team2GameWins: number }) => void;
+  onAutoComplete?: () => void;
   isSubmitting?: boolean;
   hasError?: boolean;
   errorMessage?: string;
@@ -20,6 +21,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
   match,
   onScoreChange,
   onGameWinsChange,
+  onAutoComplete,
   isSubmitting = false,
   hasError = false,
   errorMessage,
@@ -48,10 +50,8 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
 
   // This function will be called to auto-complete the match when a score is selected
   const handleAutoComplete = () => {
-    // Find the parent component that can use this to mark the match as complete
     console.log(`ScoreSection: Auto-completing match ${match.id} after score selection`);
-    
-    // This is handled through props by the parent component that will receive the onComplete callback
+    onAutoComplete?.();
   };
 
   return (
