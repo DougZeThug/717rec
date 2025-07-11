@@ -257,10 +257,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
           )}
 
-          {/* Action buttons for non-completed matches - NOW WITH ADMIN CHECK */}
-          {!isCompleted && (onEdit || onDelete) && isAdminAccessGranted && (
+          {/* Action buttons - Admin can manage all matches, non-admins only incomplete matches */}
+          {((onEdit && !isCompleted) || (onDelete && (!isCompleted || isAdminAccessGranted))) && isAdminAccessGranted && (
             <div className="flex justify-end gap-2 pt-2">
-              {onEdit && (
+              {onEdit && !isCompleted && (
                 <button
                   onClick={() => onEdit(match)}
                   className={cn(
@@ -277,11 +277,19 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   onClick={() => onDelete(match.id)}
                   className={cn(
                     "p-1.5 rounded-full transition-all duration-200",
-                    "bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30",
+                    isCompleted 
+                      ? "bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800"
+                      : "bg-gray-100 hover:bg-red-100 dark:bg-gray-800 dark:hover:bg-red-900/30",
                     "hover:shadow-sm active:scale-95"
                   )}
+                  title={isCompleted ? "Permanently delete completed match" : "Delete incomplete match"}
                 >
-                  <Trash2 className="h-4 w-4 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400" />
+                  <Trash2 className={cn(
+                    "h-4 w-4 transition-colors",
+                    isCompleted 
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                  )} />
                 </button>
               )}
             </div>
