@@ -31,7 +31,7 @@ const MatchGrid: React.FC<MatchGridProps> = ({
           match={match}
           isCompleted={isCompleted}
           onEdit={!isCompleted ? onEdit : undefined}
-          onDelete={!isCompleted ? onDelete : undefined}
+          onDelete={onDelete}
         />
       ))}
     </div>

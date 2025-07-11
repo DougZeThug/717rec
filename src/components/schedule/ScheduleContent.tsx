@@ -130,7 +130,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
                 matches={group.matches}
                 isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
                 isFirstGroup={index === 0}
-                // No edit/delete functionality for completed matches
+                onDeleteMatch={onDeleteMatch}
               />
             ))}
           </div>
