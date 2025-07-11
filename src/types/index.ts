@@ -12,6 +12,7 @@ export interface Team {
   division?: string;
   imageUrl?: string;
   logoUrl?: string;
+  spotify_url?: string | null;
   players?: string[];
   seed?: number;
   challongeParticipantId?: number;
