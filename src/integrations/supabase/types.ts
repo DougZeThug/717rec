@@ -2410,6 +2410,7 @@ export type Database = {
           name: string
           players: string[] | null
           seed: number | null
+          spotify_url: string | null
           wins: number
         }
         Insert: {
@@ -2425,6 +2426,7 @@ export type Database = {
           name: string
           players?: string[] | null
           seed?: number | null
+          spotify_url?: string | null
           wins?: number
         }
         Update: {
@@ -2440,6 +2442,7 @@ export type Database = {
           name?: string
           players?: string[] | null
           seed?: number | null
+          spotify_url?: string | null
           wins?: number
         }
         Relationships: [
