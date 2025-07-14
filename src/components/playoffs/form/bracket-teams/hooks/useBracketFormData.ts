@@ -18,7 +18,40 @@ export const useBracketFormData = (
   
   // Short-circuit if teams are provided via props
   if (providedTeams && Array.isArray(providedTeams) && providedTeams.length > 0) {
-    const processedProvidedTeams: ProcessedTeam[] = providedTeams.map((team, index) => ({
+    // Sort teams by ranking logic before assigning seeds
+    const sortedProvidedTeams = [...providedTeams].sort((a, b) => {
+      const aPowerScore = a.power_score;
+      const bPowerScore = b.power_score;
+      
+      // Handle NULL power scores - put them at the end
+      if (aPowerScore === null && bPowerScore === null) {
+        // Both are NULL, sort by win percentage as secondary
+        const aWinPct = a.win_percentage || 0;
+        const bWinPct = b.win_percentage || 0;
+        if (bWinPct !== aWinPct) {
+          return bWinPct - aWinPct;
+        }
+        // Tertiary sort by name
+        return (a.name || '').localeCompare(b.name || '');
+      }
+      if (aPowerScore === null) return 1;  // a goes to end
+      if (bPowerScore === null) return -1; // b goes to end
+      
+      // Both have power scores, sort normally (descending)
+      if (bPowerScore !== aPowerScore) {
+        return bPowerScore - aPowerScore;
+      }
+      // Secondary sort by win percentage
+      const aWinPct = a.win_percentage || 0;
+      const bWinPct = b.win_percentage || 0;
+      if (bWinPct !== aWinPct) {
+        return bWinPct - aWinPct;
+      }
+      // Tertiary sort by name
+      return (a.name || '').localeCompare(b.name || '');
+    });
+
+    const processedProvidedTeams: ProcessedTeam[] = sortedProvidedTeams.map((team, index) => ({
       id: team.id || `team-${index}`,
       name: team.name || 'Unnamed Team',
       wins: team.wins || 0,
@@ -30,7 +63,7 @@ export const useBracketFormData = (
       imageUrl: team.imageUrl || team.logoUrl || null,
       logoUrl: team.logoUrl || team.imageUrl || null,
       players: Array.isArray(team.players) ? team.players : [],
-      seed: team.seed || index + 1,
+      seed: index + 1, // Now assigned based on ranking order
       power_score: team.power_score || 0,
       powerScore: team.power_score || 0,
       sos: team.sos || 0.5,
@@ -77,29 +110,62 @@ export const useBracketFormData = (
     }
 
     try {
-      const processed: ProcessedTeam[] = fetchedTeams
+      // Sort teams by ranking logic before assigning seeds
+      const sortedFetchedTeams = [...fetchedTeams]
         .filter(team => team && typeof team.id === 'string')
-        .map((team, index) => ({
-          id: team.id,
-          name: team.name || 'Unnamed Team',
-          wins: team.wins || 0,
-          losses: team.losses || 0,
-          game_wins: team.game_wins || 0,
-          game_losses: team.game_losses || 0,
-          divisionName: team.divisionName || 'Unknown Division',
-          division_id: team.division_id || null,
-          imageUrl: team.imageUrl || team.logoUrl || null,
-          logoUrl: team.logoUrl || team.imageUrl || null,
-          players: Array.isArray(team.players) ? team.players : [],
-          seed: index + 1,
-          power_score: team.power_score || 0,
-          powerScore: team.power_score || 0,
-          sos: team.sos || 0,
-          win_percentage: team.win_percentage || 0,
-          game_win_percentage: team.game_win_percentage || 0,
-          created_at: team.created_at || new Date().toISOString(),
-          close_match_losses: team.close_match_losses || 0
-        }));
+        .sort((a, b) => {
+          const aPowerScore = a.power_score;
+          const bPowerScore = b.power_score;
+          
+          // Handle NULL power scores - put them at the end
+          if (aPowerScore === null && bPowerScore === null) {
+            // Both are NULL, sort by win percentage as secondary
+            const aWinPct = a.win_percentage || 0;
+            const bWinPct = b.win_percentage || 0;
+            if (bWinPct !== aWinPct) {
+              return bWinPct - aWinPct;
+            }
+            // Tertiary sort by name
+            return (a.name || '').localeCompare(b.name || '');
+          }
+          if (aPowerScore === null) return 1;  // a goes to end
+          if (bPowerScore === null) return -1; // b goes to end
+          
+          // Both have power scores, sort normally (descending)
+          if (bPowerScore !== aPowerScore) {
+            return bPowerScore - aPowerScore;
+          }
+          // Secondary sort by win percentage
+          const aWinPct = a.win_percentage || 0;
+          const bWinPct = b.win_percentage || 0;
+          if (bWinPct !== aWinPct) {
+            return bWinPct - aWinPct;
+          }
+          // Tertiary sort by name
+          return (a.name || '').localeCompare(b.name || '');
+        });
+
+      const processed: ProcessedTeam[] = sortedFetchedTeams.map((team, index) => ({
+        id: team.id,
+        name: team.name || 'Unnamed Team',
+        wins: team.wins || 0,
+        losses: team.losses || 0,
+        game_wins: team.game_wins || 0,
+        game_losses: team.game_losses || 0,
+        divisionName: team.divisionName || 'Unknown Division',
+        division_id: team.division_id || null,
+        imageUrl: team.imageUrl || team.logoUrl || null,
+        logoUrl: team.logoUrl || team.imageUrl || null,
+        players: Array.isArray(team.players) ? team.players : [],
+        seed: index + 1, // Now assigned based on ranking order
+        power_score: team.power_score || 0,
+        powerScore: team.power_score || 0,
+        sos: team.sos || 0,
+        win_percentage: team.win_percentage || 0,
+        game_win_percentage: team.game_win_percentage || 0,
+        created_at: team.created_at || new Date().toISOString(),
+        close_match_losses: team.close_match_losses || 0
+      }));
       
       return { processedTeams: processed, processingError: null };
     } catch (error) {
