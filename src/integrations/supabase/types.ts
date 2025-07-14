@@ -17,6 +17,7 @@ export type Database = {
       brackets: {
         Row: {
           challonge_tournament_id: number | null
+          cn_bracket_id: string | null
           created_at: string | null
           division_id: string | null
           format: string | null
@@ -31,6 +32,7 @@ export type Database = {
         }
         Insert: {
           challonge_tournament_id?: number | null
+          cn_bracket_id?: string | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null
@@ -45,6 +47,7 @@ export type Database = {
         }
         Update: {
           challonge_tournament_id?: number | null
+          cn_bracket_id?: string | null
           created_at?: string | null
           division_id?: string | null
           format?: string | null
@@ -745,6 +748,7 @@ export type Database = {
       participants: {
         Row: {
           bracket_id: string
+          cn_participant_id: string | null
           id: string
           name: string | null
           position: number
@@ -754,6 +758,7 @@ export type Database = {
         }
         Insert: {
           bracket_id: string
+          cn_participant_id?: string | null
           id?: string
           name?: string | null
           position: number
@@ -763,6 +768,7 @@ export type Database = {
         }
         Update: {
           bracket_id?: string
+          cn_participant_id?: string | null
           id?: string
           name?: string | null
           position?: number
