@@ -124,6 +124,21 @@ export interface TeamDataProcessorResult {
   processingError: string | null;
 }
 
+// Seed validation types
+export interface SeedValidationResult {
+  team_id: string;
+  team_name: string;
+  seed: number;
+  conflict_count: number;
+}
+
+export interface SeedValidationState {
+  isLoading: boolean;
+  conflicts: SeedValidationResult[];
+  hasConflicts: boolean;
+  errorMessage: string | null;
+}
+
 // Bracket form data types
 export interface BracketFormDataResult {
   teams: ProcessedTeam[];
@@ -131,6 +146,7 @@ export interface BracketFormDataResult {
   isError: boolean;
   errorMessage: string | null;
   isDataReady: boolean;
+  seedValidation?: SeedValidationState;
   refetch?: () => void;
 }
 
@@ -143,6 +159,8 @@ export interface BracketFormTeamsProps {
   onChange: (data: TeamSelectionCallback) => void;
   divisions?: import('@/types').Division[];
 }
+
+// Note: SeedValidationResult is defined above, no need to re-export
 
 // Container-specific types
 export interface BracketFormTeamsContainerProps extends BracketFormTeamsProps {

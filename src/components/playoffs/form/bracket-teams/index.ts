@@ -24,6 +24,9 @@ export {
   useBracketFormValidation
 } from './hooks';
 
+// Re-export seed validation hook
+export { useSeedValidation } from '@/hooks/playoffs/useSeedValidation';
+
 // Types - Note: Import Division directly from '@/types' where needed
 export type {
   BracketFormTeamsProps,
@@ -32,5 +35,7 @@ export type {
   FormValidationResult,
   ValidationProgress,
   BracketFormDataResult,
-  ProcessedTeam
+  ProcessedTeam,
+  SeedValidationResult,
+  SeedValidationState
 } from './types';

@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { usePlayoffTeams } from "@/hooks/playoffs/usePlayoffTeams";
+import { useSeedValidation } from "@/hooks/playoffs/useSeedValidation";
 import { Division } from '@/types';
-import { BracketFormDataResult, ProcessedTeam } from '../types';
+import { BracketFormDataResult, ProcessedTeam, SeedValidationState } from '../types';
+import { assignMixedSeeds } from '../utils/seedAssignment';
 
 /**
  * Hook for managing bracket form data including team rankings and division mapping
@@ -13,7 +15,8 @@ import { BracketFormDataResult, ProcessedTeam } from '../types';
  */
 export const useBracketFormData = (
   divisions: Division[] = [], 
-  providedTeams?: any[]
+  providedTeams?: any[],
+  divisionId?: string
 ): BracketFormDataResult => {
   
   // Short-circuit if teams are provided via props
@@ -51,7 +54,8 @@ export const useBracketFormData = (
       return (a.name || '').localeCompare(b.name || '');
     });
 
-    const processedProvidedTeams: ProcessedTeam[] = sortedProvidedTeams.map((team, index) => ({
+    // Handle mixed seed assignment: manual seeds + auto-assigned seeds
+    const processedProvidedTeams: ProcessedTeam[] = assignMixedSeeds(sortedProvidedTeams).map((team, index) => ({
       id: team.id || `team-${index}`,
       name: team.name || 'Unnamed Team',
       wins: team.wins || 0,
@@ -63,7 +67,7 @@ export const useBracketFormData = (
       imageUrl: team.imageUrl || team.logoUrl || null,
       logoUrl: team.logoUrl || team.imageUrl || null,
       players: Array.isArray(team.players) ? team.players : [],
-      seed: index + 1, // Now assigned based on ranking order
+      seed: team.finalSeed, // Use the calculated seed
       power_score: team.power_score || 0,
       powerScore: team.power_score || 0,
       sos: team.sos || 0.5,
@@ -73,17 +77,26 @@ export const useBracketFormData = (
       close_match_losses: team.close_match_losses || 0
     }));
     
-    return {
-      teams: processedProvidedTeams,
-      isLoading: false,
-      isError: false,
-      errorMessage: null,
-      isDataReady: true
-    };
+      return {
+        teams: processedProvidedTeams,
+        isLoading: false,
+        isError: false,
+        errorMessage: null,
+        isDataReady: true,
+        seedValidation: {
+          isLoading: false,
+          conflicts: [],
+          hasConflicts: false,
+          errorMessage: null
+        }
+      };
   }
   
   // Fetch teams if no teams provided
   const { data: fetchedTeams, isLoading } = usePlayoffTeams();
+  
+  // Fetch seed validation for the division
+  const { data: seedValidation, isLoading: seedValidationLoading, error: seedValidationError } = useSeedValidation(divisionId);
   
   // Check if we have all required data before proceeding
   const isDataReady = !isLoading && fetchedTeams && Array.isArray(fetchedTeams) && divisions && Array.isArray(divisions);
@@ -145,7 +158,9 @@ export const useBracketFormData = (
           return (a.name || '').localeCompare(b.name || '');
         });
 
-      const processed: ProcessedTeam[] = sortedFetchedTeams.map((team, index) => ({
+      // Handle mixed seed assignment: manual seeds + auto-assigned seeds
+      const teamsWithMixedSeeds = assignMixedSeeds(sortedFetchedTeams);
+      const processed: ProcessedTeam[] = teamsWithMixedSeeds.map((team) => ({
         id: team.id,
         name: team.name || 'Unnamed Team',
         wins: team.wins || 0,
@@ -157,7 +172,7 @@ export const useBracketFormData = (
         imageUrl: team.image_url || team.logo_url || null,
         logoUrl: team.logo_url || team.image_url || null,
         players: Array.isArray(team.players) ? team.players : [],
-        seed: index + 1, // Now assigned based on ranking order
+        seed: team.finalSeed, // Use the calculated seed
         power_score: (team as any).power_score || 0,
         powerScore: (team as any).power_score || 0,
         sos: (team as any).sos || 0,
@@ -177,6 +192,14 @@ export const useBracketFormData = (
     }
   }, [fetchedTeams, divisionMapping, isDataReady]);
 
+  // Prepare seed validation state
+  const seedValidationState: SeedValidationState = React.useMemo(() => ({
+    isLoading: seedValidationLoading,
+    conflicts: seedValidation?.filter(result => result.conflict_count > 1) || [],
+    hasConflicts: (seedValidation?.filter(result => result.conflict_count > 1) || []).length > 0,
+    errorMessage: seedValidationError?.message || null
+  }), [seedValidation, seedValidationLoading, seedValidationError]);
+
   // Determine error state
   const hasError = !isLoading && (!fetchedTeams || fetchedTeams.length === 0);
   const errorMessage = processingError || (hasError ? "Failed to load teams. Please refresh and try again." : null);
@@ -186,6 +209,7 @@ export const useBracketFormData = (
     isLoading,
     isError: hasError,
     errorMessage,
-    isDataReady
+    isDataReady,
+    seedValidation: seedValidationState
   };
 };

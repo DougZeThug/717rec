@@ -7,30 +7,44 @@ export const usePlayoffTeams = () => {
   return useQuery({
     queryKey: ['teams'],
     queryFn: async (): Promise<Team[]> => {
-      const { data, error } = await supabase
-        .from('v_team_details')
-        .select(`
-          team_id,
-          name,
-          logo_url,
-          image_url,
-          division_id,
-          divisionname,
-          wins,
-          losses,
-          game_wins,
-          game_losses,
-          players,
-          power_score,
-          sos,
-          win_percentage,
-          game_win_percentage,
-          close_match_losses
-        `);
+      // Get team details with seed values
+      const [teamDetailsResult, teamsResult] = await Promise.all([
+        supabase
+          .from('v_team_details')
+          .select(`
+            team_id,
+            name,
+            logo_url,
+            image_url,
+            division_id,
+            divisionname,
+            wins,
+            losses,
+            game_wins,
+            game_losses,
+            players,
+            power_score,
+            sos,
+            win_percentage,
+            game_win_percentage,
+            close_match_losses
+          `),
+        supabase
+          .from('teams')
+          .select('id, seed')
+      ]);
+
+      if (teamDetailsResult.error) throw teamDetailsResult.error;
+      if (teamsResult.error) throw teamsResult.error;
+
+      const teamDetails = teamDetailsResult.data ?? [];
+      const teamSeeds = new Map((teamsResult.data ?? []).map(t => [t.id, t.seed]));
+
+      const error = null; // Already handled above
 
       if (error) throw error;
 
-      return (data ?? []).map(row => ({
+      return teamDetails.map(row => ({
         id: row.team_id,
         name: row.name ?? 'Unnamed Team',
 
@@ -50,7 +64,7 @@ export const usePlayoffTeams = () => {
         
         // Additional fields to satisfy Team type
         created_at: new Date().toISOString(),
-        seed: null,
+        seed: teamSeeds.get(row.team_id) ?? null, // Get seed from teams table
         power_score: row.power_score ?? 0,
         sos: row.sos ?? 0.5,
         win_percentage: row.win_percentage ?? 0,
