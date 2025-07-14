@@ -1,17 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Users, Trophy, Zap, AlertCircle } from 'lucide-react';
-import { ProcessedTeam, BracketFormStateResult } from '../types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, Trophy, Zap, AlertCircle, Settings } from 'lucide-react';
+import { ProcessedTeam, BracketFormStateResult, SeedValidationState } from '../types';
+import { SeedOverrideControls } from './SeedOverrideControls';
 
 interface TeamSelectionFormProps {
   teams: ProcessedTeam[];
   formState: BracketFormStateResult;
   maxTeams: number;
   minTeams: number;
+  divisionId?: string;
+  seedValidation?: SeedValidationState;
 }
 
 /**
@@ -22,8 +26,11 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
   teams,
   formState,
   maxTeams,
-  minTeams
+  minTeams,
+  divisionId,
+  seedValidation
 }) => {
+  const [activeTab, setActiveTab] = useState<'select' | 'seeds'>('select');
   // Ensure we have valid arrays and objects to prevent React error #300
   const validTeams = Array.isArray(teams) ? teams : [];
   
@@ -123,16 +130,29 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Header with progress */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Select Teams</CardTitle>
-            <Badge variant={safeFormState.isValid ? "default" : "secondary"}>
-              {safeFormState.count}/{maxTeams}
-            </Badge>
-          </div>
-        </CardHeader>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'select' | 'seeds')}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="select" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Select Teams
+          </TabsTrigger>
+          <TabsTrigger value="seeds" className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Manage Seeds
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="select" className="space-y-4">
+          {/* Header with progress */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Select Teams</CardTitle>
+                <Badge variant={safeFormState.isValid ? "default" : "secondary"}>
+                  {safeFormState.count}/{maxTeams}
+                </Badge>
+              </div>
+            </CardHeader>
         <CardContent className="space-y-3">
           <Progress value={safeFormState.progress.percentage} className="w-full" />
           
@@ -199,6 +219,26 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
           )}
         </CardContent>
       </Card>
-    </div>
+    </TabsContent>
+
+    <TabsContent value="seeds" className="space-y-4">
+      {divisionId && seedValidation ? (
+        <SeedOverrideControls
+          teams={validTeams}
+          divisionId={divisionId}
+          validation={seedValidation}
+        />
+      ) : (
+        <Card>
+          <CardContent className="py-6">
+            <div className="text-center text-muted-foreground">
+              Select a division to manage seeds
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </TabsContent>
+  </Tabs>
+</div>
   );
 };

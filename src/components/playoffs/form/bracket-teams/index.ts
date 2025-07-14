@@ -14,14 +14,19 @@ export {
   TeamSelectionError,
   TeamSelectionLoading,
   TeamSelectionEmpty,
-  TeamSelectionForm
+  TeamSelectionForm,
+  SeedOverrideControls,
+  SeedInputField,
+  SeedOrderList
 } from './components';
 
 // Simplified Custom Hooks
 export {
   useBracketFormData,
   useTeamSelectionState,
-  useBracketFormValidation
+  useBracketFormValidation,
+  useSeedManagement,
+  useTeamSeedMutation
 } from './hooks';
 
 // Re-export seed validation hook
@@ -39,3 +44,15 @@ export type {
   SeedValidationResult,
   SeedValidationState
 } from './types';
+
+// Seed Management Types
+export type {
+  SeedManagementState,
+  SeedManagementActions,
+  SeedManagementResult
+} from './hooks/useSeedManagement';
+
+export type {
+  TeamSeedUpdate,
+  BulkSeedUpdateParams
+} from './hooks/useTeamSeedMutation';
