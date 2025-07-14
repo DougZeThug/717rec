@@ -19,11 +19,63 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
   try {
     onProgress?.("Creating tournament and saving to database...");
     
+    // Fetch complete team data with power scores for proper seeding
+    const { data: fullTeamData, error: teamError } = await supabase
+      .from('v_team_details')
+      .select('team_id, name, power_score, wins, losses')
+      .in('team_id', teams.map(t => t.id));
+      
+    if (teamError) {
+      console.warn("Failed to fetch team details for seeding, using provided order:", teamError);
+    }
+    
+    // Sort teams by ranking (same logic as useTeamRankings) and assign seeds
+    const sortedTeams = teams.map(team => {
+      const fullData = fullTeamData?.find(ft => ft.team_id === team.id);
+      return {
+        ...team,
+        power_score: fullData?.power_score || null,
+        wins: fullData?.wins || 0,
+        losses: fullData?.losses || 0
+      };
+    }).sort((a, b) => {
+      const aPowerScore = a.power_score;
+      const bPowerScore = b.power_score;
+      
+      // Handle NULL power scores - put them at the end
+      if (aPowerScore === null && bPowerScore === null) {
+        // Both null, sort by win percentage
+        const aWinPct = a.wins && (a.wins + a.losses) > 0 ? a.wins / (a.wins + a.losses) : 0;
+        const bWinPct = b.wins && (b.wins + b.losses) > 0 ? b.wins / (b.wins + b.losses) : 0;
+        if (aWinPct !== bWinPct) return bWinPct - aWinPct;
+        return a.name.localeCompare(b.name);
+      }
+      if (aPowerScore === null) return 1;
+      if (bPowerScore === null) return -1;
+      
+      // Both have power scores, sort by power score desc
+      if (aPowerScore !== bPowerScore) {
+        return bPowerScore - aPowerScore;
+      }
+      
+      // Power scores equal, sort by win percentage desc
+      const aWinPct = a.wins && (a.wins + a.losses) > 0 ? a.wins / (a.wins + a.losses) : 0;
+      const bWinPct = b.wins && (b.wins + b.losses) > 0 ? b.wins / (b.wins + b.losses) : 0;
+      if (aWinPct !== bWinPct) return bWinPct - aWinPct;
+      
+      // Win percentages equal, sort by name asc
+      return a.name.localeCompare(b.name);
+    }).map((team, index) => ({
+      id: team.id,
+      name: team.name,
+      seed: index + 1 // Assign seeds based on ranking order
+    }));
+
     const payload: CreateBracketPayload = {
       name,
       divisionId,
       format,
-      teams: teams.sort((a, b) => (a.seed || 999) - (b.seed || 999))
+      teams: sortedTeams
     };
 
     const { data, error } = await supabase.functions.invoke('create-bracket', {
