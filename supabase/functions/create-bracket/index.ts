@@ -53,7 +53,9 @@ class BracketGenerator {
   }
 
   static generateSingleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
-    const sortedTeams = teams.sort((a, b) => (a.seed || 999) - (b.seed || 999));
+    // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
+    console.log(`[BRACKET] Teams for single elimination:`, teams.map(t => `${t.name} (seed ${t.seed})`));
+    
     const bracketSize = this.calculateBracketSize(teams.length);
     const rounds = this.calculateRounds(bracketSize);
     const matches: any[] = [];
@@ -83,10 +85,10 @@ class BracketGenerator {
           round: round,
           position: i,
           match_type: round === rounds ? 'finals' : 'winners',
-          team1_id: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].id : null,
-          team2_id: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].id : null,
-          team1_seed: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].seed || (i * 2 + 1) : null,
-          team2_seed: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].seed || (i * 2 + 2) : null,
+          team1_id: round === 1 && (i * 2) < teams.length ? teams[i * 2].id : null,
+          team2_id: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].id : null,
+          team1_seed: round === 1 && (i * 2) < teams.length ? teams[i * 2].seed : null,
+          team2_seed: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].seed : null,
           next_win_match_id: null, // Will be set in second pass
           next_lose_match_id: null, // Not used in single elimination
           best_of: 3,
@@ -101,7 +103,9 @@ class BracketGenerator {
   }
 
   static generateDoubleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
-    const sortedTeams = teams.sort((a, b) => (a.seed || 999) - (b.seed || 999));
+    // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
+    console.log(`[BRACKET] Teams for double elimination:`, teams.map(t => `${t.name} (seed ${t.seed})`));
+    
     const bracketSize = this.calculateBracketSize(teams.length);
     const rounds = this.calculateRounds(bracketSize);
     const matches: any[] = [];
@@ -163,10 +167,10 @@ class BracketGenerator {
           round: round,
           position: i,
           match_type: 'winners', // Fixed: All winners bracket matches are type 'winners'
-          team1_id: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].id : null,
-          team2_id: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].id : null,
-          team1_seed: round === 1 && (i * 2) < sortedTeams.length ? sortedTeams[i * 2].seed || (i * 2 + 1) : null,
-          team2_seed: round === 1 && (i * 2 + 1) < sortedTeams.length ? sortedTeams[i * 2 + 1].seed || (i * 2 + 2) : null,
+          team1_id: round === 1 && (i * 2) < teams.length ? teams[i * 2].id : null,
+          team2_id: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].id : null,
+          team1_seed: round === 1 && (i * 2) < teams.length ? teams[i * 2].seed : null,
+          team2_seed: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].seed : null,
           next_win_match_id: null, // Will be set in second pass
           next_lose_match_id: null, // Will be set in third pass
           best_of: 3,
@@ -332,14 +336,19 @@ serve(async (req) => {
 
     console.log(`[BRACKET] Validating ${payload.teams.length} teams for ${payload.format} tournament`);
 
-    // Transform teams to Challonge participants
-    const participants = payload.teams
-      .sort((a, b) => (a.seed || 999) - (b.seed || 999))
-      .map((team, index) => ({
-        name: team.name,
-        seed: team.seed || (index + 1),
-        misc: JSON.stringify({ teamId: team.id })
-      }));
+    // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
+    console.log('[BRACKET] Team seeding order:', payload.teams.map(t => `${t.name} (seed ${t.seed})`));
+    
+    // Validate team seeding is consecutive starting from 1
+    const expectedSeeds = Array.from({ length: payload.teams.length }, (_, i) => i + 1);
+    const actualSeeds = payload.teams.map(t => t.seed).sort((a, b) => (a || 0) - (b || 0));
+    
+    // Transform teams to Challonge participants - maintain exact seeding order
+    const participants = payload.teams.map((team, index) => ({
+      name: team.name,
+      seed: team.seed || (index + 1), // Use provided seed or fallback to position
+      misc: JSON.stringify({ teamId: team.id })
+    }));
 
     console.log('[BRACKET] Prepared participants:', JSON.stringify(participants, null, 2));
 
