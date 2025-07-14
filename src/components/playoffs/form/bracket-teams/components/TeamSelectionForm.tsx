@@ -5,9 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Zap, AlertCircle, Settings } from 'lucide-react';
+import { Users, Trophy, Zap, AlertCircle, Settings, Save, X } from 'lucide-react';
 import { ProcessedTeam, BracketFormStateResult, SeedValidationState } from '../types';
 import { SeedOverrideControls } from './SeedOverrideControls';
+import { SeedStatusBadge } from './SeedStatusBadge';
+import { useFormStateManager } from '../hooks/useFormStateManager';
 
 interface TeamSelectionFormProps {
   teams: ProcessedTeam[];
@@ -16,6 +18,7 @@ interface TeamSelectionFormProps {
   minTeams: number;
   divisionId?: string;
   seedValidation?: SeedValidationState;
+  onSeedChange?: (teamId: string, seed: number | null) => void;
 }
 
 /**
@@ -28,9 +31,18 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
   maxTeams,
   minTeams,
   divisionId,
-  seedValidation
+  seedValidation,
+  onSeedChange
 }) => {
   const [activeTab, setActiveTab] = useState<'select' | 'seeds'>('select');
+  
+  // Initialize form state manager for coordinated state management
+  const formStateManager = useFormStateManager(
+    teams,
+    formState,
+    seedValidation,
+    onSeedChange
+  );
   // Ensure we have valid arrays and objects to prevent React error #300
   const validTeams = Array.isArray(teams) ? teams : [];
   
@@ -70,6 +82,11 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
     const canSelect = !isSelected && safeFormState.canSelectMore;
     const isDisabled = !isSelected && !canSelect;
 
+    // Check if this team has seed conflicts or pending changes
+    const hasConflict = seedValidation?.conflicts?.some(c => c.team_id === team.id) || false;
+    const isPending = formStateManager.seedManagementState.state.pendingChanges.has(team.id);
+    const isManual = formStateManager.seedManagementState.state.mode === 'manual';
+
     return (
       <Button
         key={team.id}
@@ -81,6 +98,8 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
           flex items-center gap-2 p-3 h-auto justify-start
           ${isSelected ? 'bg-primary text-primary-foreground' : ''}
           ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}
+          ${hasConflict ? 'border-destructive' : ''}
+          ${isPending ? 'border-dashed' : ''}
         `}
       >
         <div className="flex items-center gap-2 flex-1">
@@ -96,10 +115,14 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
           <span className="font-medium">{team.name || 'Unnamed Team'}</span>
         </div>
         
-        <div className="flex items-center gap-1 text-xs opacity-75">
-          <Trophy className="w-3 h-3" />
-          <span>#{team.seed || 0}</span>
-        </div>
+        <SeedStatusBadge
+          seed={team.seed || 0}
+          isManual={isManual}
+          hasConflict={hasConflict}
+          isPending={isPending}
+          size="sm"
+          onEdit={() => setActiveTab('seeds')}
+        />
         
         {team.powerScore && (
           <div className="flex items-center gap-1 text-xs opacity-75">
@@ -131,16 +154,48 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'select' | 'seeds')}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="select" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Select Teams
-          </TabsTrigger>
-          <TabsTrigger value="seeds" className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            Manage Seeds
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="select" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Select Teams
+            </TabsTrigger>
+            <TabsTrigger value="seeds" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Manage Seeds
+              {formStateManager.hasUnsavedChanges && (
+                <Badge variant="outline" className="ml-1 text-xs">
+                  *
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+          
+          {/* Form-level save/cancel controls */}
+          {formStateManager.hasUnsavedChanges && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={formStateManager.cancelAllChanges}
+                className="flex items-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={formStateManager.saveAllChanges}
+                disabled={!formStateManager.canSave}
+                className="flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Save Changes
+              </Button>
+            </div>
+          )}
+        </div>
 
         <TabsContent value="select" className="space-y-4">
           {/* Header with progress */}
@@ -208,9 +263,9 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
           <CardTitle className="text-base">Available Teams ({validTeams.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {validTeams.length > 0 ? (
+          {formStateManager.syncedTeams.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {validTeams.map(renderTeamButton)}
+              {formStateManager.syncedTeams.map(renderTeamButton)}
             </div>
           ) : (
             <div className="text-center py-4 text-muted-foreground">
@@ -224,9 +279,10 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
     <TabsContent value="seeds" className="space-y-4">
       {divisionId && seedValidation ? (
         <SeedOverrideControls
-          teams={validTeams}
+          teams={formStateManager.syncedTeams}
           divisionId={divisionId}
           validation={seedValidation}
+          onSeedChange={onSeedChange}
         />
       ) : (
         <Card>

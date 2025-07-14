@@ -7,3 +7,4 @@ export { BracketFormTeamsContainer } from './BracketFormTeamsContainer';
 export { SeedOverrideControls } from './SeedOverrideControls';
 export { SeedInputField } from './SeedInputField';
 export { SeedOrderList } from './SeedOrderList';
+export { SeedStatusBadge } from './SeedStatusBadge';

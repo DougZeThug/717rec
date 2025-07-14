@@ -169,6 +169,12 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     return <TeamSelectionEmpty />;
   }
 
+  // Seed change handler
+  const handleSeedChange = React.useCallback((teamId: string, seed: number | null) => {
+    // This could be expanded to handle seed changes at the container level
+    console.log('Seed change:', { teamId, seed });
+  }, []);
+
   // Main form with teams available
   return (
     <div className="space-y-2">
@@ -179,6 +185,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
         minTeams={minTeams}
         divisionId={validDivisionId}
         seedValidation={seedValidation}
+        onSeedChange={handleSeedChange}
       />
       
       {/* Display validation message */}
