@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTeams } from "@/hooks/useTeams";
+import { usePlayoffTeams } from "@/hooks/playoffs/usePlayoffTeams";
 import { Division } from '@/types';
 import { BracketFormDataResult, ProcessedTeam } from '../types';
 
@@ -83,7 +83,7 @@ export const useBracketFormData = (
   }
   
   // Fetch teams if no teams provided
-  const { teams: fetchedTeams, isLoading } = useTeams();
+  const { data: fetchedTeams, isLoading } = usePlayoffTeams();
   
   // Check if we have all required data before proceeding
   const isDataReady = !isLoading && fetchedTeams && Array.isArray(fetchedTeams) && divisions && Array.isArray(divisions);
@@ -114,14 +114,14 @@ export const useBracketFormData = (
       const sortedFetchedTeams = [...fetchedTeams]
         .filter(team => team && typeof team.id === 'string')
         .sort((a, b) => {
-          const aPowerScore = a.power_score;
-          const bPowerScore = b.power_score;
+          const aPowerScore = (a as any).power_score;
+          const bPowerScore = (b as any).power_score;
           
           // Handle NULL power scores - put them at the end
           if (aPowerScore === null && bPowerScore === null) {
             // Both are NULL, sort by win percentage as secondary
-            const aWinPct = a.win_percentage || 0;
-            const bWinPct = b.win_percentage || 0;
+            const aWinPct = (a as any).win_percentage || 0;
+            const bWinPct = (b as any).win_percentage || 0;
             if (bWinPct !== aWinPct) {
               return bWinPct - aWinPct;
             }
@@ -136,8 +136,8 @@ export const useBracketFormData = (
             return bPowerScore - aPowerScore;
           }
           // Secondary sort by win percentage
-          const aWinPct = a.win_percentage || 0;
-          const bWinPct = b.win_percentage || 0;
+          const aWinPct = (a as any).win_percentage || 0;
+          const bWinPct = (b as any).win_percentage || 0;
           if (bWinPct !== aWinPct) {
             return bWinPct - aWinPct;
           }
@@ -152,19 +152,19 @@ export const useBracketFormData = (
         losses: team.losses || 0,
         game_wins: team.game_wins || 0,
         game_losses: team.game_losses || 0,
-        divisionName: team.divisionName || 'Unknown Division',
+        divisionName: (team as any).divisionname || 'Unknown Division',
         division_id: team.division_id || null,
-        imageUrl: team.imageUrl || team.logoUrl || null,
-        logoUrl: team.logoUrl || team.imageUrl || null,
+        imageUrl: team.image_url || team.logo_url || null,
+        logoUrl: team.logo_url || team.image_url || null,
         players: Array.isArray(team.players) ? team.players : [],
         seed: index + 1, // Now assigned based on ranking order
-        power_score: team.power_score || 0,
-        powerScore: team.power_score || 0,
-        sos: team.sos || 0,
-        win_percentage: team.win_percentage || 0,
-        game_win_percentage: team.game_win_percentage || 0,
+        power_score: (team as any).power_score || 0,
+        powerScore: (team as any).power_score || 0,
+        sos: (team as any).sos || 0,
+        win_percentage: (team as any).win_percentage || 0,
+        game_win_percentage: (team as any).game_win_percentage || 0,
         created_at: team.created_at || new Date().toISOString(),
-        close_match_losses: team.close_match_losses || 0
+        close_match_losses: (team as any).close_match_losses || 0
       }));
       
       return { processedTeams: processed, processingError: null };
