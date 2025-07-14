@@ -2689,6 +2689,10 @@ export type Database = {
       }
     }
     Functions: {
+      auto_assign_seeds: {
+        Args: { p_division_id: string }
+        Returns: undefined
+      }
       award_clutch_performer_badge: {
         Args: { p_team_id: string }
         Returns: Json
@@ -2776,6 +2780,10 @@ export type Database = {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json
       }
+      reset_division_seeds: {
+        Args: { p_division_id: string }
+        Returns: undefined
+      }
       snapshot_current_season: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2795,6 +2803,15 @@ export type Database = {
       upsert_team_season_stats: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      validate_division_seeds: {
+        Args: { p_division_id: string }
+        Returns: {
+          team_id: string
+          team_name: string
+          seed: number
+          conflict_count: number
+        }[]
       }
     }
     Enums: {
