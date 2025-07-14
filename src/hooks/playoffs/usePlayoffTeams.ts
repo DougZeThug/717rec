@@ -20,9 +20,13 @@ export const usePlayoffTeams = () => {
           losses,
           game_wins,
           game_losses,
-          players
-        `)
-        .order('name');
+          players,
+          power_score,
+          sos,
+          win_percentage,
+          game_win_percentage,
+          close_match_losses
+        `);
 
       if (error) throw error;
 
@@ -47,11 +51,11 @@ export const usePlayoffTeams = () => {
         // Additional fields to satisfy Team type
         created_at: new Date().toISOString(),
         seed: null,
-        power_score: 0,
-        sos: 0.5,
-        win_percentage: 0,
-        game_win_percentage: 0,
-        close_match_losses: 0
+        power_score: row.power_score ?? 0,
+        sos: row.sos ?? 0.5,
+        win_percentage: row.win_percentage ?? 0,
+        game_win_percentage: row.game_win_percentage ?? 0,
+        close_match_losses: row.close_match_losses ?? 0
       })) as Team[];
     }
   });
