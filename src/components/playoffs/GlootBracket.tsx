@@ -32,7 +32,8 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   const tournament = adaptPlayoffMatchesToGloot(
     bracket.matches || [],
     teams,
-    bracket.name || "Tournament"
+    bracket.name || "Tournament",
+    bracket.format
   );
   
   // Handle match click events

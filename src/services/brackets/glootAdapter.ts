@@ -30,17 +30,19 @@ export interface GlootTournament {
 export function adaptPlayoffMatchesToGloot(
   matches: PlayoffMatch[],
   teams: Team[],
-  bracketTitle: string = "Tournament"
+  bracketTitle: string = "Tournament",
+  bracketFormat: string = "Double Elimination"
 ): GlootTournament {
   console.log('🏆 adaptPlayoffMatchesToGloot: Starting conversion');
   console.log('🏆 adaptPlayoffMatchesToGloot: Input matches:', matches);
   console.log('🏆 adaptPlayoffMatchesToGloot: Input teams:', teams);
   console.log('🏆 adaptPlayoffMatchesToGloot: Bracket title:', bracketTitle);
+  console.log('🏆 adaptPlayoffMatchesToGloot: Bracket format:', bracketFormat);
   
   if (!Array.isArray(matches) || matches.length === 0) {
     console.log('🏆 adaptPlayoffMatchesToGloot: No matches to convert');
     return {
-      type: 'DOUBLE_ELIMINATION',
+      type: detectBracketType(bracketFormat),
       title: bracketTitle,
       matches: []
     };
@@ -58,13 +60,8 @@ export function adaptPlayoffMatchesToGloot(
     
     console.log(`🏆 adaptPlayoffMatchesToGloot: Match ${match.id} teams:`, { team1, team2 });
     
-    // Determine match state
-    let state: GlootMatch['state'] = 'NO_PARTY';
-    if (match.status === 'completed' && match.winnerId) {
-      state = 'SCORE_DONE';
-    } else if (match.team1Id && match.team2Id) {
-      state = 'DONE';
-    }
+    // Determine match state using enhanced logic
+    const state = determineMatchState(match);
     
     // Create participants
     const participants = [];
@@ -105,10 +102,10 @@ export function adaptPlayoffMatchesToGloot(
     
     const glootMatch = {
       id: match.id,
-      name: `${match.matchType} R${match.round}`,
+      name: createMatchName(match),
       nextMatchId: match.nextWinMatchId || undefined,
       nextLooserMatchId: match.nextLoseMatchId || undefined,
-      tournamentRoundText: `Round ${match.round}`,
+      tournamentRoundText: match.matchType === 'finals' ? 'Finals' : `Round ${match.round}`,
       startTime: new Date().toISOString(),
       state,
       participants
@@ -119,7 +116,7 @@ export function adaptPlayoffMatchesToGloot(
   });
   
   const result = {
-    type: 'DOUBLE_ELIMINATION' as const,
+    type: detectBracketType(bracketFormat),
     title: bracketTitle,
     matches: glootMatches
   };
@@ -128,4 +125,52 @@ export function adaptPlayoffMatchesToGloot(
   console.log('🏆 adaptPlayoffMatchesToGloot: Total matches converted:', glootMatches.length);
   
   return result;
+}
+
+/**
+ * Detects bracket type from format string
+ */
+function detectBracketType(format: string): 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' {
+  const formatLower = format.toLowerCase();
+  if (formatLower.includes('single') || formatLower.includes('singleelim')) {
+    return 'SINGLE_ELIMINATION';
+  }
+  return 'DOUBLE_ELIMINATION';
+}
+
+/**
+ * Enhanced match state determination
+ */
+function determineMatchState(match: PlayoffMatch): GlootMatch['state'] {
+  if (match.status === 'completed' && match.winnerId) {
+    return 'SCORE_DONE';
+  }
+  if (match.team1Id && match.team2Id) {
+    return 'DONE';
+  }
+  if (!match.team1Id && !match.team2Id) {
+    return 'NO_PARTY';
+  }
+  return 'NO_PARTY';
+}
+
+/**
+ * Creates enhanced match name with better formatting
+ */
+function createMatchName(match: PlayoffMatch): string {
+  const typeMap = {
+    'winners': 'WB',
+    'losers': 'LB',
+    'finals': 'Finals',
+    'play-in': 'Play-In',
+    'play-in-2': 'Play-In 2'
+  };
+  
+  const prefix = typeMap[match.matchType] || match.matchType;
+  
+  if (match.matchType === 'finals') {
+    return `${prefix}`;
+  }
+  
+  return `${prefix} R${match.round}`;
 }
