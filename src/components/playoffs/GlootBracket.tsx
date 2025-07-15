@@ -33,6 +33,21 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   const isDark = resolvedTheme === "dark";
   const responsive = useBracketResponsive();
   
+  // DEBUG: Log component props
+  console.log('🏀 GlootBracket: Component props:', {
+    bracket: bracket ? {
+      id: bracket.id,
+      name: bracket.name,
+      format: bracket.format,
+      matchesCount: bracket.matches?.length,
+      matchesIsArray: Array.isArray(bracket.matches),
+      matches: bracket.matches
+    } : null,
+    teamsCount: teams?.length,
+    teams: teams,
+    onEditMatch: !!onEditMatch
+  });
+  
   // Convert our data to @g-loot format
   const tournament = adaptPlayoffMatchesToGloot(
     bracket.matches || [],
@@ -40,6 +55,14 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
     bracket.name || "Tournament",
     bracket.format
   );
+  
+  // DEBUG: Log tournament data
+  console.log('🏀 GlootBracket: Tournament data:', {
+    tournament,
+    matchesCount: tournament.matches.length,
+    type: tournament.type,
+    title: tournament.title
+  });
   
   // Get bracket dimensions for auto-fit
   const bracketDimensions = useBracketDimensions(
