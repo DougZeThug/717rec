@@ -4,37 +4,37 @@
  */
 export const divisionColors = {
   competitive: {
-    primary: "#d97706", // amber-600
-    light: "#fbbf24",   // amber-400
-    dark: "#92400e",    // amber-800
-    bg: "bg-amber-600", 
-    text: "text-amber-600",
-    border: "border-amber-600",
-    hover: "hover:bg-amber-500",
-    bgLight: "bg-amber-100",
-    textLight: "text-amber-700",
+    primary: "hsl(var(--competitive))",
+    light: "hsl(var(--competitive) / 0.8)",
+    dark: "hsl(var(--competitive) / 1.2)",
+    bg: "bg-[hsl(var(--competitive))]", 
+    text: "text-[hsl(var(--competitive))]",
+    border: "border-[hsl(var(--competitive))]",
+    hover: "hover:bg-[hsl(var(--competitive)/0.9)]",
+    bgLight: "bg-[hsl(var(--competitive)/0.1)]",
+    textLight: "text-[hsl(var(--competitive)/0.8)]",
   },
   intermediate: {
-    primary: "#3b82f6", // blue-500
-    light: "#60a5fa",   // blue-400
-    dark: "#1d4ed8",    // blue-700
-    bg: "bg-blue-500",
-    text: "text-blue-500",
-    border: "border-blue-500",
-    hover: "hover:bg-blue-400",
-    bgLight: "bg-blue-100",
-    textLight: "text-blue-700",
+    primary: "hsl(var(--intermediate))",
+    light: "hsl(var(--intermediate) / 0.8)",
+    dark: "hsl(var(--intermediate) / 1.2)",
+    bg: "bg-[hsl(var(--intermediate))]",
+    text: "text-[hsl(var(--intermediate))]",
+    border: "border-[hsl(var(--intermediate))]",
+    hover: "hover:bg-[hsl(var(--intermediate)/0.9)]",
+    bgLight: "bg-[hsl(var(--intermediate)/0.1)]",
+    textLight: "text-[hsl(var(--intermediate)/0.8)]",
   },
   recreational: {
-    primary: "#10b981", // emerald-500
-    light: "#34d399",   // emerald-400
-    dark: "#047857",    // emerald-800
-    bg: "bg-emerald-500",
-    text: "text-emerald-500",
-    border: "border-emerald-500",
-    hover: "hover:bg-emerald-400",
-    bgLight: "bg-emerald-100",
-    textLight: "text-emerald-700",
+    primary: "hsl(var(--recreational))",
+    light: "hsl(var(--recreational) / 0.8)",
+    dark: "hsl(var(--recreational) / 1.2)",
+    bg: "bg-[hsl(var(--recreational))]",
+    text: "text-[hsl(var(--recreational))]",
+    border: "border-[hsl(var(--recreational))]",
+    hover: "hover:bg-[hsl(var(--recreational)/0.9)]",
+    bgLight: "bg-[hsl(var(--recreational)/0.1)]",
+    textLight: "text-[hsl(var(--recreational)/0.8)]",
   },
 };
 
@@ -70,16 +70,16 @@ export function getDivisionGradientClass(division: string): string {
   const lowerDivName = division.toLowerCase();
   
   if (lowerDivName.includes('competitive')) {
-    return "bg-gradient-to-br from-white to-orange-50 dark:from-gray-800/90 dark:to-gray-900/70";
+    return "bg-gradient-to-br from-background to-[hsl(var(--competitive)/0.05)] dark:from-background/90 dark:to-[hsl(var(--competitive)/0.1)]";
   }
   if (lowerDivName.includes('intermediate')) {
-    return "bg-gradient-to-br from-white to-blue-50 dark:from-gray-800/90 dark:to-gray-900/70";
+    return "bg-gradient-to-br from-background to-[hsl(var(--intermediate)/0.05)] dark:from-background/90 dark:to-[hsl(var(--intermediate)/0.1)]";
   }
   if (lowerDivName.includes('recreational')) {
-    return "bg-gradient-to-br from-white to-green-50 dark:from-gray-800/90 dark:to-gray-900/70";
+    return "bg-gradient-to-br from-background to-[hsl(var(--recreational)/0.05)] dark:from-background/90 dark:to-[hsl(var(--recreational)/0.1)]";
   }
   
-  return "bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900";
+  return "bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted";
 }
 
 /**

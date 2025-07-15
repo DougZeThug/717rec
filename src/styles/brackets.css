@@ -1,0 +1,252 @@
+/* G-Loot Bracket Styling Integration */
+
+/* Custom CSS Variables for Bracket Theming */
+:root {
+  /* Bracket-specific spacing from design system */
+  --bracket-spacing: 1rem;
+  --bracket-match-padding: 0.75rem;
+  --bracket-border-radius: var(--radius);
+  
+  /* Bracket text sizing */
+  --bracket-text-sm: 0.875rem;
+  --bracket-text-base: 1rem;
+  --bracket-text-lg: 1.125rem;
+  
+  /* Bracket transition timing */
+  --bracket-transition: all 0.2s ease-in-out;
+  
+  /* Division-specific bracket colors */
+  --bracket-competitive: var(--competitive);
+  --bracket-intermediate: var(--intermediate);
+  --bracket-recreational: var(--recreational);
+}
+
+/* G-Loot component overrides */
+.gloot-bracket-container {
+  /* Ensure proper integration with app layout */
+  font-family: inherit;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  border-radius: var(--bracket-border-radius);
+  transition: var(--bracket-transition);
+}
+
+/* Match component styling */
+.gloot-match {
+  border-radius: var(--bracket-border-radius);
+  transition: var(--bracket-transition);
+  font-size: var(--bracket-text-sm);
+  
+  /* Ensure proper hover states */
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.15);
+  }
+  
+  /* Focus states for accessibility */
+  &:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+/* Team name styling */
+.gloot-team-name {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+  font-size: var(--bracket-text-sm);
+  transition: var(--bracket-transition);
+  
+  /* Truncate long team names */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Score styling */
+.gloot-score {
+  font-weight: 600;
+  font-size: var(--bracket-text-base);
+  color: hsl(var(--foreground));
+  transition: var(--bracket-transition);
+  
+  /* Winner score styling */
+  &.winner {
+    color: hsl(var(--success-foreground));
+    background: hsl(var(--success));
+  }
+  
+  /* Loser score styling */
+  &.loser {
+    color: hsl(var(--destructive-foreground));
+    background: hsl(var(--destructive));
+  }
+}
+
+/* Round header styling */
+.gloot-round-header {
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  border-radius: var(--bracket-border-radius);
+  padding: var(--bracket-match-padding);
+  font-weight: 600;
+  font-size: var(--bracket-text-sm);
+  text-align: center;
+  transition: var(--bracket-transition);
+}
+
+/* Connector lines */
+.gloot-connector {
+  stroke: hsl(var(--muted-foreground)) !important;
+  stroke-width: 1.5;
+  transition: var(--bracket-transition);
+}
+
+.gloot-connector-highlight {
+  stroke: hsl(var(--primary)) !important;
+  stroke-width: 2;
+}
+
+/* Division-specific theming */
+.bracket-competitive {
+  --bracket-accent: var(--competitive);
+  
+  .gloot-connector-highlight {
+    stroke: hsl(var(--competitive)) !important;
+  }
+  
+  .gloot-round-header {
+    background: hsl(var(--competitive) / 0.1) !important;
+    border: 1px solid hsl(var(--competitive) / 0.2);
+  }
+}
+
+.bracket-intermediate {
+  --bracket-accent: var(--intermediate);
+  
+  .gloot-connector-highlight {
+    stroke: hsl(var(--intermediate)) !important;
+  }
+  
+  .gloot-round-header {
+    background: hsl(var(--intermediate) / 0.1) !important;
+    border: 1px solid hsl(var(--intermediate) / 0.2);
+  }
+}
+
+.bracket-recreational {
+  --bracket-accent: var(--recreational);
+  
+  .gloot-connector-highlight {
+    stroke: hsl(var(--recreational)) !important;
+  }
+  
+  .gloot-round-header {
+    background: hsl(var(--recreational) / 0.1) !important;
+    border: 1px solid hsl(var(--recreational) / 0.2);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gloot-bracket-container {
+    --bracket-text-sm: 0.75rem;
+    --bracket-text-base: 0.875rem;
+    --bracket-spacing: 0.5rem;
+    --bracket-match-padding: 0.5rem;
+  }
+  
+  .gloot-match {
+    min-height: 3rem;
+  }
+  
+  .gloot-team-name {
+    font-size: var(--bracket-text-sm);
+  }
+  
+  .gloot-score {
+    font-size: var(--bracket-text-sm);
+  }
+  
+  /* Touch-friendly sizing */
+  .gloot-match:hover {
+    transform: none; /* Disable hover effects on mobile */
+  }
+}
+
+/* Dark mode adjustments */
+.dark .gloot-bracket-container {
+  /* Ensure proper contrast in dark mode */
+  .gloot-match {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+  }
+  
+  .gloot-team-name {
+    color: hsl(var(--card-foreground));
+  }
+  
+  .gloot-score {
+    color: hsl(var(--card-foreground));
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .gloot-bracket-container {
+    --bracket-transition: none; /* Disable transitions for high contrast */
+  }
+  
+  .gloot-match {
+    border: 2px solid hsl(var(--foreground));
+  }
+  
+  .gloot-connector {
+    stroke: hsl(var(--foreground)) !important;
+    stroke-width: 2;
+  }
+  
+  .gloot-connector-highlight {
+    stroke: hsl(var(--foreground)) !important;
+    stroke-width: 3;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .gloot-bracket-container * {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .gloot-match:hover {
+    transform: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .gloot-bracket-container {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .gloot-match {
+    border: 1px solid black !important;
+    background: white !important;
+  }
+  
+  .gloot-team-name,
+  .gloot-score {
+    color: black !important;
+  }
+  
+  .gloot-round-header {
+    background: #f0f0f0 !important;
+    color: black !important;
+  }
+  
+  .gloot-connector {
+    stroke: black !important;
+  }
+}

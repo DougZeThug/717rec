@@ -10,6 +10,9 @@ import { PlayoffBracket, Team } from "@/types/playoffs";
 import { adaptPlayoffMatchesToGloot } from "@/services/brackets/glootAdapter";
 import { useTheme } from "next-themes";
 import { BRACKET_FORMATS } from "@/constants/brackets";
+import { createDivisionGlootTheme } from "@/styles/brackets/glootTheme";
+import { getDisplayDivision } from "@/styles/design-system/divisions";
+import "@/styles/brackets.css";
 
 interface GlootBracketProps {
   bracket: PlayoffBracket;
@@ -43,16 +46,15 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
     }
   };
   
-  // Theme configuration
-  const theme = {
-    textColor: { main: isDark ? '#e5e7eb' : '#374151', highlighted: isDark ? '#ffffff' : '#111827', dark: isDark ? '#9ca3af' : '#6b7280' },
-    matchBackground: { wonColor: isDark ? '#065f46' : '#d1fae5', lostColor: isDark ? '#7f1d1d' : '#fee2e2' },
-    score: { background: { wonColor: isDark ? '#059669' : '#10b981', lostColor: isDark ? '#dc2626' : '#ef4444' } },
-    border: { color: isDark ? '#4b5563' : '#d1d5db', highlightedColor: isDark ? '#6b7280' : '#9ca3af' },
-    roundHeader: { backgroundColor: isDark ? '#374151' : '#f3f4f6', fontColor: isDark ? '#e5e7eb' : '#374151' },
-    connectorColor: isDark ? '#6b7280' : '#9ca3af',
-    connectorColorHighlight: isDark ? '#9ca3af' : '#6b7280'
-  };
+  // Get division for theming
+  const division = bracket.division;
+  const displayDivision = getDisplayDivision(division || '');
+  
+  // Create theme using design system
+  const theme = createDivisionGlootTheme(division, isDark);
+  
+  // Get division-specific CSS class
+  const divisionClass = displayDivision ? `bracket-${displayDivision.toLowerCase()}` : '';
   
   if (!tournament.matches.length) {
     return (
@@ -63,7 +65,7 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   }
   
   return (
-    <div className="w-full overflow-auto">
+    <div className={`w-full overflow-auto gloot-bracket-container ${divisionClass}`}>
       <div className="min-w-max p-4">
         {bracket.format === BRACKET_FORMATS.DOUBLE ? (
           <DoubleEliminationBracket
