@@ -79,16 +79,33 @@ class BracketGenerator {
       for (let i = 0; i < matchesInRound; i++) {
         const matchId = matchIdMap.get(`${round}-${i}`)!;
         
+        // Use proper seeding for first round matches
+        let team1_id = null, team2_id = null, team1_seed = null, team2_seed = null;
+        
+        if (round === 1) {
+          // Generate seeding pairs for single elimination too
+          const bracketSize = this.calculateBracketSize(teams.length);
+          const seedingPairs = this.generateSeedingPairs(teams, bracketSize);
+          
+          if (i < seedingPairs.length) {
+            const pair = seedingPairs[i];
+            team1_id = pair.team1?.id || null;
+            team2_id = pair.team2?.id || null;
+            team1_seed = pair.team1?.seed || null;
+            team2_seed = pair.team2?.seed || null;
+          }
+        }
+        
         const match = {
           id: matchId,
           bracket_id: bracketId,
           round: round,
           position: i,
           match_type: round === rounds ? 'finals' : 'winners',
-          team1_id: round === 1 && (i * 2) < teams.length ? teams[i * 2].id : null,
-          team2_id: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].id : null,
-          team1_seed: round === 1 && (i * 2) < teams.length ? teams[i * 2].seed : null,
-          team2_seed: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].seed : null,
+          team1_id,
+          team2_id,
+          team1_seed,
+          team2_seed,
           next_win_match_id: null, // Will be set in second pass
           next_lose_match_id: null, // Not used in single elimination
           best_of: 3,
@@ -102,6 +119,55 @@ class BracketGenerator {
     return { matches, matchIdMap };
   }
 
+  // Helper function to generate proper tournament seeding pairs
+  static generateSeedingPairs(teams: Array<{id: string, name: string, seed?: number}>, bracketSize: number) {
+    const pairs: Array<{team1: any, team2: any}> = [];
+    
+    // Create seeding array for the bracket size
+    const seedingOrder = [];
+    for (let i = 1; i <= bracketSize; i++) {
+      seedingOrder.push(i);
+    }
+    
+    // Create proper tournament seeding pairs
+    let currentPairs = seedingOrder.slice();
+    
+    // Apply tournament seeding algorithm
+    while (currentPairs.length > 1) {
+      const newPairs = [];
+      for (let i = 0; i < currentPairs.length; i += 2) {
+        if (i + 1 < currentPairs.length) {
+          newPairs.push([currentPairs[i], currentPairs[i + 1]]);
+        }
+      }
+      if (newPairs.length === 1) {
+        // We have our first round pairings
+        break;
+      }
+      // Continue grouping for next level
+      currentPairs = newPairs.flat();
+    }
+    
+    // Generate proper seeding pairs: 1 vs bracketSize, 2 vs (bracketSize-1), etc.
+    const numMatches = bracketSize / 2;
+    for (let i = 0; i < numMatches; i++) {
+      const seed1 = i + 1;
+      const seed2 = bracketSize - i;
+      
+      // Find actual teams with these seeds (or null if they don't exist)
+      const team1 = teams.find(t => t.seed === seed1) || null;
+      const team2 = teams.find(t => t.seed === seed2) || null;
+      
+      pairs.push({ team1, team2 });
+    }
+    
+    console.log(`[BRACKET] Generated seeding pairs:`, pairs.map(p => 
+      `${p.team1?.name || 'BYE'} (${p.team1?.seed || 'N/A'}) vs ${p.team2?.name || 'BYE'} (${p.team2?.seed || 'N/A'})`
+    ));
+    
+    return pairs;
+  }
+
   static generateDoubleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
     // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
     console.log(`[BRACKET] Teams for double elimination:`, teams.map(t => `${t.name} (seed ${t.seed})`));
@@ -111,6 +177,9 @@ class BracketGenerator {
     const matches: any[] = [];
     
     console.log(`[BRACKET] Generating double elimination for ${teams.length} teams, ${rounds} winners rounds`);
+    
+    // Generate proper seeding pairs for first round
+    const seedingPairs = this.generateSeedingPairs(teams, bracketSize);
     
     // Create match ID mappings for both brackets
     const winnersMatchIds = new Map<string, string>();
@@ -161,16 +230,27 @@ class BracketGenerator {
       for (let i = 0; i < matchesInRound; i++) {
         const matchId = winnersMatchIds.get(`w-${round}-${i}`)!;
         
+        // Use proper seeding for first round matches
+        let team1_id = null, team2_id = null, team1_seed = null, team2_seed = null;
+        
+        if (round === 1 && i < seedingPairs.length) {
+          const pair = seedingPairs[i];
+          team1_id = pair.team1?.id || null;
+          team2_id = pair.team2?.id || null;
+          team1_seed = pair.team1?.seed || null;
+          team2_seed = pair.team2?.seed || null;
+        }
+        
         const match = {
           id: matchId,
           bracket_id: bracketId,
           round: round,
           position: i,
           match_type: 'winners', // Fixed: All winners bracket matches are type 'winners'
-          team1_id: round === 1 && (i * 2) < teams.length ? teams[i * 2].id : null,
-          team2_id: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].id : null,
-          team1_seed: round === 1 && (i * 2) < teams.length ? teams[i * 2].seed : null,
-          team2_seed: round === 1 && (i * 2 + 1) < teams.length ? teams[i * 2 + 1].seed : null,
+          team1_id,
+          team2_id,
+          team1_seed,
+          team2_seed,
           next_win_match_id: null, // Will be set in second pass
           next_lose_match_id: null, // Will be set in third pass
           best_of: 3,
