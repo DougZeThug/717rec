@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ProcessedTeam, SeedValidationState } from '../types';
 import { handleDragDropReorder } from '../utils/dragAndDrop';
 
@@ -35,10 +35,14 @@ export const useSeedManagement = (
   const [pendingChanges, setPendingChanges] = useState<Map<string, number>>(new Map());
   const [draggedTeam, setDraggedTeam] = useState<ProcessedTeam | null>(null);
   const [processedTeams, setProcessedTeams] = useState<ProcessedTeam[]>(initialTeams);
+  const isInitializedRef = useRef(false);
 
-  // Update teams when initialTeams changes
-  useMemo(() => {
-    setProcessedTeams(initialTeams);
+  // Only sync with initialTeams on mount or when explicitly requested
+  useEffect(() => {
+    if (!isInitializedRef.current) {
+      setProcessedTeams(initialTeams);
+      isInitializedRef.current = true;
+    }
   }, [initialTeams]);
 
   const isDirty = pendingChanges.size > 0;
@@ -84,6 +88,7 @@ export const useSeedManagement = (
     setMode('automatic');
     setPendingChanges(new Map());
     setProcessedTeams(initialTeams);
+    isInitializedRef.current = false; // Allow resync with initialTeams
     
     // Clear all manual seeds
     initialTeams.forEach(team => {
@@ -100,6 +105,7 @@ export const useSeedManagement = (
   const cancelChanges = useCallback(() => {
     setPendingChanges(new Map());
     setProcessedTeams(initialTeams);
+    isInitializedRef.current = false; // Allow resync with initialTeams
   }, [initialTeams]);
 
   const switchMode = useCallback((newMode: 'automatic' | 'manual') => {
