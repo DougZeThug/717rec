@@ -6,6 +6,8 @@ import BracketErrorBoundary from "./BracketErrorBoundary";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
+import { useToast } from "@/hooks/use-toast";
 
 interface BracketViewProps {
   bracketId?: string | null;
@@ -41,6 +43,10 @@ const BracketView: React.FC<BracketViewProps> = ({
     error,
     refetch: refetchBracket
   } = useBracketData(bracketId);
+  
+  // Challonge admin functionality
+  const { resyncMatches } = useChallongeAdmin();
+  const { toast } = useToast();
 
   console.log('🖼️ DEBUG: useBracketData hook result:', {
     fetchedBracket: fetchedBracket ? {
@@ -87,6 +93,43 @@ const BracketView: React.FC<BracketViewProps> = ({
       console.error('🔄 DEBUG: Manual retry failed:', retryError);
     }
   }, [refetchBracket, bracketId]);
+
+  // Challonge resync handler
+  const handleChallongeResync = useCallback(async () => {
+    if (!displayBracket?.challonge_tournament_id || !bracketId) {
+      toast({
+        title: "Resync Not Available",
+        description: "This bracket is not connected to Challonge.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('🔄 DEBUG: Challonge resync triggered for bracket:', bracketId);
+    try {
+      await resyncMatches.mutateAsync({ 
+        bracketId, 
+        challongeTournamentId: displayBracket.challonge_tournament_id 
+      });
+      
+      // Refetch the bracket data after successful resync
+      await refetchBracket();
+      
+      toast({
+        title: "Sync Complete",
+        description: "Bracket updated with latest Challonge data.",
+      });
+      
+      console.log('🔄 DEBUG: Challonge resync completed successfully');
+    } catch (syncError) {
+      console.error('🔄 DEBUG: Challonge resync failed:', syncError);
+      toast({
+        title: "Sync Failed",
+        description: "Failed to sync with Challonge. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [displayBracket, bracketId, resyncMatches, refetchBracket, toast]);
 
   // Enhanced loading state with better UX
   if (isLoading && !legacyBracket) {
@@ -201,6 +244,32 @@ const BracketView: React.FC<BracketViewProps> = ({
   // Return GlootBracket viewer with enhanced error boundary
   return (
     <div className="w-full h-full min-h-[600px]">
+      {/* Bracket header with sync button */}
+      {displayBracket.challonge_tournament_id && (
+        <div className="flex justify-between items-center mb-4 p-4 bg-muted/50 rounded-lg">
+          <div>
+            <h3 className="font-semibold">{displayBracket.name}</h3>
+            <p className="text-sm text-muted-foreground">
+              Connected to Challonge Tournament #{displayBracket.challonge_tournament_id}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleChallongeResync}
+            disabled={resyncMatches.isPending}
+            className="flex items-center gap-2"
+          >
+            {resyncMatches.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            Sync from Challonge
+          </Button>
+        </div>
+      )}
+      
       <BracketErrorBoundary bracketId={bracketId}>
         <GlootBracket
           bracket={displayBracket}

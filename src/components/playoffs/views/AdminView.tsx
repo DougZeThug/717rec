@@ -17,7 +17,23 @@ const AdminView: React.FC = () => {
   const { resyncMatches } = useChallongeAdmin();
 
   const handleResyncBracket = (bracketId: string, challongeTournamentId: number) => {
-    resyncMatches.mutate({ bracketId, challongeTournamentId });
+    console.log('🔄 AdminView: Initiating bracket resync:', { bracketId, challongeTournamentId });
+    resyncMatches.mutate(
+      { bracketId, challongeTournamentId },
+      {
+        onSuccess: () => {
+          console.log('🔄 AdminView: Bracket resync completed successfully');
+          // Trigger a refetch of the bracket data
+          if (data.selectedBracketId === bracketId) {
+            // Force a refresh if this is the currently selected bracket
+            window.location.reload();
+          }
+        },
+        onError: (error) => {
+          console.error('🔄 AdminView: Bracket resync failed:', error);
+        }
+      }
+    );
   };
 
   return (
