@@ -11,7 +11,8 @@ import { useTheme } from "next-themes";
 import { BRACKET_FORMATS } from "@/constants/brackets";
 import { getDisplayDivision } from "@/styles/design-system/divisions";
 import { useBracketResponsive } from "@/hooks/use-bracket-responsive";
-import { BracketTouchControls } from "./mobile/BracketTouchControls";
+import { useBracketDimensions } from "@/hooks/use-bracket-dimensions";
+import { BracketViewport } from "./BracketViewport";
 import "@/styles/brackets.css";
 
 interface GlootBracketProps {
@@ -40,6 +41,12 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
     bracket.format
   );
   
+  // Get bracket dimensions for auto-fit
+  const bracketDimensions = useBracketDimensions(
+    tournament.matches.length,
+    bracket.format || 'single'
+  );
+  
   // Handle match click events
   const handleMatchClick = (match: Match) => {
     if (onEditMatch && match.id) {
@@ -63,38 +70,36 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   }
   
   return (
-    <BracketTouchControls className={`w-full gloot-bracket-container ${divisionClass}`}>
-      <div 
-        className="overflow-auto"
-        style={{
-          '--bracket-container-padding': `${responsive.containerPadding}px`,
-          '--bracket-match-width': `${responsive.matchCardWidth}px`,
-          '--bracket-match-height': `${responsive.matchCardHeight}px`,
-          '--bracket-spacing': `${responsive.spacing.md}px`,
-          '--bracket-font-size': responsive.fontSize.md,
-          '--bracket-min-touch-target': `${responsive.minTouchTarget}px`,
-        } as React.CSSProperties}
-      >
+    <div className={`w-full h-full gloot-bracket-container ${divisionClass}`}>
+      <BracketViewport className="h-full w-full">
         <div 
-          className={`min-w-max ${responsive.isMobile ? 'p-2' : 'p-4'}`}
-          style={{ padding: `${responsive.containerPadding}px` }}
+          className="min-w-max"
+          style={{
+            '--bracket-container-padding': `${responsive.containerPadding}px`,
+            '--bracket-match-width': `${responsive.matchCardWidth}px`,
+            '--bracket-match-height': `${responsive.matchCardHeight}px`,
+            '--bracket-spacing': `${responsive.spacing.md}px`,
+            '--bracket-font-size': responsive.fontSize.md,
+            '--bracket-min-touch-target': `${responsive.minTouchTarget}px`,
+            padding: `${responsive.containerPadding}px`,
+          } as React.CSSProperties}
         >
-        {bracket.format === BRACKET_FORMATS.DOUBLE ? (
-          <DoubleEliminationBracket
-            matches={tournament.matches}
-            matchComponent={Match}
-            onMatchClick={handleMatchClick}
-          />
-        ) : (
-          <SingleEliminationBracket
-            matches={tournament.matches}
-            matchComponent={Match}
-            onMatchClick={handleMatchClick}
-          />
-        )}
+          {bracket.format === BRACKET_FORMATS.DOUBLE ? (
+            <DoubleEliminationBracket
+              matches={tournament.matches}
+              matchComponent={Match}
+              onMatchClick={handleMatchClick}
+            />
+          ) : (
+            <SingleEliminationBracket
+              matches={tournament.matches}
+              matchComponent={Match}
+              onMatchClick={handleMatchClick}
+            />
+          )}
         </div>
-      </div>
-    </BracketTouchControls>
+      </BracketViewport>
+    </div>
   );
 };
 

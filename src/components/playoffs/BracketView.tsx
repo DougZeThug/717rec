@@ -200,13 +200,15 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   // Return GlootBracket viewer with enhanced error boundary
   return (
-    <BracketErrorBoundary bracketId={bracketId}>
-      <GlootBracket
-        bracket={displayBracket}
-        teams={displayBracket.teams || displayTeams}
-        onEditMatch={handleMatchClick}
-      />
-    </BracketErrorBoundary>
+    <div className="w-full h-full min-h-[600px]">
+      <BracketErrorBoundary bracketId={bracketId}>
+        <GlootBracket
+          bracket={displayBracket}
+          teams={displayBracket.teams || displayTeams}
+          onEditMatch={handleMatchClick}
+        />
+      </BracketErrorBoundary>
+    </div>
   );
 };
 
