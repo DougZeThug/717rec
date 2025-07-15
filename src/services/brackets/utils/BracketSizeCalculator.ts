@@ -4,16 +4,27 @@
  */
 export class BracketSizeCalculator {
   /**
-   * Calculate the next power of 2 for bracket size
+   * Calculate the appropriate bracket size for tournament play
    * @param teamCount Number of teams in the bracket
-   * @returns The next power of 2 that can accommodate all teams
+   * @returns The bracket size to use (prefers smaller brackets with play-ins)
    */
   static calculateBracketSize(teamCount: number): number {
-    let power = 1;
-    while (power < teamCount) {
-      power *= 2;
+    // For 9+ teams, use next lower power of 2 with play-ins
+    // This reduces the number of byes and creates more actual matches
+    if (teamCount <= 8) {
+      return 8;
+    } else if (teamCount <= 16) {
+      return 8; // Use 8-team bracket for 9-16 teams with play-ins
+    } else if (teamCount <= 32) {
+      return 16; // Use 16-team bracket for 17-32 teams with play-ins
+    } else {
+      // For larger tournaments, use traditional next power of 2
+      let power = 1;
+      while (power < teamCount) {
+        power *= 2;
+      }
+      return power;
     }
-    return power;
   }
 
   /**
