@@ -105,12 +105,12 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     }));
   }, [allTeams]);
 
-  // Filter teams by display division with type safety
+  // Filter teams by division with type safety
   const filteredTeams = React.useMemo(() => {
     if (!validDivisionId || !Array.isArray(processedTeams)) return processedTeams;
     
     return processedTeams.filter(team => 
-      team.divisionName === validDivisionId
+      team.division_id === validDivisionId
     );
   }, [processedTeams, validDivisionId]);
 

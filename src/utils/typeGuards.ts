@@ -30,17 +30,11 @@ export function isDivisionArray(maybe: unknown): maybe is Division[] {
 }
 
 /**
- * Type guard to validate if a display division name is valid
- * Now validates against display_division names instead of internal division IDs
+ * Type guard to validate if a division ID exists in the divisions array
  */
-export function isDivisionIdValid(divisions: Division[], displayDivisionName: unknown): displayDivisionName is string {
-  if (typeof displayDivisionName !== 'string' || !displayDivisionName) return false;
-  
-  // Check if any division has this display_division
-  return divisions.some(d => 
-    (d.display_division && d.display_division === displayDivisionName) ||
-    (!d.display_division && d.name === displayDivisionName)
-  );
+export function isDivisionIdValid(divisions: Division[], id: unknown): id is string {
+  if (typeof id !== 'string' || !id) return false;
+  return divisions.some(d => d.id === id);
 }
 
 /**

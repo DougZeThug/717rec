@@ -260,7 +260,7 @@ class BracketGenerator {
 
 interface CreateBracketPayload {
   name: string;
-  displayDivision: string;
+  divisionId: string;
   format: 'singleElim' | 'doubleElim';
   teams: Array<{
     id: string;
@@ -325,25 +325,9 @@ serve(async (req) => {
     console.log('[BRACKET] Creating bracket with payload:', JSON.stringify(payload, null, 2));
 
     // Enhanced validation
-    if (!payload.name || !payload.displayDivision || !payload.teams || payload.teams.length < 2) {
-      throw new Error('Invalid payload: name, displayDivision, and at least 2 teams are required');
+    if (!payload.name || !payload.divisionId || !payload.teams || payload.teams.length < 2) {
+      throw new Error('Invalid payload: name, divisionId, and at least 2 teams are required');
     }
-
-    // Find a division ID from one of the teams to associate the bracket with
-    // Since teams can now be from multiple divisions, we'll use the first team's division
-    console.log('[DATABASE] Finding division for bracket association...');
-    
-    const { data: firstTeam, error: teamError } = await supabaseClient
-      .from('teams')
-      .select('division_id')
-      .eq('id', payload.teams[0].id)
-      .single();
-    
-    if (teamError || !firstTeam) {
-      throw new Error('Failed to find team division for bracket association');
-    }
-    
-    const divisionId = firstTeam.division_id;
 
     // Check for reasonable maximum (tournament brackets typically support up to 64 teams)
     if (payload.teams.length > 64) {
@@ -443,7 +427,7 @@ serve(async (req) => {
       .from('brackets')
       .insert({
         title: payload.name,
-        division_id: divisionId,
+        division_id: payload.divisionId,
         format: payload.format,
         state: 'pending',
         challonge_tournament_id: parseInt(tournamentId.toString())

@@ -4,12 +4,11 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 import { BracketFormValues } from "./BracketFormSchema";
-import { useDisplayDivisions } from "@/hooks/playoffs/useDisplayDivisions";
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<BracketFormValues>;
-  divisions: { id: string; name: string; display_division?: string }[];
-  onDivisionChange: (displayDivisionName: string) => void;
+  divisions: { id: string; name: string }[];
+  onDivisionChange: (divisionId: string) => void;
 }
 
 /**
@@ -21,28 +20,31 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
   divisions,
   onDivisionChange,
 }) => {
-  // Group divisions by display division
-  const displayDivisions = useDisplayDivisions(divisions);
-
   /**
-   * Handles display division selection change events
-   * @param displayDivisionName - The selected display division name
+   * Handles division selection change events
+   * @param divisionId - The selected division ID
    */
-  const handleDivisionChange = (displayDivisionName: string) => {
+  const handleDivisionChange = (divisionId: string) => {
     try {
-      // Set the display division name in the form
-      form.setValue('divisionId', displayDivisionName);
-      form.setValue('divisionName', displayDivisionName);
+      const selectedDivision = divisions.find(d => d.id === divisionId);
       
-      // Call the parent handler with display division name
-      onDivisionChange(displayDivisionName);
+      // Set the division ID in the form
+      form.setValue('divisionId', divisionId);
+      
+      // Set division name if available for easier filtering
+      if (selectedDivision?.name) {
+        form.setValue('divisionName', selectedDivision.name);
+      }
+      
+      // Call the parent handler
+      onDivisionChange(divisionId);
     } catch (error) {
       console.error("BracketFormDivision: Error handling division change:", error);
     }
   };
 
-  // Show message if no display divisions available
-  if (!displayDivisions || displayDivisions.length === 0) {
+  // Show message if no divisions available
+  if (!divisions || !Array.isArray(divisions) || divisions.length === 0) {
     return (
       <FormField
         control={form.control}
@@ -76,9 +78,9 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {displayDivisions.map((displayDiv) => (
-                <SelectItem key={displayDiv.name} value={displayDiv.displayName}>
-                  {displayDiv.displayName}
+              {divisions.map((division) => (
+                <SelectItem key={division.id} value={division.id}>
+                  {division.name}
                 </SelectItem>
               ))}
             </SelectContent>
