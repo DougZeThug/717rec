@@ -1,9 +1,8 @@
 
 import React, { useCallback, useMemo } from "react";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
-import EwanMellorBracketViewer from "@/components/brackets/EwanMellorBracketViewer";
+import GlootBracket from "@/components/playoffs/GlootBracket";
 import BracketErrorBoundary from "./BracketErrorBoundary";
-import { transformPlayoffToEwanMellor } from "@/utils/brackets/transformers/playoffToEwanMellor";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -183,7 +182,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  console.log('🖼️ DEBUG: About to render EwanMellor viewer with valid data:', {
+  console.log('🖼️ DEBUG: About to render GlootBracket viewer with valid data:', {
     bracketId: displayBracket.id,
     bracketName: displayBracket.name,
     matchesCount: displayBracket.matches.length,
@@ -192,55 +191,20 @@ const BracketView: React.FC<BracketViewProps> = ({
     timestamp: new Date().toISOString()
   });
 
-  // Transform data for EwanMellor viewer
-  const transformedData = useMemo(() => {
-    try {
-      const matches = displayBracket.matches || [];
-      const teams = displayBracket.teams || displayTeams;
-      return transformPlayoffToEwanMellor(displayBracket, matches, teams);
-    } catch (error) {
-      console.error('🚨 Error transforming bracket data:', error);
-      return null;
-    }
-  }, [displayBracket, displayTeams]);
-
-  if (!transformedData) {
-    return (
-      <div className="text-center p-8 space-y-3">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-lg font-medium text-red-700">Data Transformation Error</p>
-          <p className="text-sm text-red-600 mt-1">Unable to transform bracket data for display</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Handle match click
-  const handleMatchClick = useCallback((matchId: number) => {
+  // Handle match click for GlootBracket
+  const handleMatchClick = useCallback((matchId: string) => {
     if (onEditMatch) {
-      const matches = displayBracket.matches || [];
-      const originalMatch = matches.find((_, index) => index + 1 === matchId);
-      if (originalMatch) {
-        onEditMatch(originalMatch.id);
-      }
+      onEditMatch(matchId);
     }
-  }, [onEditMatch, displayBracket]);
+  }, [onEditMatch]);
 
-  // Return EwanMellor viewer with enhanced error boundary
+  // Return GlootBracket viewer with enhanced error boundary
   return (
     <BracketErrorBoundary bracketId={bracketId}>
-      <EwanMellorBracketViewer
-        data={transformedData}
-        onMatchClick={handleMatchClick}
-        config={{
-          participantOriginPlacement: 'before',
-          separatorType: 'bracket',
-          showSlotsOrigin: true,
-          showLowerBracketSlotsOrigin: true,
-          highlightParticipantOnHover: true,
-          showPopoverOnMatchClick: false,
-          showPopoverOnMatchLabelClick: false
-        }}
+      <GlootBracket
+        bracket={displayBracket}
+        teams={displayBracket.teams || displayTeams}
+        onEditMatch={handleMatchClick}
       />
     </BracketErrorBoundary>
   );

@@ -1,7 +1,6 @@
 
 import React from "react";
-import AdminView from "@/components/playoffs/views/AdminView";
-import PlayoffView from "@/components/playoffs/views/PlayoffView";
+import GlootBracket from "@/components/playoffs/GlootBracket";
 import { PlayoffBracket, PlayoffTeam } from "@/utils/playoffs/playoffTypes";
 
 interface LocalBracketRendererProps {
@@ -16,20 +15,19 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   teams,
   ...props
 }) => {
-  // Check if we have admin-specific data to determine which view to render
-  const isAdmin = props.activeTab !== undefined;
+  if (!bracket) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-lg font-medium text-gray-700">No bracket data available</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Admin View with Tabs */}
-      {bracket && isAdmin && (
-        <AdminView />
-      )}
-      
-      {/* Regular View */}
-      {(!bracket || !isAdmin) && (
-        <PlayoffView />
-      )}
-    </>
+    <GlootBracket
+      bracket={bracket}
+      teams={teams}
+      onEditMatch={props.onEditMatch}
+    />
   );
 };
