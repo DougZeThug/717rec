@@ -136,11 +136,6 @@ export const getMatchSequence = (timeSlot: string): number | null => {
     case '8:30 PM':
     case '9:00 PM':
       return 1; // First match in the pair (primary slot)
-    case '7:00 PM':
-    case '7:30 PM':
-    case '8:00 PM':
-    case '8:30 PM':
-    case '9:00 PM':
     case '9:30 PM':
       return 2; // Second match in the pair (secondary slot)
     default:
