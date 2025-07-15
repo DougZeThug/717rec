@@ -19,6 +19,17 @@
   --bracket-competitive: var(--competitive);
   --bracket-intermediate: var(--intermediate);
   --bracket-recreational: var(--recreational);
+  
+  /* Responsive variables (can be overridden by component) */
+  --bracket-container-padding: 1rem;
+  --bracket-match-width: 280px;
+  --bracket-match-height: 160px;
+  --bracket-min-touch-target: 44px;
+  --bracket-round-header-height: 64px;
+  
+  /* Mobile-first responsive spacing */
+  --bracket-mobile-spacing: 0.5rem;
+  --bracket-desktop-spacing: 1rem;
 }
 
 /* G-Loot component overrides */
@@ -29,6 +40,15 @@
   background: hsl(var(--background));
   border-radius: var(--bracket-border-radius);
   transition: var(--bracket-transition);
+  
+  /* Enhanced scrolling for touch devices */
+  overflow: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  
+  /* Responsive container padding */
+  padding: var(--bracket-container-padding);
 }
 
 /* Match component styling */
@@ -36,6 +56,14 @@
   border-radius: var(--bracket-border-radius);
   transition: var(--bracket-transition);
   font-size: var(--bracket-text-sm);
+  
+  /* Responsive sizing */
+  width: var(--bracket-match-width);
+  height: var(--bracket-match-height);
+  
+  /* Touch-friendly minimum sizes */
+  min-height: var(--bracket-min-touch-target);
+  min-width: var(--bracket-min-touch-target);
   
   /* Ensure proper hover states */
   &:hover {
@@ -47,6 +75,12 @@
   &:focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
+  }
+  
+  /* Touch-friendly active state */
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.1);
   }
 }
 
@@ -93,6 +127,12 @@
   font-size: var(--bracket-text-sm);
   text-align: center;
   transition: var(--bracket-transition);
+  
+  /* Responsive height */
+  height: var(--bracket-round-header-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Connector lines */
@@ -147,30 +187,125 @@
   }
 }
 
-/* Responsive adjustments */
+/* Mobile-first responsive adjustments */
 @media (max-width: 768px) {
   .gloot-bracket-container {
     --bracket-text-sm: 0.75rem;
     --bracket-text-base: 0.875rem;
-    --bracket-spacing: 0.5rem;
-    --bracket-match-padding: 0.5rem;
+    --bracket-spacing: var(--bracket-mobile-spacing);
+    --bracket-match-padding: var(--bracket-mobile-spacing);
+    --bracket-container-padding: var(--bracket-mobile-spacing);
+    --bracket-match-width: 200px;
+    --bracket-match-height: 120px;
+    --bracket-round-header-height: 48px;
+    
+    /* Mobile-specific improvements */
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
   
   .gloot-match {
-    min-height: 3rem;
+    min-height: var(--bracket-min-touch-target);
+    padding: var(--bracket-mobile-spacing);
+    margin: calc(var(--bracket-mobile-spacing) / 2);
   }
   
   .gloot-team-name {
     font-size: var(--bracket-text-sm);
+    line-height: 1.2;
   }
   
   .gloot-score {
     font-size: var(--bracket-text-sm);
+    font-weight: 600;
+    min-width: 32px;
+    text-align: center;
   }
   
-  /* Touch-friendly sizing */
+  /* Touch-friendly interactions */
   .gloot-match:hover {
     transform: none; /* Disable hover effects on mobile */
+  }
+  
+  .gloot-match:active {
+    background: hsl(var(--muted));
+    transform: scale(0.98);
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .gloot-bracket-container {
+    --bracket-match-width: 240px;
+    --bracket-match-height: 140px;
+    --bracket-round-header-height: 56px;
+    --bracket-container-padding: 1.5rem;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .gloot-bracket-container {
+    --bracket-spacing: var(--bracket-desktop-spacing);
+    --bracket-match-padding: var(--bracket-desktop-spacing);
+    --bracket-container-padding: var(--bracket-desktop-spacing);
+    --bracket-match-width: 280px;
+    --bracket-match-height: 160px;
+    --bracket-round-header-height: 64px;
+  }
+  
+  .gloot-match {
+    padding: var(--bracket-desktop-spacing);
+    margin: calc(var(--bracket-desktop-spacing) / 2);
+  }
+  
+  /* Enhanced desktop interactions */
+  .gloot-match:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px hsl(var(--primary) / 0.2);
+  }
+  
+  .gloot-match:focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
+  
+  /* Keyboard navigation support */
+  .gloot-match[tabindex]:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+/* Touch-specific improvements */
+@media (hover: none) and (pointer: coarse) {
+  .gloot-match:hover {
+    transform: none;
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.1);
+  }
+  
+  .gloot-match:active {
+    background: hsl(var(--muted));
+    transform: scale(0.98);
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+  .gloot-bracket-container {
+    --bracket-container-padding: calc(var(--bracket-mobile-spacing) / 2);
+    --bracket-match-height: 100px;
+  }
+  
+  .gloot-match {
+    padding: calc(var(--bracket-mobile-spacing) / 2);
+    margin: calc(var(--bracket-mobile-spacing) / 4);
+  }
+  
+  .gloot-round-header {
+    --bracket-round-header-height: 40px;
+    padding: calc(var(--bracket-mobile-spacing) / 2);
   }
 }
 
