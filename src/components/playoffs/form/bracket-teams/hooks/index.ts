@@ -6,3 +6,5 @@ export { useBracketFormValidation } from './useBracketFormValidation';
 export { useSeedManagement } from './useSeedManagement';
 export { useTeamSeedMutation } from './useTeamSeedMutation';
 export { useFormStateManager } from './useFormStateManager';
+export { useOptimisticTeamMutations } from './useOptimisticTeamMutations';
+export { useMutationStateManager } from './useMutationStateManager';

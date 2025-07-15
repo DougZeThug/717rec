@@ -28,7 +28,9 @@ export {
   useBracketFormValidation,
   useSeedManagement,
   useTeamSeedMutation,
-  useFormStateManager
+  useFormStateManager,
+  useOptimisticTeamMutations,
+  useMutationStateManager
 } from './hooks';
 
 // Re-export seed validation hook

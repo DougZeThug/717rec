@@ -2709,6 +2709,10 @@ export type Database = {
         Args: { p_team_id: string }
         Returns: Json
       }
+      batch_update_team_seeds: {
+        Args: { p_updates: Json }
+        Returns: Json
+      }
       calculate_team_streak: {
         Args: { p_team_id: string }
         Returns: {

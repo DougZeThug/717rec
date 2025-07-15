@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { withRetry, formatUserError } from '../utils/mutationErrorHandling';
 
 export interface TeamSeedUpdate {
   teamId: string;
@@ -19,18 +20,20 @@ export const useTeamSeedMutation = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Single team seed update
+  // Single team seed update with retry logic
   const updateSingleTeamSeed = useMutation({
     mutationFn: async ({ teamId, seed }: { teamId: string; seed: number | null }) => {
-      const { data, error } = await supabase
-        .from('teams')
-        .update({ seed })
-        .eq('id', teamId)
-        .select()
-        .single();
+      return withRetry(async () => {
+        const { data, error } = await supabase
+          .from('teams')
+          .update({ seed })
+          .eq('id', teamId)
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
@@ -40,7 +43,7 @@ export const useTeamSeedMutation = () => {
       console.error('Failed to update team seed:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update team seed. Please try again.',
+        description: formatUserError(error, 'Seed update'),
         variant: 'destructive',
       });
     },
@@ -84,7 +87,7 @@ export const useTeamSeedMutation = () => {
       console.error('Failed to bulk update seeds:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update team seeds. Please try again.',
+        description: formatUserError(error, 'Bulk seed update'),
         variant: 'destructive',
       });
     },
@@ -111,7 +114,7 @@ export const useTeamSeedMutation = () => {
       console.error('Failed to reset seeds:', error);
       toast({
         title: 'Error',
-        description: 'Failed to reset seeds. Please try again.',
+        description: formatUserError(error, 'Seed reset'),
         variant: 'destructive',
       });
     },
