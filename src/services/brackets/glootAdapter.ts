@@ -105,7 +105,7 @@ export function adaptPlayoffMatchesToGloot(
       name: createMatchName(match),
       nextMatchId: match.nextWinMatchId || undefined,
       nextLooserMatchId: match.nextLoseMatchId || undefined,
-      tournamentRoundText: match.matchType === 'finals' ? 'Finals' : `Round ${match.round}`,
+      tournamentRoundText: createTournamentRoundText(match),
       startTime: new Date().toISOString(),
       state,
       participants
@@ -145,12 +145,13 @@ function determineMatchState(match: PlayoffMatch): GlootMatch['state'] {
   if (match.status === 'completed' && match.winnerId) {
     return 'SCORE_DONE';
   }
-  if (match.team1Id && match.team2Id) {
+  if (match.status === 'in_progress') {
     return 'DONE';
   }
-  if (!match.team1Id && !match.team2Id) {
-    return 'NO_PARTY';
+  if (match.team1Id && match.team2Id && match.status === 'pending') {
+    return 'DONE';
   }
+  // Match with no teams assigned yet
   return 'NO_PARTY';
 }
 
@@ -173,4 +174,38 @@ function createMatchName(match: PlayoffMatch): string {
   }
   
   return `${prefix} R${match.round}`;
+}
+
+/**
+ * Creates proper tournament round text for G-Loot display
+ */
+function createTournamentRoundText(match: PlayoffMatch): string {
+  switch (match.matchType) {
+    case 'winners':
+      if (match.round === 1) return 'Winners Round 1';
+      if (match.round === 2) return 'Winners Round 2';
+      if (match.round === 3) return 'Winners Semi-Final';
+      if (match.round === 4) return 'Winners Final';
+      return `Winners Round ${match.round}`;
+    
+    case 'losers':
+      if (match.round === 1) return 'Losers Round 1';
+      if (match.round === 2) return 'Losers Round 2';
+      if (match.round === 3) return 'Losers Round 3';
+      if (match.round === 4) return 'Losers Semi-Final';
+      if (match.round === 5) return 'Losers Final';
+      return `Losers Round ${match.round}`;
+    
+    case 'finals':
+      return 'Grand Final';
+    
+    case 'play-in':
+      return 'Play-In';
+    
+    case 'play-in-2':
+      return 'Play-In 2';
+    
+    default:
+      return `Round ${match.round}`;
+  }
 }
