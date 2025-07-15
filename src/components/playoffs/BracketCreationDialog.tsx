@@ -129,7 +129,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
           name: team.name,
           seed: team.seed || (index + 1)
         })),
-        divisionId: data.divisionId
+        displayDivision: data.divisionId
       });
       
       console.log("BracketCreationDialog: Bracket created successfully:", bracket);

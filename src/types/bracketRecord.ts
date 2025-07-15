@@ -16,7 +16,7 @@ export interface BracketRecord {
 
 export interface CreateBracketPayload {
   name: string;
-  divisionId: string;
+  displayDivision: string;
   format: 'singleElim' | 'doubleElim';
   teams: Array<{
     id: string;

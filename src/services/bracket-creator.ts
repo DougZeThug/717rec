@@ -6,13 +6,13 @@ import type { BracketRecord, CreateBracketPayload } from "@/types/bracketRecord"
 export interface BracketCreationOptions {
   name: string;
   format: "singleElim" | "doubleElim";
-  divisionId: string;
+  displayDivision: string;
   teams: { id: string; name: string; seed?: number }[];
   onProgress?: (step: string) => void;
 }
 
 export async function createBracket(options: BracketCreationOptions): Promise<BracketRecord> {
-  const { name, format, divisionId, teams, onProgress } = options;
+  const { name, format, displayDivision, teams, onProgress } = options;
   
   bracketLog("Starting E2E bracket creation:", { name, format, teamCount: teams.length });
   
@@ -73,7 +73,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
 
     const payload: CreateBracketPayload = {
       name,
-      divisionId,
+      displayDivision,
       format,
       teams: sortedTeams
     };

@@ -4,36 +4,25 @@ import type { Team } from "@/types";
 
 export const useFilteredTeams = (
   allTeams: Team[],
-  divisionFilter: string | null,
+  displayDivisionFilter: string | null,
 ) => {
   return useMemo(() => {
-    // Handle empty or null division filter
-    if (!divisionFilter || !allTeams || !Array.isArray(allTeams)) {
+    // Handle empty or null display division filter
+    if (!displayDivisionFilter || !allTeams || !Array.isArray(allTeams)) {
       return allTeams || [];
     }
 
     try {
-      // Filter by division ID first (preferred method)
-      const filteredByDivisionId = allTeams.filter((team) => {
-        if (!team) return false;
-        return team.division_id === divisionFilter;
+      // Filter by display division (team.divisionName contains the display_division)
+      const filteredByDisplayDivision = allTeams.filter((team) => {
+        if (!team || !team.divisionName) return false;
+        return team.divisionName === displayDivisionFilter;
       });
 
-      // If we found teams by division ID, return them
-      if (filteredByDivisionId.length > 0) {
-        return filteredByDivisionId;
-      }
-
-      // Fallback: filter by division name for backward compatibility
-      const filteredByDivisionName = allTeams.filter((team) => {
-        if (!team) return false;
-        return team.divisionName === divisionFilter;
-      });
-
-      return filteredByDivisionName;
+      return filteredByDisplayDivision;
     } catch (error) {
-      console.error("Error filtering teams by division:", error);
+      console.error("Error filtering teams by display division:", error);
       return allTeams || [];
     }
-  }, [allTeams, divisionFilter]);
+  }, [allTeams, displayDivisionFilter]);
 };
