@@ -91,8 +91,8 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
             theme={theme}
             options={{
               style: {
-                roundHeader: { 
-                  backgroundColor: theme.roundHeader.backgroundColor, 
+                roundHeaders: { 
+                  background: theme.roundHeader.backgroundColor, 
                   fontColor: theme.roundHeader.fontColor,
                   height: responsive.roundHeaderHeight
                 },
@@ -116,8 +116,8 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
             theme={theme}
             options={{
               style: {
-                roundHeader: { 
-                  backgroundColor: theme.roundHeader.backgroundColor, 
+                roundHeaders: { 
+                  background: theme.roundHeader.backgroundColor, 
                   fontColor: theme.roundHeader.fontColor,
                   height: responsive.roundHeaderHeight
                 },
