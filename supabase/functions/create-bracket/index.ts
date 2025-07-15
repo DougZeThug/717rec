@@ -123,38 +123,13 @@ class BracketGenerator {
   static generateSeedingPairs(teams: Array<{id: string, name: string, seed?: number}>, bracketSize: number) {
     const pairs: Array<{team1: any, team2: any}> = [];
     
-    // Create seeding array for the bracket size
-    const seedingOrder = [];
-    for (let i = 1; i <= bracketSize; i++) {
-      seedingOrder.push(i);
-    }
-    
-    // Create proper tournament seeding pairs
-    let currentPairs = seedingOrder.slice();
-    
-    // Apply tournament seeding algorithm
-    while (currentPairs.length > 1) {
-      const newPairs = [];
-      for (let i = 0; i < currentPairs.length; i += 2) {
-        if (i + 1 < currentPairs.length) {
-          newPairs.push([currentPairs[i], currentPairs[i + 1]]);
-        }
-      }
-      if (newPairs.length === 1) {
-        // We have our first round pairings
-        break;
-      }
-      // Continue grouping for next level
-      currentPairs = newPairs.flat();
-    }
-    
-    // Generate proper seeding pairs: 1 vs bracketSize, 2 vs (bracketSize-1), etc.
+    // Generate proper tournament seeding pairs: 1 vs bracketSize, 2 vs (bracketSize-1), etc.
     const numMatches = bracketSize / 2;
     for (let i = 0; i < numMatches; i++) {
       const seed1 = i + 1;
       const seed2 = bracketSize - i;
       
-      // Find actual teams with these seeds (or null if they don't exist)
+      // Find actual teams with these seeds (or null if they don't exist - creates bye)
       const team1 = teams.find(t => t.seed === seed1) || null;
       const team2 = teams.find(t => t.seed === seed2) || null;
       
