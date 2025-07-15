@@ -3,14 +3,12 @@ import React from "react";
 import { 
   SingleEliminationBracket, 
   DoubleEliminationBracket,
-  Match,
-  SVGViewer 
+  Match
 } from "@g-loot/react-tournament-brackets";
 import { PlayoffBracket, Team } from "@/types/playoffs";
 import { adaptPlayoffMatchesToGloot } from "@/services/brackets/glootAdapter";
 import { useTheme } from "next-themes";
 import { BRACKET_FORMATS } from "@/constants/brackets";
-import { createResponsiveGlootTheme } from "@/styles/brackets/glootTheme";
 import { getDisplayDivision } from "@/styles/design-system/divisions";
 import { useBracketResponsive } from "@/hooks/use-bracket-responsive";
 import { BracketTouchControls } from "./mobile/BracketTouchControls";
@@ -53,9 +51,6 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   const division = bracket.division;
   const displayDivision = getDisplayDivision(division || '');
   
-  // Create theme using design system with responsive config
-  const theme = createResponsiveGlootTheme(division, isDark, responsive.isMobile);
-  
   // Get division-specific CSS class
   const divisionClass = displayDivision ? `bracket-${displayDivision.toLowerCase()}` : '';
   
@@ -88,51 +83,13 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
           <DoubleEliminationBracket
             matches={tournament.matches}
             matchComponent={Match}
-            theme={theme}
-            options={{
-              style: {
-                roundHeaders: { 
-                  background: theme.roundHeader.backgroundColor, 
-                  fontColor: theme.roundHeader.fontColor,
-                  height: responsive.roundHeaderHeight
-                },
-                connectorColor: theme.connectorColor,
-                connectorColorHighlight: theme.connectorColorHighlight,
-                width: responsive.matchCardWidth,
-                height: responsive.matchCardHeight
-              }
-            }}
             onMatchClick={handleMatchClick}
-            svgWrapper={({ children, ...props }) => (
-              <SVGViewer background={isDark ? '#1f2937' : '#ffffff'} {...props}>
-                {children}
-              </SVGViewer>
-            )}
           />
         ) : (
           <SingleEliminationBracket
             matches={tournament.matches}
             matchComponent={Match}
-            theme={theme}
-            options={{
-              style: {
-                roundHeaders: { 
-                  background: theme.roundHeader.backgroundColor, 
-                  fontColor: theme.roundHeader.fontColor,
-                  height: responsive.roundHeaderHeight
-                },
-                connectorColor: theme.connectorColor,
-                connectorColorHighlight: theme.connectorColorHighlight,
-                width: responsive.matchCardWidth,
-                height: responsive.matchCardHeight
-              }
-            }}
             onMatchClick={handleMatchClick}
-            svgWrapper={({ children, ...props }) => (
-              <SVGViewer background={isDark ? '#1f2937' : '#ffffff'} {...props}>
-                {children}
-              </SVGViewer>
-            )}
           />
         )}
         </div>
