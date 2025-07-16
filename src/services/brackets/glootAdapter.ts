@@ -57,63 +57,77 @@ export function adaptPlayoffMatchesToGloot(
     sampleTeams: teams.slice(0, 3)
   });
   
-  const glootMatches: GlootMatch[] = matches.map((match, index) => {
-    console.log(`🏆 adaptPlayoffMatchesToGloot: Processing match ${index + 1}/${matches.length}:`, match);
+  // Sort matches to ensure proper G-Loot ordering: Winners first, then Losers, then Finals
+  const sortedMatches = [...matches].sort((a, b) => {
+    // Match type priority: winners < losers < finals
+    const typeOrder = { 'winners': 1, 'losers': 2, 'finals': 3 };
+    const aTypePriority = typeOrder[a.matchType] || 4;
+    const bTypePriority = typeOrder[b.matchType] || 4;
     
-    // Use conditional logic instead of empty string fallback
+    if (aTypePriority !== bTypePriority) {
+      return aTypePriority - bTypePriority;
+    }
+    
+    // Within same type, sort by round then position
+    if (a.round !== b.round) {
+      return a.round - b.round;
+    }
+    
+    return a.position - b.position;
+  });
+  
+  console.log('🏆 adaptPlayoffMatchesToGloot: Sorted matches order:', 
+    sortedMatches.map(m => `${m.matchType}-R${m.round}-P${m.position}`)
+  );
+
+  const glootMatches: GlootMatch[] = sortedMatches.map((match, index) => {
+    console.log(`🏆 adaptPlayoffMatchesToGloot: Processing match ${index + 1}/${sortedMatches.length}:`, {
+      id: match.id,
+      matchType: match.matchType,
+      round: match.round,
+      position: match.position,
+      team1Id: match.team1Id,
+      team2Id: match.team2Id,
+      status: match.status
+    });
+    
+    // Look up teams
     const team1 = match.team1Id ? teamMap.get(match.team1Id) : undefined;
     const team2 = match.team2Id ? teamMap.get(match.team2Id) : undefined;
     
-    console.log(`🏆 adaptPlayoffMatchesToGloot: Match ${match.id} team lookup:`, { 
-      matchTeam1Id: match.team1Id,
-      matchTeam2Id: match.team2Id,
-      team1Found: team1,
-      team2Found: team2,
-      team1InMap: match.team1Id ? teamMap.has(match.team1Id) : false,
-      team2InMap: match.team2Id ? teamMap.has(match.team2Id) : false,
-      matchType: match.matchType,
-      round: match.round
-    });
-    
-    // Determine match state using enhanced logic
-    const state = determineMatchState(match);
-    
-    // Create participants
-    const participants = [];
-    
-    if (team1) {
-      participants.push({
-        id: team1.id,
-        name: team1.name,
-        resultText: match.team1Score !== null && match.team1Score !== undefined ? match.team1Score.toString() : undefined,
-        isWinner: match.winnerId === team1.id,
-        status: match.status === 'completed' ? 'PLAYED' as const : 'NO_PARTY' as const
-      });
+    // Enhanced state determination - be more permissive for display
+    let state: GlootMatch['state'];
+    if (match.status === 'completed' && match.winnerId) {
+      state = 'SCORE_DONE';
+    } else if (team1 && team2 && match.status === 'pending') {
+      // Matches with both teams should be shown as ready to play
+      state = 'DONE'; 
+    } else if (team1 || team2) {
+      // Matches with at least one team should be shown
+      state = 'WALK_OVER';
     } else {
-      // Add placeholder for missing team
-      participants.push({
-        id: `tbd-${match.id}-0`,
-        name: 'TBD',
-        status: 'NO_PARTY' as const
-      });
+      // Empty matches waiting for teams
+      state = 'NO_PARTY';
     }
     
-    if (team2) {
-      participants.push({
-        id: team2.id,
-        name: team2.name,
-        resultText: match.team2Score !== null && match.team2Score !== undefined ? match.team2Score.toString() : undefined,
-        isWinner: match.winnerId === team2.id,
-        status: match.status === 'completed' ? 'PLAYED' as const : 'NO_PARTY' as const
-      });
-    } else {
-      // Add placeholder for missing team
-      participants.push({
-        id: `tbd-${match.id}-1`,
-        name: 'TBD',
-        status: 'NO_PARTY' as const
-      });
-    }
+    // Create consistent participant structure
+    const participant1 = {
+      id: team1?.id || `tbd-${match.id}-1`,
+      name: team1?.name || 'TBD',
+      resultText: match.winnerId && team1 ? (match.winnerId === match.team1Id ? 'W' : 'L') : '',
+      isWinner: !!match.winnerId && match.winnerId === match.team1Id,
+      status: (match.winnerId && team1) ? 'PLAYED' as const : 
+              (team1 ? 'WALK_OVER' as const : 'NO_PARTY' as const),
+    };
+    
+    const participant2 = {
+      id: team2?.id || `tbd-${match.id}-2`,
+      name: team2?.name || 'TBD',
+      resultText: match.winnerId && team2 ? (match.winnerId === match.team2Id ? 'W' : 'L') : '',
+      isWinner: !!match.winnerId && match.winnerId === match.team2Id,
+      status: (match.winnerId && team2) ? 'PLAYED' as const : 
+              (team2 ? 'WALK_OVER' as const : 'NO_PARTY' as const),
+    };
     
     const glootMatch = {
       id: match.id,
@@ -123,10 +137,17 @@ export function adaptPlayoffMatchesToGloot(
       tournamentRoundText: createTournamentRoundText(match),
       startTime: new Date().toISOString(),
       state,
-      participants
+      participants: [participant1, participant2]
     };
     
-    console.log(`🏆 adaptPlayoffMatchesToGloot: Created gloot match ${index + 1}:`, glootMatch);
+    console.log(`🏆 adaptPlayoffMatchesToGloot: Created match ${match.matchType}-R${match.round}:`, {
+      state,
+      hasTeam1: !!team1,
+      hasTeam2: !!team2,
+      participant1Name: participant1.name,
+      participant2Name: participant2.name
+    });
+    
     return glootMatch;
   });
   
