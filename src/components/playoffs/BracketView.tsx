@@ -72,10 +72,21 @@ const BracketView: React.FC<BracketViewProps> = ({
         name: result.name,
         matchesCount: result.matches?.length || 0,
         matchesIsArray: Array.isArray(result.matches),
-        hasValidStructure: !!(result.id && result.name && Array.isArray(result.matches))
+        hasValidStructure: !!(result.id && result.name && Array.isArray(result.matches)),
+        challonge_tournament_id: result.challonge_tournament_id,
+        hasChallongeId: !!result.challonge_tournament_id
       } : null,
       timestamp: new Date().toISOString()
     });
+    
+    // CRITICAL DEBUG: Check if this bracket should use Challonge direct
+    if (result?.challonge_tournament_id) {
+      console.log('🎯 CRITICAL: This bracket HAS challonge_tournament_id:', result.challonge_tournament_id);
+      console.log('🎯 CRITICAL: Should render ChallongeBracketDirect but GlootBracket is rendering instead!');
+    } else {
+      console.log('🎯 CRITICAL: This bracket has NO challonge_tournament_id, using GlootBracket flow');
+    }
+    
     return result;
   }, [legacyBracket, fetchedBracket]);
 

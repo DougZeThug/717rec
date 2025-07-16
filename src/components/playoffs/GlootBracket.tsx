@@ -44,6 +44,10 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
       format: bracket.format,
       matchesCount: bracket.matches?.length,
       matchesIsArray: Array.isArray(bracket.matches),
+      challonge_tournament_id: bracket.challonge_tournament_id,
+      hasChallongeId: !!bracket.challonge_tournament_id,
+      challengeIdType: typeof bracket.challonge_tournament_id,
+      allBracketKeys: Object.keys(bracket),
       firstFewMatches: bracket.matches?.slice(0, 3).map(m => ({
         id: m.id,
         team1Id: m.team1Id,
@@ -109,6 +113,13 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   const divisionClass = displayDivision ? `bracket-${displayDivision.toLowerCase()}` : '';
   
   // Check if this is a Challonge tournament and use direct display
+  console.log('🎯 CRITICAL CHECK: About to check challonge_tournament_id:', {
+    value: bracket.challonge_tournament_id,
+    type: typeof bracket.challonge_tournament_id,
+    truthy: !!bracket.challonge_tournament_id,
+    condition: bracket.challonge_tournament_id
+  });
+  
   if (bracket.challonge_tournament_id) {
     console.log('🏀 GlootBracket: Using Challonge direct display for tournament:', bracket.challonge_tournament_id);
     return (
@@ -117,6 +128,8 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
         onEditMatch={onEditMatch}
       />
     );
+  } else {
+    console.log('🎯 CRITICAL: challonge_tournament_id is falsy, proceeding with old bracket flow');
   }
   
   if (isDoubleElimination && (!doubleEliminationData || (doubleEliminationData.upper.length === 0 && doubleEliminationData.lower.length === 0))) {
