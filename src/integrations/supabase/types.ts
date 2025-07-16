@@ -2808,6 +2808,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      user_belongs_to_team: {
+        Args: { p_team_id: string }
+        Returns: boolean
+      }
       validate_division_seeds: {
         Args: { p_division_id: string }
         Returns: {
