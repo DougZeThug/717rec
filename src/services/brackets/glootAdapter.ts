@@ -24,6 +24,11 @@ export interface GlootTournament {
   matches: GlootMatch[];
 }
 
+export interface GlootDoubleEliminationData {
+  upper: GlootMatch[];
+  lower: GlootMatch[];
+}
+
 /**
  * Converts playoff matches to @g-loot format
  */
@@ -161,6 +166,115 @@ export function adaptPlayoffMatchesToGloot(
   console.log('🏆 adaptPlayoffMatchesToGloot: Total matches converted:', glootMatches.length);
   
   return result;
+}
+
+/**
+ * Converts playoff matches to double elimination format with separate upper/lower brackets
+ */
+export function adaptToDoubleEliminationFormat(
+  matches: PlayoffMatch[],
+  teams: Team[],
+  bracketTitle: string = "Tournament"
+): GlootDoubleEliminationData {
+  console.log('🏆 adaptToDoubleEliminationFormat: Starting conversion');
+  
+  if (!Array.isArray(matches) || matches.length === 0) {
+    return { upper: [], lower: [] };
+  }
+  
+  const teamMap = new Map(teams.map(team => [team.id, team]));
+  
+  // Separate matches by bracket type
+  const winnersMatches = matches.filter(m => m.matchType === 'winners');
+  const losersMatches = matches.filter(m => m.matchType === 'losers');
+  const finalsMatches = matches.filter(m => m.matchType === 'finals');
+  
+  console.log('🏆 adaptToDoubleEliminationFormat: Match breakdown:', {
+    winners: winnersMatches.length,
+    losers: losersMatches.length,
+    finals: finalsMatches.length
+  });
+  
+  // Sort within each bracket type
+  const sortedWinners = winnersMatches.sort((a, b) => {
+    if (a.round !== b.round) return a.round - b.round;
+    return a.position - b.position;
+  });
+  
+  const sortedLosers = losersMatches.sort((a, b) => {
+    if (a.round !== b.round) return a.round - b.round;
+    return a.position - b.position;
+  });
+  
+  // Helper function to convert match to G-Loot format
+  const convertMatch = (match: PlayoffMatch): GlootMatch => {
+    const team1 = match.team1Id ? teamMap.get(match.team1Id) : undefined;
+    const team2 = match.team2Id ? teamMap.get(match.team2Id) : undefined;
+    
+    let state: GlootMatch['state'];
+    if (match.status === 'completed' && match.winnerId) {
+      state = 'SCORE_DONE';
+    } else if (team1 && team2 && match.status === 'pending') {
+      state = 'DONE'; 
+    } else if (team1 || team2) {
+      state = 'WALK_OVER';
+    } else {
+      state = 'NO_PARTY';
+    }
+    
+    const participant1 = {
+      id: team1?.id || `tbd-${match.id}-1`,
+      name: team1?.name || 'TBD',
+      resultText: match.winnerId && team1 ? (match.winnerId === match.team1Id ? 'WON' : 'LOST') : '',
+      isWinner: !!match.winnerId && match.winnerId === match.team1Id,
+      status: (match.winnerId && team1) ? 'PLAYED' as const : 
+              (team1 ? 'WALK_OVER' as const : 'NO_PARTY' as const),
+    };
+    
+    const participant2 = {
+      id: team2?.id || `tbd-${match.id}-2`,
+      name: team2?.name || 'TBD',
+      resultText: match.winnerId && team2 ? (match.winnerId === match.team2Id ? 'WON' : 'LOST') : '',
+      isWinner: !!match.winnerId && match.winnerId === match.team2Id,
+      status: (match.winnerId && team2) ? 'PLAYED' as const : 
+              (team2 ? 'WALK_OVER' as const : 'NO_PARTY' as const),
+    };
+    
+    return {
+      id: match.id,
+      name: createMatchName(match),
+      nextMatchId: match.nextWinMatchId || undefined,
+      nextLooserMatchId: match.nextLoseMatchId || undefined,
+      tournamentRoundText: createTournamentRoundText(match),
+      startTime: new Date().toISOString(),
+      state,
+      participants: [participant1, participant2]
+    };
+  };
+  
+  // Convert winners bracket matches
+  const upperBracket = sortedWinners.map(convertMatch);
+  
+  // Convert losers bracket matches  
+  const lowerBracket = sortedLosers.map(convertMatch);
+  
+  // Add finals to appropriate bracket (typically upper bracket, but can be either)
+  if (finalsMatches.length > 0) {
+    const finalsMatch = convertMatch(finalsMatches[0]);
+    upperBracket.push(finalsMatch);
+  }
+  
+  console.log('🏆 adaptToDoubleEliminationFormat: Result:', {
+    upper: upperBracket.length,
+    lower: lowerBracket.length,
+    upperMatches: upperBracket.map(m => m.name),
+    lowerMatches: lowerBracket.map(m => m.name)
+  });
+  
+  return {
+    upper: upperBracket,
+    lower: lowerBracket
+  };
 }
 
 /**

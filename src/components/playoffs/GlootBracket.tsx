@@ -6,7 +6,7 @@ import {
   Match
 } from "@g-loot/react-tournament-brackets";
 import { PlayoffBracket, Team } from "@/types/playoffs";
-import { adaptPlayoffMatchesToGloot } from "@/services/brackets/glootAdapter";
+import { adaptPlayoffMatchesToGloot, adaptToDoubleEliminationFormat } from "@/services/brackets/glootAdapter";
 import { useTheme } from "next-themes";
 import { BRACKET_FORMATS } from "@/constants/brackets";
 import { getDisplayDivision } from "@/styles/design-system/divisions";
@@ -56,26 +56,38 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   });
   
   // Convert our data to @g-loot format
-  const tournament = adaptPlayoffMatchesToGloot(
-    bracket.matches || [],
-    teams,
-    bracket.name || "Tournament",
-    bracket.format
-  );
+  const isDoubleElimination = bracket.format === BRACKET_FORMATS.DOUBLE;
+  
+  const tournament = isDoubleElimination 
+    ? null 
+    : adaptPlayoffMatchesToGloot(
+        bracket.matches || [],
+        teams,
+        bracket.name || "Tournament",
+        bracket.format
+      );
+  
+  const doubleEliminationData = isDoubleElimination
+    ? adaptToDoubleEliminationFormat(
+        bracket.matches || [],
+        teams,
+        bracket.name || "Tournament"
+      )
+    : null;
   
   // DEBUG: Log tournament data
   console.log('🏀 GlootBracket: Tournament data:', {
+    isDoubleElimination,
     tournament,
-    totalMatches: tournament?.matches?.length || 0,
-    bracketFormat: bracket.format,
-    matchesCount: tournament.matches.length,
-    type: tournament.type,
-    title: tournament.title
+    doubleEliminationData,
+    totalMatches: tournament?.matches?.length || (doubleEliminationData ? doubleEliminationData.upper.length + doubleEliminationData.lower.length : 0),
+    bracketFormat: bracket.format
   });
   
   // Get bracket dimensions for auto-fit
+  const totalMatches = tournament?.matches?.length || (doubleEliminationData ? doubleEliminationData.upper.length + doubleEliminationData.lower.length : 0);
   const bracketDimensions = useBracketDimensions(
-    tournament.matches.length,
+    totalMatches,
     bracket.format || 'single'
   );
   
@@ -93,7 +105,15 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   // Get division-specific CSS class
   const divisionClass = displayDivision ? `bracket-${displayDivision.toLowerCase()}` : '';
   
-  if (!tournament.matches.length) {
+  if (isDoubleElimination && (!doubleEliminationData || (doubleEliminationData.upper.length === 0 && doubleEliminationData.lower.length === 0))) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-gray-500">No matches found for this bracket</p>
+      </div>
+    );
+  }
+  
+  if (!isDoubleElimination && (!tournament || !tournament.matches.length)) {
     return (
       <div className="flex items-center justify-center p-8">
         <p className="text-gray-500">No matches found for this bracket</p>
@@ -116,19 +136,19 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
             padding: `${responsive.containerPadding}px`,
           } as React.CSSProperties}
         >
-          {bracket.format === BRACKET_FORMATS.DOUBLE ? (
+          {isDoubleElimination && doubleEliminationData ? (
             <DoubleEliminationBracket
-              matches={tournament.matches}
+              matches={doubleEliminationData}
               matchComponent={Match}
               onMatchClick={handleMatchClick}
             />
-          ) : (
+          ) : tournament ? (
             <SingleEliminationBracket
               matches={tournament.matches}
               matchComponent={Match}
               onMatchClick={handleMatchClick}
             />
-          )}
+          ) : null}
         </div>
       </BracketViewport>
     </div>
