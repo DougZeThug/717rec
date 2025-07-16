@@ -7,10 +7,15 @@ export async function challongeFetch(
   const apiKey = Deno.env.get("CHALLONGE_API_KEY");
   if (!apiKey) throw new Error("CHALLONGE_API_KEY missing");
 
-  const url = `https://api.challonge.com/v1${path}.json?api_key=${apiKey}`;
+  // Use proper Basic auth with username and API key
+  const credentials = btoa(`dougzethug:${apiKey}`);
+  const url = `https://api.challonge.com/v1${path}.json`;
   const res = await fetch(url, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Authorization": `Basic ${credentials}`,
+      "Content-Type": "application/json" 
+    },
     body: body ? JSON.stringify(body) : undefined,
   });
   
