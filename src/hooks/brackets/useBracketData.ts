@@ -10,6 +10,7 @@ export interface SimpleBracketData {
   format: string;
   state: string;
   division: string;
+  challonge_tournament_id?: number | null;
   matches: Array<{
     id: string;
     round: number;
@@ -58,7 +59,7 @@ export const useBracketData = (bracketId: string | null) => {
         console.log('🎯 DEBUG: Step 1 - Fetching bracket info for ID:', bracketId);
         const { data: bracket, error: bracketError } = await supabase
           .from('brackets')
-          .select('id, title, format, state, division_id')
+          .select('id, title, format, state, division_id, challonge_tournament_id')
           .eq('id', bracketId)
           .single();
 
@@ -77,7 +78,8 @@ export const useBracketData = (bracketId: string | null) => {
           title: bracket.title,
           division_id: bracket.division_id,
           state: bracket.state,
-          format: bracket.format
+          format: bracket.format,
+          challonge_tournament_id: bracket.challonge_tournament_id
         });
 
         // Step 2: Get ALL playoff matches with relationship fields
@@ -204,6 +206,7 @@ export const useBracketData = (bracketId: string | null) => {
           format: bracket.format || 'Double Elimination',
           state: bracket.state || 'pending',
           division: bracket.division_id,
+          challonge_tournament_id: bracket.challonge_tournament_id,
           matches: transformedMatches,
           teams: teams || []
         };
