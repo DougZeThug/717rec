@@ -33,7 +33,7 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   const isDark = resolvedTheme === "dark";
   const responsive = useBracketResponsive();
   
-  // DEBUG: Log component props
+  // DEBUG: Log component props and data
   console.log('🏀 GlootBracket: Component props:', {
     bracket: bracket ? {
       id: bracket.id,
@@ -41,10 +41,17 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
       format: bracket.format,
       matchesCount: bracket.matches?.length,
       matchesIsArray: Array.isArray(bracket.matches),
-      matches: bracket.matches
+      firstFewMatches: bracket.matches?.slice(0, 3).map(m => ({
+        id: m.id,
+        team1Id: m.team1Id,
+        team2Id: m.team2Id,
+        round: m.round,
+        matchType: m.matchType,
+        status: m.status
+      }))
     } : null,
     teamsCount: teams?.length,
-    teams: teams,
+    teamsArray: teams?.map(t => ({ id: t.id, name: t.name })),
     onEditMatch: !!onEditMatch
   });
   

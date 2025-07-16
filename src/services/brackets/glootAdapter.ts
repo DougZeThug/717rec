@@ -49,7 +49,13 @@ export function adaptPlayoffMatchesToGloot(
   }
   
   const teamMap = new Map(teams.map(team => [team.id, team]));
-  console.log('🏆 adaptPlayoffMatchesToGloot: Team map:', teamMap);
+  console.log('🏆 adaptPlayoffMatchesToGloot: Team map creation:', {
+    teamsCount: teams.length,
+    teamMapSize: teamMap.size,
+    teamIds: teams.map(t => t.id),
+    teamNames: teams.map(t => t.name),
+    sampleTeams: teams.slice(0, 3)
+  });
   
   const glootMatches: GlootMatch[] = matches.map((match, index) => {
     console.log(`🏆 adaptPlayoffMatchesToGloot: Processing match ${index + 1}/${matches.length}:`, match);
@@ -58,7 +64,16 @@ export function adaptPlayoffMatchesToGloot(
     const team1 = match.team1Id ? teamMap.get(match.team1Id) : undefined;
     const team2 = match.team2Id ? teamMap.get(match.team2Id) : undefined;
     
-    console.log(`🏆 adaptPlayoffMatchesToGloot: Match ${match.id} teams:`, { team1, team2 });
+    console.log(`🏆 adaptPlayoffMatchesToGloot: Match ${match.id} team lookup:`, { 
+      matchTeam1Id: match.team1Id,
+      matchTeam2Id: match.team2Id,
+      team1Found: team1,
+      team2Found: team2,
+      team1InMap: match.team1Id ? teamMap.has(match.team1Id) : false,
+      team2InMap: match.team2Id ? teamMap.has(match.team2Id) : false,
+      matchType: match.matchType,
+      round: match.round
+    });
     
     // Determine match state using enhanced logic
     const state = determineMatchState(match);
