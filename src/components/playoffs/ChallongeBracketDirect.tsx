@@ -58,7 +58,15 @@ export const ChallongeBracketDirect: React.FC<ChallongeBracketDirectProps> = ({
   const matches = tournament.matches.map(m => m.match);
   const participants = tournament.participants.map(p => p.participant);
   
+  // Debug logging
+  console.log('🔍 Challonge Debug Data:');
+  console.log('Tournament:', tournament);
+  console.log('Raw matches:', matches);
+  console.log('Raw participants:', participants);
+  
   const glootMatches = adaptChallongeToGloot(matches, participants);
+  console.log('Transformed G-Loot matches:', glootMatches);
+  
   const isDoubleElimination = tournament.tournament_type === 'double elimination';
   
   // Calculate responsive dimensions for SVGViewer
@@ -67,6 +75,7 @@ export const ChallongeBracketDirect: React.FC<ChallongeBracketDirectProps> = ({
 
   if (isDoubleElimination) {
     const { upper, lower } = separateDoubleEliminationMatches(glootMatches);
+    console.log('Double elimination brackets:', { upper, lower });
     
     return (
       <div className="w-full h-full">
