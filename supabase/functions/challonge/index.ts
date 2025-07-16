@@ -67,9 +67,9 @@ serve(async req => {
         return json(200, data);
       }
       case "updateMatch": {
-        const { matchId, scores_csv, winner_id } = payload.args;
+        const { tournamentId, matchId, scores_csv, winner_id } = payload.args;
         const body = { match: { scores_csv, winner_id } };
-        const data = await challongeFetch("PUT", `/matches/${matchId}`, body);
+        const data = await challongeFetch("PUT", `/tournaments/${tournamentId}/matches/${matchId}`, body);
         return json(200, data);
       }
       case "finalizeTournament": {

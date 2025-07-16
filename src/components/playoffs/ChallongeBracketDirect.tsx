@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChallongeTournamentComplete } from '@/services/challonge/types';
 import { adaptChallongeToGloot, separateDoubleEliminationMatches } from '@/lib/challongeToGloot';
 import { useWindowSize } from '@/hooks/useWindowSize';
+import { useChallongeDualFlowEditMatch } from '@/hooks/playoffs/useChallongeDualFlowEditMatch';
 
 interface ChallongeBracketDirectProps {
   tournamentId: number;
@@ -21,6 +22,7 @@ export const ChallongeBracketDirect: React.FC<ChallongeBracketDirectProps> = ({
   onEditMatch
 }) => {
   const [windowWidth, windowHeight] = useWindowSize();
+  const { handleEditMatch } = useChallongeDualFlowEditMatch();
   
   const { data: tournamentData, isLoading, error } = useQuery({
     queryKey: ['challonge-tournament', tournamentId],
@@ -39,8 +41,12 @@ export const ChallongeBracketDirect: React.FC<ChallongeBracketDirectProps> = ({
   });
 
   const handleMatchClick = (match: any) => {
+    // Use dual-flow editing for Challonge matches
     if (onEditMatch) {
       onEditMatch(match.id);
+    } else {
+      // Fallback to dual-flow handling
+      handleEditMatch(match.id);
     }
   };
 

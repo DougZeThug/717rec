@@ -6,3 +6,4 @@ export * as playoffActions from './usePlayoffActions';
 
 export * from "./useFilteredTeams";
 export * from "./useTeamSeeding";
+export * from "./useChallongeDualFlowEditMatch";
