@@ -2,6 +2,7 @@
 import React, { useCallback, useMemo } from "react";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
 import GlootBracket from "@/components/playoffs/GlootBracket";
+import { ChallongeBracketDirect } from "./ChallongeBracketDirect";
 import BracketErrorBoundary from "./BracketErrorBoundary";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -82,7 +83,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     // CRITICAL DEBUG: Check if this bracket should use Challonge direct
     if (result?.challonge_tournament_id) {
       console.log('🎯 CRITICAL: This bracket HAS challonge_tournament_id:', result.challonge_tournament_id);
-      console.log('🎯 CRITICAL: Should render ChallongeBracketDirect but GlootBracket is rendering instead!');
+      console.log('🎯 CRITICAL: Will render ChallongeBracketDirect!');
     } else {
       console.log('🎯 CRITICAL: This bracket has NO challonge_tournament_id, using GlootBracket flow');
     }
@@ -245,18 +246,19 @@ const BracketView: React.FC<BracketViewProps> = ({
     timestamp: new Date().toISOString()
   });
 
-  // Handle match click for GlootBracket
+  // Handle match click for brackets
   const handleMatchClick = useCallback((matchId: string) => {
     if (onEditMatch) {
       onEditMatch(matchId);
     }
   }, [onEditMatch]);
 
-  // Return GlootBracket viewer with enhanced error boundary
-  return (
-    <div className="w-full h-full min-h-[600px]">
-      {/* Bracket header with sync button */}
-      {displayBracket.challonge_tournament_id && (
+  // Check if this is a Challonge tournament - render ChallongeBracketDirect
+  if (displayBracket.challonge_tournament_id) {
+    console.log('🎯 BracketView: Rendering ChallongeBracketDirect for tournament:', displayBracket.challonge_tournament_id);
+    return (
+      <div className="w-full h-full min-h-[600px]">
+        {/* Bracket header with sync button */}
         <div className="flex justify-between items-center mb-4 p-4 bg-muted/50 rounded-lg">
           <div>
             <h3 className="font-semibold">{displayBracket.name}</h3>
@@ -279,8 +281,21 @@ const BracketView: React.FC<BracketViewProps> = ({
             Sync from Challonge
           </Button>
         </div>
-      )}
-      
+        
+        <BracketErrorBoundary bracketId={bracketId}>
+          <ChallongeBracketDirect
+            tournamentId={displayBracket.challonge_tournament_id}
+            onEditMatch={handleMatchClick}
+          />
+        </BracketErrorBoundary>
+      </div>
+    );
+  }
+
+  // Return GlootBracket viewer for non-Challonge brackets
+  console.log('🎯 BracketView: Rendering GlootBracket for standard bracket');
+  return (
+    <div className="w-full h-full min-h-[600px]">
       <BracketErrorBoundary bracketId={bracketId}>
         <GlootBracket
           bracket={displayBracket}
