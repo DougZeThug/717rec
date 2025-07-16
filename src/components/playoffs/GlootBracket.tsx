@@ -14,6 +14,7 @@ import { getDisplayDivision } from "@/styles/design-system/divisions";
 import { useBracketResponsive } from "@/hooks/use-bracket-responsive";
 import { useBracketDimensions } from "@/hooks/use-bracket-dimensions";
 import { useWindowSize } from "@/hooks/useWindowSize";
+import { ChallongeBracketDirect } from "./ChallongeBracketDirect";
 import "@/styles/brackets.css";
 
 interface GlootBracketProps {
@@ -106,6 +107,17 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   
   // Get division-specific CSS class
   const divisionClass = displayDivision ? `bracket-${displayDivision.toLowerCase()}` : '';
+  
+  // Check if this is a Challonge tournament and use direct display
+  if (bracket.challonge_tournament_id) {
+    console.log('🏀 GlootBracket: Using Challonge direct display for tournament:', bracket.challonge_tournament_id);
+    return (
+      <ChallongeBracketDirect
+        tournamentId={bracket.challonge_tournament_id}
+        onEditMatch={onEditMatch}
+      />
+    );
+  }
   
   if (isDoubleElimination && (!doubleEliminationData || (doubleEliminationData.upper.length === 0 && doubleEliminationData.lower.length === 0))) {
     return (

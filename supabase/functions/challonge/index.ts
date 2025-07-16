@@ -80,6 +80,14 @@ serve(async req => {
         );
         return json(200, data);
       }
+      case "getTournamentComplete": {
+        const { tournamentId } = payload.args;
+        const data = await challongeFetch(
+          "GET",
+          `/tournaments/${tournamentId}?include_participants=1&include_matches=1`,
+        );
+        return json(200, data);
+      }
       default:
         return json(400, { error: "Unknown action" });
     }
