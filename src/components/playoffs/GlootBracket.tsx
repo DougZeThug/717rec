@@ -3,7 +3,8 @@ import React from "react";
 import { 
   SingleEliminationBracket, 
   DoubleEliminationBracket,
-  Match
+  Match,
+  SVGViewer
 } from "@g-loot/react-tournament-brackets";
 import { PlayoffBracket, Team } from "@/types/playoffs";
 import { adaptPlayoffMatchesToGloot, adaptToDoubleEliminationFormat } from "@/services/brackets/glootAdapter";
@@ -12,7 +13,7 @@ import { BRACKET_FORMATS } from "@/constants/brackets";
 import { getDisplayDivision } from "@/styles/design-system/divisions";
 import { useBracketResponsive } from "@/hooks/use-bracket-responsive";
 import { useBracketDimensions } from "@/hooks/use-bracket-dimensions";
-import { BracketViewport } from "./BracketViewport";
+import { useWindowSize } from "@/hooks/useWindowSize";
 import "@/styles/brackets.css";
 
 interface GlootBracketProps {
@@ -32,6 +33,7 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const responsive = useBracketResponsive();
+  const [windowWidth, windowHeight] = useWindowSize();
   
   // DEBUG: Log component props and data
   console.log('🏀 GlootBracket: Component props:', {
@@ -121,36 +123,35 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
     );
   }
   
+  // Calculate responsive dimensions for SVGViewer
+  const finalWidth = Math.max(windowWidth - 50, 500);
+  const finalHeight = Math.max(windowHeight - 100, 500);
+
   return (
     <div className={`w-full h-full gloot-bracket-container ${divisionClass}`}>
-      <BracketViewport className="h-full w-full">
-        <div 
-          className="min-w-max"
-          style={{
-            '--bracket-container-padding': `${responsive.containerPadding}px`,
-            '--bracket-match-width': `${responsive.matchCardWidth}px`,
-            '--bracket-match-height': `${responsive.matchCardHeight}px`,
-            '--bracket-spacing': `${responsive.spacing.md}px`,
-            '--bracket-font-size': responsive.fontSize.md,
-            '--bracket-min-touch-target': `${responsive.minTouchTarget}px`,
-            padding: `${responsive.containerPadding}px`,
-          } as React.CSSProperties}
-        >
-          {isDoubleElimination && doubleEliminationData ? (
-            <DoubleEliminationBracket
-              matches={doubleEliminationData}
-              matchComponent={Match}
-              onMatchClick={handleMatchClick}
-            />
-          ) : tournament ? (
-            <SingleEliminationBracket
-              matches={tournament.matches}
-              matchComponent={Match}
-              onMatchClick={handleMatchClick}
-            />
-          ) : null}
-        </div>
-      </BracketViewport>
+      {isDoubleElimination && doubleEliminationData ? (
+        <DoubleEliminationBracket
+          matches={doubleEliminationData}
+          matchComponent={Match}
+          onMatchClick={handleMatchClick}
+          svgWrapper={({ children, ...props }) => (
+            <SVGViewer width={finalWidth} height={finalHeight} {...props}>
+              {children}
+            </SVGViewer>
+          )}
+        />
+      ) : tournament ? (
+        <SingleEliminationBracket
+          matches={tournament.matches}
+          matchComponent={Match}
+          onMatchClick={handleMatchClick}
+          svgWrapper={({ children, ...props }) => (
+            <SVGViewer width={finalWidth} height={finalHeight} {...props}>
+              {children}
+            </SVGViewer>
+          )}
+        />
+      ) : null}
     </div>
   );
 };
