@@ -59,6 +59,8 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   // DEBUG: Log tournament data
   console.log('🏀 GlootBracket: Tournament data:', {
     tournament,
+    totalMatches: tournament?.matches?.length || 0,
+    bracketFormat: bracket.format,
     matchesCount: tournament.matches.length,
     type: tournament.type,
     title: tournament.title
