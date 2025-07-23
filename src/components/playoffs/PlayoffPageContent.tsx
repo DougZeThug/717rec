@@ -179,29 +179,6 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         </div>
       )}
       
-      {/* Enhanced empty state with actionable options */}
-      {allBracketsData.length === 0 && !displayLoading && (
-        <div className="space-y-4">
-          <EmptyBracketState onCreateBracket={onCreateBracket} />
-          {onRefreshData && (
-            <div className="text-center">
-              <p className="text-sm text-gray-500 mb-3">
-                Or try refreshing if brackets should already exist
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefreshClick}
-                disabled={isRefreshing}
-                className="flex items-center gap-2 mx-auto"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
