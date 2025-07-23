@@ -71,9 +71,15 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
     return bracketLoading !== undefined ? bracketLoading : isLoading;
   }, [bracketLoading, isLoading]);
 
-  // Memoized division cards for performance
+  // Memoized division cards for performance - only show divisions with actual brackets
+  const divisionsWithBrackets = useMemo(() => {
+    return availableDivisions.filter(division => 
+      bracketsByDivision[division] && bracketsByDivision[division].length > 0
+    );
+  }, [availableDivisions, bracketsByDivision]);
+
   const divisionCards = useMemo(() => {
-    return availableDivisions.map((division) => (
+    return divisionsWithBrackets.map((division) => (
       <DivisionBracketsCard 
         key={division}
         division={division}
@@ -82,7 +88,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         onViewBracket={onViewBracket}
       />
     ));
-  }, [availableDivisions, bracketsByDivision, onCreateBracket, onViewBracket]);
+  }, [divisionsWithBrackets, bracketsByDivision, onCreateBracket, onViewBracket]);
 
   // Enhanced loading state with refresh capability
   if (displayLoading && !allBracketsData.length && !isRefreshing) {
@@ -116,39 +122,44 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         <ChallongeFallback />
       </div>
 
-      {/* Enhanced header with refresh status */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">Tournament Brackets</h2>
-          {lastRefreshTime && (
-            <p className="text-xs text-gray-500 mt-1">
-              Last updated: {lastRefreshTime.toLocaleTimeString()}
-            </p>
-          )}
-        </div>
-        {onRefreshData && (
-          <div className="flex items-center gap-2">
-            {isRefreshing && (
-              <span className="text-sm text-gray-500">Refreshing...</span>
+      {/* Tournament Brackets section - only show if there are divisions with brackets */}
+      {divisionsWithBrackets.length > 0 && (
+        <>
+          {/* Enhanced header with refresh status */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold">Tournament Brackets</h2>
+              {lastRefreshTime && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Last updated: {lastRefreshTime.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
+            {onRefreshData && (
+              <div className="flex items-center gap-2">
+                {isRefreshing && (
+                  <span className="text-sm text-gray-500">Refreshing...</span>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefreshClick}
+                  disabled={isRefreshing}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+                </Button>
+              </div>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshClick}
-              disabled={isRefreshing}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
-            </Button>
           </div>
-        )}
-      </div>
 
-      {/* Memoized division cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {divisionCards}
-      </div>
+          {/* Memoized division cards grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {divisionCards}
+          </div>
+        </>
+      )}
       
       {/* Enhanced selected bracket view with error boundaries */}
       {selectedBracketId && (
