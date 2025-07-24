@@ -7,7 +7,7 @@ const brackets = [
   { slug: "3z8nyjfd", title: "Competitive" },
   { slug: "9oy80ax6", title: "Intermediate 1" },
   { slug: "pkem4pw9", title: "Intermediate 2" },
-  { slug: "717recRec", title: "Recreational" },
+  { slug: "bnqell8t", title: "Recreational" },
 ];
 
 export const ChallongeFallback: React.FC = () => {
