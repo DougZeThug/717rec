@@ -110,7 +110,7 @@ const ChallongeEmbedWithToggle: React.FC<{
       {isOpen && (
         <div className="transition-all duration-300 ease-in-out">
           <iframe
-            src={`https://challonge.com/${slug}/module?theme=8411`}
+            src={`https://challonge.com/${slug}/module?theme=8411&show_standings=1`}
             width="100%"
             height="500"
             frameBorder="0"
