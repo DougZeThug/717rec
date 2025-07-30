@@ -37,7 +37,7 @@ export const ChallongeEmbed: React.FC<Props> = ({ slug, title }) => {
         "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
       )}>
         <iframe
-          src={`https://challonge.com/${slug}/module${slug === '3z8nyjfd' ? '?theme=8411' : ''}`}
+          src={`https://challonge.com/${slug}/module?theme=8411`}
           width="100%"
           height="500"
           frameBorder="0"
