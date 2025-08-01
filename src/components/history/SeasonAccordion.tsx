@@ -7,6 +7,7 @@ import DivisionPanel from "./DivisionPanel";
 import SeasonMetaBar from "./SeasonMetaBar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getHistoryDivisionDisplayName, sortHistoryDivisions } from "@/utils/historyDivisionUtils";
 
 interface Season {
   id: string;
@@ -127,16 +128,17 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
     setIsExpanded(!isExpanded);
   };
 
-  // Group data by division
+  // Group data by division with proper display names and ordering
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
     
+    // First group by the display division name
     const grouped = seasonData.reduce((acc, team) => {
-      const division = team.division_name || 'No Division';
-      if (!acc[division]) {
-        acc[division] = [];
+      const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+      if (!acc[displayDivision]) {
+        acc[displayDivision] = [];
       }
-      acc[division].push(team);
+      acc[displayDivision].push(team);
       return acc;
     }, {} as Record<string, SeasonData[]>);
 
@@ -232,7 +234,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               ) : (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {Object.entries(divisionData).map(([divisionName, teams]) => (
+                    {sortHistoryDivisions(Object.entries(divisionData)).map(([divisionName, teams]) => (
                       <DivisionPanel
                         key={divisionName}
                         divisionName={divisionName}
