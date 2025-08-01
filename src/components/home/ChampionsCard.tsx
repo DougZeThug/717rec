@@ -19,72 +19,51 @@ interface DivisionData {
   runner_up_id: string;
 }
 
-const usePlayoffResults = () => {
-  const divisions: DivisionData[] = [
-    { 
-      id: 'competitive', 
-      label: 'Competitive',
-      winner_id: 'ad4ec289-fd85-4322-8ebb-68647607de23', // Cuzzo's Clinic
-      runner_up_id: '9ee2b996-99f6-446c-be20-8255ca75d8c8' // 3 Amigos
-    },
-    { 
-      id: 'intermediate1', 
-      label: 'Intermediate 1',
-      winner_id: 'af3bf12d-b671-4458-9d3c-5c2e29e362ac', // Came from Dicks
-      runner_up_id: '4ce38a7a-df7b-4d71-a17c-b8be65e342fe' // Sweat Bandits
-    },
-    { 
-      id: 'intermediate2', 
-      label: 'Intermediate 2',
-      winner_id: '21f5f389-1ad4-4dc5-a828-0e2972c13845', // Bag Assassins
-      runner_up_id: '56387477-8ba1-43b7-a307-414926ca5f79' // Zoo Pals
-    },
-    { 
-      id: 'recreational', 
-      label: 'Recreational',
-      winner_id: '31e0e752-e0fc-4bd1-892f-3b7123ad72b7', // Double Trouble
-      runner_up_id: 'c577e0f9-6700-4220-a902-b368ca915bbd' // Here for Fireball
-    },
+const useChampions = () => {
+  const winners = [
+    'ad4ec289-fd85-4322-8ebb-68647607de23', // Cuzzo's Clinic
+    'c9d644a4-4e5a-43a0-9805-9d93299cda35', // Pepperoni Cheesers
+    '2ab2e684-8c28-45c3-801a-ea215433a8e4', // Miracle @ Marion
+    'c577e0f9-6700-4220-a902-b368ca915bbd', // Here for Fireball
   ];
 
-  const allTeamIds = divisions.flatMap(div => [div.winner_id, div.runner_up_id]);
+  const divisionMap: Record<string, string> = {
+    'ad4ec289-fd85-4322-8ebb-68647607de23': 'Competitive',
+    'c9d644a4-4e5a-43a0-9805-9d93299cda35': 'Intermediate 1',
+    '2ab2e684-8c28-45c3-801a-ea215433a8e4': 'Intermediate 2',
+    'c577e0f9-6700-4220-a902-b368ca915bbd': 'Recreational',
+  };
 
   return useQuery({
-    queryKey: ['playoff-results', allTeamIds],
+    queryKey: ['champions', winners],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('teams')
         .select('id, name, image_url')
-        .in('id', allTeamIds);
+        .in('id', winners);
 
       if (error) {
-        console.error('Error fetching playoff results:', error);
+        console.error('Error fetching champions:', error);
         throw error;
       }
 
-      return { teams: data as TeamData[], divisions };
+      return { teams: data as TeamData[], divisionMap };
     },
   });
 };
 
-const TeamDisplay: React.FC<{ 
+const ChampionDisplay: React.FC<{ 
   team: TeamData; 
-  isWinner: boolean; 
   division: string; 
-}> = ({ team, isWinner, division }) => {
+}> = ({ team, division }) => {
   return (
     <div className="flex items-center gap-3 group">
       <div className="relative">
-        <div className={cn(
-          "ring-4 rounded-lg p-1 bg-white dark:bg-slate-700 transition-transform duration-200 group-hover:scale-105",
-          isWinner 
-            ? "ring-amber-400 dark:ring-amber-500" 
-            : "ring-slate-400 dark:ring-slate-300"
-        )}>
+        <div className="ring-4 ring-amber-400 dark:ring-amber-500 rounded-lg p-1 bg-white dark:bg-slate-700 transition-transform duration-200 group-hover:scale-105">
           {team.image_url ? (
             <img
               src={team.image_url}
-              alt={`${division} ${isWinner ? 'champion' : 'runner-up'} logo for ${team.name}`}
+              alt={`${division} champion logo for ${team.name}`}
               className="h-12 w-12 rounded-lg object-cover"
               onError={(e) => {
                 console.error(`Image load error for ${team.name}:`, team.image_url);
@@ -97,26 +76,14 @@ const TeamDisplay: React.FC<{
             </div>
           )}
         </div>
-        <div className={cn(
-          "absolute -top-1 -right-1 rounded-full p-1",
-          isWinner ? "bg-amber-500" : "bg-slate-400"
-        )}>
-          {isWinner ? (
-            <Crown className="w-3 h-3 text-white" />
-          ) : (
-            <Medal className="w-3 h-3 text-white" />
-          )}
+        <div className="absolute -top-1 -right-1 rounded-full p-1 bg-amber-500">
+          <Crown className="w-3 h-3 text-white" />
         </div>
       </div>
       
       <div className="flex-1">
-        <p className={cn(
-          "text-xs uppercase tracking-wide font-medium mb-1",
-          isWinner 
-            ? "text-amber-600 dark:text-amber-400" 
-            : "text-slate-500 dark:text-slate-400"
-        )}>
-          {isWinner ? 'Champion' : 'Runner-up'}
+        <p className="text-xs uppercase tracking-wide font-medium mb-1 text-amber-600 dark:text-amber-400">
+          Champion
         </p>
         <p className="font-semibold text-slate-900 dark:text-white text-sm">
           {team.name}
@@ -127,7 +94,7 @@ const TeamDisplay: React.FC<{
 };
 
 const ChampionsCard: React.FC = () => {
-  const { data, isLoading, error } = usePlayoffResults();
+  const { data, isLoading, error } = useChampions();
 
   if (isLoading) {
     return (
@@ -183,26 +150,23 @@ const ChampionsCard: React.FC = () => {
       "transition-opacity duration-500 ease-out",
       animations.fadeIn
     )}>
-      <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
-        <Crown className="w-6 h-6 text-amber-500" />
-        Spring 2025 Playoff Results
+      <h2 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2">
+        🏆 Summer 1 2025 Champions
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {data.divisions.map((division) => {
-          const winner = data.teams.find((t) => t.id === division.winner_id);
-          const runnerUp = data.teams.find((t) => t.id === division.runner_up_id);
+        {data.teams.map((team) => {
+          const division = data.divisionMap[team.id];
           
-          if (!winner || !runnerUp) return null;
+          if (!division) return null;
           
           return (
-            <div key={division.id} className="space-y-3">
+            <div key={team.id} className="space-y-3">
               <h3 className="text-sm font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                {division.label}
+                {division}
               </h3>
-              <div className="space-y-2 pl-2">
-                <TeamDisplay team={winner} isWinner={true} division={division.label} />
-                <TeamDisplay team={runnerUp} isWinner={false} division={division.label} />
+              <div className="pl-2">
+                <ChampionDisplay team={team} division={division} />
               </div>
             </div>
           );
