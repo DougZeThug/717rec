@@ -30,7 +30,7 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
   showDescription = false,
   className
 }) => {
-  const config = getBadgeConfig(badge.badge_type);
+  const config = getBadgeConfig(badge.badge_type, badge);
   const IconComponent = config.icon;
   const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
