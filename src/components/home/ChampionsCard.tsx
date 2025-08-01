@@ -64,15 +64,15 @@ const ChampionDisplay: React.FC<{
             <img
               src={team.image_url}
               alt={`${division} champion logo for ${team.name}`}
-              className="h-16 w-16 rounded-lg object-cover"
+              className="h-20 w-20 rounded-lg object-cover"
               onError={(e) => {
                 console.error(`Image load error for ${team.name}:`, team.image_url);
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           ) : (
-            <div className="h-16 w-16 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-              <Trophy className="w-8 h-8 text-slate-500" />
+            <div className="h-20 w-20 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <Trophy className="w-10 h-10 text-slate-500" />
             </div>
           )}
         </div>
