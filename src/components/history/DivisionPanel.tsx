@@ -1,7 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import ChampionCard from "./ChampionCard";
 import HistoricalStandingsTable from "./HistoricalStandingsTable";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SeasonData {
   team_id: string;
@@ -27,6 +30,7 @@ interface DivisionPanelProps {
 }
 
 const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
   const champion = teams.find(team => team.champion);
   
   // Sort teams by playoff_rank (1st, 2nd, 3rd, etc.) with fallback to match wins
@@ -45,16 +49,49 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
   });
 
   return (
-    <div className="space-y-4">
-      <h4 className="text-lg font-semibold text-slate-900 dark:text-white border-b border-gray-200 dark:border-slate-600 pb-2">
-        {divisionName}
-      </h4>
+    <div className="space-y-3 border-b pb-6 last:border-b-0">
+      <div 
+        className="flex justify-between items-center cursor-pointer bg-gray-50/50 dark:bg-gray-900/50 
+          rounded-lg px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-3">
+          <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
+            {divisionName}
+            <span className="ml-2 text-gray-500 dark:text-gray-400 text-base font-normal">
+              ({teams.length})
+            </span>
+          </h4>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="p-1 h-8 w-8 transition-transform duration-300" 
+          style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        >
+          <ChevronDown size={20} />
+        </Button>
+      </div>
       
-      {champion && (
-        <ChampionCard team={champion} />
-      )}
-      
-      <HistoricalStandingsTable teams={sortedTeams} />
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-2 space-y-4">
+              {champion && (
+                <ChampionCard team={champion} />
+              )}
+              
+              <HistoricalStandingsTable teams={sortedTeams} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
