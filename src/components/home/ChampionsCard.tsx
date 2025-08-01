@@ -155,18 +155,18 @@ const ChampionsCard: React.FC = () => {
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {data.teams.map((team) => {
-          const division = data.divisionMap[team.id];
+        {['Competitive', 'Intermediate 1', 'Intermediate 2', 'Recreational'].map((divisionName) => {
+          const team = data.teams.find((t) => data.divisionMap[t.id] === divisionName);
           
-          if (!division) return null;
+          if (!team) return null;
           
           return (
-            <div key={team.id} className="space-y-3">
+            <div key={divisionName} className="space-y-3">
               <h3 className="text-sm font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide">
-                {division}
+                {divisionName}
               </h3>
               <div className="pl-2">
-                <ChampionDisplay team={team} division={division} />
+                <ChampionDisplay team={team} division={divisionName} />
               </div>
             </div>
           );
