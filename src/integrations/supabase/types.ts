@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_privilege_changes: {
+        Row: {
+          changed_by_user_id: string | null
+          created_at: string | null
+          id: string
+          new_admin_status: boolean | null
+          old_admin_status: boolean | null
+          target_user_id: string
+        }
+        Insert: {
+          changed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_admin_status?: boolean | null
+          old_admin_status?: boolean | null
+          target_user_id: string
+        }
+        Update: {
+          changed_by_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_admin_status?: boolean | null
+          old_admin_status?: boolean | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       brackets: {
         Row: {
           challonge_tournament_id: number | null
@@ -2719,6 +2746,10 @@ export type Database = {
           streak_type: string
           streak_count: number
         }[]
+      }
+      current_user_is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       get_all_team_badges: {
         Args: Record<PropertyKey, never>

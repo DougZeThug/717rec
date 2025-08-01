@@ -9,36 +9,24 @@ export const useAdminAccess = () => {
   // Check admin access whenever the user/profile changes
   useEffect(() => {
     if (authInitialized && user && profile) {
-      // Check if the user's profile has admin privileges
+      // SECURITY: Only check server-side admin status from profile
       const isAdmin = profile.is_admin === true;
       setIsAdminAccessGranted(isAdmin);
       
-      // Store admin status in session for persistence
-      if (isAdmin) {
-        sessionStorage.setItem('adminAccess', 'true');
-      }
+      console.log('Admin access check:', {
+        userId: user.id,
+        isAdmin,
+        profileData: profile
+      });
     } else if (authInitialized && !user) {
       // If no user is logged in, revoke admin access
       setIsAdminAccessGranted(false);
-      sessionStorage.removeItem('adminAccess');
     }
   }, [user, profile, authInitialized]);
 
-  // Legacy check (only used as fallback during page refresh before auth is fully initialized)
-  useEffect(() => {
-    // Check if admin access was previously granted in this session
-    if (!authInitialized) {
-      const storedAccess = sessionStorage.getItem('adminAccess');
-      if (storedAccess === 'true') {
-        setIsAdminAccessGranted(true);
-      }
-    }
-  }, [authInitialized]);
-
-  // This function is no longer needed for password verification, 
-  // but keeping it for compatibility with existing code
+  // DEPRECATED: This function is no longer needed and always returns false
   const checkAdminAccess = (inputCode: string) => {
-    // This will always return false since we now check admin status from profile
+    console.warn('checkAdminAccess is deprecated and insecure. Admin status is now checked server-side.');
     return false;
   };
 
@@ -50,9 +38,14 @@ export const useAdminAccess = () => {
     });
   };
 
+  // SECURITY: Admin access can only be revoked by updating the database
   const revokeAdminAccess = () => {
-    setIsAdminAccessGranted(false);
-    sessionStorage.removeItem('adminAccess');
+    console.warn('Admin access cannot be revoked client-side for security. Contact an administrator.');
+    toast({
+      title: "Security Notice",
+      description: "Admin access can only be modified by existing administrators.",
+      variant: "destructive"
+    });
   };
 
   return { 
