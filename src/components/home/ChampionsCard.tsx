@@ -150,7 +150,7 @@ const ChampionsCard: React.FC = () => {
       "transition-opacity duration-500 ease-out",
       animations.fadeIn
     )}>
-      <h2 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2">
+      <h2 className="text-xl md:text-2xl font-bold font-inter mb-4 flex items-center gap-2">
         🏆 Summer 1 2025 Champions
       </h2>
       
