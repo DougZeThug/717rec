@@ -33,6 +33,11 @@ export function groupTeamsByDisplayDivision(teams: Team[], divisions: any[]): Re
       displayDivision = division?.display_division || getDisplayDivision(team.divisionName || '');
     }
     
+    // Skip teams in the "Hidden" division - they should not appear in the frontend
+    if (displayDivision === 'Hidden') {
+      return acc;
+    }
+    
     if (!acc[displayDivision]) {
       acc[displayDivision] = [];
     }
