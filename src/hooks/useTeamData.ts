@@ -52,14 +52,20 @@ export const useTeamData = (divisionId?: string | null) => {
       
       const uniqueTeamsArray = Array.from(uniqueTeamsMap.values());
       
+      // Filter out teams from the "Hidden" division
+      const filteredTeams = uniqueTeamsArray.filter(team => team.divisionname !== 'Hidden');
+      
       // Enhanced logging to debug division assignments
-      console.log("useTeamData - Teams with divisions:", uniqueTeamsArray.map(team => ({
+      console.log("useTeamData - Teams with divisions:", filteredTeams.map(team => ({
         id: team.team_id,
         name: team.name,
-        division_id: team.division_id
+        division_id: team.division_id,
+        divisionName: team.divisionname
       })));
       
-      return uniqueTeamsArray.map((team): Team => ({
+      console.log("useTeamData - Filtered out hidden teams, showing", filteredTeams.length, "of", uniqueTeamsArray.length, "total teams");
+      
+      return filteredTeams.map((team): Team => ({
         id: team.team_id,
         name: team.name || 'Unnamed Team',
         logoUrl: team.logo_url || null,
