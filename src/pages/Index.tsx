@@ -6,6 +6,7 @@ import CallToAction from "@/components/home/CallToAction";
 import HeroSection from "@/components/home/HeroSection";
 import LeagueHistoryBar from "@/components/home/LeagueHistoryBar";
 import ChampionsCard from "@/components/home/ChampionsCard";
+import PendingScoresCard from "@/components/home/PendingScoresCard";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
 import LoadingState from "@/components/ui/loading-state";
@@ -47,6 +48,10 @@ const Index: React.FC = () => {
 
         <PageTransition animation="fadeInSlideUp" delay="medium">
           <LeagueHistoryBar />
+        </PageTransition>
+
+        <PageTransition animation="fadeInSlideUp" delay="long">
+          <PendingScoresCard />
         </PageTransition>
 
         <PageTransition animation="fadeInSlideUp" delay="long">

@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -243,6 +243,13 @@ export type Database = {
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "games_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["id"]
+          },
         ]
       }
       match_comments: {
@@ -281,6 +288,13 @@ export type Database = {
             referencedRelation: "matches"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "match_comments_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["id"]
+          },
         ]
       }
       match_reactions: {
@@ -311,6 +325,13 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_reactions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
             referencedColumns: ["id"]
           },
         ]
@@ -1524,6 +1545,57 @@ export type Database = {
         }
         Relationships: []
       }
+      score_submissions: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          message: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitter_name: string
+          submitter_team: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          message: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_name: string
+          submitter_team?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          message?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_name?: string
+          submitter_team?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_submissions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "score_submissions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seasons: {
         Row: {
           champion_team_id: string | null
@@ -2529,6 +2601,213 @@ export type Database = {
       }
     }
     Views: {
+      v_pending_matches: {
+        Row: {
+          best_of: number | null
+          bracket_id: string | null
+          created_at: string | null
+          date: string | null
+          id: string | null
+          iscompleted: boolean | null
+          location: string | null
+          loser_id: string | null
+          match_type: Database["public"]["Enums"]["match_type"] | null
+          metadata: Json | null
+          next_loser_match_id: string | null
+          next_match_id: string | null
+          position: number | null
+          round_number: number | null
+          season_id: string | null
+          team1_game_wins: number | null
+          team1_id: string | null
+          team1_logo: string | null
+          team1_name: string | null
+          team1_score: number | null
+          team2_game_wins: number | null
+          team2_id: string | null
+          team2_logo: string | null
+          team2_name: string | null
+          team2_score: number | null
+          winner_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matches_bracket_id_fkey"
+            columns: ["bracket_id"]
+            isOneToOne: false
+            referencedRelation: "brackets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_season_agg"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team1_id_fkey"
+            columns: ["team1_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_season_agg"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_team2_id_fkey"
+            columns: ["team2_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_season_agg"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_team_details: {
         Row: {
           close_match_losses: number | null
@@ -2768,7 +3047,7 @@ export type Database = {
         Returns: Json
       }
       award_kingslayer_badge: {
-        Args: { p_winner_id: string; p_loser_id: string }
+        Args: { p_loser_id: string; p_winner_id: string }
         Returns: Json
       }
       award_streak_badges: {
@@ -2782,8 +3061,8 @@ export type Database = {
       calculate_team_streak: {
         Args: { p_team_id: string }
         Returns: {
-          streak_type: string
           streak_count: number
+          streak_type: string
         }[]
       }
       current_user_is_admin: {
@@ -2793,14 +3072,14 @@ export type Database = {
       get_all_team_badges: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          team_id: string
-          badge_type: string
-          season_id: string
           awarded_at: string
-          metadata: Json
-          is_active: boolean
+          badge_type: string
           created_at: string
+          id: string
+          is_active: boolean
+          metadata: Json
+          season_id: string
+          team_id: string
         }[]
       }
       get_participants: {
@@ -2808,34 +3087,34 @@ export type Database = {
         Returns: {
           id: string
           name: string
-          tournament_id: string
           team_position: number
+          tournament_id: string
         }[]
       }
       get_season_badges: {
         Args: { p_season_id: string }
         Returns: {
-          id: string
-          team_id: string
-          badge_type: string
-          season_id: string
           awarded_at: string
-          metadata: Json
-          is_active: boolean
+          badge_type: string
           created_at: string
+          id: string
+          is_active: boolean
+          metadata: Json
+          season_id: string
+          team_id: string
         }[]
       }
       get_team_badges: {
         Args: { p_team_id: string }
         Returns: {
-          id: string
-          team_id: string
-          badge_type: string
-          season_id: string
           awarded_at: string
-          metadata: Json
-          is_active: boolean
+          badge_type: string
           created_at: string
+          id: string
+          is_active: boolean
+          metadata: Json
+          season_id: string
+          team_id: string
         }[]
       }
       get_team_division_weight: {
@@ -2853,10 +3132,10 @@ export type Database = {
       log_security_operation: {
         Args: {
           p_action: string
-          p_table_name?: string
-          p_record_id?: string
-          p_old_values?: Json
           p_new_values?: Json
+          p_old_values?: Json
+          p_record_id?: string
+          p_table_name?: string
         }
         Returns: undefined
       }
@@ -2876,10 +3155,10 @@ export type Database = {
         Args:
           | Record<PropertyKey, never>
           | {
-              p_winner_id: string
+              p_loser_game_wins?: number
               p_loser_id: string
               p_winner_game_wins?: number
-              p_loser_game_wins?: number
+              p_winner_id: string
             }
           | { team_id: string }
         Returns: undefined
@@ -2895,10 +3174,10 @@ export type Database = {
       validate_division_seeds: {
         Args: { p_division_id: string }
         Returns: {
+          conflict_count: number
+          seed: number
           team_id: string
           team_name: string
-          seed: number
-          conflict_count: number
         }[]
       }
     }
