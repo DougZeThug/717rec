@@ -27,13 +27,13 @@ const PendingScoresCard = () => {
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex items-center justify-between p-3 rounded-lg border animate-pulse">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-muted rounded-full" />
-                  <div className="space-y-1">
-                    <div className="w-20 h-4 bg-muted rounded" />
-                    <div className="w-16 h-3 bg-muted rounded" />
-                  </div>
-                  <div className="w-4 h-4 bg-muted rounded-full mx-2" />
-                  <div className="w-8 h-8 bg-muted rounded-full" />
+                   <div className="w-8 h-8 bg-muted" />
+                   <div className="space-y-1">
+                     <div className="w-20 h-4 bg-muted rounded" />
+                     <div className="w-16 h-3 bg-muted rounded" />
+                   </div>
+                   <div className="w-4 h-4 bg-muted mx-2" />
+                   <div className="w-8 h-8 bg-muted" />
                   <div className="space-y-1">
                     <div className="w-20 h-4 bg-muted rounded" />
                     <div className="w-16 h-3 bg-muted rounded" />
@@ -95,10 +95,10 @@ const PendingScoresCard = () => {
                         <img 
                           src={match.team1_logo} 
                           alt={`${match.team1_name} logo`}
-                          className="w-8 h-8 rounded-full object-cover"
+                           className="w-8 h-8 object-cover"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                         <div className="w-8 h-8 bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                           {match.team1_name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -123,10 +123,10 @@ const PendingScoresCard = () => {
                         <img 
                           src={match.team2_logo} 
                           alt={`${match.team2_name} logo`}
-                          className="w-8 h-8 rounded-full object-cover"
+                          className="w-8 h-8 object-cover"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                        <div className="w-8 h-8 bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                           {match.team2_name.charAt(0).toUpperCase()}
                         </div>
                       )}
