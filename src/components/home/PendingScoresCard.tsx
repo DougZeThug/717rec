@@ -89,36 +89,48 @@ const PendingScoresCard = () => {
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {/* Team 1 */}
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {match.team1_logo && (
-                      <img 
-                        src={match.team1_logo} 
-                        alt={`${match.team1_name} logo`}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                      />
-                    )}
-                    <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 flex-shrink-0">
+                      {match.team1_logo ? (
+                        <img 
+                          src={match.team1_logo} 
+                          alt={`${match.team1_name} logo`}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                          {match.team1_name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
                       <p className="font-medium text-sm truncate">{match.team1_name}</p>
                     </div>
                   </div>
 
                   {/* VS */}
-                  <div className="flex-shrink-0">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-shrink-0 px-2">
+                    <span className="text-xs text-muted-foreground font-medium">vs</span>
                   </div>
 
                   {/* Team 2 */}
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="min-w-0">
                       <p className="font-medium text-sm truncate">{match.team2_name}</p>
                     </div>
-                    {match.team2_logo && (
-                      <img 
-                        src={match.team2_logo} 
-                        alt={`${match.team2_name} logo`}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                      />
-                    )}
+                    <div className="w-8 h-8 flex-shrink-0">
+                      {match.team2_logo ? (
+                        <img 
+                          src={match.team2_logo} 
+                          alt={`${match.team2_name} logo`}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                          {match.team2_name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
