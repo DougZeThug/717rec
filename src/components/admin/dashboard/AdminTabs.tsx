@@ -2,7 +2,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeamManagementTab from "@/components/admin/teams/TeamManagementTab";
-import TeamMembershipApprovalTab from "@/components/admin/teams/TeamMembershipApprovalTab";
+import PendingMatchesSection from "@/components/admin/PendingMatchesSection";
 import TimeslotsTab from "@/components/admin/timeslots/TimeslotsTab";
 import BatchMatchCreationTab from "@/components/admin/batch-matches/BatchMatchCreationTab";
 import MassScoresTab from "@/components/admin/scores/MassScoresTab";
@@ -14,7 +14,7 @@ const AdminTabs = () => {
     <Tabs defaultValue="teams" className="space-y-4">
       <TabsList className="flex flex-wrap md:flex-nowrap gap-2 h-auto md:h-10">
         <TabsTrigger value="teams">Team Management</TabsTrigger>
-        <TabsTrigger value="team-approvals">Team Approvals</TabsTrigger>
+        <TabsTrigger value="pending-matches">Pending Matches</TabsTrigger>
         <TabsTrigger value="seasons">Season Management</TabsTrigger>
         <TabsTrigger value="scores">Mass Scores</TabsTrigger>
         <TabsTrigger value="batch-matches">Batch Matches</TabsTrigger>
@@ -26,8 +26,8 @@ const AdminTabs = () => {
         <TeamManagementTab />
       </TabsContent>
 
-      <TabsContent value="team-approvals" className="space-y-4">
-        <TeamMembershipApprovalTab />
+      <TabsContent value="pending-matches" className="space-y-4">
+        <PendingMatchesSection />
       </TabsContent>
 
       <TabsContent value="seasons" className="space-y-4">

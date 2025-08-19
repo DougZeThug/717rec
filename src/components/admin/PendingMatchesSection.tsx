@@ -1,36 +1,30 @@
 
 import React from 'react';
-import { usePendingMatches } from "@/hooks/usePendingMatches";
-import PendingMatchesList from "@/components/admin/matches/PendingMatchesList";
+import { useScoreSubmissions } from "@/hooks/useScoreSubmissions";
+import ScoreSubmissionsList from "@/components/admin/scores/ScoreSubmissionsList";
 
 const PendingMatchesSection = () => {
   const {
-    matches,
-    teams,
+    submissions,
     isLoading,
-    openItems,
-    toggleItem,
-    handleApproveResult,
-    handleMarkAsTie
-  } = usePendingMatches();
+    handleApproveSubmission,
+    handleRejectSubmission
+  } = useScoreSubmissions();
 
   if (isLoading) {
-    return <div>Loading pending matches...</div>;
+    return <div>Loading score submissions...</div>;
   }
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-500 mb-4">
-        Review and approve match results, or mark them as ties.
+      <p className="text-sm text-muted-foreground mb-4">
+        Review score submissions reported by users.
       </p>
       
-      <PendingMatchesList 
-        matches={matches}
-        teams={teams}
-        openItems={openItems}
-        onToggleItem={toggleItem}
-        onApproveResult={handleApproveResult}
-        onMarkAsTie={handleMarkAsTie}
+      <ScoreSubmissionsList 
+        submissions={submissions}
+        onApprove={handleApproveSubmission}
+        onReject={handleRejectSubmission}
       />
     </div>
   );
