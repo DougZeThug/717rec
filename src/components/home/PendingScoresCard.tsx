@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Users } from 'lucide-react';
+import { Clock, Users, LogIn } from 'lucide-react';
 import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
 import { ScoreSubmissionModal } from './ScoreSubmissionModal';
 import { formatDate, formatTime } from './utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const PendingScoresCard = () => {
   const { matches, isLoading } = usePendingScoresMatches();
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const { user } = useAuth();
 
   if (isLoading) {
     return (
@@ -140,13 +142,25 @@ const PendingScoresCard = () => {
                     <div>{formatDate(match.date)}</div>
                     <div>{formatTime(match.date)}</div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedMatchId(match.id)}
-                  >
-                    Report
-                  </Button>
+                  {user ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedMatchId(match.id)}
+                    >
+                      Report
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => window.location.href = '/auth'}
+                      className="gap-1"
+                    >
+                      <LogIn className="h-3 w-3" />
+                      Sign In
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

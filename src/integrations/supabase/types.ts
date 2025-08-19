@@ -1578,6 +1578,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          action_count: number | null
+          action_type: string
+          created_at: string | null
+          id: string
+          user_id: string | null
+          window_start: string | null
+        }
+        Insert: {
+          action_count?: number | null
+          action_type: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          action_count?: number | null
+          action_type?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       score_submissions: {
         Row: {
           created_at: string
@@ -3202,6 +3229,10 @@ export type Database = {
       }
       user_belongs_to_team: {
         Args: { p_team_id: string }
+        Returns: boolean
+      }
+      validate_admin_operation: {
+        Args: { operation_type: string }
         Returns: boolean
       }
       validate_division_seeds: {
