@@ -41,7 +41,7 @@ const MatchApprovalItem = ({
         <div className="flex items-center">
           {isOpen ? <ChevronDown className="h-4 w-4 mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
           <div className="flex items-center">
-            <div className="w-6 h-6 rounded-sm overflow-hidden bg-gray-100 mr-2">
+            <div className="w-6 h-6 overflow-hidden bg-gray-100 mr-2">
               {team1Image && (
                 <img 
                   src={team1Image} 
@@ -56,7 +56,7 @@ const MatchApprovalItem = ({
             <span>
               {team1?.name || 'Team 1'} vs 
             </span>
-            <div className="w-6 h-6 rounded-sm overflow-hidden bg-gray-100 mx-2">
+            <div className="w-6 h-6 overflow-hidden bg-gray-100 mx-2">
               {team2Image && (
                 <img 
                   src={team2Image} 
