@@ -1518,6 +1518,39 @@ export type Database = {
           },
         ]
       }
+      policy_backup: {
+        Row: {
+          cmd: string | null
+          permissive: string | null
+          policyname: unknown | null
+          qual: string | null
+          roles: unknown[] | null
+          schemaname: unknown | null
+          tablename: unknown | null
+          with_check: string | null
+        }
+        Insert: {
+          cmd?: string | null
+          permissive?: string | null
+          policyname?: unknown | null
+          qual?: string | null
+          roles?: unknown[] | null
+          schemaname?: unknown | null
+          tablename?: unknown | null
+          with_check?: string | null
+        }
+        Update: {
+          cmd?: string | null
+          permissive?: string | null
+          policyname?: unknown | null
+          qual?: string | null
+          roles?: unknown[] | null
+          schemaname?: unknown | null
+          tablename?: unknown | null
+          with_check?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
