@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 
 export interface PendingMatch {
   id: string;
@@ -26,7 +25,6 @@ export function usePendingScoresMatches() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchPendingMatches();
@@ -68,16 +66,6 @@ export function usePendingScoresMatches() {
   };
 
   const submitScore = async (matchId: string, submission: ScoreSubmission) => {
-    // Check authentication first
-    if (!user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'You must be logged in to submit score reports. Please sign in and try again.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
     try {
       setIsSubmitting(true);
       const { error } = await supabase

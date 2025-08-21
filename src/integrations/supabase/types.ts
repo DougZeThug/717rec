@@ -1518,39 +1518,6 @@ export type Database = {
           },
         ]
       }
-      policy_backup: {
-        Row: {
-          cmd: string | null
-          permissive: string | null
-          policyname: unknown | null
-          qual: string | null
-          roles: unknown[] | null
-          schemaname: unknown | null
-          tablename: unknown | null
-          with_check: string | null
-        }
-        Insert: {
-          cmd?: string | null
-          permissive?: string | null
-          policyname?: unknown | null
-          qual?: string | null
-          roles?: unknown[] | null
-          schemaname?: unknown | null
-          tablename?: unknown | null
-          with_check?: string | null
-        }
-        Update: {
-          cmd?: string | null
-          permissive?: string | null
-          policyname?: unknown | null
-          qual?: string | null
-          roles?: unknown[] | null
-          schemaname?: unknown | null
-          tablename?: unknown | null
-          with_check?: string | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1575,33 +1542,6 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           username?: string | null
-        }
-        Relationships: []
-      }
-      rate_limits: {
-        Row: {
-          action_count: number | null
-          action_type: string
-          created_at: string | null
-          id: string
-          user_id: string | null
-          window_start: string | null
-        }
-        Insert: {
-          action_count?: number | null
-          action_type: string
-          created_at?: string | null
-          id?: string
-          user_id?: string | null
-          window_start?: string | null
-        }
-        Update: {
-          action_count?: number | null
-          action_type?: string
-          created_at?: string | null
-          id?: string
-          user_id?: string | null
-          window_start?: string | null
         }
         Relationships: []
       }
@@ -3229,10 +3169,6 @@ export type Database = {
       }
       user_belongs_to_team: {
         Args: { p_team_id: string }
-        Returns: boolean
-      }
-      validate_admin_operation: {
-        Args: { operation_type: string }
         Returns: boolean
       }
       validate_division_seeds: {
