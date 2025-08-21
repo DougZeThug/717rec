@@ -31,15 +31,16 @@ export const useAuthState = () => {
         
         if (!currentSession) {
           setProfile(null);
-        } else if (event === 'SIGNED_IN') {
+        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           // Ensure theme consistency after login
           ensureThemeConsistency();
           
           // We use setTimeout to prevent Supabase auth deadlocks
           setTimeout(async () => {
-            console.log("Fetching profile after sign in");
+            console.log(`Fetching profile after ${event}`);
             try {
               const profileData = await fetchProfile(currentSession.user.id);
+              console.log("Profile fetched:", profileData);
               setProfile(profileData);
               checkProfileSetup(profileData);
             } catch (error) {
