@@ -30,25 +30,38 @@ export const useAuthState = () => {
         setUser(currentSession?.user ?? null);
         
         if (!currentSession) {
+          console.log("No session, clearing profile");
           setProfile(null);
-        } else if (event === 'SIGNED_IN') {
-          // Ensure theme consistency after login
+        } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+          console.log(`Fetching profile for event: ${event}, user: ${currentSession.user.email}`);
+          
+          // Ensure theme consistency for all session events
           ensureThemeConsistency();
           
           // We use setTimeout to prevent Supabase auth deadlocks
           setTimeout(async () => {
-            console.log("Fetching profile after sign in");
             try {
               const profileData = await fetchProfile(currentSession.user.id);
-              setProfile(profileData);
-              checkProfileSetup(profileData);
-            } catch (error) {
-              console.error("Error fetching user profile:", error);
-              toast({
-                title: "Profile error",
-                description: "Failed to load your profile data",
-                variant: "destructive",
+              console.log("Profile loaded successfully:", { 
+                username: profileData?.username, 
+                full_name: profileData?.full_name, 
+                is_admin: profileData?.is_admin 
               });
+              setProfile(profileData);
+              
+              // Only check profile setup on sign in, not on initial session
+              if (event === 'SIGNED_IN') {
+                checkProfileSetup(profileData);
+              }
+            } catch (error) {
+              console.error(`Error fetching user profile for ${event}:`, error);
+              if (event === 'SIGNED_IN') {
+                toast({
+                  title: "Profile error",
+                  description: "Failed to load your profile data",
+                  variant: "destructive",
+                });
+              }
             }
           }, 0);
         }
