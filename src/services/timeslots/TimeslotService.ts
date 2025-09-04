@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { TeamTimeslot, TimeslotOperationResult } from "@/types/timeslots";
 import { TimeslotTransformer } from "./TimeslotTransformer";
-import { getBackToBackPair, getMatchSequence, getBackToBackPairName } from "@/utils/autoSchedule/constants";
+import { getBackToBackPair, getMatchSequence, getBackToBackPairName, getPairConfig } from "@/utils/autoSchedule/constants";
 
 export class TimeslotService {
   /**
@@ -297,47 +297,4 @@ export class TimeslotService {
     
     return this.batchAssignBackToBackTimeslots(date, teamIds, pairName);
   }
-}
-
-// Helper function to get pair configuration
-function getPairConfig(pairName: string) {
-  const BACK_TO_BACK_PAIRS = {
-    'SuperEarly': {
-      primary: '6:00 PM',
-      secondary: '6:30 PM',
-      label: 'Super Early Pair (6:00-6:30 PM)'
-    },
-    'Early': {
-      primary: '6:30 PM',
-      secondary: '7:00 PM',
-      label: 'Early Pair (6:30-7:00 PM)'
-    },
-    'MidEarly': {
-      primary: '7:00 PM',
-      secondary: '7:30 PM',
-      label: 'Mid Early Pair (7:00-7:30 PM)'
-    },
-    'Mid': {
-      primary: '7:30 PM', 
-      secondary: '8:00 PM',
-      label: 'Mid Pair (7:30-8:00 PM)'
-    },
-    'LateMid': {
-      primary: '8:00 PM',
-      secondary: '8:30 PM',
-      label: 'Late Mid Pair (8:00-8:30 PM)'
-    },
-    'Late': {
-      primary: '8:30 PM',
-      secondary: '9:00 PM', 
-      label: 'Late Pair (8:30-9:00 PM)'
-    },
-    'SuperLate': {
-      primary: '9:00 PM',
-      secondary: '9:30 PM',
-      label: 'Super Late Pair (9:00-9:30 PM)'
-    }
-  } as const;
-  
-  return BACK_TO_BACK_PAIRS[pairName as keyof typeof BACK_TO_BACK_PAIRS];
 }
