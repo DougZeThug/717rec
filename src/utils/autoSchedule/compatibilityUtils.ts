@@ -8,6 +8,10 @@ import { getCachedCompatibilityScore, getCachedMatchHistory } from "./cachingUti
  * Higher score means better match (more evenly matched)
  */
 export function calculateTeamCompatibility(team1: Team, team2: Team): number {
+  // Division compatibility - heavily prioritize same division matchups
+  const sameDivision = (team1.division || team1.division_id) === (team2.division || team2.division_id);
+  const divisionBonus = sameDivision ? 0 : 4; // Heavy penalty for cross-division (4 points out of 10)
+  
   // Compare power scores - closer power scores are better matches
   const powerScoreDiff = Math.abs((team1.power_score || 0) - (team2.power_score || 0));
   
@@ -31,16 +35,19 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
   const normalizedRecordDiff = Math.min(1, recordDiff);
   const normalizedGameRecordDiff = Math.min(1, gameRecordDiff);
   
-  // Apply weights to each factor (total should be 10)
-  const weightedScore = 10 - (
-    normalizedPowerScoreDiff * 4 + 
-    normalizedSosDiff * 2 + 
-    normalizedRecordDiff * 2.5 + 
-    normalizedGameRecordDiff * 1.5
+  // Apply weights to each factor - division penalty takes precedence
+  const baseScore = 10 - (
+    normalizedPowerScoreDiff * 3 +  // Reduced from 4 to make room for division
+    normalizedSosDiff * 1.5 +       // Reduced from 2
+    normalizedRecordDiff * 2 +       // Reduced from 2.5
+    normalizedGameRecordDiff * 1     // Reduced from 1.5
   );
   
+  // Apply division penalty - cross-division pairings get heavily penalized
+  const finalScore = Math.max(0, baseScore - divisionBonus);
+  
   // Ensure the score is within a reasonable range (0-10)
-  return Math.max(0, Math.min(10, weightedScore));
+  return Math.max(0, Math.min(10, finalScore));
 }
 
 /**
@@ -92,15 +99,20 @@ export function calculateConfigurableCompatibility(
     powerScoreWeight?: number,
     sosWeight?: number,
     recordWeight?: number,
-    gameRecordWeight?: number
+    gameRecordWeight?: number,
+    divisionWeight?: number
   } = {}
 ): number {
-  // Default weights
+  // Division compatibility - heavily prioritize same division matchups
+  const sameDivision = (team1.division || team1.division_id) === (team2.division || team2.division_id);
+  const divisionPenalty = sameDivision ? 0 : (config.divisionWeight ?? 4);
+  
+  // Default weights (adjusted to accommodate division weight)
   const weights = {
-    powerScore: config.powerScoreWeight ?? 4,
-    sos: config.sosWeight ?? 2,
-    record: config.recordWeight ?? 2.5,
-    gameRecord: config.gameRecordWeight ?? 1.5
+    powerScore: config.powerScoreWeight ?? 3,
+    sos: config.sosWeight ?? 1.5,
+    record: config.recordWeight ?? 2,
+    gameRecord: config.gameRecordWeight ?? 1
   };
   
   // Calculate differences
@@ -123,17 +135,17 @@ export function calculateConfigurableCompatibility(
   const normalizedRecordDiff = Math.min(1, recordDiff);
   const normalizedGameRecordDiff = Math.min(1, gameRecordDiff);
   
-  // Calculate total score (10 - weighted differences)
-  const totalWeightFactor = weights.powerScore + weights.sos + weights.record + weights.gameRecord;
-  const maxScore = 10; // Max possible score
-  
-  const weightedScore = maxScore - (
+  // Calculate base score from performance metrics
+  const baseScore = 10 - (
     normalizedPowerScoreDiff * weights.powerScore + 
     normalizedSosDiff * weights.sos + 
     normalizedRecordDiff * weights.record + 
     normalizedGameRecordDiff * weights.gameRecord
-  ) * (maxScore / totalWeightFactor);
+  );
+  
+  // Apply division penalty - cross-division pairings get heavily penalized
+  const finalScore = Math.max(0, baseScore - divisionPenalty);
   
   // Ensure the score is within a reasonable range (0-10)
-  return Math.max(0, Math.min(maxScore, weightedScore));
+  return Math.max(0, Math.min(10, finalScore));
 }

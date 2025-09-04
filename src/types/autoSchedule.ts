@@ -24,6 +24,7 @@ export interface CompatibilityWeights {
   sosWeight?: number;
   recordWeight?: number;
   gameRecordWeight?: number;
+  divisionWeight?: number;
 }
 
 /**

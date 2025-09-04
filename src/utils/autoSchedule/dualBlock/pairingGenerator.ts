@@ -52,7 +52,10 @@ export const generateDualBlockPairings = async (
     const primaryPairings = await generatePairingsWithConfig(primaryTeams, {
       avoidRematches: config.avoidRematches,
       haveTeamsPlayedFn: haveTeamsPlayedBefore,
-      getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, config.weights)
+      getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, {
+        ...config.weights,
+        divisionWeight: config.weights?.divisionWeight ?? 4 // Default heavy penalty for cross-division
+      })
     });
     
     // Create a map of team IDs to their opponents in the primary block
@@ -67,8 +70,11 @@ export const generateDualBlockPairings = async (
       avoidRematches: config.avoidRematches,
       haveTeamsPlayedFn: haveTeamsPlayedBefore,
       getCompatibilityScoreFn: (team1: Team, team2: Team) => {
-        // Base compatibility score
-        let score = calculateConfigurableCompatibility(team1, team2, config.weights);
+        // Base compatibility score with division weighting
+        let score = calculateConfigurableCompatibility(team1, team2, {
+          ...config.weights,
+          divisionWeight: config.weights?.divisionWeight ?? 4 // Default heavy penalty for cross-division
+        });
         
         // Penalize heavily if teams are already opponents in the primary block
         if (primaryOpponents[team1.id] === team2.id || primaryOpponents[team2.id] === team1.id) {

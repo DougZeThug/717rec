@@ -77,7 +77,10 @@ export const usePairingGenerator = () => {
           const blockPairings = await generatePairingsWithConfig(teams, {
             avoidRematches: config.avoidRematches,
             haveTeamsPlayedFn: haveTeamsPlayedBefore,
-            getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, config.weights)
+            getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, {
+              ...config.weights,
+              divisionWeight: config.weights?.divisionWeight ?? 4 // Default heavy penalty for cross-division
+            })
           });
           
           // Store pairings for this block

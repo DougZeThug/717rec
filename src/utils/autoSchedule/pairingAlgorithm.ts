@@ -12,6 +12,7 @@ type TeamPairingConfig = {
     sosWeight?: number;
     recordWeight?: number;
     gameRecordWeight?: number;
+    divisionWeight?: number;
   };
 };
 
