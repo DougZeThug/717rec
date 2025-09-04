@@ -118,14 +118,31 @@ export const generateDualBlockPairings = async (
       }
     });
     
-    // If teams have the same opponent in both blocks, warn the user
+    // If teams have the same opponent in both blocks, log and track them
     const teamsWithSameOpponent = findTeamsWithSameOpponent(primaryPairings, secondaryPairings);
-    if (teamsWithSameOpponent.length > 0 && notifyCallback) {
-      notifyCallback({
-        title: "Warning",
-        description: `${teamsWithSameOpponent.length} teams have the same opponent in both blocks.`,
-        variant: "default"
+    if (teamsWithSameOpponent.length > 0) {
+      console.warn(`Session rematch detected: ${teamsWithSameOpponent.length} teams have the same opponent in both blocks`);
+      
+      // Look up team names for better logging
+      const teamNameMap = new Map<string, string>();
+      [...primaryTeams, ...secondaryTeams].forEach(team => {
+        teamNameMap.set(team.id, team.name);
       });
+      
+      teamsWithSameOpponent.forEach(teamId => {
+        const teamName = teamNameMap.get(teamId) || `Team ${teamId}`;
+        console.warn(`  ${teamName} plays the same opponent in both blocks`);
+      });
+      
+      if (notifyCallback) {
+        notifyCallback({
+          title: "Session Rematch Warning",
+          description: `${teamsWithSameOpponent.length} teams have the same opponent in both blocks. This violates session-level rematch prevention.`,
+          variant: "destructive"
+        });
+      }
+    } else {
+      console.log('Session rematch validation passed: All teams have different opponents in each block');
     }
     
     return {

@@ -74,6 +74,7 @@ export async function generatePairingsWithConfig(
   
   // Track used pairings to prevent rematches within the session
   const usedPairings = new Set<string>();
+  const sessionMatchups = new Map<string, Set<string>>(); // Track all opponents for each team
   
   const finalPairings: TeamPairing[] = [];
   const targetMatchesPerTeam = 2;
@@ -109,8 +110,20 @@ export async function generatePairingsWithConfig(
       // Create a unique key for this pairing (order-independent)
       const pairingKey = [pairing.team1.id, pairing.team2.id].sort().join('-');
       
-      // Skip if this pairing was already used
-      if (usedPairings.has(pairingKey)) continue;
+      // Skip if this pairing was already used (session-level rematch prevention)
+      if (usedPairings.has(pairingKey)) {
+        console.log(`Skipping session rematch: ${pairing.team1.name} vs ${pairing.team2.name}`);
+        continue;
+      }
+      
+      // Additional session-level opponent check
+      const team1Opponents = sessionMatchups.get(pairing.team1.id) || new Set();
+      const team2Opponents = sessionMatchups.get(pairing.team2.id) || new Set();
+      
+      if (team1Opponents.has(pairing.team2.id) || team2Opponents.has(pairing.team1.id)) {
+        console.log(`Skipping duplicate opponent in session: ${pairing.team1.name} vs ${pairing.team2.name}`);
+        continue;
+      }
       
       // Check for rematches if avoiding them
       if (config.avoidRematches) {
@@ -152,6 +165,16 @@ export async function generatePairingsWithConfig(
     // Mark this pairing as used
     const pairingKey = [bestPairing.team1.id, bestPairing.team2.id].sort().join('-');
     usedPairings.add(pairingKey);
+    
+    // Update session matchups tracking
+    if (!sessionMatchups.has(bestPairing.team1.id)) {
+      sessionMatchups.set(bestPairing.team1.id, new Set());
+    }
+    if (!sessionMatchups.has(bestPairing.team2.id)) {
+      sessionMatchups.set(bestPairing.team2.id, new Set());
+    }
+    sessionMatchups.get(bestPairing.team1.id)!.add(bestPairing.team2.id);
+    sessionMatchups.get(bestPairing.team2.id)!.add(bestPairing.team1.id);
   }
   
   // Log performance metrics and results
@@ -171,5 +194,39 @@ export async function generatePairingsWithConfig(
     console.log(`  ${teamCount} teams with ${matchCount} matches`);
   });
   
+  // Validate no session rematches occurred
+  const validationResult = validateNoSessionRematches(finalPairings);
+  if (validationResult.hasRematches) {
+    console.error('Session rematch validation failed:', validationResult.rematches);
+  } else {
+    console.log('Session rematch validation passed: No duplicate opponents detected');
+  }
+  
   return finalPairings;
+}
+
+/**
+ * Validate that no teams play each other more than once in the session
+ */
+function validateNoSessionRematches(pairings: TeamPairing[]): {
+  hasRematches: boolean;
+  rematches: string[];
+} {
+  const pairingCounts = new Map<string, number>();
+  const rematches: string[] = [];
+  
+  pairings.forEach(pairing => {
+    const key = [pairing.team1.id, pairing.team2.id].sort().join('-');
+    const count = (pairingCounts.get(key) || 0) + 1;
+    pairingCounts.set(key, count);
+    
+    if (count > 1) {
+      rematches.push(`${pairing.team1.name} vs ${pairing.team2.name} (${count} times)`);
+    }
+  });
+  
+  return {
+    hasRematches: rematches.length > 0,
+    rematches
+  };
 }
