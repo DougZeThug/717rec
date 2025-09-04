@@ -6,6 +6,11 @@
 
 // Back-to-back time slot pairs - consecutive 30-minute slots
 export const BACK_TO_BACK_PAIRS = {
+  'UltraEarly': {
+    primary: '5:30 PM',
+    secondary: '6:00 PM',
+    label: 'Ultra Early Pair (5:30-6:00 PM)'
+  },
   'SuperEarly': {
     primary: '6:00 PM',
     secondary: '6:30 PM',
@@ -45,6 +50,7 @@ export const BACK_TO_BACK_PAIRS = {
 
 // Individual time slots for reference
 export const TIME_SLOTS = {
+  '5:30 PM': '5:30 PM',
   '6:00 PM': '6:00 PM',
   '6:30 PM': '6:30 PM',
   '7:00 PM': '7:00 PM', 
@@ -57,6 +63,10 @@ export const TIME_SLOTS = {
 
 // TIME_BLOCKS with structure expected by MatchPairingItem
 export const TIME_BLOCKS = {
+  UltraEarly: {
+    main: BACK_TO_BACK_PAIRS.UltraEarly.primary,
+    secondary: BACK_TO_BACK_PAIRS.UltraEarly.secondary
+  },
   SuperEarly: {
     main: BACK_TO_BACK_PAIRS.SuperEarly.primary,
     secondary: BACK_TO_BACK_PAIRS.SuperEarly.secondary
@@ -90,6 +100,7 @@ export const TIME_BLOCKS = {
 // Utility functions for consecutive back-to-back scheduling
 export const getBackToBackPair = (timeSlot: string): string | null => {
   switch (timeSlot) {
+    case '5:30 PM': return '6:00 PM';
     case '6:00 PM': return '6:30 PM';
     case '6:30 PM': return '7:00 PM';
     case '7:00 PM': return '7:30 PM';
@@ -107,6 +118,8 @@ export const isValidBackToBackSlot = (timeSlot: string): boolean => {
 
 export const getBackToBackPairName = (timeSlot: string): string | null => {
   switch (timeSlot) {
+    case '5:30 PM':
+      return 'UltraEarly';
     case '6:00 PM':
       return 'SuperEarly';
     case '6:30 PM':
@@ -128,6 +141,7 @@ export const getBackToBackPairName = (timeSlot: string): string | null => {
 
 export const getMatchSequence = (timeSlot: string): number | null => {
   switch (timeSlot) {
+    case '5:30 PM':
     case '6:00 PM':
     case '6:30 PM':
     case '7:00 PM':
