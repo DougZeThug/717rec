@@ -16,7 +16,7 @@ type TeamPairingConfig = {
 };
 
 /**
- * Generate team pairings with configurable options and optimization
+ * Generate team pairings ensuring each team gets exactly 2 matches per session
  */
 export async function generatePairingsWithConfig(
   teams: Team[], 
@@ -24,6 +24,11 @@ export async function generatePairingsWithConfig(
 ): Promise<TeamPairing[]> {
   // Return empty array for insufficient teams
   if (teams.length < 2) return [];
+  
+  // Need at least 4 teams to give each team 2 matches
+  if (teams.length < 4) {
+    console.warn(`Only ${teams.length} teams available. Need at least 4 teams to ensure 2 matches per team.`);
+  }
   
   // Start tracking time for performance monitoring
   const startTime = performance.now();
@@ -62,70 +67,108 @@ export async function generatePairingsWithConfig(
   // Sort by compatibility score (highest first)
   potentialPairings.sort((a, b) => b.score - a.score);
   
-  // Generate optimal pairings
-  const finalPairings: TeamPairing[] = [];
-  const assignedTeamIds = new Set<string>();
+  // Track how many matches each team has been assigned
+  const teamMatchCounts = new Map<string, number>();
+  teams.forEach(team => teamMatchCounts.set(team.id, 0));
   
-  // Filter out pairings with teams that have played before if avoidRematches is true
-  if (config.avoidRematches) {
-    // Apply match history filter - less optimal but faster
-    // Check first batch of best pairs (to avoid checking all combinations)
-    const topPairingsCount = Math.min(potentialPairings.length, teams.length * 2);
-    const topPairings = potentialPairings.slice(0, topPairingsCount);
+  // Track used pairings to prevent rematches within the session
+  const usedPairings = new Set<string>();
+  
+  const finalPairings: TeamPairing[] = [];
+  const targetMatchesPerTeam = 2;
+  
+  // Keep generating matches until all teams have 2 matches (or we can't find more valid pairings)
+  let attempts = 0;
+  const maxAttempts = potentialPairings.length * 2; // Prevent infinite loops
+  
+  while (attempts < maxAttempts) {
+    attempts++;
     
-    for (const pairing of topPairings) {
-      // Skip if either team is already assigned
-      if (assignedTeamIds.has(pairing.team1.id) || assignedTeamIds.has(pairing.team2.id)) continue;
+    // Check if all teams have reached the target
+    const teamsNeedingMatches = teams.filter(team => 
+      (teamMatchCounts.get(team.id) || 0) < targetMatchesPerTeam
+    );
+    
+    if (teamsNeedingMatches.length === 0) break;
+    if (teamsNeedingMatches.length === 1) {
+      console.warn(`Only 1 team (${teamsNeedingMatches[0].name}) needs more matches. Cannot pair.`);
+      break;
+    }
+    
+    // Find the best available pairing
+    let bestPairing: {team1: Team, team2: Team, score: number} | null = null;
+    
+    for (const pairing of potentialPairings) {
+      const team1Count = teamMatchCounts.get(pairing.team1.id) || 0;
+      const team2Count = teamMatchCounts.get(pairing.team2.id) || 0;
       
-      // Check if teams have played before
-      const hasPlayedBefore = await config.haveTeamsPlayedFn(pairing.team1.id, pairing.team2.id);
+      // Skip if either team already has 2 matches
+      if (team1Count >= targetMatchesPerTeam || team2Count >= targetMatchesPerTeam) continue;
       
-      // If teams haven't played before or we're not avoiding rematches, add the pairing
-      if (!hasPlayedBefore || !config.avoidRematches) {
-        finalPairings.push({
-          team1: pairing.team1,
-          team2: pairing.team2,
-          compatibilityScore: pairing.score,
-          hasPlayedBefore: hasPlayedBefore
-        });
-        
-        // Mark these teams as assigned
-        assignedTeamIds.add(pairing.team1.id);
-        assignedTeamIds.add(pairing.team2.id);
+      // Create a unique key for this pairing (order-independent)
+      const pairingKey = [pairing.team1.id, pairing.team2.id].sort().join('-');
+      
+      // Skip if this pairing was already used
+      if (usedPairings.has(pairingKey)) continue;
+      
+      // Check for rematches if avoiding them
+      if (config.avoidRematches) {
+        const hasPlayedBefore = await config.haveTeamsPlayedFn(pairing.team1.id, pairing.team2.id);
+        if (hasPlayedBefore) continue;
+      }
+      
+      // Prioritize pairings where both teams need matches
+      const priority = (team1Count < targetMatchesPerTeam ? 1 : 0) + (team2Count < targetMatchesPerTeam ? 1 : 0);
+      if (priority === 2) {
+        bestPairing = pairing;
+        break; // Found an ideal pairing where both teams need matches
+      } else if (bestPairing === null && priority > 0) {
+        bestPairing = pairing;
       }
     }
-  }
-  
-  // If we still have teams to pair (not all were paired in first pass)
-  // Consider remaining pairs without match history filter
-  if (assignedTeamIds.size < teams.length) {
-    for (const pairing of potentialPairings) {
-      // Skip if either team is already assigned
-      if (assignedTeamIds.has(pairing.team1.id) || assignedTeamIds.has(pairing.team2.id)) continue;
-      
-      // Check if teams have played before
-      const hasPlayedBefore = await config.haveTeamsPlayedFn(pairing.team1.id, pairing.team2.id);
-      
-      finalPairings.push({
-        team1: pairing.team1,
-        team2: pairing.team2,
-        compatibilityScore: pairing.score,
-        hasPlayedBefore: hasPlayedBefore
-      });
-      
-      // Mark these teams as assigned
-      assignedTeamIds.add(pairing.team1.id);
-      assignedTeamIds.add(pairing.team2.id);
-      
-      // If all teams are paired, we're done
-      if (assignedTeamIds.size === teams.length) break;
+    
+    if (!bestPairing) {
+      console.warn('No more valid pairings available');
+      break;
     }
+    
+    // Check for rematches one final time before adding
+    const hasPlayedBefore = config.avoidRematches ? 
+      await config.haveTeamsPlayedFn(bestPairing.team1.id, bestPairing.team2.id) : false;
+    
+    // Add the pairing
+    finalPairings.push({
+      team1: bestPairing.team1,
+      team2: bestPairing.team2,
+      compatibilityScore: bestPairing.score,
+      hasPlayedBefore: hasPlayedBefore
+    });
+    
+    // Update match counts
+    teamMatchCounts.set(bestPairing.team1.id, (teamMatchCounts.get(bestPairing.team1.id) || 0) + 1);
+    teamMatchCounts.set(bestPairing.team2.id, (teamMatchCounts.get(bestPairing.team2.id) || 0) + 1);
+    
+    // Mark this pairing as used
+    const pairingKey = [bestPairing.team1.id, bestPairing.team2.id].sort().join('-');
+    usedPairings.add(pairingKey);
   }
   
-  // Log performance metrics
+  // Log performance metrics and results
   const endTime = performance.now();
   console.log(`Pairing generation took ${(endTime - startTime).toFixed(2)}ms for ${teams.length} teams`);
-  console.log(`Generated ${finalPairings.length} pairings out of ${teams.length / 2} possible`);
+  console.log(`Generated ${finalPairings.length} pairings`);
+  
+  // Log match distribution
+  const matchDistribution = new Map<number, number>();
+  teams.forEach(team => {
+    const matchCount = teamMatchCounts.get(team.id) || 0;
+    matchDistribution.set(matchCount, (matchDistribution.get(matchCount) || 0) + 1);
+  });
+  
+  console.log('Match distribution:');
+  matchDistribution.forEach((teamCount, matchCount) => {
+    console.log(`  ${teamCount} teams with ${matchCount} matches`);
+  });
   
   return finalPairings;
 }
