@@ -50,7 +50,7 @@ export class HeadToHeadService {
       const { data: matchPairs, error: matchPairsError } = await supabase
         .from('v_match_pairs')
         .select('*')
-        .or(`and(a_id.eq.${teamId},b_id.eq.${opponentId}),and(a_id.eq.${opponentId},b_id.eq.${teamId})`)
+        .or(`a_id.eq.${teamId}.and.b_id.eq.${opponentId},a_id.eq.${opponentId}.and.b_id.eq.${teamId}`)
         .order('completed_at', { ascending: false })
         .limit(15);
 
