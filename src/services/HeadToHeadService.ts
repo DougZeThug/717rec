@@ -47,14 +47,30 @@ export class HeadToHeadService {
       if (!summary) return null;
 
       // Use v_match_pairs view to get all matches (current + archived) between these teams
-      const { data: matchPairs, error: matchPairsError } = await supabase
+      // Query 1: teamId as a_id, opponentId as b_id
+      const { data: matchPairs1, error: matchPairsError1 } = await supabase
         .from('v_match_pairs')
         .select('*')
-        .or(`a_id.eq.${teamId}.and.b_id.eq.${opponentId},a_id.eq.${opponentId}.and.b_id.eq.${teamId}`)
-        .order('completed_at', { ascending: false })
-        .limit(15);
+        .eq('a_id', teamId)
+        .eq('b_id', opponentId)
+        .order('completed_at', { ascending: false });
 
-      if (matchPairsError) throw matchPairsError;
+      if (matchPairsError1) throw matchPairsError1;
+
+      // Query 2: opponentId as a_id, teamId as b_id
+      const { data: matchPairs2, error: matchPairsError2 } = await supabase
+        .from('v_match_pairs')
+        .select('*')
+        .eq('a_id', opponentId)
+        .eq('b_id', teamId)
+        .order('completed_at', { ascending: false });
+
+      if (matchPairsError2) throw matchPairsError2;
+
+      // Combine and sort all matches by date
+      const matchPairs = [...(matchPairs1 || []), ...(matchPairs2 || [])]
+        .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
+        .slice(0, 15);
 
       // Get recent playoff matches between these teams
       const { data: playoffMatches, error: playoffError } = await supabase
