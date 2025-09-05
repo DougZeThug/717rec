@@ -2,6 +2,7 @@ export interface HeadToHeadRecord {
   team_id: string;
   opponent_id: string;
   opponent_name: string;
+  opponent_image_url?: string;
   matches_played: number;
   wins: number;
   losses: number;

@@ -13,20 +13,21 @@ export class HeadToHeadService {
 
       if (error) throw error;
 
-      // Get team names for opponents
+      // Get team names and logos for opponents
       const opponentIds = data?.map(record => record.opponent_id) || [];
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
-        .select('id, name')
+        .select('id, name, image_url')
         .in('id', opponentIds);
 
       if (teamsError) throw teamsError;
 
-      const teamMap = new Map(teams?.map(team => [team.id, team.name]) || []);
+      const teamMap = new Map(teams?.map(team => [team.id, { name: team.name, image_url: team.image_url }]) || []);
 
       return data?.map((record: HeadToHeadResponse): HeadToHeadRecord => ({
         ...record,
-        opponent_name: teamMap.get(record.opponent_id) || 'Unknown Team'
+        opponent_name: teamMap.get(record.opponent_id)?.name || 'Unknown Team',
+        opponent_image_url: teamMap.get(record.opponent_id)?.image_url
       })) || [];
     } catch (error) {
       console.error('Error fetching head-to-head records:', error);

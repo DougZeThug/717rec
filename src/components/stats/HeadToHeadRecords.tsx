@@ -219,9 +219,26 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRecords.map((record) => (
-                    <tr key={record.opponent_name} className="border-b hover:bg-muted/50">
-                      <td className="py-3 font-medium">{record.opponent_name}</td>
+                   {filteredRecords.map((record) => (
+                     <tr key={record.opponent_name} className="border-b hover:bg-muted/50">
+                       <td className="py-3">
+                         <div className="flex items-center space-x-3">
+                           {record.opponent_image_url ? (
+                             <img 
+                               src={record.opponent_image_url} 
+                               alt={`${record.opponent_name} logo`}
+                               className="w-8 h-8 rounded-sm object-cover flex-shrink-0"
+                             />
+                           ) : (
+                             <div className="w-8 h-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+                               <span className="text-xs font-medium text-muted-foreground">
+                                 {record.opponent_name.charAt(0).toUpperCase()}
+                               </span>
+                             </div>
+                           )}
+                           <span className="font-medium">{record.opponent_name}</span>
+                         </div>
+                       </td>
                       <td className="text-center">
                         <div className="flex items-center justify-center space-x-1">
                           <Trophy className="w-3 h-3 text-emerald-500" />
