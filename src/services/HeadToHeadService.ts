@@ -71,6 +71,8 @@ export class HeadToHeadService {
 
       if (error) throw error;
 
+      console.log('Regular season matches found:', matches?.length || 0);
+
       // Get archived matches from previous seasons
       const { data: archivedMatches, error: archivedError } = await supabase
         .from('matches_archive')
@@ -93,6 +95,7 @@ export class HeadToHeadService {
         .limit(15);
 
       if (archivedError) throw archivedError;
+      console.log('Archived matches found:', archivedMatches?.length || 0);
 
       // Get recent playoff matches between these teams
       const { data: playoffMatches, error: playoffError } = await supabase
@@ -146,6 +149,9 @@ export class HeadToHeadService {
         location: match.location || 'Previous Season'
       })) || [];
 
+      console.log('Formatted archived matches:', formattedArchivedMatches.length);
+      console.log('Sample archived match:', formattedArchivedMatches[0]);
+
       // Format playoff matches
       const formattedPlayoffMatches = playoffMatches?.map(match => ({
         id: match.id,
@@ -164,6 +170,13 @@ export class HeadToHeadService {
       const allMatches = [...formattedMatches, ...formattedArchivedMatches, ...formattedPlayoffMatches]
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 15); // Keep only the 15 most recent matches
+
+      console.log('Total combined matches:', allMatches.length);
+      console.log('Match sources:', {
+        regular: formattedMatches.length,
+        archived: formattedArchivedMatches.length,
+        playoff: formattedPlayoffMatches.length
+      });
 
       return {
         matches: allMatches,
