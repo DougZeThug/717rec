@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Search, Calendar, Trophy, X } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ArrowUpDown, Search, Calendar, Trophy, X, ChevronDown, ChevronRight } from "lucide-react";
 import { OpponentHistoryModal } from "./OpponentHistoryModal";
 import { format } from "date-fns";
 
@@ -25,6 +26,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
   const [sortField, setSortField] = useState<SortField>('win_pct');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedOpponent, setSelectedOpponent] = useState<{ id: string; name: string } | null>(null);
+  const [isOpen, setIsOpen] = useState(true);
 
   // Fallback to legacy head-to-head data if new system fails
   const displayRecords = records?.length ? records : (headToHead ? Object.values(headToHead).map(record => ({
@@ -83,61 +85,111 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4 text-muted-foreground">Loading head-to-head records...</div>
-        </CardContent>
-      </Card>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <div className="text-center py-4 text-muted-foreground">Loading head-to-head records...</div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4 text-rose-600">Error loading head-to-head records</div>
-        </CardContent>
-      </Card>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <div className="text-center py-4 text-rose-600">Error loading head-to-head records</div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     );
   }
 
   if (displayRecords.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4 text-muted-foreground">No head-to-head records available</div>
-        </CardContent>
-      </Card>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <div className="text-center py-4 text-muted-foreground">No head-to-head records available</div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     );
   }
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-          <div className="flex items-center space-x-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search opponents..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search opponents..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
           {filteredRecords.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">
               No opponents found matching "{searchTerm}"
@@ -179,11 +231,11 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
                           <span className="text-rose-600 font-medium">{record.losses}</span>
                         </div>
                       </td>
-                      <td className="text-center">
-                        <Badge variant={record.win_pct >= 0.5 ? "default" : "secondary"}>
-                          {(record.win_pct * 100).toFixed(1)}%
-                        </Badge>
-                      </td>
+                       <td className="text-center">
+                         <Badge variant={record.win_pct >= 50 ? "default" : "secondary"}>
+                           {Number(record.win_pct).toFixed(1)}%
+                         </Badge>
+                       </td>
                       <td className="text-center font-mono">{record.matches_played}</td>
                       <td className="text-center font-mono">
                         {record.game_wins}-{record.game_losses}
@@ -216,10 +268,12 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </div>
+             )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {selectedOpponent && (
         <OpponentHistoryModal
