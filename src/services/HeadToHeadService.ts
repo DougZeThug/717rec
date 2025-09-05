@@ -1,0 +1,95 @@
+import { supabase } from "@/integrations/supabase/client";
+import { HeadToHeadRecord, HeadToHeadResponse, OpponentHistory } from "@/types/headToHead";
+
+export class HeadToHeadService {
+  /**
+   * Get all head-to-head records for a specific team
+   */
+  static async getTeamHeadToHead(teamId: string): Promise<HeadToHeadRecord[]> {
+    try {
+      const { data, error } = await supabase.rpc('get_head_to_head_records', {
+        p_team_id: teamId
+      });
+
+      if (error) throw error;
+
+      // Get team names for opponents
+      const opponentIds = data?.map(record => record.opponent_id) || [];
+      const { data: teams, error: teamsError } = await supabase
+        .from('teams')
+        .select('id, name')
+        .in('id', opponentIds);
+
+      if (teamsError) throw teamsError;
+
+      const teamMap = new Map(teams?.map(team => [team.id, team.name]) || []);
+
+      return data?.map((record: HeadToHeadResponse): HeadToHeadRecord => ({
+        ...record,
+        opponent_name: teamMap.get(record.opponent_id) || 'Unknown Team'
+      })) || [];
+    } catch (error) {
+      console.error('Error fetching head-to-head records:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get detailed match history between two specific teams
+   */
+  static async getOpponentHistory(teamId: string, opponentId: string): Promise<OpponentHistory | null> {
+    try {
+      // Get head-to-head summary
+      const headToHeadRecords = await this.getTeamHeadToHead(teamId);
+      const summary = headToHeadRecords.find(record => record.opponent_id === opponentId);
+
+      if (!summary) return null;
+
+      // Get recent matches between these teams
+      const { data: matches, error } = await supabase
+        .from('matches')
+        .select(`
+          id,
+          date,
+          team1_id,
+          team2_id,
+          team1_score,
+          team2_score,
+          team1_game_wins,
+          team2_game_wins,
+          winner_id,
+          location,
+          team1:team1_id(name),
+          team2:team2_id(name),
+          winner:winner_id(name)
+        `)
+        .or(`and(team1_id.eq.${teamId},team2_id.eq.${opponentId}),and(team1_id.eq.${opponentId},team2_id.eq.${teamId})`)
+        .eq('iscompleted', true)
+        .order('date', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      const formattedMatches = matches?.map(match => ({
+        id: match.id,
+        date: match.date,
+        team1_name: (match.team1 as any)?.name || 'Unknown',
+        team2_name: (match.team2 as any)?.name || 'Unknown',
+        team1_score: match.team1_score || 0,
+        team2_score: match.team2_score || 0,
+        team1_game_wins: match.team1_game_wins || 0,
+        team2_game_wins: match.team2_game_wins || 0,
+        winner_name: (match.winner as any)?.name || 'Unknown',
+        location: match.location
+      })) || [];
+
+      return {
+        matches: formattedMatches,
+        summary
+      };
+    } catch (error) {
+      console.error('Error fetching opponent history:', error);
+      return null;
+    }
+  }
+}

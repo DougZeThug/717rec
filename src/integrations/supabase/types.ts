@@ -3302,6 +3302,20 @@ export type Database = {
           team_id: string
         }[]
       }
+      get_head_to_head_records: {
+        Args: { p_team_id?: string }
+        Returns: {
+          game_losses: number
+          game_wins: number
+          last_played_at: string
+          losses: number
+          matches_played: number
+          opponent_id: string
+          team_id: string
+          win_pct: number
+          wins: number
+        }[]
+      }
       get_participants: {
         Args: { p_tournament_id: string }
         Returns: {

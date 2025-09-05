@@ -173,7 +173,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                   <TableRow>
                     <TableCell colSpan={showUnified ? 11 : 10} className="bg-[#f5f5f5] dark:bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
                       <div className="p-4">
-                        <HeadToHeadRecords headToHead={ranking.headToHead} />
+                        <HeadToHeadRecords teamId={ranking.teamId} headToHead={ranking.headToHead} />
                       </div>
                     </TableCell>
                   </TableRow>
