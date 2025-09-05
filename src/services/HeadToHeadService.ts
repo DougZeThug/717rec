@@ -67,9 +67,32 @@ export class HeadToHeadService {
         .or(`and(team1_id.eq.${teamId},team2_id.eq.${opponentId}),and(team1_id.eq.${opponentId},team2_id.eq.${teamId})`)
         .eq('iscompleted', true)
         .order('date', { ascending: false })
-        .limit(10);
+        .limit(15);
 
       if (error) throw error;
+
+      // Get archived matches from previous seasons
+      const { data: archivedMatches, error: archivedError } = await supabase
+        .from('matches_archive')
+        .select(`
+          id,
+          date,
+          team1_id,
+          team2_id,
+          team1_score,
+          team2_score,
+          team1_game_wins,
+          team2_game_wins,
+          winner_id,
+          loser_id,
+          location
+        `)
+        .or(`and(team1_id.eq.${teamId},team2_id.eq.${opponentId}),and(team1_id.eq.${opponentId},team2_id.eq.${teamId})`)
+        .eq('iscompleted', true)
+        .order('date', { ascending: false })
+        .limit(15);
+
+      if (archivedError) throw archivedError;
 
       // Get recent playoff matches between these teams
       const { data: playoffMatches, error: playoffError } = await supabase
@@ -82,8 +105,11 @@ export class HeadToHeadService {
 
       if (playoffError) throw playoffError;
 
-      // Get team names for playoff matches
-      const allTeamIds = [...new Set(playoffMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
+      // Get team names for playoff matches and archived matches
+      const archivedTeamIds = [...new Set(archivedMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
+      const playoffTeamIds = [...new Set(playoffMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
+      const allTeamIds = [...new Set([...archivedTeamIds, ...playoffTeamIds])];
+      
       const { data: teamNames } = await supabase
         .from('teams')
         .select('id, name')
@@ -105,6 +131,20 @@ export class HeadToHeadService {
         location: match.location || 'Unknown'
       })) || [];
 
+      // Format archived matches
+      const formattedArchivedMatches = archivedMatches?.map(match => ({
+        id: match.id,
+        date: match.date,
+        team1_name: teamNameMap.get(match.team1_id) || 'Unknown',
+        team2_name: teamNameMap.get(match.team2_id) || 'Unknown',
+        team1_score: match.team1_score || 0,
+        team2_score: match.team2_score || 0,
+        team1_game_wins: match.team1_game_wins || 0,
+        team2_game_wins: match.team2_game_wins || 0,
+        winner_name: teamNameMap.get(match.winner_id) || 'Unknown',
+        location: match.location || 'Previous Season'
+      })) || [];
+
       // Format playoff matches
       const formattedPlayoffMatches = playoffMatches?.map(match => ({
         id: match.id,
@@ -120,9 +160,9 @@ export class HeadToHeadService {
       })) || [];
 
       // Combine and sort all matches by date
-      const allMatches = [...formattedMatches, ...formattedPlayoffMatches]
+      const allMatches = [...formattedMatches, ...formattedArchivedMatches, ...formattedPlayoffMatches]
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 10); // Keep only the 10 most recent matches
+        .slice(0, 15); // Keep only the 15 most recent matches
 
       return {
         matches: allMatches,
