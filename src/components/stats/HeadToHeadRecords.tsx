@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { HeadToHeadMap } from "@/types";
 import { HeadToHeadRecord } from "@/types/headToHead";
 import { useHeadToHead } from "@/hooks/useHeadToHead";
@@ -21,6 +22,7 @@ type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game
 type SortDirection = 'asc' | 'desc';
 
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHead }) => {
+  const navigate = useNavigate();
   const { data: records, isLoading, error } = useHeadToHead(teamId);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('win_pct');
@@ -69,6 +71,10 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
       setSortField(field);
       setSortDirection('desc');
     }
+  };
+
+  const handleTeamClick = (opponentId: string) => {
+    navigate(`/teams/${opponentId}`);
   };
 
   const SortButton: React.FC<{ field: SortField; children: React.ReactNode }> = ({ field, children }) => (
@@ -222,7 +228,10 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
                    {filteredRecords.map((record) => (
                      <tr key={record.opponent_name} className="border-b hover:bg-muted/50">
                        <td className="py-3">
-                         <div className="flex items-center space-x-3">
+                         <div 
+                           className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
+                           onClick={() => handleTeamClick(record.opponent_id)}
+                         >
                            {record.opponent_image_url ? (
                              <img 
                                src={record.opponent_image_url} 
@@ -236,7 +245,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
                                </span>
                              </div>
                            )}
-                           <span className="font-medium">{record.opponent_name}</span>
+                           <span className="font-medium hover:text-primary transition-colors">{record.opponent_name}</span>
                          </div>
                        </td>
                       <td className="text-center">
