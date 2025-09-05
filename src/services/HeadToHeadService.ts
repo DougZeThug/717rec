@@ -74,6 +74,7 @@ export class HeadToHeadService {
       console.log('Regular season matches found:', matches?.length || 0);
 
       // Get archived matches from previous seasons
+      console.log('Querying archived matches with teamId:', teamId, 'opponentId:', opponentId);
       const { data: archivedMatches, error: archivedError } = await supabase
         .from('matches_archive')
         .select(`
@@ -93,8 +94,12 @@ export class HeadToHeadService {
         .order('date', { ascending: false })
         .limit(15);
 
-      if (archivedError) throw archivedError;
+      if (archivedError) {
+        console.error('Archived matches query error:', archivedError);
+        throw archivedError;
+      }
       console.log('Archived matches found:', archivedMatches?.length || 0);
+      console.log('Raw archived matches data:', archivedMatches);
 
       // Get recent playoff matches between these teams
       const { data: playoffMatches, error: playoffError } = await supabase
