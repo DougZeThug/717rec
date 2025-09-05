@@ -47,6 +47,8 @@ export class HeadToHeadService {
       if (!summary) return null;
 
       // Use v_match_pairs view to get all matches (current + archived) between these teams
+      console.log('🔍 OpponentHistory DEBUG - Team IDs:', { teamId, opponentId });
+      
       // Query 1: teamId as a_id, opponentId as b_id
       const { data: matchPairs1, error: matchPairsError1 } = await supabase
         .from('v_match_pairs')
@@ -56,6 +58,7 @@ export class HeadToHeadService {
         .order('completed_at', { ascending: false });
 
       if (matchPairsError1) throw matchPairsError1;
+      console.log('🔍 Query 1 Results (teamId as a_id):', matchPairs1?.length || 0, 'matches');
 
       // Query 2: opponentId as a_id, teamId as b_id
       const { data: matchPairs2, error: matchPairsError2 } = await supabase
@@ -66,11 +69,15 @@ export class HeadToHeadService {
         .order('completed_at', { ascending: false });
 
       if (matchPairsError2) throw matchPairsError2;
+      console.log('🔍 Query 2 Results (opponentId as a_id):', matchPairs2?.length || 0, 'matches');
 
       // Combine and sort all matches by date
       const matchPairs = [...(matchPairs1 || []), ...(matchPairs2 || [])]
         .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
         .slice(0, 15);
+      
+      console.log('🔍 Combined matchPairs:', matchPairs?.length || 0, 'total matches');
+      console.log('🔍 First few matches:', matchPairs?.slice(0, 3));
 
       // Get recent playoff matches between these teams
       const { data: playoffMatches, error: playoffError } = await supabase
