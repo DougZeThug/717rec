@@ -90,7 +90,6 @@ export class HeadToHeadService {
           location
         `)
         .or(`and(team1_id.eq.${teamId},team2_id.eq.${opponentId}),and(team1_id.eq.${opponentId},team2_id.eq.${teamId})`)
-        .eq('iscompleted', true)
         .order('date', { ascending: false })
         .limit(15);
 
