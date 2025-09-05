@@ -75,7 +75,9 @@ export class HeadToHeadService {
 
       // Get archived matches from previous seasons
       console.log('Querying archived matches with teamId:', teamId, 'opponentId:', opponentId);
-      const { data: archivedMatches, error: archivedError } = await supabase
+      
+      // Query for matches where team1 is our team and team2 is opponent
+      const { data: archivedMatches1, error: error1 } = await supabase
         .from('matches_archive')
         .select(`
           id,
@@ -90,14 +92,39 @@ export class HeadToHeadService {
           loser_id,
           location
         `)
-        .or(`and(team1_id.eq.${teamId},team2_id.eq.${opponentId}),and(team1_id.eq.${opponentId},team2_id.eq.${teamId})`)
-        .order('date', { ascending: false })
-        .limit(15);
+        .eq('team1_id', teamId)
+        .eq('team2_id', opponentId);
 
-      if (archivedError) {
-        console.error('Archived matches query error:', archivedError);
-        throw archivedError;
+      // Query for matches where team1 is opponent and team2 is our team  
+      const { data: archivedMatches2, error: error2 } = await supabase
+        .from('matches_archive')
+        .select(`
+          id,
+          date,
+          team1_id,
+          team2_id,
+          team1_score,
+          team2_score,
+          team1_game_wins,
+          team2_game_wins,
+          winner_id,
+          loser_id,
+          location
+        `)
+        .eq('team1_id', opponentId)
+        .eq('team2_id', teamId);
+
+      if (error1 || error2) {
+        console.error('Archived matches query error:', error1 || error2);
+        throw error1 || error2;
       }
+      
+      // Combine both result sets
+      const archivedMatches = [...(archivedMatches1 || []), ...(archivedMatches2 || [])]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 15);
+      
+      const archivedError = error1 || error2;
       console.log('Archived matches found:', archivedMatches?.length || 0);
       console.log('Raw archived matches data:', archivedMatches);
 
