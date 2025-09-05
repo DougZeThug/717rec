@@ -46,87 +46,15 @@ export class HeadToHeadService {
 
       if (!summary) return null;
 
-      // Get recent regular season matches between these teams
-      const { data: matches, error } = await supabase
-        .from('matches')
-        .select(`
-          id,
-          date,
-          team1_id,
-          team2_id,
-          team1_score,
-          team2_score,
-          team1_game_wins,
-          team2_game_wins,
-          winner_id,
-          location,
-          team1:team1_id(name),
-          team2:team2_id(name),
-          winner:winner_id(name)
-        `)
-        .or(`and(team1_id.eq.${teamId},team2_id.eq.${opponentId}),and(team1_id.eq.${opponentId},team2_id.eq.${teamId})`)
-        .eq('iscompleted', true)
-        .order('date', { ascending: false })
+      // Use v_match_pairs view to get all matches (current + archived) between these teams
+      const { data: matchPairs, error: matchPairsError } = await supabase
+        .from('v_match_pairs')
+        .select('*')
+        .or(`and(a_id.eq.${teamId},b_id.eq.${opponentId}),and(a_id.eq.${opponentId},b_id.eq.${teamId})`)
+        .order('completed_at', { ascending: false })
         .limit(15);
 
-      if (error) throw error;
-
-      console.log('Regular season matches found:', matches?.length || 0);
-
-      // Get archived matches from previous seasons
-      console.log('Querying archived matches with teamId:', teamId, 'opponentId:', opponentId);
-      
-      // Query for matches where team1 is our team and team2 is opponent
-      const { data: archivedMatches1, error: error1 } = await supabase
-        .from('matches_archive')
-        .select(`
-          id,
-          date,
-          team1_id,
-          team2_id,
-          team1_score,
-          team2_score,
-          team1_game_wins,
-          team2_game_wins,
-          winner_id,
-          loser_id,
-          location
-        `)
-        .eq('team1_id', teamId)
-        .eq('team2_id', opponentId);
-
-      // Query for matches where team1 is opponent and team2 is our team  
-      const { data: archivedMatches2, error: error2 } = await supabase
-        .from('matches_archive')
-        .select(`
-          id,
-          date,
-          team1_id,
-          team2_id,
-          team1_score,
-          team2_score,
-          team1_game_wins,
-          team2_game_wins,
-          winner_id,
-          loser_id,
-          location
-        `)
-        .eq('team1_id', opponentId)
-        .eq('team2_id', teamId);
-
-      if (error1 || error2) {
-        console.error('Archived matches query error:', error1 || error2);
-        throw error1 || error2;
-      }
-      
-      // Combine both result sets
-      const archivedMatches = [...(archivedMatches1 || []), ...(archivedMatches2 || [])]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 15);
-      
-      const archivedError = error1 || error2;
-      console.log('Archived matches found:', archivedMatches?.length || 0);
-      console.log('Raw archived matches data:', archivedMatches);
+      if (matchPairsError) throw matchPairsError;
 
       // Get recent playoff matches between these teams
       const { data: playoffMatches, error: playoffError } = await supabase
@@ -139,11 +67,12 @@ export class HeadToHeadService {
 
       if (playoffError) throw playoffError;
 
-      // Get team names for all matches (regular, archived, playoff)
-      const regularTeamIds = [...new Set(matches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
-      const archivedTeamIds = [...new Set(archivedMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
-      const playoffTeamIds = [...new Set(playoffMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
-      const allTeamIds = [...new Set([...regularTeamIds, ...archivedTeamIds, ...playoffTeamIds])];
+      // Get team names for formatting
+      const allTeamIds = [...new Set([
+        teamId, 
+        opponentId,
+        ...playoffMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || []
+      ])];
       
       const { data: teamNames } = await supabase
         .from('teams')
@@ -152,62 +81,40 @@ export class HeadToHeadService {
 
       const teamNameMap = new Map(teamNames?.map(team => [team.id, team.name]) || []);
 
-      // Format regular season matches
-      const formattedMatches = matches?.map(match => ({
-        id: match.id,
-        date: match.date,
-        team1_name: (match.team1 as any)?.name || 'Unknown',
-        team2_name: (match.team2 as any)?.name || 'Unknown',
-        team1_score: match.team1_score || 0,
-        team2_score: match.team2_score || 0,
-        team1_game_wins: match.team1_game_wins || 0,
-        team2_game_wins: match.team2_game_wins || 0,
-        winner_name: (match.winner as any)?.name || 'Unknown',
-        location: match.location || 'Unknown'
+      // Format match pairs from v_match_pairs view
+      const formattedMatches = matchPairs?.map(match => ({
+        id: match.match_id,
+        date: match.completed_at,
+        team1_name: teamNameMap.get(match.a_id) || 'Unknown',
+        team2_name: teamNameMap.get(match.b_id) || 'Unknown',
+        team1_score: match.a_match_score || 0,
+        team2_score: match.b_match_score || 0,
+        team1_game_wins: match.a_game_wins || 0,
+        team2_game_wins: match.b_game_wins || 0,
+        winner_name: match.a_match_score === 1 
+          ? teamNameMap.get(match.a_id) || 'Unknown'
+          : teamNameMap.get(match.b_id) || 'Unknown',
+        location: 'Regular Season'
       })) || [];
-
-      // Format archived matches
-      const formattedArchivedMatches = archivedMatches?.map(match => ({
-        id: match.id,
-        date: match.date,
-        team1_name: teamNameMap.get(match.team1_id) || 'Unknown',
-        team2_name: teamNameMap.get(match.team2_id) || 'Unknown',
-        team1_score: match.team1_score || 0,
-        team2_score: match.team2_score || 0,
-        team1_game_wins: match.team1_game_wins || 0,
-        team2_game_wins: match.team2_game_wins || 0,
-        winner_name: teamNameMap.get(match.winner_id) || 'Unknown',
-        location: match.location || 'Previous Season'
-      })) || [];
-
-      console.log('Formatted archived matches:', formattedArchivedMatches.length);
-      console.log('Sample archived match:', formattedArchivedMatches[0]);
 
       // Format playoff matches
       const formattedPlayoffMatches = playoffMatches?.map(match => ({
         id: match.id,
-        date: match.created_at, // Use created_at for playoff matches since they don't have a date field
+        date: match.created_at,
         team1_name: teamNameMap.get(match.team1_id) || 'Unknown',
         team2_name: teamNameMap.get(match.team2_id) || 'Unknown',
         team1_score: match.team1_score || 0,
         team2_score: match.team2_score || 0,
-        team1_game_wins: match.team1_score || 0, // For playoff matches, use score as game wins
+        team1_game_wins: match.team1_score || 0,
         team2_game_wins: match.team2_score || 0,
         winner_name: teamNameMap.get(match.winner_id) || 'Unknown',
         location: 'Playoff Match'
       })) || [];
 
       // Combine and sort all matches by date
-      const allMatches = [...formattedMatches, ...formattedArchivedMatches, ...formattedPlayoffMatches]
+      const allMatches = [...formattedMatches, ...formattedPlayoffMatches]
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 15); // Keep only the 15 most recent matches
-
-      console.log('Total combined matches:', allMatches.length);
-      console.log('Match sources:', {
-        regular: formattedMatches.length,
-        archived: formattedArchivedMatches.length,
-        playoff: formattedPlayoffMatches.length
-      });
+        .slice(0, 15);
 
       return {
         matches: allMatches,
