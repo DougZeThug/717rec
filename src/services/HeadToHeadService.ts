@@ -105,10 +105,11 @@ export class HeadToHeadService {
 
       if (playoffError) throw playoffError;
 
-      // Get team names for playoff matches and archived matches
+      // Get team names for all matches (regular, archived, playoff)
+      const regularTeamIds = [...new Set(matches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
       const archivedTeamIds = [...new Set(archivedMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
       const playoffTeamIds = [...new Set(playoffMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
-      const allTeamIds = [...new Set([...archivedTeamIds, ...playoffTeamIds])];
+      const allTeamIds = [...new Set([...regularTeamIds, ...archivedTeamIds, ...playoffTeamIds])];
       
       const { data: teamNames } = await supabase
         .from('teams')
