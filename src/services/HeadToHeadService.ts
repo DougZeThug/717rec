@@ -46,7 +46,7 @@ export class HeadToHeadService {
 
       if (!summary) return null;
 
-      // Get recent matches between these teams
+      // Get recent regular season matches between these teams
       const { data: matches, error } = await supabase
         .from('matches')
         .select(`
@@ -71,6 +71,27 @@ export class HeadToHeadService {
 
       if (error) throw error;
 
+      // Get recent playoff matches between these teams
+      const { data: playoffMatches, error: playoffError } = await supabase
+        .from('playoff_matches')
+        .select('id, created_at, team1_id, team2_id, team1_score, team2_score, winner_id')
+        .or(`and(team1_id.eq.${teamId},team2_id.eq.${opponentId}),and(team1_id.eq.${opponentId},team2_id.eq.${teamId})`)
+        .not('winner_id', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (playoffError) throw playoffError;
+
+      // Get team names for playoff matches
+      const allTeamIds = [...new Set(playoffMatches?.flatMap(match => [match.team1_id, match.team2_id, match.winner_id]).filter(Boolean) || [])];
+      const { data: teamNames } = await supabase
+        .from('teams')
+        .select('id, name')
+        .in('id', allTeamIds);
+
+      const teamNameMap = new Map(teamNames?.map(team => [team.id, team.name]) || []);
+
+      // Format regular season matches
       const formattedMatches = matches?.map(match => ({
         id: match.id,
         date: match.date,
@@ -81,11 +102,30 @@ export class HeadToHeadService {
         team1_game_wins: match.team1_game_wins || 0,
         team2_game_wins: match.team2_game_wins || 0,
         winner_name: (match.winner as any)?.name || 'Unknown',
-        location: match.location
+        location: match.location || 'Unknown'
       })) || [];
 
+      // Format playoff matches
+      const formattedPlayoffMatches = playoffMatches?.map(match => ({
+        id: match.id,
+        date: match.created_at, // Use created_at for playoff matches since they don't have a date field
+        team1_name: teamNameMap.get(match.team1_id) || 'Unknown',
+        team2_name: teamNameMap.get(match.team2_id) || 'Unknown',
+        team1_score: match.team1_score || 0,
+        team2_score: match.team2_score || 0,
+        team1_game_wins: match.team1_score || 0, // For playoff matches, use score as game wins
+        team2_game_wins: match.team2_score || 0,
+        winner_name: teamNameMap.get(match.winner_id) || 'Unknown',
+        location: 'Playoff Match'
+      })) || [];
+
+      // Combine and sort all matches by date
+      const allMatches = [...formattedMatches, ...formattedPlayoffMatches]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10); // Keep only the 10 most recent matches
+
       return {
-        matches: formattedMatches,
+        matches: allMatches,
         summary
       };
     } catch (error) {
