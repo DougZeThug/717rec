@@ -261,6 +261,13 @@ export type Database = {
             foreignKeyName: "games_match_id_fkey"
             columns: ["match_id"]
             isOneToOne: false
+            referencedRelation: "v_match_pairs"
+            referencedColumns: ["match_id"]
+          },
+          {
+            foreignKeyName: "games_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
             referencedRelation: "v_pending_matches"
             referencedColumns: ["id"]
           },
@@ -306,6 +313,13 @@ export type Database = {
             foreignKeyName: "match_comments_match_id_fkey"
             columns: ["match_id"]
             isOneToOne: false
+            referencedRelation: "v_match_pairs"
+            referencedColumns: ["match_id"]
+          },
+          {
+            foreignKeyName: "match_comments_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
             referencedRelation: "v_pending_matches"
             referencedColumns: ["id"]
           },
@@ -340,6 +354,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_reactions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "v_match_pairs"
+            referencedColumns: ["match_id"]
           },
           {
             foreignKeyName: "match_reactions_match_id_fkey"
@@ -1787,6 +1808,13 @@ export type Database = {
             foreignKeyName: "score_submissions_match_id_fkey"
             columns: ["match_id"]
             isOneToOne: false
+            referencedRelation: "v_match_pairs"
+            referencedColumns: ["match_id"]
+          },
+          {
+            foreignKeyName: "score_submissions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
             referencedRelation: "v_pending_matches"
             referencedColumns: ["id"]
           },
@@ -2923,6 +2951,69 @@ export type Database = {
       }
     }
     Views: {
+      v_head_to_head: {
+        Row: {
+          game_losses: number | null
+          game_wins: number | null
+          last_played_at: string | null
+          losses: number | null
+          matches_played: number | null
+          opponent_id: string | null
+          team_id: string | null
+          win_pct: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
+      v_head_to_head_pairs: {
+        Row: {
+          a_game_wins: number | null
+          a_id: string | null
+          a_match_wins: number | null
+          b_game_wins: number | null
+          b_id: string | null
+          b_match_wins: number | null
+          last_played_at: string | null
+          matches_played: number | null
+        }
+        Relationships: []
+      }
+      v_match_pairs: {
+        Row: {
+          a_game_wins: number | null
+          a_id: string | null
+          a_match_score: number | null
+          b_game_wins: number | null
+          b_id: string | null
+          b_match_score: number | null
+          completed_at: string | null
+          match_id: string | null
+          season_id: string | null
+        }
+        Insert: {
+          a_game_wins?: never
+          a_id?: never
+          a_match_score?: never
+          b_game_wins?: never
+          b_id?: never
+          b_match_score?: never
+          completed_at?: string | null
+          match_id?: string | null
+          season_id?: string | null
+        }
+        Update: {
+          a_game_wins?: never
+          a_id?: never
+          a_match_score?: never
+          b_game_wins?: never
+          b_id?: never
+          b_match_score?: never
+          completed_at?: string | null
+          match_id?: string | null
+          season_id?: string | null
+        }
+        Relationships: []
+      }
       v_pending_matches: {
         Row: {
           date: string | null
