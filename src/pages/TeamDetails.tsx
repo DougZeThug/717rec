@@ -13,6 +13,7 @@ import { useTeamMatches } from "@/hooks/useTeamMatches";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import { Card } from "@/components/ui/card";
 import HeadToHeadRecords from "@/components/stats/HeadToHeadRecords";
+import TeamTotals from "@/components/teams/TeamTotals";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -89,6 +90,9 @@ const TeamDetails = () => {
       
       {/* Head-to-Head Records Section */}
       {teamId && <HeadToHeadRecords teamId={teamId} />}
+      
+      {/* Team Career Statistics */}
+      {teamId && <TeamTotals teamId={teamId} />}
       
       {/* Team Achievements Section - moved below PlayerList */}
       {teamId && (
