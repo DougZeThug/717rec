@@ -85,9 +85,12 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
             </TableHead>
             <TableHead 
               className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('totalSeasons')}
+              onClick={() => onSortChange('careerSOS')}
             >
-              Seasons {getSortIcon('totalSeasons')}
+              <div className="flex items-center justify-center gap-1">
+                Career SOS
+                {getSortIcon('careerSOS')}
+              </div>
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -141,8 +144,8 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                   {ranking.careerPowerScore.toFixed(1)}
                 </span>
               </TableCell>
-              <TableCell className="text-center">
-                {ranking.totalSeasons}
+              <TableCell className="text-center font-medium">
+                {ranking.careerSOS.toFixed(3)}
               </TableCell>
             </TableRow>
           ))}

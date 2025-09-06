@@ -8,6 +8,7 @@ interface TeamTotals {
   career_game_losses: number;
   career_playoff_wins: number;
   career_playoff_losses: number;
+  career_sos: number;
   championships: number;
   runner_ups: number;
   playoff_finishes: Array<{ rank: number; season_name: string }>;
@@ -203,6 +204,15 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     career_playoff_losses
   );
 
+  // Calculate career SOS (placeholder - using division weight as proxy)
+  const { data: teamData } = await supabase
+    .from('teams')
+    .select('divisions(division_weight)')
+    .eq('id', teamId)
+    .single();
+  
+  const careerSOS = teamData?.divisions?.division_weight || 0.5;
+
   return {
     career_match_wins,
     career_match_losses,
@@ -210,6 +220,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     career_game_losses,
     career_playoff_wins,
     career_playoff_losses,
+    career_sos: careerSOS,
     championships,
     runner_ups,
     playoff_finishes,

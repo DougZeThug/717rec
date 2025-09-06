@@ -122,8 +122,8 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Seasons Played</p>
-                <p className="font-medium">{ranking.totalSeasons}</p>
+                <p className="text-muted-foreground">Career SOS</p>
+                <p className="font-medium">{ranking.careerSOS.toFixed(3)}</p>
               </div>
             </div>
           </CardContent>
