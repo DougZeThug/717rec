@@ -99,9 +99,9 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
-                  {ranking.logoUrl && (
+                  {ranking.imageUrl && (
                     <img 
-                      src={ranking.logoUrl} 
+                      src={ranking.imageUrl} 
                       alt={`${ranking.teamName} logo`}
                       className="w-8 h-8 rounded object-cover"
                     />

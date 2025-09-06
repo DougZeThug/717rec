@@ -68,9 +68,9 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                 <span className="text-lg font-bold text-muted-foreground">
                   #{index + 1}
                 </span>
-                {ranking.logoUrl && (
+                {ranking.imageUrl && (
                   <img 
-                    src={ranking.logoUrl} 
+                    src={ranking.imageUrl} 
                     alt={`${ranking.teamName} logo`}
                     className="w-8 h-8 rounded object-cover"
                   />
