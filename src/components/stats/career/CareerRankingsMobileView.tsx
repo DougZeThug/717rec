@@ -108,7 +108,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     <h3 className="font-medium text-sm truncate">{ranking.teamName}</h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{ranking.careerMatchWins}-{ranking.careerMatchLosses}</span>
-                      <span className={getWinPercentageColor(ranking.careerWinPercentage / 100)}>
+                      <span className={getWinPercentageColor(ranking.careerWinPercentage)}>
                         ({formatPercentage(ranking.careerWinPercentage)})
                       </span>
                       {ranking.championships > 0 && (
@@ -154,7 +154,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     <p className="text-muted-foreground">Career Record</p>
                     <p className="font-medium">
                       {ranking.careerMatchWins}-{ranking.careerMatchLosses} 
-                      <span className={getWinPercentageColor(ranking.careerWinPercentage / 100)}>
+                      <span className={getWinPercentageColor(ranking.careerWinPercentage)}>
                         ({formatPercentage(ranking.careerWinPercentage)})
                       </span>
                     </p>
@@ -163,7 +163,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     <p className="text-muted-foreground">Game Record</p>
                     <p className="font-medium">
                       {ranking.careerGameWins}-{ranking.careerGameLosses}
-                      <span className={getWinPercentageColor(ranking.careerGameWinPercentage / 100)}>
+                      <span className={getWinPercentageColor(ranking.careerGameWinPercentage)}>
                         ({formatPercentage(ranking.careerGameWinPercentage)})
                       </span>
                     </p>

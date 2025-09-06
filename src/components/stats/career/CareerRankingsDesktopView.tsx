@@ -108,13 +108,13 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
               <TableCell className="text-center">
                 {ranking.careerMatchWins}-{ranking.careerMatchLosses}
               </TableCell>
-              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerWinPercentage / 100))}>
+              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerWinPercentage))}>
                 {formatPercentage(ranking.careerWinPercentage)}
               </TableCell>
               <TableCell className="text-center">
                 {ranking.careerGameWins}-{ranking.careerGameLosses}
               </TableCell>
-              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerGameWinPercentage / 100))}>
+              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerGameWinPercentage))}>
                 {formatPercentage(ranking.careerGameWinPercentage)}
               </TableCell>
               <TableCell className="text-center">
