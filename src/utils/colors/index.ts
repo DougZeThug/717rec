@@ -6,6 +6,8 @@ export * from './powerScoreColors';
 export * from './sosColors';
 export * from './thresholds';
 export * from './divisionColors';
+export * from './winPercentageColors';
+export * from './championshipColors';
 export { getDivisionStyles, getDivisionGradientClass } from '@/styles/design-system/divisions';
 
 // Export format utilities

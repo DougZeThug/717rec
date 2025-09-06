@@ -4,6 +4,8 @@ import { CareerSortOptions } from './CareerRankingsTable';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { getPowerScoreColor } from '@/utils/colors';
+import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
+import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
 import { cn } from '@/lib/utils';
 
 interface CareerRankingsDesktopViewProps {
@@ -106,13 +108,13 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
               <TableCell className="text-center">
                 {ranking.careerMatchWins}-{ranking.careerMatchLosses}
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerWinPercentage / 100))}>
                 {formatPercentage(ranking.careerWinPercentage)}
               </TableCell>
               <TableCell className="text-center">
                 {ranking.careerGameWins}-{ranking.careerGameLosses}
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerGameWinPercentage / 100))}>
                 {formatPercentage(ranking.careerGameWinPercentage)}
               </TableCell>
               <TableCell className="text-center">
@@ -121,10 +123,10 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                   : '-'
                 }
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className={cn("text-center", getChampionshipColor(ranking.championships))}>
                 {ranking.championships > 0 ? ranking.championships : '-'}
               </TableCell>
-              <TableCell className="text-center">
+              <TableCell className={cn("text-center", getRunnerUpColor(ranking.runnerUps))}>
                 {ranking.runnerUps > 0 ? ranking.runnerUps : '-'}
               </TableCell>
               <TableCell className="text-center">

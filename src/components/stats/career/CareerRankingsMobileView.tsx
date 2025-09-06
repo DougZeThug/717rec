@@ -5,6 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, ArrowUp, List, LayoutGrid } from 'lucide-react';
 import { getPowerScoreColor } from '@/utils/colors';
+import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
+import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
 import { cn } from '@/lib/utils';
 
 interface CareerRankingsMobileViewProps {
@@ -106,9 +108,11 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     <h3 className="font-medium text-sm truncate">{ranking.teamName}</h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{ranking.careerMatchWins}-{ranking.careerMatchLosses}</span>
-                      <span>({formatPercentage(ranking.careerWinPercentage)})</span>
+                      <span className={getWinPercentageColor(ranking.careerWinPercentage / 100)}>
+                        ({formatPercentage(ranking.careerWinPercentage)})
+                      </span>
                       {ranking.championships > 0 && (
-                        <span className="text-yellow-600">🏆{ranking.championships}</span>
+                        <span className={getChampionshipColor(ranking.championships)}>🏆{ranking.championships}</span>
                       )}
                     </div>
                   </div>
@@ -150,25 +154,29 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     <p className="text-muted-foreground">Career Record</p>
                     <p className="font-medium">
                       {ranking.careerMatchWins}-{ranking.careerMatchLosses} 
-                      ({formatPercentage(ranking.careerWinPercentage)})
+                      <span className={getWinPercentageColor(ranking.careerWinPercentage / 100)}>
+                        ({formatPercentage(ranking.careerWinPercentage)})
+                      </span>
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Game Record</p>
                     <p className="font-medium">
                       {ranking.careerGameWins}-{ranking.careerGameLosses}
-                      ({formatPercentage(ranking.careerGameWinPercentage)})
+                      <span className={getWinPercentageColor(ranking.careerGameWinPercentage / 100)}>
+                        ({formatPercentage(ranking.careerGameWinPercentage)})
+                      </span>
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Championships</p>
-                    <p className="font-medium">
+                    <p className={cn("font-medium", getChampionshipColor(ranking.championships))}>
                       {ranking.championships > 0 ? ranking.championships : '-'}
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Runner-ups</p>
-                    <p className="font-medium">
+                    <p className={cn("font-medium", getRunnerUpColor(ranking.runnerUps))}>
                       {ranking.runnerUps > 0 ? ranking.runnerUps : '-'}
                     </p>
                   </div>
