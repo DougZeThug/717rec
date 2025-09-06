@@ -71,7 +71,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <TeamLogo
-            imageUrl={ranking.logoUrl || ranking.imageUrl}
+            imageUrl={ranking.imageUrl || ranking.logoUrl}
             teamName={ranking.teamName}
             size="sm"
             className="flex-shrink-0"

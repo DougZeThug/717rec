@@ -103,10 +103,10 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                   <TableCell>
                     <div className="flex items-center gap-3 min-w-0">
                       {/** Logo as square with consistent sizing */}
-                      {ranking.logoUrl || ranking.imageUrl ? (
+                      {ranking.imageUrl || ranking.logoUrl ? (
                         <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
                           <img
-                            src={ranking.logoUrl || ranking.imageUrl}
+                            src={ranking.imageUrl || ranking.logoUrl}
                             alt={ranking.teamName}
                             className="w-full h-full object-contain"
                             style={{ minWidth: "2rem", minHeight: "2rem" }}

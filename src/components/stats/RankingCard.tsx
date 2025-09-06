@@ -79,7 +79,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           className="flex items-center gap-2 mt-2 group"
         >
           <TeamLogo
-            imageUrl={ranking.logoUrl || ranking.imageUrl}
+            imageUrl={ranking.imageUrl || ranking.logoUrl}
             teamName={ranking.teamName}
             size="sm"
             className="flex-shrink-0"
@@ -156,7 +156,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         className="flex items-center gap-3 mb-4 group"
       >
         <TeamLogo
-          imageUrl={ranking.logoUrl || ranking.imageUrl}
+          imageUrl={ranking.imageUrl || ranking.logoUrl}
           teamName={ranking.teamName}
           size="md"
           className="flex-shrink-0"
