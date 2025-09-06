@@ -9,6 +9,7 @@ import StatsSummarySection from "./StatsSummarySection";
 import StatsChartsSection from "./StatsChartsSection";
 import FullRankingsSection from "./FullRankingsSection";
 import LoadingStateContainer from "./LoadingStateContainer";
+import CareerRankingsSection from "../career/CareerRankingsSection";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -60,6 +61,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
               <FullRankingsSection rankings={rankings} />
             </div>
+            
+            <CareerRankingsSection />
           </>
         ) : (
           <NoTeamsAvailable />

@@ -145,3 +145,4 @@ export interface TeamTimeslot {
 export * from './chart';
 export * from './match';
 export * from './admin';
+export * from './career';

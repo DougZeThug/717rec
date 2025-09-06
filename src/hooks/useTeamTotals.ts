@@ -76,7 +76,7 @@ const calculateCareerPowerScore = async (
   return Math.min(100, baseCareerScore + totalPlayoffBonus);
 };
 
-const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
+export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
   // Get career stats from team_season_stats
   const { data: seasonStats, error: seasonError } = await supabase
     .from('team_season_stats')
