@@ -16,6 +16,8 @@ interface TeamTotals {
 
 const calculateCareerPowerScore = async (
   teamId: string,
+  championships: number,
+  runnerUps: number,
   careerMatchWins: number,
   careerMatchLosses: number,
   careerGameWins: number,
@@ -23,102 +25,55 @@ const calculateCareerPowerScore = async (
   careerPlayoffWins: number,
   careerPlayoffLosses: number
 ): Promise<number> => {
-  // Career Power Score using 40/40/20 formula with actual opponent data
+  // Career Power Score using historical season data as foundation + playoff bonuses
   
-  // Get team's division for context
-  const { data: teamData } = await supabase
-    .from('teams')
-    .select('division_id, divisions(division_weight)')
-    .eq('id', teamId)
-    .single();
+  // Get historical season power scores from team_season_stats
+  const { data: seasonStats } = await supabase
+    .from('team_season_stats')
+    .select('power_score, match_wins, match_losses')
+    .eq('team_id', teamId)
+    .not('power_score', 'is', null);
+
+  if (!seasonStats || seasonStats.length === 0) {
+    // Fallback for teams with no historical data - use team's division weight * 100
+    const { data: teamData } = await supabase
+      .from('teams')
+      .select('divisions(division_weight)')
+      .eq('id', teamId)
+      .single();
+    
+    const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
+    return teamDivisionWeight * 100; // Convert to 0-100 scale
+  }
+
+  // Calculate weighted average of historical season power scores
+  let totalWeightedScore = 0;
+  let totalMatches = 0;
   
-  const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
+  for (const season of seasonStats) {
+    const seasonMatches = season.match_wins + season.match_losses;
+    if (seasonMatches > 0 && season.power_score !== null) {
+      totalWeightedScore += season.power_score * seasonMatches;
+      totalMatches += seasonMatches;
+    }
+  }
   
-  // 40% Career Weighted Match Win Percentage
-  const totalRegularMatches = careerMatchWins + careerMatchLosses;
+  const baseCareerScore = totalMatches > 0 ? totalWeightedScore / totalMatches : 50;
+  
+  // Calculate playoff bonuses (modest and capped)
+  const championshipBonus = championships * 7; // 7 points per championship
+  const runnerUpBonus = runnerUps * 4; // 4 points per runner-up
+  
+  // Calculate other playoff performance bonus from playoff record
   const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
+  const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
+  const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4); // Bonus for >50% playoff win rate
   
-  // Apply modest 1.1x weight to playoff wins
-  const weightedMatchWins = careerMatchWins + (careerPlayoffWins * 1.1);
-  const weightedTotalMatches = totalRegularMatches + (totalPlayoffMatches * 1.1);
-  const weightedMatchWinPercentage = weightedTotalMatches > 0 ? weightedMatchWins / weightedTotalMatches : 0;
-
-  // 40% Career Strength of Schedule - Calculate from actual opponents
-  let regularSeasonSOS = teamDivisionWeight;
-  let playoffSOS = teamDivisionWeight;
+  // Total playoff bonus (capped at +15 points)
+  const totalPlayoffBonus = Math.min(15, championshipBonus + runnerUpBonus + otherPlayoffBonus);
   
-  // Calculate regular season SOS from actual opponents
-  const { data: regularOpponents } = await supabase
-    .from('matches')
-    .select(`
-      team1_id,
-      team2_id,
-      team1:teams!matches_team1_id_fkey(divisions(division_weight)),
-      team2:teams!matches_team2_id_fkey(divisions(division_weight))
-    `)
-    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-    .eq('iscompleted', true);
-
-  if (regularOpponents && regularOpponents.length > 0) {
-    const opponentWeights = regularOpponents.map(match => {
-      const opponentWeight = match.team1_id === teamId 
-        ? match.team2?.divisions?.division_weight 
-        : match.team1?.divisions?.division_weight;
-      // Handle edge cases: treat -1.0 or null as 0.35 (lowest valid division)
-      return opponentWeight && opponentWeight > 0 ? opponentWeight : 0.35;
-    });
-    regularSeasonSOS = opponentWeights.reduce((sum, weight) => sum + weight, 0) / opponentWeights.length;
-  }
-
-  // Calculate playoff SOS from actual opponents
-  const { data: playoffOpponents } = await supabase
-    .from('playoff_matches')
-    .select(`
-      team1_id,
-      team2_id,
-      team1:teams!playoff_matches_team1_id_fkey(divisions(division_weight)),
-      team2:teams!playoff_matches_team2_id_fkey(divisions(division_weight))
-    `)
-    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-    .not('winner_id', 'is', null);
-
-  if (playoffOpponents && playoffOpponents.length > 0) {
-    const playoffOpponentWeights = playoffOpponents.map(match => {
-      const opponentWeight = match.team1_id === teamId 
-        ? match.team2?.divisions?.division_weight 
-        : match.team1?.divisions?.division_weight;
-      // Handle edge cases: treat -1.0 or null as 0.35 (lowest valid division)
-      return opponentWeight && opponentWeight > 0 ? opponentWeight : 0.35;
-    });
-    playoffSOS = playoffOpponentWeights.reduce((sum, weight) => sum + weight, 0) / playoffOpponentWeights.length;
-  }
-
-  // Combined SOS weighted by number of matches
-  const totalMatches = totalRegularMatches + totalPlayoffMatches;
-  const strengthOfSchedule = totalMatches > 0 
-    ? ((regularSeasonSOS * totalRegularMatches) + (playoffSOS * totalPlayoffMatches)) / totalMatches
-    : teamDivisionWeight;
-
-  // 20% Career Weighted Game Win Percentage  
-  const totalRegularGames = careerGameWins + careerGameLosses;
-  const estimatedPlayoffGames = totalPlayoffMatches * 2.3; // More conservative estimate
-  
-  // Apply modest 1.1x weight to playoff game performance (reduced from 1.2x)
-  const weightedGameWins = careerGameWins + (careerPlayoffWins * 2.3 * 1.1);
-  const weightedTotalGames = totalRegularGames + (estimatedPlayoffGames * 1.1);
-  const weightedGameWinPercentage = weightedTotalGames > 0 ? weightedGameWins / weightedTotalGames : 0;
-  
-  // Apply 40/40/20 formula
-  const rawCareerPowerScore = (weightedMatchWinPercentage * 0.4) + (strengthOfSchedule * 0.4) + (weightedGameWinPercentage * 0.2);
-  
-  // Apply division-based caps to prevent unrealistic scores
-  const divisionCap = teamDivisionWeight <= 0.75 ? 65 : // Rec divisions cap at 65
-                     teamDivisionWeight <= 0.90 ? 80 : // Int divisions cap at 80  
-                     95; // Comp divisions cap at 95
-  
-  const careerPowerScore = Math.min(rawCareerPowerScore * 100, divisionCap);
-  
-  return careerPowerScore;
+  // Final career power score
+  return Math.min(100, baseCareerScore + totalPlayoffBonus);
 };
 
 const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
@@ -238,6 +193,8 @@ const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
   // Calculate career power score
   const career_power_score = await calculateCareerPowerScore(
     teamId,
+    championships,
+    runner_ups,
     career_match_wins,
     career_match_losses,
     career_game_wins,
