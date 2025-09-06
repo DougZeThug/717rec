@@ -2,6 +2,7 @@
 import React from "react";
 import { Match } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import TeamGameScoreRow from "./TeamGameScoreRow";
 
 interface MatchListProps {
@@ -11,6 +12,8 @@ interface MatchListProps {
   title?: string;
   isPast?: boolean;
   highlightWinnerLoser?: boolean; // new prop to explicitly turn on highlight
+  collapsible?: boolean; // new prop to make it collapsible
+  defaultOpen?: boolean; // control initial state
 }
 
 const MatchList: React.FC<MatchListProps> = ({
@@ -19,19 +22,18 @@ const MatchList: React.FC<MatchListProps> = ({
   teamId,
   title = "Match History",
   isPast = true,
-  highlightWinnerLoser = false
+  highlightWinnerLoser = false,
+  collapsible = false,
+  defaultOpen = true
 }) => {
-  return (
-    <div className="mt-10">
-      {title && (
-        <h2 className="text-lg sm:text-xl font-semibold mb-3">{title}</h2>
-      )}
+  const matchContent = (
+    <>
       {isLoading ? (
         <Skeleton className="h-32 w-full rounded mb-4" />
       ) : matches.length === 0 ? (
-        <div className="text-center text-gray-500 text-sm py-6">No matches found.</div>
+        <div className="text-center text-muted-foreground text-sm py-6">No matches found.</div>
       ) : (
-        <div className="divide-y divide-gray-200 dark:divide-gray-800 rounded-lg border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm overflow-hidden">
+        <div className="divide-y divide-border rounded-lg border bg-card shadow-sm overflow-hidden">
           {matches.map((match) => (
             <TeamGameScoreRow
               key={match.id}
@@ -42,6 +44,32 @@ const MatchList: React.FC<MatchListProps> = ({
           ))}
         </div>
       )}
+    </>
+  );
+
+  if (collapsible && title) {
+    return (
+      <div className="mt-10">
+        <Accordion type="single" collapsible defaultValue={defaultOpen ? "matches" : undefined}>
+          <AccordionItem value="matches" className="border-none">
+            <AccordionTrigger className="text-lg sm:text-xl font-semibold hover:no-underline">
+              {title}
+            </AccordionTrigger>
+            <AccordionContent className="pt-3">
+              {matchContent}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-10">
+      {title && (
+        <h2 className="text-lg sm:text-xl font-semibold mb-3">{title}</h2>
+      )}
+      {matchContent}
     </div>
   );
 };

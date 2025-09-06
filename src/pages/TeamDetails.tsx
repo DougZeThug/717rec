@@ -119,6 +119,8 @@ const TeamDetails = () => {
         teamId={teamId || ''}
         isPast={true}
         highlightWinnerLoser={true}
+        collapsible={true}
+        defaultOpen={false}
       />
     </div>
   );
