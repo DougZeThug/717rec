@@ -121,10 +121,6 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                   }
                 </p>
               </div>
-              <div>
-                <p className="text-muted-foreground">Career SOS</p>
-                <p className="font-medium">{ranking.careerSOS.toFixed(3)}</p>
-              </div>
             </div>
           </CardContent>
         </Card>

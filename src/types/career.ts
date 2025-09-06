@@ -27,6 +27,5 @@ export interface CareerRanking {
   
   // Career power score and meta stats
   careerPowerScore: number;
-  careerSOS: number;
   playoffFinishes: number;
 }
