@@ -23,31 +23,34 @@ const calculateCareerPowerScore = async (
   careerPlayoffWins: number,
   careerPlayoffLosses: number
 ): Promise<number> => {
-  // Simple calculation using existing data for now
-  // Calculate Career Match Performance (50%)
-  const totalMatches = careerMatchWins + careerMatchLosses;
-  const regularWinRate = totalMatches > 0 ? careerMatchWins / totalMatches : 0;
+  // Career Power Score using 40/40/20 formula with playoff weighting within each component
   
+  // 40% Career Weighted Match Win Percentage
+  const totalRegularMatches = careerMatchWins + careerMatchLosses;
   const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
-  const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
   
-  // Playoff performance weighted 1.5x
-  const matchPerformance = totalPlayoffMatches > 0 
-    ? (regularWinRate + (playoffWinRate * 1.5)) / 2
-    : regularWinRate;
+  // Apply 1.3x weight to playoff wins in match performance calculation
+  const weightedMatchWins = careerMatchWins + (careerPlayoffWins * 1.3);
+  const weightedTotalMatches = totalRegularMatches + (totalPlayoffMatches * 1.3);
+  const weightedMatchWinPercentage = weightedTotalMatches > 0 ? weightedMatchWins / weightedTotalMatches : 0;
 
-  // Use average division weight for SOS (30%) - simplified for now
-  const strengthOfSchedule = 0.85; // Default average, could be enhanced later
+  // 40% Career Strength of Schedule (simplified for now, could be enhanced with actual opponent data)
+  const strengthOfSchedule = 0.85; // Default average division weight
 
-  // Calculate Career Game Win Performance (20%)
-  const totalGames = careerGameWins + careerGameLosses;
-  const gameWinRate = totalGames > 0 ? careerGameWins / totalGames : 0;
+  // 20% Career Weighted Game Win Percentage  
+  const totalRegularGames = careerGameWins + careerGameLosses;
+  // Note: For playoffs, we're using match wins/losses as proxy for game data since playoff_matches doesn't store individual game stats
+  const estimatedPlayoffGames = totalPlayoffMatches * 2.5; // Estimate ~2.5 games per playoff match on average
   
-  // Apply 50/30/20 formula and convert to 0-100 scale
-  const careerPowerScore = (matchPerformance * 0.5) + (strengthOfSchedule * 0.3) + (gameWinRate * 0.2);
+  // Apply 1.2x weight to estimated playoff game wins
+  const weightedGameWins = careerGameWins + (careerPlayoffWins * 2.5 * 1.2);
+  const weightedTotalGames = totalRegularGames + (estimatedPlayoffGames * 1.2);
+  const weightedGameWinPercentage = weightedTotalGames > 0 ? weightedGameWins / weightedTotalGames : 0;
+  
+  // Apply 40/40/20 formula and convert to 0-100 scale
+  const careerPowerScore = (weightedMatchWinPercentage * 0.4) + (strengthOfSchedule * 0.4) + (weightedGameWinPercentage * 0.2);
   
   return careerPowerScore * 100; // Convert to 0-100 scale
-
 };
 
 const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
