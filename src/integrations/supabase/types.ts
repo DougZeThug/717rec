@@ -3266,6 +3266,21 @@ export type Database = {
           wins: number
         }[]
       }
+      get_opponent_match_history: {
+        Args: { p_opponent_id: string; p_team_id: string }
+        Returns: {
+          date: string
+          id: string
+          location: string
+          team1_game_wins: number
+          team1_name: string
+          team1_score: number
+          team2_game_wins: number
+          team2_name: string
+          team2_score: number
+          winner_name: string
+        }[]
+      }
       get_participants: {
         Args: { p_tournament_id: string }
         Returns: {
