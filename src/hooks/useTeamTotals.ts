@@ -6,6 +6,8 @@ interface TeamTotals {
   career_match_losses: number;
   career_game_wins: number;
   career_game_losses: number;
+  career_playoff_wins: number;
+  career_playoff_losses: number;
   championships: number;
   runner_ups: number;
   playoff_finishes: Array<{ rank: number; season_name: string }>;
@@ -32,42 +34,106 @@ const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
     return null;
   }
 
-  if (!seasonStats || seasonStats.length === 0) {
-    return {
-      career_match_wins: 0,
-      career_match_losses: 0,
-      career_game_wins: 0,
-      career_game_losses: 0,
-      championships: 0,
-      runner_ups: 0,
-      playoff_finishes: []
-    };
+  // Get current season matches (not yet in team_season_stats)
+  const { data: currentMatches, error: matchError } = await supabase
+    .from('matches')
+    .select(`
+      winner_id,
+      loser_id,
+      team1_game_wins,
+      team2_game_wins,
+      team1_id,
+      team2_id,
+      season_id
+    `)
+    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+    .eq('iscompleted', true);
+
+  if (matchError) {
+    console.error('Error fetching current matches:', matchError);
   }
 
-  // Calculate career totals
-  const career_match_wins = seasonStats.reduce((sum, stat) => sum + (stat.match_wins || 0), 0);
-  const career_match_losses = seasonStats.reduce((sum, stat) => sum + (stat.match_losses || 0), 0);
-  const career_game_wins = seasonStats.reduce((sum, stat) => sum + (stat.game_wins || 0), 0);
-  const career_game_losses = seasonStats.reduce((sum, stat) => sum + (stat.game_losses || 0), 0);
+  // Get playoff matches
+  const { data: playoffMatches, error: playoffError } = await supabase
+    .from('playoff_matches')
+    .select(`
+      winner_id,
+      loser_id,
+      team1_score,
+      team2_score,
+      team1_id,
+      team2_id
+    `)
+    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+    .not('winner_id', 'is', null);
+
+  if (playoffError) {
+    console.error('Error fetching playoff matches:', playoffError);
+  }
+
+  // Calculate career totals from season stats
+  let career_match_wins = seasonStats?.reduce((sum, stat) => sum + (stat.match_wins || 0), 0) || 0;
+  let career_match_losses = seasonStats?.reduce((sum, stat) => sum + (stat.match_losses || 0), 0) || 0;
+  let career_game_wins = seasonStats?.reduce((sum, stat) => sum + (stat.game_wins || 0), 0) || 0;
+  let career_game_losses = seasonStats?.reduce((sum, stat) => sum + (stat.game_losses || 0), 0) || 0;
+
+  // Add current season matches
+  if (currentMatches) {
+    for (const match of currentMatches) {
+      if (match.winner_id === teamId) {
+        career_match_wins++;
+        career_game_wins += match.team1_id === teamId ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+        career_game_losses += match.team1_id === teamId ? (match.team2_game_wins || 0) : (match.team1_game_wins || 0);
+      } else if (match.loser_id === teamId) {
+        career_match_losses++;
+        career_game_wins += match.team1_id === teamId ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+        career_game_losses += match.team1_id === teamId ? (match.team2_game_wins || 0) : (match.team1_game_wins || 0);
+      }
+    }
+  }
+
+  // Calculate playoff record
+  let career_playoff_wins = 0;
+  let career_playoff_losses = 0;
+
+  if (playoffMatches) {
+    for (const match of playoffMatches) {
+      if (match.winner_id === teamId) {
+        career_playoff_wins++;
+        career_game_wins += match.team1_id === teamId ? (match.team1_score || 0) : (match.team2_score || 0);
+        career_game_losses += match.team1_id === teamId ? (match.team2_score || 0) : (match.team1_score || 0);
+      } else if (match.loser_id === teamId) {
+        career_playoff_losses++;
+        career_game_wins += match.team1_id === teamId ? (match.team1_score || 0) : (match.team2_score || 0);
+        career_game_losses += match.team1_id === teamId ? (match.team2_score || 0) : (match.team1_score || 0);
+      }
+    }
+  }
+
+  // Add playoff matches to overall career record
+  career_match_wins += career_playoff_wins;
+  career_match_losses += career_playoff_losses;
   
   // Count championships and runner-ups
-  const championships = seasonStats.filter(stat => stat.champion).length;
-  const runner_ups = seasonStats.filter(stat => stat.runner_up).length;
+  const championships = seasonStats?.filter(stat => stat.champion).length || 0;
+  const runner_ups = seasonStats?.filter(stat => stat.runner_up).length || 0;
   
-  // Get playoff finishes (sorted by most recent)
+  // Get playoff finishes (sorted by rank)
   const playoff_finishes = seasonStats
-    .filter(stat => stat.playoff_rank)
+    ?.filter(stat => stat.playoff_rank)
     .map(stat => ({
       rank: stat.playoff_rank!,
       season_name: stat.seasons?.name || 'Unknown Season'
     }))
-    .sort((a, b) => a.rank - b.rank);
+    .sort((a, b) => a.rank - b.rank) || [];
 
   return {
     career_match_wins,
     career_match_losses,
     career_game_wins,
     career_game_losses,
+    career_playoff_wins,
+    career_playoff_losses,
     championships,
     runner_ups,
     playoff_finishes

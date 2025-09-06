@@ -36,7 +36,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
         <h2 className="text-xl font-semibold">Career Statistics</h2>
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Career Record</span>
           <div className="font-mono text-lg font-medium text-foreground flex items-center">
@@ -50,6 +50,14 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
           <div className="font-mono text-lg font-medium text-foreground flex items-center">
             <Target size={16} className="text-blue-500 mr-2" />
             {totals.career_game_wins}-{totals.career_game_losses}
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Playoff Record</span>
+          <div className="font-mono text-lg font-medium text-foreground flex items-center">
+            <Trophy size={16} className="text-purple-500 mr-2" />
+            {totals.career_playoff_wins}-{totals.career_playoff_losses}
           </div>
         </div>
 
