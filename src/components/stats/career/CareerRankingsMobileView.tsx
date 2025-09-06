@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CareerRanking } from '@/types/career';
 import { CareerSortOptions } from './CareerRankingsTable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, List, LayoutGrid } from 'lucide-react';
 import { getPowerScoreColor } from '@/utils/colors';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +18,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
   sortOptions,
   onSortChange,
 }) => {
+  const [isCompactView, setIsCompactView] = useState(false);
   const formatPercentage = (value: number) => {
     return `${(value * 100).toFixed(1)}%`;
   };
@@ -31,8 +32,31 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Sort Controls */}
-      <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
+      {/* View Toggle and Sort Controls */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isCompactView ? "outline" : "default"}
+              size="sm"
+              onClick={() => setIsCompactView(false)}
+              className="text-xs"
+            >
+              <LayoutGrid className="h-3 w-3 mr-1" />
+              Detailed
+            </Button>
+            <Button
+              variant={isCompactView ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsCompactView(true)}
+              className="text-xs"
+            >
+              <List className="h-3 w-3 mr-1" />
+              Compact
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
         <Button
           variant={sortOptions.field === 'careerPowerScore' ? 'default' : 'outline'}
           size="sm"
@@ -57,71 +81,109 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
         >
           Championships {getSortIcon('championships')}
         </Button>
+        </div>
       </div>
 
       {/* Rankings Cards */}
       {rankings.map((ranking, index) => (
         <Card key={ranking.teamId} className="overflow-hidden">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-muted-foreground">
-                  #{index + 1}
+          <CardContent className={cn("p-4", isCompactView && "p-3")}>
+            {isCompactView ? (
+              // Compact View
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <span className="text-sm font-bold text-muted-foreground min-w-[24px]">
+                    #{index + 1}
+                  </span>
+                  {ranking.imageUrl && (
+                    <img 
+                      src={ranking.imageUrl} 
+                      alt={`${ranking.teamName} logo`}
+                      className="w-6 h-6 rounded object-cover"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm truncate">{ranking.teamName}</h3>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{ranking.careerMatchWins}-{ranking.careerMatchLosses}</span>
+                      <span>({formatPercentage(ranking.careerWinPercentage)})</span>
+                      {ranking.championships > 0 && (
+                        <span className="text-yellow-600">🏆{ranking.championships}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <span className={cn(
+                  "font-bold px-2 py-1 rounded text-xs",
+                  getPowerScoreColor(ranking.careerPowerScore)
+                )}>
+                  {ranking.careerPowerScore.toFixed(1)}
                 </span>
-                {ranking.imageUrl && (
-                  <img 
-                    src={ranking.imageUrl} 
-                    alt={`${ranking.teamName} logo`}
-                    className="w-8 h-8 rounded object-cover"
-                  />
-                )}
-                <h3 className="font-semibold">{ranking.teamName}</h3>
               </div>
-              <span className={cn(
-                "font-bold px-3 py-1 rounded text-sm",
-                getPowerScoreColor(ranking.careerPowerScore)
-              )}>
-                {ranking.careerPowerScore.toFixed(1)}
-              </span>
-            </div>
+            ) : (
+              // Detailed View
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-muted-foreground">
+                      #{index + 1}
+                    </span>
+                    {ranking.imageUrl && (
+                      <img 
+                        src={ranking.imageUrl} 
+                        alt={`${ranking.teamName} logo`}
+                        className="w-8 h-8 rounded object-cover"
+                      />
+                    )}
+                    <h3 className="font-semibold">{ranking.teamName}</h3>
+                  </div>
+                  <span className={cn(
+                    "font-bold px-3 py-1 rounded text-sm",
+                    getPowerScoreColor(ranking.careerPowerScore)
+                  )}>
+                    {ranking.careerPowerScore.toFixed(1)}
+                  </span>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Career Record</p>
-                <p className="font-medium">
-                  {ranking.careerMatchWins}-{ranking.careerMatchLosses} 
-                  ({formatPercentage(ranking.careerWinPercentage)})
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Game Record</p>
-                <p className="font-medium">
-                  {ranking.careerGameWins}-{ranking.careerGameLosses}
-                  ({formatPercentage(ranking.careerGameWinPercentage)})
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Championships</p>
-                <p className="font-medium">
-                  {ranking.championships > 0 ? ranking.championships : '-'}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Runner-ups</p>
-                <p className="font-medium">
-                  {ranking.runnerUps > 0 ? ranking.runnerUps : '-'}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Playoff Record</p>
-                <p className="font-medium">
-                  {ranking.careerPlayoffWins > 0 || ranking.careerPlayoffLosses > 0 
-                    ? `${ranking.careerPlayoffWins}-${ranking.careerPlayoffLosses}`
-                    : '-'
-                  }
-                </p>
-              </div>
-            </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Career Record</p>
+                    <p className="font-medium">
+                      {ranking.careerMatchWins}-{ranking.careerMatchLosses} 
+                      ({formatPercentage(ranking.careerWinPercentage)})
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Game Record</p>
+                    <p className="font-medium">
+                      {ranking.careerGameWins}-{ranking.careerGameLosses}
+                      ({formatPercentage(ranking.careerGameWinPercentage)})
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Championships</p>
+                    <p className="font-medium">
+                      {ranking.championships > 0 ? ranking.championships : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Runner-ups</p>
+                    <p className="font-medium">
+                      {ranking.runnerUps > 0 ? ranking.runnerUps : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Playoff Record</p>
+                    <p className="font-medium">
+                      {ranking.careerPlayoffWins > 0 || ranking.careerPlayoffLosses > 0 
+                        ? `${ranking.careerPlayoffWins}-${ranking.careerPlayoffLosses}`
+                        : '-'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       ))}
