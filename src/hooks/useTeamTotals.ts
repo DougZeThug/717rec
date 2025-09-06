@@ -34,31 +34,47 @@ const calculateCareerPowerScore = async (
     .eq('team_id', teamId)
     .not('power_score', 'is', null);
 
-  if (!seasonStats || seasonStats.length === 0) {
-    // Fallback for teams with no historical data - use team's division weight * 100
-    const { data: teamData } = await supabase
-      .from('teams')
-      .select('divisions(division_weight)')
-      .eq('id', teamId)
-      .single();
-    
-    const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
-    return teamDivisionWeight * 100; // Convert to 0-100 scale
-  }
-
   // Calculate weighted average of historical season power scores
   let totalWeightedScore = 0;
   let totalMatches = 0;
   
-  for (const season of seasonStats) {
-    const seasonMatches = season.match_wins + season.match_losses;
-    if (seasonMatches > 0 && season.power_score !== null) {
-      totalWeightedScore += season.power_score * seasonMatches;
-      totalMatches += seasonMatches;
+  if (seasonStats && seasonStats.length > 0) {
+    for (const season of seasonStats) {
+      const seasonMatches = season.match_wins + season.match_losses;
+      if (seasonMatches > 0 && season.power_score !== null) {
+        totalWeightedScore += season.power_score * seasonMatches;
+        totalMatches += seasonMatches;
+      }
     }
   }
   
-  const baseCareerScore = totalMatches > 0 ? totalWeightedScore / totalMatches : 50;
+  // If no valid historical data, get current season power score from v_team_details
+  let baseCareerScore = 50; // Default fallback
+  
+  if (totalMatches > 0) {
+    baseCareerScore = totalWeightedScore / totalMatches;
+  } else {
+    // No historical season data with matches - use current season power score
+    const { data: currentTeamData } = await supabase
+      .from('v_team_details')
+      .select('power_score')
+      .eq('team_id', teamId)
+      .single();
+    
+    if (currentTeamData?.power_score !== null) {
+      baseCareerScore = currentTeamData.power_score;
+    } else {
+      // Final fallback - use team's division weight * 100
+      const { data: teamData } = await supabase
+        .from('teams')
+        .select('divisions(division_weight)')
+        .eq('id', teamId)
+        .single();
+      
+      const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
+      baseCareerScore = teamDivisionWeight * 100;
+    }
+  }
   
   // Calculate playoff bonuses (modest and capped)
   const championshipBonus = championships * 7; // 7 points per championship
