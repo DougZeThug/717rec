@@ -11,7 +11,44 @@ interface TeamTotals {
   championships: number;
   runner_ups: number;
   playoff_finishes: Array<{ rank: number; season_name: string }>;
+  career_power_score: number;
 }
+
+const calculateCareerPowerScore = async (
+  teamId: string,
+  careerMatchWins: number,
+  careerMatchLosses: number,
+  careerGameWins: number,
+  careerGameLosses: number,
+  careerPlayoffWins: number,
+  careerPlayoffLosses: number
+): Promise<number> => {
+  // Simple calculation using existing data for now
+  // Calculate Career Match Performance (50%)
+  const totalMatches = careerMatchWins + careerMatchLosses;
+  const regularWinRate = totalMatches > 0 ? careerMatchWins / totalMatches : 0;
+  
+  const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
+  const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
+  
+  // Playoff performance weighted 1.5x
+  const matchPerformance = totalPlayoffMatches > 0 
+    ? (regularWinRate + (playoffWinRate * 1.5)) / 2
+    : regularWinRate;
+
+  // Use average division weight for SOS (30%) - simplified for now
+  const strengthOfSchedule = 0.85; // Default average, could be enhanced later
+
+  // Calculate Career Game Win Performance (20%)
+  const totalGames = careerGameWins + careerGameLosses;
+  const gameWinRate = totalGames > 0 ? careerGameWins / totalGames : 0;
+  
+  // Apply 50/30/20 formula and convert to 0-100 scale
+  const careerPowerScore = (matchPerformance * 0.5) + (strengthOfSchedule * 0.3) + (gameWinRate * 0.2);
+  
+  return careerPowerScore * 100; // Convert to 0-100 scale
+
+};
 
 const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
   // Get career stats from team_season_stats
@@ -127,6 +164,17 @@ const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
     }))
     .sort((a, b) => a.rank - b.rank) || [];
 
+  // Calculate career power score
+  const career_power_score = await calculateCareerPowerScore(
+    teamId,
+    career_match_wins,
+    career_match_losses,
+    career_game_wins,
+    career_game_losses,
+    career_playoff_wins,
+    career_playoff_losses
+  );
+
   return {
     career_match_wins,
     career_match_losses,
@@ -136,7 +184,8 @@ const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
     career_playoff_losses,
     championships,
     runner_ups,
-    playoff_finishes
+    playoff_finishes,
+    career_power_score
   };
 };
 
