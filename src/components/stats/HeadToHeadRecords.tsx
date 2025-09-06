@@ -28,7 +28,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
   const [sortField, setSortField] = useState<SortField>('win_pct');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedOpponent, setSelectedOpponent] = useState<{ id: string; name: string } | null>(null);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Fallback to legacy head-to-head data if new system fails
   const displayRecords = records?.length ? records : (headToHead ? Object.values(headToHead).map(record => ({
