@@ -23,6 +23,7 @@ const StatsSummarySection = ({
   scrollToFullRankings 
 }: StatsSummarySectionProps) => {
   const [isOpen, setIsOpen] = React.useState(true); // Start uncollapsed
+  const [isHighlightsOpen, setIsHighlightsOpen] = React.useState(true); // Start uncollapsed
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -122,17 +123,50 @@ const StatsSummarySection = ({
       </motion.div>
       
       <motion.div variants={itemVariants}>
-        <div className="mb-4">
-          <h2 className={cn(
-            "font-inter text-lg sm:text-xl font-semibold tracking-wide mb-3 px-1",
-            "border-l-4 border-blue-500 dark:border-blue-700 pl-3",
-            "bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent",
-            isLight ? "text-gray-900" : "text-white"
-          )}>
-            League Highlights
-          </h2>
-          <StatsSummaryCards rankings={rankings} />
-        </div>
+        <Collapsible open={isHighlightsOpen} onOpenChange={setIsHighlightsOpen}>
+          <Card className={cardStyle}>
+            <CollapsibleTrigger asChild>
+              <CardHeader className={cn(
+                `pb-2 rounded-t-xl ${isMobile ? 'py-3 px-4' : 'py-6 px-6'}`,
+                isLight ? 
+                  "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 border-b border-blue-100" : 
+                  "bg-gradient-to-br from-gray-800/95 via-gray-800/90 to-gray-900/90 border-b border-gray-700",
+                "cursor-pointer hover:bg-muted/50 transition-colors"
+              )}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className={cn(
+                      "font-semibold text-lg sm:text-xl font-inter tracking-wide",
+                      isLight ? 
+                        "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent" :
+                        "text-white"
+                    )}>
+                      League Highlights
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 dark:text-gray-300 font-inter mt-1 mb-0">
+                      Key statistics and performance metrics
+                    </CardDescription>
+                  </div>
+                  <ChevronDown 
+                    className={cn(
+                      "h-5 w-5 transition-transform",
+                      isHighlightsOpen && "rotate-180"
+                    )}
+                  />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent>
+              <CardContent className={cn(
+                `${isMobile ? 'p-3' : 'p-4'}`,
+                "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900"
+              )}>
+                <StatsSummaryCards rankings={rankings} />
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       </motion.div>
     </motion.div>
   );
