@@ -17,7 +17,7 @@ type TeamPairingConfig = {
 };
 
 /**
- * Generate team pairings ensuring each team gets exactly 2 matches per session
+ * Generate team pairings with backtracking to ensure each team gets exactly 2 matches
  */
 export async function generatePairingsWithConfig(
   teams: Team[], 
@@ -26,183 +26,425 @@ export async function generatePairingsWithConfig(
   // Return empty array for insufficient teams
   if (teams.length < 2) return [];
   
-  // Need at least 4 teams to give each team 2 matches
-  if (teams.length < 4) {
-    console.warn(`Only ${teams.length} teams available. Need at least 4 teams to ensure 2 matches per team.`);
-  }
+  // Mathematical validation
+  const targetMatchesPerTeam = 2;
+  const expectedMatches = teams.length; // For N teams, we need N matches (each team gets 2)
+  
+  console.log(`Starting backtracking algorithm for ${teams.length} teams`);
+  console.log(`Expected to generate ${expectedMatches} matches (${targetMatchesPerTeam} per team)`);
   
   // Start tracking time for performance monitoring
   const startTime = performance.now();
   
-  // Calculate all potential pairings with compatibility scores
-  const potentialPairings: {team1: Team, team2: Team, score: number}[] = [];
+  // Pre-calculate all potential pairings with scores and metadata
+  const potentialPairings = await calculateAllPotentialPairings(teams, config);
   
-  // Generate all possible pairs - O(n²) operation
-  // Use batch processing to avoid UI freezing for large team counts
-  const batchSize = 20;
-  let processedCount = 0;
+  console.log(`Generated ${potentialPairings.length} potential pairings`);
   
+  // Use backtracking algorithm to find optimal solution
+  const result = await findOptimalPairingsWithBacktracking(
+    teams,
+    potentialPairings,
+    targetMatchesPerTeam,
+    config
+  );
+  
+  // Log performance metrics and results
+  const endTime = performance.now();
+  console.log(`Backtracking algorithm took ${(endTime - startTime).toFixed(2)}ms`);
+  console.log(`Generated ${result.length} pairings (expected ${expectedMatches})`);
+  
+  // Log final statistics
+  logFinalStatistics(teams, result, targetMatchesPerTeam);
+  
+  return result;
+}
+
+/**
+ * Pre-calculate all potential pairings with compatibility scores and rematch status
+ */
+async function calculateAllPotentialPairings(
+  teams: Team[],
+  config: TeamPairingConfig
+): Promise<Array<{
+  team1: Team;
+  team2: Team;
+  score: number;
+  hasPlayedBefore: boolean;
+  pairingKey: string;
+}>> {
+  const potentialPairings = [];
+  
+  // Generate all possible pairs with metadata
   for (let i = 0; i < teams.length - 1; i++) {
-    const team1 = teams[i];
-    
     for (let j = i + 1; j < teams.length; j++) {
+      const team1 = teams[i];
       const team2 = teams[j];
       
       // Calculate compatibility score
       const score = config.getCompatibilityScoreFn(team1, team2);
       
+      // Check if teams have played before
+      const hasPlayedBefore = config.avoidRematches ? 
+        await config.haveTeamsPlayedFn(team1.id, team2.id) : false;
+      
+      // Create unique pairing key
+      const pairingKey = [team1.id, team2.id].sort().join('-');
+      
       potentialPairings.push({
         team1,
         team2,
-        score
+        score,
+        hasPlayedBefore,
+        pairingKey
       });
+    }
+  }
+  
+  // Sort by priority: non-rematches first, then by compatibility score
+  potentialPairings.sort((a, b) => {
+    // Priority 1: Prefer non-rematches
+    if (a.hasPlayedBefore !== b.hasPlayedBefore) {
+      return a.hasPlayedBefore ? 1 : -1;
+    }
+    // Priority 2: Higher compatibility score
+    return b.score - a.score;
+  });
+  
+  return potentialPairings;
+}
+
+/**
+ * Backtracking algorithm to find optimal pairing solution
+ */
+async function findOptimalPairingsWithBacktracking(
+  teams: Team[],
+  potentialPairings: Array<{
+    team1: Team;
+    team2: Team;
+    score: number;
+    hasPlayedBefore: boolean;
+    pairingKey: string;
+  }>,
+  targetMatchesPerTeam: number,
+  config: TeamPairingConfig
+): Promise<TeamPairing[]> {
+  // State management for backtracking
+  const teamMatchCounts = new Map<string, number>();
+  const usedPairings = new Set<string>();
+  const sessionOpponents = new Map<string, Set<string>>();
+  const finalPairings: TeamPairing[] = [];
+  
+  // Initialize team counts and opponent tracking
+  teams.forEach(team => {
+    teamMatchCounts.set(team.id, 0);
+    sessionOpponents.set(team.id, new Set());
+  });
+  
+  // Performance tracking
+  let backtrackCount = 0;
+  let exploredStates = 0;
+  const maxBacktracks = 1000; // Prevent infinite recursion
+  
+  console.log('Starting recursive backtracking...');
+  
+  /**
+   * Recursive backtracking function
+   */
+  const backtrack = async (pairingIndex: number): Promise<boolean> => {
+    exploredStates++;
+    
+    // Success condition: all teams have target matches
+    const allTeamsComplete = teams.every(team => 
+      (teamMatchCounts.get(team.id) || 0) === targetMatchesPerTeam
+    );
+    
+    if (allTeamsComplete) {
+      console.log(`SUCCESS: Found complete solution with ${finalPairings.length} pairings`);
+      return true;
+    }
+    
+    // Base case: explored all pairings
+    if (pairingIndex >= potentialPairings.length) {
+      return false;
+    }
+    
+    // Prevent infinite recursion
+    if (backtrackCount > maxBacktracks) {
+      console.warn(`Reached maximum backtrack limit (${maxBacktracks})`);
+      return false;
+    }
+    
+    // Try each remaining pairing
+    for (let i = pairingIndex; i < potentialPairings.length; i++) {
+      const pairing = potentialPairings[i];
+      const { team1, team2, pairingKey, hasPlayedBefore } = pairing;
       
-      // Allow UI to update every batchSize pairs
-      processedCount++;
-      if (processedCount % batchSize === 0) {
+      // Check if this pairing is valid
+      if (!isPairingValid(team1, team2, teamMatchCounts, usedPairings, 
+                          sessionOpponents, pairingKey, targetMatchesPerTeam)) {
+        continue;
+      }
+      
+      // Apply the pairing (make the move)
+      applyPairing(team1, team2, pairingKey, teamMatchCounts, usedPairings, 
+                   sessionOpponents, finalPairings, pairing.score, hasPlayedBefore);
+      
+      console.log(`Applied pairing: ${team1.name} vs ${team2.name} (${finalPairings.length} total)`);
+      
+      // Recursively try to complete the solution
+      if (await backtrack(i + 1)) {
+        return true; // Found a complete solution
+      }
+      
+      // Backtrack: undo the pairing
+      backtrackCount++;
+      undoPairing(team1, team2, pairingKey, teamMatchCounts, usedPairings, 
+                  sessionOpponents, finalPairings);
+      
+      console.log(`Backtracked from: ${team1.name} vs ${team2.name} (attempt ${backtrackCount})`);
+      
+      // Yield control to prevent UI freezing
+      if (backtrackCount % 10 === 0) {
         await new Promise(resolve => setTimeout(resolve, 0));
       }
     }
+    
+    return false; // No valid solution found from this state
+  };
+  
+  // Start the backtracking process
+  const success = await backtrack(0);
+  
+  console.log(`Backtracking completed:`);
+  console.log(`- Success: ${success}`);
+  console.log(`- States explored: ${exploredStates}`);
+  console.log(`- Backtracks performed: ${backtrackCount}`);
+  console.log(`- Final pairings: ${finalPairings.length}`);
+  
+  // If backtracking failed to find perfect solution, try relaxed constraints
+  if (!success || finalPairings.length < teams.length) {
+    console.warn('Perfect solution not found, trying with relaxed constraints...');
+    return await findRelaxedSolution(teams, potentialPairings, targetMatchesPerTeam);
   }
   
-  // Sort by compatibility score (highest first)
-  potentialPairings.sort((a, b) => b.score - a.score);
+  return finalPairings;
+}
+
+/**
+ * Check if a pairing is valid given current state
+ */
+function isPairingValid(
+  team1: Team,
+  team2: Team,
+  teamMatchCounts: Map<string, number>,
+  usedPairings: Set<string>,
+  sessionOpponents: Map<string, Set<string>>,
+  pairingKey: string,
+  targetMatchesPerTeam: number
+): boolean {
+  const team1Count = teamMatchCounts.get(team1.id) || 0;
+  const team2Count = teamMatchCounts.get(team2.id) || 0;
   
-  // Track how many matches each team has been assigned
+  // Both teams must not exceed target matches
+  if (team1Count >= targetMatchesPerTeam || team2Count >= targetMatchesPerTeam) {
+    return false;
+  }
+  
+  // Cannot use the same pairing twice in session
+  if (usedPairings.has(pairingKey)) {
+    return false;
+  }
+  
+  // Cannot have the same opponent twice in session
+  const team1Opponents = sessionOpponents.get(team1.id) || new Set();
+  const team2Opponents = sessionOpponents.get(team2.id) || new Set();
+  
+  if (team1Opponents.has(team2.id) || team2Opponents.has(team1.id)) {
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Apply a pairing to the current state
+ */
+function applyPairing(
+  team1: Team,
+  team2: Team,
+  pairingKey: string,
+  teamMatchCounts: Map<string, number>,
+  usedPairings: Set<string>,
+  sessionOpponents: Map<string, Set<string>>,
+  finalPairings: TeamPairing[],
+  score: number,
+  hasPlayedBefore: boolean
+): void {
+  // Update match counts
+  teamMatchCounts.set(team1.id, (teamMatchCounts.get(team1.id) || 0) + 1);
+  teamMatchCounts.set(team2.id, (teamMatchCounts.get(team2.id) || 0) + 1);
+  
+  // Mark pairing as used
+  usedPairings.add(pairingKey);
+  
+  // Update opponent tracking
+  sessionOpponents.get(team1.id)!.add(team2.id);
+  sessionOpponents.get(team2.id)!.add(team1.id);
+  
+  // Add to final pairings
+  finalPairings.push({
+    team1,
+    team2,
+    compatibilityScore: score,
+    hasPlayedBefore
+  });
+}
+
+/**
+ * Undo a pairing (backtrack)
+ */
+function undoPairing(
+  team1: Team,
+  team2: Team,
+  pairingKey: string,
+  teamMatchCounts: Map<string, number>,
+  usedPairings: Set<string>,
+  sessionOpponents: Map<string, Set<string>>,
+  finalPairings: TeamPairing[]
+): void {
+  // Revert match counts
+  teamMatchCounts.set(team1.id, (teamMatchCounts.get(team1.id) || 0) - 1);
+  teamMatchCounts.set(team2.id, (teamMatchCounts.get(team2.id) || 0) - 1);
+  
+  // Remove pairing from used set
+  usedPairings.delete(pairingKey);
+  
+  // Remove from opponent tracking
+  sessionOpponents.get(team1.id)!.delete(team2.id);
+  sessionOpponents.get(team2.id)!.delete(team1.id);
+  
+  // Remove from final pairings
+  finalPairings.pop();
+}
+
+/**
+ * Fallback algorithm with relaxed constraints when backtracking fails
+ */
+async function findRelaxedSolution(
+  teams: Team[],
+  potentialPairings: Array<{
+    team1: Team;
+    team2: Team;
+    score: number;
+    hasPlayedBefore: boolean;
+    pairingKey: string;
+  }>,
+  targetMatchesPerTeam: number
+): Promise<TeamPairing[]> {
+  console.log('Applying relaxed constraints: allowing rematches if necessary');
+  
   const teamMatchCounts = new Map<string, number>();
+  const usedPairings = new Set<string>();
+  const finalPairings: TeamPairing[] = [];
+  let rematchCount = 0;
+  
   teams.forEach(team => teamMatchCounts.set(team.id, 0));
   
-  // Track used pairings to prevent rematches within the session
-  const usedPairings = new Set<string>();
-  const sessionMatchups = new Map<string, Set<string>>(); // Track all opponents for each team
-  
-  const finalPairings: TeamPairing[] = [];
-  const targetMatchesPerTeam = 2;
-  
-  // Keep generating matches until all teams have 2 matches (or we can't find more valid pairings)
-  let attempts = 0;
-  const maxAttempts = potentialPairings.length * 2; // Prevent infinite loops
-  
-  while (attempts < maxAttempts) {
-    attempts++;
+  // More aggressive approach: prioritize completing all teams
+  for (const pairing of potentialPairings) {
+    const team1Count = teamMatchCounts.get(pairing.team1.id) || 0;
+    const team2Count = teamMatchCounts.get(pairing.team2.id) || 0;
     
-    // Check if all teams have reached the target
-    const teamsNeedingMatches = teams.filter(team => 
-      (teamMatchCounts.get(team.id) || 0) < targetMatchesPerTeam
-    );
-    
-    if (teamsNeedingMatches.length === 0) break;
-    if (teamsNeedingMatches.length === 1) {
-      console.warn(`Only 1 team (${teamsNeedingMatches[0].name}) needs more matches. Cannot pair.`);
-      break;
+    // Skip if either team is complete
+    if (team1Count >= targetMatchesPerTeam || team2Count >= targetMatchesPerTeam) {
+      continue;
     }
     
-    // Find the best available pairing
-    let bestPairing: {team1: Team, team2: Team, score: number} | null = null;
-    
-    for (const pairing of potentialPairings) {
-      const team1Count = teamMatchCounts.get(pairing.team1.id) || 0;
-      const team2Count = teamMatchCounts.get(pairing.team2.id) || 0;
-      
-      // Skip if either team already has 2 matches
-      if (team1Count >= targetMatchesPerTeam || team2Count >= targetMatchesPerTeam) continue;
-      
-      // Create a unique key for this pairing (order-independent)
-      const pairingKey = [pairing.team1.id, pairing.team2.id].sort().join('-');
-      
-      // Skip if this pairing was already used (session-level rematch prevention)
-      if (usedPairings.has(pairingKey)) {
-        console.log(`Skipping session rematch: ${pairing.team1.name} vs ${pairing.team2.name}`);
-        continue;
-      }
-      
-      // Additional session-level opponent check
-      const team1Opponents = sessionMatchups.get(pairing.team1.id) || new Set();
-      const team2Opponents = sessionMatchups.get(pairing.team2.id) || new Set();
-      
-      if (team1Opponents.has(pairing.team2.id) || team2Opponents.has(pairing.team1.id)) {
-        console.log(`Skipping duplicate opponent in session: ${pairing.team1.name} vs ${pairing.team2.name}`);
-        continue;
-      }
-      
-      // Check for rematches if avoiding them
-      if (config.avoidRematches) {
-        const hasPlayedBefore = await config.haveTeamsPlayedFn(pairing.team1.id, pairing.team2.id);
-        if (hasPlayedBefore) continue;
-      }
-      
-      // Prioritize pairings where both teams need matches
-      const priority = (team1Count < targetMatchesPerTeam ? 1 : 0) + (team2Count < targetMatchesPerTeam ? 1 : 0);
-      if (priority === 2) {
-        bestPairing = pairing;
-        break; // Found an ideal pairing where both teams need matches
-      } else if (bestPairing === null && priority > 0) {
-        bestPairing = pairing;
-      }
+    // Allow session rematches in relaxed mode (but avoid if possible)
+    if (usedPairings.has(pairing.pairingKey)) {
+      continue;
     }
-    
-    if (!bestPairing) {
-      console.warn('No more valid pairings available');
-      break;
-    }
-    
-    // Check for rematches one final time before adding
-    const hasPlayedBefore = config.avoidRematches ? 
-      await config.haveTeamsPlayedFn(bestPairing.team1.id, bestPairing.team2.id) : false;
     
     // Add the pairing
     finalPairings.push({
-      team1: bestPairing.team1,
-      team2: bestPairing.team2,
-      compatibilityScore: bestPairing.score,
-      hasPlayedBefore: hasPlayedBefore
+      team1: pairing.team1,
+      team2: pairing.team2,
+      compatibilityScore: pairing.score,
+      hasPlayedBefore: pairing.hasPlayedBefore
     });
     
-    // Update match counts
-    teamMatchCounts.set(bestPairing.team1.id, (teamMatchCounts.get(bestPairing.team1.id) || 0) + 1);
-    teamMatchCounts.set(bestPairing.team2.id, (teamMatchCounts.get(bestPairing.team2.id) || 0) + 1);
-    
-    // Mark this pairing as used
-    const pairingKey = [bestPairing.team1.id, bestPairing.team2.id].sort().join('-');
-    usedPairings.add(pairingKey);
-    
-    // Update session matchups tracking
-    if (!sessionMatchups.has(bestPairing.team1.id)) {
-      sessionMatchups.set(bestPairing.team1.id, new Set());
+    if (pairing.hasPlayedBefore) {
+      rematchCount++;
     }
-    if (!sessionMatchups.has(bestPairing.team2.id)) {
-      sessionMatchups.set(bestPairing.team2.id, new Set());
+    
+    // Update counts
+    teamMatchCounts.set(pairing.team1.id, team1Count + 1);
+    teamMatchCounts.set(pairing.team2.id, team2Count + 1);
+    usedPairings.add(pairing.pairingKey);
+    
+    // Check if we're done
+    const allComplete = teams.every(team => 
+      (teamMatchCounts.get(team.id) || 0) === targetMatchesPerTeam
+    );
+    
+    if (allComplete) {
+      break;
     }
-    sessionMatchups.get(bestPairing.team1.id)!.add(bestPairing.team2.id);
-    sessionMatchups.get(bestPairing.team2.id)!.add(bestPairing.team1.id);
   }
   
-  // Log performance metrics and results
-  const endTime = performance.now();
-  console.log(`Pairing generation took ${(endTime - startTime).toFixed(2)}ms for ${teams.length} teams`);
-  console.log(`Generated ${finalPairings.length} pairings`);
+  console.log(`Relaxed solution: ${finalPairings.length} pairings with ${rematchCount} rematches`);
+  return finalPairings;
+}
+
+/**
+ * Log comprehensive statistics about the final result
+ */
+function logFinalStatistics(
+  teams: Team[],
+  finalPairings: TeamPairing[],
+  targetMatchesPerTeam: number
+): void {
+  const teamMatchCounts = new Map<string, number>();
+  teams.forEach(team => teamMatchCounts.set(team.id, 0));
   
-  // Log match distribution
+  // Count matches per team
+  finalPairings.forEach(pairing => {
+    teamMatchCounts.set(pairing.team1.id, (teamMatchCounts.get(pairing.team1.id) || 0) + 1);
+    teamMatchCounts.set(pairing.team2.id, (teamMatchCounts.get(pairing.team2.id) || 0) + 1);
+  });
+  
+  // Analyze distribution
   const matchDistribution = new Map<number, number>();
   teams.forEach(team => {
     const matchCount = teamMatchCounts.get(team.id) || 0;
     matchDistribution.set(matchCount, (matchDistribution.get(matchCount) || 0) + 1);
   });
   
+  console.log('=== FINAL STATISTICS ===');
+  console.log(`Target matches per team: ${targetMatchesPerTeam}`);
+  console.log(`Total pairings generated: ${finalPairings.length}`);
+  console.log(`Expected pairings: ${teams.length}`);
+  
   console.log('Match distribution:');
   matchDistribution.forEach((teamCount, matchCount) => {
-    console.log(`  ${teamCount} teams with ${matchCount} matches`);
+    const status = matchCount === targetMatchesPerTeam ? '✓' : '⚠️';
+    console.log(`  ${status} ${teamCount} teams with ${matchCount} matches`);
   });
   
-  // Validate no session rematches occurred
+  // Count rematches
+  const rematchCount = finalPairings.filter(p => p.hasPlayedBefore).length;
+  console.log(`Rematches: ${rematchCount}/${finalPairings.length}`);
+  
+  // Validate session rematches
   const validationResult = validateNoSessionRematches(finalPairings);
   if (validationResult.hasRematches) {
-    console.error('Session rematch validation failed:', validationResult.rematches);
+    console.error('⚠️ Session rematch validation failed:', validationResult.rematches);
   } else {
-    console.log('Session rematch validation passed: No duplicate opponents detected');
+    console.log('✓ No duplicate opponents in session');
   }
   
-  return finalPairings;
+  console.log('=== END STATISTICS ===');
 }
 
 /**
