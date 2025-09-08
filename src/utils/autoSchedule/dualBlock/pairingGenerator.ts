@@ -54,7 +54,11 @@ export const generateDualBlockPairings = async (
       haveTeamsPlayedFn: haveTeamsPlayedBefore,
       getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, {
         ...config.weights,
-        divisionWeight: config.weights?.divisionWeight ?? 4 // Default heavy penalty for cross-division
+        tierPenalty: { 
+          sameTier: 0, 
+          oneTierDiff: config.weights?.divisionWeight ?? 4, 
+          twoTierDiff: (config.weights?.divisionWeight ?? 4) * 2 
+        }
       })
     });
     
@@ -73,7 +77,11 @@ export const generateDualBlockPairings = async (
         // Base compatibility score with division weighting
         let score = calculateConfigurableCompatibility(team1, team2, {
           ...config.weights,
-          divisionWeight: config.weights?.divisionWeight ?? 4 // Default heavy penalty for cross-division
+          tierPenalty: { 
+            sameTier: 0, 
+            oneTierDiff: config.weights?.divisionWeight ?? 4, 
+            twoTierDiff: (config.weights?.divisionWeight ?? 4) * 2 
+          }
         });
         
         // Penalize heavily if teams are already opponents in the primary block

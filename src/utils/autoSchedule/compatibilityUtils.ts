@@ -2,15 +2,38 @@
 import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { getCachedCompatibilityScore, getCachedMatchHistory } from "./cachingUtils";
+import { getDisplayDivision } from "@/styles/design-system/divisions";
+
+/**
+ * Get tier distance between two teams (0 = same tier, 1 = adjacent, 2 = extreme)
+ */
+function getTierDistance(team1: Team, team2: Team): number {
+  // Extract tiers from division names
+  const tier1 = getDisplayDivision(team1.divisionName || team1.division || '');
+  const tier2 = getDisplayDivision(team2.divisionName || team2.division || '');
+  
+  // Map tiers to numeric values for distance calculation
+  const tierMap: Record<string, number> = {
+    'Competitive': 2,
+    'Intermediate': 1,
+    'Recreational': 0
+  };
+  
+  const tier1Value = tierMap[tier1] ?? 0;
+  const tier2Value = tierMap[tier2] ?? 0;
+  
+  return Math.abs(tier1Value - tier2Value);
+}
 
 /**
  * Calculate compatibility score between two teams
  * Higher score means better match (more evenly matched)
+ * Tier penalties: Same tier (8-10), One tier diff (4-6), Two tier diff (0-2)
  */
 export function calculateTeamCompatibility(team1: Team, team2: Team): number {
-  // Division compatibility - heavily prioritize same division matchups
-  const sameDivision = (team1.division || team1.division_id) === (team2.division || team2.division_id);
-  const divisionBonus = sameDivision ? 0 : 4; // Heavy penalty for cross-division (4 points out of 10)
+  // Calculate tier distance and penalty
+  const tierDistance = getTierDistance(team1, team2);
+  const tierPenalty = tierDistance === 0 ? 0 : tierDistance === 1 ? 4 : 8;
   
   // Compare power scores - closer power scores are better matches
   const powerScoreDiff = Math.abs((team1.power_score || 0) - (team2.power_score || 0));
@@ -35,16 +58,16 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
   const normalizedRecordDiff = Math.min(1, recordDiff);
   const normalizedGameRecordDiff = Math.min(1, gameRecordDiff);
   
-  // Apply weights to each factor - division penalty takes precedence
+  // Reduced weights to make room for tier penalties
   const baseScore = 10 - (
-    normalizedPowerScoreDiff * 3 +  // Reduced from 4 to make room for division
-    normalizedSosDiff * 1.5 +       // Reduced from 2
-    normalizedRecordDiff * 2 +       // Reduced from 2.5
-    normalizedGameRecordDiff * 1     // Reduced from 1.5
+    normalizedPowerScoreDiff * 1.5 +  // Reduced to accommodate tier penalties
+    normalizedSosDiff * 0.75 +        // Reduced
+    normalizedRecordDiff * 1 +         // Reduced
+    normalizedGameRecordDiff * 0.5     // Reduced
   );
   
-  // Apply division penalty - cross-division pairings get heavily penalized
-  const finalScore = Math.max(0, baseScore - divisionBonus);
+  // Apply tier penalty - cross-tier pairings get heavily penalized
+  const finalScore = Math.max(0, baseScore - tierPenalty);
   
   // Ensure the score is within a reasonable range (0-10)
   return Math.max(0, Math.min(10, finalScore));
@@ -100,12 +123,17 @@ export function calculateConfigurableCompatibility(
     sosWeight?: number,
     recordWeight?: number,
     gameRecordWeight?: number,
-    divisionWeight?: number
+    tierPenalty?: { sameTier?: number, oneTierDiff?: number, twoTierDiff?: number }
   } = {}
 ): number {
-  // Division compatibility - heavily prioritize same division matchups
-  const sameDivision = (team1.division || team1.division_id) === (team2.division || team2.division_id);
-  const divisionPenalty = sameDivision ? 0 : (config.divisionWeight ?? 4);
+  // Calculate tier distance and penalty using configurable values
+  const tierDistance = getTierDistance(team1, team2);
+  const defaultPenalties = { sameTier: 0, oneTierDiff: 4, twoTierDiff: 8 };
+  const penalties = { ...defaultPenalties, ...config.tierPenalty };
+  
+  const tierPenalty = tierDistance === 0 ? penalties.sameTier : 
+                     tierDistance === 1 ? penalties.oneTierDiff : 
+                     penalties.twoTierDiff;
   
   // Default weights (adjusted to accommodate division weight)
   const weights = {
@@ -143,8 +171,8 @@ export function calculateConfigurableCompatibility(
     normalizedGameRecordDiff * weights.gameRecord
   );
   
-  // Apply division penalty - cross-division pairings get heavily penalized
-  const finalScore = Math.max(0, baseScore - divisionPenalty);
+  // Apply tier penalty - cross-tier pairings get heavily penalized
+  const finalScore = Math.max(0, baseScore - tierPenalty);
   
   // Ensure the score is within a reasonable range (0-10)
   return Math.max(0, Math.min(10, finalScore));
