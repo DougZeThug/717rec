@@ -18,6 +18,10 @@ export function useCareerRankingsWithHidden() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(showHidden));
   }, [showHidden]);
 
+  // Always fetch all teams to count hidden teams
+  const { data: allTeams } = useTeamData(null, true);
+  
+  // Fetch teams based on toggle state
   const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamData(null, showHidden);
 
   const toggleShowHidden = () => {
@@ -96,8 +100,8 @@ export function useCareerRankingsWithHidden() {
     staleTime: 10000,
   });
 
-  // Count hidden teams
-  const hiddenTeamCount = teams ? teams.filter(team => team.divisionName === 'Hidden').length : 0;
+  // Count hidden teams from all teams (not filtered teams)
+  const hiddenTeamCount = allTeams ? allTeams.filter(team => team.divisionName === 'Hidden').length : 0;
 
   return {
     ...careerQuery,
