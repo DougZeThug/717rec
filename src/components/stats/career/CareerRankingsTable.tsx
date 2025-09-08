@@ -6,6 +6,7 @@ import CareerRankingsDesktopView from './CareerRankingsDesktopView';
 
 interface CareerRankingsTableProps {
   rankings: CareerRanking[];
+  showHidden?: boolean;
 }
 
 export type CareerSortDirection = 'asc' | 'desc';
@@ -14,7 +15,7 @@ export interface CareerSortOptions {
   direction: CareerSortDirection;
 }
 
-const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings }) => {
+const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings, showHidden = false }) => {
   const isMobile = useIsMobile();
   const [sortOptions, setSortOptions] = useState<CareerSortOptions>({
     field: 'careerPowerScore',
@@ -46,6 +47,7 @@ const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings }) =
         rankings={sortedRankings}
         sortOptions={sortOptions}
         onSortChange={handleSortChange}
+        showHidden={showHidden}
       />
     );
   }
@@ -55,6 +57,7 @@ const CareerRankingsTable: React.FC<CareerRankingsTableProps> = ({ rankings }) =
       rankings={sortedRankings}
       sortOptions={sortOptions}
       onSortChange={handleSortChange}
+      showHidden={showHidden}
     />
   );
 };

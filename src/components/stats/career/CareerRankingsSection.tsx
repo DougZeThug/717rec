@@ -1,13 +1,22 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Trophy } from 'lucide-react';
-import { useCareerRankings } from '@/hooks/useCareerRankings';
+import { ChevronDown, Trophy, EyeOff, Eye } from 'lucide-react';
+import { useCareerRankingsWithHidden } from '@/hooks/useCareerRankingsWithHidden';
 import CareerRankingsTable from './CareerRankingsTable';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 const CareerRankingsSection: React.FC = () => {
-  const { data: careerRankings, isLoading, error } = useCareerRankings();
+  const { 
+    data: careerRankings, 
+    isLoading, 
+    error, 
+    showHidden, 
+    toggleShowHidden, 
+    hiddenTeamCount 
+  } = useCareerRankingsWithHidden();
   const [isOpen, setIsOpen] = React.useState(false);
 
   if (error) {
@@ -38,15 +47,44 @@ const CareerRankingsSection: React.FC = () => {
                   <CardTitle>Career Statistics</CardTitle>
                   <CardDescription>
                     Historical performance across all seasons and playoffs
+                    {showHidden && hiddenTeamCount > 0 && (
+                      <span className="ml-2 text-xs bg-muted px-2 py-1 rounded">
+                        +{hiddenTeamCount} hidden
+                      </span>
+                    )}
                   </CardDescription>
                 </div>
               </div>
-              <ChevronDown 
-                className={cn(
-                  "h-5 w-5 transition-transform",
-                  isOpen && "rotate-180"
+              <div className="flex items-center gap-3">
+                {hiddenTeamCount > 0 && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-2">
+                          <label htmlFor="show-hidden-toggle" className="text-sm font-medium cursor-pointer flex items-center gap-1">
+                            {showHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            <span className="hidden sm:inline">Hidden</span>
+                          </label>
+                          <Switch
+                            id="show-hidden-toggle"
+                            checked={showHidden}
+                            onCheckedChange={toggleShowHidden}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{showHidden ? 'Hide' : 'Show'} teams from the hidden division</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-              />
+                <ChevronDown 
+                  className={cn(
+                    "h-5 w-5 transition-transform",
+                    isOpen && "rotate-180"
+                  )}
+                />
+              </div>
             </div>
           </CardHeader>
         </CollapsibleTrigger>
@@ -59,7 +97,7 @@ const CareerRankingsSection: React.FC = () => {
                 <span className="ml-2">Loading career statistics...</span>
               </div>
             ) : careerRankings && careerRankings.length > 0 ? (
-              <CareerRankingsTable rankings={careerRankings} />
+              <CareerRankingsTable rankings={careerRankings} showHidden={showHidden} />
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 No career statistics available.

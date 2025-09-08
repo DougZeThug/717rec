@@ -13,12 +13,14 @@ interface CareerRankingsMobileViewProps {
   rankings: CareerRanking[];
   sortOptions: CareerSortOptions;
   onSortChange: (field: string) => void;
+  showHidden?: boolean;
 }
 
 const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
   rankings,
   sortOptions,
   onSortChange,
+  showHidden = false
 }) => {
   const [isCompactView, setIsCompactView] = useState(false);
   const formatPercentage = (value: number) => {
@@ -88,7 +90,10 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
 
       {/* Rankings Cards */}
       {rankings.map((ranking, index) => (
-        <Card key={ranking.teamId} className="overflow-hidden">
+        <Card key={ranking.teamId} className={cn(
+          "overflow-hidden",
+          ranking.divisionName === 'Hidden' ? 'border-muted bg-muted/30' : ''
+        )}>
           <CardContent className={cn("p-4", isCompactView && "p-3")}>
             {isCompactView ? (
               // Compact View
@@ -105,7 +110,14 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm truncate">{ranking.teamName}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-sm truncate">{ranking.teamName}</h3>
+                      {showHidden && ranking.divisionName === 'Hidden' && (
+                        <span className="px-2 py-1 text-xs bg-muted-foreground/20 text-muted-foreground rounded-full border flex-shrink-0">
+                          Hidden
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span>{ranking.careerMatchWins}-{ranking.careerMatchLosses}</span>
                       <span className={getWinPercentageColor(ranking.careerWinPercentage)}>
@@ -139,7 +151,14 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                         className="w-8 h-8 rounded object-cover"
                       />
                     )}
-                    <h3 className="font-semibold">{ranking.teamName}</h3>
+                     <div className="flex items-center gap-2">
+                       <h3 className="font-semibold">{ranking.teamName}</h3>
+                       {showHidden && ranking.divisionName === 'Hidden' && (
+                         <span className="px-2 py-1 text-xs bg-muted-foreground/20 text-muted-foreground rounded-full border">
+                           Hidden
+                         </span>
+                       )}
+                     </div>
                   </div>
                   <span className={cn(
                     "font-bold px-3 py-1 rounded text-sm",

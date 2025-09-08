@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
 
-export const useTeamData = (divisionId?: string | null) => {
+export const useTeamData = (divisionId?: string | null, includeHidden?: boolean) => {
   const query = useQuery<Team[], Error>({
-    queryKey: ['teams', divisionId],
+    queryKey: ['teams', divisionId, includeHidden],
     queryFn: async () => {
       let query = supabase
         .from('v_team_details')
@@ -52,8 +52,10 @@ export const useTeamData = (divisionId?: string | null) => {
       
       const uniqueTeamsArray = Array.from(uniqueTeamsMap.values());
       
-      // Filter out teams from the "Hidden" division
-      const filteredTeams = uniqueTeamsArray.filter(team => team.divisionname !== 'Hidden');
+      // Filter out teams from the "Hidden" division (unless includeHidden is true)
+      const filteredTeams = includeHidden 
+        ? uniqueTeamsArray 
+        : uniqueTeamsArray.filter(team => team.divisionname !== 'Hidden');
       
       // Enhanced logging to debug division assignments
       console.log("useTeamData - Teams with divisions:", filteredTeams.map(team => ({

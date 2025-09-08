@@ -12,12 +12,14 @@ interface CareerRankingsDesktopViewProps {
   rankings: CareerRanking[];
   sortOptions: CareerSortOptions;
   onSortChange: (field: string) => void;
+  showHidden?: boolean;
 }
 
 const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
   rankings,
   sortOptions,
   onSortChange,
+  showHidden = false
 }) => {
   const getSortIcon = (field: string) => {
     if (sortOptions.field !== field) return null;
@@ -89,7 +91,10 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
         </TableHeader>
         <TableBody>
           {rankings.map((ranking, index) => (
-            <TableRow key={ranking.teamId} className="hover:bg-muted/50">
+            <TableRow key={ranking.teamId} className={cn(
+              "hover:bg-muted/50",
+              ranking.divisionName === 'Hidden' ? 'bg-muted/30 border-l-4 border-l-muted-foreground' : ''
+            )}>
               <TableCell className="text-center font-medium">
                 {index + 1}
               </TableCell>
@@ -102,7 +107,14 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                       className="w-8 h-8 rounded object-cover"
                     />
                   )}
-                  <span className="font-medium">{ranking.teamName}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{ranking.teamName}</span>
+                    {showHidden && ranking.divisionName === 'Hidden' && (
+                      <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded-full border">
+                        Hidden
+                      </span>
+                    )}
+                  </div>
                 </div>
               </TableCell>
               <TableCell className="text-center">
