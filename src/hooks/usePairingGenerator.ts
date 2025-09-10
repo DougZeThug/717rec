@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult, DualBlockConfig } from '@/types/autoSchedule';
-import { generatePairingsWithConfig } from '@/utils/autoSchedule/pairingAlgorithm';
+import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossomPairingAlgorithm';
 import { calculateConfigurableCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { useTeamFetching } from './useTeamFetching';
 import { useToast } from '@/hooks/use-toast';
@@ -74,17 +74,18 @@ export const usePairingGenerator = () => {
           
           // Generate pairings for this time block
           console.log(`Generating pairings for ${block} block with ${teams.length} teams`);
-          const blockPairings = await generatePairingsWithConfig(teams, {
+          const blockPairings = await generatePairingsWithBlossom(teams, {
             avoidRematches: config.avoidRematches,
             haveTeamsPlayedFn: haveTeamsPlayedBefore,
             getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, {
               ...config.weights,
               tierPenalty: { 
                 sameTier: 0, 
-                oneTierDiff: config.weights?.divisionWeight ?? 4, 
-                twoTierDiff: (config.weights?.divisionWeight ?? 4) * 2 
+                oneTierDiff: 4, 
+                twoTierDiff: 8 
               }
-            })
+            }),
+            weights: config.weights
           });
           
           // Store pairings for this block

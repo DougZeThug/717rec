@@ -3,7 +3,7 @@ import { TeamPairing, TeamPairingMap, TimeBlockTeamsMap, PairingResult, DualBloc
 import { Team } from '@/types';
 import { NotificationCallback } from '@/types/dualBlock';
 import { validateDualBlockTeams, handleOddTeamCount, createCrossBlockCompatibilityAdjuster } from '../dualBlockUtils';
-import { generatePairingsWithConfig } from '../pairingAlgorithm';
+import { generatePairingsWithBlossom } from '../blossomPairingAlgorithm';
 import { calculateConfigurableCompatibility } from '../compatibilityUtils';
 import { haveTeamsPlayedBefore } from '../matchHistoryService';
 import { findTeamsWithSameOpponent } from './opponentUtils';
@@ -49,17 +49,18 @@ export const generateDualBlockPairings = async (
     
     // First generate optimal pairings for the primary block
     console.log(`Generating primary block pairings for ${primaryTeams.length} teams`);
-    const primaryPairings = await generatePairingsWithConfig(primaryTeams, {
+    const primaryPairings = await generatePairingsWithBlossom(primaryTeams, {
       avoidRematches: config.avoidRematches,
       haveTeamsPlayedFn: haveTeamsPlayedBefore,
       getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, {
         ...config.weights,
         tierPenalty: { 
           sameTier: 0, 
-          oneTierDiff: config.weights?.divisionWeight ?? 4, 
-          twoTierDiff: (config.weights?.divisionWeight ?? 4) * 2 
+          oneTierDiff: 4, 
+          twoTierDiff: 8 
         }
-      })
+      }),
+      weights: config.weights
     });
     
     // Create a map of team IDs to their opponents in the primary block
@@ -79,8 +80,8 @@ export const generateDualBlockPairings = async (
           ...config.weights,
           tierPenalty: { 
             sameTier: 0, 
-            oneTierDiff: config.weights?.divisionWeight ?? 4, 
-            twoTierDiff: (config.weights?.divisionWeight ?? 4) * 2 
+            oneTierDiff: 4, 
+            twoTierDiff: 8 
           }
         });
         
@@ -95,7 +96,10 @@ export const generateDualBlockPairings = async (
     
     // Generate secondary block pairings with constraints
     console.log(`Generating secondary block pairings for ${secondaryTeams.length} teams with opponent constraints`);
-    const secondaryPairings = await generatePairingsWithConfig(secondaryTeams, secondaryConstraints);
+    const secondaryPairings = await generatePairingsWithBlossom(secondaryTeams, {
+      ...secondaryConstraints,
+      weights: config.weights
+    });
     
     // Combine pairings into a TeamPairingMap
     const pairingsMap: TeamPairingMap = {};
