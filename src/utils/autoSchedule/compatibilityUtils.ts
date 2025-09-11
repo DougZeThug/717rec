@@ -113,7 +113,30 @@ async function checkTeamsPlayedHistory(team1Id: string, team2Id: string): Promis
 }
 
 /**
+ * Simple division-only compatibility calculation
+ * Returns predictable scores based solely on division tiers:
+ * - Same division: 10
+ * - Adjacent divisions: 5  
+ * - Extreme difference (T1-T3): 0
+ */
+export function calculateDivisionOnlyCompatibility(team1: Team, team2: Team): number {
+  const tierDistance = getTierDistance(team1, team2);
+  
+  console.log(`Division compatibility: ${team1.name} (${team1.divisionName || team1.division}) vs ${team2.name} (${team2.divisionName || team2.division}) - Distance: ${tierDistance}`);
+  
+  // Simple scoring based on tier distance
+  if (tierDistance === 0) {
+    return 10; // Same division - perfect match
+  } else if (tierDistance === 1) {
+    return 5;  // Adjacent divisions - decent match
+  } else {
+    return 0;  // Extreme difference - blocked/poor match
+  }
+}
+
+/**
  * Enhanced compatibility calculation with configurable parameters
+ * @deprecated Use calculateDivisionOnlyCompatibility for simpler, more predictable results
  */
 export function calculateConfigurableCompatibility(
   team1: Team, 

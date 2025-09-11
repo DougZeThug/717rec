@@ -83,7 +83,6 @@ async function buildWeightedGraph(
   config: TeamPairingConfig
 ): Promise<Edge[]> {
   const edges: Edge[] = [];
-  const sameTierBonus = 10; // Bonus for same-tier matches
   
   // Generate all possible team pairs
   for (let i = 0; i < teams.length - 1; i++) {
@@ -96,13 +95,8 @@ async function buildWeightedGraph(
         continue;
       }
       
-      // Calculate base compatibility score
-      let weight = config.getCompatibilityScoreFn(team1, team2);
-      
-      // Apply soft preferences (adjust weights)
-      if (isSameTier(team1, team2)) {
-        weight += sameTierBonus; // Prefer same-tier matches
-      }
+      // Calculate compatibility score (no bonus needed - score is already appropriate)
+      const weight = config.getCompatibilityScoreFn(team1, team2);
       
       // Check if teams have played before
       const hasPlayedBefore = config.avoidRematches ? 

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult, DualBlockConfig } from '@/types/autoSchedule';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossomPairingAlgorithm';
-import { calculateConfigurableCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
+import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { useTeamFetching } from './useTeamFetching';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeDate } from '@/utils/dateNormalization';
@@ -77,14 +77,7 @@ export const usePairingGenerator = () => {
           const blockPairings = await generatePairingsWithBlossom(teams, {
             avoidRematches: config.avoidRematches,
             haveTeamsPlayedFn: haveTeamsPlayedBefore,
-            getCompatibilityScoreFn: (team1, team2) => calculateConfigurableCompatibility(team1, team2, {
-              ...config.weights,
-              tierPenalty: { 
-                sameTier: 0, 
-                oneTierDiff: 4, 
-                twoTierDiff: 8 
-              }
-            }),
+            getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
             weights: config.weights
           });
           
