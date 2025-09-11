@@ -31,6 +31,7 @@ export function useAutoSchedule() {
   const {
     isLoading,
     timeBlockTeams,
+    originalTimeBlockTeams,
     setTimeBlockTeams, // Expose this function for manual team assignment
     handleLoadTeams,
     getTeamCountStatus
@@ -105,6 +106,7 @@ export function useAutoSchedule() {
     isLoading: isLoadingState,
     isGenerating,
     timeBlockTeams,
+    originalTimeBlockTeams,
     setTimeBlockTeams, // Expose this for manual team assignment
     generatedPairings,
     unmatchedTeamIds,

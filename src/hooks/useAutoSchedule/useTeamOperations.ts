@@ -10,6 +10,7 @@ import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCase
 export const useTeamOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
+  const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
 
   /**
@@ -63,6 +64,7 @@ export const useTeamOperations = () => {
       
       // Update state with back-to-back structure
       setTimeBlockTeams(backToBackTeams);
+      setOriginalTimeBlockTeams(backToBackTeams); // Store original loaded teams
       
       // If dual block mode is enabled, create paired blocks structure
       if (dualBlockMode) {
@@ -77,6 +79,7 @@ export const useTeamOperations = () => {
     } catch (error) {
       console.error('❌ Error loading back-to-back teams for date:', error);
       setTimeBlockTeams({});
+      setOriginalTimeBlockTeams({});
       setPairedTimeBlockTeams({});
       return {};
     } finally {
@@ -176,6 +179,7 @@ export const useTeamOperations = () => {
   return {
     isLoading,
     timeBlockTeams,
+    originalTimeBlockTeams,
     pairedTimeBlockTeams,
     setTimeBlockTeams,
     setPairedTimeBlockTeams,

@@ -12,6 +12,7 @@ interface ScheduleWorkflowTabsProps {
   setActiveTab: (tab: string) => void;
   selectedDate: Date | null;
   timeBlockTeams: TimeBlockTeamsMap;
+  originalTimeBlockTeams: TimeBlockTeamsMap;
   generatedPairings: TeamPairingMap;
   generatedMatches: any[] | null;
   unmatchedTeamIds: string[];
@@ -29,6 +30,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   setActiveTab,
   selectedDate,
   timeBlockTeams,
+  originalTimeBlockTeams,
   generatedPairings,
   generatedMatches,
   unmatchedTeamIds,
@@ -58,6 +60,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               oddBlocks={oddBlocks}
               totalTeams={totalTeams}
               onManualTeamAssign={onManualTeamAssign}
+              originalTimeBlockTeams={originalTimeBlockTeams}
             />
           </TabsContent>
           

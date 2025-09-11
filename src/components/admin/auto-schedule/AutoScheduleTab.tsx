@@ -31,6 +31,7 @@ const AutoScheduleTab = () => {
     isLoading,
     isGenerating,
     timeBlockTeams,
+    originalTimeBlockTeams,
     setTimeBlockTeams, // We need to expose this
     generatedPairings,
     unmatchedTeamIds,
@@ -85,6 +86,7 @@ const AutoScheduleTab = () => {
           setActiveTab={setActiveTab}
           selectedDate={selectedDate}
           timeBlockTeams={timeBlockTeams || {}}
+          originalTimeBlockTeams={originalTimeBlockTeams || {}}
           generatedPairings={generatedPairings || {}}
           generatedMatches={generatedMatches}
           unmatchedTeamIds={unmatchedTeamIds || []}

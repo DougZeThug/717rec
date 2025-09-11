@@ -4,8 +4,11 @@ import { Team } from "@/types";
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
 import { WarningDisplay } from "@/components/admin/batch-matches/auto-schedule/WarningDisplay";
 import SchedulePreview from "@/components/admin/batch-matches/auto-schedule/SchedulePreview";
+import InteractiveSchedulePreview from "@/components/admin/batch-matches/auto-schedule/InteractiveSchedulePreview";
 import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Edit3, Eye, RotateCcw } from "lucide-react";
 import ManualTeamAssignment from "@/components/admin/auto-schedule/ManualTeamAssignment";
 
 interface TeamsTabProps {
@@ -15,6 +18,7 @@ interface TeamsTabProps {
   oddBlocks: number;
   totalTeams: number;
   onManualTeamAssign?: (updatedTeams: TimeBlockTeamsMap) => void;
+  originalTimeBlockTeams?: TimeBlockTeamsMap; // Store original loaded teams
 }
 
 const TeamsTab: React.FC<TeamsTabProps> = ({
@@ -23,9 +27,11 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
   unmatchedTeamIds,
   oddBlocks,
   totalTeams,
-  onManualTeamAssign
+  onManualTeamAssign,
+  originalTimeBlockTeams = {}
 }) => {
   const [activeTab, setActiveTab] = useState<string>("auto");
+  const [isEditMode, setIsEditMode] = useState(false);
   
   // Check for blocks with insufficient teams
   const { insufficientBlocks } = validateTeamCounts(timeBlockTeams);
@@ -56,6 +62,20 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
     }
   };
 
+  // Handle interactive team updates
+  const handleTeamUpdate = (updatedTeams: TimeBlockTeamsMap) => {
+    onManualTeamAssign?.(updatedTeams);
+  };
+
+  // Reset to original auto-loaded teams
+  const handleResetToOriginal = () => {
+    onManualTeamAssign?.(originalTimeBlockTeams);
+    setIsEditMode(false);
+  };
+
+  // Check if teams have been modified from original
+  const hasModifications = JSON.stringify(timeBlockTeams) !== JSON.stringify(originalTimeBlockTeams);
+
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -65,17 +85,66 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
         </TabsList>
         
         <TabsContent value="auto" className="space-y-4 mt-4">
-          <h3 className="text-lg font-medium">Teams by Time Block</h3>
-          <p className="text-sm text-muted-foreground">
-            Review teams assigned to each time block before generating the schedule.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Teams by Time Block</h3>
+              <p className="text-sm text-muted-foreground">
+                Review teams assigned to each time block before generating the schedule.
+              </p>
+            </div>
+            
+            {totalTeams > 0 && (
+              <div className="flex items-center gap-2">
+                {hasModifications && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetToOriginal}
+                    className="flex items-center gap-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Reset to Auto-Loaded
+                  </Button>
+                )}
+                
+                <Button
+                  variant={isEditMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  className="flex items-center gap-2"
+                >
+                  {isEditMode ? (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      View Mode
+                    </>
+                  ) : (
+                    <>
+                      <Edit3 className="h-4 w-4" />
+                      Edit Teams
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
           
           {totalTeams > 0 ? (
-            <SchedulePreview 
-              timeBlockTeams={timeBlockTeams}
-              date={selectedDate}
-              unmatchedTeamIds={unmatchedTeamIds}
-            />
+            isEditMode ? (
+              <InteractiveSchedulePreview
+                timeBlockTeams={timeBlockTeams}
+                date={selectedDate}
+                unmatchedTeamIds={unmatchedTeamIds}
+                isEditMode={true}
+                onTeamUpdate={handleTeamUpdate}
+              />
+            ) : (
+              <SchedulePreview 
+                timeBlockTeams={timeBlockTeams}
+                date={selectedDate}
+                unmatchedTeamIds={unmatchedTeamIds}
+              />
+            )
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <p>Select a date and load teams to preview schedule</p>
