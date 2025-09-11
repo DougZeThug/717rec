@@ -82,7 +82,7 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
                 />
               )}
               <TeamLogo 
-                imageUrl={team.logoUrl} 
+                imageUrl={team.imageUrl || team.logoUrl} 
                 teamName={team.name} 
                 className="h-6 w-6" 
               />

@@ -68,7 +68,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
         {/* Team 1 */}
         <div className="flex items-center gap-2">
           <TeamLogo 
-            imageUrl={pairing.team1.logoUrl} 
+            imageUrl={pairing.team1.imageUrl || pairing.team1.logoUrl} 
             teamName={pairing.team1.name} 
             className="h-6 w-6" 
           />
@@ -81,7 +81,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
         <div className="flex items-center gap-2 justify-end">
           <span className="text-sm truncate font-medium">{pairing.team2.name}</span>
           <TeamLogo 
-            imageUrl={pairing.team2.logoUrl} 
+            imageUrl={pairing.team2.imageUrl || pairing.team2.logoUrl} 
             teamName={pairing.team2.name} 
             className="h-6 w-6" 
           />
