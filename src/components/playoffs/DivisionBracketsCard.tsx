@@ -8,7 +8,7 @@ import { PlayoffBracket } from "@/types";
 interface DivisionBracketsCardProps {
   division: string;
   brackets: Array<Partial<PlayoffBracket>>;
-  onViewBracket: (bracketId: string) => void;
+  onViewBracket?: (bracketId: string) => void;
   onCreateBracket?: () => void;
   onEditBracket?: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
@@ -55,13 +55,15 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
                 <span className="text-xs text-gray-500">{bracket.format}</span>
               </div>
               <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={() => handleViewBracket(bracket.id!)}
-                >
-                  View
-                </Button>
+                {onViewBracket && (
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={() => handleViewBracket(bracket.id!)}
+                  >
+                    View
+                  </Button>
+                )}
                 {onResyncBracket && bracket.challonge_tournament_id && (
                   <Button 
                     size="sm" 

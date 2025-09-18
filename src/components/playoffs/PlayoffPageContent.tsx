@@ -7,42 +7,25 @@ import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
 import { ChallongeFallback } from "@/components/playoffs/embeds/ChallongeFallback";
 import { PlayoffBracket } from "@/types/playoffs";
-import BracketView from "./BracketView";
 
 interface PlayoffPageContentProps {
   availableDivisions: string[];
   bracketsByDivision: Record<string, Partial<PlayoffBracket>[]>;
-  selectedBracketId: string | null;
   allBracketsData: Partial<PlayoffBracket>[];
   isLoading: boolean;
   onCreateBracket: () => void;
-  onViewBracket: (id: string) => void;
-  onEditBracket: () => void;
-  onEditMatch: (matchId: string) => void;
   onDeleteBracket?: (id: string, name: string) => void;
   onRefreshData?: () => Promise<void>;
-  
-  // Enhanced props for better data flow
-  bracket?: any;
-  teams?: any[];
-  bracketLoading?: boolean;
 }
 
 const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   availableDivisions,
   bracketsByDivision,
-  selectedBracketId,
   allBracketsData,
   isLoading,
   onCreateBracket,
-  onViewBracket,
-  onEditBracket,
-  onEditMatch,
   onDeleteBracket,
-  onRefreshData,
-  bracket,
-  teams,
-  bracketLoading
+  onRefreshData
 }) => {
   // Enhanced refresh state management
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -66,10 +49,8 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
     }
   }, [onRefreshData, isRefreshing]);
 
-  // Memoized display loading for performance
-  const displayLoading = useMemo(() => {
-    return bracketLoading !== undefined ? bracketLoading : isLoading;
-  }, [bracketLoading, isLoading]);
+  // Display loading state
+  const displayLoading = isLoading;
 
   // Memoized division cards for performance - only show divisions with actual brackets
   const divisionsWithBrackets = useMemo(() => {
@@ -85,10 +66,9 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
         division={division}
         brackets={bracketsByDivision[division] || []}
         onCreateBracket={onCreateBracket}
-        onViewBracket={onViewBracket}
       />
     ));
-  }, [divisionsWithBrackets, bracketsByDivision, onCreateBracket, onViewBracket]);
+  }, [divisionsWithBrackets, bracketsByDivision, onCreateBracket]);
 
   // Enhanced loading state with refresh capability
   if (displayLoading && !allBracketsData.length && !isRefreshing) {
@@ -159,24 +139,6 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
             {divisionCards}
           </div>
         </>
-      )}
-      
-      {/* Enhanced selected bracket view with error boundaries */}
-      {selectedBracketId && (
-        <div className="mt-8">
-          <React.Suspense fallback={
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="w-6 h-6 animate-spin text-cornhole-navy" />
-            </div>
-          }>
-            <BracketView 
-              bracketId={selectedBracketId}
-              bracket={bracket}
-              teams={teams}
-              onEditMatch={onEditMatch}
-            />
-          </React.Suspense>
-        </div>
       )}
       
     </div>

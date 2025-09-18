@@ -14,16 +14,9 @@ const PlayoffView: React.FC = () => {
     <PlayoffPageContent
       availableDivisions={data.availableDivisions}
       bracketsByDivision={data.typesafeBracketsByDivision}
-      selectedBracketId={data.selectedBracketId}
-      bracket={data.bracket}
-      teams={data.teams}
-      bracketLoading={data.isLoading}
       allBracketsData={data.allBracketsData}
       isLoading={data.isLoading}
       onCreateBracket={view.handleCreateBracket}
-      onViewBracket={data.setSelectedBracketId}
-      onEditBracket={view.handleCreateBracket}
-      onEditMatch={handlers.handleEditMatch}
       onDeleteBracket={data.isAdmin ? view.handleDeleteBracket : undefined}
       onRefreshData={data.refetchBrackets}
     />
