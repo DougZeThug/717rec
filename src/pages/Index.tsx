@@ -5,7 +5,7 @@ import TopTeams from "@/components/home/TopTeams";
 import CallToAction from "@/components/home/CallToAction";
 import HeroSection from "@/components/home/HeroSection";
 import LeagueHistoryBar from "@/components/home/LeagueHistoryBar";
-import ChampionsCard from "@/components/home/ChampionsCard";
+import PlayoffsAnnouncementBanner from "@/components/home/PlayoffsAnnouncementBanner";
 import PendingScoresCard from "@/components/home/PendingScoresCard";
 import PageLayout from "@/components/layout/PageLayout";
 import PageHeader from "@/components/layout/PageHeader";
@@ -43,7 +43,7 @@ const Index: React.FC = () => {
       
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
         <PageTransition animation="fadeInSlideUp" delay="short">
-          <ChampionsCard />
+          <PlayoffsAnnouncementBanner />
         </PageTransition>
 
         <PageTransition animation="fadeInSlideUp" delay="medium">
