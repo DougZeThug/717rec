@@ -110,14 +110,18 @@ const ChallongeEmbedWithToggle: React.FC<{
       {isOpen && (
         <div className="transition-all duration-300 ease-in-out">
           <iframe
-            src={`https://challonge.com/${slug}/module?theme=8411&show_standings=1&show_final_results=1`}
+            src={`https://challonge.com/${slug}/module?theme=8411&show_standings=1&show_final_results=1&multiplier=1.0`}
             width="100%"
             height="500"
             frameBorder="0"
             scrolling="auto"
             allowTransparency
             title={`${title} Bracket`}
-            className="border-0"
+            className="border-0 w-full min-w-full"
+            style={{ 
+              colorScheme: 'normal',
+              minWidth: '100%'
+            }}
           />
         </div>
       )}
