@@ -21,7 +21,7 @@ const PlayoffsAnnouncementBanner: React.FC = () => {
         <div className="flex justify-center items-center gap-2 mb-6">
           <Trophy className="w-8 h-8 text-yellow-300 animate-pulse" />
           <h2 className="text-3xl md:text-4xl font-bebas uppercase tracking-wide">
-            Week 2 Playoff Bracket!
+            Playoffs start tonight!
           </h2>
           <Star className="w-8 h-8 text-yellow-300 animate-pulse" />
         </div>
