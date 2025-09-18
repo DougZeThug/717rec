@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Expand, Minimize, ChevronDown, ChevronUp } from "lucide-react";
 
 const brackets = [
-  { slug: "3z8nyjfd", title: "Competitive" },
+  { slug: "o4q3dyy2", title: "Competitive" },
   { slug: "9oy80ax6", title: "Intermediate 1" },
   { slug: "pkem4pw9", title: "Intermediate 2" },
   { slug: "bnqell8t", title: "Recreational" },
