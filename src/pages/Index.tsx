@@ -1,6 +1,7 @@
 
 import React from "react";
 import { useTeams } from "@/hooks/useTeams";
+import { usePendingScoresMatches } from "@/hooks/usePendingScoresMatches";
 import TopTeams from "@/components/home/TopTeams";
 import CallToAction from "@/components/home/CallToAction";
 import HeroSection from "@/components/home/HeroSection";
@@ -15,9 +16,11 @@ import PageTransition from "@/components/transitions/PageTransition";
 
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
+  const { matches: pendingMatches, isLoading: pendingScoresLoading } = usePendingScoresMatches();
   const isMobile = useIsMobile();
   
   const isLoading = teamsLoading;
+  const hasPendingScores = !pendingScoresLoading && pendingMatches.length > 0;
   
   // Top teams by power score
   const topTeams = React.useMemo(() => {
@@ -50,9 +53,11 @@ const Index: React.FC = () => {
           <LeagueHistoryBar />
         </PageTransition>
 
-        <PageTransition animation="fadeInSlideUp" delay="long">
-          <PendingScoresCard />
-        </PageTransition>
+        {hasPendingScores && (
+          <PageTransition animation="fadeInSlideUp" delay="long">
+            <PendingScoresCard />
+          </PageTransition>
+        )}
 
         <PageTransition animation="fadeInSlideUp" delay="long">
           <TopTeams teams={topTeams} />
