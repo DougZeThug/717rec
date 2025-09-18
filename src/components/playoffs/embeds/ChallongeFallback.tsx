@@ -24,7 +24,7 @@ export const ChallongeFallback: React.FC = () => {
     <section className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">2025 Spring Playoffs</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">2025 Summer 2 Playoffs</h2>
           <p className="text-muted-foreground">Live tournament brackets - click any bracket to view details</p>
         </div>
         <Button
