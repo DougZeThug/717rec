@@ -22,16 +22,16 @@ interface DivisionData {
 const useChampions = () => {
   const winners = [
     'ad4ec289-fd85-4322-8ebb-68647607de23', // Cuzzo's Clinic
-    'c9d644a4-4e5a-43a0-9805-9d93299cda35', // Pepperoni Cheesers
-    '2ab2e684-8c28-45c3-801a-ea215433a8e4', // Miracle @ Marion
-    'c577e0f9-6700-4220-a902-b368ca915bbd', // Here for Fireball
+    'fcb5fb21-a8f4-4dbd-a04d-7688832ada8c', // Baggin' & Braggin'
+    '56387477-8ba1-43b7-a307-414926ca5f79', // Zoo Pals
+    'aa967a4d-b9a8-496e-81e9-7993ac005763', // Jerm
   ];
 
   const divisionMap: Record<string, string> = {
     'ad4ec289-fd85-4322-8ebb-68647607de23': 'Competitive',
-    'c9d644a4-4e5a-43a0-9805-9d93299cda35': 'Intermediate 1',
-    '2ab2e684-8c28-45c3-801a-ea215433a8e4': 'Intermediate 2',
-    'c577e0f9-6700-4220-a902-b368ca915bbd': 'Recreational',
+    'fcb5fb21-a8f4-4dbd-a04d-7688832ada8c': 'Intermediate 1',
+    '56387477-8ba1-43b7-a307-414926ca5f79': 'Intermediate 2',
+    'aa967a4d-b9a8-496e-81e9-7993ac005763': 'Recreational',
   };
 
   return useQuery({
@@ -151,7 +151,7 @@ const ChampionsCard: React.FC = () => {
       animations.fadeIn
     )}>
       <h2 className="text-xl md:text-2xl font-bold font-inter mb-4 flex items-center gap-2">
-        🏆 Summer 1 2025 Champions
+        🏆 Summer 2 2025 Champions
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
