@@ -121,8 +121,13 @@ const calculateCareerPowerScore = async (
   const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
   const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4 * teamDivisionWeight);
   
-  // Competitive playoff bonus: +1 for each win in competitive division playoffs
-  const competitivePlayoffBonus = competitivePlayoffWins * 1;
+  // Competitive playoff bonus: +0.5 for each win in competitive division playoffs
+  const competitivePlayoffBonus = competitivePlayoffWins * 0.5;
+  
+  // Debug logging for competitive playoff bonus
+  if (competitivePlayoffWins > 0) {
+    console.log(`Team ${teamId} competitive playoff wins: ${competitivePlayoffWins}, bonus: ${competitivePlayoffBonus}`);
+  }
   
   // Division progression bonus: +3 points for teams that moved up and succeeded
   const progressionBonus = hasUpwardProgression ? 3 : 0;
