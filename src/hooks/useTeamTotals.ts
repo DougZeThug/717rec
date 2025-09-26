@@ -96,7 +96,7 @@ const calculateCareerPowerScore = async (
   
   // Determine division penalty multiplier based on division tier
   const getDivisionPenaltyMultiplier = (divisionWeight: number): number => {
-    if (divisionWeight >= 0.95) return 1.0;   // Competitive: no penalty
+    if (divisionWeight >= 0.89) return 1.0;   // Competitive: no penalty
     if (divisionWeight >= 0.5) return 0.9;    // Intermediate: 10% penalty
     return 0.75;                              // Recreational: 25% penalty
   };
