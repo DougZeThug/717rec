@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HeadToHeadMap } from "@/types";
+
 import { HeadToHeadRecord } from "@/types/headToHead";
 import { useHeadToHead } from "@/hooks/useHeadToHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,13 +15,12 @@ import { format } from "date-fns";
 
 interface HeadToHeadRecordsProps {
   teamId: string;
-  headToHead?: HeadToHeadMap; // Keep for backward compatibility
 }
 
 type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game_wins';
 type SortDirection = 'asc' | 'desc';
 
-const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHead }) => {
+const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
   const navigate = useNavigate();
   const { data: records, isLoading, error } = useHeadToHead(teamId);
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,19 +29,8 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, headToHea
   const [selectedOpponent, setSelectedOpponent] = useState<{ id: string; name: string } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Fallback to legacy head-to-head data if new system fails
-  const displayRecords = records?.length ? records : (headToHead ? Object.values(headToHead).map(record => ({
-    team_id: teamId,
-    opponent_id: '', // Not available in legacy format
-    opponent_name: record.opponentName,
-    matches_played: record.wins + record.losses,
-    wins: record.wins,
-    losses: record.losses,
-    game_wins: 0, // Not available in legacy format
-    game_losses: 0, // Not available in legacy format
-    win_pct: record.wins + record.losses > 0 ? record.wins / (record.wins + record.losses) : 0,
-    last_played_at: null
-  } as HeadToHeadRecord)) : []);
+  // Use fresh database data directly  
+  const displayRecords = records || [];
 
   const filteredRecords = displayRecords
     .filter(record => 
