@@ -14,14 +14,15 @@ export const getPowerScoreColor = (score: number | null | undefined): string => 
     return "text-gray-400 dark:text-gray-500"; // Neutral color for no data
   }
   
-  // Enhanced 7-tier color system for better differentiation:
+  // Enhanced 8-tier color system for better differentiation:
   // - Elite/Championship (85+): Gold
   // - Excellent (70-84): Green  
   // - Strong (60-69): Blue
   // - Average (50-59): Orange
   // - Below Average (40-49): Amber
   // - Poor (30-39): Pink
-  // - Struggling (<30): Red
+  // - Struggling (20-29): Purple
+  // - Critical (<20): Red
   
   if (score >= 85) return "text-yellow-600 dark:text-yellow-500";   // Elite/Championship
   if (score >= 70) return "text-green-600 dark:text-green-500";    // Excellent
@@ -29,7 +30,8 @@ export const getPowerScoreColor = (score: number | null | undefined): string => 
   if (score >= 50) return "text-orange-500 dark:text-orange-400"; // Average
   if (score >= 40) return "text-amber-600 dark:text-amber-500";   // Below Average
   if (score >= 30) return "text-pink-600 dark:text-pink-500";     // Poor
-  return "text-red-600 dark:text-red-500";                        // Struggling
+  if (score >= 20) return "text-purple-600 dark:text-purple-500"; // Struggling
+  return "text-red-600 dark:text-red-500";                        // Critical
 };
 
 export const getPowerScoreBackgroundColor = (score: number | null | undefined): string => {
@@ -43,7 +45,8 @@ export const getPowerScoreBackgroundColor = (score: number | null | undefined): 
   if (score >= 50) return "bg-orange-100 dark:bg-orange-900/20"; // Average
   if (score >= 40) return "bg-amber-100 dark:bg-amber-900/20";   // Below Average
   if (score >= 30) return "bg-pink-100 dark:bg-pink-900/20";     // Poor
-  return "bg-red-100 dark:bg-red-900/20";                        // Struggling
+  if (score >= 20) return "bg-purple-100 dark:bg-purple-900/20"; // Struggling
+  return "bg-red-100 dark:bg-red-900/20";                        // Critical
 };
 
 export const getPowerScoreBorderColor = (score: number | null | undefined): string => {
@@ -57,7 +60,8 @@ export const getPowerScoreBorderColor = (score: number | null | undefined): stri
   if (score >= 50) return "border-orange-300 dark:border-orange-700"; // Average
   if (score >= 40) return "border-amber-300 dark:border-amber-700";   // Below Average
   if (score >= 30) return "border-pink-300 dark:border-pink-700";     // Poor
-  return "border-red-300 dark:border-red-700";                        // Struggling
+  if (score >= 20) return "border-purple-300 dark:border-purple-700"; // Struggling
+  return "border-red-300 dark:border-red-700";                        // Critical
 };
 
 // Power score interpretation helper
@@ -72,5 +76,6 @@ export const getPowerScoreDescription = (score: number | null | undefined): stri
   if (score >= 50) return "Average";              // Solid performance
   if (score >= 40) return "Below Average";        // Needs improvement
   if (score >= 30) return "Poor";                 // Struggling
-  return "Needs Major Improvement";               // Bottom tier
+  if (score >= 20) return "Struggling";           // Critical issues
+  return "Critical Performance";                  // Bottom tier
 };
