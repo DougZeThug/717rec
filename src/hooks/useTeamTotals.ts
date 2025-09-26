@@ -28,10 +28,19 @@ const calculateCareerPowerScore = async (
 ): Promise<number> => {
   // Career Power Score using historical season data as foundation + playoff bonuses
   
+  // Get team's current division weight for scaling bonuses
+  const { data: teamData } = await supabase
+    .from('teams')
+    .select('divisions(division_weight)')
+    .eq('id', teamId)
+    .single();
+  
+  const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
+  
   // Get historical season power scores from team_season_stats
   const { data: seasonStats } = await supabase
     .from('team_season_stats')
-    .select('power_score, match_wins, match_losses')
+    .select('power_score, match_wins, match_losses, division_name')
     .eq('team_id', teamId)
     .not('power_score', 'is', null);
 
@@ -45,14 +54,30 @@ const calculateCareerPowerScore = async (
   // Calculate weighted average including BOTH historical AND current season data
   let totalWeightedScore = 0;
   let totalMatches = 0;
+  let hasUpwardProgression = false;
   
-  // Add historical season data
+  // Add historical season data and check for division progression
   if (seasonStats && seasonStats.length > 0) {
+    let previousDivisionName = null;
+    
     for (const season of seasonStats) {
       const seasonMatches = season.match_wins + season.match_losses;
       if (seasonMatches > 0 && season.power_score !== null) {
         totalWeightedScore += season.power_score * seasonMatches;
         totalMatches += seasonMatches;
+        
+        // Check for upward division progression
+        if (previousDivisionName && season.division_name) {
+          const divisionRankings = ['recreational', 'intermediate 2', 'intermediate', 'competitive'];
+          const previousRank = divisionRankings.indexOf(previousDivisionName.toLowerCase());
+          const currentRank = divisionRankings.indexOf(season.division_name.toLowerCase());
+          
+          if (currentRank > previousRank && season.power_score > 60) {
+            hasUpwardProgression = true;
+          }
+        }
+        
+        previousDivisionName = season.division_name;
       }
     }
   }
@@ -66,37 +91,35 @@ const calculateCareerPowerScore = async (
     }
   }
   
-  // Calculate base career score
+  // Calculate base career score and apply division weight scaling
   let baseCareerScore = 50; // Default fallback
   
   if (totalMatches > 0) {
-    baseCareerScore = totalWeightedScore / totalMatches;
+    const rawScore = totalWeightedScore / totalMatches;
+    // Apply division weight scaling to base score to reward higher division play
+    baseCareerScore = rawScore * teamDivisionWeight;
   } else {
-    // Final fallback - use team's division weight * 100
-    const { data: teamData } = await supabase
-      .from('teams')
-      .select('divisions(division_weight)')
-      .eq('id', teamId)
-      .single();
-    
-    const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
-    baseCareerScore = teamDivisionWeight * 100;
+    // Final fallback - use team's division weight * 50 (baseline)
+    baseCareerScore = teamDivisionWeight * 50;
   }
   
-  // Calculate playoff bonuses (modest and capped)
-  const championshipBonus = championships * 7; // 7 points per championship
-  const runnerUpBonus = runnerUps * 4; // 4 points per runner-up
+  // Calculate playoff bonuses scaled by division weight
+  const championshipBonus = championships * 7 * teamDivisionWeight;
+  const runnerUpBonus = runnerUps * 4 * teamDivisionWeight;
   
   // Calculate other playoff performance bonus from playoff record
   const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
   const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
-  const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4); // Bonus for >50% playoff win rate
+  const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4 * teamDivisionWeight);
   
   // Competitive playoff bonus: +1 for each win in competitive division playoffs
   const competitivePlayoffBonus = competitivePlayoffWins * 1;
   
-  // Total playoff bonus (capped at +20 points to accommodate competitive bonus)
-  const totalPlayoffBonus = Math.min(20, championshipBonus + runnerUpBonus + otherPlayoffBonus + competitivePlayoffBonus);
+  // Division progression bonus: +3 points for teams that moved up and succeeded
+  const progressionBonus = hasUpwardProgression ? 3 : 0;
+  
+  // Total playoff bonus (capped at +15 points but higher divisions get more value within cap)
+  const totalPlayoffBonus = Math.min(15, championshipBonus + runnerUpBonus + otherPlayoffBonus + competitivePlayoffBonus + progressionBonus);
   
   // Final career power score
   return Math.min(100, baseCareerScore + totalPlayoffBonus);
