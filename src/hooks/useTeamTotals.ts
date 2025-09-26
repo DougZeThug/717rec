@@ -112,9 +112,18 @@ const calculateCareerPowerScore = async (
     baseCareerScore = divisionPenaltyMultiplier * 50;
   }
   
-  // Calculate playoff bonuses scaled by division weight
-  const championshipBonus = championships * 7 * teamDivisionWeight;
-  const runnerUpBonus = runnerUps * 4 * teamDivisionWeight;
+  // Get championship weight based on division tier
+  const getChampionshipWeight = (divisionWeight: number): number => {
+    if (divisionWeight >= 0.89) return 1.0;   // Competitive: full weight
+    if (divisionWeight >= 0.7) return 0.75;   // Intermediate 1: 75% weight
+    if (divisionWeight >= 0.35) return 0.5;   // Intermediate 2: 50% weight
+    return 0.25;                              // Recreational: 25% weight
+  };
+
+  // Calculate playoff bonuses with fixed tier-based weights
+  const championshipWeight = getChampionshipWeight(teamDivisionWeight);
+  const championshipBonus = championships * 7 * championshipWeight;
+  const runnerUpBonus = runnerUps * 4 * championshipWeight;
   
   // Calculate other playoff performance bonus from playoff record
   const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
@@ -124,16 +133,8 @@ const calculateCareerPowerScore = async (
   // Competitive playoff bonus: +0.5 for each win in competitive division playoffs
   const competitivePlayoffBonus = competitivePlayoffWins * 0.5;
   
-  // Debug logging for competitive playoff bonus
-  if (competitivePlayoffWins > 0) {
-    console.log(`Team ${teamId} competitive playoff wins: ${competitivePlayoffWins}, bonus: ${competitivePlayoffBonus}`);
-  }
-  
-  // Division progression bonus: +3 points for teams that moved up and succeeded
-  const progressionBonus = hasUpwardProgression ? 3 : 0;
-  
   // Total playoff bonus (capped at +15 points but higher divisions get more value within cap)
-  const totalPlayoffBonus = Math.min(15, championshipBonus + runnerUpBonus + otherPlayoffBonus + competitivePlayoffBonus + progressionBonus);
+  const totalPlayoffBonus = Math.min(15, championshipBonus + runnerUpBonus + otherPlayoffBonus + competitivePlayoffBonus);
   
   // Final career power score
   return Math.min(100, baseCareerScore + totalPlayoffBonus);
