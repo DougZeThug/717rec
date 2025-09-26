@@ -3,21 +3,27 @@ import { HeadToHeadService } from "@/services/HeadToHeadService";
 
 export const useHeadToHead = (teamId: string | undefined) => {
   return useQuery({
-    queryKey: ['head-to-head', teamId],
+    queryKey: ['head-to-head', teamId, Date.now()], // Add timestamp to force fresh data
     queryFn: () => teamId ? HeadToHeadService.getTeamHeadToHead(teamId) : Promise.resolve([]),
     enabled: !!teamId,
     staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache results (formerly cacheTime)
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
 export const useOpponentHistory = (teamId: string | undefined, opponentId: string | undefined) => {
   return useQuery({
-    queryKey: ['opponent-history', teamId, opponentId],
+    queryKey: ['opponent-history', teamId, opponentId, Date.now()], // Add timestamp to force fresh data
     queryFn: () => 
       teamId && opponentId 
         ? HeadToHeadService.getOpponentHistory(teamId, opponentId)
         : Promise.resolve(null),
     enabled: !!(teamId && opponentId),
     staleTime: 0,
+    gcTime: 0, // Don't cache results (formerly cacheTime)
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
