@@ -23,7 +23,8 @@ const calculateCareerPowerScore = async (
   careerGameWins: number,
   careerGameLosses: number,
   careerPlayoffWins: number,
-  careerPlayoffLosses: number
+  careerPlayoffLosses: number,
+  competitivePlayoffWins: number
 ): Promise<number> => {
   // Career Power Score using historical season data as foundation + playoff bonuses
   
@@ -91,8 +92,11 @@ const calculateCareerPowerScore = async (
   const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
   const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4); // Bonus for >50% playoff win rate
   
-  // Total playoff bonus (capped at +15 points)
-  const totalPlayoffBonus = Math.min(15, championshipBonus + runnerUpBonus + otherPlayoffBonus);
+  // Competitive playoff bonus: +1 for each win in competitive division playoffs
+  const competitivePlayoffBonus = competitivePlayoffWins * 1;
+  
+  // Total playoff bonus (capped at +20 points to accommodate competitive bonus)
+  const totalPlayoffBonus = Math.min(20, championshipBonus + runnerUpBonus + otherPlayoffBonus + competitivePlayoffBonus);
   
   // Final career power score
   return Math.min(100, baseCareerScore + totalPlayoffBonus);
@@ -138,7 +142,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     console.error('Error fetching current matches:', matchError);
   }
 
-  // Get playoff matches
+  // Get playoff matches with bracket information
   const { data: playoffMatches, error: playoffError } = await supabase
     .from('playoff_matches')
     .select(`
@@ -147,13 +151,36 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
       team1_score,
       team2_score,
       team1_id,
-      team2_id
+      team2_id,
+      bracket_id
     `)
     .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
     .not('winner_id', 'is', null);
 
   if (playoffError) {
     console.error('Error fetching playoff matches:', playoffError);
+  }
+
+  // Get bracket division weights for competitive playoff detection
+  let bracketDivisionWeights: Record<string, number> = {};
+  if (playoffMatches && playoffMatches.length > 0) {
+    const bracketIds = [...new Set(playoffMatches.map(match => match.bracket_id).filter(Boolean))];
+    
+    if (bracketIds.length > 0) {
+      const { data: bracketData } = await supabase
+        .from('brackets')
+        .select(`
+          id,
+          divisions(division_weight)
+        `)
+        .in('id', bracketIds);
+      
+      if (bracketData) {
+        for (const bracket of bracketData) {
+          bracketDivisionWeights[bracket.id] = bracket.divisions?.division_weight || 0.85;
+        }
+      }
+    }
   }
 
   // Calculate career totals from season stats
@@ -177,14 +204,21 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     }
   }
 
-  // Calculate playoff record
+  // Calculate playoff record and competitive playoff wins
   let career_playoff_wins = 0;
   let career_playoff_losses = 0;
+  let competitive_playoff_wins = 0;
 
   if (playoffMatches) {
     for (const match of playoffMatches) {
+      const bracketDivisionWeight = bracketDivisionWeights[match.bracket_id] || 0.85;
+      const isCompetitiveDivision = bracketDivisionWeight === 1.00;
+      
       if (match.winner_id === teamId) {
         career_playoff_wins++;
+        if (isCompetitiveDivision) {
+          competitive_playoff_wins++;
+        }
         career_game_wins += match.team1_id === teamId ? (match.team1_score || 0) : (match.team2_score || 0);
         career_game_losses += match.team1_id === teamId ? (match.team2_score || 0) : (match.team1_score || 0);
       } else if (match.loser_id === teamId) {
@@ -222,7 +256,8 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     career_game_wins,
     career_game_losses,
     career_playoff_wins,
-    career_playoff_losses
+    career_playoff_losses,
+    competitive_playoff_wins
   );
 
   return {
