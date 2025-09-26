@@ -23,9 +23,34 @@ export class HeadToHeadService {
 
       console.log('📊 RPC Results:', {
         recordCount: data?.length || 0,
-        rawData: data?.slice(0, 3),
+        rawData: data,
         dataStructure: data?.[0] ? Object.keys(data[0]) : 'No data'
       });
+
+      // STALE DATA DETECTION: Check if we're getting incomplete data
+      if (data && data.length > 0) {
+        const dateRange = {
+          earliest: Math.min(...data.map(d => new Date(d.last_played_at).getTime())),
+          latest: Math.max(...data.map(d => new Date(d.last_played_at).getTime()))
+        };
+        console.log('🕐 DATA DATE ANALYSIS:', {
+          recordCount: data.length,
+          dateRange: {
+            earliest: new Date(dateRange.earliest).toISOString(),
+            latest: new Date(dateRange.latest).toISOString()
+          },
+          isStale: dateRange.latest < Date.now() - (30 * 24 * 60 * 60 * 1000) // Older than 30 days
+        });
+        
+        // Log all opponent IDs to check for data completeness
+        console.log('🏁 ALL OPPONENTS IN RESPONSE:', data.map(d => ({
+          opponent_id: d.opponent_id,
+          wins: d.wins,
+          losses: d.losses,
+          matches: d.matches_played,
+          last_played: d.last_played_at
+        })));
+      }
 
       // Step 2: Get team names and logos for opponents
       const opponentIds = data?.map(record => record.opponent_id) || [];

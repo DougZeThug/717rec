@@ -3,13 +3,14 @@ import { HeadToHeadService } from "@/services/HeadToHeadService";
 
 export const useHeadToHead = (teamId: string | undefined) => {
   return useQuery({
-    queryKey: ['head-to-head', teamId],
+    queryKey: ['head-to-head', teamId, Date.now()], // Force fresh requests with timestamp
     queryFn: () => teamId ? HeadToHeadService.getTeamHeadToHead(teamId) : Promise.resolve([]),
     enabled: !!teamId,
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Don't cache results (formerly cacheTime)
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    retry: false, // Don't retry to avoid cached responses
   });
 };
 

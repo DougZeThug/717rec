@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useQueryClient } from "@tanstack/react-query";
 import { HeadToHeadRecord } from "@/types/headToHead";
 import { useHeadToHead } from "@/hooks/useHeadToHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ArrowUpDown, Search, Calendar, Trophy, X, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowUpDown, Search, Calendar, Trophy, X, ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
 import { OpponentHistoryModal } from "./OpponentHistoryModal";
 import { format } from "date-fns";
 
@@ -22,15 +22,44 @@ type SortDirection = 'asc' | 'desc';
 
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
   const navigate = useNavigate();
-  const { data: records, isLoading, error } = useHeadToHead(teamId);
+  const queryClient = useQueryClient();
+  const { data: records, isLoading, error, refetch } = useHeadToHead(teamId);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>('wins');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedOpponent, setSelectedOpponent] = useState<{ id: string; name: string } | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Force cache clear and refresh on mount
+  useEffect(() => {
+    console.log('🔄 HeadToHeadRecords mounted for team:', teamId);
+    queryClient.invalidateQueries({ queryKey: ['head-to-head'] });
+  }, [teamId, queryClient]);
+
   // Use fresh database data directly  
   const displayRecords = records || [];
+
+  // Stale data detection
+  useEffect(() => {
+    if (displayRecords.length > 0) {
+      console.log('🔍 FRONTEND DATA ANALYSIS:', {
+        recordCount: displayRecords.length,
+        records: displayRecords.map(r => ({
+          opponent: r.opponent_name,
+          matches: r.matches_played,
+          wins: r.wins,
+          losses: r.losses,
+          lastPlayed: r.last_played_at
+        }))
+      });
+    }
+  }, [displayRecords]);
+
+  const forceRefresh = async () => {
+    console.log('🚀 FORCE REFRESH triggered');
+    await queryClient.invalidateQueries({ queryKey: ['head-to-head'] });
+    await refetch();
+  };
 
   const filteredRecords = displayRecords
     .filter(record => 
@@ -85,11 +114,22 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={forceRefresh}
+                    className="h-7 w-7 p-0"
+                    title="Force refresh data"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                  {isOpen ? (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
               </div>
             </CardHeader>
           </CollapsibleTrigger>
@@ -111,11 +151,22 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={forceRefresh}
+                    className="h-7 w-7 p-0"
+                    title="Force refresh data"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                  {isOpen ? (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
               </div>
             </CardHeader>
           </CollapsibleTrigger>
@@ -137,11 +188,22 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={forceRefresh}
+                    className="h-7 w-7 p-0"
+                    title="Force refresh data"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                  {isOpen ? (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
               </div>
             </CardHeader>
           </CollapsibleTrigger>
@@ -163,11 +225,22 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={forceRefresh}
+                    className="h-7 w-7 p-0"
+                    title="Force refresh data"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                  {isOpen ? (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
               </div>
             </CardHeader>
           </CollapsibleTrigger>
