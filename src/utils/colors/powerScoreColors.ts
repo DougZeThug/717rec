@@ -2,44 +2,75 @@
 // Power score color utilities for the corrected 0-100 scale
 // Now properly aligned with the 40/40/20 database calculation
 
-export const formatPowerScore = (score: number): string => {
+export const formatPowerScore = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return "N/A";
+  }
   return score.toFixed(1);
 };
 
-export const getPowerScoreColor = (score: number): string => {
-  // Updated color thresholds for the corrected 0-100 scale:
-  // - Perfect Competitive teams: ~90-100 (green)
-  // - Perfect Intermediate teams: ~75-85 (blue)  
-  // - Perfect Recreational teams: ~60-70 (orange)
-  // - Below average performance: <55 (red)
+export const getPowerScoreColor = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return "text-gray-400 dark:text-gray-500"; // Neutral color for no data
+  }
   
-  if (score >= 85) return "text-green-600 dark:text-green-500";
-  if (score >= 70) return "text-blue-600 dark:text-blue-500";
-  if (score >= 55) return "text-orange-500 dark:text-orange-400";
-  return "text-red-600 dark:text-red-500";
+  // Enhanced 7-tier color system for better differentiation:
+  // - Elite/Championship (85+): Gold
+  // - Excellent (70-84): Green  
+  // - Strong (60-69): Blue
+  // - Average (50-59): Orange
+  // - Below Average (40-49): Amber
+  // - Poor (30-39): Pink
+  // - Struggling (<30): Red
+  
+  if (score >= 85) return "text-yellow-600 dark:text-yellow-500";   // Elite/Championship
+  if (score >= 70) return "text-green-600 dark:text-green-500";    // Excellent
+  if (score >= 60) return "text-blue-600 dark:text-blue-500";     // Strong
+  if (score >= 50) return "text-orange-500 dark:text-orange-400"; // Average
+  if (score >= 40) return "text-amber-600 dark:text-amber-500";   // Below Average
+  if (score >= 30) return "text-pink-600 dark:text-pink-500";     // Poor
+  return "text-red-600 dark:text-red-500";                        // Struggling
 };
 
-export const getPowerScoreBackgroundColor = (score: number): string => {
-  if (score >= 85) return "bg-green-100 dark:bg-green-900/20";
-  if (score >= 70) return "bg-blue-100 dark:bg-blue-900/20";
-  if (score >= 55) return "bg-orange-100 dark:bg-orange-900/20";
-  return "bg-red-100 dark:bg-red-900/20";
+export const getPowerScoreBackgroundColor = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return "bg-gray-100 dark:bg-gray-900/20";
+  }
+  
+  if (score >= 85) return "bg-yellow-100 dark:bg-yellow-900/20";   // Elite/Championship
+  if (score >= 70) return "bg-green-100 dark:bg-green-900/20";    // Excellent
+  if (score >= 60) return "bg-blue-100 dark:bg-blue-900/20";     // Strong
+  if (score >= 50) return "bg-orange-100 dark:bg-orange-900/20"; // Average
+  if (score >= 40) return "bg-amber-100 dark:bg-amber-900/20";   // Below Average
+  if (score >= 30) return "bg-pink-100 dark:bg-pink-900/20";     // Poor
+  return "bg-red-100 dark:bg-red-900/20";                        // Struggling
 };
 
-export const getPowerScoreBorderColor = (score: number): string => {
-  if (score >= 85) return "border-green-300 dark:border-green-700";
-  if (score >= 70) return "border-blue-300 dark:border-blue-700";
-  if (score >= 55) return "border-orange-300 dark:border-orange-700";
-  return "border-red-300 dark:border-red-700";
+export const getPowerScoreBorderColor = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return "border-gray-300 dark:border-gray-700";
+  }
+  
+  if (score >= 85) return "border-yellow-300 dark:border-yellow-700";   // Elite/Championship
+  if (score >= 70) return "border-green-300 dark:border-green-700";    // Excellent
+  if (score >= 60) return "border-blue-300 dark:border-blue-700";     // Strong
+  if (score >= 50) return "border-orange-300 dark:border-orange-700"; // Average
+  if (score >= 40) return "border-amber-300 dark:border-amber-700";   // Below Average
+  if (score >= 30) return "border-pink-300 dark:border-pink-700";     // Poor
+  return "border-red-300 dark:border-red-700";                        // Struggling
 };
 
 // Power score interpretation helper
-export const getPowerScoreDescription = (score: number): string => {
-  if (score >= 90) return "Elite Performance";
-  if (score >= 85) return "Excellent";
-  if (score >= 75) return "Very Good";
-  if (score >= 65) return "Above Average";
-  if (score >= 55) return "Average";
-  if (score >= 45) return "Below Average";
-  return "Needs Improvement";
+export const getPowerScoreDescription = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return "No Data";
+  }
+  
+  if (score >= 85) return "Elite Performance";     // Championship level
+  if (score >= 70) return "Excellent";            // Strong competitive
+  if (score >= 60) return "Very Good";            // Above average
+  if (score >= 50) return "Average";              // Solid performance
+  if (score >= 40) return "Below Average";        // Needs improvement
+  if (score >= 30) return "Poor";                 // Struggling
+  return "Needs Major Improvement";               // Bottom tier
 };
