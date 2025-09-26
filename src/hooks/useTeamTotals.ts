@@ -91,16 +91,25 @@ const calculateCareerPowerScore = async (
     }
   }
   
-  // Calculate base career score and apply division weight scaling
+  // Calculate base career score and apply division penalty system
   let baseCareerScore = 50; // Default fallback
+  
+  // Determine division penalty multiplier based on division tier
+  const getDivisionPenaltyMultiplier = (divisionWeight: number): number => {
+    if (divisionWeight >= 0.95) return 1.0;   // Competitive: no penalty
+    if (divisionWeight >= 0.5) return 0.9;    // Intermediate: 10% penalty
+    return 0.75;                              // Recreational: 25% penalty
+  };
   
   if (totalMatches > 0) {
     const rawScore = totalWeightedScore / totalMatches;
-    // Apply division weight scaling to base score to reward higher division play
-    baseCareerScore = rawScore * teamDivisionWeight;
+    // Apply division penalty to base score (less harsh than previous system)
+    const divisionPenaltyMultiplier = getDivisionPenaltyMultiplier(teamDivisionWeight);
+    baseCareerScore = rawScore * divisionPenaltyMultiplier;
   } else {
-    // Final fallback - use team's division weight * 50 (baseline)
-    baseCareerScore = teamDivisionWeight * 50;
+    // Final fallback - use division penalty * 50 (baseline)
+    const divisionPenaltyMultiplier = getDivisionPenaltyMultiplier(teamDivisionWeight);
+    baseCareerScore = divisionPenaltyMultiplier * 50;
   }
   
   // Calculate playoff bonuses scaled by division weight
