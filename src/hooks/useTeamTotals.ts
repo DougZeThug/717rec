@@ -244,7 +244,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   if (playoffMatches) {
     for (const match of playoffMatches) {
       const bracketDivisionWeight = bracketDivisionWeights[match.bracket_id] || 0.85;
-      const isCompetitiveDivision = bracketDivisionWeight === 1.00;
+      const isCompetitiveDivision = bracketDivisionWeight >= 0.89;
       
       if (match.winner_id === teamId) {
         career_playoff_wins++;
