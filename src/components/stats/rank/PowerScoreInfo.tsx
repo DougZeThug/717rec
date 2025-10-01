@@ -19,7 +19,7 @@ export const PowerScoreInfo = () => {
           />
         </PopoverTrigger>
         <PopoverContent side="top" className="max-w-[300px] text-xs">
-          Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+          Power Score combines match win percentage (40%), strength of schedule (45%), and game win percentage (15%) 
           into a single rating from 0-100. Higher scores indicate stronger overall performance.
         </PopoverContent>
       </Popover>
@@ -37,7 +37,7 @@ export const PowerScoreInfo = () => {
           />
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-[300px] text-xs">
-          Power Score combines win percentage (50%), game win rate (30%), and strength of schedule (20%) 
+          Power Score combines match win percentage (40%), strength of schedule (45%), and game win percentage (15%) 
           into a single rating from 0-100. Higher scores indicate stronger overall performance.
         </TooltipContent>
       </Tooltip>

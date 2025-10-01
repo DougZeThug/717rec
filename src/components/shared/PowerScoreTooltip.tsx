@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export const PowerScoreTooltip = () => {
   const isMobile = useIsMobile();
-  const tooltipText = "Power Score is a weighted performance metric calculated as: 40% Match Wins, 40% Strength of Schedule, and 20% Individual Games Won — with all wins scaled based on opponent difficulty.";
+  const tooltipText = "Power Score is a weighted performance metric calculated as: 40% Match Wins, 45% Strength of Schedule, and 15% Individual Games Won — with all wins scaled based on opponent difficulty.";
 
   if (isMobile) {
     return (

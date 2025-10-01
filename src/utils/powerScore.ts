@@ -1,10 +1,10 @@
 
 // Power score utilities - now handling NULL values for teams with no matches
 // Teams with 0 wins and 0 losses will have NULL power scores instead of 50.0
-// The power score calculation is handled in v_team_details using the CORRECTED 40/40/20 formula:
-// - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches (FIXED)
-// - 40% Strength of Schedule = average opponent division weight  
-// - 20% Weighted Game Win % = (game_wins × opponent_weights) / total_games (FIXED)
+// The power score calculation is handled in v_team_details using the 40/45/15 formula:
+// - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches
+// - 45% Strength of Schedule = average opponent division weight  
+// - 15% Weighted Game Win % = (game_wins × opponent_weights) / total_games
 
 // Re-export power score utilities from centralized location
 export { formatPowerScore, getPowerScoreColor } from '@/utils/colors/powerScoreColors';

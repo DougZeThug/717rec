@@ -1,6 +1,6 @@
 
 // Power score color utilities for the corrected 0-100 scale
-// Now properly aligned with the 40/40/20 database calculation
+// Now properly aligned with the 40/45/15 database calculation
 
 export const formatPowerScore = (score: number | null | undefined): string => {
   if (score === null || score === undefined) {

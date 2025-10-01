@@ -26,7 +26,7 @@ export const fetchTeamsFromApi = async () => {
     `)
     .order('name');
 
-  // Enhanced logging to verify values for the corrected 40/40/20 power score formula
+  // Enhanced logging to verify values for the 40/45/15 power score formula
   if (data && data.length > 0) {
     console.log("Power scores from v_team_details with preserved NULL values:", data.slice(0, 3).map(t => ({
       name: t.name,
@@ -43,7 +43,7 @@ export const fetchTeamsFromApi = async () => {
   }
 
   // Map data directly from v_team_details with proper type handling
-  // The power_score and sos are now calculated correctly in the database using the 40/40/20 formula
+  // The power_score and sos are now calculated correctly in the database using the 40/45/15 formula
   return (data || []).map((team: any): Team => ({
     id: team.team_id,
     name: team.name || 'Unnamed Team',

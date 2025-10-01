@@ -2,10 +2,10 @@
 import { Team, Match, Ranking } from "@/types";
 
 // Ranking utilities - now handles NULL power scores for teams with no matches
-// The power score calculation is handled in v_team_details using the FIXED 40/40/20 formula:
-// - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches (CORRECTED)
-// - 40% Strength of Schedule = average opponent division weight
-// - 20% Weighted Game Win % = (game_wins × opponent_weights) / total_games (CORRECTED)
+// The power score calculation is handled in v_team_details using the 40/45/15 formula:
+// - 40% Weighted Match Win % = (wins × opponent_weights) / total_matches
+// - 45% Strength of Schedule = average opponent division weight
+// - 15% Weighted Game Win % = (game_wins × opponent_weights) / total_games
 
 export const sortRankings = (rankings: Ranking[], sortField: string, direction: 'asc' | 'desc'): Ranking[] => {
   return [...rankings].sort((a, b) => {

@@ -91,8 +91,8 @@ export const calculateTeamStats = async (
   const winPercentValue = calculateWinPercentageUtil(team.wins || 0, team.losses || 0);
   const gameWinPercentValue = parseFloat(gameWinPercentage) / 100;
   
-  // Use the new weighted formula (40/40/20)
-  const powerScore = (winPercentValue * 0.4) + (strengthOfSchedule * 0.4) + (gameWinPercentValue * 0.2);
+  // Use the new weighted formula (40/45/15)
+  const powerScore = (winPercentValue * 0.4) + (strengthOfSchedule * 0.45) + (gameWinPercentValue * 0.15);
   const formattedPowerScore = (powerScore * 100).toFixed(1);
   
   return {

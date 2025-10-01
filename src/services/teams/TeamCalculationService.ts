@@ -2,10 +2,10 @@
 import { Team } from "@/types";
 
 // Team calculation service - now handles NULL power scores for teams with no matches
-// The power score calculation is handled in v_team_details using the corrected 40/40/20 formula:
+// The power score calculation is handled in v_team_details using the 40/45/15 formula:
 // - 40% Weighted Match Win % = (sum of wins × opponent_weights) / total_matches  
-// - 40% Strength of Schedule = average opponent division weight
-// - 20% Weighted Game Win % = (sum of game_wins × opponent_weights) / total_games
+// - 45% Strength of Schedule = average opponent division weight
+// - 15% Weighted Game Win % = (sum of game_wins × opponent_weights) / total_games
 
 export const calculateTeamStats = (team: Team) => {
   const totalMatches = (team.wins || 0) + (team.losses || 0);
