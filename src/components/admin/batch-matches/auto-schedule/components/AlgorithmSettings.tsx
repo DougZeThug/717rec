@@ -67,19 +67,21 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
               />
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="prioritize-quality">Prioritize Match Quality</Label>
-                <p className="text-[0.8rem] text-muted-foreground">
-                  Match teams with similar skill levels (higher priority)
-                </p>
+            {!dualMatchMode && (
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="prioritize-quality">Prioritize Match Quality</Label>
+                  <p className="text-[0.8rem] text-muted-foreground">
+                    Match teams with similar skill levels (higher priority)
+                  </p>
+                </div>
+                <Switch
+                  id="prioritize-quality"
+                  checked={prioritizeQuality}
+                  onCheckedChange={setPrioritizeQuality}
+                />
               </div>
-              <Switch
-                id="prioritize-quality"
-                checked={prioritizeQuality}
-                onCheckedChange={setPrioritizeQuality}
-              />
-            </div>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>

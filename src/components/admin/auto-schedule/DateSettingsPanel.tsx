@@ -133,16 +133,18 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
               />
             </div>
             
-            <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="prioritize-quality" className="flex-1">
-                Prioritize Match Quality
-              </Label>
-              <Switch
-                id="prioritize-quality"
-                checked={prioritizeQuality}
-                onCheckedChange={setPrioritizeQuality}
-              />
-            </div>
+            {!dualMatchMode && (
+              <div className="flex items-center justify-between space-x-2">
+                <Label htmlFor="prioritize-quality" className="flex-1">
+                  Prioritize Match Quality
+                </Label>
+                <Switch
+                  id="prioritize-quality"
+                  checked={prioritizeQuality}
+                  onCheckedChange={setPrioritizeQuality}
+                />
+              </div>
+            )}
             
             <div className="flex items-center justify-between space-x-2">
               <Label htmlFor="dual-match-mode" className="flex-1">

@@ -4,19 +4,42 @@
  * Schedules teams for TWO matches in consecutive timeslots (S1, S2).
  * 
  * ALGORITHM:
- * - Even teams: Everyone plays in S1 and S2
+ * - Even teams: Everyone plays in S1 and S2 (one match per slot)
  * - Odd teams: Bye1 sits out S1, Bye2 sits out S2, they play each other in S3
  * 
  * CONSTRAINTS:
- * - No rematches vs season history
+ * - No rematches against season history
  * - No session rematches (can't play same team twice tonight)
- * - Max tier gap = 1 (blocks T1 vs T3)
- * - Favor same-division, then adjacent-tier
+ * - Max tier gap = 1 (blocks T1 vs T3+)
+ * - Favor same-division first, then adjacent-tier
  * 
  * GUARANTEES:
  * - Every team gets exactly 2 matches
  * - Deterministic (same input = same output)
  * - Fast O(N²) greedy selection
+ * 
+ * ODD TEAM HANDLING:
+ * When there's an odd number of teams, we ensure everyone still gets 2 matches:
+ * 1. Select Bye1 (team that sits out Slot 1)
+ * 2. Generate S1 pairings for all others
+ * 3. Select Bye2 (team that sits out Slot 2, must not have played Bye1 before)
+ * 4. Generate S2 pairings for all others
+ * 5. Create S3 (third slot) where Bye1 plays Bye2
+ * Result: Bye1 has matches in S2+S3, Bye2 has matches in S1+S3, everyone else has S1+S2
+ * 
+ * USAGE:
+ * ```typescript
+ * const matches = generateScheduleGreedy({
+ *   teams: allTeams,
+ *   historyPairs: seasonHistory, // [[teamAId, teamBId], ...]
+ *   slots: ["8:30", "9:00"],
+ *   thirdSlot: "9:30", // Optional, used only for odd team count
+ *   config: {
+ *     maxTierGap: 1, // Default: 1 (prevents T1 vs T3)
+ *     byeStrategy: 'last' // Default: 'last'
+ *   }
+ * });
+ * ```
  */
 
 import { Team } from '@/types/autoSchedule';

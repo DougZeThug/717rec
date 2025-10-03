@@ -20,8 +20,21 @@ export const usePairingGenerator = () => {
   const { toast } = useToast();
 
   /**
-   * Generate pairings for all time blocks
-   * Enhanced with dual block mode
+   * Generate match pairings for teams
+   * 
+   * Two modes:
+   * 1. Dual Match Mode (config.dualMatchMode = true):
+   *    Uses greedy back-to-back scheduler for consecutive timeslots (S1, S2, optional S3)
+   *    - Faster and deterministic
+   *    - Prioritizes same-division, no rematches
+   *    - Handles odd teams by creating a third slot
+   *    - Quality optimization not applicable
+   * 
+   * 2. Standard Mode (config.dualMatchMode = false):
+   *    Uses Edmonds' Blossom algorithm for optimal quality matching
+   *    - Maximizes compatibility scores
+   *    - Supports quality optimization weights
+   *    - Each time block scheduled independently
    */
   const generateMatchPairings = useCallback(async (
     date: Date,
