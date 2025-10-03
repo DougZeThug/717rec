@@ -34,3 +34,57 @@ export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): P
     return false;
   }
 }
+
+/**
+ * Fetch all season history pairs for a list of teams
+ * Returns array of team ID pairs that have played each other this season
+ */
+export async function fetchSeasonHistoryForTeams(teamIds: string[]): Promise<Array<[string, string]>> {
+  try {
+    if (teamIds.length === 0) return [];
+    
+    console.log(`Fetching season history for ${teamIds.length} teams`);
+    
+    // Get active season
+    const { data: seasonData, error: seasonError } = await supabase
+      .from('seasons')
+      .select('id')
+      .eq('is_active', true)
+      .single();
+    
+    if (seasonError || !seasonData) {
+      console.error('Error fetching active season:', seasonError);
+      return [];
+    }
+    
+    // Fetch all completed matches where both teams are in our list
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select('team1_id, team2_id')
+      .eq('iscompleted', true)
+      .eq('season_id', seasonData.id)
+      .in('team1_id', teamIds)
+      .in('team2_id', teamIds);
+    
+    if (error) {
+      console.error('Error fetching season history:', error);
+      return [];
+    }
+    
+    const pairs: Array<[string, string]> = [];
+    
+    if (matches) {
+      for (const match of matches) {
+        if (match.team1_id && match.team2_id) {
+          pairs.push([match.team1_id, match.team2_id]);
+        }
+      }
+    }
+    
+    console.log(`Found ${pairs.length} historical match pairs for current season`);
+    return pairs;
+  } catch (error) {
+    console.error('Unexpected error fetching season history:', error);
+    return [];
+  }
+}

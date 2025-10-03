@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
-import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult, DualBlockConfig } from '@/types/autoSchedule';
+import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult, DualBlockConfig, TeamPairing, Team } from '@/types/autoSchedule';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossomPairingAlgorithm';
 import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
 import { useTeamFetching } from './useTeamFetching';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeDate } from '@/utils/dateNormalization';
-import { haveTeamsPlayedBefore } from '@/utils/autoSchedule/matchHistoryService';
-import { generateDualBlockPairings } from '@/utils/autoSchedule/dualBlock'; // Updated import
+import { haveTeamsPlayedBefore, fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
+import { generateDualBlockPairings } from '@/utils/autoSchedule/dualBlock';
+import { generateScheduleGreedy } from '@/utils/scheduling/greedyBackToBackScheduler';
 
 /**
  * Hook to generate and manage team pairings for scheduling
@@ -39,25 +40,100 @@ export const usePairingGenerator = () => {
       const pairings: TeamPairingMap = {};
       let allUnmatchedTeamIds: string[] = [];
       
-      // Handle dual match mode specifically
+      // Handle dual match mode with greedy back-to-back scheduler
       if (config.dualMatchMode) {
-        // For dual match mode, we need to ensure each team plays in both
-        // the early and late blocks with different opponents
-        const dualBlockConfig: DualBlockConfig = {
-          ...config,
-          // Add any dual-specific config here
-        };
+        console.log("Using greedy back-to-back scheduler for dual match mode");
         
-        const dualBlockPairingResult = await generateDualBlockPairings(
-          timeBlockTeams,
-          dualBlockConfig,
-          toast // Pass the toast function for notifications
+        // Flatten all teams from time blocks
+        const allTeams: Team[] = [];
+        const timeBlocks = Object.keys(timeBlockTeams).sort();
+        
+        for (const block of timeBlocks) {
+          const blockTeams = timeBlockTeams[block];
+          if (blockTeams && blockTeams.length > 0) {
+            allTeams.push(...blockTeams);
+          }
+        }
+        
+        // Remove duplicates (a team might be in multiple blocks)
+        const uniqueTeams = Array.from(
+          new Map(allTeams.map(t => [t.id, t])).values()
         );
         
-        if (dualBlockPairingResult) {
-          Object.assign(pairings, dualBlockPairingResult.pairings);
-          allUnmatchedTeamIds = dualBlockPairingResult.unmatchedTeamIds;
+        console.log(`Flattened ${uniqueTeams.length} unique teams from time blocks`);
+        
+        // Fetch season history for all teams
+        const teamIds = uniqueTeams.map(t => t.id);
+        const historyPairs = await fetchSeasonHistoryForTeams(teamIds);
+        
+        console.log(`Fetched ${historyPairs.length} historical match pairs`);
+        
+        // Use first two time blocks as slots, or default
+        const slots: [string, string] = timeBlocks.length >= 2 
+          ? [timeBlocks[0], timeBlocks[1]]
+          : ['Early', 'Late'];
+        
+        const thirdSlot = timeBlocks.length >= 3 ? timeBlocks[2] : 'Final';
+        
+        // Generate schedule with greedy algorithm
+        const scheduledMatches = generateScheduleGreedy({
+          teams: uniqueTeams,
+          historyPairs,
+          slots,
+          thirdSlot,
+          config: {
+            maxTierGap: 1,
+            byeStrategy: 'last'
+          }
+        });
+        
+        console.log(`Greedy scheduler generated ${scheduledMatches.length} matches`);
+        
+        // Convert scheduled matches back to TeamPairingMap format
+        const slotMap = new Map<string, TeamPairing[]>();
+        
+        for (const match of scheduledMatches) {
+          const team1 = uniqueTeams.find(t => t.id === match.teamAId);
+          const team2 = uniqueTeams.find(t => t.id === match.teamBId);
+          
+          if (!team1 || !team2) {
+            console.warn(`Could not find teams for match: ${match.teamAId} vs ${match.teamBId}`);
+            continue;
+          }
+          
+          const pairing: TeamPairing = {
+            team1,
+            team2,
+            compatibilityScore: match.tierA === match.tierB ? 1.0 : 0.5,
+            hasPlayedBefore: false
+          };
+          
+          if (!slotMap.has(match.slot)) {
+            slotMap.set(match.slot, []);
+          }
+          slotMap.get(match.slot)!.push(pairing);
         }
+        
+        // Convert map to pairings object
+        for (const [slot, pairs] of slotMap.entries()) {
+          pairings[slot] = pairs;
+        }
+        
+        // Find unmatched teams (should be none with greedy algorithm)
+        const pairedTeamIds = new Set<string>();
+        scheduledMatches.forEach(match => {
+          pairedTeamIds.add(match.teamAId);
+          pairedTeamIds.add(match.teamBId);
+        });
+        
+        allUnmatchedTeamIds = uniqueTeams
+          .filter(team => !pairedTeamIds.has(team.id))
+          .map(team => team.id);
+        
+        if (allUnmatchedTeamIds.length > 0) {
+          console.warn(`Warning: ${allUnmatchedTeamIds.length} teams were not matched`);
+        }
+        
       } else {
         // Standard single-block pairing algorithm
         for (const [block, teams] of Object.entries(timeBlockTeams)) {

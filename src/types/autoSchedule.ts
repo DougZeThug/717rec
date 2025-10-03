@@ -1,5 +1,8 @@
 import { Team } from "./index";
 
+// Re-export Team for convenience
+export type { Team };
+
 export interface TeamPair {
   team1: Team;
   team2: Team;
