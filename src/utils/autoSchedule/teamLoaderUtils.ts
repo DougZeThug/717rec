@@ -28,32 +28,36 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
   
   try {
     // Query for teams in both timeslots of the pair
-    const { data: timeslots, error } = await supabase
-      .from('team_timeslots')
-      .select(`
+  const { data: timeslots, error } = await supabase
+    .from('team_timeslots')
+    .select(`
+      id,
+      team_id,
+      timeslot,
+      match_date,
+      is_back_to_back,
+      pair_slot,
+      match_sequence,
+      teams:team_id (
         id,
-        team_id,
-        timeslot,
-        match_date,
-        is_back_to_back,
-        pair_slot,
-        match_sequence,
-        teams:team_id (
-          id,
+        name,
+        logo_url, 
+        image_url,
+        players,
+        wins,
+        losses,
+        game_wins,
+        game_losses,
+        division_id,
+        divisions:division_id (
           name,
-          logo_url, 
-          image_url,
-          players,
-          wins,
-          losses,
-          game_wins,
-          game_losses,
-          division_id
+          display_division
         )
-      `)
-      .eq('match_date', formattedDate)
-      .in('timeslot', [pairConfig.primary, pairConfig.secondary])
-      .eq('is_back_to_back', true);
+      )
+    `)
+    .eq('match_date', formattedDate)
+    .in('timeslot', [pairConfig.primary, pairConfig.secondary])
+    .eq('is_back_to_back', true);
     
     if (error) {
       console.error(`❌ Error fetching teams for ${pairName} pair on ${formattedDate}:`, error);
@@ -105,7 +109,8 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
         game_losses: teamData.game_losses || 0,
         power_score: 0, // Will be calculated separately
         sos: 0.5, // Default SOS value
-        division: teamData.division_id
+        division: teamData.division_id,
+        divisionName: teamData.divisions?.display_division || teamData.divisions?.name || null,
       });
     });
     
