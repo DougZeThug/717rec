@@ -28,7 +28,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   const [batchMode, setBatchMode] = useState<boolean>(true); // Default to true for batch mode
   
   // Updated time slots to include BYE and all consecutive 30-minute slots
-  const timeSlots = ["BYE", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM"];
+  const timeSlots = ["BYE", "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM", "8:30 PM", "9:00 PM", "9:30 PM"];
   
   // Filter out teams that already have a timeslot for this date
   const assignedTeamIds = existingTimeslots.map(ts => ts.team_id);
