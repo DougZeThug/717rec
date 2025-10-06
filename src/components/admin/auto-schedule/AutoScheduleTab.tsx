@@ -30,6 +30,7 @@ const AutoScheduleTab = () => {
     // Data
     isLoading,
     isGenerating,
+    isSaving,
     timeBlockTeams,
     originalTimeBlockTeams,
     setTimeBlockTeams, // We need to expose this
@@ -42,6 +43,7 @@ const AutoScheduleTab = () => {
     handleLoadTeams,
     handleGenerateClick,
     handleApplySchedule,
+    handleSaveSchedule,
     
     // Formatted utilities
     formattedDate
@@ -95,6 +97,8 @@ const AutoScheduleTab = () => {
           totalTeams={totalTeams}
           matchQualityMetrics={matchQualityMetrics}
           onApplySchedule={handleApplySchedule}
+          onSaveSchedule={handleSaveSchedule}
+          isSaving={isSaving}
           onManualTeamAssign={handleManualTeamAssign}
         />
       </div>

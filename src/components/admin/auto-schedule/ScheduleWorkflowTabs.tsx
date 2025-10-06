@@ -22,6 +22,8 @@ interface ScheduleWorkflowTabsProps {
   matchQualityMetrics: MatchQualityMetrics | null;
   dualMatchMode?: boolean;
   onApplySchedule: () => void;
+  onSaveSchedule?: () => Promise<boolean>;
+  isSaving?: boolean;
   onManualTeamAssign?: (updatedTeams: TimeBlockTeamsMap) => void;
 }
 
@@ -40,6 +42,8 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   matchQualityMetrics,
   dualMatchMode,
   onApplySchedule,
+  onSaveSchedule,
+  isSaving,
   onManualTeamAssign
 }) => {
   return (
@@ -83,6 +87,8 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               generatedMatches={generatedMatches}
               matchQualityMetrics={matchQualityMetrics}
               onApplySchedule={onApplySchedule}
+              onSaveSchedule={onSaveSchedule}
+              isSaving={isSaving}
             />
           </TabsContent>
         </Tabs>

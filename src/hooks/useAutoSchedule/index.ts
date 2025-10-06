@@ -1,12 +1,16 @@
 
 import { useMemo } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { useAutoScheduleState } from './useAutoScheduleState';
 import { useTeamOperations } from './useTeamOperations';
 import { usePairingOperations } from './usePairingOperations';
+import { useAutoScheduleSave } from './useAutoScheduleSave';
 import { formatDate } from './utils';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
 export function useAutoSchedule() {
+  const { toast } = useToast();
+  
   // Get state management
   const {
     selectedDate,
@@ -46,8 +50,14 @@ export function useAutoSchedule() {
     handleApplySchedule
   } = usePairingOperations(setActiveTab);
 
+  // Get save operations
+  const {
+    saveMatches,
+    isSaving
+  } = useAutoScheduleSave();
+
   // Combined loading state
-  const isLoadingState = isLoading || isGenerating || isProcessing;
+  const isLoadingState = isLoading || isGenerating || isProcessing || isSaving;
 
   // Wrapped handlers that use local state
   const loadTeams = async () => {
@@ -82,6 +92,18 @@ export function useAutoSchedule() {
     );
   };
 
+  const saveSchedule = async () => {
+    if (!generatedMatches || generatedMatches.length === 0) {
+      toast({
+        title: "No Matches to Save",
+        description: "Please generate and apply a schedule first",
+        variant: "destructive"
+      });
+      return false;
+    }
+    return await saveMatches(generatedMatches, selectedDate);
+  };
+
   // Team statistics 
   const { total, odd } = useMemo(() => {
     return getTeamCountStatus();
@@ -105,6 +127,7 @@ export function useAutoSchedule() {
     // Data
     isLoading: isLoadingState,
     isGenerating,
+    isSaving,
     timeBlockTeams,
     originalTimeBlockTeams,
     setTimeBlockTeams, // Expose this for manual team assignment
@@ -117,6 +140,7 @@ export function useAutoSchedule() {
     handleLoadTeams: loadTeams,
     handleGenerateClick: generateSchedule,
     handleApplySchedule: applySchedule,
+    handleSaveSchedule: saveSchedule,
     
     // Formatted utilities
     formattedDate: formatDate(selectedDate)

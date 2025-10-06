@@ -3,19 +3,24 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MatchQualityMetrics } from "@/types/autoSchedule";
+import { Database, Save } from "lucide-react";
 
 interface ExportTabProps {
-  selectedDate: Date | null; // Added missing prop
+  selectedDate: Date | null;
   generatedMatches: any[] | null;
   matchQualityMetrics?: MatchQualityMetrics | null;
   onApplySchedule?: () => void;
+  onSaveSchedule?: () => Promise<boolean>;
+  isSaving?: boolean;
 }
 
 const ExportTab: React.FC<ExportTabProps> = ({ 
-  selectedDate, // Added missing prop
+  selectedDate,
   generatedMatches, 
   matchQualityMetrics,
-  onApplySchedule 
+  onApplySchedule,
+  onSaveSchedule,
+  isSaving = false
 }) => {
   return (
     <div className="space-y-4">
@@ -64,10 +69,29 @@ const ExportTab: React.FC<ExportTabProps> = ({
             </div>
           )}
           
-          <div className="flex justify-center mt-4">
+          <div className="flex flex-col gap-3 mt-4">
+            <Button 
+              onClick={onSaveSchedule}
+              disabled={isSaving}
+              className="w-full"
+            >
+              {isSaving ? (
+                <>
+                  <Database className="mr-2 h-4 w-4 animate-pulse" />
+                  Saving to Database...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Schedule to Database
+                </>
+              )}
+            </Button>
+            
             <Button 
               variant="outline" 
               onClick={() => window.location.href = "#batch-matches"}
+              className="w-full"
             >
               Go to Batch Matches
             </Button>
