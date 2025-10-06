@@ -76,6 +76,10 @@ const AutoScheduleTab = () => {
 
   // Handle toggling edit mode
   const handleToggleEditMode = () => {
+    // If entering edit mode and no editable matches exist, apply schedule first
+    if (!isEditMode && editableMatches.length === 0 && Object.keys(generatedPairings).length > 0) {
+      handleApplySchedule();
+    }
     setIsEditMode(!isEditMode);
   };
   
