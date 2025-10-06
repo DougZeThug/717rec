@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { DualBlockConfig } from "@/types/autoSchedule";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BACK_TO_BACK_PAIRS } from "@/utils/autoSchedule/constants";
 
 interface DateSettingsPanelProps {
   selectedDate: Date | null;
@@ -172,9 +173,11 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
                       <SelectValue placeholder="Select primary block" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Early">Early (6:30)</SelectItem>
-                      <SelectItem value="Late">Late (7:30)</SelectItem>
-                      <SelectItem value="Overflow">Overflow (8:30)</SelectItem>
+                      {Object.entries(BACK_TO_BACK_PAIRS).map(([pairName, config]) => (
+                        <SelectItem key={pairName} value={pairName}>
+                          {config.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -189,9 +192,11 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
                       <SelectValue placeholder="Select secondary block" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Early">Early (6:30)</SelectItem>
-                      <SelectItem value="Late">Late (7:30)</SelectItem>
-                      <SelectItem value="Overflow">Overflow (8:30)</SelectItem>
+                      {Object.entries(BACK_TO_BACK_PAIRS).map(([pairName, config]) => (
+                        <SelectItem key={pairName} value={pairName}>
+                          {config.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
