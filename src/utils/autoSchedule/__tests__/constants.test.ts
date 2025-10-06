@@ -4,6 +4,7 @@ import { TIME_BLOCKS } from '../constants';
 
 describe('TIME_BLOCKS constants', () => {
   it('should have the expected time block structure', () => {
+    expect(TIME_BLOCKS).toHaveProperty('SuperUltraEarly');
     expect(TIME_BLOCKS).toHaveProperty('UltraEarly');
     expect(TIME_BLOCKS).toHaveProperty('SuperEarly');
     expect(TIME_BLOCKS).toHaveProperty('Early');
@@ -17,6 +18,9 @@ describe('TIME_BLOCKS constants', () => {
   });
 
   it('should have correct time pairings', () => {
+    expect(TIME_BLOCKS['SuperUltraEarly'].main).toBe('5:00 PM');
+    expect(TIME_BLOCKS['SuperUltraEarly'].secondary).toBe('5:30 PM');
+    
     expect(TIME_BLOCKS['UltraEarly'].main).toBe('5:30 PM');
     expect(TIME_BLOCKS['UltraEarly'].secondary).toBe('6:00 PM');
     
