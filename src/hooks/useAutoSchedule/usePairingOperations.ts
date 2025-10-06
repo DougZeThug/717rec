@@ -150,7 +150,8 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
     selectedDate: Date | null,
     dualMatchMode: boolean,
     setGeneratedMatches: (matches: AutoScheduleMatch[]) => void,
-    setMatchQualityMetrics: (metrics: MatchQualityMetrics | null) => void
+    setMatchQualityMetrics: (metrics: MatchQualityMetrics | null) => void,
+    setEditableMatches?: (matches: AutoScheduleMatch[]) => void
   ) => {
     if (!selectedDate) {
       toast({
@@ -214,6 +215,11 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       }
 
       setGeneratedMatches(matches);
+      
+      // Also set editable matches to same initial state
+      if (setEditableMatches) {
+        setEditableMatches(structuredClone(matches));
+      }
 
       console.log(`✅ Applied schedule:`, {
         totalMatches: matches.length,

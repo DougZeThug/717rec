@@ -2,8 +2,9 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MatchQualityMetrics } from "@/types/autoSchedule";
-import { Database, Save } from "lucide-react";
+import { Database, Save, AlertCircle } from "lucide-react";
 
 interface ExportTabProps {
   selectedDate: Date | null;
@@ -12,6 +13,7 @@ interface ExportTabProps {
   onApplySchedule?: () => void;
   onSaveSchedule?: () => Promise<boolean>;
   isSaving?: boolean;
+  hasUnsavedEdits?: boolean;
 }
 
 const ExportTab: React.FC<ExportTabProps> = ({ 
@@ -20,7 +22,8 @@ const ExportTab: React.FC<ExportTabProps> = ({
   matchQualityMetrics,
   onApplySchedule,
   onSaveSchedule,
-  isSaving = false
+  isSaving = false,
+  hasUnsavedEdits = false
 }) => {
   return (
     <div className="space-y-4">
@@ -31,6 +34,15 @@ const ExportTab: React.FC<ExportTabProps> = ({
       
       {generatedMatches && generatedMatches.length > 0 ? (
         <div className="space-y-4">
+          {hasUnsavedEdits && (
+            <Alert variant="default" className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-900 dark:text-amber-100">
+                You have unsaved edits to the schedule. Make sure to save before leaving!
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="border rounded-md p-4 bg-muted/30">
             <p className="text-center font-medium">
               {generatedMatches.length} matches have been created

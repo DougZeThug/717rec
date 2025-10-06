@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { UseAutoScheduleState } from './types';
+import { AutoScheduleMatch } from '@/types/autoSchedule';
 
 export const useAutoScheduleState = () => {
   // Tab state
@@ -18,6 +19,10 @@ export const useAutoScheduleState = () => {
   // Generated data
   const [generatedMatches, setGeneratedMatches] = useState<UseAutoScheduleState['generatedMatches']>([]);
   const [matchQualityMetrics, setMatchQualityMetrics] = useState<UseAutoScheduleState['matchQualityMetrics']>(null);
+  
+  // Editable matches state
+  const [editableMatches, setEditableMatches] = useState<AutoScheduleMatch[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   return {
     // State
@@ -36,6 +41,10 @@ export const useAutoScheduleState = () => {
     generatedMatches,
     setGeneratedMatches,
     matchQualityMetrics,
-    setMatchQualityMetrics
+    setMatchQualityMetrics,
+    editableMatches,
+    setEditableMatches,
+    isEditMode,
+    setIsEditMode
   };
 };

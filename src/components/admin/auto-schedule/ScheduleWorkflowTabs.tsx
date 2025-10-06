@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import TeamsTab from "@/components/admin/auto-schedule/tabs/TeamsTab";
 import MatchesTab from "@/components/admin/auto-schedule/tabs/MatchesTab";
 import ExportTab from "@/components/admin/auto-schedule/tabs/ExportTab";
-import { TimeBlockTeamsMap, TeamPairingMap, MatchQualityMetrics } from "@/types/autoSchedule";
+import { TimeBlockTeamsMap, TeamPairingMap, MatchQualityMetrics, AutoScheduleMatch } from "@/types/autoSchedule";
+import { ValidationResult } from "@/utils/autoSchedule/validation";
 
 interface ScheduleWorkflowTabsProps {
   activeTab: string;
@@ -25,6 +26,17 @@ interface ScheduleWorkflowTabsProps {
   onSaveSchedule?: () => Promise<boolean>;
   isSaving?: boolean;
   onManualTeamAssign?: (updatedTeams: TimeBlockTeamsMap) => void;
+  // Edit mode props
+  isEditMode?: boolean;
+  onToggleEditMode?: () => void;
+  editableMatches?: AutoScheduleMatch[];
+  validation?: ValidationResult | null;
+  onUpdateMatchTeam?: (matchId: string, teamPosition: 'team1' | 'team2', newTeamId: string) => void;
+  onUpdateMatchTimeslot?: (matchId: string, newTimeslot: string) => void;
+  onSwapTeams?: (matchId: string) => void;
+  onRemoveMatch?: (matchId: string) => void;
+  onResetEdits?: () => void;
+  hasUnsavedEdits?: boolean;
 }
 
 const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
@@ -44,7 +56,17 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   onApplySchedule,
   onSaveSchedule,
   isSaving,
-  onManualTeamAssign
+  onManualTeamAssign,
+  isEditMode,
+  onToggleEditMode,
+  editableMatches,
+  validation,
+  onUpdateMatchTeam,
+  onUpdateMatchTimeslot,
+  onSwapTeams,
+  onRemoveMatch,
+  onResetEdits,
+  hasUnsavedEdits
 }) => {
   return (
     <div className="lg:col-span-2">
@@ -78,6 +100,16 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               matchQualityMetrics={matchQualityMetrics}
               dualMatchMode={dualMatchMode}
               onApplySchedule={onApplySchedule}
+              isEditMode={isEditMode}
+              onToggleEditMode={onToggleEditMode}
+              editableMatches={editableMatches}
+              validation={validation}
+              onUpdateMatchTeam={onUpdateMatchTeam}
+              onUpdateMatchTimeslot={onUpdateMatchTimeslot}
+              onSwapTeams={onSwapTeams}
+              onRemoveMatch={onRemoveMatch}
+              onResetEdits={onResetEdits}
+              hasUnsavedEdits={hasUnsavedEdits}
             />
           </TabsContent>
           
@@ -89,6 +121,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               onApplySchedule={onApplySchedule}
               onSaveSchedule={onSaveSchedule}
               isSaving={isSaving}
+              hasUnsavedEdits={hasUnsavedEdits}
             />
           </TabsContent>
         </Tabs>

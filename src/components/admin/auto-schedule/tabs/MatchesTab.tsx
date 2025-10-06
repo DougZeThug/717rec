@@ -1,9 +1,12 @@
 
 import React, { useMemo } from "react";
-import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics } from "@/types/autoSchedule";
+import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics, AutoScheduleMatch, Team } from "@/types/autoSchedule";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Edit, Eye, RotateCcw } from "lucide-react";
 import ScheduleMatchesPreview from "@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview";
+import EditableMatchList from "@/components/admin/auto-schedule/EditableMatchList";
+import { ValidationResult } from "@/utils/autoSchedule/validation";
 import { 
   calculateDualBlockMetrics, 
   validateDualBlockSchedule 
@@ -19,6 +22,17 @@ interface MatchesTabProps {
   matchQualityMetrics: MatchQualityMetrics | null;
   dualMatchMode?: boolean;
   onApplySchedule?: () => void;
+  // Edit mode props
+  isEditMode?: boolean;
+  onToggleEditMode?: () => void;
+  editableMatches?: AutoScheduleMatch[];
+  validation?: ValidationResult | null;
+  onUpdateMatchTeam?: (matchId: string, teamPosition: 'team1' | 'team2', newTeamId: string) => void;
+  onUpdateMatchTimeslot?: (matchId: string, newTimeslot: string) => void;
+  onSwapTeams?: (matchId: string) => void;
+  onRemoveMatch?: (matchId: string) => void;
+  onResetEdits?: () => void;
+  hasUnsavedEdits?: boolean;
 }
 
 const MatchesTab: React.FC<MatchesTabProps> = ({
@@ -29,7 +43,17 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   isGenerating,
   matchQualityMetrics,
   dualMatchMode,
-  onApplySchedule
+  onApplySchedule,
+  isEditMode = false,
+  onToggleEditMode,
+  editableMatches = [],
+  validation,
+  onUpdateMatchTeam,
+  onUpdateMatchTimeslot,
+  onSwapTeams,
+  onRemoveMatch,
+  onResetEdits,
+  hasUnsavedEdits = false
 }) => {
   // Check if we have generated any pairings
   const hasPairings = Object.keys(generatedPairings || {}).length > 0 &&
@@ -80,12 +104,66 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
     return uniqueTeamIds.size;
   }, [generatedPairings, hasPairings]);
 
+  // Get all teams for editing
+  const allTeams = useMemo(() => {
+    const teams: Team[] = [];
+    const teamMap = new Map<string, Team>();
+    
+    Object.values(timeBlockTeams).forEach(blockTeams => {
+      blockTeams.forEach(team => {
+        if (!teamMap.has(team.id)) {
+          teamMap.set(team.id, team);
+          teams.push(team);
+        }
+      });
+    });
+    
+    return teams;
+  }, [timeBlockTeams]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Generated Match Pairings</h3>
+        <div className="flex items-center gap-3">
+          <h3 className="text-lg font-medium">Generated Match Pairings</h3>
+          {hasUnsavedEdits && (
+            <Badge variant="outline" className="text-xs">
+              Unsaved Changes
+            </Badge>
+          )}
+        </div>
         
         <div className="flex items-center gap-2">
+          {hasPairings && onToggleEditMode && (
+            <Button
+              variant={isEditMode ? "default" : "outline"}
+              size="sm"
+              onClick={onToggleEditMode}
+            >
+              {isEditMode ? (
+                <>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview Mode
+                </>
+              ) : (
+                <>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Mode
+                </>
+              )}
+            </Button>
+          )}
+          
+          {isEditMode && hasUnsavedEdits && onResetEdits && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onResetEdits}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Reset
+            </Button>
+          )}
           {dualMatchMode && (
             <Badge variant="secondary" className="text-xs">
               Dual Match Mode
@@ -160,18 +238,32 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
             </>
           )}
           
-          <ScheduleMatchesPreview
-            pairings={generatedPairings}
-            date={selectedDate}
-            isGenerating={isGenerating}
-            dualMatchMode={dualMatchMode}
-          />
+          {isEditMode ? (
+            <EditableMatchList
+              matches={editableMatches}
+              teams={allTeams}
+              validation={validation || null}
+              onUpdateTeam={onUpdateMatchTeam || (() => {})}
+              onUpdateTimeslot={onUpdateMatchTimeslot || (() => {})}
+              onSwapTeams={onSwapTeams || (() => {})}
+              onRemove={onRemoveMatch || (() => {})}
+            />
+          ) : (
+            <ScheduleMatchesPreview
+              pairings={generatedPairings}
+              date={selectedDate}
+              isGenerating={isGenerating}
+              dualMatchMode={dualMatchMode}
+            />
+          )}
           
-          <div className="flex justify-end mt-4">
-            <Button onClick={onApplySchedule}>
-              Export to Match Form
-            </Button>
-          </div>
+          {!isEditMode && (
+            <div className="flex justify-end mt-4">
+              <Button onClick={onApplySchedule}>
+                Export to Match Form
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">

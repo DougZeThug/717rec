@@ -27,13 +27,20 @@ const AutoScheduleTab = () => {
     generatedMatches,
     matchQualityMetrics,
     
+    // Edit state
+    editableMatches,
+    isEditMode,
+    setIsEditMode,
+    validation,
+    hasUnsavedEdits,
+    
     // Data
     isLoading,
     isGenerating,
     isSaving,
     timeBlockTeams,
     originalTimeBlockTeams,
-    setTimeBlockTeams, // We need to expose this
+    setTimeBlockTeams,
     generatedPairings,
     unmatchedTeamIds,
     totalTeams,
@@ -44,6 +51,13 @@ const AutoScheduleTab = () => {
     handleGenerateClick,
     handleApplySchedule,
     handleSaveSchedule,
+    
+    // Edit actions
+    updateMatchTeam,
+    updateMatchTimeslot,
+    swapTeams,
+    removeMatch,
+    resetToGenerated,
     
     // Formatted utilities
     formattedDate
@@ -58,6 +72,11 @@ const AutoScheduleTab = () => {
   const handleManualTeamAssign = (updatedTeams: TimeBlockTeamsMap) => {
     console.log("Manually assigned teams:", updatedTeams);
     setTimeBlockTeams(updatedTeams);
+  };
+
+  // Handle toggling edit mode
+  const handleToggleEditMode = () => {
+    setIsEditMode(!isEditMode);
   };
   
   return (
@@ -96,10 +115,21 @@ const AutoScheduleTab = () => {
           oddBlocks={oddBlocks}
           totalTeams={totalTeams}
           matchQualityMetrics={matchQualityMetrics}
+          dualMatchMode={dualMatchMode}
           onApplySchedule={handleApplySchedule}
           onSaveSchedule={handleSaveSchedule}
           isSaving={isSaving}
           onManualTeamAssign={handleManualTeamAssign}
+          isEditMode={isEditMode}
+          onToggleEditMode={handleToggleEditMode}
+          editableMatches={editableMatches}
+          validation={validation}
+          onUpdateMatchTeam={updateMatchTeam}
+          onUpdateMatchTimeslot={updateMatchTimeslot}
+          onSwapTeams={swapTeams}
+          onRemoveMatch={removeMatch}
+          onResetEdits={resetToGenerated}
+          hasUnsavedEdits={hasUnsavedEdits}
         />
       </div>
       
