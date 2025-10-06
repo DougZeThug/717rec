@@ -101,16 +101,6 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
           {pairing.team2.wins}-{pairing.team2.losses}
         </div>
       </div>
-      
-      {isDualMatchMode && (
-        <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-          <div className="text-xs text-center text-muted-foreground">
-            {blockName === 'Early' ? 
-              "Teams will also play at 7:00 PM with different opponents" : 
-              "Teams also played at 6:30 PM with different opponents"}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
