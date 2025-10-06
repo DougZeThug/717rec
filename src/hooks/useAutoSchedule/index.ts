@@ -157,7 +157,7 @@ export function useAutoSchedule() {
     
     // Validate before saving if in edit mode
     if (isEditMode) {
-      const currentValidation = validateMatches();
+      const currentValidation = await validateMatches();
       if (!currentValidation.isValid) {
         toast({
           title: "Cannot Save",

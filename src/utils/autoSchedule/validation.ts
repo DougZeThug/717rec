@@ -1,4 +1,5 @@
 import { AutoScheduleMatch, Team } from "@/types/autoSchedule";
+import { haveTeamsPlayedBefore } from "./matchHistoryService";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -28,7 +29,7 @@ export interface TeamConflict {
 /**
  * Validate match schedule for conflicts and errors
  */
-export function validateMatchSchedule(matches: AutoScheduleMatch[]): ValidationResult {
+export async function validateMatchSchedule(matches: AutoScheduleMatch[]): Promise<ValidationResult> {
   const errors: ValidationError[] = [];
   const warnings: ValidationWarning[] = [];
 
@@ -78,11 +79,39 @@ export function validateMatchSchedule(matches: AutoScheduleMatch[]): ValidationR
     }
   });
 
+  // Check for rematches (teams that have already played each other)
+  await checkForRematches(matches, warnings);
+
   return {
     isValid: errors.length === 0,
     errors,
     warnings
   };
+}
+
+/**
+ * Check if any match pairings are rematches (teams have played before)
+ */
+async function checkForRematches(matches: AutoScheduleMatch[], warnings: ValidationWarning[]): Promise<void> {
+  const rematchChecks = matches.map(async (match) => {
+    if (!match.team1Id || !match.team2Id) return;
+    
+    try {
+      const hasPlayed = await haveTeamsPlayedBefore(match.team1Id, match.team2Id);
+      
+      if (hasPlayed) {
+        warnings.push({
+          matchId: match.id,
+          type: 'rematch',
+          message: 'These teams have already played each other this season'
+        });
+      }
+    } catch (error) {
+      console.error(`Error checking rematch for match ${match.id}:`, error);
+    }
+  });
+
+  await Promise.all(rematchChecks);
 }
 
 /**
@@ -130,10 +159,10 @@ export function findTeamConflicts(matches: AutoScheduleMatch[]): TeamConflict[] 
 /**
  * Calculate overall schedule health score (0-100)
  */
-export function calculateScheduleHealth(matches: AutoScheduleMatch[]): number {
+export async function calculateScheduleHealth(matches: AutoScheduleMatch[]): Promise<number> {
   if (matches.length === 0) return 0;
 
-  const validation = validateMatchSchedule(matches);
+  const validation = await validateMatchSchedule(matches);
   
   // Deduct points for errors and warnings
   const errorPenalty = validation.errors.length * 20;

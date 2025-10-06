@@ -11,8 +11,9 @@ export const useEditableMatches = (
   // Validate whenever editable matches change and we're in edit mode
   useEffect(() => {
     if (currentIsEditMode && currentEditableMatches.length > 0) {
-      const newValidation = validateMatchSchedule(currentEditableMatches);
-      setValidation(newValidation);
+      validateMatchSchedule(currentEditableMatches).then(newValidation => {
+        setValidation(newValidation);
+      });
     } else {
       setValidation(null);
     }
@@ -109,8 +110,8 @@ export const useEditableMatches = (
   /**
    * Manually trigger validation
    */
-  const validateMatches = useCallback(() => {
-    const newValidation = validateMatchSchedule(currentEditableMatches);
+  const validateMatches = useCallback(async () => {
+    const newValidation = await validateMatchSchedule(currentEditableMatches);
     setValidation(newValidation);
     return newValidation;
   }, [currentEditableMatches]);
