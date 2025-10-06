@@ -78,20 +78,29 @@ function pairKey(idA: string, idB: string): string {
 }
 
 /**
- * Extract tier number from division name or use division_weight
+ * Extract tier number from division name
+ * Maps display division names to tier numbers:
+ * - Competitive → Tier 1
+ * - Intermediate → Tier 2
+ * - Recreational → Tier 3
  */
 function getTier(team: Team): number {
-  // If team has explicit tier information, use it
-  if (team.division_id) {
-    // Extract tier from division name (e.g., "Tier 1" -> 1)
-    const divisionName = team.divisionName || '';
-    const tierMatch = divisionName.match(/tier\s*(\d+)/i);
-    if (tierMatch) {
-      return parseInt(tierMatch[1], 10);
-    }
+  const divisionName = (team.divisionName || '').toLowerCase();
+  
+  // Map display division names to tier numbers
+  if (divisionName.includes('competitive')) return 1;
+  if (divisionName.includes('intermediate')) return 2;
+  if (divisionName.includes('recreational')) return 3;
+  
+  // Fallback: try to extract tier number from name (e.g., "Tier 2")
+  const tierMatch = divisionName.match(/tier\s*(\d+)/i);
+  if (tierMatch) {
+    return parseInt(tierMatch[1], 10);
   }
-  // Default tier based on division_id hash (consistent but arbitrary)
-  return 1;
+  
+  // Default to tier 2 (middle) if unknown
+  console.warn(`Unknown division for team ${team.name}: "${team.divisionName}"`);
+  return 2;
 }
 
 /**

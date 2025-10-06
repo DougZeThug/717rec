@@ -121,7 +121,21 @@ export const usePairingGenerator = () => {
         const teamIds = uniqueTeams.map(t => t.id);
         const historyPairs = await fetchSeasonHistoryForTeams(teamIds);
         
-        console.log(`Fetched ${historyPairs.length} historical match pairs`);
+        console.log(`📊 Season History Loaded: ${historyPairs.length} pairs`);
+        if (historyPairs.length > 0) {
+          console.log(`Sample history pairs:`, historyPairs.slice(0, 5));
+        }
+        
+        // Log team tier assignments
+        console.log(`📊 Team Tier Assignments:`);
+        uniqueTeams.forEach(team => {
+          const divisionName = (team.divisionName || '').toLowerCase();
+          let tier = 2; // default
+          if (divisionName.includes('competitive')) tier = 1;
+          if (divisionName.includes('intermediate')) tier = 2;
+          if (divisionName.includes('recreational')) tier = 3;
+          console.log(`  - ${team.name}: "${team.divisionName}" → Tier ${tier}`);
+        });
         
         // Generate schedule with greedy algorithm
         const scheduledMatches = generateScheduleGreedy({
