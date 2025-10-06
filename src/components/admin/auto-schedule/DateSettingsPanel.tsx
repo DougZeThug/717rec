@@ -9,9 +9,6 @@ import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { DualBlockConfig } from "@/types/autoSchedule";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BACK_TO_BACK_PAIRS } from "@/utils/autoSchedule/constants";
 
 interface DateSettingsPanelProps {
   selectedDate: Date | null;
@@ -48,40 +45,6 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   onLoadTeams,
   onGenerateSchedule
 }) => {
-  // State for dual block configuration
-  const [dualBlockConfig, setDualBlockConfig] = useState<DualBlockConfig>({
-    primaryBlock: 'Early',
-    secondaryBlock: 'Late',
-    unmatchedTeamStrategy: 'lowest-rank'
-  });
-
-  // Handle dual block primary block selection
-  const handlePrimaryBlockChange = (value: string) => {
-    setDualBlockConfig(prev => ({
-      ...prev,
-      primaryBlock: value,
-      // If same block selected for both, swap them
-      secondaryBlock: prev.secondaryBlock === value ? prev.primaryBlock : prev.secondaryBlock
-    }));
-  };
-  
-  // Handle dual block secondary block selection
-  const handleSecondaryBlockChange = (value: string) => {
-    setDualBlockConfig(prev => ({
-      ...prev,
-      secondaryBlock: value,
-      // If same block selected for both, swap them
-      primaryBlock: prev.primaryBlock === value ? prev.secondaryBlock : prev.primaryBlock
-    }));
-  };
-  
-  // Handle strategy selection for unmatched teams
-  const handleStrategyChange = (value: string) => {
-    setDualBlockConfig(prev => ({
-      ...prev,
-      unmatchedTeamStrategy: value as 'random' | 'lowest-rank' | 'highest-rank'
-    }));
-  };
 
   return (
     <div className="lg:col-span-1">
@@ -147,78 +110,23 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
               </div>
             )}
             
-            <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="dual-match-mode" className="flex-1">
-                Dual Match Mode
-              </Label>
-              <Switch
-                id="dual-match-mode"
-                checked={dualMatchMode}
-                onCheckedChange={setDualMatchMode}
-              />
-            </div>
-            
-            {/* Dual Block Configuration - only show when dual match mode is enabled */}
-            {dualMatchMode && (
-              <div className="mt-4 space-y-3 border rounded-md p-3 bg-slate-50 dark:bg-slate-900">
-                <h5 className="text-sm font-medium">Dual Block Configuration</h5>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="primary-block">Primary Time Block</Label>
-                  <Select 
-                    value={dualBlockConfig.primaryBlock} 
-                    onValueChange={handlePrimaryBlockChange}
-                  >
-                    <SelectTrigger id="primary-block">
-                      <SelectValue placeholder="Select primary block" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(BACK_TO_BACK_PAIRS).map(([pairName, config]) => (
-                        <SelectItem key={pairName} value={pairName}>
-                          {config.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="secondary-block">Secondary Time Block</Label>
-                  <Select 
-                    value={dualBlockConfig.secondaryBlock} 
-                    onValueChange={handleSecondaryBlockChange}
-                  >
-                    <SelectTrigger id="secondary-block">
-                      <SelectValue placeholder="Select secondary block" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(BACK_TO_BACK_PAIRS).map(([pairName, config]) => (
-                        <SelectItem key={pairName} value={pairName}>
-                          {config.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="unmatched-strategy">Unmatched Teams Strategy</Label>
-                  <Select 
-                    value={dualBlockConfig.unmatchedTeamStrategy || 'lowest-rank'} 
-                    onValueChange={handleStrategyChange}
-                  >
-                    <SelectTrigger id="unmatched-strategy">
-                      <SelectValue placeholder="Select strategy" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="lowest-rank">Lowest Ranked Team</SelectItem>
-                      <SelectItem value="highest-rank">Highest Ranked Team</SelectItem>
-                      <SelectItem value="random">Random Team</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between space-x-2">
+                <Label htmlFor="dual-match-mode" className="flex-1">
+                  Dual Match Mode
+                </Label>
+                <Switch
+                  id="dual-match-mode"
+                  checked={dualMatchMode}
+                  onCheckedChange={setDualMatchMode}
+                />
               </div>
-            )}
+              {dualMatchMode && (
+                <p className="text-xs text-muted-foreground">
+                  Teams will play 2 matches in consecutive time blocks based on their assigned timeslots.
+                </p>
+              )}
+            </div>
           </div>
           
           <Separator />
