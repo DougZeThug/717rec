@@ -8,6 +8,7 @@ import { normalizeDate } from '@/utils/dateNormalization';
 import { haveTeamsPlayedBefore, fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
 import { generateDualBlockPairings } from '@/utils/autoSchedule/dualBlock';
 import { generateScheduleGreedy } from '@/utils/scheduling/greedyBackToBackScheduler';
+import { getPairConfig } from '@/utils/autoSchedule/constants';
 
 /**
  * Hook to generate and manage team pairings for scheduling
@@ -57,6 +58,47 @@ export const usePairingGenerator = () => {
       if (config.dualMatchMode) {
         console.log("Using greedy back-to-back scheduler for dual match mode");
         
+        // Find the first pair with teams
+        const pairsWithTeams = Object.keys(timeBlockTeams).filter(
+          pairName => timeBlockTeams[pairName]?.length > 0
+        );
+        
+        if (pairsWithTeams.length === 0) {
+          toast({
+            title: "No Teams Found",
+            description: "Please load teams for a specific date first.",
+            variant: "destructive"
+          });
+          return null;
+        }
+        
+        if (pairsWithTeams.length > 1) {
+          console.warn(`Multiple pairs have teams: ${pairsWithTeams.join(', ')}. Using first pair: ${pairsWithTeams[0]}`);
+          toast({
+            title: "Multiple Time Blocks Detected",
+            description: `Using ${pairsWithTeams[0]} pair for scheduling. Other pairs will be ignored.`,
+            variant: "default"
+          });
+        }
+        
+        const firstPairName = pairsWithTeams[0];
+        const pairConfig = getPairConfig(firstPairName);
+        
+        if (!pairConfig) {
+          toast({
+            title: "Invalid Configuration",
+            description: `Could not find configuration for pair: ${firstPairName}`,
+            variant: "destructive"
+          });
+          return null;
+        }
+        
+        // Get actual timeslot times from the pair configuration
+        const slots: [string, string] = [pairConfig.primary, pairConfig.secondary];
+        const thirdSlot = pairConfig.secondary; // No third slot in back-to-back pairs
+        
+        console.log(`Using actual timeslots for greedy scheduler: ${slots[0]} and ${slots[1]}`);
+        
         // Flatten all teams from time blocks
         const allTeams: Team[] = [];
         const timeBlocks = Object.keys(timeBlockTeams).sort();
@@ -80,13 +122,6 @@ export const usePairingGenerator = () => {
         const historyPairs = await fetchSeasonHistoryForTeams(teamIds);
         
         console.log(`Fetched ${historyPairs.length} historical match pairs`);
-        
-        // Use first two time blocks as slots, or default
-        const slots: [string, string] = timeBlocks.length >= 2 
-          ? [timeBlocks[0], timeBlocks[1]]
-          : ['Early', 'Late'];
-        
-        const thirdSlot = timeBlocks.length >= 3 ? timeBlocks[2] : 'Final';
         
         // Generate schedule with greedy algorithm
         const scheduledMatches = generateScheduleGreedy({
