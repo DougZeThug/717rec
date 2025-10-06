@@ -166,7 +166,7 @@ export const usePairingGenerator = () => {
           const pairing: TeamPairing = {
             team1,
             team2,
-            compatibilityScore: match.tierA === match.tierB ? 1.0 : 0.5,
+            compatibilityScore: match.tierA === match.tierB ? 10.0 : 5.0,
             hasPlayedBefore: false
           };
           
