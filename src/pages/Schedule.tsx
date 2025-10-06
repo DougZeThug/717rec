@@ -26,8 +26,29 @@ const Schedule = () => {
     return dayOfWeek === 4 ? "upcoming" : "completed"; // Thursday = upcoming
   };
   
+  // Get upcoming Thursday (or today if it's Thursday)
+  const getUpcomingThursday = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
+    
+    if (dayOfWeek === 4) {
+      // Today is Thursday, return today
+      return today;
+    }
+    
+    // Calculate days until next Thursday
+    const daysUntilThursday = dayOfWeek < 4 
+      ? 4 - dayOfWeek  // This week's Thursday
+      : 7 - dayOfWeek + 4;  // Next week's Thursday
+    
+    const upcomingThursday = new Date(today);
+    upcomingThursday.setDate(today.getDate() + daysUntilThursday);
+    
+    return upcomingThursday;
+  };
+  
   const [activeTab, setActiveTab] = useState(getDefaultTab());
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
   const { resolvedTheme } = useTheme();
   
   // Log date for debugging
