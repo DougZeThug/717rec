@@ -62,8 +62,8 @@ export const formatTimeString = (hours: number, minutes: number, use24Hour: bool
  * This normalizes time display formats to match what's stored in the database
  */
 export const normalizeTimeString = (timeString: string): string => {
-  // List of allowed time formats in the database - UPDATED to include 6:00 PM
-  const allowedTimes = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
+  // List of allowed time formats in the database - UPDATED to include 5:00 PM
+  const allowedTimes = ['5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
   
   if (!timeString) {
     return '';
@@ -141,8 +141,8 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
       output: formattedTime
     });
     
-    // UPDATED: Standard time slots now include 6:00 PM
-    const timeSlots = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
+    // UPDATED: Standard time slots now include 5:00 PM
+    const timeSlots = ['5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
     
     // Find exact match first
     if (timeSlots.includes(formattedTime)) {
