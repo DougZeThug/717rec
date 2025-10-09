@@ -141,8 +141,8 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
       output: formattedTime
     });
     
-    // UPDATED: Standard time slots now include 5:00 PM
-    const timeSlots = ['5:00 PM', '5:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
+    // UPDATED: Standard time slots now include 6:00 PM
+    const timeSlots = ['6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM', '8:00 PM', '8:30 PM', '9:00 PM', '9:30 PM', '10:00 PM'];
     
     // Find exact match first
     if (timeSlots.includes(formattedTime)) {
@@ -162,20 +162,18 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
     if (period === 'PM' && hours < 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
     
-    // FIXED: Calculate minutes from 5:00 PM baseline
-    const minutesFromBaseline = (hours - 17) * 60 + minutes;
+    // FIXED: Calculate minutes from 6:00 PM baseline instead of 6:30 PM
+    const minutesFromBaseline = (hours - 18) * 60 + minutes;
     
-    // UPDATED: Map to standard time slots at 30-minute intervals starting from 5:00 PM
-    if (minutesFromBaseline < 15) return '5:00 PM';      // 5:00-5:14 PM
-    else if (minutesFromBaseline < 45) return '5:30 PM'; // 5:15-5:44 PM
-    else if (minutesFromBaseline < 75) return '6:00 PM'; // 5:45-6:14 PM
-    else if (minutesFromBaseline < 105) return '6:30 PM'; // 6:15-6:44 PM
-    else if (minutesFromBaseline < 135) return '7:00 PM'; // 6:45-7:14 PM
-    else if (minutesFromBaseline < 165) return '7:30 PM'; // 7:15-7:44 PM
-    else if (minutesFromBaseline < 195) return '8:00 PM'; // 7:45-8:14 PM
-    else if (minutesFromBaseline < 225) return '8:30 PM'; // 8:15-8:44 PM
-    else if (minutesFromBaseline < 255) return '9:00 PM'; // 8:45-9:14 PM
-    else if (minutesFromBaseline < 285) return '9:30 PM'; // 9:15-9:44 PM
+    // UPDATED: Map to standard time slots at 30-minute intervals starting from 6:00 PM
+    if (minutesFromBaseline < 15) return '6:00 PM';      // 6:00-6:14 PM
+    else if (minutesFromBaseline < 45) return '6:30 PM'; // 6:15-6:44 PM
+    else if (minutesFromBaseline < 75) return '7:00 PM'; // 6:45-7:14 PM
+    else if (minutesFromBaseline < 105) return '7:30 PM'; // 7:15-7:44 PM
+    else if (minutesFromBaseline < 135) return '8:00 PM'; // 7:45-8:14 PM
+    else if (minutesFromBaseline < 165) return '8:30 PM'; // 8:15-8:44 PM
+    else if (minutesFromBaseline < 195) return '9:00 PM'; // 8:45-9:14 PM
+    else if (minutesFromBaseline < 225) return '9:30 PM'; // 9:15-9:44 PM
     else return '10:00 PM'; // 9:45 PM and later
   } catch (error) {
     console.error('Error extracting time slot from UTC date:', error);
