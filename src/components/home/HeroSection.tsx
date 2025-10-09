@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Users, Calendar } from "lucide-react";
+import { Trophy, Calendar } from "lucide-react";
 import ThemeToggle from "@/components/ui/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
 import { typography } from "@/styles/design-system";
@@ -51,9 +51,9 @@ const HeroSection = () => {
             variant="blueOrange"
             className="w-full xs:w-auto flex items-center gap-2"
           >
-            <Link to="/teams" className="flex items-center gap-2">
-              <Users size={20} className="shrink-0" />
-              View Teams
+            <Link to="/stats" className="flex items-center gap-2">
+              <Trophy size={20} className="shrink-0" />
+              View Standings
             </Link>
           </Button>
           <Button
