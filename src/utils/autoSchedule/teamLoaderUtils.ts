@@ -57,8 +57,7 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
     `)
     .eq('match_date', formattedDate)
     .in('timeslot', [pairConfig.primary, pairConfig.secondary])
-    .eq('is_back_to_back', true)
-    .eq('pair_slot', pairName);
+    .eq('is_back_to_back', true);
     
     if (error) {
       console.error(`❌ Error fetching teams for ${pairName} pair on ${formattedDate}:`, error);
