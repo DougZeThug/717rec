@@ -33,80 +33,37 @@ export const useMatchConverter = () => {
         opponents: string[];
       }> = {};
       
-      if (options.dualMatchMode && blocks.length >= 2) {
-        // Identify primary and secondary blocks
-        const primaryBlock = blocks[0];
-        const secondaryBlock = blocks[1];
+      if (options.dualMatchMode) {
+        // In dual match mode, pairings are keyed by actual timeslot (e.g., "6:30 PM", "7:00 PM")
+        // Process each timeslot independently
+        console.log("Converting dual match pairings - timeslots:", Object.keys(pairings));
         
-        // First, process primary block matches
-        pairings[primaryBlock].forEach((pairing, index) => {
-          const timeslot = TIME_BLOCKS[primaryBlock].main;
-          
-          // Create match object
-          const matchId = Date.now().toString() + '-' + primaryBlock + '-' + index;
-          matches.push({
-            id: matchId,
-            team1Id: pairing.team1.id,
-            team2Id: pairing.team2.id,
-            timeslot,
-            blockType: 'primary'
-          });
-          
-          // Track team participation and opponents
-          [pairing.team1.id, pairing.team2.id].forEach(teamId => {
-            if (!teamMatchCounts[teamId]) {
-              teamMatchCounts[teamId] = { matchCount: 0, opponents: [] };
-            }
-            teamMatchCounts[teamId].primaryBlock = primaryBlock;
-            teamMatchCounts[teamId].matchCount++;
-            teamMatchCounts[teamId].opponents.push(
-              teamId === pairing.team1.id ? pairing.team2.id : pairing.team1.id
-            );
+        Object.entries(pairings).forEach(([timeslot, blockPairings]) => {
+          blockPairings.forEach((pairing, index) => {
+            // Use the timeslot directly from the key
+            const matchId = Date.now().toString() + '-' + timeslot + '-' + index;
+            matches.push({
+              id: matchId,
+              team1Id: pairing.team1.id,
+              team2Id: pairing.team2.id,
+              timeslot, // Use actual timeslot
+              blockType: 'primary' // Not really relevant anymore since we use actual timeslots
+            });
+            
+            // Track team participation
+            [pairing.team1.id, pairing.team2.id].forEach(teamId => {
+              if (!teamMatchCounts[teamId]) {
+                teamMatchCounts[teamId] = { matchCount: 0, opponents: [] };
+              }
+              teamMatchCounts[teamId].matchCount++;
+              teamMatchCounts[teamId].opponents.push(
+                teamId === pairing.team1.id ? pairing.team2.id : pairing.team1.id
+              );
+            });
           });
         });
         
-        // Then, process secondary block matches
-        pairings[secondaryBlock].forEach((pairing, index) => {
-          const timeslot = TIME_BLOCKS[secondaryBlock].secondary;
-          
-          // Create match object
-          const matchId = Date.now().toString() + '-' + secondaryBlock + '-' + index;
-          matches.push({
-            id: matchId,
-            team1Id: pairing.team1.id,
-            team2Id: pairing.team2.id,
-            timeslot,
-            blockType: 'secondary'
-          });
-          
-          // Track team participation and ensure no repeat opponents
-          [pairing.team1.id, pairing.team2.id].forEach(teamId => {
-            if (!teamMatchCounts[teamId]) {
-              teamMatchCounts[teamId] = { matchCount: 0, opponents: [] };
-            }
-            teamMatchCounts[teamId].matchCount++;
-            teamMatchCounts[teamId].opponents.push(
-              teamId === pairing.team1.id ? pairing.team2.id : pairing.team1.id
-            );
-          });
-        });
-        
-        // Use the refactored metric calculation
-        const primaryBlockPairings = pairings[primaryBlock] || [];
-        const secondaryBlockPairings = pairings[secondaryBlock] || [];
-        
-        const metrics = calculateDualBlockMetrics(primaryBlockPairings, secondaryBlockPairings);
-        
-        // Log metrics about dual matches
-        console.log("Dual match conversion metrics:", metrics);
-        
-        // Find teams with same opponent in both blocks
-        const teamsWithSameOpponent = findTeamsWithSameOpponent(primaryBlockPairings, secondaryBlockPairings);
-        
-        // Warn if any teams have duplicate opponents
-        if (teamsWithSameOpponent.length > 0) {
-          console.warn(`${teamsWithSameOpponent.length} teams have the same opponent in both blocks`);
-        }
+        console.log(`Converted ${matches.length} matches across ${Object.keys(pairings).length} timeslots`)
       } else {
         // Standard single-block conversion logic
         Object.entries(pairings).forEach(([block, blockPairings]) => {

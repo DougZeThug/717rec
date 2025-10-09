@@ -58,7 +58,7 @@ export const usePairingGenerator = () => {
       if (config.dualMatchMode) {
         console.log("Using greedy back-to-back scheduler for dual match mode");
         
-        // Find the first pair with teams
+        // Find all pairs with teams
         const pairsWithTeams = Object.keys(timeBlockTeams).filter(
           pairName => timeBlockTeams[pairName]?.length > 0
         );
@@ -72,129 +72,103 @@ export const usePairingGenerator = () => {
           return null;
         }
         
-        if (pairsWithTeams.length > 1) {
-          console.warn(`Multiple pairs have teams: ${pairsWithTeams.join(', ')}. Using first pair: ${pairsWithTeams[0]}`);
-          toast({
-            title: "Multiple Time Blocks Detected",
-            description: `Using ${pairsWithTeams[0]} pair for scheduling. Other pairs will be ignored.`,
-            variant: "default"
-          });
-        }
+        console.log(`Processing ${pairsWithTeams.length} back-to-back pairs: ${pairsWithTeams.join(', ')}`);
         
-        const firstPairName = pairsWithTeams[0];
-        const pairConfig = getPairConfig(firstPairName);
-        
-        if (!pairConfig) {
-          toast({
-            title: "Invalid Configuration",
-            description: `Could not find configuration for pair: ${firstPairName}`,
-            variant: "destructive"
-          });
-          return null;
-        }
-        
-        // Get actual timeslot times from the pair configuration
-        const slots: [string, string] = [pairConfig.primary, pairConfig.secondary];
-        const thirdSlot = pairConfig.secondary; // No third slot in back-to-back pairs
-        
-        console.log(`Using actual timeslots for greedy scheduler: ${slots[0]} and ${slots[1]}`);
-        
-        // Flatten all teams from time blocks
-        const allTeams: Team[] = [];
-        const timeBlocks = Object.keys(timeBlockTeams).sort();
-        
-        for (const block of timeBlocks) {
-          const blockTeams = timeBlockTeams[block];
-          if (blockTeams && blockTeams.length > 0) {
-            allTeams.push(...blockTeams);
-          }
-        }
-        
-        // Remove duplicates (a team might be in multiple blocks)
-        const uniqueTeams = Array.from(
-          new Map(allTeams.map(t => [t.id, t])).values()
-        );
-        
-        console.log(`Flattened ${uniqueTeams.length} unique teams from time blocks`);
-        
-        // Fetch season history for all teams
-        const teamIds = uniqueTeams.map(t => t.id);
-        const historyPairs = await fetchSeasonHistoryForTeams(teamIds);
-        
+        // Fetch season history once for all teams
+        const allTeamIds = new Set<string>();
+        Object.values(timeBlockTeams).forEach(teams => {
+          teams?.forEach(team => allTeamIds.add(team.id));
+        });
+        const historyPairs = await fetchSeasonHistoryForTeams(Array.from(allTeamIds));
         console.log(`📊 Season History Loaded: ${historyPairs.length} pairs`);
-        if (historyPairs.length > 0) {
-          console.log(`Sample history pairs:`, historyPairs.slice(0, 5));
-        }
         
-        // Log team tier assignments
-        console.log(`📊 Team Tier Assignments:`);
-        uniqueTeams.forEach(team => {
-          const divisionName = (team.divisionName || '').toLowerCase();
-          let tier = 2; // default
-          if (divisionName.includes('competitive')) tier = 1;
-          if (divisionName.includes('intermediate')) tier = 2;
-          if (divisionName.includes('recreational')) tier = 3;
-          console.log(`  - ${team.name}: "${team.divisionName}" → Tier ${tier}`);
-        });
-        
-        // Generate schedule with greedy algorithm
-        const scheduledMatches = generateScheduleGreedy({
-          teams: uniqueTeams,
-          historyPairs,
-          slots,
-          thirdSlot,
-          config: {
-            maxTierGap: 1,
-            byeStrategy: 'last'
-          }
-        });
-        
-        console.log(`Greedy scheduler generated ${scheduledMatches.length} matches`);
-        
-        // Convert scheduled matches back to TeamPairingMap format
-        const slotMap = new Map<string, TeamPairing[]>();
-        
-        for (const match of scheduledMatches) {
-          const team1 = uniqueTeams.find(t => t.id === match.teamAId);
-          const team2 = uniqueTeams.find(t => t.id === match.teamBId);
+        // Process each back-to-back pair independently
+        for (const pairName of pairsWithTeams) {
+          const pairTeams = timeBlockTeams[pairName];
+          if (!pairTeams || pairTeams.length === 0) continue;
           
-          if (!team1 || !team2) {
-            console.warn(`Could not find teams for match: ${match.teamAId} vs ${match.teamBId}`);
+          const pairConfig = getPairConfig(pairName);
+          if (!pairConfig) {
+            console.error(`Invalid pair configuration for: ${pairName}`);
             continue;
           }
           
-          const pairing: TeamPairing = {
-            team1,
-            team2,
-            compatibilityScore: match.tierA === match.tierB ? 10.0 : 5.0,
-            hasPlayedBefore: false
-          };
+          // Get the specific timeslots for this pair
+          const slots: [string, string] = [pairConfig.primary, pairConfig.secondary];
+          const thirdSlot = pairConfig.secondary; // Fallback for odd teams
           
-          if (!slotMap.has(match.slot)) {
-            slotMap.set(match.slot, []);
+          console.log(`\n📅 Scheduling ${pairName} pair (${pairTeams.length} teams):`);
+          console.log(`   Timeslots: ${slots[0]} and ${slots[1]}`);
+          
+          // Log team tier assignments for this pair
+          console.log(`   Team Tier Assignments:`);
+          pairTeams.forEach(team => {
+            const divisionName = (team.divisionName || '').toLowerCase();
+            let tier = 2; // default
+            if (divisionName.includes('competitive')) tier = 1;
+            if (divisionName.includes('intermediate')) tier = 2;
+            if (divisionName.includes('recreational')) tier = 3;
+            console.log(`     - ${team.name}: "${team.divisionName}" → Tier ${tier}`);
+          });
+          
+          // Generate schedule for this specific pair with its specific timeslots
+          const scheduledMatches = generateScheduleGreedy({
+            teams: pairTeams,
+            historyPairs,
+            slots,
+            thirdSlot,
+            config: {
+              maxTierGap: 1,
+              byeStrategy: 'last'
+            }
+          });
+          
+          console.log(`   Generated ${scheduledMatches.length} matches for ${pairName}`);
+          
+          // Convert scheduled matches to TeamPairingMap format
+          for (const match of scheduledMatches) {
+            const team1 = pairTeams.find(t => t.id === match.teamAId);
+            const team2 = pairTeams.find(t => t.id === match.teamBId);
+            
+            if (!team1 || !team2) {
+              console.warn(`Could not find teams for match: ${match.teamAId} vs ${match.teamBId}`);
+              continue;
+            }
+            
+            const pairing: TeamPairing = {
+              team1,
+              team2,
+              compatibilityScore: match.tierA === match.tierB ? 10.0 : 5.0,
+              hasPlayedBefore: false
+            };
+            
+            // Use the actual timeslot from the match (not the pair name)
+            const timeslotKey = match.slot;
+            if (!pairings[timeslotKey]) {
+              pairings[timeslotKey] = [];
+            }
+            pairings[timeslotKey].push(pairing);
           }
-          slotMap.get(match.slot)!.push(pairing);
+          
+          // Track unmatched teams for this pair
+          const pairedTeamIds = new Set<string>();
+          scheduledMatches.forEach(match => {
+            pairedTeamIds.add(match.teamAId);
+            pairedTeamIds.add(match.teamBId);
+          });
+          
+          const unmatchedInPair = pairTeams
+            .filter(team => !pairedTeamIds.has(team.id))
+            .map(team => team.id);
+          
+          if (unmatchedInPair.length > 0) {
+            console.warn(`   Warning: ${unmatchedInPair.length} teams unmatched in ${pairName}`);
+            allUnmatchedTeamIds.push(...unmatchedInPair);
+          }
         }
         
-        // Convert map to pairings object
-        for (const [slot, pairs] of slotMap.entries()) {
-          pairings[slot] = pairs;
-        }
-        
-        // Find unmatched teams (should be none with greedy algorithm)
-        const pairedTeamIds = new Set<string>();
-        scheduledMatches.forEach(match => {
-          pairedTeamIds.add(match.teamAId);
-          pairedTeamIds.add(match.teamBId);
-        });
-        
-        allUnmatchedTeamIds = uniqueTeams
-          .filter(team => !pairedTeamIds.has(team.id))
-          .map(team => team.id);
-        
-        if (allUnmatchedTeamIds.length > 0) {
-          console.warn(`Warning: ${allUnmatchedTeamIds.length} teams were not matched`);
-        }
+        console.log(`\n✅ Total matches generated: ${Object.values(pairings).reduce((sum, p) => sum + p.length, 0)}`);
+        console.log(`   Timeslots used: ${Object.keys(pairings).join(', ')}`)
         
       } else {
         // Standard single-block pairing algorithm
