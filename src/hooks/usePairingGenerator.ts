@@ -99,6 +99,7 @@ export const usePairingGenerator = () => {
           
           console.log(`\n📅 Scheduling ${pairName} pair (${pairTeams.length} teams):`);
           console.log(`   Timeslots: ${slots[0]} and ${slots[1]}`);
+          console.log(`   Teams in this pair: ${pairTeams.map(t => t.name).join(', ')}`);
           
           // Log team tier assignments for this pair
           console.log(`   Team Tier Assignments:`);
@@ -110,6 +111,8 @@ export const usePairingGenerator = () => {
             if (divisionName.includes('recreational')) tier = 3;
             console.log(`     - ${team.name}: "${team.divisionName}" → Tier ${tier}`);
           });
+          
+          console.log(`   Total teams to schedule: ${pairTeams.length}`);
           
           // Generate schedule for this specific pair with its specific timeslots
           const scheduledMatches = generateScheduleGreedy({
