@@ -121,29 +121,16 @@ function canPlay(
   maxTierGap: number
 ): boolean {
   const key = pairKey(teamA.id, teamB.id);
-  const tierA = getTier(teamA);
-  const tierB = getTier(teamB);
-  const tierDist = tierDistance(teamA, teamB);
   
   // Can't play if they've already played this season
-  if (playedSet.has(key)) {
-    console.log(`    ❌ ${teamA.name} vs ${teamB.name}: Already played this season`);
-    return false;
-  }
+  if (playedSet.has(key)) return false;
   
   // Can't play if they've already been paired tonight
-  if (tonightPairs.has(key)) {
-    console.log(`    ❌ ${teamA.name} vs ${teamB.name}: Already paired tonight`);
-    return false;
-  }
+  if (tonightPairs.has(key)) return false;
   
   // Can't play if tier gap is too large
-  if (tierDist > maxTierGap) {
-    console.log(`    ❌ ${teamA.name} (Tier ${tierA}) vs ${teamB.name} (Tier ${tierB}): Tier gap ${tierDist} > ${maxTierGap}`);
-    return false;
-  }
+  if (tierDistance(teamA, teamB) > maxTierGap) return false;
   
-  console.log(`    ✅ ${teamA.name} (Tier ${tierA}) vs ${teamB.name} (Tier ${tierB}): CAN PLAY`);
   return true;
 }
 
@@ -158,21 +145,12 @@ function findBestOpponent(
   teamMatchCounts: Map<string, number>,
   maxTierGap: number
 ): Team | null {
-  console.log(`  🔍 Finding opponent for ${team.name} (Tier ${getTier(team)})`);
-  console.log(`     Initial candidates: ${candidates.filter(c => c.id !== team.id).length}`);
-  
   const validCandidates = candidates.filter(candidate => 
     candidate.id !== team.id &&
     canPlay(team, candidate, playedSet, tonightPairs, maxTierGap)
   );
 
-  console.log(`     Valid candidates after canPlay filter: ${validCandidates.length}`);
-  
-  if (validCandidates.length === 0) {
-    console.warn(`     ⚠️ NO VALID CANDIDATES for ${team.name}`);
-    console.warn(`        All candidates: ${candidates.filter(c => c.id !== team.id).map(c => c.name).join(', ')}`);
-    return null;
-  }
+  if (validCandidates.length === 0) return null;
 
   // Sort by priority:
   // 1. Same division (tier distance = 0)
@@ -254,13 +232,7 @@ function generateSlotPairings(
   for (const team of teams) {
     if (pairedInSlot.has(team.id)) continue;
     
-    console.log(`\n🎯 Processing team: ${team.name} in slot ${slotName}`);
-    console.log(`   Already paired in slot: ${pairedInSlot.size} teams`);
-    console.log(`   Paired teams: ${Array.from(pairedInSlot).map(id => teams.find(t => t.id === id)?.name).join(', ')}`);
-    
     const availableCandidates = teams.filter(t => !pairedInSlot.has(t.id));
-    console.log(`   Available candidates: ${availableCandidates.length}`);
-    
     const opponent = findBestOpponent(
       team,
       availableCandidates,
@@ -271,11 +243,7 @@ function generateSlotPairings(
     );
     
     if (!opponent) {
-      console.warn(`\n❌ FAILED: No opponent found for team ${team.name} in slot ${slotName}`);
-      console.warn(`   Available unpaired teams: ${availableCandidates.filter(c => c.id !== team.id).map(c => `${c.name} (Tier ${getTier(c)})`).join(', ')}`);
-      console.warn(`   playedSet size: ${playedSet.size}`);
-      console.warn(`   tonightPairs size: ${tonightPairs.size}`);
-      console.warn(`   Tonight pairs: ${Array.from(tonightPairs).slice(0, 5).join(', ')}...`);
+      console.warn(`No opponent found for team ${team.name} in slot ${slotName}`);
       continue;
     }
     
