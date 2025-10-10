@@ -1,5 +1,5 @@
 
-import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake, Swords } from 'lucide-react';
+import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake, Swords, PartyPopper } from 'lucide-react';
 import { BadgeConfig, BadgeType, TeamBadgeEvent } from '@/types/badges';
 
 export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
@@ -165,6 +165,19 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
     textColor: 'text-blue-800',
     isPermanent: false,
     category: 'streak'
+  },
+  
+  // Special badges
+  cool_fun_team: {
+    type: 'cool_fun_team',
+    name: 'Cool Fun Team',
+    description: 'Just vibing and having a good time',
+    icon: PartyPopper,
+    gradient: 'from-pink-400 to-purple-500',
+    bgColor: 'bg-pink-100',
+    textColor: 'text-pink-800',
+    isPermanent: true,
+    category: 'performance'
   }
 };
 

@@ -16,7 +16,8 @@ export type BadgeType =
   | 'clutch_performer'
   | 'consistent_performer'
   | 'hot_streak'
-  | 'cold_streak';
+  | 'cold_streak'
+  | 'cool_fun_team';
 
 export interface TeamBadgeEvent {
   id: string;
