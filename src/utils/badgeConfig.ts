@@ -1,5 +1,5 @@
 
-import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake, Swords, PartyPopper } from 'lucide-react';
+import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake, Swords, Sparkles } from 'lucide-react';
 import { BadgeConfig, BadgeType, TeamBadgeEvent } from '@/types/badges';
 
 export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
@@ -172,7 +172,7 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
     type: 'cool_fun_team',
     name: 'Cool Fun Team',
     description: 'Just vibing and having a good time',
-    icon: PartyPopper,
+    icon: Sparkles,
     gradient: 'from-pink-400 to-purple-500',
     bgColor: 'bg-pink-100',
     textColor: 'text-pink-800',
