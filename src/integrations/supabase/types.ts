@@ -3396,6 +3396,7 @@ export type Database = {
         | "consistent_performer"
         | "hot_streak"
         | "cold_streak"
+        | "cool_fun_team"
       match_type: "winners" | "losers" | "finals"
       playoff_match_type:
         | "winners"
@@ -3545,6 +3546,7 @@ export const Constants = {
         "consistent_performer",
         "hot_streak",
         "cold_streak",
+        "cool_fun_team",
       ],
       match_type: ["winners", "losers", "finals"],
       playoff_match_type: [
