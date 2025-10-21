@@ -44,7 +44,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           participants: viewerData.participants
         },
         {
-          selector: containerRef.current,
+          selector: '#brackets-viewer-container',
           clear: true,
           participantOriginPlacement: 'before',
           separatedChildCountLabel: true,
@@ -102,7 +102,8 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   return (
     <div className="w-full overflow-auto bg-background">
       <div 
-        ref={containerRef} 
+        ref={containerRef}
+        id="brackets-viewer-container"
         className="brackets-viewer min-w-max p-4"
         style={{ minHeight: '400px' }}
       />

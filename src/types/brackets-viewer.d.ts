@@ -16,7 +16,7 @@ interface BracketsViewerData {
 }
 
 interface BracketsViewerConfig {
-  selector?: HTMLElement | string;
+  selector?: string;
   clear?: boolean;
   participantOriginPlacement?: 'before' | 'after' | 'none';
   separatedChildCountLabel?: boolean;
