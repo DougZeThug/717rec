@@ -30,8 +30,12 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
     }
 
     try {
-      // Transform data
-      const viewerData = BracketsViewerAdapter.transform(bracket, teams);
+      // Transform data with stored participants if available
+      const viewerData = BracketsViewerAdapter.transform(
+        bracket, 
+        teams,
+        bracket.participants
+      );
 
       console.log('Rendering brackets-viewer with data:', viewerData);
 

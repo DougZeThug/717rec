@@ -12,6 +12,13 @@ export interface PlayoffBracket {
   created_at?: string;
   challonge_tournament_id?: number;
   uses_brackets_manager?: boolean;
+  participants?: Array<{
+    position: number;
+    team_id: string;
+    name: string;
+    logo_url?: string;
+    image_url?: string;
+  }>;
 }
 
 export interface PlayoffMatch {

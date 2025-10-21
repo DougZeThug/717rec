@@ -10,13 +10,24 @@ export class BracketsViewerAdapter {
    */
   static transform(
     bracket: PlayoffBracket,
-    teams: PlayoffTeam[]
+    teams: PlayoffTeam[],
+    storedParticipants?: Array<{
+      position: number;
+      team_id: string;
+      name: string;
+      logo_url?: string;
+      image_url?: string;
+    }>
   ): ViewerData {
     // Reset maps for each transformation
     this.teamIdMap.clear();
     this.matchIdMap.clear();
     
-    const participants = this.transformParticipants(teams);
+    // Use stored participants if available, otherwise fall back to teams
+    const participants = storedParticipants && storedParticipants.length > 0
+      ? this.transformStoredParticipants(storedParticipants)
+      : this.transformParticipants(teams);
+    
     const stage = this.transformBracket(bracket);
     const matches = this.transformMatches(bracket.matches || [], bracket.id);
     const matchGames = this.transformGames(bracket.matches || []);
@@ -49,7 +60,34 @@ export class BracketsViewerAdapter {
   }
 
   /**
-   * Transform teams → participants
+   * Transform stored participants (with seed positions)
+   */
+  private static transformStoredParticipants(
+    storedParticipants: Array<{
+      position: number;
+      team_id: string;
+      name: string;
+      logo_url?: string;
+      image_url?: string;
+    }>
+  ): ViewerParticipant[] {
+    return storedParticipants
+      .sort((a, b) => a.position - b.position)
+      .map((participant, index) => {
+        const participantId = index + 1;
+        this.teamIdMap.set(participant.team_id, participantId);
+        
+        return {
+          id: participantId,
+          tournament_id: 1,
+          name: participant.name,
+          image: participant.logo_url || participant.image_url || undefined
+        };
+      });
+  }
+
+  /**
+   * Transform teams → participants (fallback)
    */
   private static transformParticipants(teams: PlayoffTeam[]): ViewerParticipant[] {
     return teams.map((team, index) => {

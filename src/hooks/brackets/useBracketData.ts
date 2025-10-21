@@ -37,6 +37,13 @@ export interface SimpleBracketData {
     name: string;
     logo_url?: string;
   }>;
+  participants?: Array<{
+    position: number;
+    team_id: string;
+    name: string;
+    logo_url?: string;
+    image_url?: string;
+  }>;
 }
 
 export const useBracketData = (bracketId: string | null) => {
@@ -150,6 +157,41 @@ export const useBracketData = (bracketId: string | null) => {
           } : null
         });
 
+        // Step 3.5: Fetch participants from database
+        console.log('🎯 DEBUG: Step 3.5 - Fetching participants for bracket:', bracketId);
+        const { data: participants, error: participantsError } = await supabase
+          .from('participants')
+          .select(`
+            position,
+            team_id,
+            teams:team_id (
+              id,
+              name,
+              logo_url,
+              image_url
+            )
+          `)
+          .eq('bracket_id', bracketId)
+          .order('position', { ascending: true });
+
+        if (participantsError) {
+          console.error('🎯 DEBUG: Participants query error:', participantsError);
+        }
+
+        // Transform participants to flatten team data
+        const transformedParticipants = participants?.map(p => ({
+          position: p.position,
+          team_id: p.team_id,
+          name: (p.teams as any)?.name || '',
+          logo_url: (p.teams as any)?.logo_url,
+          image_url: (p.teams as any)?.image_url
+        })) || [];
+
+        console.log('🎯 DEBUG: Step 3.5 Complete - Participants found:', {
+          participantsCount: transformedParticipants.length,
+          sampleParticipant: transformedParticipants[0] || null
+        });
+
         // Step 4: Create team lookup map
         const teamLookup = new Map();
         (teams || []).forEach(team => {
@@ -210,7 +252,8 @@ export const useBracketData = (bracketId: string | null) => {
           challonge_tournament_id: bracket.challonge_tournament_id,
           uses_brackets_manager: bracket.uses_brackets_manager,
           matches: transformedMatches,
-          teams: teams || []
+          teams: teams || [],
+          participants: transformedParticipants
         };
 
         console.log('🎯 DEBUG: Step 6 Complete - Final result built:', {

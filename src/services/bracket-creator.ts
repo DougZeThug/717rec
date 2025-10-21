@@ -94,6 +94,24 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
 
       if (bracketError) throw bracketError;
 
+      onProgress?.("Storing participants...");
+
+      // Insert participants into the participants table
+      const participantInserts = sortedTeams.map((team) => ({
+        bracket_id: bracketData.id,
+        team_id: team.id,
+        position: team.seed || 0
+      }));
+
+      const { error: participantsError } = await supabase
+        .from('participants')
+        .insert(participantInserts);
+
+      if (participantsError) {
+        console.error("Failed to insert participants:", participantsError);
+        // Don't throw - bracket is already created, just log the error
+      }
+
       onProgress?.("Generating matches with brackets-manager...");
 
       // Use brackets-manager to create matches
