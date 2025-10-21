@@ -57,7 +57,14 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
           onCreateBracket={view.handleCreateBracket} 
         />
         
-        <PlayoffViewSelector view={selectedView} />
+        <PlayoffViewSelector 
+          view={selectedView}
+          bracketDialogOpen={view.bracketDialogOpen}
+          setBracketDialogOpen={view.setBracketDialogOpen}
+          onCreateBracket={view.handleCreateBracket}
+          onDeleteBracket={view.handleDeleteBracket}
+          data={data}
+        />
         
         {/* Realtime indicator */}
         <RealtimeIndicator enabled={!!realtimeEnabled && !!data.selectedBracketId} />

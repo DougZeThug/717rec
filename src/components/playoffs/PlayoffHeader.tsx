@@ -12,6 +12,16 @@ interface PlayoffHeaderProps {
 const PlayoffHeader: React.FC<PlayoffHeaderProps> = ({ onCreateBracket }) => {
   const { isAdminAccessGranted } = useAdminAccess();
 
+  const handleCreateClick = () => {
+    console.log('🎯 PlayoffHeader: New Bracket button clicked');
+    console.log('🎯 PlayoffHeader: isAdminAccessGranted:', isAdminAccessGranted);
+    onCreateBracket();
+  };
+
+  React.useEffect(() => {
+    console.log('🎯 PlayoffHeader: Rendered with isAdminAccessGranted:', isAdminAccessGranted);
+  }, [isAdminAccessGranted]);
+
   return (
     <PageHeader 
       title="Playoffs" 
@@ -21,7 +31,7 @@ const PlayoffHeader: React.FC<PlayoffHeaderProps> = ({ onCreateBracket }) => {
       {isAdminAccessGranted && (
         <div className="flex space-x-3 mt-3 md:mt-0">
           <Button 
-            onClick={onCreateBracket}
+            onClick={handleCreateClick}
             className="bg-cornhole-green hover:bg-cornhole-green/90 min-h-11"
             size="sm"
           >

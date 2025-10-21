@@ -107,7 +107,15 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
             </div>
           ))
         ) : (
-          <Button size="sm" variant="outline" className="w-full" onClick={onCreateBracket}>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="w-full" 
+            onClick={() => {
+              console.log('🎯 DivisionBracketsCard: Create bracket button clicked for division:', division);
+              onCreateBracket?.();
+            }}
+          >
             <Plus className="h-4 w-4 mr-1" /> Create Bracket
           </Button>
         )}

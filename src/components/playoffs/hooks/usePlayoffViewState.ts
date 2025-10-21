@@ -15,8 +15,10 @@ export function usePlayoffViewState(
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreateBracket = () => {
-    console.log('🎯 usePlayoffViewState: Create bracket clicked');
+    console.log('🎯 usePlayoffViewState: Create bracket clicked, setting dialog open to true');
+    console.log('🎯 usePlayoffViewState: Current bracketDialogOpen state:', bracketDialogOpen);
     setBracketDialogOpen(true);
+    console.log('🎯 usePlayoffViewState: Dialog open state should now be true');
   };
 
   const handleDeleteBracket = (bracketId: string, bracketName: string) => {

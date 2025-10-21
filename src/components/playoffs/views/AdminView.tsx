@@ -5,16 +5,28 @@ import BracketList from "../BracketList";
 import BracketView from "../BracketView";
 import TeamDivisionTable from "../TeamDivisionTable";
 import { ChallongeFallback } from "../embeds/ChallongeFallback";
-import { usePlayoffPageData } from "../hooks/usePlayoffPageData";
+import { PlayoffPageData } from "../hooks/usePlayoffPageData";
 import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
-import { usePlayoffViewState } from "../hooks/usePlayoffViewState";
 import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 
-const AdminView: React.FC = () => {
-  const data = usePlayoffPageData();
+interface AdminViewProps {
+  bracketDialogOpen: boolean;
+  setBracketDialogOpen: (open: boolean) => void;
+  onCreateBracket: () => void;
+  onDeleteBracket: (bracketId: string, bracketName: string) => void;
+  data: PlayoffPageData;
+}
+
+const AdminView: React.FC<AdminViewProps> = ({ 
+  bracketDialogOpen,
+  setBracketDialogOpen,
+  onCreateBracket,
+  onDeleteBracket,
+  data
+}) => {
   const handlers = usePlayoffHandlers(data);
-  const view = usePlayoffViewState(data, handlers, "brackets");
   const { resyncMatches } = useChallongeAdmin();
+  const [activeTab, setActiveTab] = React.useState("brackets");
 
   const handleResyncBracket = (bracketId: string, challongeTournamentId: number) => {
     console.log('🔄 AdminView: Initiating bracket resync:', { bracketId, challongeTournamentId });
@@ -36,8 +48,13 @@ const AdminView: React.FC = () => {
     );
   };
 
+  const handleCreateBracketClick = () => {
+    console.log('🎯 AdminView: Create bracket button clicked');
+    onCreateBracket();
+  };
+
   return (
-    <Tabs value={view.activeTab} onValueChange={view.setActiveTab} defaultValue="brackets" className="space-y-4">
+    <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="brackets" className="space-y-4">
       <TabsList>
         <TabsTrigger value="brackets">Brackets</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
@@ -53,10 +70,10 @@ const AdminView: React.FC = () => {
           <BracketList 
             divisions={data.availableDivisions}
             bracketsByDivision={data.typesafeBracketsByDivision}
-            onCreateBracket={view.handleCreateBracket}
+            onCreateBracket={handleCreateBracketClick}
             onViewBracket={data.setSelectedBracketId}
-            onEditBracket={view.handleCreateBracket}
-            onDeleteBracket={view.handleDeleteBracket}
+            onEditBracket={handleCreateBracketClick}
+            onDeleteBracket={onDeleteBracket}
             onResyncBracket={handleResyncBracket}
             isResyncLoading={resyncMatches.isPending}
             isLoading={data.isLoading}
