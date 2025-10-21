@@ -3373,6 +3373,10 @@ export type Database = {
         Args: { p_team_id: string }
         Returns: boolean
       }
+      user_is_team_member: {
+        Args: { p_team_id: string; p_user_id: string }
+        Returns: boolean
+      }
       validate_division_seeds: {
         Args: { p_division_id: string }
         Returns: {
