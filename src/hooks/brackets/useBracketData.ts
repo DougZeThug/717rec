@@ -136,29 +136,8 @@ export const useBracketData = (bracketId: string | null) => {
           console.warn('🎯 DEBUG: No matches found in database for bracket:', bracketId);
         }
 
-        // Step 3: Get teams for the division
-        console.log('🎯 DEBUG: Step 3 - Fetching teams for division:', bracket.division_id);
-        const { data: teams, error: teamsError } = await supabase
-          .from('teams')
-          .select('id, name, logo_url, image_url')
-          .eq('division_id', bracket.division_id);
-
-        if (teamsError) {
-          console.error('🎯 DEBUG: Teams query error:', teamsError);
-          throw teamsError;
-        }
-
-        console.log('🎯 DEBUG: Step 3 Complete - Teams found:', {
-          teamsCount: teams?.length || 0,
-          sampleTeam: teams?.[0] ? {
-            id: teams[0].id,
-            name: teams[0].name,
-            hasLogo: !!(teams[0].logo_url || teams[0].image_url)
-          } : null
-        });
-
-        // Step 3.5: Fetch participants from database
-        console.log('🎯 DEBUG: Step 3.5 - Fetching participants for bracket:', bracketId);
+        // Step 3: Fetch participants from database (includes team data)
+        console.log('🎯 DEBUG: Step 3 - Fetching participants for bracket:', bracketId);
         const { data: participants, error: participantsError } = await supabase
           .from('participants')
           .select(`
@@ -187,18 +166,23 @@ export const useBracketData = (bracketId: string | null) => {
           image_url: (p.teams as any)?.image_url
         })) || [];
 
-        console.log('🎯 DEBUG: Step 3.5 Complete - Participants found:', {
+        console.log('🎯 DEBUG: Step 3 Complete - Participants found:', {
           participantsCount: transformedParticipants.length,
           sampleParticipant: transformedParticipants[0] || null
         });
 
-        // Step 4: Create team lookup map
+        // Step 4: Create team lookup map from participants (supports cross-division teams)
         const teamLookup = new Map();
-        (teams || []).forEach(team => {
-          teamLookup.set(team.id, team);
+        transformedParticipants.forEach(participant => {
+          teamLookup.set(participant.team_id, {
+            id: participant.team_id,
+            name: participant.name,
+            logo_url: participant.logo_url,
+            image_url: participant.image_url
+          });
         });
 
-        console.log('🎯 DEBUG: Step 4 - Team lookup map created with', teamLookup.size, 'teams');
+        console.log('🎯 DEBUG: Step 4 - Team lookup map created from participants with', teamLookup.size, 'teams');
 
         // Step 5: Transform matches with team data and relationship fields
         const transformedMatches = (rawMatches || []).map((match) => {
@@ -252,7 +236,7 @@ export const useBracketData = (bracketId: string | null) => {
           challonge_tournament_id: bracket.challonge_tournament_id,
           uses_brackets_manager: bracket.uses_brackets_manager,
           matches: transformedMatches,
-          teams: teams || [],
+          teams: Array.from(teamLookup.values()),
           participants: transformedParticipants
         };
 
