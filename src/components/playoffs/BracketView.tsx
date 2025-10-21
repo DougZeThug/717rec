@@ -1,8 +1,10 @@
 
 import React, { useCallback, useMemo } from "react";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
+import { useBracketCompletion } from "@/hooks/useBracketCompletion";
 import GlootBracket from "@/components/playoffs/GlootBracket";
 import { ChallongeBracketDirect } from "./ChallongeBracketDirect";
+import { FinalStandings } from "./FinalStandings";
 import BracketErrorBoundary from "./BracketErrorBoundary";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -48,6 +50,9 @@ const BracketView: React.FC<BracketViewProps> = ({
   // Challonge admin functionality
   const { resyncMatches } = useChallongeAdmin();
   const { toast } = useToast();
+  
+  // Monitor bracket completion for final standings
+  useBracketCompletion(bracketId || undefined);
 
   console.log('🖼️ DEBUG: useBracketData hook result:', {
     fetchedBracket: fetchedBracket ? {
@@ -294,8 +299,13 @@ const BracketView: React.FC<BracketViewProps> = ({
 
   // Return GlootBracket viewer for non-Challonge brackets
   console.log('🎯 BracketView: Rendering GlootBracket for standard bracket');
+  
+  const showStandings = displayBracket.state === 'completed' && displayBracket.uses_brackets_manager;
+  
   return (
-    <div className="w-full h-full min-h-[600px]">
+    <div className="w-full h-full min-h-[600px] space-y-4">
+      {showStandings && <FinalStandings bracketId={bracketId!} />}
+      
       <BracketErrorBoundary bracketId={bracketId}>
         <GlootBracket
           bracket={displayBracket}

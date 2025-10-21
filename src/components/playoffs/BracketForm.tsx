@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { BracketFormTitle } from "./form/BracketFormTitle";
 import { BracketFormDivision } from "./form/BracketFormDivision";
 import { BracketFormFormat } from "./form/BracketFormFormat";
+import { BracketFormGrandFinal } from "./form/BracketFormGrandFinal";
 import { BracketFormTeamsContainer } from "./form/bracket-teams/components/BracketFormTeamsContainer";
 import { bracketFormSchema, BracketFormValues } from "./form/BracketFormSchema";
 import { Team, Division } from "@/types";
-import { AlertCircle, Users } from "lucide-react";
+import { Users } from "lucide-react";
+
+const isPowerOf2 = (n: number) => n > 0 && (n & (n - 1)) === 0;
 
 interface BracketFormProps {
   divisions?: Division[];
@@ -120,20 +123,19 @@ const BracketForm: React.FC<BracketFormProps> = ({
     });
   };
 
+  const selectedTeamCount = selectedTeams.length;
+  const minTeams = 2;
+  const maxTeams = 32;
+
   // Simplified button state logic - check individual field requirements
   const isButtonEnabled = !!(
     watchedTitle && 
     watchedDivisionId && 
     teamsValidationState && 
-    [2, 4, 8, 16].includes(selectedTeams.length) && 
+    selectedTeamCount >= minTeams &&
+    selectedTeamCount <= maxTeams &&
     !isSubmitting
   );
-
-  const selectedTeamCount = selectedTeams.length;
-  const minTeams = 2;
-  const maxTeams = 16;
-  const validTeamCounts = [2, 4, 8, 16];
-  const isValidTeamCount = validTeamCounts.includes(selectedTeamCount);
 
   return (
     <Form {...form}>
@@ -150,6 +152,9 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
         {/* Format Selection */}
         <BracketFormFormat form={form} />
+
+        {/* Grand Final Type (only for Double Elimination) */}
+        <BracketFormGrandFinal form={form} />
 
         {/* Team Selection */}
         <div className="space-y-2">
@@ -171,21 +176,11 @@ const BracketForm: React.FC<BracketFormProps> = ({
         </div>
 
         {/* Validation Messages */}
-        {selectedTeamCount > 0 && !isValidTeamCount && (
-          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
-            <AlertCircle className="w-4 h-4" />
-            <span>
-              Tournament system requires exactly 2, 4, 8, or 16 teams. 
-              Currently selected: {selectedTeamCount} team{selectedTeamCount !== 1 ? 's' : ''}
-            </span>
-          </div>
-        )}
-
-        {isValidTeamCount && (
+        {selectedTeamCount > 0 && selectedTeamCount >= minTeams && selectedTeamCount <= maxTeams && (
           <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
             <Users className="w-4 h-4" />
             <span>
-              Ready to create bracket with {selectedTeamCount} teams
+              Ready to create bracket with {selectedTeamCount} teams{!isPowerOf2(selectedTeamCount) ? ' (BYEs will be added)' : ''}
             </span>
           </div>
         )}

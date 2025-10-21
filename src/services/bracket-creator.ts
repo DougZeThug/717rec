@@ -10,11 +10,12 @@ export interface BracketCreationOptions {
   divisionId: string;
   teams: { id: string; name: string; seed?: number }[];
   onProgress?: (step: string) => void;
-  useBracketsManager?: boolean; // New: opt into brackets-manager.js
+  useBracketsManager?: boolean;
+  grandFinalType?: "simple" | "double";
 }
 
 export async function createBracket(options: BracketCreationOptions): Promise<BracketRecord> {
-  const { name, format, divisionId, teams, onProgress, useBracketsManager = true } = options;
+  const { name, format, divisionId, teams, onProgress, useBracketsManager = true, grandFinalType } = options;
   
   bracketLog("Starting E2E bracket creation:", { name, format, teamCount: teams.length, useBracketsManager });
   
@@ -99,7 +100,8 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       await bracketManagerService.createBracket({
         bracketId: bracketData.id,
         format: format === 'singleElim' ? 'single_elimination' : 'double_elimination',
-        teams: sortedTeams
+        teams: sortedTeams,
+        grandFinalType: grandFinalType || 'simple'
       });
 
       const bracket: BracketRecord = {

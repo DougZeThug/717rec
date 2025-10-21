@@ -7,6 +7,7 @@ export interface CreateBracketOptions {
   bracketId: string;
   format: "single_elimination" | "double_elimination";
   teams: Array<{ id: string; name: string; seed: number }>;
+  grandFinalType?: "simple" | "double";
 }
 
 export interface UpdateMatchOptions {
@@ -62,7 +63,9 @@ export class BracketManagerService {
         seeding,
         settings: {
           seedOrdering: ["natural"],
-          grandFinal: format === "double_elimination" ? "simple" : "none",
+          grandFinal: format === "double_elimination" 
+            ? (options.grandFinalType || "simple")
+            : "none",
           skipFirstRound: false
         }
       });
@@ -269,6 +272,100 @@ export class BracketManagerService {
       failureLog("Failed to update match with brackets-manager", error);
       throw new Error(
         `Match update failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+
+  /**
+   * Calculate and store final standings for a completed bracket
+   * Uses brackets-manager's finalStandings calculation
+   */
+  async calculateFinalStandings(bracketId: string): Promise<void> {
+    bracketLog("Calculating final standings for bracket:", bracketId);
+
+    try {
+      // 1. Load bracket state into memory
+      await this.storage.loadFromSupabase(bracketId);
+
+      // 2. Get all stages for this bracket (should be 1 stage)
+      const stages = await this.storage.select("stage") as any[];
+      
+      if (!stages || stages.length === 0) {
+        throw new Error("No stages found for bracket");
+      }
+
+      const stageId = stages[0].id;
+
+      // 3. Use brackets-manager to calculate final standings
+      const standings = await this.manager.get.finalStandings(stageId);
+      
+      bracketLog("Final standings calculated:", standings);
+
+      // 4. Get bracket details to map participant IDs to team IDs
+      const { data: bracket, error: bracketError } = await supabase
+        .from('brackets')
+        .select('id, division_id')
+        .eq('id', bracketId)
+        .single();
+
+      if (bracketError || !bracket) {
+        throw new Error(`Failed to fetch bracket: ${bracketError?.message}`);
+      }
+
+      // 5. Get team mappings
+      const { data: teams, error: teamsError } = await supabase
+        .from('teams')
+        .select('id, name')
+        .eq('division_id', bracket.division_id);
+
+      if (teamsError) {
+        throw new Error(`Failed to fetch teams: ${teamsError.message}`);
+      }
+
+      const teamMap = new Map(teams?.map(t => [t.name, t.id]) || []);
+
+      // 6. Get participants to map positions to team IDs
+      const participants = await this.storage.select("participant");
+      const participantIdToTeamId = new Map(
+        participants.map((p: any) => [p.id, teamMap.get(p.name)])
+      );
+
+      // 7. Update playoff_team_records with placements
+      const updates = standings.map((standing: any, index: number) => {
+        const teamId = participantIdToTeamId.get((standing as any).id);
+        const placement = index + 1; // 1st place, 2nd place, etc.
+
+        return {
+          team_id: teamId,
+          bracket_id: bracketId,
+          placement: placement
+        };
+      });
+
+      // 8. Upsert placements into playoff_team_records
+      const { error: upsertError } = await supabase
+        .from('playoff_team_records')
+        .upsert(
+          updates.map(u => ({
+            team_id: u.team_id,
+            bracket_id: u.bracket_id,
+            placement: u.placement,
+          })),
+          {
+            onConflict: 'team_id,bracket_id',
+            ignoreDuplicates: false
+          }
+        );
+
+      if (upsertError) {
+        throw new Error(`Failed to update placements: ${upsertError.message}`);
+      }
+
+      successLog("Final standings calculated and stored", bracketId);
+    } catch (error) {
+      failureLog("Failed to calculate final standings", error);
+      throw new Error(
+        `Final standings calculation failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
   }
