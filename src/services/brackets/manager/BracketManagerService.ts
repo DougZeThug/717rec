@@ -38,11 +38,15 @@ export class BracketManagerService {
   async createBracket(options: CreateBracketOptions): Promise<void> {
     const { bracketId, format, teams } = options;
 
-    bracketLog("Creating bracket with brackets-manager:", {
-      bracketId,
-      format,
-      teamCount: teams.length
-    });
+      const isPowerOf2 = (teams.length & (teams.length - 1)) === 0;
+      bracketLog("Creating bracket with brackets-manager:", {
+        bracketId,
+        format,
+        teamCount: teams.length,
+        isPowerOf2,
+        willUseByes: !isPowerOf2,
+        message: !isPowerOf2 ? `BYE slots will be auto-inserted for ${teams.length} teams` : 'No BYEs needed'
+      });
 
     try {
       // Prepare seeding
