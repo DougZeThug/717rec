@@ -125,13 +125,15 @@ const BracketForm: React.FC<BracketFormProps> = ({
     watchedTitle && 
     watchedDivisionId && 
     teamsValidationState && 
-    selectedTeams.length >= 2 && 
+    [2, 4, 8, 16].includes(selectedTeams.length) && 
     !isSubmitting
   );
 
   const selectedTeamCount = selectedTeams.length;
   const minTeams = 2;
   const maxTeams = 16;
+  const validTeamCounts = [2, 4, 8, 16];
+  const isValidTeamCount = validTeamCounts.includes(selectedTeamCount);
 
   return (
     <Form {...form}>
@@ -169,19 +171,21 @@ const BracketForm: React.FC<BracketFormProps> = ({
         </div>
 
         {/* Validation Messages */}
-        {selectedTeamCount > 0 && selectedTeamCount < minTeams && (
-          <div className="flex items-center gap-2 text-sm text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-800">
+        {selectedTeamCount > 0 && !isValidTeamCount && (
+          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
             <AlertCircle className="w-4 h-4" />
-            <span>Select at least {minTeams} teams to create a bracket</span>
+            <span>
+              Tournament system requires exactly 2, 4, 8, or 16 teams. 
+              Currently selected: {selectedTeamCount} team{selectedTeamCount !== 1 ? 's' : ''}
+            </span>
           </div>
         )}
 
-        {selectedTeamCount >= minTeams && (
+        {isValidTeamCount && (
           <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
             <Users className="w-4 h-4" />
             <span>
               Ready to create bracket with {selectedTeamCount} teams
-              {selectedTeamCount < maxTeams ? ` • You can add up to ${maxTeams - selectedTeamCount} more teams` : ""}
             </span>
           </div>
         )}

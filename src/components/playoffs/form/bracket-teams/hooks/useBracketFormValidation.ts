@@ -7,6 +7,8 @@ export interface ValidationResult {
   message: string | null;
 }
 
+const VALID_TEAM_COUNTS = [2, 4, 8, 16];
+
 export function useBracketFormValidation(
   selectedCount: number,
   availableTeams: number,
@@ -35,6 +37,15 @@ export function useBracketFormValidation(
         isValid: false,
         status: 'tooMany',
         message: `Too many teams selected (max ${max}).`,
+      };
+    }
+
+    // Check if team count is a valid power of 2
+    if (selectedCount >= min && !VALID_TEAM_COUNTS.includes(selectedCount)) {
+      return {
+        isValid: false,
+        status: 'tooFew',
+        message: `Must select exactly 2, 4, 8, or 16 teams (current: ${selectedCount})`,
       };
     }
 
