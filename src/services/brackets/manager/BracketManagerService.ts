@@ -39,6 +39,9 @@ export class BracketManagerService {
   async createBracket(options: CreateBracketOptions): Promise<void> {
     const { bracketId, format, teams } = options;
 
+    // CRITICAL: Reset in-memory storage to prevent contamination from previous brackets
+    this.storage.reset();
+
       const isPowerOf2 = (teams.length & (teams.length - 1)) === 0;
       bracketLog("Creating bracket with brackets-manager:", {
         bracketId,

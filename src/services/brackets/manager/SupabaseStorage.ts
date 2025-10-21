@@ -14,6 +14,26 @@ export class SupabaseStorage extends InMemoryDatabase {
   }
 
   /**
+   * Clear all in-memory storage
+   * MUST be called before creating a new bracket to avoid data contamination
+   */
+  public reset(): void {
+    // Clear all in-memory data tables
+    this.data = {
+      stage: [],
+      group: [],
+      round: [],
+      match: [],
+      match_game: [],
+      participant: []
+    };
+    
+    // Clear team mappings
+    this.teamNameToIdMap.clear();
+    this.teamIdToNameMap.clear();
+  }
+
+  /**
    * Load all matches for a bracket from Supabase into memory
    */
   async loadFromSupabase(bracketId: string): Promise<void> {
