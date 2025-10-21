@@ -122,27 +122,40 @@ export class BracketManagerService {
     });
 
     try {
-      // Determine winner
-      const winnerId = team1GameWins > team2GameWins ? 1 : 2; // opponent1 or opponent2
+      // 1. Query Supabase to get match details
+      const { data: match, error: matchError } = await supabase
+        .from('playoff_matches')
+        .select('*')
+        .eq('id', matchId)
+        .single();
 
-      // Update match in brackets-manager
-      // The library will automatically handle:
-      // - Setting winner/loser
-      // - Progressing winners to next rounds
-      // - Handling grand finals reset if needed
+      if (matchError || !match) {
+        throw new Error(`Failed to fetch match: ${matchError?.message || 'Match not found'}`);
+      }
+
+      // 2. Load bracket state into memory
+      await this.storage.loadFromSupabase(match.bracket_id);
+
+      // 3. Determine winner
+      const winnerId = team1GameWins > team2GameWins ? 1 : 2;
+
+      // 4. Update match in brackets-manager (uses position as ID)
       await this.manager.update.match({
-        id: parseInt(matchId), // Convert UUID to numeric ID via storage
+        id: match.position,
         opponent1: {
-          score: team1Score,
+          score: team1GameWins,
           result: winnerId === 1 ? "win" : "loss"
         },
         opponent2: {
-          score: team2Score,
+          score: team2GameWins,
           result: winnerId === 2 ? "win" : "loss"
         }
       });
 
-      successLog("Match updated successfully with brackets-manager", matchId);
+      // 5. Sync all changes back to Supabase (includes winner progression)
+      await this.storage.syncToSupabase(match.bracket_id);
+
+      successLog("Match updated with automatic progression", matchId);
     } catch (error) {
       failureLog("Failed to update match with brackets-manager", error);
       throw new Error(

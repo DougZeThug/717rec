@@ -2,7 +2,8 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Plus, RefreshCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Plus, RefreshCw, Zap } from "lucide-react";
 import { PlayoffBracket } from "@/types";
 
 interface DivisionBracketsCardProps {
@@ -50,9 +51,21 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
         {brackets.length > 0 ? (
           brackets.map(bracket => (
             <div key={bracket.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-              <div className="flex flex-col">
-                <span className="font-medium">{bracket.name}</span>
-                <span className="text-xs text-gray-500">{bracket.format}</span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{bracket.name}</span>
+                  {bracket.uses_brackets_manager ? (
+                    <Badge variant="default" className="text-xs flex items-center gap-1">
+                      <Zap className="h-3 w-3" />
+                      Smart Progression
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs">
+                      Legacy
+                    </Badge>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">{bracket.format}</span>
               </div>
               <div className="flex gap-2">
                 {onViewBracket && (

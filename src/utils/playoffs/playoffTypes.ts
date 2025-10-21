@@ -11,6 +11,7 @@ export interface PlayoffBracket {
   state: BracketState;
   created_at?: string;
   challonge_tournament_id?: number;
+  uses_brackets_manager?: boolean;
 }
 
 export interface PlayoffMatch {
