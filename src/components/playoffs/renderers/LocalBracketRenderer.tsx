@@ -1,18 +1,19 @@
 
 import React from "react";
-import GlootBracket from "@/components/playoffs/GlootBracket";
+import { BracketsViewerComponent } from "@/components/playoffs/viewer";
 import { PlayoffBracket, PlayoffTeam } from "@/utils/playoffs/playoffTypes";
 
 interface LocalBracketRendererProps {
   bracket: PlayoffBracket;
   teams: PlayoffTeam[];
-  // Accept and ignore any extra legacy props so TypeScript stops complaining
+  onEditMatch?: (matchId: string) => void;
   [key: string]: any;
 }
 
 export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   bracket,
   teams,
+  onEditMatch,
   ...props
 }) => {
   if (!bracket) {
@@ -24,10 +25,10 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   }
 
   return (
-    <GlootBracket
+    <BracketsViewerComponent
       bracket={bracket}
       teams={teams}
-      onEditMatch={props.onEditMatch}
+      onMatchClick={onEditMatch}
     />
   );
 };

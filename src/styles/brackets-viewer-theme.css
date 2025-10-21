@@ -1,0 +1,143 @@
+/* Custom theme for brackets-viewer.js to match design system */
+
+.brackets-viewer {
+  --primary-color: hsl(var(--primary));
+  --secondary-color: hsl(var(--secondary));
+  --win-color: hsl(var(--success, 142 76% 36%));
+  --loss-color: hsl(var(--destructive));
+  --text-color: hsl(var(--foreground));
+  --background-color: hsl(var(--background));
+  --card-background: hsl(var(--card));
+  --border-color: hsl(var(--border));
+  --muted-color: hsl(var(--muted));
+  --muted-foreground: hsl(var(--muted-foreground));
+}
+
+/* Match container styling */
+.brackets-viewer .match {
+  border: 1px solid var(--border-color);
+  background: var(--card-background);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.brackets-viewer .match:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px hsla(var(--primary) / 0.2);
+  cursor: pointer;
+}
+
+/* Participant styling */
+.brackets-viewer .participant {
+  color: var(--text-color);
+  padding: 8px 12px;
+}
+
+.brackets-viewer .participant.win {
+  color: var(--win-color);
+  font-weight: 600;
+  background: hsla(var(--success, 142 76% 36%) / 0.1);
+}
+
+.brackets-viewer .participant.loss {
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
+
+/* Score display */
+.brackets-viewer .score {
+  color: var(--text-color);
+  font-weight: 600;
+  padding: 4px 8px;
+  background: var(--muted-color);
+  border-radius: 4px;
+}
+
+/* Round headers */
+.brackets-viewer .round-title {
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Connection lines */
+.brackets-viewer .connector {
+  stroke: var(--border-color);
+  stroke-width: 2px;
+}
+
+.brackets-viewer .connector.highlight {
+  stroke: var(--primary-color);
+  stroke-width: 3px;
+}
+
+/* Bracket groups */
+.brackets-viewer .bracket-container {
+  background: var(--background-color);
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.brackets-viewer .upper-bracket {
+  margin-bottom: 2rem;
+}
+
+.brackets-viewer .lower-bracket {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--border-color);
+}
+
+/* Participant images */
+.brackets-viewer .participant-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+  border: 2px solid var(--border-color);
+}
+
+/* Status indicators */
+.brackets-viewer .match-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.brackets-viewer .match-status.completed {
+  color: var(--win-color);
+}
+
+.brackets-viewer .match-status.ready {
+  color: var(--primary-color);
+}
+
+.brackets-viewer .match-status.waiting {
+  color: var(--muted-foreground);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .brackets-viewer .match {
+    font-size: 0.875rem;
+  }
+  
+  .brackets-viewer .participant {
+    padding: 6px 10px;
+  }
+  
+  .brackets-viewer .participant-image {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .brackets-viewer .match:hover {
+    box-shadow: 0 2px 12px hsla(var(--primary) / 0.3);
+  }
+}
