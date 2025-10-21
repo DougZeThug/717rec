@@ -92,21 +92,37 @@ export const usePlayoffData = () => {
     }
   });
 
-  // Group brackets by division
+  // Group brackets by display_division (consolidates to 3 main divisions)
   const bracketsByDivision = useMemo(() => {
     const grouped: Record<string, PlayoffBracket[]> = {};
     
     if (divisions && brackets) {
-      // Initialize with empty arrays for each division
+      // Initialize with empty arrays for unique display divisions (excluding Hidden)
+      const uniqueDisplayDivisions = new Set<string>();
       divisions.forEach(div => {
-        grouped[div.name] = [];
+        if (div.display_division && div.display_division !== 'Hidden') {
+          uniqueDisplayDivisions.add(div.display_division);
+        }
       });
       
-      // Group brackets by division name
+      uniqueDisplayDivisions.forEach(displayDiv => {
+        grouped[displayDiv] = [];
+      });
+      
+      // Create a map of division name -> display_division for lookup
+      const divisionNameToDisplay = new Map<string, string>();
+      divisions.forEach(div => {
+        divisionNameToDisplay.set(div.name, div.display_division || div.name);
+      });
+      
+      // Group brackets by display_division
       brackets.forEach(bracket => {
         const divisionName = bracket.division;
-        if (divisionName && grouped[divisionName]) {
-          grouped[divisionName].push(bracket);
+        const displayDivision = divisionName ? divisionNameToDisplay.get(divisionName) : null;
+        
+        // Skip Hidden division brackets
+        if (displayDivision && displayDivision !== 'Hidden' && grouped[displayDivision]) {
+          grouped[displayDivision].push(bracket);
         }
       });
     }

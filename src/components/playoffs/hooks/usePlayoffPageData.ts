@@ -250,7 +250,14 @@ export function usePlayoffPageData(): PlayoffPageData {
       if (!Array.isArray(divisions)) {
         return [];
       }
-      return divisions.map(div => div.name).filter(Boolean);
+      // Get unique display divisions, excluding Hidden
+      const uniqueDisplayDivisions = new Set<string>();
+      divisions.forEach(div => {
+        if (div.display_division && div.display_division !== 'Hidden') {
+          uniqueDisplayDivisions.add(div.display_division);
+        }
+      });
+      return Array.from(uniqueDisplayDivisions);
     } catch (err) {
       const errorMessage = getUIErrorMessage(err, "Failed to process divisions data");
       logError(err, "availableDivisions processing");

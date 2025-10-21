@@ -7,9 +7,34 @@ import { BracketFormValues } from "./BracketFormSchema";
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<BracketFormValues>;
-  divisions: { id: string; name: string }[];
+  divisions: { id: string; name: string; display_division?: string }[];
   onDivisionChange: (divisionId: string) => void;
 }
+
+/**
+ * Get unique display divisions (Competitive, Intermediate, Recreational)
+ * Filters out "Hidden" division and groups by display_division
+ */
+const getUniqueDisplayDivisions = (divisions: { id: string; name: string; display_division?: string }[]) => {
+  const displayDivisionMap = new Map<string, { id: string; name: string; display_division: string }>();
+  
+  divisions.forEach(div => {
+    const displayDiv = div.display_division || div.name;
+    // Skip Hidden division
+    if (displayDiv === 'Hidden') return;
+    
+    // Store the first division of each display group
+    if (!displayDivisionMap.has(displayDiv)) {
+      displayDivisionMap.set(displayDiv, {
+        id: div.id,
+        name: displayDiv,
+        display_division: displayDiv
+      });
+    }
+  });
+  
+  return Array.from(displayDivisionMap.values());
+};
 
 /**
  * Division selection component for bracket forms
@@ -43,8 +68,14 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
     }
   };
 
+  // Get unique display divisions
+  const uniqueDisplayDivisions = React.useMemo(
+    () => getUniqueDisplayDivisions(divisions),
+    [divisions]
+  );
+
   // Show message if no divisions available
-  if (!divisions || !Array.isArray(divisions) || divisions.length === 0) {
+  if (!divisions || !Array.isArray(divisions) || divisions.length === 0 || uniqueDisplayDivisions.length === 0) {
     return (
       <FormField
         control={form.control}
@@ -78,9 +109,9 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {divisions.map((division) => (
+              {uniqueDisplayDivisions.map((division) => (
                 <SelectItem key={division.id} value={division.id}>
-                  {division.name}
+                  {division.display_division}
                 </SelectItem>
               ))}
             </SelectContent>
