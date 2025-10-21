@@ -74,15 +74,11 @@ const BracketForm: React.FC<BracketFormProps> = ({
     [onTeamsValidityChange]
   );
 
-  // Handle division change - clears team selection
+  // Handle division change - preserve team selection for cross-division playoffs
   const handleDivisionChange = React.useCallback((divisionId: string) => {
-    // Clear selected teams when division changes
-    setSelectedTeams([]);
-    setTeamsValidationState(false);
-    if (onTeamsValidityChange) {
-      onTeamsValidityChange(false);
-    }
-  }, [onTeamsValidityChange]);
+    // Don't clear teams - allow cross-division team selection for playoffs
+    // Division is for bracket organization only, not team filtering
+  }, []);
 
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {

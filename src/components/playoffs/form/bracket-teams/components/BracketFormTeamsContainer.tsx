@@ -105,14 +105,11 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     }));
   }, [allTeams]);
 
-  // Filter teams by division with type safety
+  // No division filtering - allow all teams to be selected regardless of division
+  // This supports playoff scenarios where teams can move up divisions
   const filteredTeams = React.useMemo(() => {
-    if (!validDivisionId || !Array.isArray(processedTeams)) return processedTeams;
-    
-    return processedTeams.filter(team => 
-      team.division_id === validDivisionId
-    );
-  }, [processedTeams, validDivisionId]);
+    return processedTeams;
+  }, [processedTeams]);
 
   // Manage form state - no onChange parameter passed to hook
   const formState = useTeamSelectionState(
@@ -140,14 +137,11 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     });
   }, [formState.selected, validation.isValid, onChange]);
 
-  // Reset selection when division changes
+  // Don't clear selection when division changes - teams can be in any division
   React.useEffect(() => {
-    if (formState.clearSelection) {
-      formState.clearSelection();
-    }
     // Reset toast flag when division changes
     hasToastedInvalidDivision.current = false;
-  }, [validDivisionId, formState.clearSelection]);
+  }, [validDivisionId]);
 
   // Loading state
   if (isLoading) {
