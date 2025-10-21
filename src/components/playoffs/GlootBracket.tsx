@@ -36,6 +36,11 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
   const responsive = useBracketResponsive();
   const [windowWidth, windowHeight] = useWindowSize();
   
+  // Warn if receiving brackets-manager bracket (should use BracketsViewerComponent instead)
+  if (bracket.uses_brackets_manager) {
+    console.warn('⚠️ GlootBracket: Received brackets-manager bracket - should use BracketsViewerComponent instead');
+  }
+
   // DEBUG: Log component props and data
   console.log('🏀 GlootBracket: Component props:', {
     bracket: bracket ? {
@@ -47,6 +52,7 @@ const GlootBracket: React.FC<GlootBracketProps> = ({
       challonge_tournament_id: bracket.challonge_tournament_id,
       hasChallongeId: !!bracket.challonge_tournament_id,
       challengeIdType: typeof bracket.challonge_tournament_id,
+      uses_brackets_manager: bracket.uses_brackets_manager,
       allBracketKeys: Object.keys(bracket),
       firstFewMatches: bracket.matches?.slice(0, 3).map(m => ({
         id: m.id,

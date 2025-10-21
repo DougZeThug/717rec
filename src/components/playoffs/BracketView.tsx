@@ -4,6 +4,7 @@ import { useBracketData } from "@/hooks/brackets/useBracketData";
 import { useBracketCompletion } from "@/hooks/useBracketCompletion";
 import GlootBracket from "@/components/playoffs/GlootBracket";
 import { ChallongeBracketDirect } from "./ChallongeBracketDirect";
+import { BracketsViewerComponent } from "./viewer";
 import { FinalStandings } from "./FinalStandings";
 import BracketErrorBoundary from "./BracketErrorBoundary";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
@@ -258,6 +259,27 @@ const BracketView: React.FC<BracketViewProps> = ({
     }
   }, [onEditMatch]);
 
+  // Check if this bracket uses brackets-manager - render BracketsViewerComponent
+  if (displayBracket.uses_brackets_manager) {
+    console.log('🎯 BracketView: Rendering BracketsViewerComponent for brackets-manager bracket');
+    
+    const showStandings = displayBracket.state === 'completed';
+    
+    return (
+      <div className="w-full h-full min-h-[600px] space-y-4">
+        {showStandings && <FinalStandings bracketId={bracketId!} />}
+        
+        <BracketErrorBoundary bracketId={bracketId}>
+          <BracketsViewerComponent
+            bracket={displayBracket}
+            teams={displayBracket.teams || displayTeams}
+            onMatchClick={handleMatchClick}
+          />
+        </BracketErrorBoundary>
+      </div>
+    );
+  }
+
   // Check if this is a Challonge tournament - render ChallongeBracketDirect
   if (displayBracket.challonge_tournament_id) {
     console.log('🎯 BracketView: Rendering ChallongeBracketDirect for tournament:', displayBracket.challonge_tournament_id);
@@ -297,15 +319,11 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  // Return GlootBracket viewer for non-Challonge brackets
-  console.log('🎯 BracketView: Rendering GlootBracket for standard bracket');
-  
-  const showStandings = displayBracket.state === 'completed' && displayBracket.uses_brackets_manager;
+  // Return GlootBracket viewer as fallback for legacy brackets
+  console.log('🎯 BracketView: Rendering GlootBracket for legacy bracket');
   
   return (
-    <div className="w-full h-full min-h-[600px] space-y-4">
-      {showStandings && <FinalStandings bracketId={bracketId!} />}
-      
+    <div className="w-full h-full min-h-[600px]">
       <BracketErrorBoundary bracketId={bracketId}>
         <GlootBracket
           bracket={displayBracket}
