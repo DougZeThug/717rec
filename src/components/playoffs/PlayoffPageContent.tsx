@@ -99,6 +99,43 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
     <div className="space-y-8">
       <ChallongeFallback />
       
+      {/* Refresh Button */}
+      {onRefreshData && allBracketsData.length > 0 && (
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefreshClick}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+          </Button>
+        </div>
+      )}
+
+      {/* Empty State - No brackets at all */}
+      {!displayLoading && allBracketsData.length === 0 && (
+        <EmptyBracketState onCreateBracket={onCreateBracket} />
+      )}
+
+      {/* Division Cards - Show brackets grouped by division */}
+      {!displayLoading && divisionsWithBrackets.length > 0 && (
+        <div className="space-y-6">
+          {divisionCards}
+        </div>
+      )}
+
+      {/* Info message if data loaded but no divisions have brackets */}
+      {!displayLoading && allBracketsData.length > 0 && divisionsWithBrackets.length === 0 && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Brackets exist but are not assigned to any division. Please assign brackets to divisions to see them here.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
