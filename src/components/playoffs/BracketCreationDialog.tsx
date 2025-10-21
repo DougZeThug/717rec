@@ -188,6 +188,14 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       
     } catch (error: any) {
       console.error("BracketCreationDialog: E2E bracket creation failed:", error);
+      console.error("Error details:", {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+        stack: error?.stack,
+        fullError: JSON.stringify(error, null, 2)
+      });
       
       let errorMessage = "Failed to create bracket. Check your internet or try again.";
       

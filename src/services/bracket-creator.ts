@@ -153,9 +153,25 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     }
     
   } catch (error) {
+    // Log full error details
+    console.error("🔴 E2E bracket creation error - full context:", {
+      error,
+      errorType: error?.constructor?.name,
+      errorMessage: (error as any)?.message,
+      isSupabaseError: error && typeof error === 'object' && 'code' in error,
+      supabaseCode: (error as any)?.code,
+      fullErrorString: JSON.stringify(error, null, 2)
+    });
+    
     failureLog("E2E bracket creation failed", error);
     
-    // Re-throw with appropriate error type
-    throw new Error(`Bracket creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // Preserve detailed error message if available
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : typeof error === 'object' && error !== null
+        ? JSON.stringify(error)
+        : 'Unknown error';
+    
+    throw new Error(`Bracket creation failed: ${errorMessage}`);
   }
 }

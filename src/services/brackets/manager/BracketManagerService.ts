@@ -84,16 +84,54 @@ export class BracketManagerService {
       }));
 
       if (matchRecords.length > 0) {
+        bracketLog("Attempting to insert playoff matches:", {
+          count: matchRecords.length,
+          bracketId,
+          sample: matchRecords[0] // Log first record for structure verification
+        });
+        
         const { error } = await supabase
           .from('playoff_matches')
           .insert(matchRecords);
 
-        if (error) throw error;
+        if (error) {
+          // Log the FULL error object with all Supabase properties
+          console.error("🔴 Supabase INSERT failed on playoff_matches:", {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
+            fullError: error
+          });
+          throw error; // Throw original error, not wrapped
+        }
       }
 
       successLog("Bracket created and persisted to Supabase", bracketId);
     } catch (error) {
+      // Log detailed error context
+      console.error("🔴 Bracket creation error - full context:", {
+        error,
+        errorType: error?.constructor?.name,
+        errorKeys: error ? Object.keys(error) : [],
+        isSupabaseError: error && typeof error === 'object' && 'code' in error,
+        supabaseCode: (error as any)?.code,
+        supabaseDetails: (error as any)?.details,
+        supabaseHint: (error as any)?.hint
+      });
+      
       failureLog("Failed to create bracket with brackets-manager", error);
+      
+      // If it's a Supabase error, preserve all properties
+      if (error && typeof error === 'object' && 'code' in error) {
+        const supabaseError = error as any;
+        throw new Error(
+          `Supabase Error [${supabaseError.code}]: ${supabaseError.message}\n` +
+          `Details: ${supabaseError.details || 'none'}\n` +
+          `Hint: ${supabaseError.hint || 'none'}`
+        );
+      }
+      
       throw new Error(
         `Bracket creation failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );

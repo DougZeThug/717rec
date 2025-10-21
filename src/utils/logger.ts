@@ -32,3 +32,18 @@ export const successLog = (operation: string, details?: string) => {
 export const failureLog = (operation: string, error: string | Error) => {
   errorLog(`❌ ${operation} failed:`, error);
 };
+
+// Supabase-specific error logging
+export const supabaseErrorLog = (operation: string, error: any) => {
+  if (error && typeof error === 'object' && 'code' in error) {
+    errorLog(`🔴 Supabase Error in ${operation}:`, {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      statusCode: error.statusCode
+    });
+  } else {
+    errorLog(`❌ ${operation} error:`, error);
+  }
+};
