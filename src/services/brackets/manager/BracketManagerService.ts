@@ -69,19 +69,75 @@ export class BracketManagerService {
       // Map teams to their IDs for persistence
       const teamMap = new Map(teams.map(t => [t.name, t.id]));
 
-      // Persist matches to Supabase
-      const matchRecords = matches.map((match: any) => ({
-        bracket_id: bracketId,
-        round: match.round_id,
-        position: match.number,
-        match_type: this.getMatchType(match.group_id),
-        team1_id: match.opponent1?.id ? teamMap.get(seeding[match.opponent1.id - 1]) || null : null,
-        team2_id: match.opponent2?.id ? teamMap.get(seeding[match.opponent2.id - 1]) || null : null,
-        team1_seed: match.opponent1?.position || null,
-        team2_seed: match.opponent2?.position || null,
-        best_of: 3,
-        status: 'pending'
-      }));
+      // First pass: Create match records with UUIDs
+      const matchRecords = matches.map((match: any) => {
+        const uuid = crypto.randomUUID();
+        return {
+          id: uuid,
+          bracket_id: bracketId,
+          round: match.round_id,
+          position: match.number,
+          match_type: this.getMatchType(match.group_id),
+          team1_id: match.opponent1?.id ? teamMap.get(seeding[match.opponent1.id - 1]) || null : null,
+          team2_id: match.opponent2?.id ? teamMap.get(seeding[match.opponent2.id - 1]) || null : null,
+          team1_seed: match.opponent1?.position || null,
+          team2_seed: match.opponent2?.position || null,
+          best_of: 3,
+          status: 'pending',
+          next_win_match_id: null,
+          next_lose_match_id: null
+        };
+      });
+
+      // Build mapping: brackets-manager position -> Supabase UUID
+      const positionToUuid = new Map(
+        matchRecords.map(record => [record.position, record.id])
+      );
+
+      // Second pass: Populate match connections
+      matches.forEach((bmMatch: any, index: number) => {
+        const record = matchRecords[index];
+        
+        // Find where winner of this match goes (child_count tells us if this match feeds another)
+        if (bmMatch.child_count && bmMatch.child_count > 0) {
+          // Winners advance: find the next match in the same group or finals
+          const nextRoundMatches = matches.filter((m: any) => 
+            m.round_id === bmMatch.round_id + 1 && 
+            (m.group_id === bmMatch.group_id || m.group_id === 3) // Same bracket or finals
+          );
+          
+          // Calculate which next match this feeds into
+          // In brackets-manager, matches are numbered sequentially
+          // Two matches feed into one in the next round
+          const nextMatchIndex = Math.floor((bmMatch.number - 1) / 2);
+          const nextMatch = nextRoundMatches[nextMatchIndex];
+          
+          if (nextMatch && typeof nextMatch === 'object' && 'number' in nextMatch) {
+            record.next_win_match_id = positionToUuid.get((nextMatch as any).number) || null;
+          }
+        }
+        
+        // For double elimination: losers drop to losers bracket
+        if (format === 'double_elimination' && bmMatch.group_id === 1) {
+          // Winners bracket losers go to losers bracket
+          const losersRoundMatches = matches.filter((m: any) => 
+            m.group_id === 2 // Losers bracket
+          );
+          
+          // Complex mapping logic for WB -> LB drops
+          // This depends on the round structure
+          const loserDestination = this.findLoserDestination(bmMatch, losersRoundMatches);
+          if (loserDestination && typeof loserDestination === 'object' && 'number' in loserDestination) {
+            record.next_lose_match_id = positionToUuid.get((loserDestination as any).number) || null;
+          }
+        }
+      });
+
+      bracketLog("Match records with connections:", {
+        count: matchRecords.length,
+        sample: matchRecords[0],
+        connectionsCount: matchRecords.filter(m => m.next_win_match_id).length
+      });
 
       if (matchRecords.length > 0) {
         bracketLog("Attempting to insert playoff matches:", {
@@ -145,6 +201,17 @@ export class BracketManagerService {
       case 3: return 'finals';
       default: return 'winners';
     }
+  }
+
+  /**
+   * Find where a loser from winners bracket should go in losers bracket
+   * This is a simplified mapping - brackets-manager handles the complex logic
+   */
+  private findLoserDestination(winnersMatch: any, losersMatches: any[]): any | null {
+    // For now, return null - the viewer will handle progression
+    // Full implementation would map WB round/position to LB round/position
+    // This is complex and varies by bracket size
+    return null;
   }
 
   /**
