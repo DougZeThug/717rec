@@ -136,53 +136,78 @@ export const useBracketData = (bracketId: string | null) => {
           console.warn('🎯 DEBUG: No matches found in database for bracket:', bracketId);
         }
 
-        // Step 3: Fetch participants from database (includes team data)
+        // Step 3: Fetch participants from database (separate query for reliability)
         console.log('🎯 DEBUG: Step 3 - Fetching participants for bracket:', bracketId);
         const { data: participants, error: participantsError } = await supabase
           .from('participants')
-          .select(`
-            position,
-            team_id,
-            teams:team_id (
-              id,
-              name,
-              logo_url,
-              image_url
-            )
-          `)
+          .select('position, team_id')
           .eq('bracket_id', bracketId)
           .order('position', { ascending: true });
 
         if (participantsError) {
           console.error('🎯 DEBUG: Participants query error:', participantsError);
+          throw participantsError;
         }
 
-        // Transform participants to flatten team data
-        const transformedParticipants = participants?.map(p => ({
-          position: p.position,
-          team_id: p.team_id,
-          name: (p.teams as any)?.name || '',
-          logo_url: (p.teams as any)?.logo_url,
-          image_url: (p.teams as any)?.image_url
-        })) || [];
-
         console.log('🎯 DEBUG: Step 3 Complete - Participants found:', {
-          participantsCount: transformedParticipants.length,
-          sampleParticipant: transformedParticipants[0] || null
+          participantsCount: participants?.length || 0,
+          sampleParticipant: participants?.[0] || null
         });
 
-        // Step 4: Create team lookup map from participants (supports cross-division teams)
-        const teamLookup = new Map();
-        transformedParticipants.forEach(participant => {
-          teamLookup.set(participant.team_id, {
-            id: participant.team_id,
-            name: participant.name,
-            logo_url: participant.logo_url,
-            image_url: participant.image_url
+        // Step 4: Fetch team details for participants (separate query for better reliability)
+        const teamIds = participants?.map(p => p.team_id) || [];
+        
+        console.log('🎯 DEBUG: Step 4 - Fetching team details for', teamIds.length, 'teams');
+
+        let teamLookup = new Map();
+        let transformedParticipants: Array<{
+          position: number;
+          team_id: string;
+          name: string;
+          logo_url?: string;
+          image_url?: string;
+        }> = [];
+
+        if (teamIds.length > 0) {
+          const { data: teamDetails, error: teamsError } = await supabase
+            .from('teams')
+            .select('id, name, logo_url, image_url')
+            .in('id', teamIds);
+          
+          if (teamsError) {
+            console.error('🎯 DEBUG: Teams query error:', teamsError);
+            throw teamsError;
+          }
+
+          console.log('🎯 DEBUG: Step 4 Complete - Team details fetched:', {
+            teamsCount: teamDetails?.length || 0,
+            sampleTeam: teamDetails?.[0] || null
           });
-        });
 
-        console.log('🎯 DEBUG: Step 4 - Team lookup map created from participants with', teamLookup.size, 'teams');
+          // Create team lookup
+          teamDetails?.forEach(team => {
+            teamLookup.set(team.id, team);
+          });
+
+          // Transform participants with team data
+          transformedParticipants = participants?.map(p => {
+            const team = teamLookup.get(p.team_id);
+            return {
+              position: p.position,
+              team_id: p.team_id,
+              name: team?.name || '',
+              logo_url: team?.logo_url,
+              image_url: team?.image_url
+            };
+          }) || [];
+
+          console.log('🎯 DEBUG: Transformed participants with team data:', {
+            participantsCount: transformedParticipants.length,
+            teamsInLookup: teamLookup.size
+          });
+        } else {
+          console.warn('🎯 DEBUG: No team IDs found in participants');
+        }
 
         // Step 5: Transform matches with team data and relationship fields
         const transformedMatches = (rawMatches || []).map((match) => {
