@@ -7,6 +7,7 @@ export interface BracketRecord {
   format: string;
   state: string;
   created_at: string;
+  uses_brackets_manager: boolean;
   participants: Array<{
     teamId: string;
     name: string;

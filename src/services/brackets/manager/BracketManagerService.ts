@@ -1,5 +1,6 @@
 import { BracketsManager } from "brackets-manager";
 import { SupabaseStorage } from "./SupabaseStorage";
+import { supabase } from "@/integrations/supabase/client";
 import { bracketLog, successLog, failureLog } from "@/utils/logger";
 
 export interface CreateBracketOptions {
@@ -18,7 +19,8 @@ export interface UpdateMatchOptions {
 
 /**
  * Service wrapper for brackets-manager.js
- * Handles bracket creation and match updates using the library
+ * Phase 1: Uses in-memory storage with Supabase persistence after operations
+ * Handles bracket creation and match updates using brackets-manager
  */
 export class BracketManagerService {
   private storage: SupabaseStorage;
@@ -31,6 +33,7 @@ export class BracketManagerService {
 
   /**
    * Create a new bracket using brackets-manager
+   * Then persist matches to Supabase
    */
   async createBracket(options: CreateBracketOptions): Promise<void> {
     const { bracketId, format, teams } = options;
@@ -42,30 +45,67 @@ export class BracketManagerService {
     });
 
     try {
-      // Prepare seeding - convert team IDs to numeric format
+      // Prepare seeding
       const seeding = teams
         .sort((a, b) => a.seed - b.seed)
-        .map(team => team.name); // brackets-manager uses participant names
+        .map(team => team.name);
 
-      // Create the tournament stage
+      // Create tournament stage in memory
       await this.manager.create({
         name: bracketId,
-        tournamentId: 0, // Not used in our case
+        tournamentId: 0,
         type: format,
         seeding,
         settings: {
-          seedOrdering: ["natural"], // Standard seeding
+          seedOrdering: ["natural"],
           grandFinal: format === "double_elimination" ? "simple" : "none",
           skipFirstRound: false
         }
       });
 
-      successLog("Bracket created successfully with brackets-manager", bracketId);
+      // Get generated matches from memory storage
+      const matches = await this.storage.select("match");
+      
+      // Map teams to their IDs for persistence
+      const teamMap = new Map(teams.map(t => [t.name, t.id]));
+
+      // Persist matches to Supabase
+      const matchRecords = matches.map((match: any) => ({
+        bracket_id: bracketId,
+        round: match.round_id,
+        position: match.number,
+        match_type: this.getMatchType(match.group_id),
+        team1_id: match.opponent1?.id ? teamMap.get(seeding[match.opponent1.id - 1]) || null : null,
+        team2_id: match.opponent2?.id ? teamMap.get(seeding[match.opponent2.id - 1]) || null : null,
+        team1_seed: match.opponent1?.position || null,
+        team2_seed: match.opponent2?.position || null,
+        best_of: 3,
+        status: 'pending'
+      }));
+
+      if (matchRecords.length > 0) {
+        const { error } = await supabase
+          .from('playoff_matches')
+          .insert(matchRecords);
+
+        if (error) throw error;
+      }
+
+      successLog("Bracket created and persisted to Supabase", bracketId);
     } catch (error) {
       failureLog("Failed to create bracket with brackets-manager", error);
       throw new Error(
         `Bracket creation failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
+    }
+  }
+
+  private getMatchType(groupId: number): "winners" | "losers" | "finals" {
+    switch (groupId) {
+      case 1: return 'winners';
+      case 2: return 'losers';
+      case 3: return 'finals';
+      default: return 'winners';
     }
   }
 

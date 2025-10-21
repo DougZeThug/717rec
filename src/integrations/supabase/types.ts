@@ -55,6 +55,7 @@ export type Database = {
           reset_match_needed: boolean | null
           state: string | null
           title: string
+          uses_brackets_manager: boolean
           wb_champion_id: string | null
         }
         Insert: {
@@ -70,6 +71,7 @@ export type Database = {
           reset_match_needed?: boolean | null
           state?: string | null
           title: string
+          uses_brackets_manager?: boolean
           wb_champion_id?: string | null
         }
         Update: {
@@ -85,6 +87,7 @@ export type Database = {
           reset_match_needed?: boolean | null
           state?: string | null
           title?: string
+          uses_brackets_manager?: boolean
           wb_champion_id?: string | null
         }
         Relationships: [
