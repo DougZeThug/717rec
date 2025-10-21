@@ -2,16 +2,12 @@
 import React, { useCallback, useMemo } from "react";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
 import { useBracketCompletion } from "@/hooks/useBracketCompletion";
-import GlootBracket from "@/components/playoffs/GlootBracket";
-import { ChallongeBracketDirect } from "./ChallongeBracketDirect";
 import { BracketsViewerComponent } from "./viewer";
 import { FinalStandings } from "./FinalStandings";
 import BracketErrorBoundary from "./BracketErrorBoundary";
-import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
-import { useToast } from "@/hooks/use-toast";
 
 interface BracketViewProps {
   bracketId?: string | null;
@@ -48,10 +44,6 @@ const BracketView: React.FC<BracketViewProps> = ({
     refetch: refetchBracket
   } = useBracketData(bracketId);
   
-  // Challonge admin functionality
-  const { resyncMatches } = useChallongeAdmin();
-  const { toast } = useToast();
-  
   // Monitor bracket completion for final standings
   useBracketCompletion(bracketId || undefined);
 
@@ -86,13 +78,6 @@ const BracketView: React.FC<BracketViewProps> = ({
       timestamp: new Date().toISOString()
     });
     
-    // CRITICAL DEBUG: Check if this bracket should use Challonge direct
-    if (result?.challonge_tournament_id) {
-      console.log('🎯 CRITICAL: This bracket HAS challonge_tournament_id:', result.challonge_tournament_id);
-      console.log('🎯 CRITICAL: Will render ChallongeBracketDirect!');
-    } else {
-      console.log('🎯 CRITICAL: This bracket has NO challonge_tournament_id, using GlootBracket flow');
-    }
     
     return result;
   }, [legacyBracket, fetchedBracket]);
@@ -112,42 +97,6 @@ const BracketView: React.FC<BracketViewProps> = ({
     }
   }, [refetchBracket, bracketId]);
 
-  // Challonge resync handler
-  const handleChallongeResync = useCallback(async () => {
-    if (!displayBracket?.challonge_tournament_id || !bracketId) {
-      toast({
-        title: "Resync Not Available",
-        description: "This bracket is not connected to Challonge.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    console.log('🔄 DEBUG: Challonge resync triggered for bracket:', bracketId);
-    try {
-      await resyncMatches.mutateAsync({ 
-        bracketId, 
-        challongeTournamentId: displayBracket.challonge_tournament_id 
-      });
-      
-      // Refetch the bracket data after successful resync
-      await refetchBracket();
-      
-      toast({
-        title: "Sync Complete",
-        description: "Bracket updated with latest Challonge data.",
-      });
-      
-      console.log('🔄 DEBUG: Challonge resync completed successfully');
-    } catch (syncError) {
-      console.error('🔄 DEBUG: Challonge resync failed:', syncError);
-      toast({
-        title: "Sync Failed",
-        description: "Failed to sync with Challonge. Please try again.",
-        variant: "destructive"
-      });
-    }
-  }, [displayBracket, bracketId, resyncMatches, refetchBracket, toast]);
 
   // Enhanced loading state with better UX
   if (isLoading && !legacyBracket) {
@@ -189,9 +138,7 @@ const BracketView: React.FC<BracketViewProps> = ({
           <Button 
             variant="outline" 
             onClick={handleRetry}
-            className="flex items-center gap-2"
           >
-            <RefreshCw className="w-4 h-4" />
             Try Again
           </Button>
         </div>
@@ -243,12 +190,13 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  console.log('🖼️ DEBUG: About to render GlootBracket viewer with valid data:', {
+  console.log('🖼️ DEBUG: About to render BracketsViewerComponent with valid data:', {
     bracketId: displayBracket.id,
     bracketName: displayBracket.name,
     matchesCount: displayBracket.matches.length,
     matchesIsArray: Array.isArray(displayBracket.matches),
     teamsCount: displayBracket.teams?.length || 0,
+    uses_brackets_manager: displayBracket.uses_brackets_manager,
     timestamp: new Date().toISOString()
   });
 
@@ -259,76 +207,20 @@ const BracketView: React.FC<BracketViewProps> = ({
     }
   }, [onEditMatch]);
 
-  // Check if this bracket uses brackets-manager - render BracketsViewerComponent
-  if (displayBracket.uses_brackets_manager) {
-    console.log('🎯 BracketView: Rendering BracketsViewerComponent for brackets-manager bracket');
-    
-    const showStandings = displayBracket.state === 'completed';
-    
-    return (
-      <div className="w-full h-full min-h-[600px] space-y-4">
-        {showStandings && <FinalStandings bracketId={bracketId!} />}
-        
-        <BracketErrorBoundary bracketId={bracketId}>
-          <BracketsViewerComponent
-            bracket={displayBracket}
-            teams={displayBracket.teams || displayTeams}
-            onMatchClick={handleMatchClick}
-          />
-        </BracketErrorBoundary>
-      </div>
-    );
-  }
-
-  // Check if this is a Challonge tournament - render ChallongeBracketDirect
-  if (displayBracket.challonge_tournament_id) {
-    console.log('🎯 BracketView: Rendering ChallongeBracketDirect for tournament:', displayBracket.challonge_tournament_id);
-    return (
-      <div className="w-full h-full min-h-[600px]">
-        {/* Bracket header with sync button */}
-        <div className="flex justify-between items-center mb-4 p-4 bg-muted/50 rounded-lg">
-          <div>
-            <h3 className="font-semibold">{displayBracket.name}</h3>
-            <p className="text-sm text-muted-foreground">
-              Connected to Challonge Tournament #{displayBracket.challonge_tournament_id}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleChallongeResync}
-            disabled={resyncMatches.isPending}
-            className="flex items-center gap-2"
-          >
-            {resyncMatches.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            Sync from Challonge
-          </Button>
-        </div>
-        
-        <BracketErrorBoundary bracketId={bracketId}>
-          <ChallongeBracketDirect
-            tournamentId={displayBracket.challonge_tournament_id}
-            onEditMatch={handleMatchClick}
-          />
-        </BracketErrorBoundary>
-      </div>
-    );
-  }
-
-  // Return GlootBracket viewer as fallback for legacy brackets
-  console.log('🎯 BracketView: Rendering GlootBracket for legacy bracket');
+  // All brackets use brackets-manager - render BracketsViewerComponent
+  console.log('🎯 BracketView: Rendering BracketsViewerComponent');
+  
+  const showStandings = displayBracket.state === 'completed';
   
   return (
-    <div className="w-full h-full min-h-[600px]">
+    <div className="w-full h-full min-h-[600px] space-y-4">
+      {showStandings && <FinalStandings bracketId={bracketId!} />}
+      
       <BracketErrorBoundary bracketId={bracketId}>
-        <GlootBracket
+        <BracketsViewerComponent
           bracket={displayBracket}
           teams={displayBracket.teams || displayTeams}
-          onEditMatch={handleMatchClick}
+          onMatchClick={handleMatchClick}
         />
       </BracketErrorBoundary>
     </div>

@@ -11,6 +11,7 @@ export interface SimpleBracketData {
   state: string;
   division: string;
   challonge_tournament_id?: number | null;
+  uses_brackets_manager?: boolean;
   matches: Array<{
     id: string;
     round: number;
@@ -57,11 +58,11 @@ export const useBracketData = (bracketId: string | null) => {
       try {
         // Step 1: Get bracket info with state field
         console.log('🎯 DEBUG: Step 1 - Fetching bracket info for ID:', bracketId);
-        const { data: bracket, error: bracketError } = await supabase
-          .from('brackets')
-          .select('id, title, format, state, division_id, challonge_tournament_id')
-          .eq('id', bracketId)
-          .single();
+      const { data: bracket, error: bracketError } = await supabase
+        .from('brackets')
+        .select('id, title, format, state, division_id, challonge_tournament_id, uses_brackets_manager')
+        .eq('id', bracketId)
+        .single();
 
         if (bracketError) {
           console.error('🎯 DEBUG: Bracket query error:', bracketError);
@@ -207,6 +208,7 @@ export const useBracketData = (bracketId: string | null) => {
           state: bracket.state || 'pending',
           division: bracket.division_id,
           challonge_tournament_id: bracket.challonge_tournament_id,
+          uses_brackets_manager: bracket.uses_brackets_manager,
           matches: transformedMatches,
           teams: teams || []
         };
