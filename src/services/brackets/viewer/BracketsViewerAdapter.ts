@@ -51,6 +51,13 @@ export class BracketsViewerAdapter {
   private static transformBracket(bracket: PlayoffBracket): ViewerStage {
     const isDoubleElim = bracket.format === 'Double Elimination';
     
+    // Extract grandFinalType from bracket metadata
+    let grandFinalType: 'simple' | 'double' | undefined = 'simple';
+    if (isDoubleElim && bracket.participants && typeof bracket.participants === 'object') {
+      const metadata = bracket.participants as any;
+      grandFinalType = metadata.grandFinalType || 'simple';
+    }
+    
     return {
       id: 1,
       tournament_id: 1,
@@ -59,7 +66,7 @@ export class BracketsViewerAdapter {
       number: 1,
       settings: {
         size: this.calculateBracketSize(bracket.matches || []),
-        grandFinal: isDoubleElim ? 'simple' : undefined
+        grandFinal: isDoubleElim ? grandFinalType : undefined
       }
     };
   }

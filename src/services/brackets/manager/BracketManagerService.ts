@@ -65,7 +65,7 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: ["natural"],
+          seedOrdering: ["inner_outer"], // Traditional seeding: #1 vs lowest, #2 vs second-lowest
           grandFinal: format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none",

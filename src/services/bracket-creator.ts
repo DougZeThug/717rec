@@ -87,7 +87,10 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
           division_id: divisionId,
           format: format === 'singleElim' ? 'Single Elimination' : 'Double Elimination',
           state: 'pending',
-          uses_brackets_manager: true
+          uses_brackets_manager: true,
+          participants: {
+            grandFinalType: grandFinalType || 'simple'
+          }
         })
         .select()
         .single();
