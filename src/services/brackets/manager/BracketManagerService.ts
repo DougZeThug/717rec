@@ -58,7 +58,7 @@ export class BracketManagerService {
 
       bracketLog("Inserting participants into participant table:", participantInserts);
       const { error: participantsError } = await supabase
-        .from('participant')
+        .from('participant' as any)
         .insert(participantInserts);
 
       if (participantsError) {

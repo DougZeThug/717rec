@@ -1000,6 +1000,32 @@ export type Database = {
           },
         ]
       }
+      participant: {
+        Row: {
+          id: number
+          name: string
+          tournament_id: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          tournament_id: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participant_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "brackets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       participants: {
         Row: {
           bracket_id: string
