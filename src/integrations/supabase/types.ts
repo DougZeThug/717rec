@@ -1041,17 +1041,17 @@ export type Database = {
       participant: {
         Row: {
           id: number
-          name: string
+          name: string | null
           tournament_id: string
         }
         Insert: {
           id?: number
-          name: string
+          name?: string | null
           tournament_id: string
         }
         Update: {
           id?: number
-          name?: string
+          name?: string | null
           tournament_id?: string
         }
         Relationships: [
