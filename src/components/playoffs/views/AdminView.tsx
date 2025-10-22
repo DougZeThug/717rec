@@ -80,8 +80,7 @@ const AdminView: React.FC<AdminViewProps> = ({
           />
         ) : (
           <BracketView 
-            bracket={data.bracket} 
-            teams={data.teams}
+            bracketId={data.selectedBracketId}
             onEditMatch={handlers.handleEditMatch}
           />
         )}
