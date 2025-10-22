@@ -15,6 +15,7 @@ interface SeedOverrideControlsProps {
   divisionId: string;
   validation: SeedValidationState;
   onSeedChange?: (teamId: string, seed: number | null) => void;
+  show?: boolean;
 }
 
 export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
@@ -22,7 +23,9 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
   divisionId,
   validation,
   onSeedChange,
+  show = true,
 }) => {
+  // ALWAYS call hooks first (before any conditional logic)
   const {
     state,
     actions,
@@ -35,6 +38,19 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
     resetDivisionSeeds,
     isUpdating,
   } = useTeamSeedMutation();
+
+  // Early return AFTER all hooks are called
+  if (!show) {
+    return (
+      <Card>
+        <CardContent className="py-6">
+          <div className="text-center text-muted-foreground">
+            Select a division to manage seeds
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const conflictTeamIds = new Set(
     validation.conflicts.map(conflict => conflict.team_id)

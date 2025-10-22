@@ -31,22 +31,31 @@ export const useSeedManagement = (
   validation: SeedValidationState,
   onSeedChange?: (teamId: string, seed: number | null) => void
 ): SeedManagementResult => {
+  // Ensure we have valid arrays and objects to prevent React errors
+  const safeInitialTeams = Array.isArray(initialTeams) ? initialTeams : [];
+  const safeValidation = validation || { 
+    hasConflicts: false, 
+    conflicts: [], 
+    isLoading: false, 
+    errorMessage: null 
+  };
+  
   const [mode, setMode] = useState<'automatic' | 'manual'>('automatic');
   const [pendingChanges, setPendingChanges] = useState<Map<string, number>>(new Map());
   const [draggedTeam, setDraggedTeam] = useState<ProcessedTeam | null>(null);
-  const [processedTeams, setProcessedTeams] = useState<ProcessedTeam[]>(initialTeams);
+  const [processedTeams, setProcessedTeams] = useState<ProcessedTeam[]>(safeInitialTeams);
   const isInitializedRef = useRef(false);
 
   // Only sync with initialTeams on mount or when explicitly requested
   useEffect(() => {
     if (!isInitializedRef.current) {
-      setProcessedTeams(initialTeams);
+      setProcessedTeams(safeInitialTeams);
       isInitializedRef.current = true;
     }
-  }, [initialTeams]);
+  }, [safeInitialTeams]);
 
   const isDirty = pendingChanges.size > 0;
-  const hasConflicts = validation.hasConflicts;
+  const hasConflicts = safeValidation.hasConflicts;
 
   const updateTeamSeed = useCallback((teamId: string, seed: number | null) => {
     setPendingChanges(prev => {
@@ -87,16 +96,16 @@ export const useSeedManagement = (
   const resetToAutomatic = useCallback(() => {
     setMode('automatic');
     setPendingChanges(new Map());
-    setProcessedTeams(initialTeams);
+    setProcessedTeams(safeInitialTeams);
     isInitializedRef.current = false; // Allow resync with initialTeams
     
     // Clear all manual seeds
-    initialTeams.forEach(team => {
+    safeInitialTeams.forEach(team => {
       if (onSeedChange) {
         onSeedChange(team.id, null);
       }
     });
-  }, [initialTeams, onSeedChange]);
+  }, [safeInitialTeams, onSeedChange]);
 
   const commitChanges = useCallback(() => {
     setPendingChanges(new Map());
@@ -104,9 +113,9 @@ export const useSeedManagement = (
 
   const cancelChanges = useCallback(() => {
     setPendingChanges(new Map());
-    setProcessedTeams(initialTeams);
+    setProcessedTeams(safeInitialTeams);
     isInitializedRef.current = false; // Allow resync with initialTeams
-  }, [initialTeams]);
+  }, [safeInitialTeams]);
 
   const switchMode = useCallback((newMode: 'automatic' | 'manual') => {
     setMode(newMode);

@@ -277,22 +277,13 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
     </TabsContent>
 
     <TabsContent value="seeds" className="space-y-4">
-      {divisionId && seedValidation ? (
-        <SeedOverrideControls
-          teams={formStateManager.syncedTeams}
-          divisionId={divisionId}
-          validation={seedValidation}
-          onSeedChange={onSeedChange}
-        />
-      ) : (
-        <Card>
-          <CardContent className="py-6">
-            <div className="text-center text-muted-foreground">
-              Select a division to manage seeds
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <SeedOverrideControls
+        teams={formStateManager.syncedTeams}
+        divisionId={divisionId || ''}
+        validation={seedValidation}
+        onSeedChange={onSeedChange}
+        show={!!(divisionId && seedValidation)}
+      />
     </TabsContent>
   </Tabs>
 </div>
