@@ -15,20 +15,34 @@ export class SupabaseSqlStorage implements CrudInterface {
   private transformMatchToDb(data: any): any {
     const transformed: any = { ...data };
     
-    // Handle opponent1
-    if (data.opponent1 && typeof data.opponent1 === 'object') {
-      transformed.opponent1_id = data.opponent1.id ?? null;
-      transformed.opponent1_score = data.opponent1.score ?? null;
-      transformed.opponent1_result = data.opponent1.result ?? null;
-      delete transformed.opponent1;
+    // Handle opponent1 - always transform, even if null/undefined
+    if ('opponent1' in data) {
+      if (data.opponent1 && typeof data.opponent1 === 'object') {
+        transformed.opponent1_id = data.opponent1.id ?? null;
+        transformed.opponent1_score = data.opponent1.score ?? null;
+        transformed.opponent1_result = data.opponent1.result ?? null;
+      } else {
+        // opponent1 is null/undefined (BYE case) - set all fields to null
+        transformed.opponent1_id = null;
+        transformed.opponent1_score = null;
+        transformed.opponent1_result = null;
+      }
+      delete transformed.opponent1; // Always delete the opponent1 field
     }
     
-    // Handle opponent2
-    if (data.opponent2 && typeof data.opponent2 === 'object') {
-      transformed.opponent2_id = data.opponent2.id ?? null;
-      transformed.opponent2_score = data.opponent2.score ?? null;
-      transformed.opponent2_result = data.opponent2.result ?? null;
-      delete transformed.opponent2;
+    // Handle opponent2 - always transform, even if null/undefined
+    if ('opponent2' in data) {
+      if (data.opponent2 && typeof data.opponent2 === 'object') {
+        transformed.opponent2_id = data.opponent2.id ?? null;
+        transformed.opponent2_score = data.opponent2.score ?? null;
+        transformed.opponent2_result = data.opponent2.result ?? null;
+      } else {
+        // opponent2 is null/undefined (BYE case) - set all fields to null
+        transformed.opponent2_id = null;
+        transformed.opponent2_score = null;
+        transformed.opponent2_result = null;
+      }
+      delete transformed.opponent2; // Always delete the opponent2 field
     }
     
     return transformed;
