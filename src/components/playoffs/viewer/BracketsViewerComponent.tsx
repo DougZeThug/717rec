@@ -171,7 +171,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         ref={containerRef}
         id="brackets-viewer-container"
         className="brackets-viewer min-w-max p-4"
-        style={{ minHeight: '400px', pointerEvents: 'auto', border: '2px solid red' }}
+        style={{ minHeight: '400px', pointerEvents: 'auto' }}
       />
       {!isInitialized && (
         <div className="text-center p-8">
