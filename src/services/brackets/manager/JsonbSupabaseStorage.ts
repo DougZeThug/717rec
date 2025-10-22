@@ -70,8 +70,7 @@ export class JsonbSupabaseStorage extends InMemoryDatabase {
       const { data, error } = await supabase
         .from('brackets')
         .update({ 
-          bracket_data: this.data as any,
-          updated_at: new Date().toISOString()
+          bracket_data: this.data as any
         })
         .eq('id', this.bracketId)
         .select();
