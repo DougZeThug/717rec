@@ -112,6 +112,13 @@ const BracketView: React.FC<BracketViewProps> = ({
   // Monitor bracket completion for final standings
   useBracketCompletion(bracketId || undefined);
 
+  // Handle match click for brackets - MUST be before any conditional returns
+  const handleMatchClick = useCallback((matchId: string) => {
+    if (onEditMatch) {
+      onEditMatch(matchId);
+    }
+  }, [onEditMatch]);
+
   // Combine loading states
   const isLoading = isLoadingBracketInfo || isLoadingLegacy;
   const error = bracketInfoError || legacyError;
@@ -260,13 +267,6 @@ const BracketView: React.FC<BracketViewProps> = ({
     uses_brackets_manager: displayBracket.uses_brackets_manager,
     timestamp: new Date().toISOString()
   });
-
-  // Handle match click for brackets
-  const handleMatchClick = useCallback((matchId: string) => {
-    if (onEditMatch) {
-      onEditMatch(matchId);
-    }
-  }, [onEditMatch]);
 
   // All brackets use brackets-manager - render BracketsViewerComponent
   console.log('🎯 BracketView: Rendering BracketsViewerComponent');
