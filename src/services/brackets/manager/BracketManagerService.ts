@@ -78,11 +78,10 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: ["inner_outer"] as any, // Traditional seeding: #1 vs lowest, #2 vs second-lowest
+          size: teams.length, // Explicitly set bracket size
           grandFinal: format === "double_elimination" 
             ? (options.grandFinalType || "simple")
-            : "none",
-          skipFirstRound: false
+            : "none"
         }
       });
 
