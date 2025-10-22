@@ -247,7 +247,7 @@ export const useBracketData = (bracketId: string | null) => {
         throw error;
       }
     },
-    enabled: !!bracketId,
+    enabled: true, // Always enabled - null check handled in queryFn
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: (failureCount, error) => {
       console.log(`🔄 DEBUG: Query retry attempt ${failureCount} for bracket ${bracketId}:`, {

@@ -66,7 +66,7 @@ const BracketView: React.FC<BracketViewProps> = ({
       
       return data;
     },
-    enabled: !!bracketId && !legacyBracket
+    enabled: true // Always enabled - null check handled in queryFn
   });
   
   // Enhanced data hook with refetch capability

@@ -75,6 +75,6 @@ export const usePlayoffBracketData = (bracketId: string | null) => {
       console.log('🎯 usePlayoffBracketData: Final bracket result:', bracket);
       return bracket;
     },
-    enabled: !!bracketId
+    enabled: true // Always enabled - null check handled in queryFn
   });
 };
