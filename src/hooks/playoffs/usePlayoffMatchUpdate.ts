@@ -26,11 +26,17 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       console.log('🚀 Using brackets-manager for match update with auto-progression');
       
       await bracketManagerService.updateMatch({
-        matchId,
-        team1Score,
-        team2Score,
-        team1GameWins,
-        team2GameWins
+        matchId: parseInt(matchId),
+        scores: {
+          opponent1: { 
+            score: team1GameWins,
+            result: team1GameWins > team2GameWins ? "win" : "loss"
+          },
+          opponent2: { 
+            score: team2GameWins,
+            result: team2GameWins > team1GameWins ? "win" : "loss"
+          }
+        }
       });
       
       // Save individual games

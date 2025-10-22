@@ -272,6 +272,102 @@ export type Database = {
           },
         ]
       }
+      group: {
+        Row: {
+          id: number
+          name: string | null
+          number: number
+          stage_id: number
+        }
+        Insert: {
+          id?: number
+          name?: string | null
+          number: number
+          stage_id: number
+        }
+        Update: {
+          id?: number
+          name?: string | null
+          number?: number
+          stage_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match: {
+        Row: {
+          group_id: number
+          id: number
+          number: number
+          opponent1_id: number | null
+          opponent1_result: string | null
+          opponent1_score: number | null
+          opponent2_id: number | null
+          opponent2_result: string | null
+          opponent2_score: number | null
+          round_id: number
+          stage_id: number
+          status: number
+        }
+        Insert: {
+          group_id: number
+          id?: number
+          number: number
+          opponent1_id?: number | null
+          opponent1_result?: string | null
+          opponent1_score?: number | null
+          opponent2_id?: number | null
+          opponent2_result?: string | null
+          opponent2_score?: number | null
+          round_id: number
+          stage_id: number
+          status?: number
+        }
+        Update: {
+          group_id?: number
+          id?: number
+          number?: number
+          opponent1_id?: number | null
+          opponent1_result?: string | null
+          opponent1_score?: number | null
+          opponent2_id?: number | null
+          opponent2_result?: string | null
+          opponent2_score?: number | null
+          round_id?: number
+          stage_id?: number
+          status?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "round"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_comments: {
         Row: {
           content: string
@@ -313,6 +409,41 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "v_pending_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_game: {
+        Row: {
+          id: number
+          match_id: number
+          number: number
+          opponent1_score: number | null
+          opponent2_score: number | null
+          status: number
+        }
+        Insert: {
+          id?: number
+          match_id: number
+          number: number
+          opponent1_score?: number | null
+          opponent2_score?: number | null
+          status?: number
+        }
+        Update: {
+          id?: number
+          match_id?: number
+          number?: number
+          opponent1_score?: number | null
+          opponent2_score?: number | null
+          status?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_game_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "match"
             referencedColumns: ["id"]
           },
         ]
@@ -875,7 +1006,7 @@ export type Database = {
           cn_participant_id: string | null
           id: string
           name: string | null
-          position: number
+          position: number | null
           seeding: number | null
           team_id: string
           tournament_id: string | null
@@ -885,7 +1016,7 @@ export type Database = {
           cn_participant_id?: string | null
           id?: string
           name?: string | null
-          position: number
+          position?: number | null
           seeding?: number | null
           team_id: string
           tournament_id?: string | null
@@ -895,7 +1026,7 @@ export type Database = {
           cn_participant_id?: string | null
           id?: string
           name?: string | null
-          position?: number
+          position?: number | null
           seeding?: number | null
           team_id?: string
           tournament_id?: string | null
@@ -1747,6 +1878,35 @@ export type Database = {
         }
         Relationships: []
       }
+      round: {
+        Row: {
+          group_id: number
+          id: number
+          name: string | null
+          number: number
+        }
+        Insert: {
+          group_id: number
+          id?: number
+          name?: string | null
+          number: number
+        }
+        Update: {
+          group_id?: number
+          id?: number
+          name?: string | null
+          number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       score_submissions: {
         Row: {
           created_at: string
@@ -2089,6 +2249,41 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      stage: {
+        Row: {
+          id: number
+          name: string
+          number: number
+          settings: Json | null
+          tournament_id: string
+          type: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          number: number
+          settings?: Json | null
+          tournament_id: string
+          type: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          number?: number
+          settings?: Json | null
+          tournament_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stage_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "brackets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       team_badge_events: {
         Row: {

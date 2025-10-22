@@ -1,4 +1,3 @@
 export { BracketManagerService, bracketManagerService } from "./BracketManagerService";
-export { SupabaseStorage } from "./SupabaseStorage";
-export { JsonbSupabaseStorage } from "./JsonbSupabaseStorage";
+export { SupabaseSqlStorage } from "./SupabaseSqlStorage";
 export type { CreateBracketOptions, UpdateMatchOptions } from "./BracketManagerService";
