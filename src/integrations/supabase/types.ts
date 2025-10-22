@@ -303,6 +303,7 @@ export type Database = {
       }
       match: {
         Row: {
+          child_count: number
           group_id: number
           id: number
           number: number
@@ -317,6 +318,7 @@ export type Database = {
           status: number
         }
         Insert: {
+          child_count?: number
           group_id: number
           id?: number
           number: number
@@ -331,6 +333,7 @@ export type Database = {
           status?: number
         }
         Update: {
+          child_count?: number
           group_id?: number
           id?: number
           number?: number
