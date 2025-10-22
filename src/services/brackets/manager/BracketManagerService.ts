@@ -292,15 +292,20 @@ export class BracketManagerService {
       });
 
       if (matchRecords.length > 0) {
+        // ✅ Remove internal _bmMatch property before database insertion
+        const dbRecords = matchRecords.map(({ _bmMatch, ...dbRecord }) => dbRecord);
+        
         bracketLog("Attempting to insert playoff matches:", {
-          count: matchRecords.length,
+          count: dbRecords.length,
           bracketId,
-          sample: matchRecords[0] // Log first record for structure verification
+          sample: dbRecords[0], // Log first record for structure verification
+          hasInternalProps: '_bmMatch' in matchRecords[0], // Should be true
+          cleanedForDb: !('_bmMatch' in dbRecords[0]) // Should be true
         });
         
         const { error } = await supabase
           .from('playoff_matches')
-          .insert(matchRecords);
+          .insert(dbRecords);
 
         if (error) {
           // Log the FULL error object with all Supabase properties
