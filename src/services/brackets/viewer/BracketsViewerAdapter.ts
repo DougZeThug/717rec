@@ -59,6 +59,7 @@ export class BracketsViewerAdapter {
       group_id: match.group_id,
       round_id: match.round_id,
       number: match.number,
+      child_count: match.child_count,
       opponent1: match.opponent1_id ? {
         id: match.opponent1_id,
         score: match.opponent1_score ?? undefined,
