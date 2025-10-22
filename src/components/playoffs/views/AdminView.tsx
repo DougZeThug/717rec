@@ -66,7 +66,7 @@ const AdminView: React.FC<AdminViewProps> = ({
           <ChallongeFallback />
         </div>
 
-        {!data.selectedBracketId || !data.bracket ? (
+        <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
           <BracketList 
             divisions={data.availableDivisions}
             bracketsByDivision={data.typesafeBracketsByDivision}
@@ -78,12 +78,14 @@ const AdminView: React.FC<AdminViewProps> = ({
             isResyncLoading={resyncMatches.isPending}
             isLoading={data.isLoading}
           />
-        ) : (
+        </div>
+
+        <div className={data.selectedBracketId && data.bracket ? 'block' : 'hidden'}>
           <BracketView 
             bracketId={data.selectedBracketId}
             onEditMatch={handlers.handleEditMatch}
           />
-        )}
+        </div>
       </TabsContent>
       
       <TabsContent value="teams">
