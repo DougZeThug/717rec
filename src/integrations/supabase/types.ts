@@ -3207,10 +3207,7 @@ export type Database = {
       }
     }
     Functions: {
-      auto_assign_seeds: {
-        Args: { p_division_id: string }
-        Returns: undefined
-      }
+      auto_assign_seeds: { Args: { p_division_id: string }; Returns: undefined }
       award_clutch_performer_badge: {
         Args: { p_team_id: string }
         Returns: Json
@@ -3223,14 +3220,8 @@ export type Database = {
         Args: { p_loser_id: string; p_winner_id: string }
         Returns: Json
       }
-      award_streak_badges: {
-        Args: { p_team_id: string }
-        Returns: Json
-      }
-      batch_update_team_seeds: {
-        Args: { p_updates: Json }
-        Returns: Json
-      }
+      award_streak_badges: { Args: { p_team_id: string }; Returns: Json }
+      batch_update_team_seeds: { Args: { p_updates: Json }; Returns: Json }
       calculate_team_streak: {
         Args: { p_team_id: string }
         Returns: {
@@ -3238,12 +3229,9 @@ export type Database = {
           streak_type: string
         }[]
       }
-      current_user_is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      current_user_is_admin: { Args: never; Returns: boolean }
       get_all_team_badges: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           awarded_at: string
           badge_type: string
@@ -3319,10 +3307,7 @@ export type Database = {
           team_id: string
         }[]
       }
-      get_team_division_weight: {
-        Args: { team_id: string }
-        Returns: number
-      }
+      get_team_division_weight: { Args: { team_id: string }; Returns: number }
       insert_participant: {
         Args: {
           p_bracket_id: string
@@ -3349,30 +3334,21 @@ export type Database = {
         Args: { p_division_id: string }
         Returns: undefined
       }
-      snapshot_current_season: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_team_stats: {
-        Args:
-          | Record<PropertyKey, never>
-          | {
+      snapshot_current_season: { Args: never; Returns: undefined }
+      update_team_stats:
+        | { Args: { team_id: string }; Returns: undefined }
+        | {
+            Args: {
               p_loser_game_wins?: number
               p_loser_id: string
               p_winner_game_wins?: number
               p_winner_id: string
             }
-          | { team_id: string }
-        Returns: undefined
-      }
-      upsert_team_season_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      user_belongs_to_team: {
-        Args: { p_team_id: string }
-        Returns: boolean
-      }
+            Returns: Json
+          }
+        | { Args: never; Returns: undefined }
+      upsert_team_season_stats: { Args: never; Returns: undefined }
+      user_belongs_to_team: { Args: { p_team_id: string }; Returns: boolean }
       user_is_team_member: {
         Args: { p_team_id: string; p_user_id: string }
         Returns: boolean
