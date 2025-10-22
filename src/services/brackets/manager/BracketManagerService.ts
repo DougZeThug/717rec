@@ -40,7 +40,20 @@ export class BracketManagerService {
     const { bracketId, format, teams } = options;
 
     // CRITICAL: Reset in-memory storage to prevent contamination from previous brackets
+    console.log("🧹 Resetting bracket storage before creation");
+    const preResetMatches = (await this.storage.select("match")).length;
     this.storage.reset();
+    const postResetMatches = (await this.storage.select("match")).length;
+    
+    bracketLog("Storage reset verification:", {
+      matchesBeforeReset: preResetMatches,
+      matchesAfterReset: postResetMatches,
+      resetSuccessful: postResetMatches === 0
+    });
+
+    if (postResetMatches > 0) {
+      throw new Error("Storage reset failed - contaminated data detected");
+    }
 
       const isPowerOf2 = (teams.length & (teams.length - 1)) === 0;
       bracketLog("Creating bracket with brackets-manager:", {
@@ -65,7 +78,7 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: ["inner_outer"], // Traditional seeding: #1 vs lowest, #2 vs second-lowest
+          seedOrdering: ["inner_outer"] as any, // Traditional seeding: #1 vs lowest, #2 vs second-lowest
           grandFinal: format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none",
@@ -76,24 +89,29 @@ export class BracketManagerService {
       // Get generated matches from memory storage
       const rawMatches = await this.storage.select("match");
       
-      // Deduplicate matches by group_id, round_id, and number
+      // ✅ Deduplicate matches by their unique ID (not position!)
       const matches = Array.from(
         new Map(
           rawMatches.map((m: any) => [
-            `${m.group_id}-${m.round_id}-${m.number}`,
+            m.id, // Use unique match ID as key
             m
           ])
         ).values()
       );
 
-      bracketLog("Match deduplication:", {
+      bracketLog("Match deduplication (by ID):", {
         originalCount: rawMatches.length,
         uniqueCount: matches.length,
-        duplicatesRemoved: rawMatches.length - matches.length
+        duplicatesRemoved: rawMatches.length - matches.length,
+        positionCounts: matches.reduce((acc: any, m: any) => {
+          const key = `${m.group_id}-${m.round_id}-${m.number}`;
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {})
       });
 
       // Log raw brackets-manager structure for debugging
-      bracketLog("Raw brackets-manager matches:", {
+      bracketLog("Match generation analysis:", {
         totalMatches: matches.length,
         byGroup: {
           winners: matches.filter((m: any) => m.group_id === 1).length,
@@ -110,6 +128,15 @@ export class BracketManagerService {
             max: Math.max(...matches.filter((m: any) => m.group_id === 2).map((m: any) => m.round_id))
           } : null
         },
+        finalsMatches: matches
+          .filter((m: any) => m.group_id === 3)
+          .map((m: any) => ({
+            id: m.id,
+            round_id: m.round_id,
+            number: m.number,
+            opponent1: m.opponent1,
+            opponent2: m.opponent2
+          })),
         sampleMatches: matches.slice(0, 3).map((m: any) => ({
           group_id: m.group_id,
           round_id: m.round_id,
@@ -139,6 +166,14 @@ export class BracketManagerService {
         const uuid = crypto.randomUUID();
         const minRound = groupMinRounds.get(match.group_id) ?? 0;
         const normalizedRound = match.round_id - minRound; // Normalize to 0-indexed per group
+        
+        // Validation warnings for missing team mappings
+        if (match.opponent1?.position && !seedToTeamId.get(match.opponent1.position)) {
+          console.warn(`⚠️ Seed ${match.opponent1.position} not found in team map`);
+        }
+        if (match.opponent2?.position && !seedToTeamId.get(match.opponent2.position)) {
+          console.warn(`⚠️ Seed ${match.opponent2.position} not found in team map`);
+        }
         
         return {
           id: uuid,
