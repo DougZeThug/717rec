@@ -121,6 +121,25 @@ export const useBracketData = (bracketId: string | null) => {
           const stage = stages[0];
           console.log('🎯 DEBUG: Stage found:', { stageId: stage.id, type: stage.type });
 
+          // Step 3.5: Fetch groups to map group_id to group.number for match types
+          console.log('🎯 DEBUG: Step 3.5 - Fetching groups');
+          const { data: groups, error: groupError } = await supabase
+            .from('group')
+            .select('*')
+            .eq('stage_id', stage.id);
+
+          if (groupError) {
+            console.error('🎯 DEBUG: Group query error:', groupError);
+            throw groupError;
+          }
+
+          // Build group_id to group.number mapping
+          const groupIdToNumberMap = new Map<number, number>();
+          groups?.forEach(group => {
+            groupIdToNumberMap.set(group.id, group.number);
+          });
+          console.log('🎯 DEBUG: Groups mapped:', groupIdToNumberMap.size);
+
           // Step 4: Fetch matches from SQL and transform opponent fields back to objects
           console.log('🎯 DEBUG: Step 4 - Fetching matches');
           const { data: matches, error: matchError } = await supabase
@@ -174,6 +193,16 @@ export const useBracketData = (bracketId: string | null) => {
 
           console.log('🎯 DEBUG: Teams fetched:', teamDetails?.length || 0);
 
+          // Helper function to map group.number to matchType
+          const getMatchType = (groupNumber: number): string => {
+            switch(groupNumber) {
+              case 1: return 'winners';
+              case 2: return 'losers';
+              case 3: return 'finals';
+              default: return 'winners';
+            }
+          };
+
           // Step 8: Transform matches - convert opponent1_id back to opponent1 object
           const transformedMatches = (matches || []).map((match: any) => {
             const team1Name = match.opponent1_id ? participantToTeamMap.get(match.opponent1_id) : null;
@@ -192,6 +221,10 @@ export const useBracketData = (bracketId: string | null) => {
             else if (match.status === 3) status = 'running';
             else if (match.status === 2) status = 'ready';
 
+            // Determine match type from group_id
+            const groupNumber = groupIdToNumberMap.get(match.group_id) || 1;
+            const matchType = getMatchType(groupNumber);
+
             return {
               id: `match-${match.id}`,
               round: match.round_id + 1,
@@ -205,7 +238,7 @@ export const useBracketData = (bracketId: string | null) => {
               winnerId,
               team1Score: match.opponent1_score ?? null,
               team2Score: match.opponent2_score ?? null,
-              matchType: 'winners',
+              matchType,
               status,
               nextWinMatchId: null,
               nextLoseMatchId: null,
