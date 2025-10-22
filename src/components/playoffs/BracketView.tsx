@@ -1,5 +1,7 @@
 
 import React, { useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
 import { useBracketCompletion } from "@/hooks/useBracketCompletion";
 import { BracketsViewerComponent } from "./viewer";
@@ -36,51 +38,79 @@ const BracketView: React.FC<BracketViewProps> = ({
     timestamp: new Date().toISOString()
   });
   
-  // Enhanced data hook with refetch capability
+  // First, check if this is a JSONB bracket
+  const { data: bracketInfo, isLoading: isLoadingBracketInfo, error: bracketInfoError } = useQuery({
+    queryKey: ['bracket-info', bracketId],
+    queryFn: async () => {
+      if (!bracketId) return null;
+      
+      console.log('🔍 DEBUG: Fetching bracket info for JSONB check:', bracketId);
+      const { data, error } = await supabase
+        .from('brackets')
+        .select('id, title, format, state, uses_brackets_manager, bracket_data, participants')
+        .eq('id', bracketId)
+        .single();
+      
+      if (error) {
+        console.error('❌ DEBUG: Error fetching bracket info:', error);
+        throw error;
+      }
+      
+      console.log('✅ DEBUG: Bracket info fetched:', {
+        id: data.id,
+        title: data.title,
+        uses_brackets_manager: data.uses_brackets_manager,
+        has_bracket_data: !!data.bracket_data,
+        bracket_data_keys: data.bracket_data ? Object.keys(data.bracket_data) : []
+      });
+      
+      return data;
+    },
+    enabled: !!bracketId && !legacyBracket
+  });
+  
+  // Enhanced data hook with refetch capability (only for non-JSONB brackets)
+  const shouldFetchLegacyData = !bracketInfo?.uses_brackets_manager || !bracketInfo?.bracket_data;
   const { 
     data: fetchedBracket, 
-    isLoading, 
-    error,
+    isLoading: isLoadingLegacy, 
+    error: legacyError,
     refetch: refetchBracket
-  } = useBracketData(bracketId);
+  } = useBracketData(shouldFetchLegacyData ? bracketId : null);
   
   // Monitor bracket completion for final standings
   useBracketCompletion(bracketId || undefined);
 
-  console.log('🖼️ DEBUG: useBracketData hook result:', {
+  // Combine loading states
+  const isLoading = isLoadingBracketInfo || isLoadingLegacy;
+  const error = bracketInfoError || legacyError;
+
+  console.log('🖼️ DEBUG: Data fetching status:', {
+    isLoadingBracketInfo,
+    isLoadingLegacy,
+    hasLegacyBracket: !!legacyBracket,
+    bracketInfo: bracketInfo ? {
+      id: bracketInfo.id,
+      uses_brackets_manager: bracketInfo.uses_brackets_manager,
+      has_bracket_data: !!bracketInfo.bracket_data
+    } : null,
     fetchedBracket: fetchedBracket ? {
       id: fetchedBracket.id,
-      name: fetchedBracket.name,
-      matchesCount: fetchedBracket.matches?.length || 0,
-      matchesIsArray: Array.isArray(fetchedBracket.matches),
-      teamsCount: fetchedBracket.teams?.length || 0
+      matchesCount: fetchedBracket.matches?.length || 0
     } : null,
-    isLoading,
-    error: error?.message,
     timestamp: new Date().toISOString()
   });
 
+  // If this is a JSONB bracket, use it directly
+  const isJsonbBracket = bracketInfo?.uses_brackets_manager && bracketInfo?.bracket_data;
+  
   // Memoized data selection for performance
   const displayBracket = useMemo(() => {
-    const result = legacyBracket || fetchedBracket;
-    console.log('🖼️ DEBUG: displayBracket selection:', {
-      usingLegacy: !!legacyBracket,
-      usingFetched: !!fetchedBracket,
-      finalResult: result ? {
-        id: result.id,
-        name: result.name,
-        matchesCount: result.matches?.length || 0,
-        matchesIsArray: Array.isArray(result.matches),
-        hasValidStructure: !!(result.id && result.name && Array.isArray(result.matches)),
-        challonge_tournament_id: result.challonge_tournament_id,
-        hasChallongeId: !!result.challonge_tournament_id
-      } : null,
-      timestamp: new Date().toISOString()
-    });
-    
-    
-    return result;
-  }, [legacyBracket, fetchedBracket]);
+    // Priority: legacy prop > JSONB bracket > fetched bracket
+    if (legacyBracket) return legacyBracket;
+    if (isJsonbBracket) return bracketInfo;
+    return fetchedBracket;
+  }, [legacyBracket, isJsonbBracket, bracketInfo, fetchedBracket]);
 
   const displayTeams = useMemo(() => {
     return legacyTeams || [];
@@ -99,7 +129,7 @@ const BracketView: React.FC<BracketViewProps> = ({
 
 
   // Enhanced loading state with better UX
-  if (isLoading && !legacyBracket) {
+  if (isLoading && !legacyBracket && !isJsonbBracket) {
     console.log('🖼️ DEBUG: Showing loading state');
     return (
       <div className="flex items-center justify-center p-8">
@@ -118,7 +148,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   }
 
   // Enhanced error state with retry functionality
-  if (error && !legacyBracket) {
+  if (error && !legacyBracket && !isJsonbBracket) {
     console.log('🖼️ DEBUG: Showing error state:', error.message);
     return (
       <div className="space-y-4">
@@ -165,8 +195,8 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  // Critical check before rendering bracket viewer
-  if (!displayBracket.matches || !Array.isArray(displayBracket.matches)) {
+  // Skip matches validation for JSONB brackets (data is in bracket_data)
+  if (!isJsonbBracket && (!displayBracket.matches || !Array.isArray(displayBracket.matches))) {
     console.error('🚨 DEBUG: CRITICAL - Bracket exists but matches is not an array!', {
       bracket: displayBracket,
       matchesProperty: displayBracket.matches,
@@ -190,12 +220,12 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  console.log('🖼️ DEBUG: About to render BracketsViewerComponent with valid data:', {
+  console.log('🖼️ DEBUG: About to render BracketsViewerComponent:', {
+    isJsonbBracket,
     bracketId: displayBracket.id,
-    bracketName: displayBracket.name,
-    matchesCount: displayBracket.matches.length,
-    matchesIsArray: Array.isArray(displayBracket.matches),
-    teamsCount: displayBracket.teams?.length || 0,
+    bracketName: displayBracket.title || displayBracket.name,
+    matchesCount: displayBracket.matches?.length || 0,
+    has_bracket_data: !!displayBracket.bracket_data,
     uses_brackets_manager: displayBracket.uses_brackets_manager,
     timestamp: new Date().toISOString()
   });
