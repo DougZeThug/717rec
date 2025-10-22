@@ -1910,18 +1910,21 @@ export type Database = {
           id: number
           name: string | null
           number: number
+          stage_id: number
         }
         Insert: {
           group_id: number
           id?: number
           name?: string | null
           number: number
+          stage_id: number
         }
         Update: {
           group_id?: number
           id?: number
           name?: string | null
           number?: number
+          stage_id?: number
         }
         Relationships: [
           {
@@ -1929,6 +1932,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "round_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stage"
             referencedColumns: ["id"]
           },
         ]
