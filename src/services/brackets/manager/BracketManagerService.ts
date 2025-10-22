@@ -74,10 +74,54 @@ export class BracketManagerService {
       });
 
       // Get generated matches from memory storage
-      const matches = await this.storage.select("match");
+      const rawMatches = await this.storage.select("match");
       
-      // Map teams to their IDs for persistence
+      // Deduplicate matches by group_id, round_id, and number
+      const matches = Array.from(
+        new Map(
+          rawMatches.map((m: any) => [
+            `${m.group_id}-${m.round_id}-${m.number}`,
+            m
+          ])
+        ).values()
+      );
+
+      bracketLog("Match deduplication:", {
+        originalCount: rawMatches.length,
+        uniqueCount: matches.length,
+        duplicatesRemoved: rawMatches.length - matches.length
+      });
+
+      // Log raw brackets-manager structure for debugging
+      bracketLog("Raw brackets-manager matches:", {
+        totalMatches: matches.length,
+        byGroup: {
+          winners: matches.filter((m: any) => m.group_id === 1).length,
+          losers: matches.filter((m: any) => m.group_id === 2).length,
+          finals: matches.filter((m: any) => m.group_id === 3).length
+        },
+        roundRange: {
+          winners: {
+            min: Math.min(...matches.filter((m: any) => m.group_id === 1).map((m: any) => m.round_id)),
+            max: Math.max(...matches.filter((m: any) => m.group_id === 1).map((m: any) => m.round_id))
+          },
+          losers: matches.filter((m: any) => m.group_id === 2).length > 0 ? {
+            min: Math.min(...matches.filter((m: any) => m.group_id === 2).map((m: any) => m.round_id)),
+            max: Math.max(...matches.filter((m: any) => m.group_id === 2).map((m: any) => m.round_id))
+          } : null
+        },
+        sampleMatches: matches.slice(0, 3).map((m: any) => ({
+          group_id: m.group_id,
+          round_id: m.round_id,
+          number: m.number,
+          opponent1: m.opponent1,
+          opponent2: m.opponent2
+        }))
+      });
+      
+      // Map teams to their IDs for persistence (by name and by seed)
       const teamMap = new Map(teams.map(t => [t.name, t.id]));
+      const seedToTeamId = new Map(teams.map(t => [t.seed, t.id]));
 
       // Calculate minimum round_id per group for round normalization
       const groupMinRounds = new Map<number, number>();
@@ -102,8 +146,9 @@ export class BracketManagerService {
           round: normalizedRound, // Store normalized round (0-indexed per bracket type)
           position: match.number,
           match_type: this.getMatchType(match.group_id),
-          team1_id: match.opponent1?.id ? teamMap.get(seeding[match.opponent1.id - 1]) || null : null,
-          team2_id: match.opponent2?.id ? teamMap.get(seeding[match.opponent2.id - 1]) || null : null,
+          // Use seed position mapping for more reliable team ID lookup
+          team1_id: match.opponent1?.position ? seedToTeamId.get(match.opponent1.position) || null : null,
+          team2_id: match.opponent2?.position ? seedToTeamId.get(match.opponent2.position) || null : null,
           team1_seed: match.opponent1?.position || null,
           team2_seed: match.opponent2?.position || null,
           best_of: 3,
@@ -184,6 +229,28 @@ export class BracketManagerService {
             fullError: error
           });
           throw error; // Throw original error, not wrapped
+        }
+
+        // Store participants for the bracket
+        bracketLog("Storing participants:", {
+          count: teams.length,
+          bracketId
+        });
+
+        const participantRecords = teams.map(team => ({
+          bracket_id: bracketId,
+          position: team.seed,
+          team_id: team.id,
+          name: team.name
+        }));
+
+        const { error: participantError } = await supabase
+          .from('participants')
+          .insert(participantRecords);
+
+        if (participantError) {
+          console.error("Failed to insert participants:", participantError);
+          throw participantError;
         }
       }
 
