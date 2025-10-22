@@ -78,11 +78,18 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          size: teams.length, // Explicitly set bracket size
+          seedOrdering: ["inner_outer"], // Traditional seeding: 1v8, 4v5, 2v7, 3v6
           grandFinal: format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none"
         }
+      });
+
+      bracketLog("Seeding configuration:", {
+        teamCount: teams.length,
+        seedingOrder: seeding,
+        seedOrdering: "inner_outer",
+        expectedMatchups: "1v8, 4v5, 2v7, 3v6 (for 8 teams)"
       });
 
       // Get generated matches from memory storage
