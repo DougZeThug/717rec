@@ -8,6 +8,76 @@ type Id = number | string;
  * Implements the CrudInterface to work directly with Supabase SQL tables
  */
 export class SupabaseSqlStorage implements CrudInterface {
+  /**
+   * Transform match data from brackets-manager format to SQL format
+   * Flattens opponent1/opponent2 objects into separate columns
+   */
+  private transformMatchToDb(data: any): any {
+    const transformed: any = { ...data };
+    
+    // Handle opponent1
+    if (data.opponent1 && typeof data.opponent1 === 'object') {
+      transformed.opponent1_id = data.opponent1.id ?? null;
+      transformed.opponent1_score = data.opponent1.score ?? null;
+      transformed.opponent1_result = data.opponent1.result ?? null;
+      delete transformed.opponent1;
+    }
+    
+    // Handle opponent2
+    if (data.opponent2 && typeof data.opponent2 === 'object') {
+      transformed.opponent2_id = data.opponent2.id ?? null;
+      transformed.opponent2_score = data.opponent2.score ?? null;
+      transformed.opponent2_result = data.opponent2.result ?? null;
+      delete transformed.opponent2;
+    }
+    
+    return transformed;
+  }
+
+  /**
+   * Transform match data from SQL format to brackets-manager format
+   * Re-inflates separate columns into opponent1/opponent2 objects
+   */
+  private transformMatchFromDb(data: any): any {
+    const transformed: any = { ...data };
+    
+    // Re-inflate opponent1
+    if ('opponent1_id' in data || 'opponent1_score' in data || 'opponent1_result' in data) {
+      transformed.opponent1 = {
+        id: data.opponent1_id ?? null,
+        score: data.opponent1_score ?? null,
+        result: data.opponent1_result ?? null
+      };
+      delete transformed.opponent1_id;
+      delete transformed.opponent1_score;
+      delete transformed.opponent1_result;
+    }
+    
+    // Re-inflate opponent2
+    if ('opponent2_id' in data || 'opponent2_score' in data || 'opponent2_result' in data) {
+      transformed.opponent2 = {
+        id: data.opponent2_id ?? null,
+        score: data.opponent2_score ?? null,
+        result: data.opponent2_result ?? null
+      };
+      delete transformed.opponent2_id;
+      delete transformed.opponent2_score;
+      delete transformed.opponent2_result;
+    }
+    
+    return transformed;
+  }
+
+  /**
+   * Transform data for database storage based on table type
+   */
+  private transformDataForDb<T extends keyof DataTypes>(table: T, data: any): any {
+    if (table === 'match') {
+      return this.transformMatchToDb(data);
+    }
+    return data;
+  }
+
   // Select overloads
   async select<T extends keyof DataTypes>(table: T): Promise<DataTypes[T][]>;
   async select<T extends keyof DataTypes>(table: T, id: Id): Promise<DataTypes[T]>;
@@ -36,8 +106,9 @@ export class SupabaseSqlStorage implements CrudInterface {
           throw error;
         }
         
-        console.log(`✅ SupabaseSqlStorage.select() SUCCESS - Table: ${table}, Single record found`);
-        return data as DataTypes[T];
+    console.log(`✅ SupabaseSqlStorage.select() SUCCESS - Table: ${table}, Single record found`);
+        const transformedData = table === 'match' ? this.transformMatchFromDb(data) : data;
+        return transformedData as DataTypes[T];
       } else {
         // Filter object
         Object.entries(filter).forEach(([key, value]) => {
@@ -60,7 +131,8 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
     
     console.log(`✅ SupabaseSqlStorage.select() SUCCESS - Table: ${table}, Rows: ${data?.length || 0}`);
-    return (data || []) as DataTypes[T][];
+    const transformedData = table === 'match' ? (data || []).map(item => this.transformMatchFromDb(item)) : (data || []);
+    return transformedData as DataTypes[T][];
   }
 
   // Insert overloads - single returns number (ID), array returns boolean
@@ -78,9 +150,19 @@ export class SupabaseSqlStorage implements CrudInterface {
       firstItem: items[0]
     });
     
+    // Transform data for database storage
+    const transformedItems = items.map(item => this.transformDataForDb(table, item));
+    
+    if (table === 'match') {
+      console.log(`🔄 SupabaseSqlStorage.insert() - MATCH TRANSFORMATION`, {
+        before: items[0],
+        after: transformedItems[0]
+      });
+    }
+    
     const { data, error } = await client
       .from(table)
-      .insert(items)
+      .insert(transformedItems)
       .select('id');
     
     if (error) {
@@ -119,9 +201,20 @@ export class SupabaseSqlStorage implements CrudInterface {
     values: Partial<DataTypes[T]>
   ): Promise<boolean> {
     const client = supabase as any;
-    let query = client.from(table).update(values);
+    
+    // Transform data for database storage
+    const transformedValues = this.transformDataForDb(table, values);
     
     console.log(`🔵 SupabaseSqlStorage.update() - Table: ${table}`, { filter, values });
+    
+    if (table === 'match') {
+      console.log(`🔄 SupabaseSqlStorage.update() - MATCH TRANSFORMATION`, {
+        before: values,
+        after: transformedValues
+      });
+    }
+    
+    let query = client.from(table).update(transformedValues);
     
     if (typeof filter === 'number' || typeof filter === 'string') {
       query = query.eq('id', filter);
