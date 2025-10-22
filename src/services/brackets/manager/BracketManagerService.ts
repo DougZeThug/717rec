@@ -197,44 +197,71 @@ export class BracketManagerService {
         groupMinRounds: Array.from(groupMinRounds.entries())
       });
 
-      // Create match records with UUIDs and normalized rounds
-      const matchRecords = rawMatches.map((match: any) => {
-        const uuid = crypto.randomUUID();
+      // Group matches by (match_type, normalized_round) for sequential position assignment
+      const matchesByTypeAndRound = new Map<string, any[]>();
+
+      rawMatches.forEach((match: any) => {
         const minRound = groupMinRounds.get(match.group_id) ?? 0;
         const normalizedRound = match.round_id - minRound;
         const matchType = this.getMatchType(match.group_id);
+        const key = `${matchType}-${normalizedRound}`;
         
-        // Use position mapping to get team IDs
-        const team1Id = match.opponent1?.position ? positionToTeamId.get(match.opponent1.position) || null : null;
-        const team2Id = match.opponent2?.position ? positionToTeamId.get(match.opponent2.position) || null : null;
-        
-        // Validation warnings for missing team mappings
-        if (match.opponent1?.position && !team1Id) {
-          console.warn(`⚠️ Position ${match.opponent1.position} not found in position map`);
+        if (!matchesByTypeAndRound.has(key)) {
+          matchesByTypeAndRound.set(key, []);
         }
-        if (match.opponent2?.position && !team2Id) {
-          console.warn(`⚠️ Position ${match.opponent2.position} not found in position map`);
-        }
-        
-        return {
-          id: uuid,
-          bracket_id: bracketId,
-          round: normalizedRound,
-          position: match.number,
-          match_type: matchType,
-          team1_id: team1Id,
-          team2_id: team2Id,
-          team1_seed: match.opponent1?.position || null,
-          team2_seed: match.opponent2?.position || null,
-          best_of: 3,
-          status: 'pending',
-          next_win_match_id: null,
-          next_lose_match_id: null,
-          // Store original match and compound key for connection mapping
-          _bmMatch: match,
-          _compoundKey: `${matchType}-${normalizedRound}-${match.number}`
-        };
+        matchesByTypeAndRound.get(key)!.push(match);
       });
+
+      bracketLog("Matches grouped by type and round:", {
+        groups: Array.from(matchesByTypeAndRound.keys()),
+        counts: Array.from(matchesByTypeAndRound.entries()).map(([key, matches]) => ({
+          key,
+          count: matches.length
+        }))
+      });
+
+      // Create match records with sequential positions per (match_type, round)
+      const matchRecords = [];
+      for (const [key, matches] of matchesByTypeAndRound.entries()) {
+        const [matchType, roundStr] = key.split('-');
+        const round = parseInt(roundStr);
+        
+        matches.forEach((match, index) => {
+          const uuid = crypto.randomUUID();
+          const position = index + 1; // Sequential: 1, 2, 3, 4...
+          
+          // Use position mapping to get team IDs
+          const team1Id = match.opponent1?.position ? positionToTeamId.get(match.opponent1.position) || null : null;
+          const team2Id = match.opponent2?.position ? positionToTeamId.get(match.opponent2.position) || null : null;
+          
+          // Validation warnings for missing team mappings
+          if (match.opponent1?.position && !team1Id) {
+            console.warn(`⚠️ Position ${match.opponent1.position} not found in position map`);
+          }
+          if (match.opponent2?.position && !team2Id) {
+            console.warn(`⚠️ Position ${match.opponent2.position} not found in position map`);
+          }
+          
+          matchRecords.push({
+            id: uuid,
+            bracket_id: bracketId,
+            round: round,
+            position: position, // Now guaranteed unique per (match_type, round)
+            match_type: matchType,
+            team1_id: team1Id,
+            team2_id: team2Id,
+            team1_seed: match.opponent1?.position || null,
+            team2_seed: match.opponent2?.position || null,
+            best_of: 3,
+            status: 'pending',
+            next_win_match_id: null,
+            next_lose_match_id: null,
+            // Store original match and compound key for connection mapping
+            _bmMatch: match,
+            _compoundKey: `${matchType}-${round}-${position}`
+          });
+        });
+      }
 
       bracketLog("Match records created:", {
         count: matchRecords.length,
