@@ -69,14 +69,14 @@ const BracketView: React.FC<BracketViewProps> = ({
     enabled: !!bracketId && !legacyBracket
   });
   
-  // Enhanced data hook with refetch capability (only for non-JSONB brackets)
-  const shouldFetchLegacyData = !bracketInfo?.uses_brackets_manager || !bracketInfo?.bracket_data;
+  // Enhanced data hook with refetch capability
+  // Always call unconditionally to comply with Rules of Hooks
   const { 
     data: fetchedBracket, 
     isLoading: isLoadingLegacy, 
     error: legacyError,
     refetch: refetchBracket
-  } = useBracketData(shouldFetchLegacyData ? bracketId : null);
+  } = useBracketData(bracketId);
   
   // Monitor bracket completion for final standings
   useBracketCompletion(bracketId || undefined);
