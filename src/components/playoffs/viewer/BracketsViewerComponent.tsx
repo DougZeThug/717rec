@@ -80,34 +80,30 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
       console.log('🎨 Rendering brackets-viewer with data:', result.data);
 
-      // Create the onMatchClick handler
+      // Create the onMatchClick handler with participant validation
       const handleMatchClick = (match: any) => {
         console.log('🎯 Match clicked in brackets-viewer!', {
           matchId: match.id,
           opponent1: match.opponent1,
           opponent2: match.opponent2,
-          hasOnMatchClickProp: !!onMatchClick,
-          hasMapping: !!getPlayoffMatchIdRef.current
+          status: match.status
         });
+        
+        // Check if match has both participants
+        if (!match.opponent1?.id || !match.opponent2?.id) {
+          console.warn('⚠️ Match clicked but participants not determined yet');
+          return;
+        }
 
         if (onMatchClick && getPlayoffMatchIdRef.current) {
           const playoffMatchId = getPlayoffMatchIdRef.current(match.id);
-          console.log('🔄 Mapping viewer match ID to playoff match:', {
-            viewerMatchId: match.id,
-            playoffMatchId
-          });
-
+          
           if (playoffMatchId) {
             console.log('✅ Calling onMatchClick with playoff match ID:', playoffMatchId);
             onMatchClick(playoffMatchId);
           } else {
             console.error('❌ Could not map viewer match ID to playoff match:', match.id);
           }
-        } else {
-          console.warn('⚠️ onMatchClick handler not available:', {
-            hasOnMatchClick: !!onMatchClick,
-            hasMapping: !!getPlayoffMatchIdRef.current
-          });
         }
       };
 

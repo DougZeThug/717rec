@@ -203,6 +203,30 @@ export class BracketManagerService {
   }
 
   /**
+   * Check if a match can be updated
+   */
+  async canUpdateMatch(matchId: number): Promise<{ canUpdate: boolean; reason?: string }> {
+    try {
+      const match = await this.storage.select('match', matchId);
+      
+      // Check if match is already completed
+      if (match.status === 4) { // Status 4 = completed
+        return { canUpdate: false, reason: 'Match already completed' };
+      }
+      
+      // Check if both participants are known
+      if (!match.opponent1?.id || !match.opponent2?.id) {
+        return { canUpdate: false, reason: 'Waiting for participants' };
+      }
+      
+      return { canUpdate: true };
+    } catch (error) {
+      console.error('Error checking match update status:', error);
+      return { canUpdate: false, reason: 'Error checking match status' };
+    }
+  }
+
+  /**
    * Calculate and store final standings for a completed bracket
    */
   async calculateFinalStandings(bracketId: string): Promise<void> {

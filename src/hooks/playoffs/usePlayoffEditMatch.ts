@@ -48,6 +48,15 @@ export const usePlayoffEditMatch = () => {
         return;
       }
 
+      // Check if match can be edited
+      if (!matchData.team1_id || !matchData.team2_id) {
+        toast({
+          title: "Match Locked",
+          description: "This match is waiting for teams to be determined from previous matches.",
+        });
+        return;
+      }
+
       // Store bracket info for routing
       setCurrentBracket({
         id: matchData.bracket_id,
