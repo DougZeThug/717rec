@@ -79,13 +79,27 @@ export class BracketManagerService {
       // Map teams to their IDs for persistence
       const teamMap = new Map(teams.map(t => [t.name, t.id]));
 
-      // First pass: Create match records with UUIDs
+      // Calculate minimum round_id per group for round normalization
+      const groupMinRounds = new Map<number, number>();
+      matches.forEach((match: any) => {
+        const currentMin = groupMinRounds.get(match.group_id) ?? Infinity;
+        groupMinRounds.set(match.group_id, Math.min(currentMin, match.round_id));
+      });
+
+      bracketLog("Round normalization map:", {
+        groupMinRounds: Array.from(groupMinRounds.entries())
+      });
+
+      // First pass: Create match records with UUIDs and normalized rounds
       const matchRecords = matches.map((match: any) => {
         const uuid = crypto.randomUUID();
+        const minRound = groupMinRounds.get(match.group_id) ?? 0;
+        const normalizedRound = match.round_id - minRound; // Normalize to 0-indexed per group
+        
         return {
           id: uuid,
           bracket_id: bracketId,
-          round: match.round_id,
+          round: normalizedRound, // Store normalized round (0-indexed per bracket type)
           position: match.number,
           match_type: this.getMatchType(match.group_id),
           team1_id: match.opponent1?.id ? teamMap.get(seeding[match.opponent1.id - 1]) || null : null,

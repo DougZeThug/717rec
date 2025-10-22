@@ -63,28 +63,36 @@ export class SupabaseStorage extends InMemoryDatabase {
       }
     });
 
+    // Calculate offsets to restore sequential round_id values for brackets-manager
+    const groupRoundOffsets = this.calculateGroupOffsets(matches);
+
     // Convert Supabase matches to brackets-manager format
-    const memoryMatches = matches.map((match: any) => ({
-      id: match.position,
-      stage_id: 0,
-      group_id: this.getGroupIdFromMatchType(match.match_type),
-      round_id: match.round,
-      number: match.position,
-      child_count: 0,
-      opponent1: match.team1_id ? {
-        id: match.team1_seed || match.position * 2 - 1,
-        position: match.team1_seed,
-        score: match.team1_score,
-        result: match.winner_id === match.team1_id ? 'win' : match.winner_id ? 'loss' : undefined
-      } : null,
-      opponent2: match.team2_id ? {
-        id: match.team2_seed || match.position * 2,
-        position: match.team2_seed,
-        score: match.team2_score,
-        result: match.winner_id === match.team2_id ? 'win' : match.winner_id ? 'loss' : undefined
-      } : null,
-      status: match.status === 'completed' ? 3 : match.status === 'in_progress' ? 2 : 1
-    }));
+    const memoryMatches = matches.map((match: any) => {
+      const groupId = this.getGroupIdFromMatchType(match.match_type);
+      const offset = groupRoundOffsets.get(groupId) ?? 0;
+      
+      return {
+        id: match.position,
+        stage_id: 0,
+        group_id: groupId,
+        round_id: match.round + offset, // Restore sequential round_id for brackets-manager
+        number: match.position,
+        child_count: 0,
+        opponent1: match.team1_id ? {
+          id: match.team1_seed || match.position * 2 - 1,
+          position: match.team1_seed,
+          score: match.team1_score,
+          result: match.winner_id === match.team1_id ? 'win' : match.winner_id ? 'loss' : undefined
+        } : null,
+        opponent2: match.team2_id ? {
+          id: match.team2_seed || match.position * 2,
+          position: match.team2_seed,
+          score: match.team2_score,
+          result: match.winner_id === match.team2_id ? 'win' : match.winner_id ? 'loss' : undefined
+        } : null,
+        status: match.status === 'completed' ? 3 : match.status === 'in_progress' ? 2 : 1
+      };
+    });
 
     // Clear and repopulate in-memory storage
     this.data.match = memoryMatches as any;
@@ -129,6 +137,29 @@ export class SupabaseStorage extends InMemoryDatabase {
         .eq('bracket_id', bracketId)
         .eq('position', match.number);
     }
+  }
+
+  /**
+   * Calculate round offsets for each group to restore sequential round_id values
+   * Group 1 (winners): offset 0
+   * Group 2 (losers): offset = max winners round + 1
+   * Group 3 (finals): offset = max losers round + offset for losers + 1
+   */
+  private calculateGroupOffsets(matches: any[]): Map<number, number> {
+    const maxRounds = new Map<number, number>();
+    
+    matches.forEach((match: any) => {
+      const groupId = this.getGroupIdFromMatchType(match.match_type);
+      const currentMax = maxRounds.get(groupId) ?? -1;
+      maxRounds.set(groupId, Math.max(currentMax, match.round));
+    });
+
+    const offsets = new Map<number, number>();
+    offsets.set(1, 0); // Winners start at 0
+    offsets.set(2, (maxRounds.get(1) ?? 0) + 1); // Losers after winners
+    offsets.set(3, (maxRounds.get(2) ?? 0) + (offsets.get(2) ?? 0) + 1); // Finals after losers
+    
+    return offsets;
   }
 
   private getGroupIdFromMatchType(matchType: string): number {
