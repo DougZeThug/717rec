@@ -39,19 +39,47 @@ export class BracketManagerService {
   async createBracket(options: CreateBracketOptions): Promise<void> {
     const { bracketId, format, teams } = options;
 
-    // CRITICAL: Reset in-memory storage to prevent contamination from previous brackets
+    // ✅ IDEMPOTENCY CHECK: Prevent double execution
+    const { data: existingMatches, error: checkError } = await supabase
+      .from('playoff_matches')
+      .select('id')
+      .eq('bracket_id', bracketId)
+      .limit(1);
+
+    if (existingMatches && existingMatches.length > 0) {
+      bracketLog("⚠️ Bracket already has matches - skipping creation", bracketId);
+      throw new Error(`Bracket ${bracketId} already has matches. Delete them first to recreate.`);
+    }
+
+    // ✅ CRITICAL: Reset in-memory storage to prevent contamination from previous brackets
     console.log("🧹 Resetting bracket storage before creation");
-    const preResetMatches = (await this.storage.select("match")).length;
+    
+    // Get counts before reset for all tables
+    const preResetCounts = {
+      matches: (await this.storage.select("match")).length,
+      stages: (await this.storage.select("stage")).length,
+      groups: (await this.storage.select("group")).length,
+      participants: (await this.storage.select("participant")).length
+    };
+    
+    // Reset storage
     this.storage.reset();
-    const postResetMatches = (await this.storage.select("match")).length;
+    
+    // Verify ALL tables are empty
+    const postResetCounts = {
+      matches: (await this.storage.select("match")).length,
+      stages: (await this.storage.select("stage")).length,
+      groups: (await this.storage.select("group")).length,
+      participants: (await this.storage.select("participant")).length
+    };
     
     bracketLog("Storage reset verification:", {
-      matchesBeforeReset: preResetMatches,
-      matchesAfterReset: postResetMatches,
-      resetSuccessful: postResetMatches === 0
+      before: preResetCounts,
+      after: postResetCounts,
+      resetSuccessful: Object.values(postResetCounts).every(count => count === 0)
     });
 
-    if (postResetMatches > 0) {
+    if (Object.values(postResetCounts).some(count => count > 0)) {
       throw new Error("Storage reset failed - contaminated data detected");
     }
 
@@ -71,14 +99,13 @@ export class BracketManagerService {
         .sort((a, b) => a.seed - b.seed)
         .map(team => team.name);
 
-      // Create tournament stage in memory
+      // Create tournament stage in memory (using default seeding algorithm)
       await this.manager.create({
         name: bracketId,
         tournamentId: 0,
         type: format,
         seeding,
         settings: {
-          seedOrdering: ["inner_outer"], // Traditional seeding: 1v8, 4v5, 2v7, 3v6
           grandFinal: format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none"
@@ -88,8 +115,7 @@ export class BracketManagerService {
       bracketLog("Seeding configuration:", {
         teamCount: teams.length,
         seedingOrder: seeding,
-        seedOrdering: "inner_outer",
-        expectedMatchups: "1v8, 4v5, 2v7, 3v6 (for 8 teams)"
+        note: "Using brackets-manager default seeding algorithm"
       });
 
       // Get generated matches from memory storage
@@ -109,7 +135,13 @@ export class BracketManagerService {
         originalCount: rawMatches.length,
         uniqueCount: matches.length,
         duplicatesRemoved: rawMatches.length - matches.length,
-        positionCounts: matches.reduce((acc: any, m: any) => {
+        sampleMatchIds: rawMatches.slice(0, 5).map((m: any) => ({
+          id: m.id,
+          group_id: m.group_id,
+          round_id: m.round_id,
+          number: m.number
+        })),
+        positionDuplicates: matches.reduce((acc: any, m: any) => {
           const key = `${m.group_id}-${m.round_id}-${m.number}`;
           acc[key] = (acc[key] || 0) + 1;
           return acc;
