@@ -7,3 +7,4 @@ export * from "./useFilteredTeams";
 export * from "./useTeamSeeding";
 export * from "./useChallongeDualFlowEditMatch";
 export * from "./usePlayoffMatchUpdate";
+export * from "./useBracketsManagerMatch";

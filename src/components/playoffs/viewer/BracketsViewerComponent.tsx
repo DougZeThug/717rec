@@ -3,6 +3,7 @@ import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/brackets/viewer';
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { log } from '@/utils/logger';
+import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
 
 interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
@@ -20,6 +21,10 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const [error, setError] = useState<string | null>(null);
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const renderCount = useRef(0);
+  
+  // State for brackets-manager match editor
+  const [selectedBMMatchId, setSelectedBMMatchId] = useState<number | null>(null);
+  const [isBMEditorOpen, setIsBMEditorOpen] = useState(false);
   
   renderCount.current++;
   log(`🎨 BracketsViewerComponent render #${renderCount.current}`, {
@@ -106,19 +111,21 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           usesBracketsManager: bracket.uses_brackets_manager
         });
         
-        // Brackets using brackets-manager SQL tables don't have playoff_matches records
-        // so we can't open the match editor for them
-        if (bracket.uses_brackets_manager) {
-          console.warn('⚠️ Match editing not supported for brackets-manager brackets');
-          return;
-        }
-        
         // Check if match has both participants
         if (!match.opponent1?.id || !match.opponent2?.id) {
           console.warn('⚠️ Match clicked but participants not determined yet');
           return;
         }
 
+        // Handle brackets-manager brackets differently
+        if (bracket.uses_brackets_manager) {
+          console.log('✅ Opening brackets-manager match editor for match:', match.id);
+          setSelectedBMMatchId(match.id);
+          setIsBMEditorOpen(true);
+          return;
+        }
+
+        // Handle legacy playoff_matches brackets
         if (onMatchClick && getPlayoffMatchIdRef.current) {
           const playoffMatchId = getPlayoffMatchIdRef.current(match.id);
           
@@ -189,18 +196,31 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   }
 
   return (
-    <div className="w-full overflow-auto bg-background">
-      <div 
-        ref={containerRef}
-        id="brackets-viewer-container"
-        className="brackets-viewer min-w-max p-4"
-        style={{ minHeight: '400px', pointerEvents: 'auto' }}
+    <>
+      <div className="w-full overflow-auto bg-background">
+        <div 
+          ref={containerRef}
+          id="brackets-viewer-container"
+          className="brackets-viewer min-w-max p-4"
+          style={{ minHeight: '400px', pointerEvents: 'auto' }}
+        />
+        {!isInitialized && (
+          <div className="text-center p-8">
+            <p className="text-sm text-muted-foreground">Loading bracket...</p>
+          </div>
+        )}
+      </div>
+
+      {/* Brackets-manager match editor */}
+      <BracketsManagerMatchEditor
+        matchId={selectedBMMatchId}
+        bracketId={bracket.id}
+        isOpen={isBMEditorOpen}
+        onClose={() => {
+          setIsBMEditorOpen(false);
+          setSelectedBMMatchId(null);
+        }}
       />
-      {!isInitialized && (
-        <div className="text-center p-8">
-          <p className="text-sm text-muted-foreground">Loading bracket...</p>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
