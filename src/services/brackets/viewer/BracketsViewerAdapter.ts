@@ -1,8 +1,36 @@
 import { PlayoffBracket, PlayoffMatch, PlayoffGame, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 import { ViewerData, ViewerStage, ViewerMatch, ViewerMatchGame, ViewerParticipant, ViewerDataWithMapping } from './types';
+import { InMemoryDatabase } from 'brackets-memory-db';
 
 export class BracketsViewerAdapter {
   private static teamIdMap: Map<string, number> = new Map();
+  
+  /**
+   * Transform from JSONB bracket_data (brackets-manager's native format)
+   */
+  static transformFromJsonb(
+    bracketData: InMemoryDatabase['data'],
+    bracketId: string
+  ): ViewerDataWithMapping {
+    // Reset team map
+    this.teamIdMap.clear();
+    
+    // Create match ID mapping (brackets-manager match ID -> playoff match UUID)
+    const matchIdMap = new Map<string, number>();
+    const reverseMatchIdMap = new Map<number, string>();
+
+    // Direct pass-through with type assertion - brackets-manager format is compatible with brackets-viewer
+    // The Id types are compatible (number | string, with number being most common)
+    return {
+      data: {
+        stages: (bracketData.stage || []) as any,
+        matches: (bracketData.match || []) as any,
+        matchGames: (bracketData.match_game || []) as any,
+        participants: (bracketData.participant || []) as any
+      },
+      getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId)
+    };
+  }
   
   /**
    * Main transformation function - returns data and ID mapping function

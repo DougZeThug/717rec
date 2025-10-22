@@ -43,6 +43,7 @@ export type Database = {
       }
       brackets: {
         Row: {
+          bracket_data: Json | null
           challonge_tournament_id: number | null
           cn_bracket_id: string | null
           created_at: string | null
@@ -59,6 +60,7 @@ export type Database = {
           wb_champion_id: string | null
         }
         Insert: {
+          bracket_data?: Json | null
           challonge_tournament_id?: number | null
           cn_bracket_id?: string | null
           created_at?: string | null
@@ -75,6 +77,7 @@ export type Database = {
           wb_champion_id?: string | null
         }
         Update: {
+          bracket_data?: Json | null
           challonge_tournament_id?: number | null
           cn_bracket_id?: string | null
           created_at?: string | null

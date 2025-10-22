@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 import { BracketsViewerAdapter } from '@/services/brackets/viewer';
+import { InMemoryDatabase } from 'brackets-memory-db';
 
 interface BracketsViewerComponentProps {
-  bracket: PlayoffBracket;
+  bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
   teams: PlayoffTeam[];
   onMatchClick?: (matchId: string) => void;
 }
@@ -46,12 +47,10 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
     try {
       console.log('🎯 BracketsViewerComponent: Starting transformation');
       
-      // Transform data with stored participants if available
-      const result = BracketsViewerAdapter.transform(
-        bracket, 
-        teams,
-        bracket.participants
-      );
+      // Use JSONB data if available, otherwise fall back to legacy transformation
+      const result = bracket.bracket_data
+        ? BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id)
+        : BracketsViewerAdapter.transform(bracket, teams, bracket.participants);
 
       // Store the mapping function in ref
       getPlayoffMatchIdRef.current = result.getPlayoffMatchId;
