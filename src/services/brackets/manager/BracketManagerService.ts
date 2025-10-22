@@ -230,28 +230,6 @@ export class BracketManagerService {
           });
           throw error; // Throw original error, not wrapped
         }
-
-        // Store participants for the bracket
-        bracketLog("Storing participants:", {
-          count: teams.length,
-          bracketId
-        });
-
-        const participantRecords = teams.map(team => ({
-          bracket_id: bracketId,
-          position: team.seed,
-          team_id: team.id,
-          name: team.name
-        }));
-
-        const { error: participantError } = await supabase
-          .from('participants')
-          .insert(participantRecords);
-
-        if (participantError) {
-          console.error("Failed to insert participants:", participantError);
-          throw participantError;
-        }
       }
 
       successLog("Bracket created and persisted to Supabase", bracketId);
