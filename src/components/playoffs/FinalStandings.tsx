@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useEffect, useRef } from 'react';
+import { log } from '@/utils/logger';
 
 interface FinalStandingsProps {
   bracketId: string;
@@ -9,6 +11,19 @@ interface FinalStandingsProps {
 }
 
 export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) {
+  const renderCount = useRef(0);
+  
+  renderCount.current++;
+  log(`🏆 FinalStandings render #${renderCount.current}`, { bracketId, show });
+  
+  // Track component lifecycle
+  useEffect(() => {
+    log('✅ FinalStandings MOUNTED', { bracketId });
+    return () => {
+      log('❌ FinalStandings UNMOUNTED', { bracketId });
+    };
+  }, [bracketId]);
+  
   const { data: standings, isLoading } = useQuery({
     queryKey: ['final-standings', bracketId],
     queryFn: async () => {

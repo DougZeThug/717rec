@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 import { BracketsViewerAdapter } from '@/services/brackets/viewer';
 import { InMemoryDatabase } from 'brackets-memory-db';
+import { log } from '@/utils/logger';
 
 interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
@@ -18,13 +19,29 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
+  const renderCount = useRef(0);
+  
+  renderCount.current++;
+  log(`🎨 BracketsViewerComponent render #${renderCount.current}`, {
+    bracketId: bracket?.id,
+    teamsCount: teams?.length
+  });
+  
+  // Track component lifecycle
+  useEffect(() => {
+    log('✅ BracketsViewerComponent MOUNTED');
+    return () => {
+      log('❌ BracketsViewerComponent UNMOUNTED');
+    };
+  }, []);
 
   useEffect(() => {
-    console.log('🔍 BracketsViewerComponent: useEffect triggered', {
+    log('🔍 BracketsViewerComponent: useEffect triggered', {
       hasContainer: !!containerRef.current,
       hasBracket: !!bracket,
       teamsCount: teams.length,
-      bracketId: bracket?.id
+      bracketId: bracket?.id,
+      onMatchClickChanged: !!onMatchClick
     });
 
     if (!containerRef.current || !bracket || !teams.length) {

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { log } from "@/utils/logger";
 
 export interface SimpleBracketData {
   id: string;
@@ -47,9 +48,14 @@ export interface SimpleBracketData {
 }
 
 export const useBracketData = (bracketId: string | null) => {
+  log('🎣 useBracketData hook called', { bracketId });
+  
   return useQuery({
     queryKey: ['bracket-data', bracketId],
     queryFn: async (): Promise<SimpleBracketData | null> => {
+      log('🎯 useBracketData: Starting fetch for bracket:', bracketId);
+      log('🔍 Query state change: FETCHING');
+      
       console.log('🎯 DEBUG: useBracketData queryFn called:', {
         bracketId,
         bracketIdType: typeof bracketId,

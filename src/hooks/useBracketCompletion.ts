@@ -2,12 +2,17 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
+import { log } from '@/utils/logger';
 
 export function useBracketCompletion(bracketId: string | undefined) {
   const { toast } = useToast();
+  
+  log('🔔 useBracketCompletion hook called', { bracketId });
 
   useEffect(() => {
     if (!bracketId) return;
+    
+    log('🔔 useBracketCompletion effect running', { bracketId });
 
     // Subscribe to bracket state changes
     const channel = supabase

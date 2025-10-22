@@ -1,5 +1,5 @@
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
@@ -10,6 +10,7 @@ import BracketErrorBoundary from "./BracketErrorBoundary";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { log } from "@/utils/logger";
 
 interface BracketViewProps {
   bracketId?: string | null;
@@ -24,6 +25,19 @@ const BracketView: React.FC<BracketViewProps> = ({
   teams: legacyTeams,
   onEditMatch
 }) => {
+  // Debug logging for React #310 errors
+  const hookCallCount = useRef(0);
+  const renderCount = useRef(0);
+  
+  hookCallCount.current++;
+  renderCount.current++;
+  
+  log(`🪝 BracketView hooks called: ${hookCallCount.current}, render: ${renderCount.current}`, {
+    bracketId,
+    hasLegacyBracket: !!legacyBracket,
+    hasLegacyTeams: !!legacyTeams
+  });
+  
   console.log('🖼️ DEBUG: BracketView rendering with props:', {
     bracketId,
     bracketIdType: typeof bracketId,
@@ -37,6 +51,23 @@ const BracketView: React.FC<BracketViewProps> = ({
     } : null,
     timestamp: new Date().toISOString()
   });
+  
+  // Track component lifecycle
+  useEffect(() => {
+    log('✅ BracketView MOUNTED', { bracketId });
+    return () => {
+      log('❌ BracketView UNMOUNTED', { bracketId });
+    };
+  }, [bracketId]);
+  
+  // Track props changes
+  useEffect(() => {
+    log('🔄 BracketView props changed:', {
+      bracketId,
+      hasLegacyBracket: !!legacyBracket,
+      hasLegacyTeams: !!legacyTeams
+    });
+  }, [bracketId, legacyBracket, legacyTeams]);
   
   // First, check if this is a JSONB bracket
   const { data: bracketInfo, isLoading: isLoadingBracketInfo, error: bracketInfoError } = useQuery({
