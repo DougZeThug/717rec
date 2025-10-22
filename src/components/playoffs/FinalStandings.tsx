@@ -5,9 +5,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface FinalStandingsProps {
   bracketId: string;
+  show?: boolean;
 }
 
-export function FinalStandings({ bracketId }: FinalStandingsProps) {
+export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) {
   const { data: standings, isLoading } = useQuery({
     queryKey: ['final-standings', bracketId],
     queryFn: async () => {
@@ -31,9 +32,11 @@ export function FinalStandings({ bracketId }: FinalStandingsProps) {
 
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: show && !!bracketId
   });
 
+  if (!show) return null;
   if (isLoading) return <div>Loading standings...</div>;
   if (!standings || standings.length === 0) return null;
 

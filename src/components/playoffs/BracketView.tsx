@@ -244,7 +244,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   
   return (
     <div className="w-full h-full min-h-[600px] space-y-4">
-      {showStandings && <FinalStandings bracketId={bracketId!} />}
+      <FinalStandings bracketId={bracketId!} show={showStandings} />
       
       <BracketErrorBoundary bracketId={bracketId}>
         <BracketsViewerComponent
