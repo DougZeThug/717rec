@@ -65,3 +65,8 @@ export interface ViewerData {
   matchGames: ViewerMatchGame[];
   participants: ViewerParticipant[];
 }
+
+export interface ViewerDataWithMapping {
+  data: ViewerData;
+  getPlayoffMatchId: (viewerMatchId: number) => string | undefined;
+}

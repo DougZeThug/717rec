@@ -16,6 +16,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || !bracket || !teams.length) {
@@ -31,22 +32,20 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
     try {
       // Transform data with stored participants if available
-      const viewerData = BracketsViewerAdapter.transform(
+      const result = BracketsViewerAdapter.transform(
         bracket, 
         teams,
         bracket.participants
       );
 
-      console.log('Rendering brackets-viewer with data:', viewerData);
+      // Store the mapping function in ref
+      getPlayoffMatchIdRef.current = result.getPlayoffMatchId;
+
+      console.log('Rendering brackets-viewer with data:', result.data);
 
       // Render using brackets-viewer v1.8.1
       window.bracketsViewer.render(
-        {
-          stages: viewerData.stages,
-          matches: viewerData.matches,
-          matchGames: viewerData.matchGames,
-          participants: viewerData.participants
-        },
+        result.data,
         {
           selector: '#brackets-viewer-container',
           clear: true,
@@ -57,11 +56,12 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           highlightParticipantOnHover: true,
           onMatchClick: (match: any) => {
             console.log('Match clicked:', match);
-            if (onMatchClick) {
-              // Map viewer match back to playoff match ID
-              const playoffMatchId = BracketsViewerAdapter.getPlayoffMatchId(match.id);
+            if (onMatchClick && getPlayoffMatchIdRef.current) {
+              const playoffMatchId = getPlayoffMatchIdRef.current(match.id);
               if (playoffMatchId) {
                 onMatchClick(playoffMatchId);
+              } else {
+                console.error('❌ Could not map viewer match ID to playoff match:', match.id);
               }
             }
           }

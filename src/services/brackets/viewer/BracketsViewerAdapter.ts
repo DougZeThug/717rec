@@ -1,12 +1,11 @@
 import { PlayoffBracket, PlayoffMatch, PlayoffGame, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
-import { ViewerData, ViewerStage, ViewerMatch, ViewerMatchGame, ViewerParticipant } from './types';
+import { ViewerData, ViewerStage, ViewerMatch, ViewerMatchGame, ViewerParticipant, ViewerDataWithMapping } from './types';
 
 export class BracketsViewerAdapter {
   private static teamIdMap: Map<string, number> = new Map();
-  private static matchIdMap: Map<string, number> = new Map();
   
   /**
-   * Main transformation function
+   * Main transformation function - returns data and ID mapping function
    */
   static transform(
     bracket: PlayoffBracket,
@@ -18,10 +17,13 @@ export class BracketsViewerAdapter {
       logo_url?: string;
       image_url?: string;
     }>
-  ): ViewerData {
-    // Reset maps for each transformation
+  ): ViewerDataWithMapping {
+    // Reset team map for each transformation
     this.teamIdMap.clear();
-    this.matchIdMap.clear();
+    
+    // Create a local match ID map for this transformation
+    const matchIdMap = new Map<string, number>();
+    const reverseMatchIdMap = new Map<number, string>();
     
     // Use stored participants if available, otherwise fall back to teams
     const participants = storedParticipants && storedParticipants.length > 0
@@ -29,14 +31,17 @@ export class BracketsViewerAdapter {
       : this.transformParticipants(teams);
     
     const stage = this.transformBracket(bracket);
-    const matches = this.transformMatches(bracket.matches || [], bracket.id);
-    const matchGames = this.transformGames(bracket.matches || []);
+    const matches = this.transformMatches(bracket.matches || [], bracket.id, matchIdMap, reverseMatchIdMap);
+    const matchGames = this.transformGames(bracket.matches || [], matchIdMap);
 
     return {
-      stages: [stage],
-      matches,
-      matchGames,
-      participants
+      data: {
+        stages: [stage],
+        matches,
+        matchGames,
+        participants
+      },
+      getPlayoffMatchId: (viewerMatchId: number) => reverseMatchIdMap.get(viewerMatchId)
     };
   }
 
@@ -108,7 +113,9 @@ export class BracketsViewerAdapter {
    */
   private static transformMatches(
     playoffMatches: PlayoffMatch[],
-    bracketId: string
+    bracketId: string,
+    matchIdMap: Map<string, number>,
+    reverseMatchIdMap: Map<number, string>
   ): ViewerMatch[] {
     // Group by match_type
     const winnerMatches = playoffMatches
@@ -129,21 +136,24 @@ export class BracketsViewerAdapter {
     // Transform winner bracket (group 1)
     winnerMatches.forEach(m => {
       const viewerMatch = this.transformMatch(m, 1, 1, matchNumber++);
-      this.matchIdMap.set(m.id, viewerMatch.id);
+      matchIdMap.set(m.id, viewerMatch.id);
+      reverseMatchIdMap.set(viewerMatch.id, m.id);
       matches.push(viewerMatch);
     });
 
     // Transform loser bracket (group 2)
     loserMatches.forEach(m => {
       const viewerMatch = this.transformMatch(m, 1, 2, matchNumber++);
-      this.matchIdMap.set(m.id, viewerMatch.id);
+      matchIdMap.set(m.id, viewerMatch.id);
+      reverseMatchIdMap.set(viewerMatch.id, m.id);
       matches.push(viewerMatch);
     });
 
     // Transform finals (group 3)
     finalMatches.forEach(m => {
       const viewerMatch = this.transformMatch(m, 1, 3, matchNumber++);
-      this.matchIdMap.set(m.id, viewerMatch.id);
+      matchIdMap.set(m.id, viewerMatch.id);
+      reverseMatchIdMap.set(viewerMatch.id, m.id);
       matches.push(viewerMatch);
     });
 
@@ -195,12 +205,15 @@ export class BracketsViewerAdapter {
   /**
    * Transform playoff_games → viewer match games
    */
-  private static transformGames(playoffMatches: PlayoffMatch[]): ViewerMatchGame[] {
+  private static transformGames(
+    playoffMatches: PlayoffMatch[],
+    matchIdMap: Map<string, number>
+  ): ViewerMatchGame[] {
     const games: ViewerMatchGame[] = [];
     let gameId = 1;
 
     playoffMatches.forEach((match) => {
-      const viewerMatchId = this.matchIdMap.get(match.id);
+      const viewerMatchId = matchIdMap.get(match.id);
       if (!viewerMatchId) return;
 
       const team1ParticipantId = match.team1Id ? this.teamIdMap.get(match.team1Id) : undefined;
@@ -250,15 +263,4 @@ export class BracketsViewerAdapter {
     return Math.pow(2, Math.ceil(Math.log2(maxSeed || 8)));
   }
 
-  /**
-   * Get original playoff match ID from viewer match
-   */
-  static getPlayoffMatchId(viewerMatchId: number): string | undefined {
-    for (const [playoffId, viewerId] of this.matchIdMap.entries()) {
-      if (viewerId === viewerMatchId) {
-        return playoffId;
-      }
-    }
-    return undefined;
-  }
 }
