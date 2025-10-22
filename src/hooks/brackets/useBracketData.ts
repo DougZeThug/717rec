@@ -91,81 +91,96 @@ export const useBracketData = (bracketId: string | null) => {
           has_bracket_data: !!bracket.bracket_data
         });
 
-        // Step 2: Check if this is a brackets-manager bracket with JSONB data
-        if (bracket.uses_brackets_manager && bracket.bracket_data) {
-          console.log('🎯 DEBUG: Step 2 - Using brackets-manager JSONB data');
-          const jsonbData = bracket.bracket_data as any;
+        // Step 2: Check if this is a brackets-manager bracket
+        if (bracket.uses_brackets_manager) {
+          console.log('🎯 DEBUG: Step 2 - Fetching from SQL tables (brackets-manager)');
           
-          // Step 3: Get participants to map participant IDs to team IDs
-          console.log('🎯 DEBUG: Step 3 - Fetching participants for ID mapping');
+          // Step 3: Fetch stage, matches, participants from SQL tables
+          console.log('🎯 DEBUG: Step 3 - Fetching stage data');
+          const { data: stages, error: stageError } = await supabase
+            .from('stage')
+            .select('*')
+            .eq('tournament_id', bracketId);
+
+          if (stageError) {
+            console.error('🎯 DEBUG: Stage query error:', stageError);
+            throw stageError;
+          }
+
+          if (!stages || stages.length === 0) {
+            console.log('🎯 DEBUG: No stage found for bracket:', bracketId);
+            return null;
+          }
+
+          const stage = stages[0];
+          console.log('🎯 DEBUG: Stage found:', { stageId: stage.id, type: stage.type });
+
+          // Step 4: Fetch matches from SQL and transform opponent fields back to objects
+          console.log('🎯 DEBUG: Step 4 - Fetching matches');
+          const { data: matches, error: matchError } = await supabase
+            .from('match')
+            .select('*')
+            .eq('stage_id', stage.id);
+
+          if (matchError) {
+            console.error('🎯 DEBUG: Match query error:', matchError);
+            throw matchError;
+          }
+
+          console.log('🎯 DEBUG: Raw matches fetched:', matches?.length || 0);
+
+          // Step 5: Fetch participants
+          console.log('🎯 DEBUG: Step 5 - Fetching participants');
           const { data: participants, error: participantsError } = await supabase
-            .from('participants')
-            .select('id, team_id, position')
-            .eq('bracket_id', bracketId);
+            .from('participant')
+            .select('*')
+            .eq('tournament_id', bracketId);
 
           if (participantsError) {
             console.error('🎯 DEBUG: Participants query error:', participantsError);
             throw participantsError;
           }
 
-          // Create mapping from brackets-manager participant ID to team ID
+          console.log('🎯 DEBUG: Participants fetched:', participants?.length || 0);
+
+          // Step 6: Build participant to team mapping
           const participantToTeamMap = new Map<number, string>();
           participants?.forEach(p => {
-            participantToTeamMap.set(p.position, p.team_id);
+            participantToTeamMap.set(p.id, p.name); // Map participant ID to team name
           });
 
-          console.log('🎯 DEBUG: Participant to team mapping:', {
-            participantCount: participants?.length || 0,
-            mappingSize: participantToTeamMap.size
-          });
+          // Step 7: Extract team IDs from participant names (match with teams table)
+          const teamNames = participants?.map(p => p.name) || [];
+          const { data: teamDetails, error: teamsError } = await supabase
+            .from('teams')
+            .select('id, name, image_url')
+            .in('name', teamNames);
 
-          // Step 4: Extract team IDs from participants
-          const teamIds = Array.from(new Set(participants?.map(p => p.team_id).filter(Boolean) || []));
-
-          console.log('🎯 DEBUG: Step 4 - Team IDs from participants:', {
-            uniqueTeamIds: teamIds.length,
-            sampleIds: teamIds.slice(0, 3)
-          });
-
-          // Step 5: Fetch team details
-          let teamLookup = new Map();
-          if (teamIds.length > 0) {
-            console.log('🎯 DEBUG: Step 5 - Fetching team details');
-            const { data: teamDetails, error: teamsError } = await supabase
-              .from('teams')
-              .select('id, name, image_url')
-              .in('id', teamIds);
-            
-            if (teamsError) {
-              console.error('🎯 DEBUG: Teams query error:', teamsError);
-              throw teamsError;
-            }
-
-            teamDetails?.forEach(team => {
-              teamLookup.set(team.id, team);
-            });
-
-            console.log('🎯 DEBUG: Step 5 Complete - Team details fetched:', {
-              teamsCount: teamDetails?.length || 0
-            });
+          if (teamsError) {
+            console.error('🎯 DEBUG: Teams query error:', teamsError);
+            throw teamsError;
           }
 
-          // Step 6: Transform JSONB matches to SimpleBracketData format
-          console.log('🎯 DEBUG: Step 6 - Transforming JSONB matches');
-          const matches = jsonbData.match || [];
-          const transformedMatches = matches.map((match: any) => {
-            const team1Id = match.opponent1?.id !== null ? participantToTeamMap.get(match.opponent1?.id) : null;
-            const team2Id = match.opponent2?.id !== null ? participantToTeamMap.get(match.opponent2?.id) : null;
-            const team1 = team1Id ? teamLookup.get(team1Id) : null;
-            const team2 = team2Id ? teamLookup.get(team2Id) : null;
-            
-            // Determine winner based on opponent results
-            let winnerId = null;
-            if (match.opponent1?.result === 'win') winnerId = team1Id;
-            else if (match.opponent2?.result === 'win') winnerId = team2Id;
+          const teamLookup = new Map();
+          teamDetails?.forEach(team => {
+            teamLookup.set(team.name, team);
+          });
 
-            // Map brackets-manager status to our status
-            // 0=locked, 1=waiting, 2=ready, 3=running, 4=completed
+          console.log('🎯 DEBUG: Teams fetched:', teamDetails?.length || 0);
+
+          // Step 8: Transform matches - convert opponent1_id back to opponent1 object
+          const transformedMatches = (matches || []).map((match: any) => {
+            const team1Name = match.opponent1_id ? participantToTeamMap.get(match.opponent1_id) : null;
+            const team2Name = match.opponent2_id ? participantToTeamMap.get(match.opponent2_id) : null;
+            const team1 = team1Name ? teamLookup.get(team1Name) : null;
+            const team2 = team2Name ? teamLookup.get(team2Name) : null;
+
+            // Determine winner based on results
+            let winnerId = null;
+            if (match.opponent1_result === 'win' && team1) winnerId = team1.id;
+            else if (match.opponent2_result === 'win' && team2) winnerId = team2.id;
+
+            // Map status
             let status = 'pending';
             if (match.status === 4) status = 'completed';
             else if (match.status === 3) status = 'running';
@@ -175,36 +190,33 @@ export const useBracketData = (bracketId: string | null) => {
               id: `match-${match.id}`,
               round: match.round_id + 1,
               position: match.number,
-              team1Id: team1Id || null,
-              team2Id: team2Id || null,
+              team1Id: team1?.id || null,
+              team2Id: team2?.id || null,
               team1Name: team1?.name,
               team2Name: team2?.name,
               team1Logo: team1?.image_url,
               team2Logo: team2?.image_url,
               winnerId,
-              team1Score: match.opponent1?.score ?? null,
-              team2Score: match.opponent2?.score ?? null,
-              matchType: 'winners', // brackets-manager handles this differently
+              team1Score: match.opponent1_score ?? null,
+              team2Score: match.opponent2_score ?? null,
+              matchType: 'winners',
               status,
-              nextWinMatchId: null, // Not directly available in brackets-manager format
+              nextWinMatchId: null,
               nextLoseMatchId: null,
-              team1Seed: match.opponent1?.position ?? null,
-              team2Seed: match.opponent2?.position ?? null
+              team1Seed: null,
+              team2Seed: null
             };
           });
 
-          console.log('🎯 DEBUG: Step 6 Complete - Transformed JSONB matches:', {
-            originalMatchCount: matches.length,
-            transformedMatchCount: transformedMatches.length
-          });
+          console.log('🎯 DEBUG: Matches transformed:', transformedMatches.length);
 
-          // Step 7: Transform participants
+          // Step 9: Transform participants
           const transformedParticipants = participants?.map(p => {
-            const team = teamLookup.get(p.team_id);
+            const team = teamLookup.get(p.name);
             return {
-              position: p.position,
-              team_id: p.team_id,
-              name: team?.name || '',
+              position: p.id,
+              team_id: team?.id || '',
+              name: p.name,
               image_url: team?.image_url
             };
           }) || [];
@@ -222,7 +234,7 @@ export const useBracketData = (bracketId: string | null) => {
             participants: transformedParticipants
           };
 
-          console.log('🎯 DEBUG: Step 7 Complete - Final result built:', {
+          console.log('🎯 DEBUG: Final result built from SQL tables:', {
             bracketId: result.id,
             matchesCount: result.matches.length,
             teamsCount: result.teams.length,
@@ -232,8 +244,8 @@ export const useBracketData = (bracketId: string | null) => {
           return result;
         }
 
-        // Fallback: Legacy playoff_matches table (should not be used)
-        console.warn('🎯 DEBUG: No bracket_data found, bracket may be incomplete');
+        // Fallback: Non-brackets-manager bracket
+        console.warn('🎯 DEBUG: Not a brackets-manager bracket');
         return null;
 
 
