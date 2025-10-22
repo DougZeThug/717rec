@@ -1,10 +1,80 @@
 import { PlayoffBracket, PlayoffMatch, PlayoffGame, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 import { ViewerData, ViewerStage, ViewerMatch, ViewerMatchGame, ViewerParticipant, ViewerDataWithMapping } from './types';
 import { InMemoryDatabase } from 'brackets-memory-db';
+import { supabase } from '@/integrations/supabase/client';
 
 export class BracketsViewerAdapter {
   private static teamIdMap: Map<string, number> = new Map();
   
+  /**
+   * Transform from brackets-manager SQL tables
+   */
+  static async transformFromSql(bracketId: string): Promise<ViewerDataWithMapping> {
+    console.log('🔍 transformFromSql: Fetching from SQL tables for bracket:', bracketId);
+    
+    // Reset team map
+    this.teamIdMap.clear();
+    
+    // First get stage to find stage_id
+    const { data: stages, error: stageError } = await supabase
+      .from('stage')
+      .select('*')
+      .eq('tournament_id', bracketId);
+    
+    if (stageError) throw stageError;
+    if (!stages || stages.length === 0) {
+      throw new Error(`No stage found for bracket: ${bracketId}`);
+    }
+    
+    const stageId = stages[0].id;
+    
+    // Fetch all data from SQL tables
+    const [matchesResult, matchGamesResult, participantsResult] = await Promise.all([
+      supabase.from('match').select('*').eq('stage_id', stageId),
+      supabase.from('match_game').select('*'),
+      supabase.from('participant').select('*').eq('tournament_id', bracketId)
+    ]);
+
+    if (matchesResult.error) throw matchesResult.error;
+    if (matchGamesResult.error) throw matchGamesResult.error;
+    if (participantsResult.error) throw participantsResult.error;
+
+    const matches = matchesResult.data || [];
+    const participants = participantsResult.data || [];
+    
+    // Filter match games by the matches we have
+    const matchIds = new Set(matches.map(m => m.id));
+    const matchGames = (matchGamesResult.data || []).filter(g => matchIds.has(g.match_id));
+
+    // Build reverse match ID map: brackets-manager match.id (integer) -> match.id as string
+    const reverseMatchIdMap = new Map<number, string>();
+    matches.forEach(match => {
+      reverseMatchIdMap.set(match.id, match.id.toString());
+    });
+
+    console.log('✅ transformFromSql: Fetched data:', {
+      stages: stages.length,
+      matches: matches.length,
+      matchGames: matchGames.length,
+      participants: participants.length,
+      reverseMatchIdMapSize: reverseMatchIdMap.size
+    });
+
+    return {
+      data: {
+        stages: stages as any,
+        matches: matches as any,
+        matchGames: matchGames as any,
+        participants: participants as any
+      },
+      getPlayoffMatchId: (viewerMatchId: number) => {
+        const result = reverseMatchIdMap.get(viewerMatchId);
+        console.log('🔍 getPlayoffMatchId:', viewerMatchId, '→', result);
+        return result;
+      }
+    };
+  }
+
   /**
    * Transform from JSONB bracket_data (brackets-manager's native format)
    */

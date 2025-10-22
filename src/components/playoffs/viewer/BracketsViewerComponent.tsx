@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
-import { BracketsViewerAdapter } from '@/services/brackets/viewer';
+import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/brackets/viewer';
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { log } from '@/utils/logger';
 
@@ -61,16 +61,32 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       return;
     }
 
-    try {
-      console.log('🎯 BracketsViewerComponent: Starting transformation');
-      
-      // Use JSONB data if available, otherwise fall back to legacy transformation
-      const result = bracket.bracket_data
-        ? BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id)
-        : BracketsViewerAdapter.transform(bracket, teams, bracket.participants);
+    const renderBracket = async () => {
+      try {
+        console.log('🎯 BracketsViewerComponent: Starting transformation', {
+          usesBracketsManager: bracket.uses_brackets_manager,
+          hasBracketData: !!bracket.bracket_data
+        });
+        
+        // Determine which transformation method to use
+        let result: ViewerDataWithMapping;
+        
+        if (bracket.uses_brackets_manager) {
+          // Fetch from brackets-manager SQL tables
+          console.log('📊 Using brackets-manager SQL storage');
+          result = await BracketsViewerAdapter.transformFromSql(bracket.id);
+        } else if (bracket.bracket_data) {
+          // Use JSONB data
+          console.log('📊 Using JSONB bracket_data');
+          result = BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id);
+        } else {
+          // Legacy: Use playoff_matches table
+          console.log('📊 Using legacy playoff_matches table');
+          result = BracketsViewerAdapter.transform(bracket, teams, bracket.participants);
+        }
 
-      // Store the mapping function in ref
-      getPlayoffMatchIdRef.current = result.getPlayoffMatchId;
+        // Store the mapping function in ref
+        getPlayoffMatchIdRef.current = result.getPlayoffMatchId;
 
       console.log('✅ BracketsViewerComponent: Transformation complete', {
         stagesCount: result.data.stages?.length,
@@ -124,14 +140,17 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         }
       );
 
-      console.log('✅ BracketsViewerComponent: Render complete');
+        console.log('✅ BracketsViewerComponent: Render complete');
 
-      setIsInitialized(true);
-      setError(null);
-    } catch (err) {
-      console.error('❌ Error rendering brackets-viewer:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    }
+        setIsInitialized(true);
+        setError(null);
+      } catch (err) {
+        console.error('❌ Error rendering brackets-viewer:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      }
+    };
+
+    renderBracket();
 
     // Cleanup on unmount
     return () => {
