@@ -42,8 +42,8 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
         </CardTitle>
         <CardDescription>
           {brackets.length 
-            ? `${brackets.length} active bracket${brackets.length > 1 ? 's' : ''}`
-            : "No active brackets"
+            ? `${brackets.length} bracket${brackets.length > 1 ? 's' : ''}`
+            : "No brackets"
           }
         </CardDescription>
       </CardHeader>

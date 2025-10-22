@@ -65,7 +65,9 @@ export const usePlayoffData = () => {
           *,
           divisions(*),
           matches(*)
-        `) as unknown as {
+        `)
+        .neq('state', 'completed')
+        .order('created_at', { ascending: false }) as unknown as {
           data: BracketRowWithRels[] | null;
           error: any;
         };
