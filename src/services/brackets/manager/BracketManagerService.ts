@@ -94,13 +94,36 @@ export class BracketManagerService {
       });
 
     try {
-      // Prepare seeding
-      const seeding = teams
-        .sort((a, b) => a.seed - b.seed)
-        .map(team => team.name);
+      // Sort teams by seed to get rankings
+      const teamsBySeed = [...teams].sort((a, b) => a.seed - b.seed);
 
-      // Create tournament stage in memory (using default seeding algorithm)
-      await this.manager.create({
+      // Standard bracket seeding positions for 8 teams: [1,8,4,5,2,7,3,6]
+      // Generalized formula for any power of 2
+      const teamCount = teams.length;
+      const seedingOrder = this.generateStandardSeeding(teamCount);
+      
+      // Map bracket positions to team names (brackets-manager expects names in position order)
+      const seeding = seedingOrder.map(seedIdx => 
+        seedIdx < teamsBySeed.length ? teamsBySeed[seedIdx].name : null
+      );
+
+      // Create position -> teamId mapping (position is 1-indexed for brackets-manager)
+      const positionToTeamId = new Map(
+        seedingOrder.map((seedIdx, position) => [
+          position + 1,
+          seedIdx < teamsBySeed.length ? teamsBySeed[seedIdx].id : null
+        ])
+      );
+
+      bracketLog("Bracket seeding configuration:", {
+        teamCount,
+        seedingOrder,
+        seeding,
+        positionToTeamIdSample: Array.from(positionToTeamId.entries()).slice(0, 4)
+      });
+
+      // ✅ Use manager.create.stage() - the correct API method
+      await this.manager.create.stage({
         name: bracketId,
         tournamentId: 0,
         type: format,
@@ -110,12 +133,6 @@ export class BracketManagerService {
             ? (options.grandFinalType || "simple")
             : "none"
         }
-      });
-
-      bracketLog("Seeding configuration:", {
-        teamCount: teams.length,
-        seedingOrder: seeding,
-        note: "Using brackets-manager default seeding algorithm"
       });
 
       // Get generated matches from memory storage
@@ -167,9 +184,7 @@ export class BracketManagerService {
         }))
       });
       
-      // Map teams to their IDs for persistence (by name and by seed)
-      const teamMap = new Map(teams.map(t => [t.name, t.id]));
-      const seedToTeamId = new Map(teams.map(t => [t.seed, t.id]));
+      // Use the position mapping we created earlier (already defined above)
 
       // Calculate minimum round_id per group for round normalization
       const groupMinRounds = new Map<number, number>();
@@ -182,18 +197,23 @@ export class BracketManagerService {
         groupMinRounds: Array.from(groupMinRounds.entries())
       });
 
-      // Create match records with UUIDs and normalized rounds (from ALL raw matches)
-      const allMatchRecords = rawMatches.map((match: any) => {
+      // Create match records with UUIDs and normalized rounds
+      const matchRecords = rawMatches.map((match: any) => {
         const uuid = crypto.randomUUID();
         const minRound = groupMinRounds.get(match.group_id) ?? 0;
         const normalizedRound = match.round_id - minRound;
+        const matchType = this.getMatchType(match.group_id);
+        
+        // Use position mapping to get team IDs
+        const team1Id = match.opponent1?.position ? positionToTeamId.get(match.opponent1.position) || null : null;
+        const team2Id = match.opponent2?.position ? positionToTeamId.get(match.opponent2.position) || null : null;
         
         // Validation warnings for missing team mappings
-        if (match.opponent1?.position && !seedToTeamId.get(match.opponent1.position)) {
-          console.warn(`⚠️ Seed ${match.opponent1.position} not found in team map`);
+        if (match.opponent1?.position && !team1Id) {
+          console.warn(`⚠️ Position ${match.opponent1.position} not found in position map`);
         }
-        if (match.opponent2?.position && !seedToTeamId.get(match.opponent2.position)) {
-          console.warn(`⚠️ Seed ${match.opponent2.position} not found in team map`);
+        if (match.opponent2?.position && !team2Id) {
+          console.warn(`⚠️ Position ${match.opponent2.position} not found in position map`);
         }
         
         return {
@@ -201,86 +221,76 @@ export class BracketManagerService {
           bracket_id: bracketId,
           round: normalizedRound,
           position: match.number,
-          match_type: this.getMatchType(match.group_id),
-          team1_id: match.opponent1?.position ? seedToTeamId.get(match.opponent1.position) || null : null,
-          team2_id: match.opponent2?.position ? seedToTeamId.get(match.opponent2.position) || null : null,
+          match_type: matchType,
+          team1_id: team1Id,
+          team2_id: team2Id,
           team1_seed: match.opponent1?.position || null,
           team2_seed: match.opponent2?.position || null,
           best_of: 3,
           status: 'pending',
           next_win_match_id: null,
           next_lose_match_id: null,
-          // Store original brackets-manager match for connection mapping
-          _bmMatch: match
+          // Store original match and compound key for connection mapping
+          _bmMatch: match,
+          _compoundKey: `${matchType}-${normalizedRound}-${match.number}`
         };
       });
 
-      // ✅ Deduplicate based on database constraint fields (bracket_id, match_type, round, position)
-      const matchRecords = Array.from(
-        new Map(
-          allMatchRecords.map(record => [
-            `${record.bracket_id}-${record.match_type}-${record.round}-${record.position}`,
-            record
-          ])
-        ).values()
-      );
-
-      bracketLog("Match deduplication after normalization:", {
-        rawCount: rawMatches.length,
-        afterNormalization: allMatchRecords.length,
-        afterDeduplication: matchRecords.length,
-        duplicatesRemoved: allMatchRecords.length - matchRecords.length,
-        sampleRecords: matchRecords.slice(0, 3).map(r => ({
-          match_type: r.match_type,
-          round: r.round,
-          position: r.position,
-          constraintKey: `${r.bracket_id}-${r.match_type}-${r.round}-${r.position}`
-        }))
+      bracketLog("Match records created:", {
+        count: matchRecords.length,
+        byType: {
+          winners: matchRecords.filter(m => m.match_type === 'winners').length,
+          losers: matchRecords.filter(m => m.match_type === 'losers').length,
+          finals: matchRecords.filter(m => m.match_type === 'finals').length
+        },
+        sampleRecord: matchRecords[0]
       });
 
       // Extract brackets-manager matches for connection mapping
       const matches = matchRecords.map(r => r._bmMatch);
 
-      // Build mapping: brackets-manager position -> Supabase UUID
-      const positionToUuid = new Map(
-        matchRecords.map(record => [record.position, record.id])
+      // Build mapping: compound key (match_type-round-position) -> Supabase UUID
+      const keyToUuid = new Map(
+        matchRecords.map(record => [record._compoundKey, record.id])
       );
 
-      // Second pass: Populate match connections
+      // Second pass: Populate match connections using compound keys
       matches.forEach((bmMatch: any, index: number) => {
         const record = matchRecords[index];
+        const currentType = this.getMatchType(bmMatch.group_id);
+        const minRound = groupMinRounds.get(bmMatch.group_id) ?? 0;
+        const currentRound = bmMatch.round_id - minRound;
         
-        // Find where winner of this match goes (child_count tells us if this match feeds another)
+        // Find where winner of this match goes
         if (bmMatch.child_count && bmMatch.child_count > 0) {
-          // Winners advance: find the next match in the same group or finals
+          // Winners advance to next round in same bracket or finals
           const nextRoundMatches = matches.filter((m: any) => 
             m.round_id === bmMatch.round_id + 1 && 
-            (m.group_id === bmMatch.group_id || m.group_id === 3) // Same bracket or finals
+            (m.group_id === bmMatch.group_id || m.group_id === 3)
           );
           
-          // Calculate which next match this feeds into
-          // In brackets-manager, matches are numbered sequentially
-          // Two matches feed into one in the next round
           const nextMatchIndex = Math.floor((bmMatch.number - 1) / 2);
           const nextMatch = nextRoundMatches[nextMatchIndex];
           
-          if (nextMatch && typeof nextMatch === 'object' && 'number' in nextMatch) {
-            record.next_win_match_id = positionToUuid.get((nextMatch as any).number) || null;
+          if (nextMatch) {
+            const nextType = this.getMatchType(nextMatch.group_id);
+            const nextMinRound = groupMinRounds.get(nextMatch.group_id) ?? 0;
+            const nextRound = nextMatch.round_id - nextMinRound;
+            const nextKey = `${nextType}-${nextRound}-${nextMatch.number}`;
+            record.next_win_match_id = keyToUuid.get(nextKey) || null;
           }
         }
         
         // For double elimination: losers drop to losers bracket
         if (format === 'double_elimination' && bmMatch.group_id === 1) {
-          // Winners bracket losers go to losers bracket
-          const losersRoundMatches = matches.filter((m: any) => 
-            m.group_id === 2 // Losers bracket
-          );
-          
-          // Complex mapping logic for WB -> LB drops
-          // This depends on the round structure
+          const losersRoundMatches = matches.filter((m: any) => m.group_id === 2);
           const loserDestination = this.findLoserDestination(bmMatch, losersRoundMatches);
-          if (loserDestination && typeof loserDestination === 'object' && 'number' in loserDestination) {
-            record.next_lose_match_id = positionToUuid.get((loserDestination as any).number) || null;
+          
+          if (loserDestination) {
+            const loserMinRound = groupMinRounds.get(2) ?? 0;
+            const loserRound = loserDestination.round_id - loserMinRound;
+            const loserKey = `losers-${loserRound}-${loserDestination.number}`;
+            record.next_lose_match_id = keyToUuid.get(loserKey) || null;
           }
         }
       });
@@ -292,8 +302,8 @@ export class BracketManagerService {
       });
 
       if (matchRecords.length > 0) {
-        // ✅ Remove internal _bmMatch property before database insertion
-        const dbRecords = matchRecords.map(({ _bmMatch, ...dbRecord }) => dbRecord);
+        // ✅ Remove internal properties before database insertion
+        const dbRecords = matchRecords.map(({ _bmMatch, _compoundKey, ...dbRecord }) => dbRecord);
         
         bracketLog("Attempting to insert playoff matches:", {
           count: dbRecords.length,
@@ -358,6 +368,21 @@ export class BracketManagerService {
       case 3: return 'finals';
       default: return 'winners';
     }
+  }
+
+  /**
+   * Generate standard bracket seeding order for any power of 2
+   * Returns array of seed indices (0-based) in bracket position order
+   * Example for 8 teams: [0,7,3,4,1,6,2,5] means position 1 gets seed 1 (index 0), position 2 gets seed 8 (index 7), etc.
+   */
+  private generateStandardSeeding(teamCount: number): number[] {
+    if (teamCount === 2) return [0, 1];
+    if (teamCount === 4) return [0, 3, 1, 2];
+    if (teamCount === 8) return [0, 7, 3, 4, 1, 6, 2, 5];
+    if (teamCount === 16) return [0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10];
+    
+    // Fallback to sequential for non-standard sizes
+    return Array.from({ length: teamCount }, (_, i) => i);
   }
 
   /**
