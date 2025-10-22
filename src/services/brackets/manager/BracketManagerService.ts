@@ -81,21 +81,52 @@ export class BracketManagerService {
     });
 
     try {
-      // Step 1: Sort teams by seed
-      bracketLog("📝 Step 1/4: Sorting teams by seed...");
+      // Step 1: Calculate required bracket size (power of 2)
+      const bracketSize = this.calculateNextPowerOf2(teams.length);
+      const byesNeeded = bracketSize - teams.length;
+      
+      bracketLog("📊 Bracket sizing:", {
+        teamCount: teams.length,
+        bracketSize,
+        byesNeeded
+      });
+
+      // Step 2: Sort teams by seed
+      bracketLog("📝 Step 2/5: Sorting teams by seed...");
       const teamsBySeed = [...teams].sort((a, b) => a.seed - b.seed);
       bracketLog("✅ Teams sorted:", { teams: teamsBySeed.map(t => `${t.name} (seed ${t.seed})`) });
 
-      // Step 2: Prepare participant inserts
-      bracketLog("📝 Step 2/4: Preparing participant inserts...");
-      const participantInserts = teamsBySeed.map((team) => ({
-        tournament_id: bracketId,
-        name: team.name
-      }));
-      bracketLog("✅ Participant inserts prepared:", { count: participantInserts.length, names: participantInserts.map(p => p.name) });
+      // Step 3: Create seeding array with BYEs (null values)
+      bracketLog("📝 Step 3/5: Creating seeding array with BYEs...");
+      const seeding: (string | null)[] = [];
+      for (let i = 0; i < bracketSize; i++) {
+        if (i < teams.length) {
+          seeding.push(teamsBySeed[i].name);
+        } else {
+          seeding.push(null); // BYE represented as null
+        }
+      }
+      
+      bracketLog("✅ Seeding array created:", { 
+        length: seeding.length,
+        teams: seeding.filter(s => s !== null).length,
+        byes: seeding.filter(s => s === null).length
+      });
 
-      // Step 3: Insert participants into database
-      bracketLog("📝 Step 3/4: Inserting participants into database...");
+      // Step 4: Prepare participant inserts (including BYEs)
+      bracketLog("📝 Step 4/5: Preparing participant inserts...");
+      const participantInserts = seeding.map((name) => ({
+        tournament_id: bracketId,
+        name: name // null for BYEs
+      }));
+      bracketLog("✅ Participant inserts prepared:", { 
+        count: participantInserts.length,
+        teams: participantInserts.filter(p => p.name !== null).length,
+        byes: participantInserts.filter(p => p.name === null).length
+      });
+
+      // Step 5: Insert participants into database
+      bracketLog("📝 Step 5/5: Inserting participants into database...");
       const { data: insertedParticipants, error: participantsError } = await supabase
         .from('participant' as any)
         .insert(participantInserts)
@@ -121,9 +152,8 @@ export class BracketManagerService {
         participants: insertedParticipants 
       });
 
-      // Step 4: Create bracket stage with brackets-manager
-      bracketLog("📝 Step 4/4: Creating bracket stage with brackets-manager...");
-      const seeding = teamsBySeed.map(t => t.name);
+      // Step 6: Create bracket stage with brackets-manager
+      bracketLog("📝 Step 6/5: Creating bracket stage with brackets-manager...");
       
       const stageConfig = {
         name: bracketId,
@@ -200,6 +230,17 @@ export class BracketManagerService {
         `Match update failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
     }
+  }
+
+  /**
+   * Calculate the next power of 2 for proper bracket sizing
+   */
+  private calculateNextPowerOf2(count: number): number {
+    let power = 2;
+    while (power < count) {
+      power *= 2;
+    }
+    return power;
   }
 
   /**
