@@ -3,6 +3,42 @@ import { SupabaseSqlStorage } from "./SupabaseSqlStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { bracketLog, successLog, failureLog } from "@/utils/logger";
 
+/**
+ * Safely serialize any error type to a readable string
+ */
+function serializeError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  try {
+    // Try to extract meaningful info from plain objects
+    const errorObj = error as any;
+    if (errorObj && typeof errorObj === 'object') {
+      const parts: string[] = [];
+      
+      // Common error properties
+      if (errorObj.message) parts.push(`Message: ${errorObj.message}`);
+      if (errorObj.code) parts.push(`Code: ${errorObj.code}`);
+      if (errorObj.details) parts.push(`Details: ${errorObj.details}`);
+      if (errorObj.hint) parts.push(`Hint: ${errorObj.hint}`);
+      if (errorObj.table) parts.push(`Table: ${errorObj.table}`);
+      if (errorObj.operation) parts.push(`Operation: ${errorObj.operation}`);
+      
+      if (parts.length > 0) {
+        return parts.join(' | ');
+      }
+      
+      // Fallback: full JSON
+      return JSON.stringify(errorObj, Object.getOwnPropertyNames(errorObj), 2);
+    }
+    
+    return String(error);
+  } catch {
+    return 'Unable to serialize error';
+  }
+}
+
 export interface CreateBracketOptions {
   bracketId: string;
   format: "single_elimination" | "double_elimination";
@@ -38,69 +74,105 @@ export class BracketManagerService {
   async createBracket(options: CreateBracketOptions): Promise<void> {
     const { bracketId, format, teams } = options;
 
-    bracketLog("Creating bracket with SQL storage:", {
+    bracketLog("🚀 STARTING bracket creation with SQL storage:", {
       bracketId,
       format,
       teamCount: teams.length
     });
 
     try {
-      // Sort teams by seed and create seeding array
+      // Step 1: Sort teams by seed
+      bracketLog("📝 Step 1/4: Sorting teams by seed...");
       const teamsBySeed = [...teams].sort((a, b) => a.seed - b.seed);
-      
-      bracketLog("Team seeding:", { teams: teamsBySeed.map(t => t.name) });
+      bracketLog("✅ Teams sorted:", { teams: teamsBySeed.map(t => `${t.name} (seed ${t.seed})`) });
 
-      // Insert participants into the participant table BEFORE creating stage
+      // Step 2: Prepare participant inserts
+      bracketLog("📝 Step 2/4: Preparing participant inserts...");
       const participantInserts = teamsBySeed.map((team) => ({
         tournament_id: bracketId,
-        name: team.name  // brackets-manager uses name, not team_id
+        name: team.name
       }));
+      bracketLog("✅ Participant inserts prepared:", { count: participantInserts.length, names: participantInserts.map(p => p.name) });
 
-      bracketLog("Inserting participants into participant table:", participantInserts);
-      const { error: participantsError } = await supabase
+      // Step 3: Insert participants into database
+      bracketLog("📝 Step 3/4: Inserting participants into database...");
+      const { data: insertedParticipants, error: participantsError } = await supabase
         .from('participant' as any)
-        .insert(participantInserts);
+        .insert(participantInserts)
+        .select('*');
 
       if (participantsError) {
-        console.error("Failed to insert participants:", participantsError);
-        throw new Error(`Failed to insert participants: ${participantsError.message}`);
+        console.error("❌ Participant insertion failed - FULL ERROR:", {
+          error: participantsError,
+          errorType: participantsError?.constructor?.name,
+          code: participantsError.code,
+          message: participantsError.message,
+          details: participantsError.details,
+          hint: participantsError.hint,
+          statusCode: (participantsError as any).statusCode,
+          inserts: participantInserts,
+          serialized: serializeError(participantsError)
+        });
+        throw new Error(`Failed to insert participants: ${serializeError(participantsError)}`);
       }
 
-      // Create seeding array (just names in seed order)
-      const seeding = teamsBySeed.map(t => t.name);
+      bracketLog("✅ Participants inserted successfully:", { 
+        insertedCount: insertedParticipants?.length || 0,
+        participants: insertedParticipants 
+      });
 
-      // Create bracket using brackets-manager (automatically saves to SQL tables)
-      bracketLog("Calling brackets-manager create.stage()...");
-      await this.manager.create.stage({
+      // Step 4: Create bracket stage with brackets-manager
+      bracketLog("📝 Step 4/4: Creating bracket stage with brackets-manager...");
+      const seeding = teamsBySeed.map(t => t.name);
+      
+      const stageConfig = {
         name: bracketId,
-        tournamentId: bracketId, // Using bracketId as tournamentId
+        tournamentId: bracketId,
         type: format,
         seeding,
         settings: {
-          seedOrdering: ['natural'],
-          grandFinal: format === "double_elimination" 
+          seedOrdering: ['natural' as const],
+          grandFinal: (format === "double_elimination" 
             ? (options.grandFinalType || "simple")
-            : "none"
+            : "none") as "simple" | "double" | "none"
         }
-      });
+      };
+      
+      bracketLog("🎯 Stage configuration:", stageConfig);
+      
+      await this.manager.create.stage(stageConfig);
 
-      bracketLog("Stage created successfully in SQL tables");
+      bracketLog("✅ Stage created successfully in SQL tables");
       successLog("Bracket created successfully", bracketId);
     } catch (error) {
-      console.error("🔴 BracketManagerService.createBracket failed:", {
-        error,
-        errorType: error?.constructor?.name,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
+      // Comprehensive error logging
+      const errorDetails = {
+        timestamp: new Date().toISOString(),
         bracketId,
         format,
-        teamCount: teams.length
-      });
+        teamCount: teams.length,
+        errorType: error?.constructor?.name || typeof error,
+        errorString: String(error),
+        errorJSON: JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
+        serializedError: serializeError(error),
+      };
       
-      failureLog("Failed to create bracket", error);
+      // Check if it's a Supabase error
+      if (error && typeof error === 'object' && 'code' in error) {
+        Object.assign(errorDetails, {
+          supabaseCode: (error as any).code,
+          supabaseMessage: (error as any).message,
+          supabaseDetails: (error as any).details,
+          supabaseHint: (error as any).hint,
+          supabaseStatusCode: (error as any).statusCode,
+        });
+      }
       
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      throw new Error(`Bracket creation failed: ${errorMessage}`);
+      console.error("🔴 BracketManagerService.createBracket FAILED - Full Debug Info:", errorDetails);
+      
+      failureLog("Failed to create bracket", serializeError(error));
+      
+      throw new Error(`Bracket creation failed: ${serializeError(error)}`);
     }
   }
 

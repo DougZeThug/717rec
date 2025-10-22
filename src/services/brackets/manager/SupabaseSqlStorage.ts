@@ -17,12 +17,26 @@ export class SupabaseSqlStorage implements CrudInterface {
     const client = supabase as any;
     let query = client.from(table).select('*');
     
+    console.log(`🔵 SupabaseSqlStorage.select() - Table: ${table}`, { filter });
+    
     if (filter !== undefined) {
       if (typeof filter === 'number' || typeof filter === 'string') {
         // Single ID lookup
         query = query.eq('id', filter);
         const { data, error } = await query.single();
-        if (error) throw error;
+        
+        if (error) {
+          console.error(`❌ SupabaseSqlStorage.select() FAILED - Table: ${table}`, {
+            error,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            filter
+          });
+          throw error;
+        }
+        
+        console.log(`✅ SupabaseSqlStorage.select() SUCCESS - Table: ${table}, Single record found`);
         return data as DataTypes[T];
       } else {
         // Filter object
@@ -33,7 +47,19 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
     
     const { data, error } = await query;
-    if (error) throw error;
+    
+    if (error) {
+      console.error(`❌ SupabaseSqlStorage.select() FAILED - Table: ${table}`, {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        filter
+      });
+      throw error;
+    }
+    
+    console.log(`✅ SupabaseSqlStorage.select() SUCCESS - Table: ${table}, Rows: ${data?.length || 0}`);
     return (data || []) as DataTypes[T][];
   }
 
@@ -46,15 +72,34 @@ export class SupabaseSqlStorage implements CrudInterface {
     const isArray = Array.isArray(values);
     const items = isArray ? values : [values];
     
+    console.log(`🔵 SupabaseSqlStorage.insert() - Table: ${table}, Count: ${items.length}`, {
+      table,
+      itemCount: items.length,
+      firstItem: items[0]
+    });
+    
     const { data, error } = await client
       .from(table)
       .insert(items)
       .select('id');
     
     if (error) {
-      console.error(`Error inserting into ${table}:`, error);
+      console.error(`❌ SupabaseSqlStorage.insert() FAILED - Table: ${table}`, {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        statusCode: error.statusCode,
+        items
+      });
       throw error;
     }
+    
+    console.log(`✅ SupabaseSqlStorage.insert() SUCCESS - Table: ${table}`, {
+      insertedCount: data?.length || 0,
+      returnedIds: data?.map(d => d.id)
+    });
     
     // Single insert returns the ID, array insert returns true
     if (isArray) {
@@ -76,6 +121,8 @@ export class SupabaseSqlStorage implements CrudInterface {
     const client = supabase as any;
     let query = client.from(table).update(values);
     
+    console.log(`🔵 SupabaseSqlStorage.update() - Table: ${table}`, { filter, values });
+    
     if (typeof filter === 'number' || typeof filter === 'string') {
       query = query.eq('id', filter);
     } else {
@@ -85,11 +132,21 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
     
     const { error } = await query;
+    
     if (error) {
-      console.error(`Error updating ${table}:`, error);
+      console.error(`❌ SupabaseSqlStorage.update() FAILED - Table: ${table}`, {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        filter,
+        values
+      });
       throw error;
     }
     
+    console.log(`✅ SupabaseSqlStorage.update() SUCCESS - Table: ${table}`);
     return true;
   }
 
@@ -101,6 +158,8 @@ export class SupabaseSqlStorage implements CrudInterface {
     const client = supabase as any;
     let query = client.from(table).delete();
     
+    console.log(`🔵 SupabaseSqlStorage.delete() - Table: ${table}`, { filter });
+    
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
         query = query.eq(key, value);
@@ -108,11 +167,20 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
     
     const { error } = await query;
+    
     if (error) {
-      console.error(`Error deleting from ${table}:`, error);
+      console.error(`❌ SupabaseSqlStorage.delete() FAILED - Table: ${table}`, {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        filter
+      });
       throw error;
     }
     
+    console.log(`✅ SupabaseSqlStorage.delete() SUCCESS - Table: ${table}`);
     return true;
   }
 }
