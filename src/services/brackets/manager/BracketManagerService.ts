@@ -121,31 +121,37 @@ export class BracketManagerService {
       // Get generated matches from memory storage
       const rawMatches = await this.storage.select("match");
       
-      // ✅ Deduplicate matches by their unique ID (not position!)
+      // ✅ Step 1: Deduplicate by match ID
+      const matchesById = Array.from(
+        new Map(
+          rawMatches.map((m: any) => [m.id, m])
+        ).values()
+      );
+
+      // ✅ Step 2: Deduplicate by position (group_id, round_id, number)
+      // Keep the first occurrence of each unique position
       const matches = Array.from(
         new Map(
-          rawMatches.map((m: any) => [
-            m.id, // Use unique match ID as key
+          matchesById.map((m: any) => [
+            `${m.group_id}-${m.round_id}-${m.number}`, // Position-based key
             m
           ])
         ).values()
       );
 
-      bracketLog("Match deduplication (by ID):", {
-        originalCount: rawMatches.length,
-        uniqueCount: matches.length,
-        duplicatesRemoved: rawMatches.length - matches.length,
-        sampleMatchIds: rawMatches.slice(0, 5).map((m: any) => ({
+      bracketLog("Match deduplication:", {
+        rawCount: rawMatches.length,
+        afterIdDedup: matchesById.length,
+        afterPositionDedup: matches.length,
+        idDuplicatesRemoved: rawMatches.length - matchesById.length,
+        positionDuplicatesRemoved: matchesById.length - matches.length,
+        sampleMatches: matches.slice(0, 5).map((m: any) => ({
           id: m.id,
           group_id: m.group_id,
           round_id: m.round_id,
-          number: m.number
-        })),
-        positionDuplicates: matches.reduce((acc: any, m: any) => {
-          const key = `${m.group_id}-${m.round_id}-${m.number}`;
-          acc[key] = (acc[key] || 0) + 1;
-          return acc;
-        }, {})
+          number: m.number,
+          positionKey: `${m.group_id}-${m.round_id}-${m.number}`
+        }))
       });
 
       // Log raw brackets-manager structure for debugging
