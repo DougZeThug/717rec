@@ -102,8 +102,16 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           matchId: match.id,
           opponent1: match.opponent1,
           opponent2: match.opponent2,
-          status: match.status
+          status: match.status,
+          usesBracketsManager: bracket.uses_brackets_manager
         });
+        
+        // Brackets using brackets-manager SQL tables don't have playoff_matches records
+        // so we can't open the match editor for them
+        if (bracket.uses_brackets_manager) {
+          console.warn('⚠️ Match editing not supported for brackets-manager brackets');
+          return;
+        }
         
         // Check if match has both participants
         if (!match.opponent1?.id || !match.opponent2?.id) {
