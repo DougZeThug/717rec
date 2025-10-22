@@ -52,10 +52,45 @@ export class BracketsViewerAdapter {
       reverseMatchIdMap.set(match.id, match.id.toString());
     });
 
+    // Transform matches to viewer format
+    const transformedMatches = matches.map(match => ({
+      id: match.id,
+      stage_id: match.stage_id,
+      group_id: match.group_id,
+      round_id: match.round_id,
+      number: match.number,
+      opponent1: match.opponent1_id ? {
+        id: match.opponent1_id,
+        score: match.opponent1_score ?? undefined,
+        result: match.opponent1_result as 'win' | 'loss' | undefined
+      } : null,
+      opponent2: match.opponent2_id ? {
+        id: match.opponent2_id,
+        score: match.opponent2_score ?? undefined,
+        result: match.opponent2_result as 'win' | 'loss' | undefined
+      } : null,
+      status: this.mapStatusToString(match.status)
+    }));
+
+    // Transform match games to viewer format
+    const transformedMatchGames = matchGames.map(game => ({
+      id: game.id,
+      number: game.number,
+      stage_id: 1,
+      parent_id: game.match_id,
+      status: this.mapStatusToString(game.status),
+      opponent1: {
+        score: game.opponent1_score ?? undefined
+      },
+      opponent2: {
+        score: game.opponent2_score ?? undefined
+      }
+    }));
+
     console.log('✅ transformFromSql: Fetched data:', {
       stages: stages.length,
-      matches: matches.length,
-      matchGames: matchGames.length,
+      matches: transformedMatches.length,
+      matchGames: transformedMatchGames.length,
       participants: participants.length,
       reverseMatchIdMapSize: reverseMatchIdMap.size
     });
@@ -63,8 +98,8 @@ export class BracketsViewerAdapter {
     return {
       data: {
         stages: stages as any,
-        matches: matches as any,
-        matchGames: matchGames as any,
+        matches: transformedMatches as any,
+        matchGames: transformedMatchGames as any,
         participants: participants as any
       },
       getPlayoffMatchId: (viewerMatchId: number) => {
@@ -350,6 +385,21 @@ export class BracketsViewerAdapter {
     });
 
     return games;
+  }
+
+  /**
+   * Helper: Map integer status to string status
+   */
+  private static mapStatusToString(status: number): ViewerMatch['status'] {
+    const statusMap: Record<number, ViewerMatch['status']> = {
+      0: 'locked',
+      1: 'waiting',
+      2: 'ready',
+      3: 'running',
+      4: 'completed',
+      5: 'archived'
+    };
+    return statusMap[status] || 'waiting';
   }
 
   /**
