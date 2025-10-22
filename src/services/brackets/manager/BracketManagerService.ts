@@ -120,59 +120,36 @@ export class BracketManagerService {
 
       // Get generated matches from memory storage
       const rawMatches = await this.storage.select("match");
-      
-      // ✅ Step 1: Deduplicate by match ID
-      const matchesById = Array.from(
-        new Map(
-          rawMatches.map((m: any) => [m.id, m])
-        ).values()
-      );
 
-      // ✅ Step 2: Deduplicate by position (group_id, round_id, number)
-      // Keep the first occurrence of each unique position
-      const matches = Array.from(
-        new Map(
-          matchesById.map((m: any) => [
-            `${m.group_id}-${m.round_id}-${m.number}`, // Position-based key
-            m
-          ])
-        ).values()
-      );
-
-      bracketLog("Match deduplication:", {
-        rawCount: rawMatches.length,
-        afterIdDedup: matchesById.length,
-        afterPositionDedup: matches.length,
-        idDuplicatesRemoved: rawMatches.length - matchesById.length,
-        positionDuplicatesRemoved: matchesById.length - matches.length,
-        sampleMatches: matches.slice(0, 5).map((m: any) => ({
+      bracketLog("Raw matches from brackets-manager:", {
+        count: rawMatches.length,
+        sample: rawMatches.slice(0, 3).map((m: any) => ({
           id: m.id,
           group_id: m.group_id,
           round_id: m.round_id,
-          number: m.number,
-          positionKey: `${m.group_id}-${m.round_id}-${m.number}`
+          number: m.number
         }))
       });
 
       // Log raw brackets-manager structure for debugging
       bracketLog("Match generation analysis:", {
-        totalMatches: matches.length,
+        totalMatches: rawMatches.length,
         byGroup: {
-          winners: matches.filter((m: any) => m.group_id === 1).length,
-          losers: matches.filter((m: any) => m.group_id === 2).length,
-          finals: matches.filter((m: any) => m.group_id === 3).length
+          winners: rawMatches.filter((m: any) => m.group_id === 1).length,
+          losers: rawMatches.filter((m: any) => m.group_id === 2).length,
+          finals: rawMatches.filter((m: any) => m.group_id === 3).length
         },
         roundRange: {
           winners: {
-            min: Math.min(...matches.filter((m: any) => m.group_id === 1).map((m: any) => m.round_id)),
-            max: Math.max(...matches.filter((m: any) => m.group_id === 1).map((m: any) => m.round_id))
+            min: Math.min(...rawMatches.filter((m: any) => m.group_id === 1).map((m: any) => m.round_id)),
+            max: Math.max(...rawMatches.filter((m: any) => m.group_id === 1).map((m: any) => m.round_id))
           },
-          losers: matches.filter((m: any) => m.group_id === 2).length > 0 ? {
-            min: Math.min(...matches.filter((m: any) => m.group_id === 2).map((m: any) => m.round_id)),
-            max: Math.max(...matches.filter((m: any) => m.group_id === 2).map((m: any) => m.round_id))
+          losers: rawMatches.filter((m: any) => m.group_id === 2).length > 0 ? {
+            min: Math.min(...rawMatches.filter((m: any) => m.group_id === 2).map((m: any) => m.round_id)),
+            max: Math.max(...rawMatches.filter((m: any) => m.group_id === 2).map((m: any) => m.round_id))
           } : null
         },
-        finalsMatches: matches
+        finalsMatches: rawMatches
           .filter((m: any) => m.group_id === 3)
           .map((m: any) => ({
             id: m.id,
@@ -181,7 +158,7 @@ export class BracketManagerService {
             opponent1: m.opponent1,
             opponent2: m.opponent2
           })),
-        sampleMatches: matches.slice(0, 3).map((m: any) => ({
+        sampleMatches: rawMatches.slice(0, 3).map((m: any) => ({
           group_id: m.group_id,
           round_id: m.round_id,
           number: m.number,
@@ -196,7 +173,7 @@ export class BracketManagerService {
 
       // Calculate minimum round_id per group for round normalization
       const groupMinRounds = new Map<number, number>();
-      matches.forEach((match: any) => {
+      rawMatches.forEach((match: any) => {
         const currentMin = groupMinRounds.get(match.group_id) ?? Infinity;
         groupMinRounds.set(match.group_id, Math.min(currentMin, match.round_id));
       });
@@ -205,11 +182,11 @@ export class BracketManagerService {
         groupMinRounds: Array.from(groupMinRounds.entries())
       });
 
-      // First pass: Create match records with UUIDs and normalized rounds
-      const matchRecords = matches.map((match: any) => {
+      // Create match records with UUIDs and normalized rounds (from ALL raw matches)
+      const allMatchRecords = rawMatches.map((match: any) => {
         const uuid = crypto.randomUUID();
         const minRound = groupMinRounds.get(match.group_id) ?? 0;
-        const normalizedRound = match.round_id - minRound; // Normalize to 0-indexed per group
+        const normalizedRound = match.round_id - minRound;
         
         // Validation warnings for missing team mappings
         if (match.opponent1?.position && !seedToTeamId.get(match.opponent1.position)) {
@@ -222,10 +199,9 @@ export class BracketManagerService {
         return {
           id: uuid,
           bracket_id: bracketId,
-          round: normalizedRound, // Store normalized round (0-indexed per bracket type)
+          round: normalizedRound,
           position: match.number,
           match_type: this.getMatchType(match.group_id),
-          // Use seed position mapping for more reliable team ID lookup
           team1_id: match.opponent1?.position ? seedToTeamId.get(match.opponent1.position) || null : null,
           team2_id: match.opponent2?.position ? seedToTeamId.get(match.opponent2.position) || null : null,
           team1_seed: match.opponent1?.position || null,
@@ -233,9 +209,37 @@ export class BracketManagerService {
           best_of: 3,
           status: 'pending',
           next_win_match_id: null,
-          next_lose_match_id: null
+          next_lose_match_id: null,
+          // Store original brackets-manager match for connection mapping
+          _bmMatch: match
         };
       });
+
+      // ✅ Deduplicate based on database constraint fields (bracket_id, match_type, round, position)
+      const matchRecords = Array.from(
+        new Map(
+          allMatchRecords.map(record => [
+            `${record.bracket_id}-${record.match_type}-${record.round}-${record.position}`,
+            record
+          ])
+        ).values()
+      );
+
+      bracketLog("Match deduplication after normalization:", {
+        rawCount: rawMatches.length,
+        afterNormalization: allMatchRecords.length,
+        afterDeduplication: matchRecords.length,
+        duplicatesRemoved: allMatchRecords.length - matchRecords.length,
+        sampleRecords: matchRecords.slice(0, 3).map(r => ({
+          match_type: r.match_type,
+          round: r.round,
+          position: r.position,
+          constraintKey: `${r.bracket_id}-${r.match_type}-${r.round}-${r.position}`
+        }))
+      });
+
+      // Extract brackets-manager matches for connection mapping
+      const matches = matchRecords.map(r => r._bmMatch);
 
       // Build mapping: brackets-manager position -> Supabase UUID
       const positionToUuid = new Map(
