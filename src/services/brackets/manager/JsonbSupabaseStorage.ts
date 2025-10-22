@@ -46,17 +46,55 @@ export class JsonbSupabaseStorage extends InMemoryDatabase {
   async save(): Promise<void> {
     if (!this.bracketId) throw new Error('No bracket ID set');
 
-    const { error } = await supabase
-      .from('brackets')
-      .update({ 
-        bracket_data: this.data as any,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', this.bracketId);
+    // Log what we're trying to save
+    console.log('🔍 Attempting to save bracket state:', {
+      bracketId: this.bracketId,
+      dataKeys: Object.keys(this.data),
+      stageCount: this.data.stage?.length,
+      matchCount: this.data.match?.length,
+      participantCount: this.data.participant?.length,
+      dataSize: JSON.stringify(this.data).length
+    });
 
-    if (error) throw error;
-    
-    console.log('✅ Saved bracket state to JSONB');
+    // Verify JSON serializability
+    try {
+      const serialized = JSON.stringify(this.data);
+      JSON.parse(serialized);
+      console.log('✅ Data is JSON-serializable');
+    } catch (jsonError) {
+      console.error('🔴 Data is NOT JSON-serializable:', jsonError);
+      throw new Error(`Bracket data cannot be serialized to JSON: ${jsonError instanceof Error ? jsonError.message : String(jsonError)}`);
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('brackets')
+        .update({ 
+          bracket_data: this.data as any,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', this.bracketId)
+        .select();
+
+      if (error) {
+        console.error('🔴 Supabase update error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw new Error(`Failed to save bracket data to Supabase: ${error.message} (code: ${error.code})`);
+      }
+
+      if (!data || data.length === 0) {
+        throw new Error(`No rows updated - bracket ${this.bracketId} may not exist`);
+      }
+      
+      console.log('✅ Saved bracket state to JSONB');
+    } catch (error) {
+      console.error('🔴 Exception during save:', error);
+      throw error;
+    }
   }
 
   /**

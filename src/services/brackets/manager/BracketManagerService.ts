@@ -56,6 +56,7 @@ export class BracketManagerService {
       bracketLog("Team seeding:", { seeding });
 
       // Create bracket using brackets-manager
+      bracketLog("Calling brackets-manager create.stage()...");
       await this.manager.create.stage({
         name: bracketId,
         tournamentId: 0,
@@ -69,15 +70,29 @@ export class BracketManagerService {
         }
       });
 
+      bracketLog("Stage created successfully, saving to JSONB...");
+
       // Save entire state to JSONB
       await this.storage.save();
 
       successLog("Bracket created and saved to JSONB", bracketId);
     } catch (error) {
+      // Preserve full error details
+      console.error("🔴 BracketManagerService.createBracket failed:", {
+        error,
+        errorType: error?.constructor?.name,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+        bracketId,
+        format,
+        teamCount: teams.length
+      });
+      
       failureLog("Failed to create bracket", error);
-      throw new Error(
-        `Bracket creation failed: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
+      
+      // Throw with preserved error message
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      throw new Error(`Bracket creation failed: ${errorMessage}`);
     }
   }
 
