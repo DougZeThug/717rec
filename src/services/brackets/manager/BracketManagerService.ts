@@ -47,9 +47,27 @@ export class BracketManagerService {
     try {
       // Sort teams by seed and create seeding array
       const teamsBySeed = [...teams].sort((a, b) => a.seed - b.seed);
-      const seeding = teamsBySeed.map(t => t.name);
+      
+      bracketLog("Team seeding:", { teams: teamsBySeed.map(t => t.name) });
 
-      bracketLog("Team seeding:", { seeding });
+      // Insert participants into the participant table BEFORE creating stage
+      const participantInserts = teamsBySeed.map((team) => ({
+        tournament_id: bracketId,
+        name: team.name  // brackets-manager uses name, not team_id
+      }));
+
+      bracketLog("Inserting participants into participant table:", participantInserts);
+      const { error: participantsError } = await supabase
+        .from('participant')
+        .insert(participantInserts);
+
+      if (participantsError) {
+        console.error("Failed to insert participants:", participantsError);
+        throw new Error(`Failed to insert participants: ${participantsError.message}`);
+      }
+
+      // Create seeding array (just names in seed order)
+      const seeding = teamsBySeed.map(t => t.name);
 
       // Create bracket using brackets-manager (automatically saves to SQL tables)
       bracketLog("Calling brackets-manager create.stage()...");
