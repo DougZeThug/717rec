@@ -141,6 +141,21 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       console.log('🎨 Calling window.bracketsViewer.render with options');
       console.log('📸 Participants with images:', result.data.participants.filter(p => p.image).map(p => ({ id: p.id, name: p.name, image: p.image })));
 
+      // Set participant images before rendering (required by brackets-viewer API)
+      if (window.bracketsViewer.setParticipantImages) {
+        const participantImages = result.data.participants
+          .filter(p => p.image)
+          .map(p => ({
+            participantId: p.id,
+            imageUrl: p.image
+          }));
+        
+        if (participantImages.length > 0) {
+          console.log('🖼️ Setting participant images:', participantImages);
+          window.bracketsViewer.setParticipantImages(participantImages);
+        }
+      }
+
       // Render using brackets-viewer v1.8.1
       window.bracketsViewer.render(
         result.data,

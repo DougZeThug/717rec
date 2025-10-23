@@ -4,6 +4,7 @@ declare global {
   interface Window {
     bracketsViewer: {
       render: (data: BracketsViewerData, config?: BracketsViewerConfig) => void;
+      setParticipantImages: (images: { participantId: number; imageUrl: string }[]) => void;
     };
   }
 }
