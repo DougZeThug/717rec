@@ -80,9 +80,9 @@ const AdminView: React.FC<AdminViewProps> = ({
           />
         </div>
 
-        <div className={data.selectedBracketId && data.bracket ? 'block' : 'hidden'}>
+        {data.selectedBracketId && data.bracket && (
           <BracketDetail 
-            bracketId={data.selectedBracketId!}
+            bracketId={data.selectedBracketId}
             bracket={data.bracket}
             teams={data.teams}
             bracketLoading={data.isLoading}
@@ -93,7 +93,7 @@ const AdminView: React.FC<AdminViewProps> = ({
               data.setSelectedBracketId(null);
             }}
           />
-        </div>
+        )}
       </TabsContent>
       
       <TabsContent value="teams">

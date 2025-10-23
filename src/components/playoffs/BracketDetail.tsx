@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface BracketDetailProps {
   bracketId: string;
-  bracket: PlayoffBracket;
+  bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
   onEditBracket: () => void;
@@ -62,6 +62,17 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     if (divisonLower.includes("competitive")) return "border-amber-400 dark:border-amber-600";
     return "border-gray-400 dark:border-gray-600";
   };
+
+  // Early return if bracket is not loaded
+  if (!bracket) {
+    return (
+      <Card className="mb-8">
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card 
