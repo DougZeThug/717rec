@@ -124,7 +124,8 @@ export class BracketsViewerAdapter {
       matchGames: transformedMatchGames.length,
       participants: transformedParticipants.length,
       reverseMatchIdMapSize: reverseMatchIdMap.size,
-      teamsWithLogos: transformedParticipants.filter(p => p.image).length
+      teamsWithLogos: transformedParticipants.filter(p => p.image).length,
+      participantsSample: transformedParticipants.slice(0, 3)
     });
 
     return {

@@ -32,6 +32,63 @@
   --bracket-desktop-spacing: 1rem;
 }
 
+/* ========================================
+   Brackets-Viewer 1.8.1 Custom Styles
+   ======================================== */
+
+/* Apply Bebas Neue font to brackets-viewer */
+.brackets-viewer,
+.brackets-viewer * {
+  font-family: 'Bebas Neue', 'Arial', sans-serif !important;
+}
+
+/* Participant/team logo styling */
+.brackets-viewer .participant-image {
+  width: 32px !important;
+  height: 32px !important;
+  object-fit: contain !important;
+  margin-right: 8px !important;
+  border-radius: 4px !important;
+}
+
+/* Ensure participant names and images are visible */
+.brackets-viewer .participant {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+/* Match container styling */
+.brackets-viewer .match {
+  font-size: 1.125rem !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Team/participant name styling */
+.brackets-viewer .participant-name {
+  font-size: 1.125rem !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Score styling */
+.brackets-viewer .score {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* Round headers */
+.brackets-viewer .round-name,
+.brackets-viewer .group-name {
+  font-size: 1.5rem !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+}
+
+/* ========================================
+   G-Loot Bracket Styling (Legacy)
+   ======================================== */
+
 /* G-Loot component overrides */
 .gloot-bracket-container {
   /* Ensure proper integration with app layout */
