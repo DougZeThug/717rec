@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -38,16 +38,21 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   bracketState
 }) => {
   // State for reordered teams
-  const [teams, setTeams] = useState(
-    currentParticipants
+  const [teams, setTeams] = useState<Array<{id: string; name: string; seed: number}>>([]);
+  
+  // Update teams whenever currentParticipants changes
+  useEffect(() => {
+    const processedTeams = currentParticipants
       .filter(p => p.name !== null)
       .sort((a, b) => (a.position || 0) - (b.position || 0))
       .map((p, idx) => ({
         id: String(p.id),
         name: p.name,
         seed: p.position || idx + 1
-      }))
-  );
+      }));
+    
+    setTeams(processedTeams);
+  }, [currentParticipants]);
   
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
