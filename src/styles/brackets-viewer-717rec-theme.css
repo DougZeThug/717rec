@@ -75,6 +75,27 @@
    Participant Styling
    ============================================ */
 
+/* Participant Origin (Seeds) - displayed by brackets-viewer */
+.brackets-viewer .participant-origin {
+  color: var(--bv-accent-color);
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-right: 8px;
+  opacity: 0.8;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  font-family: 'Bebas Neue', 'Arial', sans-serif;
+}
+
+.dark .brackets-viewer .participant-origin {
+  opacity: 0.7;
+}
+
+/* Add '#' prefix via CSS */
+.brackets-viewer .participant-origin::before {
+  content: '#';
+}
+
 .brackets-viewer .participant {
   color: var(--bv-text-color);
   padding: 10px 12px;

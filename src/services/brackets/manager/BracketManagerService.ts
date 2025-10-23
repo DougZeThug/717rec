@@ -130,10 +130,15 @@ export class BracketManagerService {
 
       // Step 4: Prepare participant inserts (including BYEs)
       bracketLog("📝 Step 4/5: Preparing participant inserts...");
-      const participantInserts = seeding.map((name) => ({
-        tournament_id: bracketId,
-        name: name // null for BYEs
-      }));
+      const participantInserts = seeding.map((name, index) => {
+        // Find the original team to get its seed
+        const team = teamsBySeed.find(t => t.name === name);
+        return {
+          tournament_id: bracketId,
+          name: name, // null for BYEs
+          position: team?.seed ?? null  // Store the actual team seed
+        };
+      });
       bracketLog("✅ Participant inserts prepared:", { 
         count: participantInserts.length,
         teams: participantInserts.filter(p => p.name !== null).length,

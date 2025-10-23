@@ -1042,16 +1042,19 @@ export type Database = {
         Row: {
           id: number
           name: string | null
+          position: number | null
           tournament_id: string
         }
         Insert: {
           id?: number
           name?: string | null
+          position?: number | null
           tournament_id: string
         }
         Update: {
           id?: number
           name?: string | null
+          position?: number | null
           tournament_id?: string
         }
         Relationships: [
