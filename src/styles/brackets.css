@@ -42,17 +42,27 @@
   font-family: 'Bebas Neue', 'Arial', sans-serif !important;
 }
 
-/* Participant/team logo styling */
-.brackets-viewer .participant-image {
+/* Participant/team logo styling - image is rendered as background */
+.brackets-viewer .participant img {
   width: 32px !important;
   height: 32px !important;
   object-fit: contain !important;
   margin-right: 8px !important;
   border-radius: 4px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
 }
 
-/* Ensure participant names and images are visible */
+/* Ensure participant container allows images */
 .brackets-viewer .participant {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px !important;
+}
+
+/* Participant slot styling */
+.brackets-viewer .participant-slot {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -68,6 +78,7 @@
 .brackets-viewer .participant-name {
   font-size: 1.125rem !important;
   letter-spacing: 0.5px !important;
+  flex: 1 !important;
 }
 
 /* Score styling */

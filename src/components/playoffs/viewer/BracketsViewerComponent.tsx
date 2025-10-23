@@ -139,6 +139,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       };
 
       console.log('🎨 Calling window.bracketsViewer.render with options');
+      console.log('📸 Participants with images:', result.data.participants.filter(p => p.image).map(p => ({ id: p.id, name: p.name, image: p.image })));
 
       // Render using brackets-viewer v1.8.1
       window.bracketsViewer.render(
