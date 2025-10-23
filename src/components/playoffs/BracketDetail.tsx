@@ -1,8 +1,8 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Loader2, Trash } from "lucide-react";
+import { Edit, Loader2, Trash, ListOrdered } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
 import ChampionDisplay from "@/components/playoffs/ChampionDisplay";
 import { PlayoffBracket, Team } from "@/types/playoffs";
@@ -10,6 +10,9 @@ import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { blueAmber } from "@/styles/design-system";
+import { SeedingUpdateDialog } from "./SeedingUpdateDialog";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BracketDetailProps {
   bracketId: string;
@@ -33,6 +36,23 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   const { isAdminAccessGranted } = useAdminAccess();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
+  const [seedingDialogOpen, setSeedingDialogOpen] = useState(false);
+
+  // Fetch current participants for seeding updates
+  const { data: participants } = useQuery({
+    queryKey: ['bracket-participants', bracketId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('participant')
+        .select('*')
+        .eq('tournament_id', bracketId)
+        .order('position', { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!bracketId
+  });
 
   // Get the division color class based on division name
   const getDivisionColorClass = (division: string) => {
@@ -83,6 +103,16 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           </div>
           {isAdminAccessGranted && (
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hidden md:flex"
+                onClick={() => setSeedingDialogOpen(true)}
+                disabled={bracket.state === 'completed'}
+              >
+                <ListOrdered className="h-4 w-4 mr-2" /> Update Seeding
+              </Button>
+
               <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEditBracket}>
                 <Edit className="h-4 w-4 mr-2" /> Edit Bracket
               </Button>
@@ -121,6 +151,15 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           </>
         )}
       </CardContent>
+
+      <SeedingUpdateDialog
+        open={seedingDialogOpen}
+        onOpenChange={setSeedingDialogOpen}
+        bracketId={bracketId}
+        bracketName={bracket.name}
+        currentParticipants={participants || []}
+        bracketState={bracket.state || 'pending'}
+      />
     </Card>
   );
 };

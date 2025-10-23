@@ -54,6 +54,12 @@ export interface UpdateMatchOptions {
   };
 }
 
+export interface UpdateSeedingOptions {
+  bracketId: string;
+  newSeeding: Array<{ id: string; name: string; seed: number }>;
+  keepSameSize?: boolean;
+}
+
 /**
  * Service wrapper for brackets-manager.js with SQL Storage
  * Uses SQL tables (stage, group, round, match, match_game, participant)
@@ -249,6 +255,99 @@ export class BracketManagerService {
       throw new Error(
         `Match update failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
+    }
+  }
+
+  /**
+   * Update the seeding of an existing bracket stage
+   * Only allowed if changes don't impact existing match results
+   */
+  async updateSeeding(options: UpdateSeedingOptions): Promise<void> {
+    const { bracketId, newSeeding, keepSameSize = true } = options;
+
+    bracketLog("🔄 Updating bracket seeding:", {
+      bracketId,
+      newSeedingCount: newSeeding.length,
+      keepSameSize
+    });
+
+    try {
+      // Step 1: Get the stage ID for this bracket
+      const stages = await this.storage.select('stage', { 
+        tournament_id: bracketId 
+      } as any);
+      
+      if (!stages || (Array.isArray(stages) && stages.length === 0)) {
+        throw new Error(`No stage found for bracket: ${bracketId}`);
+      }
+
+      const stage = Array.isArray(stages) ? stages[0] : stages;
+      const stageId = (stage as any).id;
+
+      // Step 2: Sort teams by seed
+      const teamsBySeed = [...newSeeding].sort((a, b) => a.seed - b.seed);
+      
+      // Step 3: Calculate bracket size
+      let bracketSize = 2;
+      while (bracketSize < teamsBySeed.length) {
+        bracketSize *= 2;
+      }
+
+      // Step 4: Generate bracket order
+      const bracketOrder = this.generateBracketOrder(bracketSize);
+
+      // Step 5: Create new seeding array
+      const seedingArray: (string | null)[] = bracketOrder.map(position => {
+        const teamIndex = position - 1;
+        if (teamIndex < teamsBySeed.length) {
+          return teamsBySeed[teamIndex].name;
+        }
+        return null; // Will be treated as TBD (not BYE) per docs
+      });
+
+      bracketLog("📝 New seeding array prepared:", {
+        length: seedingArray.length,
+        teams: seedingArray.filter(s => s !== null).length,
+        tbds: seedingArray.filter(s => s === null).length
+      });
+
+      // Step 6: Update seeding via brackets-manager
+      await this.manager.update.seeding(stageId, seedingArray, keepSameSize);
+
+      // Step 7: Update participant positions in database
+      const participants = await this.storage.select('participant', {
+        tournament_id: bracketId
+      } as any);
+
+      if (participants) {
+        const participantArray = Array.isArray(participants) ? participants : [participants];
+        
+        // Update positions for each participant
+        for (const participant of participantArray) {
+          const team = teamsBySeed.find(t => t.name === (participant as any).name);
+          if (team) {
+            await supabase
+              .from('participant')
+              .update({ position: team.seed })
+              .eq('id', (participant as any).id);
+          }
+        }
+      }
+
+      successLog("Seeding updated successfully", bracketId);
+    } catch (error) {
+      const errorMsg = serializeError(error);
+      failureLog("Failed to update seeding", errorMsg);
+      
+      // Check if error is due to existing match results
+      if (errorMsg.includes('impact') || errorMsg.includes('result')) {
+        throw new Error(
+          "Cannot update seeding: Changes would affect existing match results. " +
+          "You can only reorder teams that haven't started matches yet."
+        );
+      }
+      
+      throw new Error(`Seeding update failed: ${errorMsg}`);
     }
   }
 
