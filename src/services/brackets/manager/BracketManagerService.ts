@@ -101,21 +101,29 @@ export class BracketManagerService {
       const teamsBySeed = [...teams].sort((a, b) => a.seed - b.seed);
       bracketLog("✅ Teams sorted:", { teams: teamsBySeed.map(t => `${t.name} (seed ${t.seed})`) });
 
-      // Step 3: Create seeding array with BYEs (null values)
-      bracketLog("📝 Step 3/5: Creating seeding array with BYEs...");
-      const seeding: (string | null)[] = [];
-      for (let i = 0; i < bracketSize; i++) {
-        if (i < teams.length) {
-          seeding.push(teamsBySeed[i].name);
-        } else {
-          seeding.push(null); // BYE represented as null
-        }
-      }
+      // Step 3: Create seeding array with proper bracket seeding
+      // Use standard bracket seeding algorithm to distribute BYEs to top seeds
+      bracketLog("📝 Step 3/5: Creating seeding array with proper bracket seeding...");
       
-      bracketLog("✅ Seeding array created:", { 
+      // Create a map of seed number to team name
+      const seedToTeam = new Map<number, string>();
+      teamsBySeed.forEach((team) => {
+        seedToTeam.set(team.seed, team.name);
+      });
+      
+      // Generate standard bracket order for the bracket size
+      const bracketOrder = this.generateBracketOrder(bracketSize);
+      
+      // Map bracket positions to teams (or null for BYEs)
+      const seeding: (string | null)[] = bracketOrder.map(seedNumber => {
+        return seedToTeam.get(seedNumber) || null;
+      });
+      
+      bracketLog("✅ Seeding array created with standard bracket order:", { 
         length: seeding.length,
         teams: seeding.filter(s => s !== null).length,
-        byes: seeding.filter(s => s === null).length
+        byes: seeding.filter(s => s === null).length,
+        order: seeding.map((name, idx) => `Pos ${idx + 1}: ${name || 'BYE'}`)
       });
 
       // Step 4: Prepare participant inserts (including BYEs)
@@ -237,6 +245,34 @@ export class BracketManagerService {
     }
   }
 
+
+  /**
+   * Generate standard bracket seeding order for a given bracket size
+   * This ensures proper matchups where top seeds get BYEs when teams < bracket size
+   * @param bracketSize Power of 2 bracket size (8, 16, 32, etc.)
+   * @returns Array of seed numbers in bracket order
+   */
+  private generateBracketOrder(bracketSize: number): number[] {
+    // Start with seed 1
+    let order = [1];
+    
+    // Build bracket order using rounds
+    let currentRound = 1;
+    while (currentRound < bracketSize) {
+      const newOrder: number[] = [];
+      const nextSeed = currentRound * 2 + 1;
+      
+      for (const seed of order) {
+        newOrder.push(seed);
+        newOrder.push(nextSeed - seed);
+      }
+      
+      order = newOrder;
+      currentRound *= 2;
+    }
+    
+    return order;
+  }
 
   /**
    * Check if a match can be updated
