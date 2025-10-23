@@ -451,9 +451,28 @@
 
 :is(.dark) :is(.brackets-viewer) :is(.round-name),
 :is(.dark) :is(.brackets-viewer) :is(.group-name) {
-  background-color: hsl(var(--muted)) !important;
-  color: hsl(var(--muted-foreground)) !important;
-  border-color: hsl(var(--border)) !important;
+  background-color: hsl(var(--muted) / 0.3) !important;
+  color: hsl(var(--muted-foreground) / 0.6) !important;
+  border-color: hsl(var(--border) / 0.5) !important;
+}
+
+/* Match origin labels (WB 1.1, etc.) and slot labels - make them less bright */
+:is(.dark) :is(.brackets-viewer) :is(.match-header),
+:is(.dark) :is(.brackets-viewer) :is(.participant-origin),
+:is(.dark) :is(.brackets-viewer) :is(.origin),
+:is(.dark) :is(.brackets-viewer) :is(.participant-slot-origin),
+:is(.dark) :is(.brackets-viewer) :is(.slot-origin),
+:is(.dark) :is(.brackets-viewer) :is([class*="origin"]),
+:is(.dark) :is(.brackets-viewer) :is([class*="label"]),
+:is(.dark) :is(.brackets-viewer) :is([class*="header"]) {
+  color: hsl(var(--muted-foreground) / 0.5) !important;
+  background-color: hsl(var(--muted) / 0.2) !important;
+}
+
+/* Ensure round labels specifically are muted */
+:is(.dark) :is(.brackets-viewer) div[class*="round"],
+:is(.dark) :is(.brackets-viewer) span[class*="round"] {
+  color: hsl(var(--muted-foreground) / 0.6) !important;
 }
 
 :is(.dark) :is(.brackets-viewer) :is(.connector),
