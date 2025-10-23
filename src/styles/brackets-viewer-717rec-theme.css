@@ -22,11 +22,16 @@
   --bv-hover-bg: hsl(var(--accent));
   --bv-hover-border: hsl(var(--primary));
   
-  /* Division Colors (default) */
+  /* Universal Accent Color - App Primary Blue */
   --bv-accent-color: hsl(var(--primary));
-  --bv-accent-glow: hsl(var(--primary) / 0.2);
+  --bv-accent-glow: hsl(var(--primary) / 0.15);
+  
+  /* Match Sizing */
+  --bv-match-min-width: 240px;
+  --bv-match-max-width: 300px;
   
   /* Typography */
+  --bv-participant-font-size: 0.85rem;
   font-family: 'Bebas Neue', 'Arial', sans-serif;
 }
 
@@ -46,25 +51,6 @@
 }
 
 /* ============================================
-   Division-Specific Colors
-   ============================================ */
-
-.brackets-viewer[data-division="competitive"] {
-  --bv-accent-color: hsl(var(--competitive));
-  --bv-accent-glow: hsl(var(--competitive) / 0.2);
-}
-
-.brackets-viewer[data-division="intermediate"] {
-  --bv-accent-color: hsl(var(--intermediate));
-  --bv-accent-glow: hsl(var(--intermediate) / 0.2);
-}
-
-.brackets-viewer[data-division="recreational"] {
-  --bv-accent-color: hsl(var(--recreational));
-  --bv-accent-glow: hsl(var(--recreational) / 0.2);
-}
-
-/* ============================================
    Match Container Styling
    ============================================ */
 
@@ -74,6 +60,8 @@
   border-radius: 8px;
   transition: all 0.2s ease;
   overflow: hidden;
+  min-width: var(--bv-match-min-width);
+  max-width: var(--bv-match-max-width);
 }
 
 .brackets-viewer .match:hover {
@@ -89,11 +77,21 @@
 
 .brackets-viewer .participant {
   color: var(--bv-text-color);
-  padding: 8px 12px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   gap: 8px;
   transition: all 0.15s ease;
+  font-size: var(--bv-participant-font-size);
+  line-height: 1.2;
+}
+
+.brackets-viewer .participant-name,
+.brackets-viewer .participant span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
 .brackets-viewer .participant.win {

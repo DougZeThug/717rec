@@ -211,9 +211,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
     );
   }
 
-  // Extract division from bracket for theming
-  const division = bracket.division?.toLowerCase() || 'competitive';
-
   return (
     <>
       <div className="w-full overflow-auto bg-background">
@@ -221,7 +218,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           ref={containerRef}
           id="brackets-viewer-container"
           className="brackets-viewer min-w-max p-4 font-bebas"
-          data-division={division}
           style={{ minHeight: '400px', pointerEvents: 'auto' }}
         />
         {!isInitialized && (
