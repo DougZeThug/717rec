@@ -1,0 +1,281 @@
+/* 717rec Bracket Viewer Theme - Unified Styling */
+
+/* ============================================
+   Base Theme Variables
+   ============================================ */
+
+.brackets-viewer {
+  /* 717rec Base Colors */
+  --bv-primary-bg: hsl(var(--background));
+  --bv-secondary-bg: hsl(var(--card));
+  --bv-text-color: hsl(var(--foreground));
+  --bv-text-muted: hsl(var(--muted-foreground));
+  --bv-connector-color: hsl(var(--border));
+  --bv-match-bg: hsl(var(--card));
+  --bv-match-border: hsl(var(--border));
+  
+  /* Winner/Loser Colors */
+  --bv-win-color: hsl(var(--success));
+  --bv-loss-color: hsl(var(--muted-foreground));
+  
+  /* Interactive States */
+  --bv-hover-bg: hsl(var(--accent));
+  --bv-hover-border: hsl(var(--primary));
+  
+  /* Division Colors (default) */
+  --bv-accent-color: hsl(var(--primary));
+  --bv-accent-glow: hsl(var(--primary) / 0.2);
+  
+  /* Typography */
+  font-family: 'Bebas Neue', 'Arial', sans-serif;
+}
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+
+.dark .brackets-viewer {
+  --bv-primary-bg: hsl(var(--background));
+  --bv-secondary-bg: hsl(var(--card) / 0.8);
+  --bv-text-color: hsl(var(--foreground) / 0.9);
+  --bv-text-muted: hsl(var(--muted-foreground) / 0.5);
+  --bv-connector-color: hsl(var(--border) / 0.5);
+  --bv-match-bg: hsl(var(--card) / 0.8);
+  --bv-match-border: hsl(var(--border) / 0.3);
+  --bv-win-color: hsl(var(--success) / 0.9);
+}
+
+/* ============================================
+   Division-Specific Colors
+   ============================================ */
+
+.brackets-viewer[data-division="competitive"] {
+  --bv-accent-color: hsl(var(--competitive));
+  --bv-accent-glow: hsl(var(--competitive) / 0.2);
+}
+
+.brackets-viewer[data-division="intermediate"] {
+  --bv-accent-color: hsl(var(--intermediate));
+  --bv-accent-glow: hsl(var(--intermediate) / 0.2);
+}
+
+.brackets-viewer[data-division="recreational"] {
+  --bv-accent-color: hsl(var(--recreational));
+  --bv-accent-glow: hsl(var(--recreational) / 0.2);
+}
+
+/* ============================================
+   Match Container Styling
+   ============================================ */
+
+.brackets-viewer .match {
+  border: 1px solid var(--bv-match-border);
+  background: var(--bv-match-bg);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.brackets-viewer .match:hover {
+  border-color: var(--bv-accent-color);
+  box-shadow: 0 2px 8px var(--bv-accent-glow), 0 0 0 1px var(--bv-accent-color);
+  cursor: pointer;
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   Participant Styling
+   ============================================ */
+
+.brackets-viewer .participant {
+  color: var(--bv-text-color);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.brackets-viewer .participant.win {
+  color: var(--bv-win-color);
+  font-weight: 600;
+  background: var(--bv-accent-glow);
+}
+
+.brackets-viewer .participant.loss {
+  color: var(--bv-loss-color);
+  opacity: 0.6;
+}
+
+/* ============================================
+   Participant Images
+   ============================================ */
+
+.brackets-viewer .participant-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid var(--bv-match-border);
+}
+
+/* ============================================
+   Score Display
+   ============================================ */
+
+.brackets-viewer .score {
+  color: var(--bv-text-color);
+  font-weight: 700;
+  padding: 4px 10px;
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 4px;
+  min-width: 32px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.brackets-viewer .participant.win .score {
+  background: var(--bv-accent-glow);
+  color: var(--bv-accent-color);
+}
+
+/* ============================================
+   Round Headers
+   ============================================ */
+
+.brackets-viewer .round-title,
+.brackets-viewer .round-name {
+  color: var(--bv-text-muted);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: hsl(var(--muted) / 0.15);
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.dark .brackets-viewer .round-title,
+.dark .brackets-viewer .round-name {
+  color: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ============================================
+   Connection Lines
+   ============================================ */
+
+.brackets-viewer .connector {
+  stroke: var(--bv-connector-color);
+  stroke-width: 2px;
+}
+
+.brackets-viewer .connector.highlight {
+  stroke: var(--bv-accent-color);
+  stroke-width: 3px;
+}
+
+/* ============================================
+   Bracket Structure
+   ============================================ */
+
+.brackets-viewer .bracket-container {
+  background: var(--bv-primary-bg);
+  padding: 1rem;
+}
+
+.brackets-viewer .upper-bracket {
+  margin-bottom: 2rem;
+}
+
+.brackets-viewer .lower-bracket {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--bv-connector-color);
+}
+
+/* ============================================
+   Match Labels & Status
+   ============================================ */
+
+.brackets-viewer .match-label {
+  color: var(--bv-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  opacity: 0.5;
+}
+
+.dark .brackets-viewer .match-label {
+  opacity: 0.3;
+}
+
+.brackets-viewer .match-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.brackets-viewer .match-status.completed {
+  color: var(--bv-win-color);
+}
+
+.brackets-viewer .match-status.ready {
+  color: var(--bv-accent-color);
+}
+
+.brackets-viewer .match-status.waiting {
+  color: var(--bv-text-muted);
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+@media (max-width: 768px) {
+  .brackets-viewer .match {
+    font-size: 0.875rem;
+  }
+  
+  .brackets-viewer .participant {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  
+  .brackets-viewer .participant-image {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .brackets-viewer .score {
+    font-size: 1rem;
+    padding: 3px 8px;
+    min-width: 28px;
+  }
+  
+  .brackets-viewer .round-title,
+  .brackets-viewer .round-name {
+    font-size: 0.875rem;
+    padding: 4px 10px;
+  }
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+
+.brackets-viewer .match:focus-visible {
+  outline: 2px solid var(--bv-accent-color);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brackets-viewer .match,
+  .brackets-viewer .participant {
+    transition: none;
+  }
+}
