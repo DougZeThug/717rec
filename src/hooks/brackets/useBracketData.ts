@@ -73,7 +73,17 @@ export const useBracketData = (bracketId: string | null) => {
         console.log('🎯 DEBUG: Step 1 - Fetching bracket info for ID:', bracketId);
       const { data: bracket, error: bracketError } = await supabase
         .from('brackets')
-        .select('id, title, format, state, division_id, challonge_tournament_id, uses_brackets_manager, bracket_data')
+        .select(`
+          id, 
+          title, 
+          format, 
+          state, 
+          division_id,
+          divisions!inner(display_division, name),
+          challonge_tournament_id, 
+          uses_brackets_manager, 
+          bracket_data
+        `)
         .eq('id', bracketId)
         .single();
 
@@ -260,13 +270,17 @@ export const useBracketData = (bracketId: string | null) => {
             };
           }) || [];
 
+          if (!bracket.divisions) {
+            console.warn('🎯 DEBUG: Bracket has no division data:', bracketId);
+          }
+
           const result: SimpleBracketData = {
             id: bracket.id,
             name: bracket.title,
             title: bracket.title,
             format: bracket.format || 'Single Elimination',
             state: bracket.state || 'pending',
-            division: bracket.division_id,
+            division: bracket.divisions?.display_division || bracket.divisions?.name || 'Unknown',
             uses_brackets_manager: true,
             matches: transformedMatches,
             teams: Array.from(teamLookup.values()),
