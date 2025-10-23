@@ -2,7 +2,6 @@ import { BracketsManager } from "brackets-manager";
 import { SupabaseSqlStorage } from "./SupabaseSqlStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { bracketLog, successLog, failureLog } from "@/utils/logger";
-import { BracketSizeCalculator } from "../BracketSizeCalculator";
 
 /**
  * Safely serialize any error type to a readable string
@@ -82,15 +81,19 @@ export class BracketManagerService {
     });
 
     try {
-      // Step 1: Calculate required bracket size (optimized for play-ins)
-      const bracketSize = BracketSizeCalculator.calculateBracketSize(teams.length);
+      // Step 1: Calculate required bracket size (next power of 2 for brackets-manager)
+      // brackets-manager requires bracket size >= team count for BYEs to work
+      let bracketSize = 2;
+      while (bracketSize < teams.length) {
+        bracketSize *= 2;
+      }
       const byesNeeded = bracketSize - teams.length;
       
-      bracketLog("📊 Bracket sizing (with play-in support):", {
+      bracketLog("📊 Bracket sizing (with BYE support):", {
         teamCount: teams.length,
         bracketSize,
         byesNeeded,
-        note: byesNeeded > 0 ? `Top ${byesNeeded} seeds auto-advance, bottom ${teams.length - byesNeeded} seeds play in` : 'No play-ins needed'
+        note: byesNeeded > 0 ? `Top ${byesNeeded} seeds get BYEs (auto-advance to round 2), bottom ${teams.length - byesNeeded} seeds play in round 1` : 'No BYEs needed'
       });
 
       // Step 2: Sort teams by seed
