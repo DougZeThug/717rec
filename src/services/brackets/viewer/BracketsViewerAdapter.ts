@@ -42,6 +42,36 @@ export class BracketsViewerAdapter {
     const matches = matchesResult.data || [];
     const participants = participantsResult.data || [];
     
+    // Fetch team data to get logos - participant names match team names
+    const teamNames = participants
+      .filter(p => p.name !== null)
+      .map(p => p.name);
+    
+    const { data: teamsData } = await supabase
+      .from('teams')
+      .select('name, logo_url, image_url')
+      .in('name', teamNames);
+    
+    // Create a map of team name -> logo/image
+    const teamLogoMap = new Map<string, { logo_url?: string; image_url?: string }>();
+    (teamsData || []).forEach(team => {
+      teamLogoMap.set(team.name, {
+        logo_url: team.logo_url,
+        image_url: team.image_url
+      });
+    });
+    
+    // Transform participants to include logos
+    const transformedParticipants = participants.map(p => {
+      const teamData = p.name ? teamLogoMap.get(p.name) : null;
+      return {
+        id: p.id,
+        tournament_id: p.tournament_id,
+        name: p.name,
+        image: teamData?.logo_url || teamData?.image_url || undefined
+      };
+    });
+    
     // Filter match games by the matches we have
     const matchIds = new Set(matches.map(m => m.id));
     const matchGames = (matchGamesResult.data || []).filter(g => matchIds.has(g.match_id));
@@ -92,8 +122,9 @@ export class BracketsViewerAdapter {
       stages: stages.length,
       matches: transformedMatches.length,
       matchGames: transformedMatchGames.length,
-      participants: participants.length,
-      reverseMatchIdMapSize: reverseMatchIdMap.size
+      participants: transformedParticipants.length,
+      reverseMatchIdMapSize: reverseMatchIdMap.size,
+      teamsWithLogos: transformedParticipants.filter(p => p.image).length
     });
 
     return {
@@ -101,7 +132,7 @@ export class BracketsViewerAdapter {
         stages: stages as any,
         matches: transformedMatches as any,
         matchGames: transformedMatchGames as any,
-        participants: participants as any
+        participants: transformedParticipants as any
       },
       getPlayoffMatchId: (viewerMatchId: number) => {
         const result = reverseMatchIdMap.get(viewerMatchId);
