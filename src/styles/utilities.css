@@ -1,5 +1,5 @@
 
-@layer utilities {
+/* Utilities */
   /* Safe area utilities with improved fallback values */
   .safe-area-top {
     padding-top: max(0.5rem, var(--sat));
@@ -120,4 +120,3 @@
   .touch-manipulation {
     touch-action: manipulation;
   }
-}

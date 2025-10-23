@@ -397,20 +397,81 @@
 }
 
 /* Dark mode adjustments */
-.dark .gloot-bracket-container {
-  /* Ensure proper contrast in dark mode */
-  .gloot-match {
-    background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-  }
-  
-  .gloot-team-name {
-    color: hsl(var(--card-foreground));
-  }
-  
-  .gloot-score {
-    color: hsl(var(--card-foreground));
-  }
+.dark .gloot-bracket-container .gloot-match {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+}
+
+.dark .gloot-bracket-container .gloot-team-name {
+  color: hsl(var(--card-foreground));
+}
+
+.dark .gloot-bracket-container .gloot-score {
+  color: hsl(var(--card-foreground));
+}
+
+/* Dark mode for brackets-viewer component */
+:is(.dark) :is(.brackets-viewer) {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.match) {
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--card-foreground)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.participant) {
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--card-foreground)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.participant-name) {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.participant).win,
+:is(.dark) :is(.brackets-viewer) :is(.participant).winner {
+  background-color: hsl(var(--success) / 0.15) !important;
+  border-color: hsl(var(--success)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.score) {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--muted)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.participant).win :is(.score),
+:is(.dark) :is(.brackets-viewer) :is(.participant).winner :is(.score) {
+  color: hsl(var(--success-foreground)) !important;
+  background-color: hsl(var(--success)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.round-name),
+:is(.dark) :is(.brackets-viewer) :is(.group-name) {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.connector),
+:is(.dark) :is(.brackets-viewer) :is(.connector-bracket),
+:is(.dark) :is(.brackets-viewer) :is(line) {
+  stroke: hsl(var(--border)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.connector-highlight) {
+  stroke: hsl(var(--primary)) !important;
+}
+
+:is(.dark) :is(.brackets-viewer) :is(.participant).bye,
+:is(.dark) :is(.brackets-viewer) :is(.participant)[data-name="null"] {
+  background-color: hsl(var(--muted)) !important;
+  border-style: dashed !important;
+  border-color: hsl(var(--border)) !important;
+  opacity: 0.5;
 }
 
 /* High contrast mode support */
