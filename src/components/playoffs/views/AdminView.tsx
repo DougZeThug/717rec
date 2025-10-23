@@ -2,7 +2,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BracketList from "../BracketList";
-import BracketView from "../BracketView";
+import BracketDetail from "../BracketDetail";
 import TeamDivisionTable from "../TeamDivisionTable";
 import { ChallongeFallback } from "../embeds/ChallongeFallback";
 import { PlayoffPageData } from "../hooks/usePlayoffPageData";
@@ -81,9 +81,17 @@ const AdminView: React.FC<AdminViewProps> = ({
         </div>
 
         <div className={data.selectedBracketId && data.bracket ? 'block' : 'hidden'}>
-          <BracketView 
-            bracketId={data.selectedBracketId}
+          <BracketDetail 
+            bracketId={data.selectedBracketId!}
+            bracket={data.bracket}
+            teams={data.teams}
+            bracketLoading={data.isLoading}
+            onEditBracket={handleCreateBracketClick}
             onEditMatch={handlers.handleEditMatch}
+            onDeleteBracket={async (bracketId: string, bracketName: string) => {
+              await onDeleteBracket(bracketId, bracketName);
+              data.setSelectedBracketId(null);
+            }}
           />
         </div>
       </TabsContent>
