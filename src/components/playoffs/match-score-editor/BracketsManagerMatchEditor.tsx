@@ -50,26 +50,24 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
       });
 
       // Determine winner based on scores
-      let opponent1Result: "win" | "loss" | "draw" | undefined;
-      let opponent2Result: "win" | "loss" | "draw" | undefined;
-
-      if (opponent1Score > opponent2Score) {
-        opponent1Result = "win";
-        opponent2Result = "loss";
-      } else if (opponent2Score > opponent1Score) {
-        opponent1Result = "loss";
-        opponent2Result = "win";
-      } else {
-        opponent1Result = "draw";
-        opponent2Result = "draw";
-      }
+      // Only set result:"win" for the winner, omit for loser (per brackets-manager.js spec)
+      const scores: {
+        opponent1: { score: number; result?: "win" };
+        opponent2: { score: number; result?: "win" };
+      } = {
+        opponent1: { 
+          score: opponent1Score,
+          ...(opponent1Score > opponent2Score ? { result: "win" as const } : {})
+        },
+        opponent2: { 
+          score: opponent2Score,
+          ...(opponent2Score > opponent1Score ? { result: "win" as const } : {})
+        }
+      };
 
       await bracketManagerService.updateMatch({
         matchId,
-        scores: {
-          opponent1: { score: opponent1Score, result: opponent1Result },
-          opponent2: { score: opponent2Score, result: opponent2Result }
-        }
+        scores
       });
 
       toast({
