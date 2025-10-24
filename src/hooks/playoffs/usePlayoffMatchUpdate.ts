@@ -30,11 +30,11 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         scores: {
           opponent1: { 
             score: team1GameWins,
-            result: team1GameWins > team2GameWins ? "win" : "loss"
+            ...(team1GameWins > team2GameWins ? { result: "win" as const } : {})
           },
           opponent2: { 
             score: team2GameWins,
-            result: team2GameWins > team1GameWins ? "win" : "loss"
+            ...(team2GameWins > team1GameWins ? { result: "win" as const } : {})
           }
         }
       });
