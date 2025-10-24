@@ -37,11 +37,25 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       const fullData = fullTeamData?.find(ft => ft.team_id === team.id);
       return {
         ...team,
+        seed: team.seed || null, // Preserve manual seed if provided
         power_score: fullData?.power_score || null,
         wins: fullData?.wins || 0,
         losses: fullData?.losses || 0
       };
     }).sort((a, b) => {
+      // If BOTH teams have manual seeds, sort by those seeds
+      if (a.seed !== null && a.seed !== undefined && 
+          b.seed !== null && b.seed !== undefined) {
+        return a.seed - b.seed;
+      }
+      
+      // If only A has a manual seed, it goes first
+      if (a.seed !== null && a.seed !== undefined) return -1;
+      
+      // If only B has a manual seed, it goes first
+      if (b.seed !== null && b.seed !== undefined) return 1;
+      
+      // Neither has manual seed - use existing power ranking logic
       const aPowerScore = a.power_score;
       const bPowerScore = b.power_score;
       
@@ -68,11 +82,16 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       
       // Win percentages equal, sort by name asc
       return a.name.localeCompare(b.name);
-    }).map((team, index) => ({
-      id: team.id,
-      name: team.name,
-      seed: index + 1 // Assign seeds based on ranking order
-    }));
+    }).map((team, index) => {
+      // Use manual seed if provided, otherwise auto-assign based on sorted position
+      const finalSeed = team.seed || (index + 1);
+      
+      return {
+        id: team.id,
+        name: team.name,
+        seed: finalSeed
+      };
+    });
 
     // Branch: Use brackets-manager.js OR legacy Challonge
     if (useBracketsManager) {
