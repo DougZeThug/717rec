@@ -248,11 +248,6 @@ const BracketView: React.FC<BracketViewProps> = ({
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-lg font-medium text-red-700">Data Structure Error</p>
           <p className="text-sm text-red-600 mt-1">Bracket found but matches data is corrupted</p>
-          <div className="text-xs text-red-500 mt-2">
-            <p>Bracket ID: {displayBracket.id}</p>
-            <p>Matches property type: {typeof displayBracket.matches}</p>
-            <p>Is array: {Array.isArray(displayBracket.matches) ? 'Yes' : 'No'}</p>
-          </div>
         </div>
       </div>
     );
