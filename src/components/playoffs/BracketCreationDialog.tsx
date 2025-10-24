@@ -95,7 +95,13 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      const selectedTeams = teams.filter(team => data.teams.includes(team.id));
+      // Filter selected teams and apply seed overrides
+      const selectedTeams = teams
+        .filter(team => data.teams.includes(team.id))
+        .map(team => ({
+          ...team,
+          seed: data.teamSeeds?.[team.id] ?? team.seed ?? 0
+        }));
       
       if (selectedTeams.length < 2) {
         const error = "At least 2 teams are required for a bracket";

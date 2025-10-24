@@ -167,4 +167,5 @@ export interface BracketFormTeamsContainerProps extends BracketFormTeamsProps {
   divisionId?: string | null;
   teams?: import('@/types').Team[];
   minTeams?: number;
+  onSeedChange?: (teamId: string, seed: number | null) => void;
 }

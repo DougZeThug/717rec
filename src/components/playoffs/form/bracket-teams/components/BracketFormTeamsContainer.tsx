@@ -22,7 +22,8 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   maxTeams,
   minTeams = 2,
   divisions = [],
-  onChange
+  onChange,
+  onSeedChange
 }) => {
   const { toast } = useToast();
   const hasToastedInvalidDivision = React.useRef(false);
@@ -163,11 +164,12 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     return <TeamSelectionEmpty />;
   }
 
-  // Seed change handler
+  // Seed change handler - forward to parent if provided
   const handleSeedChange = React.useCallback((teamId: string, seed: number | null) => {
-    // This could be expanded to handle seed changes at the container level
-    console.log('Seed change:', { teamId, seed });
-  }, []);
+    if (onSeedChange) {
+      onSeedChange(teamId, seed);
+    }
+  }, [onSeedChange]);
 
   // Main form with teams available
   return (

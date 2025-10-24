@@ -37,6 +37,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const [selectedTeams, setSelectedTeams] = React.useState<string[]>([]);
   const [teamsValidationState, setTeamsValidationState] = React.useState(false);
   const [isExplicitSubmission, setIsExplicitSubmission] = React.useState(false);
+  const [teamSeeds, setTeamSeeds] = React.useState<Record<string, number>>({});
 
   const form = useForm<BracketFormValues>({
     resolver: zodResolver(bracketFormSchema),
@@ -80,6 +81,19 @@ const BracketForm: React.FC<BracketFormProps> = ({
     // Division is for bracket organization only, not team filtering
   }, []);
 
+  // Handle seed change - track manual seed overrides
+  const handleSeedChange = React.useCallback((teamId: string, seed: number | null) => {
+    setTeamSeeds(prev => {
+      const updated = { ...prev };
+      if (seed === null) {
+        delete updated[teamId];
+      } else {
+        updated[teamId] = seed;
+      }
+      return updated;
+    });
+  }, []);
+
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {
     // Guard: Only proceed if this is an explicit submission
@@ -100,7 +114,8 @@ const BracketForm: React.FC<BracketFormProps> = ({
     const selectedDivision = divisions?.find(d => d.id === data.divisionId);
     const formDataWithDivision = {
       ...data,
-      divisionName: selectedDivision?.name || "Unknown Division"
+      divisionName: selectedDivision?.name || "Unknown Division",
+      teamSeeds // Include manual seed overrides
     };
 
     onSubmit(formDataWithDivision);
@@ -168,6 +183,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
             minTeams={minTeams}
             divisions={divisions}
             onChange={handleTeamSelectionChange}
+            onSeedChange={handleSeedChange}
           />
         </div>
 
