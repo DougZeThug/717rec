@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { challongeFetch } from "./lib.ts";
 
 const cors = {
@@ -16,6 +17,38 @@ function json(status: number, data: unknown) {
 
 serve(async req => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+
+  // Create Supabase client with auth context
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    {
+      global: {
+        headers: { Authorization: req.headers.get('Authorization')! },
+      },
+    }
+  );
+
+  // Verify authentication
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+  if (userError || !user) {
+    console.error('Authentication failed:', userError);
+    return json(401, { error: 'Authentication required' });
+  }
+
+  // Verify admin status
+  const { data: profile, error: profileError } = await supabaseClient
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile?.is_admin) {
+    console.error('Admin check failed:', profileError);
+    return json(403, { error: 'Admin access required' });
+  }
+
+  console.log('Authenticated admin user:', user.id);
 
   let payload: { action: string; args?: any };
   try {
