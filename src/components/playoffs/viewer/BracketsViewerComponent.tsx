@@ -167,7 +167,31 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           showSlotsOrigin: true,
           showLowerBracketSlotsOrigin: true,
           highlightParticipantOnHover: true,
-          onMatchClick: handleMatchClick
+          onMatchClick: handleMatchClick,
+          customRoundName: (info: any) => {
+            const { groupType, roundNumber, roundCount } = info;
+            
+            // Grand Final
+            if (groupType === 'final-group') {
+              return roundNumber === 1 ? 'Grand Final' : 'Grand Final - Round 2';
+            }
+            
+            // Winners Bracket
+            if (groupType === 'winner-bracket') {
+              if (roundNumber === roundCount) return 'Winners Final';
+              if (roundNumber === roundCount - 1) return 'Winners Semi-Final';
+              return `Winners Round ${roundNumber}`;
+            }
+            
+            // Losers Bracket
+            if (groupType === 'loser-bracket') {
+              if (roundNumber === roundCount) return 'Losers Final';
+              if (roundNumber === roundCount - 1) return 'Losers Semi-Final';
+              return `Losers Round ${roundNumber}`;
+            }
+            
+            return `Round ${roundNumber}`;
+          }
         }
       );
 
@@ -213,12 +237,17 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
   return (
     <>
-      <div className="w-full overflow-auto bg-background">
+      <div className="w-full overflow-x-auto overflow-y-hidden bg-background">
         <div 
           ref={containerRef}
           id="brackets-viewer-container"
-          className="brackets-viewer min-w-max p-4 font-bebas"
-          style={{ minHeight: '400px', pointerEvents: 'auto' }}
+          className="brackets-viewer p-4 font-bebas"
+          style={{ 
+            minHeight: '400px', 
+            minWidth: 'fit-content',
+            width: 'max-content',
+            pointerEvents: 'auto' 
+          }}
         />
         {!isInitialized && (
           <div className="text-center p-8">

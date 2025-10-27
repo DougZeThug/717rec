@@ -59,6 +59,8 @@
   font-weight: 600;
   font-size: 1rem;
   margin-bottom: 1rem;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 /* Connection lines */
