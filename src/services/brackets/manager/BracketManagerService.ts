@@ -2,6 +2,7 @@ import { BracketsManager } from "brackets-manager";
 import { SupabaseSqlStorage } from "./SupabaseSqlStorage";
 import { supabase } from "@/integrations/supabase/client";
 import { bracketLog, successLog, failureLog } from "@/utils/logger";
+import { matchUpdateQueue } from "./MatchUpdateQueue";
 
 /**
  * Safely serialize any error type to a readable string
@@ -232,36 +233,40 @@ export class BracketManagerService {
 
   /**
    * Update a match result using brackets-manager with SQL storage
-   * Only the winner should have result: 'win' explicitly set; library infers the loser
+   * Both win and loss must be explicitly set for proper loser propagation
+   * Updates are serialized to prevent race conditions during concurrent updates
    */
   async updateMatch(options: UpdateMatchOptions): Promise<void> {
     const { matchId, scores } = options;
 
     bracketLog("Updating match with SQL storage:", { matchId, scores });
 
-    try {
-      // Update match using brackets-manager (automatically saves to SQL and handles propagation)
-      // Only set result: 'win' explicitly; library infers the loser
-      await this.manager.update.match({
-        id: matchId,
-        opponent1: {
-          score: scores.opponent1.score,
-          result: scores.opponent1.result  // Only passed if explicitly 'win'
-        },
-        opponent2: {
-          score: scores.opponent2.score,
-          result: scores.opponent2.result  // Only passed if explicitly 'win'
-        }
-      });
+    // Serialize updates to prevent race conditions
+    return matchUpdateQueue.enqueue(async () => {
+      try {
+        // Update match using brackets-manager (automatically saves to SQL and handles propagation)
+        // Both win and loss must be explicitly set for proper propagation
+        await this.manager.update.match({
+          id: matchId,
+          opponent1: {
+            score: scores.opponent1.score,
+            result: scores.opponent1.result
+          },
+          opponent2: {
+            score: scores.opponent2.score,
+            result: scores.opponent2.result
+          }
+        });
 
-      bracketLog("Match updated successfully in SQL tables");
-      successLog("Match updated successfully", String(matchId));
-    } catch (error) {
-      failureLog("Failed to update match", error);
-      throw new Error(
-        `Match update failed: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
+        bracketLog("Match updated successfully in SQL tables");
+        successLog("Match updated successfully", String(matchId));
+      } catch (error) {
+        failureLog("Failed to update match", error);
+        throw new Error(
+          `Match update failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
+      }
+    });
   }
 
 
