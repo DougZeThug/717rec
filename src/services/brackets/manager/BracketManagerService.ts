@@ -296,6 +296,9 @@ export class BracketManagerService {
           : currentMatch.stage_id;
         await this.normalizeLosersR1(stageId);
         
+        // ⭐ Normalize Grand Final population after every update (defensive)
+        await this.normalizeGrandFinalPopulation(stageId);
+        
         // ⭐ Fetch and log next matches to see propagation results
         const updatedMatch = await this.storage.select('match', matchId);
         console.log(`📊 UPDATED MATCH STATE - Match ${matchId}:`, {
@@ -330,6 +333,128 @@ export class BracketManagerService {
         );
       }
     });
+  }
+
+  /**
+   * Calculate the total number of Loser Bracket rounds based on bracket size
+   */
+  private calculateLBRounds(bracketSize: number): number {
+    // For double elimination:
+    // Size 4 → 2 LB rounds
+    // Size 8 → 4 LB rounds
+    // Size 16 → 6 LB rounds
+    return (Math.log2(bracketSize) * 2) - 2;
+  }
+
+  /**
+   * Find the LB Final match for a given stage
+   */
+  private async findLBFinalMatch(stageId: number): Promise<any | null> {
+    try {
+      // Find LB group (group number 2 in double elimination)
+      const groups = await this.storage.select('group', { stage_id: stageId } as any);
+      const groupsArray = Array.isArray(groups) ? groups : [groups];
+      const lbGroup = groupsArray.find((g: any) => g.number === 2);
+      
+      if (!lbGroup) return null;
+      
+      const lbGroupId = (lbGroup as any).id;
+      
+      // Find all LB rounds
+      const rounds = await this.storage.select('round', { group_id: lbGroupId } as any);
+      const roundsArray = Array.isArray(rounds) ? rounds : [rounds];
+      
+      // The final round is the max round number
+      const maxRoundNumber = Math.max(...roundsArray.map((r: any) => r.number));
+      const lbFinalRound = roundsArray.find((r: any) => r.number === maxRoundNumber);
+      
+      if (!lbFinalRound) return null;
+      
+      // Get the LB Final match (should be the only match in that round)
+      const matches = await this.storage.select('match', { 
+        round_id: (lbFinalRound as any).id 
+      } as any);
+      
+      return Array.isArray(matches) ? matches[0] : matches;
+    } catch (error) {
+      console.error('Error finding LB Final match:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Normalize Grand Final population after LB Final
+   * If GF opponent2 is missing and LB Final is complete, populate it
+   */
+  private async normalizeGrandFinalPopulation(stageId: number): Promise<void> {
+    try {
+      bracketLog('🔍 Checking Grand Final population...', { stageId });
+      
+      // Find GF group (group number 3 in double elimination)
+      const groups = await this.storage.select('group', { stage_id: stageId } as any);
+      const groupsArray = Array.isArray(groups) ? groups : [groups];
+      const gfGroup = groupsArray.find((g: any) => g.number === 3);
+      
+      if (!gfGroup) {
+        bracketLog('No GF group found, skipping normalization');
+        return;
+      }
+      
+      const gfGroupId = (gfGroup as any).id;
+      
+      // Get GF Round 1
+      const rounds = await this.storage.select('round', { group_id: gfGroupId } as any);
+      const roundsArray = Array.isArray(rounds) ? rounds : [rounds];
+      const gfRound1 = roundsArray.find((r: any) => r.number === 1);
+      
+      if (!gfRound1) {
+        bracketLog('No GF Round 1 found, skipping normalization');
+        return;
+      }
+      
+      const gfMatches = await this.storage.select('match', { 
+        round_id: (gfRound1 as any).id 
+      } as any);
+      const gfMatch = Array.isArray(gfMatches) ? gfMatches[0] : gfMatches;
+      
+      if (!gfMatch) {
+        bracketLog('No GF match found, skipping normalization');
+        return;
+      }
+      
+      const m = gfMatch as any;
+      
+      // If opponent2 is missing, populate from LB Final
+      if (!m.opponent2?.id) {
+        bracketLog('🔧 GF opponent2 missing, checking LB Final...');
+        
+        const lbFinalMatch = await this.findLBFinalMatch(stageId);
+        
+        if (lbFinalMatch && lbFinalMatch.status === 4) {
+          // Match is complete
+          const winnerId = lbFinalMatch.opponent1?.result === 'win' 
+            ? lbFinalMatch.opponent1?.id 
+            : lbFinalMatch.opponent2?.id;
+          
+          if (winnerId) {
+            bracketLog('✅ [NORMALIZE GF] Populating opponent2 from LB Final winner', {
+              gfMatchId: m.id,
+              lbWinnerId: winnerId
+            });
+            
+            await this.storage.update('match', m.id, {
+              opponent2: { id: winnerId, position: undefined },
+              status: m.status
+            } as any);
+            
+            successLog('Grand Final normalized', `Populated opponent2 with LB winner ${winnerId}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error normalizing Grand Final:', error);
+      // Don't throw - normalization is defensive, not critical
+    }
   }
 
   /**
