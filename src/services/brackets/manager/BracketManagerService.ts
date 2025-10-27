@@ -239,11 +239,28 @@ export class BracketManagerService {
   async updateMatch(options: UpdateMatchOptions): Promise<void> {
     const { matchId, scores } = options;
 
-    bracketLog("Updating match with SQL storage:", { matchId, scores });
+    bracketLog("🎯 BracketManagerService.updateMatch() START:", { matchId, scores });
 
     // Serialize updates to prevent race conditions
     return matchUpdateQueue.enqueue(async () => {
       try {
+        // ⭐ Fetch current match state before update
+        const currentMatch = await this.storage.select('match', matchId);
+        console.log(`📊 CURRENT MATCH STATE - Match ${matchId}:`, {
+          opponent1: currentMatch.opponent1,
+          opponent2: currentMatch.opponent2,
+          round_id: currentMatch.round_id,
+          group_id: currentMatch.group_id,
+          number: currentMatch.number,
+          stage_id: currentMatch.stage_id
+        });
+        
+        console.log(`🎯 CALLING manager.update.match() with:`, {
+          id: matchId,
+          opponent1: scores.opponent1,
+          opponent2: scores.opponent2
+        });
+        
         // Update match using brackets-manager (automatically saves to SQL and handles propagation)
         // Both win and loss must be explicitly set for proper propagation
         await this.manager.update.match({
@@ -258,10 +275,37 @@ export class BracketManagerService {
           }
         });
 
+        console.log(`✅ manager.update.match() COMPLETED for Match ${matchId}`);
+        
+        // ⭐ Fetch and log next matches to see propagation results
+        const updatedMatch = await this.storage.select('match', matchId);
+        console.log(`📊 UPDATED MATCH STATE - Match ${matchId}:`, {
+          opponent1: updatedMatch.opponent1,
+          opponent2: updatedMatch.opponent2
+        });
+        
+        // Log all LB matches to see propagation
+        const allMatches = await this.storage.select('match', { 
+          stage_id: updatedMatch.stage_id,
+          group_id: 2 // Loser bracket group
+        });
+        console.log(`📊 ALL LB MATCHES after Match ${matchId} update:`, 
+          allMatches.map(m => ({
+            id: m.id,
+            round: m.round_id,
+            number: m.number,
+            opponent1_id: m.opponent1?.id,
+            opponent2_id: m.opponent2?.id,
+            opponent1_result: m.opponent1?.result,
+            opponent2_result: m.opponent2?.result
+          }))
+        );
+
         bracketLog("Match updated successfully in SQL tables");
         successLog("Match updated successfully", String(matchId));
       } catch (error) {
         failureLog("Failed to update match", error);
+        console.error(`❌ FULL ERROR DETAILS for Match ${matchId}:`, error);
         throw new Error(
           `Match update failed: ${error instanceof Error ? error.message : "Unknown error"}`
         );

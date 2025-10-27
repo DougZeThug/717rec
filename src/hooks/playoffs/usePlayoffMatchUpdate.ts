@@ -23,7 +23,12 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
     
     if (useBracketsManager) {
       // ✅ Use brackets-manager.js for match updates (handles loser propagation automatically)
-      console.log('🚀 Using brackets-manager for match update with automatic propagation');
+      console.log('🚀 usePlayoffMatchUpdate - START: Using brackets-manager', {
+        matchId,
+        team1GameWins,
+        team2GameWins,
+        winnerId: team1GameWins > team2GameWins ? 'team1' : 'team2'
+      });
       
       // Fetch match data to determine winner
       const { data: matchData } = await supabase
@@ -38,6 +43,14 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       
       const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
       
+      console.log(`🚀 Calling bracketManagerService.updateMatch for Match ${matchId}`, {
+        matchId: parseInt(matchId),
+        scores: {
+          opponent1: { score: team1GameWins, result: team1GameWins > team2GameWins ? "win" : "loss" },
+          opponent2: { score: team2GameWins, result: team2GameWins > team1GameWins ? "win" : "loss" }
+        }
+      });
+      
       await bracketManagerService.updateMatch({
         matchId: parseInt(matchId),
         scores: {
@@ -51,6 +64,8 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
           }
         }
       });
+      
+      console.log(`✅ usePlayoffMatchUpdate - COMPLETED: Match ${matchId}`);
       
       // Save individual games
       if (games && games.length > 0) {

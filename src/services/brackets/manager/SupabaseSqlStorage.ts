@@ -224,8 +224,27 @@ export class SupabaseSqlStorage implements CrudInterface {
     if (table === 'match') {
       console.log(`🔄 SupabaseSqlStorage.update() - MATCH TRANSFORMATION`, {
         before: values,
-        after: transformedValues
+        after: transformedValues,
+        matchId: typeof filter === 'number' || typeof filter === 'string' ? filter : filter
       });
+      
+      // ⭐ Fetch current state BEFORE update
+      if ('opponent1' in values || 'opponent2' in values) {
+        const matchId = typeof filter === 'number' || typeof filter === 'string' ? filter : (filter as any).id;
+        const { data: currentMatch } = await client
+          .from('match')
+          .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number')
+          .eq('id', matchId)
+          .single();
+        
+        console.log(`📊 BEFORE UPDATE - Match ${matchId} current state:`, currentMatch);
+        console.log(`📊 AFTER TRANSFORM - Will write to Match ${matchId}:`, {
+          opponent1_id: transformedValues.opponent1_id,
+          opponent2_id: transformedValues.opponent2_id,
+          opponent1_result: transformedValues.opponent1_result,
+          opponent2_result: transformedValues.opponent2_result
+        });
+      }
     }
     
     let query = client.from(table).update(transformedValues);
@@ -254,6 +273,19 @@ export class SupabaseSqlStorage implements CrudInterface {
     }
     
     console.log(`✅ SupabaseSqlStorage.update() SUCCESS - Table: ${table}`);
+    
+    // ⭐ Fetch and log final state AFTER update for match opponent changes
+    if (table === 'match' && ('opponent1' in values || 'opponent2' in values)) {
+      const matchId = typeof filter === 'number' || typeof filter === 'string' ? filter : (filter as any).id;
+      const { data: finalMatch } = await client
+        .from('match')
+        .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number')
+        .eq('id', matchId)
+        .single();
+      
+      console.log(`📊 AFTER UPDATE - Match ${matchId} final state:`, finalMatch);
+    }
+    
     return true;
   }
 
