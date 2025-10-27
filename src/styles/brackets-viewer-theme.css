@@ -48,37 +48,15 @@
 .brackets-viewer .score {
   color: var(--text-color);
   font-weight: 600;
-  padding: 4px 8px;
   background: var(--muted-color);
   border-radius: 4px;
 }
 
-/* Bracket spacing */
-.brackets-viewer .bracket {
-  margin-bottom: 2rem;
-}
-
-.brackets-viewer .bracket-header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-}
-
-/* Round headers */
+/* Round title styling - visual only */
 .brackets-viewer .round-title {
   color: var(--text-color);
   font-weight: 600;
   font-size: 1rem;
-  white-space: nowrap;
-  overflow: visible;
-}
-
-/* Ensure SVG connectors are visible */
-.brackets-viewer svg,
-.brackets-viewer .connector-container,
-.brackets-viewer .bracket-connector {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
 
 /* Connection lines */
@@ -92,22 +70,6 @@
   stroke-width: 3px;
 }
 
-/* Bracket groups */
-.brackets-viewer .bracket-container {
-  background: var(--background-color);
-  padding: 1rem;
-  border-radius: 12px;
-}
-
-.brackets-viewer .upper-bracket {
-  margin-bottom: 2rem;
-}
-
-.brackets-viewer .lower-bracket {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 2px solid var(--border-color);
-}
 
 /* Participant images */
 .brackets-viewer .participant-image {
@@ -115,7 +77,6 @@
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 8px;
   border: 2px solid var(--border-color);
 }
 
@@ -139,21 +100,6 @@
   color: var(--muted-foreground);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .brackets-viewer .match {
-    font-size: 0.875rem;
-  }
-  
-  .brackets-viewer .participant {
-    padding: 6px 10px;
-  }
-  
-  .brackets-viewer .participant-image {
-    width: 24px;
-    height: 24px;
-  }
-}
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
