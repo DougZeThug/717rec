@@ -22,10 +22,10 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
   ) => {
     
     if (useBracketsManager) {
-      // ✅ NEW: Use brackets-manager.js for automatic progression
-      console.log('🚀 Using brackets-manager for match update with auto-progression');
+      // ✅ NEW: Use brackets-manager.js with MANUAL loser propagation (fixes v1.7.0 bug)
+      console.log('🚀 Using brackets-manager for match update with MANUAL loser propagation');
       
-      await bracketManagerService.updateMatch({
+      await bracketManagerService.updateMatchWithLoserPropagation({
         matchId: parseInt(matchId),
         scores: {
           opponent1: { 
