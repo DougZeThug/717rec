@@ -187,7 +187,9 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: ['natural' as const],
+          seedOrdering: format === "double_elimination" 
+            ? (['natural', 'natural'] as ['natural', 'natural']) 
+            : (['natural'] as ['natural']),
           grandFinal: (format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none") as "simple" | "double" | "none"
@@ -234,6 +236,7 @@ export class BracketManagerService {
 
   /**
    * Update a match result using brackets-manager with SQL storage
+   * Both opponents MUST have explicit result values for proper loser propagation
    */
   async updateMatch(options: UpdateMatchOptions): Promise<void> {
     const { matchId, scores } = options;
@@ -241,11 +244,23 @@ export class BracketManagerService {
     bracketLog("Updating match with SQL storage:", { matchId, scores });
 
     try {
-      // Update match using brackets-manager (automatically saves to SQL)
+      // Ensure both opponents have explicit results (required for loser propagation)
+      const opponent1Result = scores.opponent1.result || 
+        (scores.opponent1.score! > scores.opponent2.score! ? "win" : "loss");
+      const opponent2Result = scores.opponent2.result || 
+        (scores.opponent2.score! > scores.opponent1.score! ? "win" : "loss");
+
+      // Update match using brackets-manager (automatically saves to SQL and handles propagation)
       await this.manager.update.match({
         id: matchId,
-        opponent1: scores.opponent1,
-        opponent2: scores.opponent2
+        opponent1: {
+          score: scores.opponent1.score,
+          result: opponent1Result
+        },
+        opponent2: {
+          score: scores.opponent2.score,
+          result: opponent2Result
+        }
       });
 
       bracketLog("Match updated successfully in SQL tables");
@@ -258,146 +273,6 @@ export class BracketManagerService {
     }
   }
 
-  /**
-   * Update a match result with manual loser propagation for double elimination
-   * This fixes a bug in brackets-manager v1.7.0 where losers don't propagate correctly
-   */
-  async updateMatchWithLoserPropagation(options: UpdateMatchOptions): Promise<void> {
-    const { matchId, scores } = options;
-
-    bracketLog("🔧 Updating match with manual loser propagation:", { matchId, scores });
-
-    try {
-      // Step 1: Update the match normally
-      await this.updateMatch(options);
-
-      // Step 2: Get the updated match
-      const match = await this.storage.select('match', matchId);
-      if (!match) {
-        console.warn("Match not found after update:", matchId);
-        return;
-      }
-
-      const matchData = match as any;
-
-      // Step 3: Check if this is a Winners Bracket match in double elimination
-      const stage = await this.storage.select('stage', matchData.stage_id);
-      if (!stage) {
-        console.warn("Stage not found:", matchData.stage_id);
-        return;
-      }
-
-      const stageData = stage as any;
-      if (stageData.type !== 'double_elimination') {
-        bracketLog("Not a double elimination bracket, skipping manual propagation");
-        return;
-      }
-
-      const matchGroup = await this.storage.select('group', matchData.group_id);
-      if (!matchGroup) {
-        console.warn("Group not found:", matchData.group_id);
-        return;
-      }
-
-      const groupData = matchGroup as any;
-      if (groupData.number !== 1) {
-        bracketLog("Not a Winners Bracket match (group number:", groupData.number, "), skipping");
-        return;
-      }
-
-      // Step 4: Identify the loser
-      const isOpponent1Winner = scores.opponent1?.result === 'win';
-      const loserId = isOpponent1Winner ? matchData.opponent2_id : matchData.opponent1_id;
-
-      if (!loserId) {
-        bracketLog("No loser identified (might be a BYE match), skipping propagation");
-        return;
-      }
-
-      bracketLog("✅ Identified loser:", loserId);
-
-      // Step 5: Find the corresponding Losers Bracket match
-      const round = await this.storage.select('round', matchData.round_id);
-      if (!round) {
-        console.warn("Round not found:", matchData.round_id);
-        return;
-      }
-
-      const roundData = round as any;
-      const winnersRoundNumber = roundData.number;
-
-      // Get all groups for this stage
-      const allGroups = await this.storage.select('group', { stage_id: matchData.stage_id } as any);
-      const groupsArray = Array.isArray(allGroups) ? allGroups : [allGroups];
-      
-      // Find Losers Bracket (group 2)
-      const losersGroup = groupsArray.find((g: any) => g.number === 2);
-      if (!losersGroup) {
-        console.warn("Losers Bracket group not found");
-        return;
-      }
-
-      const losersGroupData = losersGroup as any;
-
-      // Get all rounds in Losers Bracket
-      const losersRounds = await this.storage.select('round', { group_id: losersGroupData.id } as any);
-      const losersRoundsArray = Array.isArray(losersRounds) ? losersRounds : [losersRounds];
-
-      // Find the first round of Losers Bracket (lowest round number)
-      const firstLosersRound = losersRoundsArray.sort((a: any, b: any) => a.number - b.number)[0];
-      if (!firstLosersRound) {
-        console.warn("No rounds found in Losers Bracket");
-        return;
-      }
-
-      const losersRoundData = firstLosersRound as any;
-      bracketLog("Target Losers Bracket round:", losersRoundData);
-
-      // Step 6: Get all matches in the target Losers Bracket round
-      const losersMatches = await this.storage.select('match', { round_id: losersRoundData.id } as any);
-      const losersMatchesArray = Array.isArray(losersMatches) ? losersMatches : [losersMatches];
-
-      bracketLog("Available Losers Bracket matches:", losersMatchesArray.map((m: any) => ({
-        id: m.id,
-        opponent1_id: m.opponent1_id,
-        opponent2_id: m.opponent2_id,
-        status: m.status
-      })));
-
-      // Step 7: Find the first available slot in Losers Bracket
-      for (const lMatch of losersMatchesArray) {
-        const lMatchData = lMatch as any;
-        
-        if (lMatchData.opponent1_id === null) {
-          bracketLog("🎯 Assigning loser to opponent1 of match:", lMatchData.id);
-          await this.storage.update('match', lMatchData.id, {
-            ...lMatchData,
-            opponent1_id: loserId,
-            status: lMatchData.opponent2_id !== null ? 3 : 1 // 3=ready, 1=waiting
-          });
-          successLog("Loser propagated successfully", `${loserId} → match ${lMatchData.id}`);
-          return;
-        } else if (lMatchData.opponent2_id === null) {
-          bracketLog("🎯 Assigning loser to opponent2 of match:", lMatchData.id);
-          await this.storage.update('match', lMatchData.id, {
-            ...lMatchData,
-            opponent2_id: loserId,
-            status: lMatchData.opponent1_id !== null ? 3 : 1 // 3=ready, 1=waiting
-          });
-          successLog("Loser propagated successfully", `${loserId} → match ${lMatchData.id}`);
-          return;
-        }
-      }
-
-      console.warn("⚠️ No available slot found in Losers Bracket for loser:", loserId);
-
-    } catch (error) {
-      failureLog("Failed to update match with loser propagation", error);
-      throw new Error(
-        `Match update with loser propagation failed: ${error instanceof Error ? error.message : "Unknown error"}`
-      );
-    }
-  }
 
   /**
    * Update the seeding of an existing bracket stage

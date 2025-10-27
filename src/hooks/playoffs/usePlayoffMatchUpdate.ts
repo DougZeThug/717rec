@@ -22,19 +22,19 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
   ) => {
     
     if (useBracketsManager) {
-      // ✅ NEW: Use brackets-manager.js with MANUAL loser propagation (fixes v1.7.0 bug)
-      console.log('🚀 Using brackets-manager for match update with MANUAL loser propagation');
+      // ✅ Use brackets-manager.js for match updates (handles loser propagation automatically)
+      console.log('🚀 Using brackets-manager for match update with automatic propagation');
       
-      await bracketManagerService.updateMatchWithLoserPropagation({
+      await bracketManagerService.updateMatch({
         matchId: parseInt(matchId),
         scores: {
           opponent1: { 
             score: team1GameWins,
-            ...(team1GameWins > team2GameWins ? { result: "win" as const } : {})
+            result: team1GameWins > team2GameWins ? "win" as const : "loss" as const
           },
           opponent2: { 
             score: team2GameWins,
-            ...(team2GameWins > team1GameWins ? { result: "win" as const } : {})
+            result: team2GameWins > team1GameWins ? "win" as const : "loss" as const
           }
         }
       });
