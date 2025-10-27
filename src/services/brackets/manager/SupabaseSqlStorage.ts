@@ -39,6 +39,72 @@ function mergeOpponentSlots(prev: any, patch: any): any {
  * Implements the CrudInterface to work directly with Supabase SQL tables
  */
 export class SupabaseSqlStorage implements CrudInterface {
+  private participantCache: Map<number, { position: number; name: string }> = new Map();
+  /**
+   * Load participants into cache for a tournament
+   * Call this before bracket operations to ensure position data is available
+   */
+  async loadParticipantsForTournament(tournamentId: string): Promise<void> {
+    const participants = await this.internalSelect('participant', { 
+      tournament_id: tournamentId 
+    } as any);
+    
+    const participantArray = Array.isArray(participants) ? participants : [participants];
+    
+    console.log(`🔵 Loading ${participantArray.length} participants into cache for tournament ${tournamentId}`);
+    
+    for (const p of participantArray) {
+      const participant = p as any;
+      if (participant.id && typeof participant.id === 'number') {
+        this.participantCache.set(participant.id, {
+          position: participant.position ?? 0,
+          name: participant.name ?? ''
+        });
+      }
+    }
+    
+    console.log(`✅ Participant cache loaded:`, Array.from(this.participantCache.entries()));
+  }
+
+  /**
+   * Clear participant cache - call when bracket structure changes significantly
+   */
+  clearParticipantCache(): void {
+    this.participantCache.clear();
+    console.log(`🗑️ Participant cache cleared`);
+  }
+
+  /**
+   * Internal select method that bypasses cache loading
+   */
+  private async internalSelect<T extends keyof DataTypes>(
+    table: T,
+    filter?: Partial<DataTypes[T]> | Id
+  ): Promise<DataTypes[T][] | DataTypes[T]> {
+    const client = supabase as any;
+    let query = client.from(table).select('*');
+    
+    if (filter !== undefined) {
+      if (typeof filter === 'number' || typeof filter === 'string') {
+        query = query.eq('id', filter);
+        const { data, error } = await query.single();
+        
+        if (error) throw error;
+        return table === 'match' ? this.transformMatchFromDb(data) : data;
+      } else {
+        Object.entries(filter).forEach(([key, value]) => {
+          query = query.eq(key, value);
+        });
+      }
+    }
+    
+    const { data, error } = await query;
+    if (error) throw error;
+    
+    const transformedData = table === 'match' ? (data || []).map(item => this.transformMatchFromDb(item)) : (data || []);
+    return transformedData as DataTypes[T][];
+  }
+
   /**
    * Transform match data from brackets-manager format to SQL format
    * Flattens opponent1/opponent2 objects into separate columns
@@ -82,14 +148,19 @@ export class SupabaseSqlStorage implements CrudInterface {
   /**
    * Transform match data from SQL format to brackets-manager format
    * Re-inflates separate columns into opponent1/opponent2 objects
+   * Includes position field from participant cache for proper bracket routing
    */
   private transformMatchFromDb(data: any): any {
     const transformed: any = { ...data };
     
-    // Re-inflate opponent1
+    // Re-inflate opponent1 with position from cache
     if ('opponent1_id' in data || 'opponent1_score' in data || 'opponent1_result' in data) {
+      const opponentId = data.opponent1_id;
+      const cached = opponentId ? this.participantCache.get(opponentId) : null;
+      
       transformed.opponent1 = {
-        id: data.opponent1_id ?? null,
+        id: opponentId ?? null,
+        position: cached?.position ?? undefined,
         score: data.opponent1_score ?? null,
         result: data.opponent1_result ?? null
       };
@@ -98,10 +169,14 @@ export class SupabaseSqlStorage implements CrudInterface {
       delete transformed.opponent1_result;
     }
     
-    // Re-inflate opponent2
+    // Re-inflate opponent2 with position from cache
     if ('opponent2_id' in data || 'opponent2_score' in data || 'opponent2_result' in data) {
+      const opponentId = data.opponent2_id;
+      const cached = opponentId ? this.participantCache.get(opponentId) : null;
+      
       transformed.opponent2 = {
-        id: data.opponent2_id ?? null,
+        id: opponentId ?? null,
+        position: cached?.position ?? undefined,
         score: data.opponent2_score ?? null,
         result: data.opponent2_result ?? null
       };
@@ -129,55 +204,9 @@ export class SupabaseSqlStorage implements CrudInterface {
   async select<T extends keyof DataTypes>(table: T, filter: Partial<DataTypes[T]>): Promise<DataTypes[T][]>;
   
   async select<T extends keyof DataTypes>(table: T, filter?: Partial<DataTypes[T]> | Id): Promise<DataTypes[T][] | DataTypes[T]> {
-    const client = supabase as any;
-    let query = client.from(table).select('*');
+    // Use the public select method which includes logging
+    return this.internalSelect(table, filter);
     
-    console.log(`🔵 SupabaseSqlStorage.select() - Table: ${table}`, { filter });
-    
-    if (filter !== undefined) {
-      if (typeof filter === 'number' || typeof filter === 'string') {
-        // Single ID lookup
-        query = query.eq('id', filter);
-        const { data, error } = await query.single();
-        
-        if (error) {
-          console.error(`❌ SupabaseSqlStorage.select() FAILED - Table: ${table}`, {
-            error,
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            filter
-          });
-          throw error;
-        }
-        
-    console.log(`✅ SupabaseSqlStorage.select() SUCCESS - Table: ${table}, Single record found`);
-        const transformedData = table === 'match' ? this.transformMatchFromDb(data) : data;
-        return transformedData as DataTypes[T];
-      } else {
-        // Filter object
-        Object.entries(filter).forEach(([key, value]) => {
-          query = query.eq(key, value);
-        });
-      }
-    }
-    
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error(`❌ SupabaseSqlStorage.select() FAILED - Table: ${table}`, {
-        error,
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        filter
-      });
-      throw error;
-    }
-    
-    console.log(`✅ SupabaseSqlStorage.select() SUCCESS - Table: ${table}, Rows: ${data?.length || 0}`);
-    const transformedData = table === 'match' ? (data || []).map(item => this.transformMatchFromDb(item)) : (data || []);
-    return transformedData as DataTypes[T][];
   }
 
   // Insert overloads - single returns number (ID), array returns boolean

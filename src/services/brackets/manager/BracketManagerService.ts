@@ -179,6 +179,10 @@ export class BracketManagerService {
         participants: insertedParticipants 
       });
 
+      // Load participants into cache before bracket operations
+      bracketLog("📝 Loading participants into cache...");
+      await (this.storage as SupabaseSqlStorage).loadParticipantsForTournament(bracketId);
+
       // Step 6: Create bracket stage with brackets-manager
       bracketLog("📝 Step 6/5: Creating bracket stage with brackets-manager...");
       
@@ -257,6 +261,13 @@ export class BracketManagerService {
           stage_id: currentMatch.stage_id
         });
         
+        // ⭐ Load participants into cache before update
+        const stage = await this.storage.select('stage', (currentMatch as any).stage_id);
+        if (stage) {
+          await (this.storage as SupabaseSqlStorage)
+            .loadParticipantsForTournament((stage as any).tournament_id);
+        }
+        
         console.log(`🎯 CALLING manager.update.match() with:`, {
           id: matchId,
           opponent1: scores.opponent1,
@@ -327,6 +338,8 @@ export class BracketManagerService {
    */
   async normalizeLosersR1(stageId: number): Promise<void> {
     try {
+      // Clear cache before normalization as we're changing structure
+      (this.storage as SupabaseSqlStorage).clearParticipantCache();
       // Find LB group (group number 2 in double elimination)
       const groups = await this.storage.select('group', { stage_id: stageId } as any);
       const groupsArray = Array.isArray(groups) ? groups : [groups];
@@ -435,6 +448,9 @@ export class BracketManagerService {
         teams: seedingArray.filter(s => s !== null).length,
         tbds: seedingArray.filter(s => s === null).length
       });
+
+      // Load participants into cache before seeding update
+      await (this.storage as SupabaseSqlStorage).loadParticipantsForTournament(bracketId);
 
       // Step 6: Update seeding via brackets-manager
       await this.manager.update.seeding(stageId, seedingArray, keepSameSize);
