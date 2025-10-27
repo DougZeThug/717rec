@@ -72,7 +72,9 @@ export class BracketManagerService {
 
   constructor() {
     this.storage = new SupabaseSqlStorage();
-    this.manager = new BracketsManager(this.storage);
+    // Enable verbose logging for brackets-manager operations
+    const VERBOSE = true;
+    this.manager = new BracketsManager(this.storage, VERBOSE);
   }
 
   /**
@@ -186,7 +188,7 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: ['natural'] as ['natural'],
+          seedOrdering: ['natural', 'natural'] as ['natural', 'natural'],
           grandFinal: (format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none") as "simple" | "double" | "none"
@@ -277,6 +279,12 @@ export class BracketManagerService {
 
         console.log(`✅ manager.update.match() COMPLETED for Match ${matchId}`);
         
+        // ⭐ Normalize LB R1 to fix same-side-twice issues
+        const stageId = typeof currentMatch.stage_id === 'string' 
+          ? parseInt(currentMatch.stage_id) 
+          : currentMatch.stage_id;
+        await this.normalizeLosersR1(stageId);
+        
         // ⭐ Fetch and log next matches to see propagation results
         const updatedMatch = await this.storage.select('match', matchId);
         console.log(`📊 UPDATED MATCH STATE - Match ${matchId}:`, {
@@ -311,6 +319,67 @@ export class BracketManagerService {
         );
       }
     });
+  }
+
+  /**
+   * Normalize Losers Bracket Round 1 matches to fix same-side-twice issues
+   * If library wrote both losers to opponent2, move one to opponent1
+   */
+  async normalizeLosersR1(stageId: number): Promise<void> {
+    try {
+      // Find LB group (group number 2 in double elimination)
+      const groups = await this.storage.select('group', { stage_id: stageId } as any);
+      const groupsArray = Array.isArray(groups) ? groups : [groups];
+      const lbGroup = groupsArray.find((g: any) => g.number === 2);
+      
+      if (!lbGroup) {
+        console.log('No LB group found, skipping normalization');
+        return;
+      }
+      
+      const lbGroupId = (lbGroup as any).id;
+      
+      // Find LB R1 (first round in LB group)
+      const rounds = await this.storage.select('round', { group_id: lbGroupId } as any);
+      const roundsArray = Array.isArray(rounds) ? rounds : [rounds];
+      const minRoundNumber = Math.min(...roundsArray.map((r: any) => r.number));
+      const lbR1 = roundsArray.find((r: any) => r.number === minRoundNumber);
+      
+      if (!lbR1) {
+        console.log('No LB R1 found, skipping normalization');
+        return;
+      }
+      
+      const lbR1Id = (lbR1 as any).id;
+      
+      // Get all LB R1 matches
+      const matches = await this.storage.select('match', { round_id: lbR1Id } as any);
+      const matchesArray = Array.isArray(matches) ? matches : [matches];
+      
+      for (const match of matchesArray) {
+        const m = match as any;
+        const opponent1Id = m.opponent1?.id;
+        const opponent2Id = m.opponent2?.id;
+        
+        // If both filled or both empty, nothing to do
+        if ((opponent1Id && opponent2Id) || (!opponent1Id && !opponent2Id)) {
+          continue;
+        }
+        
+        // If only opponent2 is filled, shift to opponent1
+        if (!opponent1Id && opponent2Id) {
+          console.log(`[BRACKETS][NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${m.id}`);
+          await this.storage.update('match', m.id, {
+            opponent1: { id: opponent2Id, score: null, result: null },
+            opponent2: { id: null, score: null, result: null },
+            status: m.status
+          } as any);
+        }
+      }
+    } catch (error) {
+      console.error('Error normalizing LB R1:', error);
+      // Don't throw - normalization is defensive, not critical
+    }
   }
 
 

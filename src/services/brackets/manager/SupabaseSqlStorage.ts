@@ -4,6 +4,37 @@ import { supabase } from '@/integrations/supabase/client';
 type Id = number | string;
 
 /**
+ * Helper: Extract specific fields from object for logging
+ */
+function pick(obj: any, keys: string[]): any {
+  const result: any = {};
+  keys.forEach(k => {
+    result[k] = obj?.[k];
+  });
+  return result;
+}
+
+/**
+ * Helper: Defensive merge to prevent null from overwriting filled opponent slots
+ */
+function mergeOpponentSlots(prev: any, patch: any): any {
+  const out = { ...patch };
+  
+  for (const slot of ['opponent1_id', 'opponent2_id']) {
+    if (slot in patch) {
+      const incoming = patch[slot];
+      // If incoming is null but previous slot has a value, don't overwrite
+      if (incoming === null && prev?.[slot] != null) {
+        console.log(`🛡️ [DEFENSIVE MERGE] Prevented null overwrite of ${slot}: keeping ${prev[slot]}`);
+        delete out[slot];
+      }
+    }
+  }
+  
+  return out;
+}
+
+/**
  * Supabase SQL Storage Adapter for brackets-manager
  * Implements the CrudInterface to work directly with Supabase SQL tables
  */
@@ -217,34 +248,36 @@ export class SupabaseSqlStorage implements CrudInterface {
     const client = supabase as any;
     
     // Transform data for database storage
-    const transformedValues = this.transformDataForDb(table, values);
+    let transformedValues = this.transformDataForDb(table, values);
     
     console.log(`🔵 SupabaseSqlStorage.update() - Table: ${table}`, { filter, values });
     
-    if (table === 'match') {
-      console.log(`🔄 SupabaseSqlStorage.update() - MATCH TRANSFORMATION`, {
-        before: values,
-        after: transformedValues,
-        matchId: typeof filter === 'number' || typeof filter === 'string' ? filter : filter
+    // ⭐ DEFENSIVE MERGE: Prevent null from overwriting filled opponent slots
+    if (table === 'match' && ('opponent1' in values || 'opponent2' in values)) {
+      const matchId = typeof filter === 'number' || typeof filter === 'string' ? filter : (filter as any).id;
+      const { data: currentMatch } = await client
+        .from('match')
+        .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number, status')
+        .eq('id', matchId)
+        .single();
+      
+      console.log(`[BRACKETS][ROW BEFORE]`, pick(currentMatch, [
+        'id', 'group_id', 'round_id', 'number', 'status',
+        'opponent1_id', 'opponent2_id', 'opponent1_result', 'opponent2_result'
+      ]));
+      
+      console.log(`[BRACKETS][PATCH IN]`, {
+        id: matchId,
+        patch: transformedValues,
       });
       
-      // ⭐ Fetch current state BEFORE update
-      if ('opponent1' in values || 'opponent2' in values) {
-        const matchId = typeof filter === 'number' || typeof filter === 'string' ? filter : (filter as any).id;
-        const { data: currentMatch } = await client
-          .from('match')
-          .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number')
-          .eq('id', matchId)
-          .single();
-        
-        console.log(`📊 BEFORE UPDATE - Match ${matchId} current state:`, currentMatch);
-        console.log(`📊 AFTER TRANSFORM - Will write to Match ${matchId}:`, {
-          opponent1_id: transformedValues.opponent1_id,
-          opponent2_id: transformedValues.opponent2_id,
-          opponent1_result: transformedValues.opponent1_result,
-          opponent2_result: transformedValues.opponent2_result
-        });
-      }
+      // Apply defensive merge
+      transformedValues = mergeOpponentSlots(currentMatch, transformedValues);
+      
+      console.log(`[BRACKETS][PATCH MERGED]`, {
+        id: matchId,
+        merged: transformedValues
+      });
     }
     
     let query = client.from(table).update(transformedValues);
@@ -279,11 +312,14 @@ export class SupabaseSqlStorage implements CrudInterface {
       const matchId = typeof filter === 'number' || typeof filter === 'string' ? filter : (filter as any).id;
       const { data: finalMatch } = await client
         .from('match')
-        .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number')
+        .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number, status')
         .eq('id', matchId)
         .single();
       
-      console.log(`📊 AFTER UPDATE - Match ${matchId} final state:`, finalMatch);
+      console.log(`[BRACKETS][ROW AFTER]`, pick(finalMatch, [
+        'id', 'group_id', 'round_id', 'number', 'status',
+        'opponent1_id', 'opponent2_id', 'opponent1_result', 'opponent2_result'
+      ]));
     }
     
     return true;
