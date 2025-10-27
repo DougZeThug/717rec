@@ -53,16 +53,32 @@
   border-radius: 4px;
 }
 
+/* Bracket spacing */
+.brackets-viewer .bracket {
+  margin-bottom: 2rem;
+}
+
+.brackets-viewer .bracket-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+
 /* Round headers */
 .brackets-viewer .round-title {
   color: var(--text-color);
   font-weight: 600;
   font-size: 1rem;
-  margin-bottom: 1rem;
   white-space: nowrap;
   overflow: visible;
-  position: relative;
-  z-index: 10;
+}
+
+/* Ensure SVG connectors are visible */
+.brackets-viewer svg,
+.brackets-viewer .connector-container,
+.brackets-viewer .bracket-connector {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Connection lines */

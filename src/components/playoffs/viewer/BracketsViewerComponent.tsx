@@ -237,15 +237,16 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
   return (
     <>
-      <div className="w-full overflow-x-auto overflow-y-hidden bg-background">
+      <div className="w-full overflow-x-auto overflow-y-visible bg-background">
         <div 
           ref={containerRef}
           id="brackets-viewer-container"
-          className="brackets-viewer p-4 font-bebas"
+          className="brackets-viewer p-8 font-bebas"
           style={{ 
             minHeight: '400px', 
             minWidth: 'fit-content',
             width: 'max-content',
+            overflow: 'visible',
             pointerEvents: 'auto' 
           }}
         />
