@@ -185,9 +185,7 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: format === "double_elimination" 
-            ? (['natural', 'natural'] as ['natural', 'natural']) 
-            : (['natural'] as ['natural']),
+          seedOrdering: ['natural'] as ['natural'],
           grandFinal: (format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none") as "simple" | "double" | "none"
@@ -234,7 +232,7 @@ export class BracketManagerService {
 
   /**
    * Update a match result using brackets-manager with SQL storage
-   * Both opponents MUST have explicit result values for proper loser propagation
+   * Only the winner should have result: 'win' explicitly set; library infers the loser
    */
   async updateMatch(options: UpdateMatchOptions): Promise<void> {
     const { matchId, scores } = options;
@@ -242,22 +240,17 @@ export class BracketManagerService {
     bracketLog("Updating match with SQL storage:", { matchId, scores });
 
     try {
-      // Ensure both opponents have explicit results (required for loser propagation)
-      const opponent1Result = scores.opponent1.result || 
-        (scores.opponent1.score! > scores.opponent2.score! ? "win" : "loss");
-      const opponent2Result = scores.opponent2.result || 
-        (scores.opponent2.score! > scores.opponent1.score! ? "win" : "loss");
-
       // Update match using brackets-manager (automatically saves to SQL and handles propagation)
+      // Only set result: 'win' explicitly; library infers the loser
       await this.manager.update.match({
         id: matchId,
         opponent1: {
           score: scores.opponent1.score,
-          result: opponent1Result
+          result: scores.opponent1.result  // Only passed if explicitly 'win'
         },
         opponent2: {
           score: scores.opponent2.score,
-          result: opponent2Result
+          result: scores.opponent2.result  // Only passed if explicitly 'win'
         }
       });
 
