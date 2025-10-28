@@ -548,6 +548,78 @@ export class BracketManagerService {
         }
       }
       
+      // ====== NULL PARTICIPANT PROPAGATION ======
+      // In brackets with BYEs, NULL participants from WB R1 must drop to LB R1
+      console.log(`[BRACKETS][NORMALIZE] Checking for NULL participants from WB R1 to populate LB R1...`);
+      
+      // Get WB group (group number 1)
+      const wbGroup = groupsArray.find((g: any) => g.number === 1);
+      
+      if (wbGroup) {
+        // Find WB R1 (first round in WB group)
+        const wbRounds = await this.storage.select('round', { group_id: (wbGroup as any).id } as any);
+        const wbRoundsArray = Array.isArray(wbRounds) ? wbRounds : [wbRounds];
+        const wbR1 = wbRoundsArray.find((r: any) => r.number === 1);
+        
+        if (wbR1) {
+          const wbR1Matches = await this.storage.select('match', { round_id: (wbR1 as any).id } as any);
+          const wbMatchesArray = Array.isArray(wbR1Matches) ? wbR1Matches : [wbR1Matches];
+          
+          console.log(`[BRACKETS][NORMALIZE] Found ${wbMatchesArray.length} WB R1 matches to check for NULL participants`);
+          
+          // Collect all NULL participants from WB R1
+          const nullParticipants: Array<{ matchNumber: number, opponentSlot: 'opponent1' | 'opponent2' }> = [];
+          
+          for (const wbMatch of wbMatchesArray) {
+            const wb = wbMatch as any;
+            
+            // Check if opponent1 is NULL
+            if (wb.opponent1_id === null) {
+              nullParticipants.push({ matchNumber: wb.number, opponentSlot: 'opponent1' });
+              console.log(`[BRACKETS][NORMALIZE] Found NULL in WB R1 Match ${wb.id} (number ${wb.number}), opponent1`);
+            }
+            
+            // Check if opponent2 is NULL
+            if (wb.opponent2_id === null) {
+              nullParticipants.push({ matchNumber: wb.number, opponentSlot: 'opponent2' });
+              console.log(`[BRACKETS][NORMALIZE] Found NULL in WB R1 Match ${wb.id} (number ${wb.number}), opponent2`);
+            }
+          }
+          
+          console.log(`[BRACKETS][NORMALIZE] Found ${nullParticipants.length} NULL participants to propagate to LB R1`);
+          
+          // Propagate NULL participants to LB R1 matches
+          // In double elimination, losers from WB match N go to LB match based on position
+          for (const nullInfo of nullParticipants) {
+            // The NULL participant should drop to the corresponding LB R1 position
+            // Find LB R1 matches that have an empty slot
+            const lbMatchesWithEmptySlot = matchesArray.filter((lbm: any) => 
+              lbm.opponent1_id === null || lbm.opponent2_id === null
+            );
+            
+            if (lbMatchesWithEmptySlot.length > 0) {
+              // Take the first available LB match with an empty slot
+              const targetLBMatch = lbMatchesWithEmptySlot[0] as any;
+              
+              // Determine which slot is empty
+              const emptySlot = targetLBMatch.opponent1_id === null ? 'opponent1' : 'opponent2';
+              
+              console.log(`[BRACKETS][NORMALIZE] Propagating NULL from WB R1 Match ${nullInfo.matchNumber} to LB R1 Match ${targetLBMatch.id}, slot ${emptySlot}`);
+              
+              // Use direct SQL to set NULL participant (participant ID = null)
+              await supabase
+                .from('match')
+                .update({
+                  [`${emptySlot}_id`]: null
+                })
+                .eq('id', targetLBMatch.id);
+              
+              console.log(`[BRACKETS][NORMALIZE] ✅ NULL participant propagated to LB R1 Match ${targetLBMatch.id}`);
+            }
+          }
+        }
+      }
+      
       console.log(`[BRACKETS][NORMALIZE] LB R1 normalization complete`);
       
       // Recalculate child_count after normalization to fix connectors
