@@ -192,7 +192,10 @@ export class BracketManagerService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: ['natural', 'natural'] as ['natural', 'natural'],
+          // Fixed seedOrdering for double elimination:
+          // [WB R1, LB R1 from WB R1, LB R2 from WB R2, subsequent LB rounds]
+          // Using 'natural' for LB R2 prevents reverse_half_shift routing issues
+          seedOrdering: ['natural', 'reverse', 'natural', 'reverse'] as any,
           grandFinal: (format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none") as "simple" | "double" | "none"
@@ -458,13 +461,14 @@ export class BracketManagerService {
   }
 
   /**
-   * Normalize Losers Bracket Round 1 matches to fix same-side-twice issues
-   * If library wrote both losers to opponent2, move one to opponent1
+   * Normalize Losers Bracket Round 1 matches to fix duplicate participant issues
+   * Detects and fixes cases where the same participant is in both opponent slots
    */
   async normalizeLosersR1(stageId: number): Promise<void> {
     try {
       // Clear cache before normalization as we're changing structure
       (this.storage as SupabaseSqlStorage).clearParticipantCache();
+      
       // Find LB group (group number 2 in double elimination)
       const groups = await this.storage.select('group', { stage_id: stageId } as any);
       const groupsArray = Array.isArray(groups) ? groups : [groups];
@@ -494,13 +498,23 @@ export class BracketManagerService {
       const matches = await this.storage.select('match', { round_id: lbR1Id } as any);
       const matchesArray = Array.isArray(matches) ? matches : [matches];
       
+      console.log(`[BRACKETS][NORMALIZE] Checking ${matchesArray.length} LB R1 matches for duplicates`);
+      
       for (const match of matchesArray) {
         const m = match as any;
         const opponent1Id = m.opponent1?.id;
         const opponent2Id = m.opponent2?.id;
         
-        // If both filled or both empty, nothing to do
-        if ((opponent1Id && opponent2Id) || (!opponent1Id && !opponent2Id)) {
+        // CRITICAL FIX: Detect if same participant is in both slots (duplicate bug)
+        if (opponent1Id && opponent2Id && opponent1Id === opponent2Id) {
+          console.log(`[BRACKETS][NORMALIZE] ⚠️ DUPLICATE DETECTED in LB R1 Match ${m.id}: Participant ${opponent1Id} in both slots`);
+          console.log(`[BRACKETS][NORMALIZE] Clearing opponent2 to fix duplicate`);
+          
+          await this.storage.update('match', m.id, {
+            opponent1: { id: opponent1Id, score: null, result: null },
+            opponent2: { id: null, score: null, result: null },
+            status: m.status
+          } as any);
           continue;
         }
         
@@ -514,6 +528,8 @@ export class BracketManagerService {
           } as any);
         }
       }
+      
+      console.log(`[BRACKETS][NORMALIZE] LB R1 normalization complete`);
     } catch (error) {
       console.error('Error normalizing LB R1:', error);
       // Don't throw - normalization is defensive, not critical
