@@ -8,6 +8,7 @@ import { useBracketsManagerMatch } from '@/hooks/playoffs/useBracketsManagerMatc
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
 import { log } from '@/utils/logger';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface BracketsManagerMatchEditorProps {
   matchId: number | null;
@@ -23,6 +24,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
   onClose
 }) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: matchData, isLoading, error } = useBracketsManagerMatch(matchId);
   
   const [opponent1Score, setOpponent1Score] = useState<number>(0);
@@ -69,6 +71,11 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
         matchId,
         scores
       });
+
+      // Invalidate all bracket-related queries to trigger refresh
+      await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
+      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
+      await queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
 
       toast({
         title: 'Match Updated',
