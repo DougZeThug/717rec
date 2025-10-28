@@ -555,13 +555,13 @@ export class BracketManagerService {
       
       for (const match of matchesArray) {
         const m = match as any;
-        const hasOpponent1 = m.opponent1_id !== null && m.opponent1_id !== undefined;
-        const hasOpponent2 = m.opponent2_id !== null && m.opponent2_id !== undefined;
+        const hasOpponent1 = m.opponent1?.id !== null && m.opponent1?.id !== undefined;
+        const hasOpponent2 = m.opponent2?.id !== null && m.opponent2?.id !== undefined;
         
         // If match has exactly one opponent and is Locked, it's a BYE
         if ((hasOpponent1 && !hasOpponent2) || (!hasOpponent1 && hasOpponent2)) {
           if (m.status === 4) { // Status 4 = Locked
-            const winnerId = hasOpponent1 ? m.opponent1_id : m.opponent2_id;
+            const winnerId = hasOpponent1 ? m.opponent1.id : m.opponent2.id;
             const winnerSlot = hasOpponent1 ? 'opponent1' : 'opponent2';
             
             console.log(`[BRACKETS][NORMALIZE] Match ${m.id} is BYE - only has ${winnerSlot} (participant ${winnerId})`);
