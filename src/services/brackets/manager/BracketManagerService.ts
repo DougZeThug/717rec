@@ -508,13 +508,23 @@ export class BracketManagerService {
         // CRITICAL FIX: Detect if same participant is in both slots (duplicate bug)
         if (opponent1Id && opponent2Id && opponent1Id === opponent2Id) {
           console.log(`[BRACKETS][NORMALIZE] ⚠️ DUPLICATE DETECTED in LB R1 Match ${m.id}: Participant ${opponent1Id} in both slots`);
-          console.log(`[BRACKETS][NORMALIZE] Clearing opponent2 to fix duplicate`);
+          console.log(`[BRACKETS][NORMALIZE] Force-clearing opponent2 using direct SQL to bypass defensive merge`);
           
-          await this.storage.update('match', m.id, {
-            opponent1: { id: opponent1Id, score: null, result: null },
-            opponent2: { id: null, score: null, result: null },
-            status: m.status
-          } as any);
+          // Bypass storage adapter's defensive merge and use direct SQL
+          const { error } = await supabase
+            .from('match')
+            .update({
+              opponent2_id: null,
+              opponent2_score: null,
+              opponent2_result: null
+            })
+            .eq('id', m.id);
+            
+          if (error) {
+            console.error(`[BRACKETS][NORMALIZE] Failed to clear duplicate in match ${m.id}:`, error);
+          } else {
+            console.log(`[BRACKETS][NORMALIZE] ✅ Successfully cleared duplicate in match ${m.id}`);
+          }
           continue;
         }
         
