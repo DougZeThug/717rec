@@ -40,6 +40,14 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       if (!matchData) {
         throw new Error('Failed to fetch match data');
       }
+
+      // Handle BYE matches (one team is null) as forfeits
+      const isBye = !matchData.team1_id || !matchData.team2_id;
+      if (isBye) {
+        console.log("🚩 BYE match detected - treating as forfeit");
+        // For BYE matches, the scores are already set correctly (winner gets all games)
+        // Just pass through to bracket manager with the forfeit scores
+      }
       
       const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
       

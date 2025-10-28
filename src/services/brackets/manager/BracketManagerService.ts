@@ -548,37 +548,8 @@ export class BracketManagerService {
         }
       }
       
-      // ====== LB R1 BYE DETECTION ======
-      // After WB R1 completes, some LB R1 matches may have only one participant
-      // These should be marked as BYEs to auto-advance the single participant
-      console.log(`[BRACKETS][NORMALIZE] Checking for LB R1 BYE matches...`);
-      
-      for (const match of matchesArray) {
-        const m = match as any;
-        const hasOpponent1 = m.opponent1?.id !== null && m.opponent1?.id !== undefined;
-        const hasOpponent2 = m.opponent2?.id !== null && m.opponent2?.id !== undefined;
-        
-        // If match has exactly one opponent and is Locked, it's a BYE
-        if ((hasOpponent1 && !hasOpponent2) || (!hasOpponent1 && hasOpponent2)) {
-          if (m.status === 4) { // Status 4 = Locked
-            const winnerId = hasOpponent1 ? m.opponent1.id : m.opponent2.id;
-            const winnerSlot = hasOpponent1 ? 'opponent1' : 'opponent2';
-            
-            console.log(`[BRACKETS][NORMALIZE] Match ${m.id} is BYE - only has ${winnerSlot} (participant ${winnerId})`);
-            
-            // Update to BYE status (status 2) and set winner
-            await supabase
-              .from('match')
-              .update({
-                status: 2, // Status 2 = BYE
-                [`${winnerSlot}_result`]: 'win'
-              })
-              .eq('id', m.id);
-            
-            console.log(`[BRACKETS][NORMALIZE] ✅ Match ${m.id} set to BYE, participant ${winnerId} auto-advances to LB R2`);
-          }
-        }
-      }
+      // BYE matches are handled manually via forfeit scoring in the match editor
+      // No automatic BYE detection needed
       
       console.log(`[BRACKETS][NORMALIZE] LB R1 normalization complete`);
       
