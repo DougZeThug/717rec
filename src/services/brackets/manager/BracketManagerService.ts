@@ -566,14 +566,12 @@ export class BracketManagerService {
             
             console.log(`[BRACKETS][NORMALIZE] Match ${m.id} is BYE - only has ${winnerSlot} (participant ${winnerId})`);
             
-            // Update to BYE status (status 2) and set winner
-            await supabase
-              .from('match')
-              .update({
-                status: 2, // Status 2 = BYE
-                [`${winnerSlot}_result`]: 'win'
-              })
-              .eq('id', m.id);
+            // Use brackets-manager's update method to trigger proper propagation
+            await this.manager.update.match({
+              id: m.id,
+              opponent1: hasOpponent1 ? { result: 'win' } : undefined,
+              opponent2: hasOpponent2 ? { result: 'win' } : undefined
+            });
             
             console.log(`[BRACKETS][NORMALIZE] ✅ Match ${m.id} set to BYE, participant ${winnerId} auto-advances to LB R2`);
           }
