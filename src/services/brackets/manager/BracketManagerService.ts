@@ -193,9 +193,9 @@ export class BracketManagerService {
         seeding,
         settings: {
           // Fixed seedOrdering for double elimination:
-          // [WB R1, LB R1 from WB R1, LB R2 from WB R2, subsequent LB rounds]
-          // Using 'natural' for LB R2 prevents reverse_half_shift routing issues
-          seedOrdering: ['natural', 'reverse', 'natural', 'reverse'] as any,
+          // [WB R1, LB minor R1, LB minor R2, LB minor R3+]
+          // All LB intake rounds use 'reverse' per brackets-manager documentation
+          seedOrdering: ['natural', 'reverse', 'reverse', 'reverse'] as any,
           grandFinal: (format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none") as "simple" | "double" | "none"
