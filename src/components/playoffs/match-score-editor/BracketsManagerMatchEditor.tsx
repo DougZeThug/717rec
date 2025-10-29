@@ -57,24 +57,19 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
         hasOpponent2: !!matchData.opponent2
       });
 
-      // For BYE matches, use forfeit result
+      // For BYE matches, only update the opponent that exists
       if (isBye) {
-        // The existing opponent wins by forfeit
         const scores: any = {};
         
         if (matchData.opponent1) {
           scores.opponent1 = { 
             score: opponent1Score,
-            result: "win" as const,
-            forfeit: true
+            result: "win" as const
           };
-        }
-        
-        if (matchData.opponent2) {
+        } else if (matchData.opponent2) {
           scores.opponent2 = { 
             score: opponent2Score,
-            result: "win" as const,
-            forfeit: true
+            result: "win" as const
           };
         }
 

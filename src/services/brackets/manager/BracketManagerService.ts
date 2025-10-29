@@ -286,19 +286,27 @@ export class BracketManagerService {
           opponent2: scores.opponent2
         });
         
-        // Update match using brackets-manager (automatically saves to SQL and handles propagation)
-        // Both win and loss must be explicitly set for proper propagation
-        await this.manager.update.match({
-          id: matchId,
-          opponent1: {
+        // Build update payload - only include opponents that exist
+        const updatePayload: any = { id: matchId };
+        
+        if (scores.opponent1) {
+          updatePayload.opponent1 = {
             score: scores.opponent1.score,
             result: scores.opponent1.result
-          },
-          opponent2: {
+          };
+        }
+        
+        if (scores.opponent2) {
+          updatePayload.opponent2 = {
             score: scores.opponent2.score,
             result: scores.opponent2.result
-          }
-        });
+          };
+        }
+        
+        console.log(`🎯 Final update payload:`, updatePayload);
+        
+        // Update match using brackets-manager (automatically saves to SQL and handles propagation)
+        await this.manager.update.match(updatePayload);
 
         console.log(`✅ manager.update.match() COMPLETED for Match ${matchId}`);
         
