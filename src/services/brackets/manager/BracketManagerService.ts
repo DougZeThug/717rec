@@ -306,7 +306,13 @@ export class BracketManagerService {
         const stageId = typeof currentMatch.stage_id === 'string' 
           ? parseInt(currentMatch.stage_id) 
           : currentMatch.stage_id;
-        await this.normalizeLosersR1(stageId);
+        
+        // Run normalization multiple times to catch timing issues
+        for (let i = 0; i < 3; i++) {
+          await this.normalizeLosersR1(stageId);
+          // Small delay to let propagation complete
+          if (i < 2) await new Promise(resolve => setTimeout(resolve, 100));
+        }
         
         // ⭐ Normalize Grand Final population after every update (defensive)
         await this.normalizeGrandFinalPopulation(stageId);
@@ -520,19 +526,25 @@ export class BracketManagerService {
           console.log(`[BRACKETS][NORMALIZE] Force-clearing opponent2 using direct SQL to bypass defensive merge`);
           
           // Bypass storage adapter's defensive merge and use direct SQL
+          // Use service role to ensure permissions
           const { error } = await supabase
             .from('match')
             .update({
               opponent2_id: null,
               opponent2_score: null,
-              opponent2_result: null
+              opponent2_result: null,
+              status: 4 // Set to waiting/ready status for BYE
             })
             .eq('id', m.id);
             
           if (error) {
-            console.error(`[BRACKETS][NORMALIZE] Failed to clear duplicate in match ${m.id}:`, error);
+            console.error(`[BRACKETS][NORMALIZE] ❌ Failed to clear duplicate in match ${m.id}:`, error);
+            // Log full error details for debugging
+            console.error(`[BRACKETS][NORMALIZE] Error details:`, JSON.stringify(error, null, 2));
           } else {
-            console.log(`[BRACKETS][NORMALIZE] ✅ Successfully cleared duplicate in match ${m.id}`);
+            console.log(`[BRACKETS][NORMALIZE] ✅ Successfully cleared duplicate in match ${m.id}, converted to BYE`);
+            // Clear cache to reflect changes
+            (this.storage as SupabaseSqlStorage).clearParticipantCache();
           }
           continue;
         }
