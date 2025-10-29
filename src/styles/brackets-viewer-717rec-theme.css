@@ -1,30 +1,27 @@
-/* 717rec Bracket Viewer Theme - Unified Styling */
+/* 717rec Bracket Viewer Theme - Unified Styling with Dark Blue Aesthetic */
 
 /* ============================================
-   Base Theme Variables
+   Base Theme Variables (Light Mode)
    ============================================ */
 
 .brackets-viewer {
-  /* 717rec Base Colors */
-  --bv-primary-bg: hsl(var(--background));
-  --bv-secondary-bg: hsl(var(--card));
-  --bv-text-color: hsl(var(--foreground));
-  --bv-text-muted: hsl(var(--muted-foreground));
-  --bv-connector-color: hsl(var(--border));
-  --bv-match-bg: hsl(var(--card));
-  --bv-match-border: hsl(var(--border));
+  /* Light Mode Colors */
+  --bv-primary-bg: #ffffff;
+  --bv-secondary-bg: #f8f9fa;
+  --bv-match-bg: #ffffff;
+  --bv-text-color: #1a1a1a;
+  --bv-text-muted: #6b7280;
+  --bv-connector-color: #e5e7eb;
+  --bv-match-border: #d1d5db;
   
   /* Winner/Loser Colors */
-  --bv-win-color: hsl(var(--success));
-  --bv-loss-color: hsl(var(--muted-foreground));
+  --bv-win-color: #16a34a;
+  --bv-loss-color: #dc2626;
   
   /* Interactive States */
-  --bv-hover-bg: hsl(var(--accent));
-  --bv-hover-border: hsl(var(--primary));
-  
-  /* Universal Accent Color - App Primary Blue */
-  --bv-accent-color: hsl(var(--primary));
-  --bv-accent-glow: hsl(var(--primary) / 0.15);
+  --bv-hover-border: #3b82f6;
+  --bv-accent-color: #3b82f6;
+  --bv-accent-glow: rgba(59, 130, 246, 0.15);
   
   /* Match Sizing */
   --bv-match-min-width: 240px;
@@ -36,18 +33,27 @@
 }
 
 /* ============================================
-   Dark Mode Overrides
+   Dark Mode - Dark Blue Aesthetic
    ============================================ */
 
 .dark .brackets-viewer {
-  --bv-primary-bg: hsl(var(--background));
-  --bv-secondary-bg: hsl(var(--card) / 0.8);
-  --bv-text-color: hsl(var(--foreground) / 0.9);
-  --bv-text-muted: hsl(var(--muted-foreground) / 0.5);
-  --bv-connector-color: hsl(var(--border) / 0.5);
-  --bv-match-bg: hsl(var(--card) / 0.8);
-  --bv-match-border: hsl(var(--border) / 0.3);
-  --bv-win-color: hsl(var(--success) / 0.9);
+  /* Dark Blue Theme Colors (Based on provided example) */
+  --bv-primary-bg: #101213;        /* Very dark background */
+  --bv-secondary-bg: #1c2835;      /* Dark blue background */
+  --bv-match-bg: #14191f;          /* Match card dark blue-gray */
+  --bv-text-color: #d9d9d9;        /* Light gray text */
+  --bv-text-muted: #a7a7a7;        /* Muted hint color */
+  --bv-connector-color: #1c2835;   /* Connector lines dark blue */
+  --bv-match-border: #2a3441;      /* Slightly lighter border */
+  
+  /* Winner/Loser Colors */
+  --bv-win-color: #50b649;         /* Green for winners */
+  --bv-loss-color: #e61a1a;        /* Red for losers */
+  
+  /* Interactive States */
+  --bv-hover-border: #4a90e2;      /* Blue hover */
+  --bv-accent-color: #4a90e2;      /* Primary blue accent */
+  --bv-accent-glow: rgba(74, 144, 226, 0.2);
 }
 
 /* ============================================
@@ -62,13 +68,22 @@
   overflow: hidden;
   min-width: var(--bv-match-min-width);
   max-width: var(--bv-match-max-width);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .brackets-viewer .match:hover {
-  border-color: var(--bv-accent-color);
-  box-shadow: 0 2px 8px var(--bv-accent-glow), 0 0 0 1px var(--bv-accent-color);
+  border-color: var(--bv-hover-border);
+  box-shadow: 0 2px 8px var(--bv-accent-glow), 0 0 0 1px var(--bv-hover-border);
   cursor: pointer;
   transform: translateY(-1px);
+}
+
+.dark .brackets-viewer .match {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark .brackets-viewer .match:hover {
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3), 0 0 0 1px var(--bv-hover-border);
 }
 
 /* ============================================
@@ -135,8 +150,13 @@
   height: 32px;
   border-radius: 4px;
   object-fit: contain;
-  background: hsl(var(--muted) / 0.3);
+  background: rgba(128, 128, 128, 0.1);
   border: 1px solid var(--bv-match-border);
+}
+
+.dark .brackets-viewer .participant-image {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #2a3441;
 }
 
 /* ============================================
@@ -147,7 +167,7 @@
   color: var(--bv-text-color);
   font-weight: 700;
   padding: 4px 10px;
-  background: hsl(var(--muted) / 0.3);
+  background: rgba(128, 128, 128, 0.15);
   border-radius: 4px;
   min-width: 32px;
   text-align: center;
@@ -156,7 +176,17 @@
 
 .brackets-viewer .participant.win .score {
   background: var(--bv-accent-glow);
-  color: var(--bv-accent-color);
+  color: var(--bv-win-color);
+  font-weight: 800;
+}
+
+.dark .brackets-viewer .score {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .brackets-viewer .participant.win .score {
+  background: rgba(80, 182, 73, 0.2);
+  color: var(--bv-win-color);
 }
 
 /* ============================================
@@ -171,7 +201,7 @@
   margin-bottom: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: hsl(var(--muted) / 0.15);
+  background: rgba(128, 128, 128, 0.1);
   padding: 6px 12px;
   border-radius: 4px;
   display: inline-block;
@@ -179,7 +209,8 @@
 
 .dark .brackets-viewer .round-title,
 .dark .brackets-viewer .round-name {
-  color: hsl(var(--muted-foreground) / 0.4);
+  color: var(--bv-text-muted);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* ============================================
