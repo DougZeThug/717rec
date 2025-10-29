@@ -139,6 +139,15 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         }
       };
 
+      // Verify container exists
+      const container = containerRef.current;
+      if (!container) {
+        console.error('❌ Container element not found!');
+        setError('Bracket container not ready');
+        return;
+      }
+      
+      console.log('✅ Container element exists:', container);
       console.log('🎨 Calling window.bracketsViewer.render with options');
       console.log('📸 Participants with images:', result.data.participants.filter(p => p.image).map(p => ({ id: p.id, name: p.name, image: p.image })));
       console.log('🔍 CONNECTOR DEBUG - Complete data structure:', {
@@ -167,10 +176,22 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         }
       }
 
-      // Render using brackets-viewer v1.8.1
-      window.bracketsViewer.render(
-        result.data,
-        {
+      // Prepare data for brackets-viewer (excludes groups/rounds - library derives them from match.group_id/round_id)
+      const viewerData = {
+        stages: result.data.stages,
+        matches: result.data.matches,
+        matchGames: result.data.matchGames,
+        participants: result.data.participants
+        // DON'T pass groups/rounds - brackets-viewer derives them from match properties
+      };
+      
+      console.log('🎨 Rendering with cleaned data (no groups/rounds):', viewerData);
+
+      // Render using brackets-viewer v1.8.1 with try/catch
+      try {
+        window.bracketsViewer.render(
+          viewerData,
+          {
           selector: '#brackets-viewer-container',
           clear: true,
           participantOriginPlacement: 'before',
@@ -205,6 +226,13 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           }
         }
       );
+      
+      console.log('✅ brackets-viewer.render() completed successfully');
+      } catch (renderError) {
+        console.error('❌ brackets-viewer.render() threw an error:', renderError);
+        setError('Failed to render bracket visualization');
+        return;
+      }
 
         console.log('✅ BracketsViewerComponent: Render complete');
         
@@ -213,30 +241,48 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           const container = containerRef.current;
           if (!container) return;
           
+          // Check for bracket structure and match elements
+          const bracket = container.querySelector('.bracket');
+          const matches = container.querySelectorAll('.match');
+          const stages = container.querySelectorAll('.stage');
+          
           // Check for ALL SVG-related elements
           const allSvgs = container.querySelectorAll('svg');
           const allPaths = container.querySelectorAll('path');
           const allLines = container.querySelectorAll('line');
           const allPolylines = container.querySelectorAll('polyline');
           
-          console.log('🔍 SVG DEBUG:', {
-            totalSvgs: allSvgs.length,
-            totalPaths: allPaths.length,
-            totalLines: allLines.length,
-            totalPolylines: allPolylines.length
+          console.log('🔍 POST-RENDER CHECK:', {
+            hasBracketElement: !!bracket,
+            stageCount: stages.length,
+            matchCount: matches.length,
+            svgCount: allSvgs.length,
+            pathCount: allPaths.length,
+            lineCount: allLines.length,
+            polylineCount: allPolylines.length,
+            containerHTMLLength: container.innerHTML.length
           });
+          
+          if (matches.length === 0) {
+            console.error('❌ No matches rendered - brackets-viewer failed silently');
+            console.log('🔍 Container HTML preview:', container.innerHTML.substring(0, 1000));
+          } else {
+            console.log('✅ Matches rendered successfully!');
+          }
           
           // Log first SVG structure if it exists
           if (allSvgs.length > 0) {
             console.log('🔍 First SVG element:', allSvgs[0].outerHTML.substring(0, 500));
+          } else {
+            console.warn('⚠️ No SVG elements found - connectors missing');
           }
           
           // Check for connector class specifically
           const connectors = container.querySelectorAll('.connector, [class*="connector"]');
           console.log('🔍 Elements with .connector class:', connectors.length);
           
-          if (connectors.length === 0) {
-            console.warn('⚠️ CONNECTOR DEBUG - No connector elements found!');
+          if (connectors.length === 0 && matches.length > 0) {
+            console.warn('⚠️ Matches exist but no connector elements found!');
           }
           
           // Hide bracket ID if it's showing
