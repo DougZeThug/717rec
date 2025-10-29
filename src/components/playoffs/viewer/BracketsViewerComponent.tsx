@@ -242,13 +242,15 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         <div 
           ref={containerRef}
           id="brackets-viewer-container"
-          className="brackets-viewer p-8 font-bebas"
+          className="brackets-viewer p-4 md:p-8 font-bebas"
           style={{ 
             minHeight: '400px', 
             minWidth: 'fit-content',
             width: 'max-content',
             overflow: 'visible',
-            pointerEvents: 'auto' 
+            pointerEvents: 'auto',
+            transform: 'scale(1)',
+            transformOrigin: 'top left'
           }}
         />
         {!isInitialized && (

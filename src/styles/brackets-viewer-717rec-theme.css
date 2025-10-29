@@ -296,10 +296,23 @@
 }
 
 /* ============================================
-   Responsive Design
+   Responsive Design - Mobile Scaling
    ============================================ */
 
 @media (max-width: 768px) {
+  /* Scale down bracket viewer for mobile */
+  #brackets-viewer-container {
+    transform: scale(0.5) !important;
+    transform-origin: top left !important;
+  }
+  
+  /* Adjust container to account for scaling */
+  .w-full.overflow-x-auto {
+    height: 50vh;
+    overflow-x: scroll;
+    overflow-y: scroll;
+  }
+  
   .brackets-viewer .match {
     font-size: 0.875rem;
   }
@@ -325,6 +338,19 @@
     font-size: 0.875rem;
     padding: 4px 10px;
   }
+}
+
+/* Tablet sizing */
+@media (min-width: 769px) and (max-width: 1024px) {
+  #brackets-viewer-container {
+    transform: scale(0.75) !important;
+    transform-origin: top left !important;
+  }
+}
+
+/* Hide bracket ID from debug displays */
+[id^="bracket-"] .text-xs.opacity-80 {
+  display: none !important;
 }
 
 /* ============================================
