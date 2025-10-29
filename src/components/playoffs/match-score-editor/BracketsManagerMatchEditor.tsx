@@ -151,7 +151,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
     }
   };
 
-  const handleToggleByeStatus = async () => {
+  const handleToggleByeStatus = async (clearDownstream: boolean = false) => {
     if (!matchId || !byeEligible) return;
 
     try {
@@ -159,7 +159,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
       const makeReady = byeEligible.currentStatus !== 2;
 
-      const result = await bracketManagerService.adminToggleByeReady(matchId, makeReady);
+      const result = await bracketManagerService.adminToggleByeReady(matchId, makeReady, clearDownstream);
 
       toast({
         title: 'Status Updated',
@@ -167,6 +167,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
       });
 
       await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
+      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
 
       setByeEligible({
         ...byeEligible,
@@ -242,11 +243,43 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {byeEligible.currentStatus !== 2 ? (
+                    {byeEligible.currentStatus === 4 ? (
+                      // Completed match - show reopen options
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleByeStatus(false)}
+                          disabled={isTogglingStatus}
+                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                        >
+                          {isTogglingStatus ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <span className="mr-2">🔄</span>
+                          )}
+                          Reopen (Safe)
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleByeStatus(true)}
+                          disabled={isTogglingStatus}
+                          className="border-red-600 text-red-600 hover:bg-red-50"
+                        >
+                          {isTogglingStatus ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <span className="mr-2">⚠️</span>
+                          )}
+                          Reopen + Clear Downstream
+                        </Button>
+                      </>
+                    ) : byeEligible.currentStatus !== 2 ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleToggleByeStatus}
+                        onClick={() => handleToggleByeStatus(false)}
                         disabled={isTogglingStatus}
                         className="border-green-600 text-green-600 hover:bg-green-50"
                       >
@@ -261,7 +294,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleToggleByeStatus}
+                        onClick={() => handleToggleByeStatus(false)}
                         disabled={isTogglingStatus}
                         className="border-amber-600 text-amber-600 hover:bg-amber-50"
                       >
@@ -276,7 +309,19 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {byeEligible.currentStatus !== 2 ? (
+                  {byeEligible.currentStatus === 4 ? (
+                    <div className="space-y-1">
+                      <p className="text-destructive font-medium">
+                        ⚠️ This match is marked as Completed but has no winner (zombie state).
+                      </p>
+                      <p>
+                        <strong>Reopen (Safe)</strong>: Only works if downstream matches haven't been populated yet.
+                      </p>
+                      <p>
+                        <strong>Reopen + Clear Downstream</strong>: Nullifies all downstream matches. Use with caution!
+                      </p>
+                    </div>
+                  ) : byeEligible.currentStatus !== 2 ? (
                     <p>
                       ⚠️ This BYE match is currently locked. Click "Unlock to Ready" to enable score entry.
                     </p>

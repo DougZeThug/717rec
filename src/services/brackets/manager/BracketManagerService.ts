@@ -292,6 +292,10 @@ export class BracketManagerService {
           currentMatch.status = 2;
             
           console.log(`✅ BYE match ${matchId} unlocked successfully`);
+          
+          // ⭐ FIX: Return early to prevent calling manager.update.match() without scores
+          // This prevents BYE matches from being marked as Completed (status 4) without a winner
+          return;
         }
         
         // ⭐ Load participants into cache before update
@@ -980,14 +984,16 @@ export class BracketManagerService {
         opponent2Name
       };
 
-      const isEligible = isLosers && exactlyOneReal && isByeSide && lockedOrWaiting;
+      // Allow completed matches for reopening (status 4)
+      const isCompletedMatch = matchData.status === 4;
+      const isEligible = isLosers && exactlyOneReal && isByeSide && (lockedOrWaiting || isCompletedMatch);
 
       if (!isEligible) {
         let reason = 'Not eligible: ';
         if (!isLosers) reason += 'Not in Losers Bracket. ';
         if (!exactlyOneReal) reason += 'Must have exactly one real team. ';
         if (!isByeSide) reason += 'No BYE detected. ';
-        if (!lockedOrWaiting) reason += `Status is ${meta.currentStatusName} (must be Locked or Waiting).`;
+        if (!lockedOrWaiting && !isCompletedMatch) reason += `Status is ${meta.currentStatusName} (must be Locked, Waiting, or Completed).`;
         
         return { ok: false, reason: reason.trim(), meta };
       }
@@ -1010,19 +1016,120 @@ export class BracketManagerService {
   }
 
   /**
-   * Admin-only: Toggle a Losers Bracket BYE match status between Waiting (1) and Ready (2)
+   * Check if downstream matches have been populated with this match's winner
    */
-  async adminToggleByeReady(matchId: number, makeReady: boolean): Promise<{
+  private async checkDownstreamPopulation(matchId: number): Promise<{
+    hasDownstream: boolean;
+    downstreamMatches: any[];
+  }> {
+    const currentMatch = await this.storage.select('match', matchId);
+    if (!currentMatch) {
+      return { hasDownstream: false, downstreamMatches: [] };
+    }
+
+    // Get all matches in the same stage
+    const allMatches = await this.storage.select('match', { stage_id: currentMatch.stage_id });
+    
+    // Find matches that have this match's participants as opponents
+    const winnerParticipantId = currentMatch.opponent1?.id || currentMatch.opponent2?.id;
+    
+    const populated = allMatches.filter((m: any) => 
+      m.id !== matchId && 
+      (m.opponent1?.id === winnerParticipantId || m.opponent2?.id === winnerParticipantId)
+    );
+
+    return {
+      hasDownstream: populated.length > 0,
+      downstreamMatches: populated
+    };
+  }
+
+  /**
+   * Admin-only: Toggle BYE match status between Waiting, Ready, and Completed
+   * 
+   * Supports reopening completed matches with downstream cascade clearing.
+   * 
+   * @param matchId - Match ID in the brackets-manager database
+   * @param makeReady - If true, set to Ready (2). If false, revert to Waiting (1)
+   * @param clearDownstream - If true, clear downstream matches when reopening completed match
+   */
+  async adminToggleByeReady(matchId: number, makeReady: boolean, clearDownstream: boolean = false): Promise<{
     matchId: number;
     status: number;
     statusName: string;
     message: string;
   }> {
-    bracketLog(`Admin BYE toggle requested for match ${matchId}`, { makeReady });
+    bracketLog(`Admin BYE toggle requested for match ${matchId}`, { makeReady, clearDownstream });
 
     try {
       const check = await this.isLosersByeMatch(matchId);
+      const isCompletedMatch = check.meta?.status === 4;
 
+      // If reopening a completed match
+      if (isCompletedMatch && !makeReady) {
+        // Check downstream population
+        if (!clearDownstream) {
+          const downstream = await this.checkDownstreamPopulation(matchId);
+          
+          if (downstream.hasDownstream) {
+            throw new Error(
+              'Cannot reopen completed match: downstream matches have been populated. ' +
+              'Use "Reopen + Clear Downstream" option to cascade clear downstream matches.'
+            );
+          }
+        }
+
+        // If clearDownstream is requested, nullify downstream matches
+        if (clearDownstream) {
+          const downstream = await this.checkDownstreamPopulation(matchId);
+          
+          for (const downstreamMatch of downstream.downstreamMatches) {
+            await supabase
+              .from('match')
+              .update({
+                opponent1_id: null,
+                opponent2_id: null,
+                opponent1_result: null,
+                opponent2_result: null,
+                opponent1_score: null,
+                opponent2_score: null,
+                status: 1 // Reset to Waiting
+              })
+              .eq('id', downstreamMatch.id);
+          }
+
+          bracketLog('Cleared downstream matches', { 
+            matchId, 
+            clearedCount: downstream.downstreamMatches.length,
+            clearedIds: downstream.downstreamMatches.map((m: any) => m.id)
+          });
+        }
+
+        // Clear current match results and set to Ready for re-scoring
+        await supabase
+          .from('match')
+          .update({
+            opponent1_result: null,
+            opponent2_result: null,
+            opponent1_score: null,
+            opponent2_score: null,
+            status: 2 // Set to Ready for re-scoring
+          })
+          .eq('id', matchId);
+
+        successLog(`Reopened completed BYE match ${matchId} to Ready`);
+
+        return {
+          matchId,
+          status: 2,
+          statusName: 'Ready',
+          message: clearDownstream 
+            ? 'Match reopened and downstream matches cleared'
+            : 'Match reopened to Ready status'
+        };
+      }
+
+      // Normal toggle between Waiting and Ready
       if (makeReady) {
         if (!check.ok) {
           throw new Error(
