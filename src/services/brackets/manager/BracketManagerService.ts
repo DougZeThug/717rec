@@ -270,8 +270,26 @@ export class BracketManagerService {
           round_id: currentMatch.round_id,
           group_id: currentMatch.group_id,
           number: currentMatch.number,
-          stage_id: currentMatch.stage_id
+          stage_id: currentMatch.stage_id,
+          status: currentMatch.status
         });
+        
+        // ⭐ Check if this is a BYE match (one opponent is null)
+        const isByeMatch = !currentMatch.opponent1 || !currentMatch.opponent2;
+        
+        // ⭐ If it's a BYE match and locked/waiting, unlock it for manual advancement
+        // Status: 0 = Locked, 1 = Waiting, 2 = Ready, 3 = Running, 4 = Completed, 5 = Archived
+        if (isByeMatch && (currentMatch.status === 0 || currentMatch.status === 1)) {
+          console.log(`🔓 Unlocking BYE match ${matchId} for manual advancement (status: ${currentMatch.status} -> 2)`);
+          
+          // Directly update the match status in the database to Ready (2)
+          await supabase
+            .from('match')
+            .update({ status: 2 }) // 2 = Ready
+            .eq('id', matchId);
+            
+          console.log(`✅ BYE match ${matchId} unlocked successfully`);
+        }
         
         // ⭐ Load participants into cache before update
         const stage = await this.storage.select('stage', (currentMatch as any).stage_id);
