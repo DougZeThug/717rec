@@ -205,72 +205,148 @@ export class BracketsViewerAdapter {
   /**
    * Calculate source_node_id for each opponent in matches
    * This determines which previous match each opponent came from
+   * Handles Winners→Winners, Losers→Losers, and Winners→Losers drop-ins
    */
   private static calculateSourceNodeIds(
     matches: any[],
     groups: any[],
     rounds: any[]
   ): any[] {
-    // Build maps for fast lookup
-    const matchesByRound = new Map<number, any[]>();
-    matches.forEach(match => {
-      if (!matchesByRound.has(match.round_id)) {
-        matchesByRound.set(match.round_id, []);
-      }
-      matchesByRound.get(match.round_id)!.push(match);
-    });
+    // Build comprehensive indexes for O(1) lookups
+    const matchesById = new Map(matches.map(m => [m.id, m]));
+    const roundsById = new Map(rounds.map(r => [r.id, r]));
+    const groupsById = new Map(groups.map(g => [g.id, g]));
 
-    // Sort rounds by number to process in order
-    const sortedRounds = [...rounds].sort((a, b) => a.number - b.number);
-    
-    return matches.map(match => {
-      const currentRound = rounds.find(r => r.id === match.round_id);
-      if (!currentRound) return match;
-      
-      const currentRoundNumber = currentRound.number;
-      
-      // First round matches have no source
-      if (currentRoundNumber === 1) {
-        return match;
-      }
-      
-      // Find previous round in the same group
-      const prevRound = sortedRounds.find(r => 
-        r.group_id === match.group_id && 
-        r.number === currentRoundNumber - 1
-      );
-      
-      if (!prevRound) {
-        return match; // No previous round
-      }
-      
-      // Get matches from previous round, sorted by number
-      const prevRoundMatches = (matchesByRound.get(prevRound.id) || [])
-        .sort((a, b) => a.number - b.number);
-      
-      // Calculate which previous matches feed into this match
-      // Standard bracket: match N in current round gets opponents from matches (2N-1) and (2N) in previous round
-      const prevMatch1Index = (match.number - 1) * 2;
-      const prevMatch2Index = prevMatch1Index + 1;
-      
-      const prevMatch1 = prevRoundMatches[prevMatch1Index];
-      const prevMatch2 = prevRoundMatches[prevMatch2Index];
-      
-      // Add source_node_id to opponents
-      return {
-        ...match,
-        opponent1: match.opponent1 ? {
+    // Index matches by group+round for fast lookup: "groupId:roundNumber" -> matches[]
+    const matchesByGroupRound = new Map<string, any[]>();
+    for (const m of matches) {
+      const r = roundsById.get(m.round_id);
+      if (!r) continue;
+      const key = `${r.group_id}:${r.number}`;
+      if (!matchesByGroupRound.has(key)) matchesByGroupRound.set(key, []);
+      matchesByGroupRound.get(key)!.push(m);
+    }
+
+    // Sort matches within each group+round by number (1-based indexing)
+    for (const [key, arr] of matchesByGroupRound) {
+      arr.sort((a, b) => a.number - b.number);
+    }
+
+    // Helper: Add Winners→Winners progression sources
+    const addWinnersProgressionSources = (match: any) => {
+      const currentRound = roundsById.get(match.round_id);
+      if (!currentRound || currentRound.number === 1) return; // First round has no sources
+
+      const keyPrev = `${currentRound.group_id}:${currentRound.number - 1}`;
+      const prevMatches = matchesByGroupRound.get(keyPrev);
+      if (!prevMatches) return;
+
+      // Binary tree pairing: match N gets winners from matches (2N-1) and (2N)
+      const prevMatch1 = prevMatches[(match.number - 1) * 2];
+      const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
+
+      if (prevMatch1 && match.opponent1) {
+        match.opponent1 = {
           ...match.opponent1,
-          source_node_id: prevMatch1?.id?.toString(),
-          source_type: 'winner' as const
-        } : null,
-        opponent2: match.opponent2 ? {
+          source_node_id: String(prevMatch1.id),
+          source_type: 'winner'
+        };
+      }
+
+      if (prevMatch2 && match.opponent2) {
+        match.opponent2 = {
           ...match.opponent2,
-          source_node_id: prevMatch2?.id?.toString(),
-          source_type: 'winner' as const
-        } : null
-      };
-    });
+          source_node_id: String(prevMatch2.id),
+          source_type: 'winner'
+        };
+      }
+    };
+
+    // Helper: Add Losers→Losers progression sources
+    const addLosersProgressionSources = (match: any) => {
+      const currentRound = roundsById.get(match.round_id);
+      if (!currentRound || currentRound.number === 1) return; // First LB round gets drop-ins only
+
+      const keyPrev = `${currentRound.group_id}:${currentRound.number - 1}`;
+      const prevMatches = matchesByGroupRound.get(keyPrev);
+      if (!prevMatches) return;
+
+      // Same binary pairing within losers bracket
+      const prevMatch1 = prevMatches[(match.number - 1) * 2];
+      const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
+
+      // Only set if not already sourced (to avoid overwriting drop-ins)
+      if (prevMatch1 && match.opponent1 && !match.opponent1.source_node_id) {
+        match.opponent1 = {
+          ...match.opponent1,
+          source_node_id: String(prevMatch1.id),
+          source_type: 'winner'
+        };
+      }
+
+      if (prevMatch2 && match.opponent2 && !match.opponent2.source_node_id) {
+        match.opponent2 = {
+          ...match.opponent2,
+          source_node_id: String(prevMatch2.id),
+          source_type: 'winner'
+        };
+      }
+    };
+
+    // Helper: Add Winners→Losers drop-in connectors (THE KEY FIX)
+    const addWinnersToLosersDropIns = (match: any) => {
+      const lbRound = roundsById.get(match.round_id);
+      if (!lbRound) return;
+
+      const lbGroup = groupsById.get(lbRound.group_id);
+      if (!lbGroup || lbGroup.number !== 2) return; // Only losers bracket (group 2)
+
+      // Find winners bracket group (group.number === 1)
+      const wbGroup = [...groupsById.values()].find(g => g.number === 1);
+      if (!wbGroup) return;
+
+      // Map: Winners Round i → Losers Round i (standard brackets-manager layout)
+      const keyWB = `${wbGroup.id}:${lbRound.number}`;
+      const wbMatches = matchesByGroupRound.get(keyWB);
+      if (!wbMatches) return;
+
+      // Loser from WB match N drops into LB match N
+      const wbMatch = wbMatches[match.number - 1];
+      if (!wbMatch) return;
+
+      // Determine which opponent slot to fill
+      // If opponent1 already has a source (from LB progression), use opponent2
+      const targetSlot = match.opponent1?.source_node_id ? 'opponent2' : 'opponent1';
+
+      if (match[targetSlot]) {
+        match[targetSlot] = {
+          ...match[targetSlot],
+          source_node_id: String(wbMatch.id),
+          source_type: 'loser'
+        };
+      }
+    };
+
+    // Process all matches and apply sources in correct order
+    for (const match of matches) {
+      const round = roundsById.get(match.round_id);
+      if (!round) continue;
+
+      const group = groupsById.get(round.group_id);
+      if (!group) continue;
+
+      if (group.number === 2) {
+        // Losers bracket: apply LB→LB first, then WB→LB drop-ins
+        addLosersProgressionSources(match);
+        addWinnersToLosersDropIns(match);
+      } else if (group.number === 1) {
+        // Winners bracket: simple progression
+        addWinnersProgressionSources(match);
+      }
+      // Finals group (number === 3) would be handled here if needed
+    }
+
+    return matches;
   }
 
   /**

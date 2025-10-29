@@ -200,6 +200,21 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         }))
       });
 
+      // Diagnostic logging for connector debugging
+      const totalOpps = viewerData.matches.reduce(
+        (n, m) => n + (m.opponent1 ? 1 : 0) + (m.opponent2 ? 1 : 0), 
+        0
+      );
+      const sourced = viewerData.matches.reduce(
+        (n, m) => n + (m.opponent1?.source_node_id ? 1 : 0) + (m.opponent2?.source_node_id ? 1 : 0), 
+        0
+      );
+      console.log('🔗 Connector Stats:', { 
+        totalOpponents: totalOpps, 
+        withSources: sourced,
+        percentage: totalOpps > 0 ? Math.round((sourced / totalOpps) * 100) + '%' : '0%'
+      });
+
       // Render using brackets-viewer v1.8.1 with try/catch
       try {
         window.bracketsViewer.render(
