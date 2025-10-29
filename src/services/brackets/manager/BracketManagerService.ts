@@ -273,21 +273,6 @@ export class BracketManagerService {
           stage_id: currentMatch.stage_id
         });
         
-        // Prevent manual editing of BYE or waiting matches
-        // According to brackets-manager docs: "BYE supported: only during creation"
-        const isByeOrWaiting = !currentMatch.opponent1 || !currentMatch.opponent2;
-        if (isByeOrWaiting) {
-          const statusNames = ['Locked', 'Waiting', 'Ready', 'Running', 'Completed', 'Archived'];
-          const statusName = statusNames[currentMatch.status as number] || 'Unknown';
-          
-          throw new Error(
-            `Cannot manually update match ${matchId}. ` +
-            `This match has status="${statusName}" with one or both opponents missing. ` +
-            `BYE matches are handled automatically during bracket creation. ` +
-            `Matches waiting for opponents will be populated automatically when previous matches complete.`
-          );
-        }
-        
         // ⭐ Load participants into cache before update
         const stage = await this.storage.select('stage', (currentMatch as any).stage_id);
         if (stage) {

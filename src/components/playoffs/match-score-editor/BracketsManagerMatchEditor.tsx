@@ -149,66 +149,60 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
     );
   }
 
-  // Detect BYE or waiting match
-  // According to brackets-manager docs: BYEs are "only during creation"
-  // Matches with one null opponent are either:
-  // - Status 5 (Archived): Permanent BYE - already completed
-  // - Status 1 (Waiting): Waiting for opponent from previous match
-  // Both should NOT be manually edited
-  const isByeOrWaiting = !matchData.opponent1 || !matchData.opponent2;
-  
-  // Show error UI for BYE/waiting matches that shouldn't be edited
-  if (isByeOrWaiting) {
+  // Detect BYE match
+  const isBye = !matchData.opponent1 || !matchData.opponent2;
+  const byeWinner = matchData.opponent1 || matchData.opponent2;
+
+  // BYE match UI
+  if (isBye && byeWinner) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Cannot Edit This Match</DialogTitle>
+            <DialogTitle>Match Forfeit - BYE</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            {matchData.opponent1 || matchData.opponent2 ? (
-              // One opponent present - waiting for second
-              <>
-                <p className="text-muted-foreground">
-                  This match is waiting for an opponent to be determined from a previous match.
-                </p>
-                <div className="bg-muted p-4 rounded-lg">
-                  <p className="font-medium">
-                    {matchData.opponent1?.name || matchData.opponent2?.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">vs. TBD</p>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Once the previous matches are completed, this match will automatically be populated with both opponents.
-                </p>
-              </>
-            ) : (
-              // No opponents - locked until previous matches complete
-              <>
-                <p className="text-muted-foreground">
-                  This match is locked until the preceding matches are completed.
-                </p>
-                <div className="bg-muted p-4 rounded-lg text-center">
-                  <p className="font-medium">TBD vs. TBD</p>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Both opponents will be determined automatically by the bracket system.
-                </p>
-              </>
-            )}
-            
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded text-sm">
-              <p className="font-medium text-blue-900 dark:text-blue-100">📘 How brackets-manager works:</p>
-              <p className="text-blue-800 dark:text-blue-200 mt-1">
-                BYE matches and opponent propagation are handled automatically. You cannot manually edit matches that are waiting for opponents.
+          <div className="space-y-6 py-4">
+            <div className="text-center py-4">
+              <p className="text-xl font-semibold">{byeWinner.name} wins by walkover</p>
+              <p className="text-sm text-muted-foreground mt-2">Opponent: BYE</p>
+            </div>
+
+            {/* Winner Score */}
+            <div className="space-y-2">
+              <Label htmlFor="winner-score">
+                {byeWinner.name} Score (Games Won)
+              </Label>
+              <Input
+                id="winner-score"
+                type="number"
+                min="0"
+                value={matchData.opponent1 ? opponent1Score : opponent2Score}
+                onChange={(e) => {
+                  const score = parseInt(e.target.value) || 0;
+                  if (matchData.opponent1) {
+                    setOpponent1Score(score);
+                    setOpponent2Score(0);
+                  } else {
+                    setOpponent2Score(score);
+                    setOpponent1Score(0);
+                  }
+                }}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter the number of games won (typically 2 for Best of 3)
               </p>
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={onClose}>
-              Close
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Award Win
             </Button>
           </div>
         </DialogContent>
