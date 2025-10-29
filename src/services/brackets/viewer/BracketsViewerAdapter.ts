@@ -131,6 +131,26 @@ export class BracketsViewerAdapter {
       status: this.mapStatusToString(match.status)
     }));
 
+    // Calculate source_node_id for connectors
+    const matchesWithSources = this.calculateSourceNodeIds(
+      transformedMatches,
+      groups,
+      rounds
+    );
+
+    console.log('✅ Calculated source_node_ids:', {
+      totalMatches: matchesWithSources.length,
+      matchesWithSources: matchesWithSources.filter(m => 
+        m.opponent1?.source_node_id || m.opponent2?.source_node_id
+      ).length,
+      sampleWithSources: matchesWithSources.slice(5, 8).map(m => ({
+        id: m.id,
+        round: m.round_id,
+        opp1_source: m.opponent1?.source_node_id,
+        opp2_source: m.opponent2?.source_node_id
+      }))
+    });
+
     // Transform match games to viewer format
     const transformedMatchGames = matchGames.map(game => ({
       id: game.id,
@@ -170,7 +190,7 @@ export class BracketsViewerAdapter {
         stages: stages as any,
         groups: groups as any,
         rounds: rounds as any,
-        matches: transformedMatches as any,
+        matches: matchesWithSources as any,
         matchGames: transformedMatchGames as any,
         participants: transformedParticipants as any
       },
@@ -180,6 +200,77 @@ export class BracketsViewerAdapter {
         return result;
       }
     };
+  }
+
+  /**
+   * Calculate source_node_id for each opponent in matches
+   * This determines which previous match each opponent came from
+   */
+  private static calculateSourceNodeIds(
+    matches: any[],
+    groups: any[],
+    rounds: any[]
+  ): any[] {
+    // Build maps for fast lookup
+    const matchesByRound = new Map<number, any[]>();
+    matches.forEach(match => {
+      if (!matchesByRound.has(match.round_id)) {
+        matchesByRound.set(match.round_id, []);
+      }
+      matchesByRound.get(match.round_id)!.push(match);
+    });
+
+    // Sort rounds by number to process in order
+    const sortedRounds = [...rounds].sort((a, b) => a.number - b.number);
+    
+    return matches.map(match => {
+      const currentRound = rounds.find(r => r.id === match.round_id);
+      if (!currentRound) return match;
+      
+      const currentRoundNumber = currentRound.number;
+      
+      // First round matches have no source
+      if (currentRoundNumber === 1) {
+        return match;
+      }
+      
+      // Find previous round in the same group
+      const prevRound = sortedRounds.find(r => 
+        r.group_id === match.group_id && 
+        r.number === currentRoundNumber - 1
+      );
+      
+      if (!prevRound) {
+        return match; // No previous round
+      }
+      
+      // Get matches from previous round, sorted by number
+      const prevRoundMatches = (matchesByRound.get(prevRound.id) || [])
+        .sort((a, b) => a.number - b.number);
+      
+      // Calculate which previous matches feed into this match
+      // Standard bracket: match N in current round gets opponents from matches (2N-1) and (2N) in previous round
+      const prevMatch1Index = (match.number - 1) * 2;
+      const prevMatch2Index = prevMatch1Index + 1;
+      
+      const prevMatch1 = prevRoundMatches[prevMatch1Index];
+      const prevMatch2 = prevRoundMatches[prevMatch2Index];
+      
+      // Add source_node_id to opponents
+      return {
+        ...match,
+        opponent1: match.opponent1 ? {
+          ...match.opponent1,
+          source_node_id: prevMatch1?.id?.toString(),
+          source_type: 'winner' as const
+        } : null,
+        opponent2: match.opponent2 ? {
+          ...match.opponent2,
+          source_node_id: prevMatch2?.id?.toString(),
+          source_type: 'winner' as const
+        } : null
+      };
+    });
   }
 
   /**

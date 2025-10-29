@@ -25,12 +25,16 @@ export interface ViewerMatch {
     position?: number;
     result?: 'win' | 'loss';
     score?: number;
+    source_node_id?: string;
+    source_type?: 'winner' | 'loser';
   } | null;
   opponent2: {
     id: number | null;
     position?: number;
     result?: 'win' | 'loss';
     score?: number;
+    source_node_id?: string;
+    source_type?: 'winner' | 'loser';
   } | null;
   status: 'locked' | 'waiting' | 'ready' | 'running' | 'completed' | 'archived';
 }

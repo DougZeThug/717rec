@@ -176,16 +176,29 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         }
       }
 
-      // Prepare data for brackets-viewer (excludes groups/rounds - library derives them from match.group_id/round_id)
+      // Prepare data for brackets-viewer (INCLUDE groups/rounds for connector rendering)
       const viewerData = {
         stages: result.data.stages,
+        groups: result.data.groups,
+        rounds: result.data.rounds,
         matches: result.data.matches,
         matchGames: result.data.matchGames,
         participants: result.data.participants
-        // DON'T pass groups/rounds - brackets-viewer derives them from match properties
       };
       
-      console.log('🎨 Rendering with cleaned data (no groups/rounds):', viewerData);
+      console.log('🎨 Rendering with complete data including groups/rounds:', {
+        stagesCount: viewerData.stages.length,
+        groupsCount: viewerData.groups?.length,
+        roundsCount: viewerData.rounds?.length,
+        matchesCount: viewerData.matches.length,
+        sampleMatches: viewerData.matches.slice(5, 8).map(m => ({
+          id: m.id,
+          round_id: m.round_id,
+          group_id: m.group_id,
+          opp1_source: m.opponent1?.source_node_id,
+          opp2_source: m.opponent2?.source_node_id
+        }))
+      });
 
       // Render using brackets-viewer v1.8.1 with try/catch
       try {
