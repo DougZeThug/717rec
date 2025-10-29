@@ -348,19 +348,10 @@
   }
 }
 
-/* Hide bracket ID from debug displays - multiple selectors to catch all cases */
-.text-xs.opacity-80,
-.opacity-80.text-xs,
-[class*="text-xs"][class*="opacity"] {
+/* Hide bracket ID - simpler approach */
+.brackets-viewer > p:first-child,
+.font-bebas > p:first-child {
   display: none !important;
-}
-
-/* Also hide any elements that look like UUIDs */
-*[class*="text-"]:has(+ *) {
-  &:contains("EADE187F"),
-  &:contains("-") {
-    display: none !important;
-  }
 }
 
 /* ============================================

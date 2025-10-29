@@ -141,6 +141,15 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
       console.log('🎨 Calling window.bracketsViewer.render with options');
       console.log('📸 Participants with images:', result.data.participants.filter(p => p.image).map(p => ({ id: p.id, name: p.name, image: p.image })));
+      console.log('🔍 CONNECTOR DEBUG - Match data:', result.data.matches.slice(0, 5).map(m => ({
+        id: m.id,
+        round_id: m.round_id,
+        group_id: m.group_id,
+        stage_id: m.stage_id,
+        child_count: m.child_count,
+        number: m.number
+      })));
+      console.log('🔍 CONNECTOR DEBUG - Stage data:', result.data.stages);
 
       // Set participant images before rendering (required by brackets-viewer API)
       if (window.bracketsViewer.setParticipantImages) {
@@ -197,6 +206,36 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       );
 
         console.log('✅ BracketsViewerComponent: Render complete');
+        
+        // Debug: Check if connector SVG elements exist
+        setTimeout(() => {
+          const svgElements = containerRef.current?.querySelectorAll('svg.connector, svg [class*="connector"], line.connector');
+          console.log('🔍 CONNECTOR DEBUG - SVG connectors found:', svgElements?.length || 0);
+          if (svgElements && svgElements.length > 0) {
+            const firstConnector = svgElements[0] as SVGElement;
+            console.log('🔍 CONNECTOR DEBUG - First connector styles:', {
+              stroke: getComputedStyle(firstConnector).stroke,
+              strokeWidth: getComputedStyle(firstConnector).strokeWidth,
+              display: getComputedStyle(firstConnector).display,
+              visibility: getComputedStyle(firstConnector).visibility
+            });
+          } else {
+            console.warn('⚠️ CONNECTOR DEBUG - No connector SVG elements found!');
+          }
+          
+          // Hide bracket ID if it's showing
+          if (containerRef.current) {
+            const allText = containerRef.current.querySelectorAll('*:not(script):not(style)');
+            allText.forEach(el => {
+              const text = el.textContent || '';
+              // UUID pattern: 8-4-4-4-12 hex characters
+              if (/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$/i.test(text.trim())) {
+                console.log('🔍 Hiding bracket ID element:', el);
+                (el as HTMLElement).style.display = 'none';
+              }
+            });
+          }
+        }, 500);
 
         setIsInitialized(true);
         setError(null);

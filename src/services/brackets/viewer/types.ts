@@ -19,6 +19,7 @@ export interface ViewerMatch {
   group_id: number;
   round_id: number;
   number: number;
+  child_count?: number;  // Added: Required for connectors
   opponent1: {
     id: number | null;
     position?: number;

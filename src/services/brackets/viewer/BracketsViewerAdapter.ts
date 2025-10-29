@@ -147,7 +147,14 @@ export class BracketsViewerAdapter {
       participants: transformedParticipants.length,
       reverseMatchIdMapSize: reverseMatchIdMap.size,
       teamsWithLogos: transformedParticipants.filter(p => p.image).length,
-      participantsSample: transformedParticipants.slice(0, 3)
+      participantsSample: transformedParticipants.slice(0, 3),
+      matchesWithChildCount: transformedMatches.filter(m => m.child_count > 0).length,
+      sampleMatches: transformedMatches.slice(0, 3).map(m => ({
+        id: m.id,
+        child_count: m.child_count,
+        round_id: m.round_id,
+        group_id: m.group_id
+      }))
     });
 
     return {
