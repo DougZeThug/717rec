@@ -111,9 +111,10 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           usesBracketsManager: bracket.uses_brackets_manager
         });
         
-        // Check if match has both participants
-        if (!match.opponent1?.id || !match.opponent2?.id) {
-          console.warn('⚠️ Match clicked but participants not determined yet');
+        // Allow BYE matches (one participant) to be clicked for manual scoring
+        // Only block if BOTH opponents are missing (match not yet determined)
+        if (!match.opponent1?.id && !match.opponent2?.id) {
+          console.warn('⚠️ Match clicked but no participants determined yet');
           return;
         }
 
