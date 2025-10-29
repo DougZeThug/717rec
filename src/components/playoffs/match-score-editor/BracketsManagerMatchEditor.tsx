@@ -45,32 +45,64 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
     try {
       setIsSaving(true);
       
+      // Check if this is a BYE match (one opponent is null)
+      const isBye = !matchData.opponent1 || !matchData.opponent2;
+      
       log('Saving brackets-manager match', {
         matchId,
         opponent1Score,
-        opponent2Score
+        opponent2Score,
+        isBye,
+        hasOpponent1: !!matchData.opponent1,
+        hasOpponent2: !!matchData.opponent2
       });
 
-      // Determine winner based on scores
-      // Only set result:"win" for the winner, omit for loser (per brackets-manager.js spec)
-      const scores: {
-        opponent1: { score: number; result?: "win" };
-        opponent2: { score: number; result?: "win" };
-      } = {
-        opponent1: { 
-          score: opponent1Score,
-          ...(opponent1Score > opponent2Score ? { result: "win" as const } : {})
-        },
-        opponent2: { 
-          score: opponent2Score,
-          ...(opponent2Score > opponent1Score ? { result: "win" as const } : {})
+      // For BYE matches, use forfeit result
+      if (isBye) {
+        // The existing opponent wins by forfeit
+        const scores: any = {};
+        
+        if (matchData.opponent1) {
+          scores.opponent1 = { 
+            score: opponent1Score,
+            result: "win" as const,
+            forfeit: true
+          };
         }
-      };
+        
+        if (matchData.opponent2) {
+          scores.opponent2 = { 
+            score: opponent2Score,
+            result: "win" as const,
+            forfeit: true
+          };
+        }
 
-      await bracketManagerService.updateMatch({
-        matchId,
-        scores
-      });
+        await bracketManagerService.updateMatch({
+          matchId,
+          scores
+        });
+      } else {
+        // Regular match - determine winner based on scores
+        const scores: {
+          opponent1: { score: number; result?: "win" | "loss" };
+          opponent2: { score: number; result?: "win" | "loss" };
+        } = {
+          opponent1: { 
+            score: opponent1Score,
+            result: opponent1Score > opponent2Score ? "win" as const : "loss" as const
+          },
+          opponent2: { 
+            score: opponent2Score,
+            result: opponent2Score > opponent1Score ? "win" as const : "loss" as const
+          }
+        };
+
+        await bracketManagerService.updateMatch({
+          matchId,
+          scores
+        });
+      }
 
       // Invalidate all bracket-related queries to trigger refresh
       await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
@@ -122,6 +154,68 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
     );
   }
 
+  // Detect BYE match
+  const isBye = !matchData.opponent1 || !matchData.opponent2;
+  const byeWinner = matchData.opponent1 || matchData.opponent2;
+
+  // BYE match UI
+  if (isBye && byeWinner) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Match Forfeit - BYE</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="text-center py-4">
+              <p className="text-xl font-semibold">{byeWinner.name} wins by walkover</p>
+              <p className="text-sm text-muted-foreground mt-2">Opponent: BYE</p>
+            </div>
+
+            {/* Winner Score */}
+            <div className="space-y-2">
+              <Label htmlFor="winner-score">
+                {byeWinner.name} Score (Games Won)
+              </Label>
+              <Input
+                id="winner-score"
+                type="number"
+                min="0"
+                value={matchData.opponent1 ? opponent1Score : opponent2Score}
+                onChange={(e) => {
+                  const score = parseInt(e.target.value) || 0;
+                  if (matchData.opponent1) {
+                    setOpponent1Score(score);
+                    setOpponent2Score(0);
+                  } else {
+                    setOpponent2Score(score);
+                    setOpponent1Score(0);
+                  }
+                }}
+                className="w-full"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter the number of games won (typically 2 for Best of 3)
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isSaving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Award Win
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Regular match UI
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
