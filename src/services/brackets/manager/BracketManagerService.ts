@@ -288,6 +288,9 @@ export class BracketManagerService {
             .update({ status: 2 }) // 2 = Ready
             .eq('id', matchId);
             
+          // ⭐ Update the local object to match the database
+          currentMatch.status = 2;
+            
           console.log(`✅ BYE match ${matchId} unlocked successfully`);
         }
         
