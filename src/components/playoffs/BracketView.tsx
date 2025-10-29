@@ -177,9 +177,6 @@ const BracketView: React.FC<BracketViewProps> = ({
             <p className="font-medium">Loading bracket data...</p>
             <p className="text-sm text-gray-500 mt-1">This may take a moment</p>
           </div>
-          {bracketId && (
-            <p className="text-xs text-gray-400 mt-2">Bracket ID: {bracketId}</p>
-          )}
         </div>
       </div>
     );
@@ -195,9 +192,6 @@ const BracketView: React.FC<BracketViewProps> = ({
           <AlertDescription>
             <div className="space-y-2">
               <p>Failed to load bracket: {error.message}</p>
-              {bracketId && (
-                <p className="text-xs opacity-80">Bracket ID: {bracketId}</p>
-              )}
             </div>
           </AlertDescription>
         </Alert>

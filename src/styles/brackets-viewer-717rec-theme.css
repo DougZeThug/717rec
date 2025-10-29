@@ -302,7 +302,7 @@
 @media (max-width: 768px) {
   /* Scale down bracket viewer for mobile */
   #brackets-viewer-container {
-    transform: scale(0.5) !important;
+    transform: scale(0.75) !important;
     transform-origin: top left !important;
   }
   
@@ -348,9 +348,19 @@
   }
 }
 
-/* Hide bracket ID from debug displays */
-[id^="bracket-"] .text-xs.opacity-80 {
+/* Hide bracket ID from debug displays - multiple selectors to catch all cases */
+.text-xs.opacity-80,
+.opacity-80.text-xs,
+[class*="text-xs"][class*="opacity"] {
   display: none !important;
+}
+
+/* Also hide any elements that look like UUIDs */
+*[class*="text-"]:has(+ *) {
+  &:contains("EADE187F"),
+  &:contains("-") {
+    display: none !important;
+  }
 }
 
 /* ============================================

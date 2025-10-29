@@ -238,7 +238,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
   return (
     <>
-      <div className="w-full overflow-x-auto overflow-y-visible bg-background">
+      <div className="w-full overflow-x-auto overflow-y-visible" style={{ backgroundColor: 'var(--bv-primary-bg, #101213)' }}>
         <div 
           ref={containerRef}
           id="brackets-viewer-container"
@@ -250,7 +250,8 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
             overflow: 'visible',
             pointerEvents: 'auto',
             transform: 'scale(1)',
-            transformOrigin: 'top left'
+            transformOrigin: 'top left',
+            backgroundColor: 'var(--bv-primary-bg, #101213)'
           }}
         />
         {!isInitialized && (
