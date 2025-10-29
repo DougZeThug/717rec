@@ -4,7 +4,6 @@ import { ThemeProvider } from 'next-themes'
 import App from './App.tsx'
 import './index.css'
 import 'brackets-viewer/dist/brackets-viewer.min.css'
-import './styles/brackets-viewer-theme.css'
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider 
