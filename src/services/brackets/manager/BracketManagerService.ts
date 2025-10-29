@@ -273,6 +273,21 @@ export class BracketManagerService {
           stage_id: currentMatch.stage_id
         });
         
+        // Prevent manual editing of BYE or waiting matches
+        // According to brackets-manager docs: "BYE supported: only during creation"
+        const isByeOrWaiting = !currentMatch.opponent1 || !currentMatch.opponent2;
+        if (isByeOrWaiting) {
+          const statusNames = ['Locked', 'Waiting', 'Ready', 'Running', 'Completed', 'Archived'];
+          const statusName = statusNames[currentMatch.status as number] || 'Unknown';
+          
+          throw new Error(
+            `Cannot manually update match ${matchId}. ` +
+            `This match has status="${statusName}" with one or both opponents missing. ` +
+            `BYE matches are handled automatically during bracket creation. ` +
+            `Matches waiting for opponents will be populated automatically when previous matches complete.`
+          );
+        }
+        
         // ⭐ Load participants into cache before update
         const stage = await this.storage.select('stage', (currentMatch as any).stage_id);
         if (stage) {
@@ -321,9 +336,6 @@ export class BracketManagerService {
           // Small delay to let propagation complete
           if (i < 2) await new Promise(resolve => setTimeout(resolve, 100));
         }
-        
-        // Auto-complete any BYE matches
-        await this.autoCompleteBYEMatches(stageId);
         
         // ⭐ Normalize Grand Final population after every update (defensive)
         await this.normalizeGrandFinalPopulation(stageId);
@@ -483,57 +495,6 @@ export class BracketManagerService {
     } catch (error) {
       console.error('Error normalizing Grand Final:', error);
       // Don't throw - normalization is defensive, not critical
-    }
-  }
-
-  /**
-   * Auto-complete any BYE matches (where one opponent is null).
-   * BYE matches should automatically advance the non-null opponent.
-   * According to brackets-manager spec, BYE matches don't require manual scoring.
-   */
-  async autoCompleteBYEMatches(stageId: number): Promise<void> {
-    try {
-      console.log(`🤖 Auto-completing BYE matches for stage ${stageId}...`);
-      
-      // Get all matches for this stage
-      const matches = await this.storage.select('match', { stage_id: stageId });
-      const matchesArray = Array.isArray(matches) ? matches : [matches];
-      
-      for (const match of matchesArray) {
-        // Check if this is a BYE match (one opponent is null) and not yet completed
-        const isBye = !match.opponent1 || !match.opponent2;
-        const isNotCompleted = match.status !== 2; // Status 2 = Completed
-        
-        if (isBye && isNotCompleted) {
-          const existingOpponent = match.opponent1 || match.opponent2;
-          
-          if (existingOpponent) {
-            console.log(`🤖 Auto-completing BYE match ${match.id} for participant ${existingOpponent.id}`);
-            
-            // Update match to mark the existing opponent as winner
-            // Score of 1-0 indicates a walkover/BYE win
-            await this.manager.update.match({
-              id: match.id,
-              ...(match.opponent1 ? {
-                opponent1: {
-                  score: 1,
-                  result: 'win' as const
-                }
-              } : {
-                opponent2: {
-                  score: 1,
-                  result: 'win' as const
-                }
-              })
-            });
-            
-            console.log(`✅ Auto-completed BYE match ${match.id}`);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error auto-completing BYE matches:', error);
-      // Don't throw - this is a cleanup operation
     }
   }
 
