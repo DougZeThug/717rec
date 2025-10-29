@@ -46,7 +46,7 @@
   --bv-match-bg: #14191f;          /* Match card dark blue-gray */
   --bv-text-color: #d9d9d9;        /* Light gray text */
   --bv-text-muted: #a7a7a7;        /* Muted hint color */
-  --bv-connector-color: #1c2835;   /* Connector lines dark blue */
+  --bv-connector-color: #4a5a6a;   /* Connector lines - MUCH LIGHTER for visibility */
   --bv-match-border: #2a3441;      /* Slightly lighter border */
   
   /* Winner/Loser Colors */
