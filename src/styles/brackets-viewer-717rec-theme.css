@@ -30,6 +30,9 @@
   /* Typography */
   --bv-participant-font-size: 0.85rem;
   font-family: 'Bebas Neue', 'Arial', sans-serif;
+  
+  /* Apply background to the container */
+  background-color: var(--bv-primary-bg);
 }
 
 /* ============================================
@@ -54,6 +57,9 @@
   --bv-hover-border: #4a90e2;      /* Blue hover */
   --bv-accent-color: #4a90e2;      /* Primary blue accent */
   --bv-accent-glow: rgba(74, 144, 226, 0.2);
+  
+  /* Apply dark background */
+  background-color: var(--bv-primary-bg) !important;
 }
 
 /* ============================================
@@ -234,6 +240,13 @@
 .brackets-viewer .bracket-container {
   background: var(--bv-primary-bg);
   padding: 1rem;
+}
+
+/* Ensure all bracket sections have proper dark background */
+.dark .brackets-viewer,
+.dark .brackets-viewer .bracket-container,
+.dark #brackets-viewer-container {
+  background-color: var(--bv-primary-bg) !important;
 }
 
 .brackets-viewer .upper-bracket {
