@@ -30,6 +30,13 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
   const [opponent1Score, setOpponent1Score] = useState<number>(0);
   const [opponent2Score, setOpponent2Score] = useState<number>(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const [byeEligible, setByeEligible] = useState<{
+    canToggle: boolean;
+    currentStatus: number;
+    statusName: string;
+    reason?: string;
+  } | null>(null);
 
   // Reset form when match data loads
   useEffect(() => {
@@ -38,6 +45,28 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
       setOpponent2Score(matchData.opponent2?.score ?? 0);
     }
   }, [matchData]);
+
+  // Check BYE eligibility when match loads
+  useEffect(() => {
+    const checkByeEligibility = async () => {
+      if (!matchData || !matchId) return;
+
+      try {
+        const result = await bracketManagerService.checkByeEligibility(matchId);
+        
+        setByeEligible({
+          canToggle: result.ok,
+          currentStatus: result.meta?.status || 0,
+          statusName: result.meta?.currentStatusName || 'Unknown',
+          reason: result.reason
+        });
+      } catch (err) {
+        console.error('Error checking BYE eligibility:', err);
+      }
+    };
+
+    checkByeEligibility();
+  }, [matchData, matchId]);
 
   const handleSave = async () => {
     if (!matchId || !matchData) return;
@@ -122,6 +151,40 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
     }
   };
 
+  const handleToggleByeStatus = async () => {
+    if (!matchId || !byeEligible) return;
+
+    try {
+      setIsTogglingStatus(true);
+
+      const makeReady = byeEligible.currentStatus !== 2;
+
+      const result = await bracketManagerService.adminToggleByeReady(matchId, makeReady);
+
+      toast({
+        title: 'Status Updated',
+        description: result.message
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
+
+      setByeEligible({
+        ...byeEligible,
+        currentStatus: result.status,
+        statusName: result.statusName
+      });
+    } catch (err) {
+      console.error('Error toggling BYE status:', err);
+      toast({
+        title: 'Toggle Failed',
+        description: err instanceof Error ? err.message : 'Failed to toggle match status',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsTogglingStatus(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -168,6 +231,64 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
               <p className="text-sm text-muted-foreground mt-2">Opponent: BYE</p>
             </div>
 
+            {/* BYE Status Toggle Control - Admin Only */}
+            {byeEligible && byeEligible.canToggle && (
+              <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Match Status Control</p>
+                    <p className="text-xs text-muted-foreground">
+                      Current Status: <span className="font-semibold">{byeEligible.statusName}</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {byeEligible.currentStatus !== 2 ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleToggleByeStatus}
+                        disabled={isTogglingStatus}
+                        className="border-green-600 text-green-600 hover:bg-green-50"
+                      >
+                        {isTogglingStatus ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <span className="mr-2">🔓</span>
+                        )}
+                        Unlock to Ready
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleToggleByeStatus}
+                        disabled={isTogglingStatus}
+                        className="border-amber-600 text-amber-600 hover:bg-amber-50"
+                      >
+                        {isTogglingStatus ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <span className="mr-2">🔒</span>
+                        )}
+                        Revert to Waiting
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {byeEligible.currentStatus !== 2 ? (
+                    <p>
+                      ⚠️ This BYE match is currently locked. Click "Unlock to Ready" to enable score entry.
+                    </p>
+                  ) : (
+                    <p>
+                      ✅ Match is ready. You can now enter scores below or revert if needed.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Winner Score */}
             <div className="space-y-2">
               <Label htmlFor="winner-score">
@@ -188,8 +309,14 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                     setOpponent1Score(0);
                   }
                 }}
+                disabled={byeEligible && byeEligible.currentStatus !== 2}
                 className="w-full"
               />
+              {byeEligible && byeEligible.currentStatus !== 2 && (
+                <p className="text-xs text-destructive">
+                  Match is {byeEligible.statusName}. Use the status toggle above to unlock.
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Enter the number of games won (typically 2 for Best of 3)
               </p>
@@ -200,7 +327,10 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
             <Button variant="outline" onClick={onClose} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button 
+              onClick={handleSave} 
+              disabled={isSaving || (byeEligible && byeEligible.currentStatus !== 2)}
+            >
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Award Win
             </Button>

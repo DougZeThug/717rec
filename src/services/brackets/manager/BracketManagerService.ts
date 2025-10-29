@@ -902,6 +902,181 @@ export class BracketManagerService {
   getStorage(): SupabaseSqlStorage {
     return this.storage;
   }
+
+  /**
+   * Check if a match is a BYE-facing Losers Bracket match eligible for manual status toggle
+   * @private
+   */
+  private async isLosersByeMatch(matchId: number): Promise<{
+    ok: boolean;
+    reason?: string;
+    meta?: {
+      isLosers: boolean;
+      exactlyOneReal: boolean;
+      isByeSide: boolean;
+      status: number;
+      currentStatusName: string;
+      opponent1Name: string | null;
+      opponent2Name: string | null;
+    };
+  }> {
+    try {
+      const matchData = await this.storage.select('match', matchId);
+      if (!matchData) {
+        return { ok: false, reason: 'Match not found' };
+      }
+
+      const round = await this.storage.select('round', matchData.round_id);
+      if (!round) {
+        return { ok: false, reason: 'Round not found' };
+      }
+
+      const group = await this.storage.select('group', round.group_id);
+      if (!group) {
+        return { ok: false, reason: 'Group not found' };
+      }
+
+      const isLosers = group.number === 2;
+
+      let opponent1Name: string | null = null;
+      let opponent2Name: string | null = null;
+
+      if (matchData.opponent1?.id) {
+        const p1 = await this.storage.select('participant', matchData.opponent1.id);
+        opponent1Name = p1?.name || null;
+      }
+
+      if (matchData.opponent2?.id) {
+        const p2 = await this.storage.select('participant', matchData.opponent2.id);
+        opponent2Name = p2?.name || null;
+      }
+
+      const o1Real = !!matchData.opponent1?.id && opponent1Name !== null;
+      const o2Real = !!matchData.opponent2?.id && opponent2Name !== null;
+      const exactlyOneReal = (o1Real ? 1 : 0) + (o2Real ? 1 : 0) === 1;
+
+      const isByeSide = 
+        (!matchData.opponent1?.id || opponent1Name === null) ||
+        (!matchData.opponent2?.id || opponent2Name === null);
+
+      const lockedOrWaiting = matchData.status === 0 || matchData.status === 1;
+
+      const statusNames: Record<number, string> = {
+        0: 'Locked',
+        1: 'Waiting',
+        2: 'Ready',
+        3: 'Running',
+        4: 'Completed',
+        5: 'Archived'
+      };
+
+      const meta = {
+        isLosers,
+        exactlyOneReal,
+        isByeSide,
+        status: matchData.status,
+        currentStatusName: statusNames[matchData.status] || 'Unknown',
+        opponent1Name,
+        opponent2Name
+      };
+
+      const isEligible = isLosers && exactlyOneReal && isByeSide && lockedOrWaiting;
+
+      if (!isEligible) {
+        let reason = 'Not eligible: ';
+        if (!isLosers) reason += 'Not in Losers Bracket. ';
+        if (!exactlyOneReal) reason += 'Must have exactly one real team. ';
+        if (!isByeSide) reason += 'No BYE detected. ';
+        if (!lockedOrWaiting) reason += `Status is ${meta.currentStatusName} (must be Locked or Waiting).`;
+        
+        return { ok: false, reason: reason.trim(), meta };
+      }
+
+      return { ok: true, meta };
+    } catch (error) {
+      console.error('Error checking BYE match eligibility:', error);
+      return { 
+        ok: false, 
+        reason: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      };
+    }
+  }
+
+  /**
+   * Check if a match is eligible for BYE status toggle (public wrapper)
+   */
+  async checkByeEligibility(matchId: number) {
+    return this.isLosersByeMatch(matchId);
+  }
+
+  /**
+   * Admin-only: Toggle a Losers Bracket BYE match status between Waiting (1) and Ready (2)
+   */
+  async adminToggleByeReady(matchId: number, makeReady: boolean): Promise<{
+    matchId: number;
+    status: number;
+    statusName: string;
+    message: string;
+  }> {
+    bracketLog(`Admin BYE toggle requested for match ${matchId}`, { makeReady });
+
+    try {
+      const check = await this.isLosersByeMatch(matchId);
+
+      if (makeReady) {
+        if (!check.ok) {
+          throw new Error(
+            `Cannot set to Ready: ${check.reason}. ` +
+            `Match must be a Losers Bracket BYE match in Locked/Waiting status.`
+          );
+        }
+
+        await supabase
+          .from('match')
+          .update({ status: 2 })
+          .eq('id', matchId);
+
+        successLog(`Admin unlocked BYE match ${matchId} to Ready`);
+
+        return {
+          matchId,
+          status: 2,
+          statusName: 'Ready',
+          message: 'Match unlocked to Ready status. You can now enter scores and advance the bracket.'
+        };
+      } else {
+        if (!check.meta) {
+          throw new Error('Cannot revert: Match data unavailable');
+        }
+
+        if (check.meta.status >= 4) {
+          throw new Error(
+            `Cannot revert: Match is ${check.meta.currentStatusName}. ` +
+            `Only Ready (2) or Running (3) matches can be reverted.`
+          );
+        }
+
+        await supabase
+          .from('match')
+          .update({ status: 1 })
+          .eq('id', matchId);
+
+        successLog(`Admin reverted BYE match ${matchId} to Waiting`);
+
+        return {
+          matchId,
+          status: 1,
+          statusName: 'Waiting',
+          message: 'Match reverted to Waiting status. Status toggle is available again.'
+        };
+      }
+    } catch (error) {
+      failureLog('Admin BYE toggle failed', error);
+      throw new Error(
+        `Failed to toggle BYE match status: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
 }
 
 // Export singleton instance
