@@ -11,6 +11,8 @@ declare global {
 
 interface BracketsViewerData {
   stages: any[];
+  groups?: any[];
+  rounds?: any[];
   matches: any[];
   matchGames: any[];
   participants: any[];

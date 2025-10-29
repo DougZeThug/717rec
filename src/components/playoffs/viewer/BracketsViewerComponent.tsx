@@ -208,35 +208,48 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
         console.log('✅ BracketsViewerComponent: Render complete');
         
-        // Debug: Check if connector SVG elements exist
+        // Debug: Check if connector SVG elements exist with enhanced debugging
         setTimeout(() => {
-          const svgElements = containerRef.current?.querySelectorAll('svg.connector, svg [class*="connector"], line.connector');
-          console.log('🔍 CONNECTOR DEBUG - SVG connectors found:', svgElements?.length || 0);
-          if (svgElements && svgElements.length > 0) {
-            const firstConnector = svgElements[0] as SVGElement;
-            console.log('🔍 CONNECTOR DEBUG - First connector styles:', {
-              stroke: getComputedStyle(firstConnector).stroke,
-              strokeWidth: getComputedStyle(firstConnector).strokeWidth,
-              display: getComputedStyle(firstConnector).display,
-              visibility: getComputedStyle(firstConnector).visibility
-            });
-          } else {
-            console.warn('⚠️ CONNECTOR DEBUG - No connector SVG elements found!');
+          const container = containerRef.current;
+          if (!container) return;
+          
+          // Check for ALL SVG-related elements
+          const allSvgs = container.querySelectorAll('svg');
+          const allPaths = container.querySelectorAll('path');
+          const allLines = container.querySelectorAll('line');
+          const allPolylines = container.querySelectorAll('polyline');
+          
+          console.log('🔍 SVG DEBUG:', {
+            totalSvgs: allSvgs.length,
+            totalPaths: allPaths.length,
+            totalLines: allLines.length,
+            totalPolylines: allPolylines.length
+          });
+          
+          // Log first SVG structure if it exists
+          if (allSvgs.length > 0) {
+            console.log('🔍 First SVG element:', allSvgs[0].outerHTML.substring(0, 500));
+          }
+          
+          // Check for connector class specifically
+          const connectors = container.querySelectorAll('.connector, [class*="connector"]');
+          console.log('🔍 Elements with .connector class:', connectors.length);
+          
+          if (connectors.length === 0) {
+            console.warn('⚠️ CONNECTOR DEBUG - No connector elements found!');
           }
           
           // Hide bracket ID if it's showing
-          if (containerRef.current) {
-            const allText = containerRef.current.querySelectorAll('*:not(script):not(style)');
-            allText.forEach(el => {
-              const text = el.textContent || '';
-              // UUID pattern: 8-4-4-4-12 hex characters
-              if (/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$/i.test(text.trim())) {
-                console.log('🔍 Hiding bracket ID element:', el);
-                (el as HTMLElement).style.display = 'none';
-              }
-            });
-          }
-        }, 500);
+          const allText = container.querySelectorAll('*:not(script):not(style)');
+          allText.forEach(el => {
+            const text = el.textContent || '';
+            // UUID pattern: 8-4-4-4-12 hex characters
+            if (/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$/i.test(text.trim())) {
+              console.log('🔍 Hiding bracket ID element:', el);
+              (el as HTMLElement).style.display = 'none';
+            }
+          });
+        }, 1000);
 
         setIsInitialized(true);
         setError(null);
