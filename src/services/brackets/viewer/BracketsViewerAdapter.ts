@@ -28,19 +28,25 @@ export class BracketsViewerAdapter {
     
     const stageId = stages[0].id;
     
-    // Fetch all data from SQL tables
-    const [matchesResult, matchGamesResult, participantsResult] = await Promise.all([
+    // Fetch all data from SQL tables including groups and rounds for connectors
+    const [matchesResult, matchGamesResult, participantsResult, groupsResult, roundsResult] = await Promise.all([
       supabase.from('match').select('*').eq('stage_id', stageId),
       supabase.from('match_game').select('*'),
-      supabase.from('participant').select('*').eq('tournament_id', bracketId)
+      supabase.from('participant').select('*').eq('tournament_id', bracketId),
+      supabase.from('group').select('*').eq('stage_id', stageId),
+      supabase.from('round').select('*')
     ]);
 
     if (matchesResult.error) throw matchesResult.error;
     if (matchGamesResult.error) throw matchGamesResult.error;
     if (participantsResult.error) throw participantsResult.error;
+    if (groupsResult.error) throw groupsResult.error;
+    if (roundsResult.error) throw roundsResult.error;
 
     const matches = matchesResult.data || [];
     const participants = participantsResult.data || [];
+    const groups = groupsResult.data || [];
+    const rounds = roundsResult.data || [];
     
     console.log('🔍 Raw participants from DB:', participants.map(p => ({ id: p.id, name: p.name })));
     
@@ -142,6 +148,8 @@ export class BracketsViewerAdapter {
 
     console.log('✅ transformFromSql: Fetched data:', {
       stages: stages.length,
+      groups: groups.length,
+      rounds: rounds.length,
       matches: transformedMatches.length,
       matchGames: transformedMatchGames.length,
       participants: transformedParticipants.length,
@@ -160,6 +168,8 @@ export class BracketsViewerAdapter {
     return {
       data: {
         stages: stages as any,
+        groups: groups as any,
+        rounds: rounds as any,
         matches: transformedMatches as any,
         matchGames: transformedMatchGames as any,
         participants: transformedParticipants as any

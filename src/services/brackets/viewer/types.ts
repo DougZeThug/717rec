@@ -62,6 +62,8 @@ export interface ViewerParticipant {
 
 export interface ViewerData {
   stages: ViewerStage[];
+  groups?: any[];
+  rounds?: any[];
   matches: ViewerMatch[];
   matchGames: ViewerMatchGame[];
   participants: ViewerParticipant[];

@@ -141,14 +141,15 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
       console.log('🎨 Calling window.bracketsViewer.render with options');
       console.log('📸 Participants with images:', result.data.participants.filter(p => p.image).map(p => ({ id: p.id, name: p.name, image: p.image })));
-      console.log('🔍 CONNECTOR DEBUG - Match data:', result.data.matches.slice(0, 5).map(m => ({
-        id: m.id,
-        round_id: m.round_id,
-        group_id: m.group_id,
-        stage_id: m.stage_id,
-        child_count: m.child_count,
-        number: m.number
-      })));
+      console.log('🔍 CONNECTOR DEBUG - Complete data structure:', {
+        stagesCount: result.data.stages?.length,
+        groupsCount: result.data.groups?.length,
+        roundsCount: result.data.rounds?.length,
+        matchesCount: result.data.matches?.length,
+        participantsCount: result.data.participants?.length
+      });
+      console.log('🔍 CONNECTOR DEBUG - Groups:', result.data.groups);
+      console.log('🔍 CONNECTOR DEBUG - Rounds:', result.data.rounds);
       console.log('🔍 CONNECTOR DEBUG - Stage data:', result.data.stages);
 
       // Set participant images before rendering (required by brackets-viewer API)
