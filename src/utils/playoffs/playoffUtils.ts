@@ -23,9 +23,6 @@ export const toPlayoffMatch = (m: ChallongeMatch): PlayoffMatch => ({
   status: m.state === 'complete' ? 'completed' : 'pending',
 });
 
-// Re-export the adaptChallongeMatches function
-export { adaptChallongeMatches } from '@/utils/adaptChallongeMatches';
-
 // UUID validation utility
 export const isValidUuidSafe = (str: string): boolean => {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
