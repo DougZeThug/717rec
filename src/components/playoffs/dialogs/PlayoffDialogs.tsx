@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import BracketCreationDialog from "@/components/playoffs/BracketCreationDialog";
 import TeamDivisionDialog from "@/components/playoffs/TeamDivisionDialog";
 import DeleteBracketDialog from "@/components/playoffs/DeleteBracketDialog";
@@ -101,6 +101,17 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
         }}
       >
         <DialogContent className="sm:max-w-md">
+          <DialogHeader className="sr-only">
+            <DialogTitle>
+              {isQuickEdit ? "Quick Score Update" : "Edit Match Score"}
+            </DialogTitle>
+            <DialogDescription>
+              {isQuickEdit 
+                ? "Update the match score quickly" 
+                : "Edit match details and game-by-game scores"}
+            </DialogDescription>
+          </DialogHeader>
+
           {editingMatch && isQuickEdit && (
             <QuickScoreEditor
               match={editingMatch}
