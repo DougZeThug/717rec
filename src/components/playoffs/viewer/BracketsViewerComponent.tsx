@@ -68,6 +68,11 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
     const renderBracket = async () => {
       try {
+        // Wait for fonts to be ready (CRITICAL FIX for layout/connector timing)
+        console.log('⏳ Waiting for fonts to load...');
+        await document.fonts.ready;
+        console.log('✅ Fonts loaded');
+
         console.log('🎯 BracketsViewerComponent: Starting transformation', {
           usesBracketsManager: bracket.uses_brackets_manager,
           hasBracketData: !!bracket.bracket_data
@@ -256,6 +261,11 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       );
       
       console.log('✅ brackets-viewer.render() completed successfully');
+      
+      // Force connector recalculation (CRITICAL FIX for layout reflow)
+      console.log('🔄 Dispatching resize event for connector recalc');
+      window.dispatchEvent(new Event('resize'));
+      
       } catch (renderError) {
         console.error('❌ brackets-viewer.render() threw an error:', renderError);
         setError('Failed to render bracket visualization');

@@ -36,6 +36,20 @@
 }
 
 /* ============================================
+   Bracket Container - Prevent Connector Clipping (CRITICAL FIX)
+   ============================================ */
+
+#brackets-viewer-container {
+  position: relative;
+  overflow: visible !important; /* Critical: don't clip SVG connectors */
+  min-height: 400px;
+}
+
+.brackets-viewer .bracket-container {
+  overflow: visible !important;
+}
+
+/* ============================================
    Dark Mode - Dark Blue Aesthetic
    ============================================ */
 

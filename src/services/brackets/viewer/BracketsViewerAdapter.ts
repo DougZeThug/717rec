@@ -359,16 +359,30 @@ export class BracketsViewerAdapter {
     // Reset team map
     this.teamIdMap.clear();
     
+    console.log('🔍 transformFromJsonb: Using in-memory data');
+    
     // Create match ID mapping (brackets-manager match ID -> playoff match UUID)
     const matchIdMap = new Map<string, number>();
     const reverseMatchIdMap = new Map<number, string>();
 
-    // Direct pass-through with type assertion - brackets-manager format is compatible with brackets-viewer
-    // The Id types are compatible (number | string, with number being most common)
+    const matches = (bracketData.match || []) as any;
+    const groups = (bracketData.group || []) as any;
+    const rounds = (bracketData.round || []) as any;
+
+    // Calculate source_node_id for connectors (CRITICAL FIX)
+    const matchesWithSources = this.calculateSourceNodeIds(matches, groups, rounds);
+
+    console.log('✅ transformFromJsonb: Wired sources for JSONB path', {
+      totalMatches: matchesWithSources.length,
+      withSources: matchesWithSources.filter(m => m.opponent1?.source_node_id || m.opponent2?.source_node_id).length
+    });
+
     return {
       data: {
         stages: (bracketData.stage || []) as any,
-        matches: (bracketData.match || []) as any,
+        groups: groups,
+        rounds: rounds,
+        matches: matchesWithSources,
         matchGames: (bracketData.match_game || []) as any,
         participants: (bracketData.participant || []) as any
       },
@@ -406,10 +420,46 @@ export class BracketsViewerAdapter {
     const matches = this.transformMatches(bracket.matches || [], bracket.id, matchIdMap, reverseMatchIdMap);
     const matchGames = this.transformGames(bracket.matches || [], matchIdMap);
 
+    // Build groups and rounds arrays for connector calculation (CRITICAL FIX)
+    const isDoubleElim = bracket.format === 'Double Elimination';
+    const groups = isDoubleElim 
+      ? [
+          { id: 1, stage_id: 1, number: 1 }, // Winners bracket
+          { id: 2, stage_id: 1, number: 2 }  // Losers bracket
+        ]
+      : [{ id: 1, stage_id: 1, number: 1 }]; // Single elimination
+
+    // Build rounds based on match data
+    const roundsMap = new Map<number, { id: number; stage_id: number; group_id: number; number: number }>();
+    matches.forEach(match => {
+      const roundKey = match.round_id;
+      if (!roundsMap.has(roundKey)) {
+        roundsMap.set(roundKey, {
+          id: roundKey,
+          stage_id: 1,
+          group_id: match.group_id,
+          number: roundKey
+        });
+      }
+    });
+    const rounds = Array.from(roundsMap.values());
+
+    // Wire source_node_id for connectors (CRITICAL FIX)
+    const matchesWithSources = this.calculateSourceNodeIds(matches, groups, rounds);
+
+    console.log('✅ transform: Wired sources for internal transform path', {
+      totalMatches: matchesWithSources.length,
+      withSources: matchesWithSources.filter(m => m.opponent1?.source_node_id || m.opponent2?.source_node_id).length,
+      groupsCount: groups.length,
+      roundsCount: rounds.length
+    });
+
     return {
       data: {
         stages: [stage],
-        matches,
+        groups: groups as any,
+        rounds: rounds as any,
+        matches: matchesWithSources,
         matchGames,
         participants
       },

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Double Elimination Connector Test - Minimal Repro</title>
+  
+  <!-- brackets-viewer@1.8.1 CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/brackets-viewer@1.8.1/dist/brackets-viewer.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/brackets-viewer@1.8.1/dist/brackets-viewer.min.js"></script>
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    
+    .instructions {
+      background: #1a1a1a;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-left: 3px solid #4a90e2;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .instructions code {
+      background: #2a2a2a;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    #bracket {
+      min-height: 600px;
+      position: relative;
+      overflow: visible !important;
+      background: #101213;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    
+    /* Ensure connectors are visible */
+    .connector {
+      stroke: #4a90e2;
+      stroke-width: 2px;
+      fill: none;
+    }
+    
+    .match {
+      cursor: pointer;
+    }
+    
+    .match:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔬 Double Elimination Connector Test</h1>
+  
+  <div class="instructions">
+    <strong>Instructions:</strong>
+    <ol>
+      <li>Open your app's browser console at <code>/playoffs</code></li>
+      <li>Look for the log: <code>🎨 Rendering with complete data including groups/rounds</code></li>
+      <li>Copy the <strong>entire viewerData object</strong> from that log</li>
+      <li>Open this file in your editor and replace the <code>data</code> variable below with your copied data</li>
+      <li>Reload this HTML file in your browser</li>
+      <li>Verify connectors appear in WB, LB, and WB→LB drop-ins</li>
+    </ol>
+    <p><strong>Expected Result:</strong> All matches should have visible connector lines (SVG paths) showing bracket progression.</p>
+  </div>
+  
+  <div id="bracket"></div>
+  
+  <script>
+    // ==========================================
+    // PASTE YOUR VIEWERDATA HERE
+    // ==========================================
+    // Replace this with the actual payload from your console log
+    const data = {
+      stages: [
+        {
+          id: 1,
+          tournament_id: "your-bracket-id",
+          name: "Playoff Bracket",
+          type: "double_elimination",
+          number: 1,
+          settings: {
+            size: 8,
+            grandFinal: "simple"
+          }
+        }
+      ],
+      groups: [
+        { id: 1, stage_id: 1, number: 1 }, // Winners Bracket
+        { id: 2, stage_id: 1, number: 2 }  // Losers Bracket
+      ],
+      rounds: [
+        { id: 1, stage_id: 1, group_id: 1, number: 1 },
+        { id: 2, stage_id: 1, group_id: 1, number: 2 },
+        { id: 3, stage_id: 1, group_id: 1, number: 3 },
+        { id: 4, stage_id: 1, group_id: 2, number: 1 },
+        { id: 5, stage_id: 1, group_id: 2, number: 2 },
+        { id: 6, stage_id: 1, group_id: 2, number: 3 }
+      ],
+      matches: [
+        // PASTE YOUR MATCHES HERE - ensure they have source_node_id set
+        // Example structure:
+        // {
+        //   id: 1,
+        //   stage_id: 1,
+        //   group_id: 1,
+        //   round_id: 1,
+        //   number: 1,
+        //   opponent1: { id: 1, source_node_id: null, source_type: null },
+        //   opponent2: { id: 2, source_node_id: null, source_type: null },
+        //   status: "completed"
+        // }
+      ],
+      matchGames: [],
+      participants: [
+        // PASTE YOUR PARTICIPANTS HERE
+        // Example: { id: 1, tournament_id: "...", name: "Team A", image: "https://..." }
+      ]
+    };
+    
+    // ==========================================
+    // RENDER
+    // ==========================================
+    
+    // Wait for fonts (if any) and render
+    document.fonts.ready.then(() => {
+      console.log('🎨 Rendering bracket with data:', data);
+      console.log('🔗 Connector Stats:', {
+        totalMatches: data.matches.length,
+        withSources: data.matches.filter(m => 
+          m.opponent1?.source_node_id || m.opponent2?.source_node_id
+        ).length
+      });
+      
+      window.bracketsViewer.render(data, {
+        selector: '#bracket',
+        clear: true,
+        showSlotsOrigin: true,
+        showLowerBracketSlotsOrigin: true,
+        highlightParticipantOnHover: true,
+        onMatchClick: (match) => {
+          console.log('Match clicked:', match);
+        }
+      });
+      
+      console.log('✅ Render complete');
+      
+      // Force resize for connector recalculation
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        
+        // Debug connector elements
+        const bracket = document.querySelector('#bracket');
+        const connectors = bracket.querySelectorAll('.connector, path, line');
+        console.log('🔍 Connector elements found:', connectors.length);
+        
+        if (connectors.length === 0) {
+          console.error('❌ NO CONNECTORS RENDERED - Check data.groups, data.rounds, and opponent.source_node_id');
+        } else {
+          console.log('✅ Connectors rendered successfully!');
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
