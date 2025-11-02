@@ -293,7 +293,7 @@ export class BracketsViewerAdapter {
       }
     };
 
-    // Helper: Add Winners→Losers drop-in connectors (THE KEY FIX)
+    // Helper: Add Winners→Losers drop-in connectors
     const addWinnersToLosersDropIns = (match: any) => {
       const lbRound = roundsById.get(match.round_id);
       if (!lbRound) return;
@@ -305,17 +305,50 @@ export class BracketsViewerAdapter {
       const wbGroup = [...groupsById.values()].find(g => g.number === 1);
       if (!wbGroup) return;
 
-      // Map: Winners Round i → Losers Round i (standard brackets-manager layout)
-      const keyWB = `${wbGroup.id}:${lbRound.number}`;
+      // FIX 1: LB Round 1 gets TWO sources from WB Round 1 (binary tree pairing)
+      if (lbRound.number === 1) {
+        const keyWB = `${wbGroup.id}:1`;
+        const wbMatches = matchesByGroupRound.get(keyWB);
+        if (!wbMatches) return;
+
+        // LB R1 Match N gets losers from WB R1 matches (2N-1) and (2N)
+        const wbMatch1 = wbMatches[(match.number - 1) * 2];
+        const wbMatch2 = wbMatches[(match.number - 1) * 2 + 1];
+
+        if (wbMatch1 && match.opponent1) {
+          match.opponent1 = {
+            ...match.opponent1,
+            source_node_id: String(wbMatch1.id),
+            source_type: 'loser'
+          };
+        }
+
+        if (wbMatch2 && match.opponent2) {
+          match.opponent2 = {
+            ...match.opponent2,
+            source_node_id: String(wbMatch2.id),
+            source_type: 'loser'
+          };
+        }
+        return;
+      }
+
+      // FIX 2: Later LB rounds get drop-ins on ODD rounds only (3, 5, 7...)
+      // Standard DE layout: LB R3 = WB R2 losers, LB R5 = WB R3 losers, etc.
+      const hasDropIns = lbRound.number % 2 === 1;
+      if (!hasDropIns) return;
+
+      // Map LB odd round to corresponding WB round
+      const wbRoundNumber = Math.ceil(lbRound.number / 2);
+      const keyWB = `${wbGroup.id}:${wbRoundNumber}`;
       const wbMatches = matchesByGroupRound.get(keyWB);
       if (!wbMatches) return;
 
-      // Loser from WB match N drops into LB match N
+      // Each WB loser drops into corresponding LB match by match number
       const wbMatch = wbMatches[match.number - 1];
       if (!wbMatch) return;
 
-      // Determine which opponent slot to fill
-      // If opponent1 already has a source (from LB progression), use opponent2
+      // Fill the slot that doesn't already have a source (from LB progression)
       const targetSlot = match.opponent1?.source_node_id ? 'opponent2' : 'opponent1';
 
       if (match[targetSlot]) {
@@ -327,6 +360,59 @@ export class BracketsViewerAdapter {
       }
     };
 
+    // Helper: Add Grand Final sources (WB Final winner + LB Final winner)
+    const addGrandFinalSources = (match: any) => {
+      const currentRound = roundsById.get(match.round_id);
+      if (!currentRound) return;
+
+      const currentGroup = groupsById.get(currentRound.group_id);
+      if (!currentGroup || currentGroup.number !== 3) return; // Only finals group
+
+      // Find last round of Winners Bracket (group 1)
+      const wbRounds = rounds.filter(r => {
+        const g = groupsById.get(r.group_id);
+        return g && g.number === 1;
+      }).sort((a, b) => b.number - a.number);
+      const wbFinalRound = wbRounds[0];
+
+      // Find last round of Losers Bracket (group 2)
+      const lbRounds = rounds.filter(r => {
+        const g = groupsById.get(r.group_id);
+        return g && g.number === 2;
+      }).sort((a, b) => b.number - a.number);
+      const lbFinalRound = lbRounds[0];
+
+      // WB Final winner → Grand Final opponent1
+      if (wbFinalRound) {
+        const keyWBFinal = `${wbFinalRound.group_id}:${wbFinalRound.number}`;
+        const wbFinalMatches = matchesByGroupRound.get(keyWBFinal);
+        const wbFinalMatch = wbFinalMatches?.[0];
+        
+        if (wbFinalMatch && match.opponent1) {
+          match.opponent1 = {
+            ...match.opponent1,
+            source_node_id: String(wbFinalMatch.id),
+            source_type: 'winner'
+          };
+        }
+      }
+
+      // LB Final winner → Grand Final opponent2
+      if (lbFinalRound) {
+        const keyLBFinal = `${lbFinalRound.group_id}:${lbFinalRound.number}`;
+        const lbFinalMatches = matchesByGroupRound.get(keyLBFinal);
+        const lbFinalMatch = lbFinalMatches?.[0];
+        
+        if (lbFinalMatch && match.opponent2) {
+          match.opponent2 = {
+            ...match.opponent2,
+            source_node_id: String(lbFinalMatch.id),
+            source_type: 'winner'
+          };
+        }
+      }
+    };
+
     // Process all matches and apply sources in correct order
     for (const match of matches) {
       const round = roundsById.get(match.round_id);
@@ -335,15 +421,17 @@ export class BracketsViewerAdapter {
       const group = groupsById.get(round.group_id);
       if (!group) continue;
 
-      if (group.number === 2) {
+      if (group.number === 1) {
+        // Winners bracket: simple progression
+        addWinnersProgressionSources(match);
+      } else if (group.number === 2) {
         // Losers bracket: apply LB→LB first, then WB→LB drop-ins
         addLosersProgressionSources(match);
         addWinnersToLosersDropIns(match);
-      } else if (group.number === 1) {
-        // Winners bracket: simple progression
-        addWinnersProgressionSources(match);
+      } else if (group.number === 3) {
+        // Grand Final: WB Final winner + LB Final winner
+        addGrandFinalSources(match);
       }
-      // Finals group (number === 3) would be handled here if needed
     }
 
     return matches;
