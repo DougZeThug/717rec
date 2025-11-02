@@ -110,7 +110,7 @@ export class BracketsViewerAdapter {
       reverseMatchIdMap.set(match.id, match.id.toString());
     });
 
-    // Transform matches to viewer format
+    // Transform matches to viewer format (always create opponent objects for connectors)
     const transformedMatches = matches.map(match => ({
       id: match.id,
       stage_id: match.stage_id,
@@ -118,16 +118,16 @@ export class BracketsViewerAdapter {
       round_id: match.round_id,
       number: match.number,
       child_count: match.child_count,
-      opponent1: match.opponent1_id ? {
-        id: match.opponent1_id,
-        score: match.opponent1_score ?? undefined,
-        result: match.opponent1_result as 'win' | 'loss' | undefined
-      } : null,
-      opponent2: match.opponent2_id ? {
-        id: match.opponent2_id,
-        score: match.opponent2_score ?? undefined,
-        result: match.opponent2_result as 'win' | 'loss' | undefined
-      } : null,
+      opponent1: BracketsViewerAdapter.toViewerOpponent(
+        match.opponent1_id,
+        match.opponent1_score,
+        match.opponent1_result
+      ),
+      opponent2: BracketsViewerAdapter.toViewerOpponent(
+        match.opponent2_id,
+        match.opponent2_score,
+        match.opponent2_result
+      ),
       status: this.mapStatusToString(match.status)
     }));
 
@@ -203,6 +203,28 @@ export class BracketsViewerAdapter {
   }
 
   /**
+   * Normalize opponent to viewer format (per Toornament API specification)
+   * Always creates an object even when participant ID is null (for TBD slots)
+   * This allows calculateSourceNodeIds() to populate source_node_id for connectors
+   * 
+   * @see https://developer.toornament.com/v2/doc/viewer_bracket_nodes
+   */
+  private static toViewerOpponent(
+    id: number | null | undefined,
+    score?: number | null,
+    result?: string | null
+  ): any {
+    return {
+      id: id ?? null,
+      score: score ?? undefined,
+      result: result as 'win' | 'loss' | undefined,
+      // These will be populated by calculateSourceNodeIds() for connector drawing
+      source_node_id: undefined as string | undefined,
+      source_type: undefined as ('winner' | 'loser') | undefined
+    };
+  }
+
+  /**
    * Calculate source_node_id for each opponent in matches
    * This determines which previous match each opponent came from
    * Handles Winners→Winners, Losers→Losers, and Winners→Losers drop-ins
@@ -241,11 +263,15 @@ export class BracketsViewerAdapter {
       const prevMatches = matchesByGroupRound.get(keyPrev);
       if (!prevMatches) return;
 
+      // Defensive: ensure opponent objects exist
+      if (!match.opponent1) match.opponent1 = { id: null };
+      if (!match.opponent2) match.opponent2 = { id: null };
+
       // Binary tree pairing: match N gets winners from matches (2N-1) and (2N)
       const prevMatch1 = prevMatches[(match.number - 1) * 2];
       const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
 
-      if (prevMatch1 && match.opponent1) {
+      if (prevMatch1) {
         match.opponent1 = {
           ...match.opponent1,
           source_node_id: String(prevMatch1.id),
@@ -253,7 +279,7 @@ export class BracketsViewerAdapter {
         };
       }
 
-      if (prevMatch2 && match.opponent2) {
+      if (prevMatch2) {
         match.opponent2 = {
           ...match.opponent2,
           source_node_id: String(prevMatch2.id),
@@ -271,12 +297,16 @@ export class BracketsViewerAdapter {
       const prevMatches = matchesByGroupRound.get(keyPrev);
       if (!prevMatches) return;
 
+      // Defensive: ensure opponent objects exist
+      if (!match.opponent1) match.opponent1 = { id: null };
+      if (!match.opponent2) match.opponent2 = { id: null };
+
       // Same binary pairing within losers bracket
       const prevMatch1 = prevMatches[(match.number - 1) * 2];
       const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
 
       // Only set if not already sourced (to avoid overwriting drop-ins)
-      if (prevMatch1 && match.opponent1 && !match.opponent1.source_node_id) {
+      if (prevMatch1 && !match.opponent1.source_node_id) {
         match.opponent1 = {
           ...match.opponent1,
           source_node_id: String(prevMatch1.id),
@@ -284,7 +314,7 @@ export class BracketsViewerAdapter {
         };
       }
 
-      if (prevMatch2 && match.opponent2 && !match.opponent2.source_node_id) {
+      if (prevMatch2 && !match.opponent2.source_node_id) {
         match.opponent2 = {
           ...match.opponent2,
           source_node_id: String(prevMatch2.id),
@@ -311,11 +341,15 @@ export class BracketsViewerAdapter {
         const wbMatches = matchesByGroupRound.get(keyWB);
         if (!wbMatches) return;
 
+        // Defensive: ensure opponent objects exist
+        if (!match.opponent1) match.opponent1 = { id: null };
+        if (!match.opponent2) match.opponent2 = { id: null };
+
         // LB R1 Match N gets losers from WB R1 matches (2N-1) and (2N)
         const wbMatch1 = wbMatches[(match.number - 1) * 2];
         const wbMatch2 = wbMatches[(match.number - 1) * 2 + 1];
 
-        if (wbMatch1 && match.opponent1) {
+        if (wbMatch1) {
           match.opponent1 = {
             ...match.opponent1,
             source_node_id: String(wbMatch1.id),
@@ -323,7 +357,7 @@ export class BracketsViewerAdapter {
           };
         }
 
-        if (wbMatch2 && match.opponent2) {
+        if (wbMatch2) {
           match.opponent2 = {
             ...match.opponent2,
             source_node_id: String(wbMatch2.id),
@@ -368,6 +402,10 @@ export class BracketsViewerAdapter {
       const currentGroup = groupsById.get(currentRound.group_id);
       if (!currentGroup || currentGroup.number !== 3) return; // Only finals group
 
+      // Defensive: ensure opponent objects exist
+      if (!match.opponent1) match.opponent1 = { id: null };
+      if (!match.opponent2) match.opponent2 = { id: null };
+
       // Find last round of Winners Bracket (group 1)
       const wbRounds = rounds.filter(r => {
         const g = groupsById.get(r.group_id);
@@ -388,7 +426,7 @@ export class BracketsViewerAdapter {
         const wbFinalMatches = matchesByGroupRound.get(keyWBFinal);
         const wbFinalMatch = wbFinalMatches?.[0];
         
-        if (wbFinalMatch && match.opponent1) {
+        if (wbFinalMatch) {
           match.opponent1 = {
             ...match.opponent1,
             source_node_id: String(wbFinalMatch.id),
@@ -403,7 +441,7 @@ export class BracketsViewerAdapter {
         const lbFinalMatches = matchesByGroupRound.get(keyLBFinal);
         const lbFinalMatch = lbFinalMatches?.[0];
         
-        if (lbFinalMatch && match.opponent2) {
+        if (lbFinalMatch) {
           match.opponent2 = {
             ...match.opponent2,
             source_node_id: String(lbFinalMatch.id),
@@ -700,20 +738,24 @@ export class BracketsViewerAdapter {
       group_id: groupId,
       round_id: playoffMatch.round,
       number: matchNumber,
-      opponent1: team1ParticipantId ? {
-        id: team1ParticipantId,
+      opponent1: {
+        id: team1ParticipantId ?? null,
         position: playoffMatch.team1Seed || undefined,
         result: playoffMatch.winnerId === playoffMatch.team1Id ? 'win' : 
                 playoffMatch.loserId === playoffMatch.team1Id ? 'loss' : undefined,
-        score: playoffMatch.team1GameWins ?? playoffMatch.team1Score ?? undefined
-      } : null,
-      opponent2: team2ParticipantId ? {
-        id: team2ParticipantId,
+        score: playoffMatch.team1GameWins ?? playoffMatch.team1Score ?? undefined,
+        source_node_id: undefined,
+        source_type: undefined
+      },
+      opponent2: {
+        id: team2ParticipantId ?? null,
         position: playoffMatch.team2Seed || undefined,
         result: playoffMatch.winnerId === playoffMatch.team2Id ? 'win' : 
                 playoffMatch.loserId === playoffMatch.team2Id ? 'loss' : undefined,
-        score: playoffMatch.team2GameWins ?? playoffMatch.team2Score ?? undefined
-      } : null,
+        score: playoffMatch.team2GameWins ?? playoffMatch.team2Score ?? undefined,
+        source_node_id: undefined,
+        source_type: undefined
+      },
       status: playoffMatch.status === 'completed' ? 'completed' : 
               (team1ParticipantId && team2ParticipantId) ? 'ready' : 'waiting'
     };
