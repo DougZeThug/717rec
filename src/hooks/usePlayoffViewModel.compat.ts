@@ -11,19 +11,20 @@ import type { Database } from "@/integrations/supabase/types";
 import type { PlayoffBracket, PlayoffMatch } from "@/utils/playoffs/playoffTypes";
 
 // Helper type aliases
+type PlayoffMatchRow = Database["public"]["Tables"]["playoff_matches"]["Row"];
 type MatchRow = Database["public"]["Tables"]["matches"]["Row"];
 type BracketRow = Database["public"]["Tables"]["brackets"]["Row"];
 type DivisionRow = Database["public"]["Tables"]["divisions"]["Row"];
 
 interface BracketRowWithRels extends BracketRow {
   divisions: DivisionRow | null;
-  matches: MatchRow[];
+  playoff_matches: PlayoffMatchRow[];
 }
 
 // Row-to-Domain mapper
-const mapMatchRow = (row: MatchRow): PlayoffMatch => ({
+const mapMatchRow = (row: PlayoffMatchRow): PlayoffMatch => ({
   id: row.id,
-  round: row.round_number ?? 0,
+  round: row.round ?? 0,
   position: row.position ?? 0,
   team1Id: row.team1_id,
   team2Id: row.team2_id,
@@ -31,17 +32,17 @@ const mapMatchRow = (row: MatchRow): PlayoffMatch => ({
   loserId: row.loser_id,
   team1Score: row.team1_score,
   team2Score: row.team2_score,
-  team1GameWins: row.team1_game_wins,
-  team2GameWins: row.team2_game_wins,
+  team1GameWins: null,
+  team2GameWins: null,
   matchType: (row.match_type as PlayoffMatch["matchType"]) ?? "winners",
   bestOf: row.best_of ?? 3,
   games: [],
-  team1Seed: null,
-  team2Seed: null,
-  nextWinMatchId: row.next_match_id,
-  nextLoseMatchId: row.next_loser_match_id,
+  team1Seed: row.team1_seed,
+  team2Seed: row.team2_seed,
+  nextWinMatchId: row.next_win_match_id,
+  nextLoseMatchId: row.next_lose_match_id,
   bracket_id: row.bracket_id ?? "",
-  status: row.iscompleted ? "completed" : "pending"
+  status: (row.status as PlayoffMatch["status"]) ?? "pending"
 });
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
@@ -77,9 +78,8 @@ export const usePlayoffData = () => {
         .select(`
           *,
           divisions(*),
-          matches(*)
+          playoff_matches(*)
         `)
-        .neq('state', 'completed')
         .order('created_at', { ascending: false }) as unknown as {
           data: BracketRowWithRels[] | null;
           error: any;
@@ -95,7 +95,7 @@ export const usePlayoffData = () => {
           state: b.state,
           divisionId: b.division_id,
           divisionName: b.divisions?.name,
-          matchesCount: b.matches?.length || 0
+          matchesCount: b.playoff_matches?.length || 0
         })) || []
       });
       
@@ -118,7 +118,7 @@ export const usePlayoffData = () => {
         division: br.divisions?.name,
         divisionId: br.division_id,
         format: br.format ?? "Double Elimination",
-        matches: (br.matches ?? []).map(mapMatchRow),
+        matches: (br.playoff_matches ?? []).map(mapMatchRow),
         champion: undefined,
         state: (br.state === 'underway' ? 'in_progress' : 
                 br.state === 'complete' ? 'completed' : 
