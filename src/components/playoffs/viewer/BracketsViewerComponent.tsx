@@ -167,6 +167,10 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         return;
       }
       
+      // Store matches for the overlay shim BEFORE fingerprint check
+      // This ensures ConnectorOverlayShim always has fresh data
+      viewerMatchesRef.current = m;
+      
       // Prevent duplicate re-renders on identical data
       const fp = fingerprint(m);
       if (lastFingerprintRef.current === fp) {
@@ -174,9 +178,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         return;
       }
       lastFingerprintRef.current = fp;
-      
-      // Store matches for the overlay shim
-      viewerMatchesRef.current = m;
 
       console.log('🎨 Rendering brackets-viewer with data:', result.data);
 
