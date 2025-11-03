@@ -54,6 +54,19 @@ export default function ConnectorOverlayShim({
     return () => ro.disconnect();
   }, [containerId]);
 
+  // Sync container transform to overlay for coordinate alignment
+  useEffect(() => {
+    const overlayEl = document.getElementById(overlayId);
+    const containerEl = document.getElementById(containerId) as HTMLElement | null;
+    
+    if (!enabled || !overlayEl || !containerEl) return;
+    
+    const cs = getComputedStyle(containerEl);
+    overlayEl.style.transform = cs.transform;
+    overlayEl.style.transformOrigin = cs.transformOrigin || 'top left';
+    overlayEl.style.zIndex = '9999';
+  }, [containerId, overlayId, enabled, tick]);
+
   // ✅ Compute paths in useMemo (includes DOM lookups)
   const svgContent = useMemo(() => {
     const overlayEl = document.getElementById(overlayId);
@@ -67,28 +80,50 @@ export default function ConnectorOverlayShim({
     const width = Math.max(1, Math.floor(rootRect.width));
     const height = Math.max(1, Math.floor(rootRect.height));
 
-    // map data-match-id → element
+    // map data-match-id → element (KEEP AS STRING - no number conversion)
     const byId = new Map<MatchID, HTMLElement>();
     containerEl.querySelectorAll<HTMLElement>('.match').forEach(el => {
       const idAttr = el.getAttribute('data-match-id');
-      if (idAttr) byId.set(isNaN(+idAttr) ? idAttr : +idAttr, el);
+      if (idAttr) byId.set(idAttr, el); // ✅ Keep as string
     });
 
-    // Build edges
+    // Build edges (ensure string IDs)
     const edges: Array<{from: MatchID; to: MatchID}> = [];
     for (const m of matches) {
       const s1 = m.opponent1?.source_node_id;
       const s2 = m.opponent2?.source_node_id;
-      if (s1 != null) edges.push({ from: s1, to: m.id });
-      if (s2 != null) edges.push({ from: s2, to: m.id });
+      if (s1 != null) edges.push({ from: String(s1), to: String(m.id) });
+      if (s2 != null) edges.push({ from: String(s2), to: String(m.id) });
     }
 
-    // Generate paths
+    // Debug: Log edges and DOM availability
+    console.log('🧪 OVERLAY DEBUG:', {
+      enabled,
+      matchesReceived: matches.length,
+      edgesBuilt: edges.length,
+      domMatchElements: byId.size,
+      sampleEdges: edges.slice(0, 3),
+      sampleDomIds: Array.from(byId.keys()).slice(0, 5)
+    });
+
+    // Generate paths with resolution tracking
     const paths: JSX.Element[] = [];
+    let resolved = 0, missingFrom = 0, missingTo = 0;
+    
     for (const e of edges) {
       const fromEl = byId.get(e.from);
       const toEl = byId.get(e.to);
-      if (!fromEl || !toEl) continue;
+      
+      if (!fromEl) { 
+        missingFrom++; 
+        continue; 
+      }
+      if (!toEl) { 
+        missingTo++; 
+        continue; 
+      }
+      
+      resolved++;
       
       const A = midRight(rootRect, fromEl);
       const B = midLeft(rootRect, toEl);
@@ -96,15 +131,24 @@ export default function ConnectorOverlayShim({
       
       paths.push(
         <path 
-          key={`${String(e.from)}->${String(e.to)}`} 
+          key={`${e.from}->${e.to}`} 
           d={elbow(A, B)}
           fill="none" 
-          stroke="currentColor" 
-          strokeWidth={2} 
-          vectorEffect="non-scaling-stroke" 
+          stroke="rgba(34, 197, 94, 0.9)" 
+          strokeWidth={3} 
+          vectorEffect="non-scaling-stroke"
+          data-debug="connector-overlay"
         />
       );
     }
+
+    console.log('🎯 OVERLAY RESOLUTION:', {
+      totalEdges: edges.length,
+      resolved,
+      missingFrom,
+      missingTo,
+      pathsGenerated: paths.length
+    });
 
     return {
       overlayEl,

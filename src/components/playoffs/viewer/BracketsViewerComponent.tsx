@@ -489,6 +489,20 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           
           console.log('🔍 POST-RENDER DOM AUDIT:', domAudit);
           
+          // Audit the overlay separately
+          setTimeout(() => {
+            const overlayEl = document.getElementById(overlayId);
+            if (overlayEl) {
+              const overlaySvgs = overlayEl.querySelectorAll('svg');
+              const overlayPaths = overlayEl.querySelectorAll('path');
+              console.log('🎨 OVERLAY AUDIT:', {
+                svgCount: overlaySvgs.length,
+                pathCount: overlayPaths.length,
+                overlayHTML: overlayEl.innerHTML.substring(0, 500)
+              });
+            }
+          }, 1300);
+          
           if (domAudit.matchCount === 0) {
             console.error('❌ No matches rendered - brackets-viewer failed silently');
             console.log('🔍 Container HTML preview:', container.innerHTML.substring(0, 1000));
@@ -595,7 +609,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
             position: 'absolute',
             inset: 0,
             pointerEvents: 'none',
-            zIndex: 5
+            zIndex: 9999
           }} />
         </div>
         {!isInitialized && (
