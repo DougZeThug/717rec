@@ -71,6 +71,13 @@
   box-sizing: border-box !important;
 }
 
+/* Neutralize Tailwind Preflight border defaults inside viewer */
+.brackets-viewer *, 
+.brackets-viewer *::before, 
+.brackets-viewer *::after {
+  border-color: inherit !important; /* Let viewer/theme control all borders */
+}
+
 /* Minimal Tailwind fix - restore content, let library control border sides */
 .brackets-viewer [class*="connect"]::before,
 .brackets-viewer [class*="connect"]::after {
@@ -91,14 +98,14 @@
    ============================================ */
 
 .dark .brackets-viewer {
-  /* Dark Blue Theme Colors (Based on provided example) */
-  --bv-primary-bg: #101213;        /* Very dark background */
-  --bv-secondary-bg: #1c2835;      /* Dark blue background */
-  --bv-match-bg: #14191f;          /* Match card dark blue-gray */
-  --bv-text-color: #d9d9d9;        /* Light gray text */
-  --bv-text-muted: #a7a7a7;        /* Muted hint color */
-  --bv-connector-color: #4a5a6a;   /* Connector lines - MUCH LIGHTER for visibility */
-  --bv-match-border: #2a3441;      /* Slightly lighter border */
+  /* Dark Blue Theme Colors - Enhanced for visibility */
+  --bv-primary-bg: #0d1117;        /* Slightly lighter base (GitHub dark) */
+  --bv-secondary-bg: #161b22;      /* Subtle variation */
+  --bv-match-bg: #1a2028;          /* Lighter match cards for contrast */
+  --bv-text-color: #e6edf3;        /* Brighter text (WCAG AA) */
+  --bv-text-muted: #adbac7;        /* More readable muted text */
+  --bv-connector-color: #596d80;   /* MUCH more visible connectors */
+  --bv-match-border: #30363d;      /* Stronger borders */
   
   /* Winner/Loser Colors */
   --bv-win-color: #50b649;         /* Green for winners */
@@ -111,6 +118,7 @@
   
   /* Apply dark background */
   background-color: var(--bv-primary-bg) !important;
+  color-scheme: dark; /* Browser hint for native controls */
 }
 
 /* ============================================
@@ -135,12 +143,19 @@
   transform: translateY(-1px);
 }
 
+/* Dark mode: enhanced match visibility */
 .dark .brackets-viewer .match {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border-color: var(--bv-match-border);
+  background: var(--bv-match-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4),
+              0 0 0 1px rgba(255, 255, 255, 0.05); /* Subtle inner glow */
 }
 
 .dark .brackets-viewer .match:hover {
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3), 0 0 0 1px var(--bv-hover-border);
+  border-color: var(--bv-hover-border);
+  background: #1e252e; /* Slightly lighter on hover */
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.35),
+              0 0 0 1px var(--bv-hover-border);
 }
 
 /* ============================================
@@ -160,7 +175,9 @@
 }
 
 .dark .brackets-viewer .participant-origin {
-  opacity: 0.7;
+  color: var(--bv-accent-color);
+  opacity: 0.85; /* More visible in dark mode */
+  font-weight: 700; /* Ensure bold */
 }
 
 /* Add '#' prefix via CSS */
@@ -196,6 +213,27 @@
 .brackets-viewer .participant.loss {
   color: var(--bv-loss-color);
   opacity: 0.6;
+}
+
+/* Dark mode: ensure participant text is readable */
+.dark .brackets-viewer .participant {
+  color: var(--bv-text-color);
+}
+
+.dark .brackets-viewer .participant-name,
+.dark .brackets-viewer .participant span {
+  color: inherit; /* Inherit brighter text */
+}
+
+.dark .brackets-viewer .participant.win {
+  color: var(--bv-win-color);
+  background: rgba(80, 182, 73, 0.15); /* More subtle */
+  font-weight: 700; /* Ensure bold */
+}
+
+.dark .brackets-viewer .participant.loss {
+  color: #999; /* Softer gray for losing teams */
+  opacity: 0.7; /* Slightly more visible */
 }
 
 /* ============================================
@@ -266,8 +304,10 @@
 
 .dark .brackets-viewer .round-title,
 .dark .brackets-viewer .round-name {
-  color: var(--bv-text-muted);
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--bv-text-color); /* Use main text color, not muted */
+  background: rgba(255, 255, 255, 0.08); /* More visible */
+  border: 1px solid rgba(255, 255, 255, 0.12); /* Add definition */
+  font-weight: 700; /* Ensure bold */
 }
 
 /* ============================================
@@ -330,7 +370,9 @@
 }
 
 .dark .brackets-viewer .match-label {
-  opacity: 0.3;
+  opacity: 0.75; /* Much more readable */
+  color: var(--bv-text-muted); /* Explicit color */
+  font-weight: 600; /* Ensure weight */
 }
 
 .brackets-viewer .match-status {
@@ -357,18 +399,18 @@
    ============================================ */
 
 @media (max-width: 768px) {
-  /* Scale down bracket viewer for mobile */
+  /* Scale wrapper, NOT the viewer node itself to preserve connectors */
+  #brackets-wrapper {
+    transform: scale(0.75);
+    transform-origin: top left;
+  }
+  
+  /* Remove scaling from viewer container */
   #brackets-viewer-container {
-    transform: scale(0.75) !important;
-    transform-origin: top left !important;
+    transform: none !important; /* Override previous rule */
   }
   
-  /* Ensure connectors scale with container */
-  #brackets-viewer-container .brackets-viewer {
-    transform-origin: inherit;
-  }
-  
-  /* Adjust container to account for scaling */
+  /* Adjust outer container for scrolling */
   .w-full.overflow-x-auto {
     height: 50vh;
     overflow-x: scroll;
@@ -414,6 +456,35 @@
 .brackets-viewer > p:first-child,
 .font-bebas > p:first-child {
   display: none !important;
+}
+
+/* ============================================
+   Dark Mode Specificity Reinforcements
+   ============================================ */
+
+/* Ensure dark connectors always use correct color */
+.dark .brackets-viewer .connector,
+.dark .brackets-viewer .connector .line,
+.dark .brackets-viewer .connection {
+  border-color: var(--bv-connector-color) !important;
+  background-color: var(--bv-connector-color) !important;
+  stroke: var(--bv-connector-color) !important;
+}
+
+/* Lower bracket separator */
+.dark .brackets-viewer .lower-bracket {
+  border-top-color: var(--bv-connector-color);
+}
+
+/* Ensure score backgrounds are visible */
+.dark .brackets-viewer .score {
+  background: rgba(255, 255, 255, 0.08); /* More visible */
+  color: var(--bv-text-color);
+}
+
+.dark .brackets-viewer .participant.win .score {
+  background: rgba(80, 182, 73, 0.2);
+  color: var(--bv-win-color);
 }
 
 /* ============================================
