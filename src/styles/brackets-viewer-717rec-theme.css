@@ -56,6 +56,29 @@
 }
 
 /* ============================================
+   CSS Connector Support (Critical)
+   ============================================ */
+
+/* Ensure base connector pseudo-elements can render */
+.brackets-viewer .match::before,
+.brackets-viewer .match::after {
+  box-sizing: border-box !important;
+}
+
+/* Connector classes from base CSS */
+.brackets-viewer .connect-next,
+.brackets-viewer .connect-previous {
+  box-sizing: border-box !important;
+}
+
+/* Ensure stroke/border properties aren't nulled */
+.brackets-viewer [class*="connect"]::before,
+.brackets-viewer [class*="connect"]::after {
+  border-color: var(--bv-connector-color) !important;
+  border-style: solid !important;
+}
+
+/* ============================================
    Dark Mode - Dark Blue Aesthetic
    ============================================ */
 
@@ -324,6 +347,11 @@
   #brackets-viewer-container {
     transform: scale(0.75) !important;
     transform-origin: top left !important;
+  }
+  
+  /* Ensure connectors scale with container */
+  #brackets-viewer-container .brackets-viewer {
+    transform-origin: inherit;
   }
   
   /* Adjust container to account for scaling */

@@ -415,6 +415,23 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         }
       );
       
+      // Connector readiness check
+      const totalSlots = viewerData.matches.length * 2;
+      const sourcedSlots = viewerData.matches.reduce((count, m) => {
+        let c = count;
+        if (m.opponent1?.source_node_id) c++;
+        if (m.opponent2?.source_node_id) c++;
+        return c;
+      }, 0);
+      
+      const sourcePercentage = Math.round((sourcedSlots / totalSlots) * 100);
+      console.log('🧪 CONNECTOR READINESS:', {
+        totalSlots,
+        sourcedSlots,
+        percentage: `${sourcePercentage}%`,
+        note: 'First round has no sources (expected)'
+      });
+      
       hasRenderedRef.current = true;
       console.log('✅ brackets-viewer.render() completed successfully');
       
@@ -430,67 +447,39 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
         console.log('✅ BracketsViewerComponent: Render complete');
         
-        // Debug: Check if connector SVG elements exist with enhanced debugging
+        // Check for CSS-based connectors (not SVG)
         setTimeout(() => {
           const container = containerRef.current;
           if (!container) return;
           
-          // Check for bracket structure and match elements
-          const bracket = container.querySelector('.bracket');
           const matches = container.querySelectorAll('.match');
-          const stages = container.querySelectorAll('.stage');
-          
-          // Comprehensive DOM structure check for connectors
-          const allSvgs = container.querySelectorAll('svg');
-          const allPaths = container.querySelectorAll('path');
-          const allLines = container.querySelectorAll('line');
-          const allPolylines = container.querySelectorAll('polyline');
-          const connectorClasses = container.querySelectorAll('.connector, [class*="connector"]');
+          const connectNext = container.querySelectorAll('.connect-next').length;
+          const connectPrevious = container.querySelectorAll('.connect-previous').length;
+          const hasConnectorClasses = connectNext + connectPrevious;
           
           const domAudit = {
-            hasBracketElement: !!bracket,
-            stageCount: stages.length,
             matchCount: matches.length,
-            svgCount: allSvgs.length,
-            pathCount: allPaths.length,
-            lineCount: allLines.length,
-            polylineCount: allPolylines.length,
-            connectorClassCount: connectorClasses.length,
-            totalConnectorElements: allSvgs.length + allPaths.length + allLines.length + allPolylines.length,
-            containerHTMLLength: container.innerHTML.length
+            connectNextCount: connectNext,
+            connectPreviousCount: connectPrevious,
+            totalConnectorClasses: hasConnectorClasses,
+            // Legacy counts (should be 0 for CSS-based viewer)
+            svgCount: container.querySelectorAll('svg').length,
+            pathCount: container.querySelectorAll('path, line, polyline').length
           };
           
-          console.log('🔍 POST-RENDER DOM AUDIT:', domAudit);
+          console.log('🔍 POST-RENDER DOM AUDIT (CSS connectors):', domAudit);
           
           if (domAudit.matchCount === 0) {
             console.error('❌ No matches rendered - brackets-viewer failed silently');
             console.log('🔍 Container HTML preview:', container.innerHTML.substring(0, 1000));
-          } else if (domAudit.matchCount > 0 && domAudit.totalConnectorElements === 0) {
-            console.error('❌ CRITICAL: Matches rendered but ZERO connector elements!');
+          } else if (hasConnectorClasses === 0) {
+            console.warn('⚠️ No .connect-next or .connect-previous classes found - CSS connectors may not be rendering');
             console.log('📋 Sample match HTML:', matches[0]?.outerHTML?.substring(0, 300));
-          } else if (domAudit.totalConnectorElements > 0) {
-            console.log('✅ Connectors successfully rendered!', {
-              svgs: domAudit.svgCount,
-              paths: domAudit.pathCount,
-              lines: domAudit.lineCount
+          } else {
+            console.log('✅ CSS connector classes detected!', {
+              connectNext: connectNext,
+              connectPrevious: connectPrevious
             });
-          } else {
-            console.log('✅ Matches rendered successfully!');
-          }
-          
-          // Log first SVG structure if it exists
-          if (allSvgs.length > 0) {
-            console.log('🔍 First SVG element:', allSvgs[0].outerHTML.substring(0, 500));
-          } else {
-            console.warn('⚠️ No SVG elements found - connectors missing');
-          }
-          
-          // Check for connector class specifically
-          const connectors = container.querySelectorAll('.connector, [class*="connector"]');
-          console.log('🔍 Elements with .connector class:', connectors.length);
-          
-          if (connectors.length === 0 && matches.length > 0) {
-            console.warn('⚠️ Matches exist but no connector elements found!');
           }
           
           // Hide bracket ID if it's showing
