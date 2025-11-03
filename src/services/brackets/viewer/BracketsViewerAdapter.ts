@@ -96,7 +96,8 @@ export class BracketsViewerAdapter {
         id: p.id,
         tournament_id: p.tournament_id,
         name: p.name,
-        image: teamData?.logo_url || teamData?.image_url || undefined
+        image: teamData?.logo_url || teamData?.image_url || undefined,
+        position: p.position
       };
     });
     
@@ -671,7 +672,8 @@ export class BracketsViewerAdapter {
           id: participantId,
           tournament_id: 1,
           name: participant.name,
-          image: participant.logo_url || participant.image_url || undefined
+          image: participant.logo_url || participant.image_url || undefined,
+          position: participant.position
         };
       });
   }
@@ -688,7 +690,8 @@ export class BracketsViewerAdapter {
         id: participantId,
         tournament_id: 1,
         name: team.name,
-        image: team.logo_url || team.image_url || undefined
+        image: team.logo_url || team.image_url || undefined,
+        position: index + 1
       };
     });
   }

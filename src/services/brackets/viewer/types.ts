@@ -62,6 +62,7 @@ export interface ViewerParticipant {
   tournament_id: number;
   name: string;
   image?: string;
+  position?: number;
 }
 
 export interface ViewerData {
