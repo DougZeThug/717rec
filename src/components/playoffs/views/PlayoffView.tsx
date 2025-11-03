@@ -35,9 +35,9 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
       <BracketList 
         divisions={data.availableDivisions}
         bracketsByDivision={data.typesafeBracketsByDivision}
-        onCreateBracket={data.isAdmin ? handleCreateBracketClick : () => {}}
+        onCreateBracket={data.isAdmin ? handleCreateBracketClick : undefined}
         onViewBracket={(id) => data.setSelectedBracketId(id)}
-        onEditBracket={data.isAdmin ? handleCreateBracketClick : () => {}}
+        onEditBracket={data.isAdmin ? handleCreateBracketClick : undefined}
         onDeleteBracket={data.isAdmin ? onDeleteBracket : undefined}
         onResyncBracket={undefined}
         isResyncLoading={false}

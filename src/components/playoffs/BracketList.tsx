@@ -9,9 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface BracketListProps {
   divisions: string[];
   bracketsByDivision: Record<string, PlayoffBracket[]>;
-  onCreateBracket: () => void;
+  onCreateBracket?: () => void;
   onViewBracket: (id: string) => void;
-  onEditBracket: () => void;
+  onEditBracket?: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
   onResyncBracket?: (bracketId: string, challongeTournamentId: number) => void;
   isResyncLoading?: boolean;
@@ -49,19 +49,27 @@ const BracketList: React.FC<BracketListProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Playoff Brackets</h2>
-        <Button onClick={onCreateBracket} className="flex items-center gap-2">
-          <PlusCircle className="h-4 w-4" />
-          Create Bracket
-        </Button>
+        {onCreateBracket && (
+          <Button onClick={onCreateBracket} className="flex items-center gap-2">
+            <PlusCircle className="h-4 w-4" />
+            Create Bracket
+          </Button>
+        )}
       </div>
       
       {divisions.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No divisions available. Create a bracket to get started.</p>
-          <Button onClick={onCreateBracket} className="mt-4 flex items-center gap-2">
-            <PlusCircle className="h-4 w-4" />
-            Create First Bracket
-          </Button>
+          <p className="text-muted-foreground">
+            {onCreateBracket 
+              ? "No divisions available. Create a bracket to get started."
+              : "No brackets are currently available. Check back later!"}
+          </p>
+          {onCreateBracket && (
+            <Button onClick={onCreateBracket} className="mt-4 flex items-center gap-2">
+              <PlusCircle className="h-4 w-4" />
+              Create First Bracket
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">

@@ -128,6 +128,22 @@ export const usePlayoffData = () => {
   const bracketsByDivision = useMemo(() => {
     const grouped: Record<string, PlayoffBracket[]> = {};
     
+    console.log('🔍 bracketsByDivision grouping - Input data:', {
+      bracketsCount: brackets?.length || 0,
+      brackets: brackets?.map(b => ({
+        id: b.id,
+        name: b.name,
+        division: b.division,
+        divisionId: b.divisionId
+      })),
+      divisionsCount: divisions?.length || 0,
+      divisions: divisions?.map(d => ({
+        id: d.id,
+        name: d.name,
+        display_division: d.display_division
+      }))
+    });
+    
     if (divisions && brackets) {
       // Initialize with empty arrays for unique display divisions (excluding Hidden)
       const uniqueDisplayDivisions = new Set<string>();
@@ -147,10 +163,23 @@ export const usePlayoffData = () => {
         divisionNameToDisplay.set(div.name, div.display_division || div.name);
       });
       
+      console.log('🔍 Division name to display mapping:', {
+        mapping: Array.from(divisionNameToDisplay.entries())
+      });
+      
       // Group brackets by display_division
       brackets.forEach(bracket => {
         const divisionName = bracket.division;
         const displayDivision = divisionName ? divisionNameToDisplay.get(divisionName) : null;
+        
+        console.log('🔍 Processing bracket:', {
+          bracketId: bracket.id,
+          bracketName: bracket.name,
+          bracketDivision: bracket.division,
+          bracketDivisionId: bracket.divisionId,
+          lookupResult: displayDivision,
+          willBeAdded: !!(displayDivision && displayDivision !== 'Hidden' && grouped[displayDivision])
+        });
         
         // Skip Hidden division brackets
         if (displayDivision && displayDivision !== 'Hidden' && grouped[displayDivision]) {
@@ -158,6 +187,8 @@ export const usePlayoffData = () => {
         }
       });
     }
+    
+    console.log('🔍 Final bracketsByDivision grouped:', grouped);
     
     return grouped;
   }, [divisions, brackets]);
