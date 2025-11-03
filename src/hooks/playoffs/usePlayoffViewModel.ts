@@ -37,6 +37,28 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel called with bracketId:', bracketId);
   console.log('🔍 usePlayoffViewModel: Timestamp:', new Date().toISOString());
   
+  // Defensive: return safe defaults immediately if bracketId is invalid
+  if (!bracketId || (typeof bracketId === 'string' && bracketId.trim() === '')) {
+    console.warn('⚠️ usePlayoffViewModel: Returning safe defaults for invalid bracketId', { bracketId });
+    return {
+      bracket: null,
+      isLoading: false,
+      error: null,
+      bracketMatchesByType: null,
+      teams: [],
+      teamsLoading: false,
+      refetch: async () => {
+        console.warn('⚠️ Cannot refetch with invalid bracketId');
+      },
+      deleteBracket: async () => {
+        throw new Error('Cannot delete bracket: invalid bracketId');
+      },
+      updateMatchResult: async () => {
+        throw new Error('Cannot update match: invalid bracketId');
+      }
+    };
+  }
+  
   // Get QueryClient using the proper hook
   const queryClient = useQueryClient();
   
@@ -54,12 +76,12 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Matches query error:', matchesQuery.error);
   console.log('🔍 usePlayoffViewModel - Teams data:', teamsQuery.data);
   
-  // CRITICAL FIX: Properly combine bracket data with matches data
-  // Defensive: always return array, never undefined
+  // CRITICAL: Normalize to stable defaults - never return undefined
   const safeMatches = Array.isArray(matchesQuery.data) ? matchesQuery.data : [];
+  const safeTeams = Array.isArray(teamsQuery.data) ? teamsQuery.data : [];
   const combinedBracket = bracketQuery.data ? {
     ...bracketQuery.data,
-    matches: safeMatches // This ensures matches are attached to the bracket
+    matches: safeMatches
   } : null;
   
   console.log('🔍 usePlayoffViewModel - Combined bracket BEFORE matches attachment:', bracketQuery.data);
@@ -103,8 +125,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     error: processedError,
     bracketMatchesByType,
     
-    // Teams data
-    teams: teamsQuery.data || [],
+    // Teams data - always array, never undefined
+    teams: safeTeams,
     teamsLoading: teamsQuery.isLoading,
     
     // Actions

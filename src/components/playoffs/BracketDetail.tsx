@@ -150,6 +150,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
         ) : (
           <>
             <BracketView 
+              bracketId={bracketId}
               bracket={bracket}
               teams={teams || []}
               onEditMatch={isAdminAccessGranted ? onEditMatch : undefined}

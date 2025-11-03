@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { log } from "@/utils/logger";
 
 interface BracketViewProps {
-  bracketId?: string | null;
+  bracketId: string; // Required - must be non-empty
   bracket?: any; // Legacy prop for backward compatibility
   teams?: any[]; // Legacy prop for backward compatibility
   onEditMatch?: (matchId: string) => void;
@@ -73,8 +73,6 @@ const BracketView: React.FC<BracketViewProps> = ({
   const { data: bracketInfo, isLoading: isLoadingBracketInfo, error: bracketInfoError } = useQuery({
     queryKey: ['bracket-info', bracketId],
     queryFn: async () => {
-      if (!bracketId) return null;
-      
       console.log('🔍 DEBUG: Fetching bracket info for JSONB check:', bracketId);
       const { data, error } = await supabase
         .from('brackets')
@@ -97,7 +95,7 @@ const BracketView: React.FC<BracketViewProps> = ({
       
       return data;
     },
-    enabled: true // Always enabled - null check handled in queryFn
+    enabled: !!bracketId && typeof bracketId === 'string'
   });
   
   // Enhanced data hook with refetch capability
@@ -118,6 +116,19 @@ const BracketView: React.FC<BracketViewProps> = ({
       onEditMatch(matchId);
     }
   }, [onEditMatch]);
+  
+  // Guard: Require valid bracketId before any rendering
+  if (!bracketId || typeof bracketId !== 'string' || bracketId.trim() === '') {
+    console.error('❌ BracketView: Invalid bracketId', { bracketId });
+    return (
+      <div className="p-8 text-center">
+        <div className="text-gray-500">
+          <p className="text-lg font-semibold mb-2">Invalid bracket ID</p>
+          <p className="text-sm">Cannot display bracket without a valid identifier.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Combine loading states
   const isLoading = isLoadingBracketInfo || isLoadingLegacy;
