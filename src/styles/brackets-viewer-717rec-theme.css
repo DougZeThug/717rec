@@ -41,6 +41,7 @@
 
 #brackets-wrapper {
   position: relative;
+  isolation: isolate; /* Prevent z-index stacking issues */
 }
 
 #brackets-viewer-container {
@@ -54,6 +55,7 @@
   inset: 0;
   pointer-events: none;
   z-index: 5;
+  will-change: transform; /* GPU acceleration for smooth rendering */
 }
 
 .brackets-viewer .bracket-container {

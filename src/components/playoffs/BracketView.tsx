@@ -267,11 +267,17 @@ const BracketView: React.FC<BracketViewProps> = ({
       <FinalStandings bracketId={bracketId!} show={showStandings} />
       
       <BracketErrorBoundary bracketId={bracketId}>
-        <BracketsViewerComponent
-          bracket={displayBracket}
-          teams={displayBracket.teams || displayTeams}
-          onMatchClick={handleMatchClick}
-        />
+        {displayBracket && displayBracket.id ? (
+          <BracketsViewerComponent
+            bracket={displayBracket}
+            teams={displayBracket.teams || displayTeams}
+            onMatchClick={handleMatchClick}
+          />
+        ) : (
+          <div className="text-center p-8 text-gray-500">
+            <p>Invalid bracket data</p>
+          </div>
+        )}
       </BracketErrorBoundary>
     </div>
   );

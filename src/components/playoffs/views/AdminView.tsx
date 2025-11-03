@@ -80,7 +80,7 @@ const AdminView: React.FC<AdminViewProps> = ({
           />
         </div>
 
-        {data.selectedBracketId && data.bracket && (
+        {data.ready && data.selectedBracketId && data.bracket && data.bracket.id === data.selectedBracketId && (
           <BracketDetail 
             bracketId={data.selectedBracketId}
             bracket={data.bracket}

@@ -17,6 +17,16 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   teams,
   onMatchClick
 }) => {
+  // Guard: Require valid bracket with ID
+  if (!bracket || !bracket.id) {
+    console.error('❌ BracketsViewerComponent: Invalid bracket prop', bracket);
+    return (
+      <div className="text-center p-8 text-red-500">
+        <p>Cannot render bracket: Invalid data</p>
+      </div>
+    );
+  }
+
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -27,6 +37,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const lastFingerprintRef = useRef<string | null>(null);
   const hasRenderedRef = useRef(false);
   const viewerMatchesRef = useRef<any[]>([]);
+  const isMountingRef = useRef(true);
   
   const containerId = 'brackets-viewer-container';
   const overlayId = 'brackets-connector-overlay';
@@ -52,6 +63,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   // Track component lifecycle
   useEffect(() => {
     log('✅ BracketsViewerComponent MOUNTED');
+    isMountingRef.current = false;
     return () => {
       log('❌ BracketsViewerComponent UNMOUNTED');
     };
@@ -61,10 +73,16 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
     log('🔍 BracketsViewerComponent: useEffect triggered', {
       hasContainer: !!containerRef.current,
       hasBracket: !!bracket,
-      teamsCount: teams.length,
       bracketId: bracket?.id,
+      teamsCount: teams.length,
       onMatchClickChanged: !!onMatchClick
     });
+
+    // Skip render if component is still mounting and data is incomplete
+    if (isMountingRef.current && (!bracket?.id || !teams.length)) {
+      console.warn('⏭️ Skipping render: component still mounting with incomplete data');
+      return;
+    }
 
     // Guard: require container, bracket, and teams
     if (!containerRef.current || !bracket || !teams.length) {
@@ -421,14 +439,22 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         // Check for connectors and enable shim fallback if needed
         setTimeout(() => {
           const c = document.getElementById(containerId);
-          if (!c) return;
+          if (!c) {
+            console.warn('⚠️ Container not found for connector check');
+            return;
+          }
+          
           const hasViewerConnectors = !!c.querySelector('svg, path, line, polyline, .connector');
           console.log('🔎 Viewer connector presence:', hasViewerConnectors);
+          
           if (!hasViewerConnectors) {
             console.warn('🛟 Fallback: enabling ConnectorOverlayShim (portal)');
             setUseShim(true);
+          } else {
+            console.log('✅ Viewer connectors detected, shim not needed');
+            setUseShim(false);
           }
-        }, 1000);
+        }, 1200);
         
         // Debug: Check if connector SVG elements exist with enhanced debugging
         setTimeout(() => {
@@ -522,7 +548,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       }
       setIsInitialized(false);
     };
-  }, [bracket, teams, onMatchClick]);
+  }, [bracket?.id, bracket?.uses_brackets_manager, bracket?.bracket_data, teams.length, onMatchClick]);
 
   if (!bracket || !teams.length) {
     return (

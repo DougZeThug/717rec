@@ -20,6 +20,7 @@ export interface PlayoffPageData {
   // Selected bracket state
   selectedBracketId: string | null;
   setSelectedBracketId: (id: string | null) => void;
+  ready: boolean;
   
   // Simple error states
   error: string | null;
@@ -395,6 +396,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     // Selected bracket state
     selectedBracketId,
     setSelectedBracketId,
+    ready: !!selectedBracketId && !!selectedBracket && !selectedBracketLoading,
     
     // Simple error states
     error,
