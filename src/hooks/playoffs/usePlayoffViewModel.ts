@@ -55,9 +55,11 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Teams data:', teamsQuery.data);
   
   // CRITICAL FIX: Properly combine bracket data with matches data
+  // Defensive: always return array, never undefined
+  const safeMatches = Array.isArray(matchesQuery.data) ? matchesQuery.data : [];
   const combinedBracket = bracketQuery.data ? {
     ...bracketQuery.data,
-    matches: matchesQuery.data || [] // This ensures matches are attached to the bracket
+    matches: safeMatches // This ensures matches are attached to the bracket
   } : null;
   
   console.log('🔍 usePlayoffViewModel - Combined bracket BEFORE matches attachment:', bracketQuery.data);
@@ -66,8 +68,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   console.log('🔍 usePlayoffViewModel - Combined bracket matches length:', combinedBracket?.matches?.length);
   
   // Process bracket data to separate winners, losers and finals matches
-  const bracketMatchesByType: BracketMatchesByType | null = matchesQuery.data
-    ? groupBracketMatchesByType(matchesQuery.data)
+  const bracketMatchesByType: BracketMatchesByType | null = safeMatches.length > 0
+    ? groupBracketMatchesByType(safeMatches)
     : null;
   
   console.log('🔍 usePlayoffViewModel - Bracket matches by type:', bracketMatchesByType);

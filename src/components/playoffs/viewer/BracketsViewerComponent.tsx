@@ -21,6 +21,16 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const [error, setError] = useState<string | null>(null);
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const renderCount = useRef(0);
+  const lastFingerprintRef = useRef<string | null>(null);
+  const hasRenderedRef = useRef(false);
+  
+  // Fingerprint function to detect identical data
+  const fingerprint = (matches: any[]): string => {
+    const ids = matches.map(x => x.id).join(',');
+    const sourced = matches.reduce((n, x) =>
+      n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0), 0);
+    return `${matches.length}:${sourced}:${ids}`;
+  };
   
   // State for brackets-manager match editor
   const [selectedBMMatchId, setSelectedBMMatchId] = useState<number | null>(null);
@@ -49,6 +59,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       onMatchClickChanged: !!onMatchClick
     });
 
+    // Guard: require container, bracket, and teams
     if (!containerRef.current || !bracket || !teams.length) {
       console.log('⚠️ BracketsViewerComponent: Missing required data, skipping render');
       return;
@@ -103,6 +114,41 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         matchesCount: result.data.matches?.length,
         participantsCount: result.data.participants?.length
       });
+      
+      // Guard: validate data structure before rendering
+      const m = result.data.matches;
+      const s = result.data.stages;
+      
+      if (!Array.isArray(m) || m.length === 0 || !Array.isArray(s) || s.length === 0) {
+        console.warn('⏭️ Skipping render: matches or stages not ready', {
+          hasMatches: Array.isArray(m) && m.length,
+          hasStages: Array.isArray(s) && s.length,
+        });
+        return;
+      }
+      
+      // Validate source coverage (avoid premature render)
+      const totalSlots = m.length * 2;
+      const sourcedCount = m.reduce((n, x) =>
+        n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0), 0);
+      const sourcePct = totalSlots ? sourcedCount / totalSlots : 0;
+      
+      if (sourcePct < 0.6) {
+        console.warn('⏭️ Skipping render: insufficient sources', { 
+          matches: m.length, 
+          sourced: sourcedCount, 
+          pct: Math.round(sourcePct * 100) + '%' 
+        });
+        return;
+      }
+      
+      // Prevent duplicate re-renders on identical data
+      const fp = fingerprint(m);
+      if (lastFingerprintRef.current === fp) {
+        console.log('🧩 No-op: identical fingerprint, skipping render');
+        return;
+      }
+      lastFingerprintRef.current = fp;
 
       console.log('🎨 Rendering brackets-viewer with data:', result.data);
 
@@ -220,7 +266,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         percentage: totalOpps > 0 ? Math.round((sourced / totalOpps) * 100) + '%' : '0%'
       });
 
-      // ========== PRE-RENDER IDENTITY & INVARIANT CHECKS ==========
+      // ========== PRE-RENDER IDENTITY CHECKS ==========
       
       // Sample matches to verify Symbol identity tags survived
       const takeSample = (arr: any[]) => arr.slice(0, 5).map(m => {
@@ -239,11 +285,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       // Verify array identity (should be same reference from adapter)
       console.log('🧪 SAME ARRAY FROM ADAPTER?', viewerData.matches === result.data.matches);
 
-      // Strong pre-render invariants
-      const totalSlots = viewerData.matches.length * 2;
-      const sourcedCount = viewerData.matches.reduce((n, m) =>
-        n + (m?.opponent1?.source_node_id ? 1 : 0) + (m?.opponent2?.source_node_id ? 1 : 0), 0
-      );
+      // Check if symbol tags survived
       const tagsMissing = viewerData.matches.filter(m => {
         const need1 = !!m.opponent1;
         const need2 = !!m.opponent2;
@@ -252,21 +294,9 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         return (need1 && bad1) || (need2 && bad2);
       }).length;
 
-      const invariants = {
-        matches: viewerData.matches.length,
-        totalSlots,
-        sourced: sourcedCount,
-        pct: totalSlots ? Math.round((sourcedCount / totalSlots) * 100) : 0,
-        tagsMissing,
-        passesThreshold: totalSlots ? (sourcedCount / totalSlots) >= 0.6 : false,
-        tagsIntact: tagsMissing === 0,
-      };
-      console.log('✅ RENDER INVARIANTS', invariants);
-
-      // BAIL if invariants fail
-      if (!invariants.passesThreshold || !invariants.tagsIntact) {
-        console.error('❌ INVARIANT FAILED - not rendering to avoid false negatives', invariants);
-        setError(`Bracket data integrity failed: ${!invariants.passesThreshold ? 'insufficient sources' : 'identity tags missing'}`);
+      if (tagsMissing > 0) {
+        console.error('❌ IDENTITY TAGS MISSING - object identity was lost', { tagsMissing });
+        setError('Bracket data integrity failed: identity tags missing');
         return;
       }
 
@@ -309,12 +339,18 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       }
 
       // Render using brackets-viewer v1.8.1 with try/catch
+      console.log('🎨 Calling bracketsViewer.render with', {
+        matches: viewerData.matches.length,
+        sourced: sourcedCount,
+        clearFlag: !hasRenderedRef.current
+      });
+      
       try {
         window.bracketsViewer.render(
           viewerData,
           {
           selector: '#brackets-viewer-container',
-          clear: true,
+          clear: !hasRenderedRef.current, // Only clear on first render
           participantOriginPlacement: 'before',
           separatedChildCountLabel: true,
           showSlotsOrigin: true,
@@ -348,6 +384,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         }
       );
       
+      hasRenderedRef.current = true;
       console.log('✅ brackets-viewer.render() completed successfully');
       
       // Force connector recalculation (CRITICAL FIX for layout reflow)
