@@ -71,16 +71,12 @@
   box-sizing: border-box !important;
 }
 
-/* Ensure stroke/border properties aren't nulled AND override Tailwind reset */
+/* Minimal Tailwind fix - restore content, let library control border sides */
 .brackets-viewer [class*="connect"]::before,
 .brackets-viewer [class*="connect"]::after {
-  content: "" !important;           /* CRITICAL: Override Tailwind's --tw-content */
-  border-style: solid !important;
-  border-color: var(--bv-connector-color) !important;
-  border-width: 2px !important;     /* Start at 2px for verification; dial back later */
-  position: absolute !important;     /* Ensure positioning */
+  content: "" !important;                              /* Override Tailwind's --tw-content */
+  border-color: var(--bv-connector-color) !important; /* Color only, let library set width/sides */
   box-sizing: border-box !important;
-  opacity: 1 !important;             /* Ensure visibility */
 }
 
 /* Prevent clipping of connector pseudo-elements */

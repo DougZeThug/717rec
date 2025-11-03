@@ -3,11 +3,10 @@ import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from 'next-themes'
 import App from './App.tsx'
 
-// CRITICAL: Load brackets-viewer base CSS FIRST (before any app styles)
-import 'brackets-viewer/dist/brackets-viewer.min.css'
-
-// Then load app CSS (which includes theme overrides)
-import './index.css'
+// CRITICAL: Correct order - Tailwind first, then library, then theme
+import './index.css' // Tailwind base + components + utilities
+import 'brackets-viewer/dist/brackets-viewer.min.css' // Library rules
+import './styles/brackets-viewer-717rec-theme.css' // Theme tweaks last
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider 
