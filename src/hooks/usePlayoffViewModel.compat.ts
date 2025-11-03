@@ -57,12 +57,16 @@ export const usePlayoffData = () => {
 
   // Fetch brackets data from Supabase with matches included
   const { data: brackets = [], isLoading: bracketsLoading, error: bracketsError, refetch: refetchBrackets } = useQuery({
-    queryKey: ['brackets'],
+    queryKey: ['playoffs-brackets-overview'], // More specific key to avoid cache conflicts
     queryFn: async () => {
+      console.log('🔍 Brackets Query START:', {
+        timestamp: new Date().toISOString()
+      });
+      
       // Check authentication state
       const { data: { user } } = await supabase.auth.getUser();
       
-      console.log('🔍 Brackets Query Debug:', {
+      console.log('🔍 Brackets Query User Check:', {
         timestamp: new Date().toISOString(),
         userAuthenticated: !!user,
         userId: user?.id || 'none'
@@ -81,6 +85,20 @@ export const usePlayoffData = () => {
           error: any;
         };
       
+      console.log('🔍 Brackets Query RAW RESULT:', {
+        dataLength: data?.length || 0,
+        hasError: !!error,
+        errorMessage: error?.message || null,
+        rawBrackets: data?.map(b => ({
+          id: b.id,
+          title: b.title,
+          state: b.state,
+          divisionId: b.division_id,
+          divisionName: b.divisions?.name,
+          matchesCount: b.matches?.length || 0
+        })) || []
+      });
+      
       if (error) {
         console.error('🚨 Brackets query failed:', {
           error,
@@ -92,17 +110,6 @@ export const usePlayoffData = () => {
         });
         throw error;
       }
-      
-      console.log('📊 Brackets query result:', {
-        bracketsCount: data?.length || 0,
-        brackets: data?.map(b => ({ 
-          id: b.id, 
-          title: b.title, 
-          state: b.state,
-          divisionId: b.division_id,
-          matchesCount: b.matches?.length || 0
-        })) || []
-      });
       
       // Transform to domain objects
       const brackets: PlayoffBracket[] = (data ?? []).map(br => ({
@@ -120,8 +127,24 @@ export const usePlayoffData = () => {
         challonge_tournament_id: br.challonge_tournament_id
       }));
       
+      console.log('🔍 Brackets Query TRANSFORMED:', {
+        count: brackets.length,
+        transformedBrackets: brackets.map(b => ({
+          id: b.id,
+          name: b.name,
+          division: b.division,
+          divisionId: b.divisionId,
+          state: b.state,
+          matchesCount: b.matches.length
+        }))
+      });
+      
       return brackets;
-    }
+    },
+    staleTime: 0, // Always consider data stale
+    gcTime: 0, // Don't cache (formerly cacheTime)
+    refetchOnMount: 'always', // Always refetch when component mounts
+    refetchOnWindowFocus: false
   });
 
   // Group brackets by display_division (consolidates to 3 main divisions)
