@@ -71,11 +71,16 @@
   box-sizing: border-box !important;
 }
 
-/* Ensure stroke/border properties aren't nulled */
+/* Ensure stroke/border properties aren't nulled AND override Tailwind reset */
 .brackets-viewer [class*="connect"]::before,
 .brackets-viewer [class*="connect"]::after {
-  border-color: var(--bv-connector-color) !important;
+  content: "" !important;           /* CRITICAL: Override Tailwind's --tw-content */
   border-style: solid !important;
+  border-color: var(--bv-connector-color) !important;
+  border-width: 1px !important;     /* Explicit width */
+  position: absolute !important;     /* Ensure positioning */
+  box-sizing: border-box !important;
+  opacity: 1 !important;             /* Ensure visibility */
 }
 
 /* ============================================
