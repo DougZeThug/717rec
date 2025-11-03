@@ -5,34 +5,31 @@
    ============================================ */
 
 .brackets-viewer {
-  /* Light Mode Colors */
-  --bv-primary-bg: #ffffff;
-  --bv-secondary-bg: #f8f9fa;
-  --bv-match-bg: #ffffff;
-  --bv-text-color: #1a1a1a;
-  --bv-text-muted: #6b7280;
-  --bv-connector-color: #e5e7eb;
-  --bv-match-border: #d1d5db;
+  /* Light Mode - Official brackets-viewer variables */
+  --primary-background: #ffffff;
+  --secondary-background: #f8f9fa;
+  --match-background: #ffffff;
+  --font-color: #1a1a1a;
+  --win-color: #16a34a;
+  --loss-color: #dc2626;
+  --label-color: #6b7280;
+  --hint-color: #9ca3af;
+  --connector-color: #d1d5db;
+  --border-color: #e5e7eb;
+  --border-hover-color: #3b82f6;
   
-  /* Winner/Loser Colors */
-  --bv-win-color: #16a34a;
-  --bv-loss-color: #dc2626;
+  /* Sizes */
+  --text-size: 14px;
+  --round-margin: 50px;
+  --match-width: 240px;
+  --match-horizontal-padding: 12px;
+  --match-vertical-padding: 10px;
+  --connector-border-width: 2px;
+  --match-border-width: 1px;
+  --match-border-radius: 8px;
   
-  /* Interactive States */
-  --bv-hover-border: #3b82f6;
-  --bv-accent-color: #3b82f6;
-  --bv-accent-glow: rgba(59, 130, 246, 0.15);
-  
-  /* Match Sizing */
-  --bv-match-min-width: 240px;
-  --bv-match-max-width: 300px;
-  
-  /* Typography */
-  --bv-participant-font-size: 0.85rem;
   font-family: 'Bebas Neue', 'Arial', sans-serif;
-  
-  /* Apply background to the container */
-  background-color: var(--bv-primary-bg);
+  background-color: var(--primary-background);
 }
 
 /* ============================================
@@ -75,14 +72,14 @@
 .brackets-viewer *, 
 .brackets-viewer *::before, 
 .brackets-viewer *::after {
-  border-color: inherit !important; /* Let viewer/theme control all borders */
+  border-color: inherit !important;
 }
 
 /* Minimal Tailwind fix - restore content, let library control border sides */
 .brackets-viewer [class*="connect"]::before,
 .brackets-viewer [class*="connect"]::after {
-  content: "" !important;                              /* Override Tailwind's --tw-content */
-  border-color: var(--bv-connector-color) !important; /* Color only, let library set width/sides */
+  content: "" !important;
+  border-color: var(--connector-color) !important;
   box-sizing: border-box !important;
 }
 
@@ -98,27 +95,21 @@
    ============================================ */
 
 .dark .brackets-viewer {
-  /* Dark Blue Theme Colors - Enhanced for visibility */
-  --bv-primary-bg: #0d1117;        /* Slightly lighter base (GitHub dark) */
-  --bv-secondary-bg: #161b22;      /* Subtle variation */
-  --bv-match-bg: #1a2028;          /* Lighter match cards for contrast */
-  --bv-text-color: #e6edf3;        /* Brighter text (WCAG AA) */
-  --bv-text-muted: #adbac7;        /* More readable muted text */
-  --bv-connector-color: #596d80;   /* MUCH more visible connectors */
-  --bv-match-border: #30363d;      /* Stronger borders */
+  /* Dark Mode - Official brackets-viewer variables with enhanced visibility */
+  --primary-background: #0d1117;
+  --secondary-background: #1c2835;
+  --match-background: #161b22;
+  --font-color: #e6edf3;          /* Brighter than default #d9d9d9 */
+  --win-color: #50b649;
+  --loss-color: #e61a1a;
+  --label-color: #8b949e;         /* More visible than grey */
+  --hint-color: #adbac7;          /* Brighter than default #a7a7a7 */
+  --connector-color: #30363d;     /* More visible connectors */
+  --border-color: #30363d;
+  --border-hover-color: #4a90e2;
   
-  /* Winner/Loser Colors */
-  --bv-win-color: #50b649;         /* Green for winners */
-  --bv-loss-color: #e61a1a;        /* Red for losers */
-  
-  /* Interactive States */
-  --bv-hover-border: #4a90e2;      /* Blue hover */
-  --bv-accent-color: #4a90e2;      /* Primary blue accent */
-  --bv-accent-glow: rgba(74, 144, 226, 0.2);
-  
-  /* Apply dark background */
-  background-color: var(--bv-primary-bg) !important;
-  color-scheme: dark; /* Browser hint for native controls */
+  background-color: var(--primary-background) !important;
+  color-scheme: dark;
 }
 
 /* ============================================
@@ -126,73 +117,33 @@
    ============================================ */
 
 .brackets-viewer .match {
-  border: 1px solid var(--bv-match-border);
-  background: var(--bv-match-bg);
-  border-radius: 8px;
+  border: var(--match-border-width) solid var(--border-color);
+  background: var(--match-background);
+  border-radius: var(--match-border-radius);
   transition: all 0.2s ease;
   overflow: hidden;
-  min-width: var(--bv-match-min-width);
-  max-width: var(--bv-match-max-width);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .brackets-viewer .match:hover {
-  border-color: var(--bv-hover-border);
-  box-shadow: 0 2px 8px var(--bv-accent-glow), 0 0 0 1px var(--bv-hover-border);
+  border-color: var(--border-hover-color);
   cursor: pointer;
   transform: translateY(-1px);
-}
-
-/* Dark mode: enhanced match visibility */
-.dark .brackets-viewer .match {
-  border-color: var(--bv-match-border);
-  background: var(--bv-match-bg);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4),
-              0 0 0 1px rgba(255, 255, 255, 0.05); /* Subtle inner glow */
-}
-
-.dark .brackets-viewer .match:hover {
-  border-color: var(--bv-hover-border);
-  background: #1e252e; /* Slightly lighter on hover */
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.35),
-              0 0 0 1px var(--bv-hover-border);
 }
 
 /* ============================================
    Participant Styling
    ============================================ */
 
-/* Participant Origin (Seeds) - displayed by brackets-viewer */
-.brackets-viewer .participant-origin {
-  color: var(--bv-accent-color);
-  font-weight: 700;
-  font-size: 0.75rem;
-  margin-right: 8px;
-  opacity: 0.8;
-  letter-spacing: 0.3px;
-  flex-shrink: 0;
-  font-family: 'Bebas Neue', 'Arial', sans-serif;
-}
-
-.dark .brackets-viewer .participant-origin {
-  color: var(--bv-accent-color);
-  opacity: 0.85; /* More visible in dark mode */
-  font-weight: 700; /* Ensure bold */
-}
-
-/* Add '#' prefix via CSS */
-.brackets-viewer .participant-origin::before {
-  content: '#';
-}
-
+/* Participant styling */
 .brackets-viewer .participant {
-  color: var(--bv-text-color);
-  padding: 10px 12px;
+  color: var(--font-color);
+  padding: var(--match-vertical-padding) var(--match-horizontal-padding);
   display: flex;
   align-items: center;
   gap: 8px;
   transition: all 0.15s ease;
-  font-size: var(--bv-participant-font-size);
+  font-size: var(--text-size);
   line-height: 1.2;
 }
 
@@ -205,35 +156,13 @@
 }
 
 .brackets-viewer .participant.win {
-  color: var(--bv-win-color);
-  font-weight: 600;
-  background: var(--bv-accent-glow);
+  color: var(--win-color);
+  font-weight: 700;
 }
 
 .brackets-viewer .participant.loss {
-  color: var(--bv-loss-color);
+  color: var(--loss-color);
   opacity: 0.6;
-}
-
-/* Dark mode: ensure participant text is readable */
-.dark .brackets-viewer .participant {
-  color: var(--bv-text-color);
-}
-
-.dark .brackets-viewer .participant-name,
-.dark .brackets-viewer .participant span {
-  color: inherit; /* Inherit brighter text */
-}
-
-.dark .brackets-viewer .participant.win {
-  color: var(--bv-win-color);
-  background: rgba(80, 182, 73, 0.15); /* More subtle */
-  font-weight: 700; /* Ensure bold */
-}
-
-.dark .brackets-viewer .participant.loss {
-  color: #999; /* Softer gray for losing teams */
-  opacity: 0.7; /* Slightly more visible */
 }
 
 /* ============================================
@@ -246,12 +175,7 @@
   border-radius: 4px;
   object-fit: contain;
   background: rgba(128, 128, 128, 0.1);
-  border: 1px solid var(--bv-match-border);
-}
-
-.dark .brackets-viewer .participant-image {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: #2a3441;
+  border: 1px solid var(--border-color);
 }
 
 /* ============================================
@@ -259,7 +183,7 @@
    ============================================ */
 
 .brackets-viewer .score {
-  color: var(--bv-text-color);
+  color: var(--font-color);
   font-weight: 700;
   padding: 4px 10px;
   background: rgba(128, 128, 128, 0.15);
@@ -270,18 +194,8 @@
 }
 
 .brackets-viewer .participant.win .score {
-  background: var(--bv-accent-glow);
-  color: var(--bv-win-color);
+  color: var(--win-color);
   font-weight: 800;
-}
-
-.dark .brackets-viewer .score {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.dark .brackets-viewer .participant.win .score {
-  background: rgba(80, 182, 73, 0.2);
-  color: var(--bv-win-color);
 }
 
 /* ============================================
@@ -290,7 +204,7 @@
 
 .brackets-viewer .round-title,
 .brackets-viewer .round-name {
-  color: var(--bv-text-muted);
+  color: var(--label-color);
   font-weight: 700;
   font-size: 1rem;
   margin-bottom: 1rem;
@@ -302,25 +216,17 @@
   display: inline-block;
 }
 
-.dark .brackets-viewer .round-title,
-.dark .brackets-viewer .round-name {
-  color: var(--bv-text-color); /* Use main text color, not muted */
-  background: rgba(255, 255, 255, 0.08); /* More visible */
-  border: 1px solid rgba(255, 255, 255, 0.12); /* Add definition */
-  font-weight: 700; /* Ensure bold */
-}
-
 /* ============================================
    Connection Lines
    ============================================ */
 
 .brackets-viewer .connector {
-  stroke: var(--bv-connector-color);
-  stroke-width: 2px;
+  stroke: var(--connector-color);
+  stroke-width: var(--connector-border-width);
 }
 
 .brackets-viewer .connector.highlight {
-  stroke: var(--bv-accent-color);
+  stroke: var(--border-hover-color);
   stroke-width: 3px;
 }
 
@@ -329,21 +235,8 @@
    ============================================ */
 
 .brackets-viewer .bracket-container {
-  background: var(--bv-primary-bg);
+  background: var(--primary-background);
   padding: 1rem;
-}
-
-/* Ensure all bracket sections have proper dark background */
-.dark .brackets-viewer,
-.dark .brackets-viewer .bracket-container,
-.dark #brackets-viewer-container {
-  background-color: var(--bv-primary-bg) !important;
-}
-
-/* Dark mode connector color override (explicit for safety) */
-.dark .brackets-viewer [class*="connect"]::before,
-.dark .brackets-viewer [class*="connect"]::after {
-  border-color: #4a5a6a !important;
 }
 
 .brackets-viewer .upper-bracket {
@@ -353,7 +246,7 @@
 .brackets-viewer .lower-bracket {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 2px solid var(--bv-connector-color);
+  border-top: var(--connector-border-width) solid var(--connector-color);
 }
 
 /* ============================================
@@ -361,18 +254,11 @@
    ============================================ */
 
 .brackets-viewer .match-label {
-  color: var(--bv-text-muted);
+  color: var(--label-color);
   font-size: 0.75rem;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.5px;
-  opacity: 0.5;
-}
-
-.dark .brackets-viewer .match-label {
-  opacity: 0.75; /* Much more readable */
-  color: var(--bv-text-muted); /* Explicit color */
-  font-weight: 600; /* Ensure weight */
 }
 
 .brackets-viewer .match-status {
@@ -383,15 +269,15 @@
 }
 
 .brackets-viewer .match-status.completed {
-  color: var(--bv-win-color);
+  color: var(--win-color);
 }
 
 .brackets-viewer .match-status.ready {
-  color: var(--bv-accent-color);
+  color: var(--border-hover-color);
 }
 
 .brackets-viewer .match-status.waiting {
-  color: var(--bv-text-muted);
+  color: var(--hint-color);
 }
 
 /* ============================================
@@ -459,40 +345,11 @@
 }
 
 /* ============================================
-   Dark Mode Specificity Reinforcements
-   ============================================ */
-
-/* Ensure dark connectors always use correct color */
-.dark .brackets-viewer .connector,
-.dark .brackets-viewer .connector .line,
-.dark .brackets-viewer .connection {
-  border-color: var(--bv-connector-color) !important;
-  background-color: var(--bv-connector-color) !important;
-  stroke: var(--bv-connector-color) !important;
-}
-
-/* Lower bracket separator */
-.dark .brackets-viewer .lower-bracket {
-  border-top-color: var(--bv-connector-color);
-}
-
-/* Ensure score backgrounds are visible */
-.dark .brackets-viewer .score {
-  background: rgba(255, 255, 255, 0.08); /* More visible */
-  color: var(--bv-text-color);
-}
-
-.dark .brackets-viewer .participant.win .score {
-  background: rgba(80, 182, 73, 0.2);
-  color: var(--bv-win-color);
-}
-
-/* ============================================
    Accessibility
    ============================================ */
 
 .brackets-viewer .match:focus-visible {
-  outline: 2px solid var(--bv-accent-color);
+  outline: 2px solid var(--border-hover-color);
   outline-offset: 2px;
 }
 
