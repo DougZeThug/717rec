@@ -1,6 +1,7 @@
 
 import React from "react";
-import PlayoffPageContent from "@/components/playoffs/PlayoffPageContent";
+import BracketList from "@/components/playoffs/BracketList";
+import { ChallongeFallback } from "@/components/playoffs/embeds/ChallongeFallback";
 import { PlayoffPageData } from "../hooks/usePlayoffPageData";
 
 interface PlayoffViewProps {
@@ -24,16 +25,25 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
   };
 
   return (
-    <PlayoffPageContent
-      availableDivisions={data.availableDivisions}
-      bracketsByDivision={data.typesafeBracketsByDivision}
-      allBracketsData={data.allBracketsData}
-      isLoading={data.isLoading}
-      onCreateBracket={handleCreateBracketClick}
-      onDeleteBracket={data.isAdmin ? onDeleteBracket : undefined}
-      onRefreshData={data.refetchBrackets}
-      isAdmin={data.isAdmin}
-    />
+    <>
+      {/* Challonge Fallback - Always show for everyone */}
+      <div className="mb-8">
+        <ChallongeFallback />
+      </div>
+
+      {/* Use BracketList for everyone, same as AdminView */}
+      <BracketList 
+        divisions={data.availableDivisions}
+        bracketsByDivision={data.typesafeBracketsByDivision}
+        onCreateBracket={data.isAdmin ? handleCreateBracketClick : () => {}}
+        onViewBracket={(id) => data.setSelectedBracketId(id)}
+        onEditBracket={data.isAdmin ? handleCreateBracketClick : () => {}}
+        onDeleteBracket={data.isAdmin ? onDeleteBracket : undefined}
+        onResyncBracket={undefined}
+        isResyncLoading={false}
+        isLoading={data.isLoading}
+      />
+    </>
   );
 };
 
