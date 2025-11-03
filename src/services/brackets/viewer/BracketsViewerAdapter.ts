@@ -234,6 +234,13 @@ export class BracketsViewerAdapter {
     groups: any[],
     rounds: any[]
   ): any[] {
+    // AUDIT LOG: Track object references at start
+    console.log('🔬 AUDIT: calculateSourceNodeIds START', {
+      matchCount: matches.length,
+      sampleMatch: matches[0],
+      opponent1Ref: matches[0]?.opponent1
+    });
+    
     // Build comprehensive indexes for O(1) lookups
     const matchesById = new Map(matches.map(m => [m.id, m]));
     const roundsById = new Map(rounds.map(r => [r.id, r]));
@@ -272,19 +279,13 @@ export class BracketsViewerAdapter {
       const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
 
       if (prevMatch1) {
-        match.opponent1 = {
-          ...match.opponent1,
-          source_node_id: String(prevMatch1.id),
-          source_type: 'winner'
-        };
+        match.opponent1.source_node_id = String(prevMatch1.id);
+        match.opponent1.source_type = 'winner';
       }
 
       if (prevMatch2) {
-        match.opponent2 = {
-          ...match.opponent2,
-          source_node_id: String(prevMatch2.id),
-          source_type: 'winner'
-        };
+        match.opponent2.source_node_id = String(prevMatch2.id);
+        match.opponent2.source_type = 'winner';
       }
     };
 
@@ -307,19 +308,13 @@ export class BracketsViewerAdapter {
 
       // Only set if not already sourced (to avoid overwriting drop-ins)
       if (prevMatch1 && !match.opponent1.source_node_id) {
-        match.opponent1 = {
-          ...match.opponent1,
-          source_node_id: String(prevMatch1.id),
-          source_type: 'winner'
-        };
+        match.opponent1.source_node_id = String(prevMatch1.id);
+        match.opponent1.source_type = 'winner';
       }
 
       if (prevMatch2 && !match.opponent2.source_node_id) {
-        match.opponent2 = {
-          ...match.opponent2,
-          source_node_id: String(prevMatch2.id),
-          source_type: 'winner'
-        };
+        match.opponent2.source_node_id = String(prevMatch2.id);
+        match.opponent2.source_type = 'winner';
       }
     };
 
@@ -350,19 +345,13 @@ export class BracketsViewerAdapter {
         const wbMatch2 = wbMatches[(match.number - 1) * 2 + 1];
 
         if (wbMatch1) {
-          match.opponent1 = {
-            ...match.opponent1,
-            source_node_id: String(wbMatch1.id),
-            source_type: 'loser'
-          };
+          match.opponent1.source_node_id = String(wbMatch1.id);
+          match.opponent1.source_type = 'loser';
         }
 
         if (wbMatch2) {
-          match.opponent2 = {
-            ...match.opponent2,
-            source_node_id: String(wbMatch2.id),
-            source_type: 'loser'
-          };
+          match.opponent2.source_node_id = String(wbMatch2.id);
+          match.opponent2.source_type = 'loser';
         }
         return;
       }
@@ -386,11 +375,8 @@ export class BracketsViewerAdapter {
       const targetSlot = match.opponent1?.source_node_id ? 'opponent2' : 'opponent1';
 
       if (match[targetSlot]) {
-        match[targetSlot] = {
-          ...match[targetSlot],
-          source_node_id: String(wbMatch.id),
-          source_type: 'loser'
-        };
+        match[targetSlot].source_node_id = String(wbMatch.id);
+        match[targetSlot].source_type = 'loser';
       }
     };
 
@@ -427,11 +413,8 @@ export class BracketsViewerAdapter {
         const wbFinalMatch = wbFinalMatches?.[0];
         
         if (wbFinalMatch) {
-          match.opponent1 = {
-            ...match.opponent1,
-            source_node_id: String(wbFinalMatch.id),
-            source_type: 'winner'
-          };
+          match.opponent1.source_node_id = String(wbFinalMatch.id);
+          match.opponent1.source_type = 'winner';
         }
       }
 
@@ -442,11 +425,8 @@ export class BracketsViewerAdapter {
         const lbFinalMatch = lbFinalMatches?.[0];
         
         if (lbFinalMatch) {
-          match.opponent2 = {
-            ...match.opponent2,
-            source_node_id: String(lbFinalMatch.id),
-            source_type: 'winner'
-          };
+          match.opponent2.source_node_id = String(lbFinalMatch.id);
+          match.opponent2.source_type = 'winner';
         }
       }
     };
@@ -471,6 +451,37 @@ export class BracketsViewerAdapter {
         addGrandFinalSources(match);
       }
     }
+
+    // AUDIT LOG: Verify mutations at end
+    console.log('🔬 AUDIT: calculateSourceNodeIds END', {
+      matchCount: matches.length,
+      sampleMatch: matches[5],
+      opponent1Ref: matches[5]?.opponent1,
+      hasSource: !!matches[5]?.opponent1?.source_node_id
+    });
+    
+    // AUDIT: Check ID types and dangling edges
+    const idTypes = matches.slice(0, 10).map(m => typeof m.id);
+    console.log('🔬 AUDIT: ID TYPES', idTypes);
+    
+    const sourceSamples = matches.slice(0, 5).map(m => ({
+      id: m.id,
+      o1_id: m.opponent1?.id,
+      o1_source: m.opponent1?.source_node_id,
+      o1_type: m.opponent1?.source_type,
+      o2_id: m.opponent2?.id,
+      o2_source: m.opponent2?.source_node_id,
+      o2_type: m.opponent2?.source_type
+    }));
+    console.log('🔬 AUDIT: SOURCE_NODE_SAMPLES', sourceSamples);
+    
+    // Detect dangling edges
+    const allIds = new Set(matches.map(m => String(m.id)));
+    const danglingEdges = matches.filter(m =>
+      (m.opponent1?.source_node_id && !allIds.has(String(m.opponent1.source_node_id))) ||
+      (m.opponent2?.source_node_id && !allIds.has(String(m.opponent2.source_node_id)))
+    );
+    console.warn('🔬 AUDIT: Dangling source_node_ids:', danglingEdges.length, danglingEdges.slice(0, 3));
 
     return matches;
   }

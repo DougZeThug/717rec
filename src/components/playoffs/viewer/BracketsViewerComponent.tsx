@@ -220,6 +220,20 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         percentage: totalOpps > 0 ? Math.round((sourced / totalOpps) * 100) + '%' : '0%'
       });
 
+      // AUDIT: Verify render payload
+      const renderPayload = {
+        totalMatches: viewerData.matches.length,
+        sourcedSlots: viewerData.matches.filter(m => 
+          m.opponent1?.source_node_id || m.opponent2?.source_node_id
+        ).length,
+        sampleMatches: viewerData.matches.slice(0, 3).map(m => ({
+          id: m.id,
+          o1_source: m.opponent1?.source_node_id,
+          o2_source: m.opponent2?.source_node_id
+        }))
+      };
+      console.log('🔬 AUDIT: RENDER_PAYLOAD_CHECK', renderPayload);
+
       // Render using brackets-viewer v1.8.1 with try/catch
       try {
         window.bracketsViewer.render(
