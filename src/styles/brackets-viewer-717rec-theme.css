@@ -30,6 +30,7 @@
   
   font-family: 'Bebas Neue', 'Arial', sans-serif;
   background-color: var(--primary-background);
+  color-scheme: light;
 }
 
 /* ============================================
@@ -108,7 +109,7 @@
   --border-color: #30363d;
   --border-hover-color: #4a90e2;
   
-  background-color: var(--primary-background) !important;
+  background-color: var(--primary-background);
   color-scheme: dark;
 }
 
