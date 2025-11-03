@@ -4,6 +4,7 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { log } from '@/utils/logger';
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
+import ConnectorEngineShim from './ConnectorEngineShim';
 
 interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
@@ -19,6 +20,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useShim, setUseShim] = useState(false);
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const renderCount = useRef(0);
   const lastFingerprintRef = useRef<string | null>(null);
@@ -300,8 +302,17 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         return;
       }
 
-      // Log viewer version and options
-      console.log('🌐 BV VERSION:', (window as any).bracketsViewer?.version || 'unknown');
+      // Audit: try to read version and script src
+      const bv = (window as any).bracketsViewer;
+      const scriptEl = Array.from(document.scripts).find(s =>
+        s.src && /brackets-viewer/i.test(s.src));
+      console.log('🌐 BV VERSION (if any):', bv?.version ?? 'unknown');
+      console.log('🌐 BV SCRIPT SRC:', scriptEl?.src ?? 'not found');
+
+      // Audit: probe for connector-ish methods/symbols
+      const keys = bv ? Object.keys(bv).filter(k => /connect|connector|edge|link|draw/i.test(k)) : [];
+      console.log('🧪 BV CONNECTOR KEYS:', keys);
+      
       console.log('⚙️ RENDER OPTIONS:', {
         showSlotsOrigin: true,
         showLowerBracketSlotsOrigin: true,
@@ -398,6 +409,20 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       }
 
         console.log('✅ BracketsViewerComponent: Render complete');
+        
+        // Check for connectors and enable shim fallback if needed
+        setTimeout(() => {
+          const c = document.getElementById('brackets-viewer-container');
+          if (!c) return;
+          const hasSvg = c.querySelector('svg');
+          const hasPaths = c.querySelector('path, line, polyline, .connector');
+          const connectorPresent = !!(hasSvg || hasPaths);
+          console.log('🔎 Viewer connector presence:', connectorPresent);
+          if (!connectorPresent) {
+            console.warn('🛟 Fallback: enabling ConnectorEngineShim');
+            setUseShim(true);
+          }
+        }, 1000);
         
         // Debug: Check if connector SVG elements exist with enhanced debugging
         setTimeout(() => {
@@ -520,6 +545,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           id="brackets-viewer-container"
           className="brackets-viewer p-4 md:p-8 font-bebas"
           style={{ 
+            position: 'relative',
             minHeight: '400px', 
             minWidth: 'fit-content',
             width: 'max-content',
@@ -529,7 +555,15 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
             transformOrigin: 'top left',
             backgroundColor: 'var(--bv-primary-bg, #101213)'
           }}
-        />
+        >
+          {useShim && (
+            <ConnectorEngineShim
+              containerId="brackets-viewer-container"
+              matches={bracket.bracket_data?.match ?? []}
+              enabled={true}
+            />
+          )}
+        </div>
         {!isInitialized && (
           <div className="text-center p-8">
             <p className="text-sm text-muted-foreground">Loading bracket...</p>
