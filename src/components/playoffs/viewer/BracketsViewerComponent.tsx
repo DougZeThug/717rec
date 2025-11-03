@@ -4,7 +4,7 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { log } from '@/utils/logger';
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
-import ConnectorOverlayShim from './ConnectorOverlayShim';
+
 
 interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
@@ -31,16 +31,13 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [useShim, setUseShim] = useState(false);
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const renderCount = useRef(0);
   const lastFingerprintRef = useRef<string | null>(null);
   const hasRenderedRef = useRef(false);
-  const viewerMatchesRef = useRef<any[]>([]);
   const isMountingRef = useRef(true);
   
   const containerId = 'brackets-viewer-container';
-  const overlayId = 'brackets-connector-overlay';
   
   // Fingerprint function to detect identical data
   const fingerprint = (matches: any[]): string => {
@@ -166,10 +163,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         });
         return;
       }
-      
-      // Store matches for the overlay shim BEFORE fingerprint check
-      // This ensures ConnectorOverlayShim always has fresh data
-      viewerMatchesRef.current = m;
       
       // Prevent duplicate re-renders on identical data
       const fp = fingerprint(m);
@@ -437,26 +430,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
         console.log('✅ BracketsViewerComponent: Render complete');
         
-        // Check for connectors and enable shim fallback if needed
-        setTimeout(() => {
-          const c = document.getElementById(containerId);
-          if (!c) {
-            console.warn('⚠️ Container not found for connector check');
-            return;
-          }
-          
-          const hasViewerConnectors = !!c.querySelector('svg, path, line, polyline, .connector');
-          console.log('🔎 Viewer connector presence:', hasViewerConnectors);
-          
-          if (!hasViewerConnectors) {
-            console.warn('🛟 Fallback: enabling ConnectorOverlayShim (portal)');
-            setUseShim(true);
-          } else {
-            console.log('✅ Viewer connectors detected, shim not needed');
-            setUseShim(false);
-          }
-        }, 1200);
-        
         // Debug: Check if connector SVG elements exist with enhanced debugging
         setTimeout(() => {
           const container = containerRef.current;
@@ -488,20 +461,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           };
           
           console.log('🔍 POST-RENDER DOM AUDIT:', domAudit);
-          
-          // Audit the overlay separately
-          setTimeout(() => {
-            const overlayEl = document.getElementById(overlayId);
-            if (overlayEl) {
-              const overlaySvgs = overlayEl.querySelectorAll('svg');
-              const overlayPaths = overlayEl.querySelectorAll('path');
-              console.log('🎨 OVERLAY AUDIT:', {
-                svgCount: overlaySvgs.length,
-                pathCount: overlayPaths.length,
-                overlayHTML: overlayEl.innerHTML.substring(0, 500)
-              });
-            }
-          }, 1300);
           
           if (domAudit.matchCount === 0) {
             console.error('❌ No matches rendered - brackets-viewer failed silently');
@@ -604,13 +563,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
               backgroundColor: 'var(--bv-primary-bg, #101213)'
             }}
           />
-          {/* Overlay sibling exists outside of viewer DOM, so viewer clears won't affect it */}
-          <div id={overlayId} style={{
-            position: 'absolute',
-            inset: 0,
-            pointerEvents: 'none',
-            zIndex: 9999
-          }} />
         </div>
         {!isInitialized && (
           <div className="text-center p-8">
@@ -618,14 +570,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           </div>
         )}
       </div>
-      
-      {/* Portal-based connector overlay */}
-      <ConnectorOverlayShim
-        containerId={containerId}
-        overlayId={overlayId}
-        matches={viewerMatchesRef.current}
-        enabled={useShim}
-      />
 
       {/* Brackets-manager match editor */}
       <BracketsManagerMatchEditor

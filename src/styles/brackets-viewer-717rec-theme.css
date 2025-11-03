@@ -50,12 +50,6 @@
   min-height: 400px;
 }
 
-#brackets-connector-overlay { 
-  position: absolute; 
-  inset: 0; 
-  pointer-events: none; 
-  z-index: 9999 !important;
-}
 
 .brackets-viewer .bracket-container {
   overflow: visible !important;
