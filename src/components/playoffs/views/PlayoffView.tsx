@@ -32,6 +32,7 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
       onCreateBracket={handleCreateBracketClick}
       onDeleteBracket={data.isAdmin ? onDeleteBracket : undefined}
       onRefreshData={data.refetchBrackets}
+      isAdmin={data.isAdmin}
     />
   );
 };

@@ -59,6 +59,15 @@ export const usePlayoffData = () => {
   const { data: brackets = [], isLoading: bracketsLoading, error: bracketsError, refetch: refetchBrackets } = useQuery({
     queryKey: ['brackets'],
     queryFn: async () => {
+      // Check authentication state
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      console.log('🔍 Brackets Query Debug:', {
+        timestamp: new Date().toISOString(),
+        userAuthenticated: !!user,
+        userId: user?.id || 'none'
+      });
+      
       const { data, error } = await supabase
         .from('brackets')
         .select(`
@@ -72,7 +81,28 @@ export const usePlayoffData = () => {
           error: any;
         };
       
-      if (error) throw error;
+      if (error) {
+        console.error('🚨 Brackets query failed:', {
+          error,
+          errorMessage: error.message,
+          errorDetails: error.details,
+          errorHint: error.hint,
+          errorCode: error.code,
+          userAuthenticated: !!user
+        });
+        throw error;
+      }
+      
+      console.log('📊 Brackets query result:', {
+        bracketsCount: data?.length || 0,
+        brackets: data?.map(b => ({ 
+          id: b.id, 
+          title: b.title, 
+          state: b.state,
+          divisionId: b.division_id,
+          matchesCount: b.matches?.length || 0
+        })) || []
+      });
       
       // Transform to domain objects
       const brackets: PlayoffBracket[] = (data ?? []).map(br => ({

@@ -1,6 +1,6 @@
 
 import React, { useCallback, useMemo } from "react";
-import { Loader2, RefreshCw, AlertCircle } from "lucide-react";
+import { Loader2, RefreshCw, AlertCircle, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
@@ -16,6 +16,7 @@ interface PlayoffPageContentProps {
   onCreateBracket: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
   onRefreshData?: () => Promise<void>;
+  isAdmin?: boolean;
 }
 
 const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
@@ -25,7 +26,8 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
   isLoading,
   onCreateBracket,
   onDeleteBracket,
-  onRefreshData
+  onRefreshData,
+  isAdmin = false
 }) => {
   // Enhanced refresh state management
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -117,7 +119,17 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 
       {/* Empty State - No brackets at all */}
       {!displayLoading && allBracketsData.length === 0 && (
-        <EmptyBracketState onCreateBracket={onCreateBracket} />
+        isAdmin ? (
+          <EmptyBracketState onCreateBracket={onCreateBracket} />
+        ) : (
+          <div className="text-center py-12 bg-card rounded-lg border">
+            <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No Brackets Available</h3>
+            <p className="text-muted-foreground mb-4">
+              Check the Challonge brackets above for current tournament information.
+            </p>
+          </div>
+        )
       )}
 
       {/* Division Cards - Show brackets grouped by division */}

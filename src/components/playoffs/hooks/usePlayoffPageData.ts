@@ -59,8 +59,18 @@ export function usePlayoffPageData(): PlayoffPageData {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const isAdmin = profile?.is_admin || false;
+  
+  // DEBUG: Authentication state
+  useEffect(() => {
+    console.log('👤 Authentication state:', {
+      user: user ? { id: user.id, email: user.email } : null,
+      profile: profile ? { id: profile.id, is_admin: profile.is_admin, username: profile.username } : null,
+      isAdmin,
+      timestamp: new Date().toISOString()
+    });
+  }, [user, profile, isAdmin]);
 
   // DEBUG: Enhanced URL parameter debugging
   useEffect(() => {
