@@ -225,6 +225,16 @@ export class BracketsViewerAdapter {
   }
 
   /**
+   * Ensure opponent object exists for in-place mutation
+   */
+  private static ensureOpponentObject(match: any, key: 'opponent1' | 'opponent2') {
+    if (!match[key]) {
+      match[key] = { id: null };
+    }
+    return match[key];
+  }
+
+  /**
    * Calculate source_node_id for each opponent in matches
    * This determines which previous match each opponent came from
    * Handles Winners→Winners, Losers→Losers, and Winners→Losers drop-ins
@@ -240,6 +250,11 @@ export class BracketsViewerAdapter {
       sampleMatch: matches[0],
       opponent1Ref: matches[0]?.opponent1
     });
+    
+    // Normalize all match IDs to strings for consistent comparisons
+    for (const m of matches) {
+      if (typeof m.id !== 'string') m.id = String(m.id);
+    }
     
     // Build comprehensive indexes for O(1) lookups
     const matchesById = new Map(matches.map(m => [m.id, m]));
@@ -270,22 +285,20 @@ export class BracketsViewerAdapter {
       const prevMatches = matchesByGroupRound.get(keyPrev);
       if (!prevMatches) return;
 
-      // Defensive: ensure opponent objects exist
-      if (!match.opponent1) match.opponent1 = { id: null };
-      if (!match.opponent2) match.opponent2 = { id: null };
-
       // Binary tree pairing: match N gets winners from matches (2N-1) and (2N)
       const prevMatch1 = prevMatches[(match.number - 1) * 2];
       const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
 
       if (prevMatch1) {
-        match.opponent1.source_node_id = String(prevMatch1.id);
-        match.opponent1.source_type = 'winner';
+        const o1 = this.ensureOpponentObject(match, 'opponent1');
+        o1.source_node_id = String(prevMatch1.id);
+        o1.source_type = 'winner';
       }
 
       if (prevMatch2) {
-        match.opponent2.source_node_id = String(prevMatch2.id);
-        match.opponent2.source_type = 'winner';
+        const o2 = this.ensureOpponentObject(match, 'opponent2');
+        o2.source_node_id = String(prevMatch2.id);
+        o2.source_type = 'winner';
       }
     };
 
@@ -298,23 +311,25 @@ export class BracketsViewerAdapter {
       const prevMatches = matchesByGroupRound.get(keyPrev);
       if (!prevMatches) return;
 
-      // Defensive: ensure opponent objects exist
-      if (!match.opponent1) match.opponent1 = { id: null };
-      if (!match.opponent2) match.opponent2 = { id: null };
-
       // Same binary pairing within losers bracket
       const prevMatch1 = prevMatches[(match.number - 1) * 2];
       const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
 
       // Only set if not already sourced (to avoid overwriting drop-ins)
-      if (prevMatch1 && !match.opponent1.source_node_id) {
-        match.opponent1.source_node_id = String(prevMatch1.id);
-        match.opponent1.source_type = 'winner';
+      if (prevMatch1) {
+        const o1 = this.ensureOpponentObject(match, 'opponent1');
+        if (!o1.source_node_id) {
+          o1.source_node_id = String(prevMatch1.id);
+          o1.source_type = 'winner';
+        }
       }
 
-      if (prevMatch2 && !match.opponent2.source_node_id) {
-        match.opponent2.source_node_id = String(prevMatch2.id);
-        match.opponent2.source_type = 'winner';
+      if (prevMatch2) {
+        const o2 = this.ensureOpponentObject(match, 'opponent2');
+        if (!o2.source_node_id) {
+          o2.source_node_id = String(prevMatch2.id);
+          o2.source_type = 'winner';
+        }
       }
     };
 
@@ -336,22 +351,20 @@ export class BracketsViewerAdapter {
         const wbMatches = matchesByGroupRound.get(keyWB);
         if (!wbMatches) return;
 
-        // Defensive: ensure opponent objects exist
-        if (!match.opponent1) match.opponent1 = { id: null };
-        if (!match.opponent2) match.opponent2 = { id: null };
-
         // LB R1 Match N gets losers from WB R1 matches (2N-1) and (2N)
         const wbMatch1 = wbMatches[(match.number - 1) * 2];
         const wbMatch2 = wbMatches[(match.number - 1) * 2 + 1];
 
         if (wbMatch1) {
-          match.opponent1.source_node_id = String(wbMatch1.id);
-          match.opponent1.source_type = 'loser';
+          const o1 = this.ensureOpponentObject(match, 'opponent1');
+          o1.source_node_id = String(wbMatch1.id);
+          o1.source_type = 'loser';
         }
 
         if (wbMatch2) {
-          match.opponent2.source_node_id = String(wbMatch2.id);
-          match.opponent2.source_type = 'loser';
+          const o2 = this.ensureOpponentObject(match, 'opponent2');
+          o2.source_node_id = String(wbMatch2.id);
+          o2.source_type = 'loser';
         }
         return;
       }
@@ -372,12 +385,13 @@ export class BracketsViewerAdapter {
       if (!wbMatch) return;
 
       // Fill the slot that doesn't already have a source (from LB progression)
-      const targetSlot = match.opponent1?.source_node_id ? 'opponent2' : 'opponent1';
+      const o1 = this.ensureOpponentObject(match, 'opponent1');
+      const o2 = this.ensureOpponentObject(match, 'opponent2');
+      const targetSlot = o1.source_node_id ? 'opponent2' : 'opponent1';
+      const targetOpp = targetSlot === 'opponent1' ? o1 : o2;
 
-      if (match[targetSlot]) {
-        match[targetSlot].source_node_id = String(wbMatch.id);
-        match[targetSlot].source_type = 'loser';
-      }
+      targetOpp.source_node_id = String(wbMatch.id);
+      targetOpp.source_type = 'loser';
     };
 
     // Helper: Add Grand Final sources (WB Final winner + LB Final winner)
@@ -387,10 +401,6 @@ export class BracketsViewerAdapter {
 
       const currentGroup = groupsById.get(currentRound.group_id);
       if (!currentGroup || currentGroup.number !== 3) return; // Only finals group
-
-      // Defensive: ensure opponent objects exist
-      if (!match.opponent1) match.opponent1 = { id: null };
-      if (!match.opponent2) match.opponent2 = { id: null };
 
       // Find last round of Winners Bracket (group 1)
       const wbRounds = rounds.filter(r => {
@@ -413,8 +423,9 @@ export class BracketsViewerAdapter {
         const wbFinalMatch = wbFinalMatches?.[0];
         
         if (wbFinalMatch) {
-          match.opponent1.source_node_id = String(wbFinalMatch.id);
-          match.opponent1.source_type = 'winner';
+          const o1 = this.ensureOpponentObject(match, 'opponent1');
+          o1.source_node_id = String(wbFinalMatch.id);
+          o1.source_type = 'winner';
         }
       }
 
@@ -425,8 +436,9 @@ export class BracketsViewerAdapter {
         const lbFinalMatch = lbFinalMatches?.[0];
         
         if (lbFinalMatch) {
-          match.opponent2.source_node_id = String(lbFinalMatch.id);
-          match.opponent2.source_type = 'winner';
+          const o2 = this.ensureOpponentObject(match, 'opponent2');
+          o2.source_node_id = String(lbFinalMatch.id);
+          o2.source_type = 'winner';
         }
       }
     };
@@ -452,36 +464,43 @@ export class BracketsViewerAdapter {
       }
     }
 
-    // AUDIT LOG: Verify mutations at end
-    console.log('🔬 AUDIT: calculateSourceNodeIds END', {
-      matchCount: matches.length,
-      sampleMatch: matches[5],
-      opponent1Ref: matches[5]?.opponent1,
-      hasSource: !!matches[5]?.opponent1?.source_node_id
-    });
-    
-    // AUDIT: Check ID types and dangling edges
-    const idTypes = matches.slice(0, 10).map(m => typeof m.id);
-    console.log('🔬 AUDIT: ID TYPES', idTypes);
-    
-    const sourceSamples = matches.slice(0, 5).map(m => ({
-      id: m.id,
-      o1_id: m.opponent1?.id,
-      o1_source: m.opponent1?.source_node_id,
-      o1_type: m.opponent1?.source_type,
-      o2_id: m.opponent2?.id,
-      o2_source: m.opponent2?.source_node_id,
-      o2_type: m.opponent2?.source_type
-    }));
-    console.log('🔬 AUDIT: SOURCE_NODE_SAMPLES', sourceSamples);
-    
-    // Detect dangling edges
-    const allIds = new Set(matches.map(m => String(m.id)));
-    const danglingEdges = matches.filter(m =>
-      (m.opponent1?.source_node_id && !allIds.has(String(m.opponent1.source_node_id))) ||
-      (m.opponent2?.source_node_id && !allIds.has(String(m.opponent2.source_node_id)))
+    // Apply Symbol identity tags to track object references downstream
+    const TAG = Symbol('opponent_identity_tag');
+    for (const m of matches) {
+      if (m.opponent1) (m.opponent1 as any)[TAG] = `o1:${m.id}`;
+      if (m.opponent2) (m.opponent2 as any)[TAG] = `o2:${m.id}`;
+    }
+    console.info('🔖 IDENTITY TAGS APPLIED to', matches.length, 'matches');
+
+    // Detect dangling source_node_id references
+    const ids = new Set(matches.map(m => m.id));
+    let dangling = 0;
+    for (const m of matches) {
+      const s1 = m.opponent1?.source_node_id;
+      const s2 = m.opponent2?.source_node_id;
+      if (s1 && !ids.has(String(s1))) {
+        console.warn('⚠️ Dangling source_node_id (o1)', m.id, '→', s1);
+        dangling++;
+      }
+      if (s2 && !ids.has(String(s2))) {
+        console.warn('⚠️ Dangling source_node_id (o2)', m.id, '→', s2);
+        dangling++;
+      }
+    }
+
+    // Final connector stats
+    const sourcedSlots = matches.reduce((n, m) =>
+      n + (m.opponent1?.source_node_id ? 1 : 0) + (m.opponent2?.source_node_id ? 1 : 0), 0
     );
-    console.warn('🔬 AUDIT: Dangling source_node_ids:', danglingEdges.length, danglingEdges.slice(0, 3));
+    console.info('📊 Connector Stats (final pre-render):', {
+      matches: matches.length,
+      sourcedSlots,
+      percentage: matches.length * 2 > 0 ? Math.round((sourcedSlots / (matches.length * 2)) * 100) + '%' : '0%'
+    });
+
+    if (dangling > 0) {
+      console.error(`❌ Found ${dangling} dangling source_node_id(s) - connectors will fail!`);
+    }
 
     return matches;
   }

@@ -220,19 +220,93 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         percentage: totalOpps > 0 ? Math.round((sourced / totalOpps) * 100) + '%' : '0%'
       });
 
-      // AUDIT: Verify render payload
-      const renderPayload = {
-        totalMatches: viewerData.matches.length,
-        sourcedSlots: viewerData.matches.filter(m => 
-          m.opponent1?.source_node_id || m.opponent2?.source_node_id
-        ).length,
-        sampleMatches: viewerData.matches.slice(0, 3).map(m => ({
+      // ========== PRE-RENDER IDENTITY & INVARIANT CHECKS ==========
+      
+      // Sample matches to verify Symbol identity tags survived
+      const takeSample = (arr: any[]) => arr.slice(0, 5).map(m => {
+        const o1Syms = m.opponent1 ? Object.getOwnPropertySymbols(m.opponent1) : [];
+        const o2Syms = m.opponent2 ? Object.getOwnPropertySymbols(m.opponent2) : [];
+        return {
           id: m.id,
-          o1_source: m.opponent1?.source_node_id,
-          o2_source: m.opponent2?.source_node_id
-        }))
+          o1_src: m.opponent1?.source_node_id,
+          o1_tag: o1Syms.length ? m.opponent1[o1Syms[0]] : 'NO_TAG',
+          o2_src: m.opponent2?.source_node_id,
+          o2_tag: o2Syms.length ? m.opponent2[o2Syms[0]] : 'NO_TAG',
+        };
+      });
+      console.log('🧪 PRE-RENDER SAMPLE', takeSample(viewerData.matches));
+
+      // Verify array identity (should be same reference from adapter)
+      console.log('🧪 SAME ARRAY FROM ADAPTER?', viewerData.matches === result.data.matches);
+
+      // Strong pre-render invariants
+      const totalSlots = viewerData.matches.length * 2;
+      const sourcedCount = viewerData.matches.reduce((n, m) =>
+        n + (m?.opponent1?.source_node_id ? 1 : 0) + (m?.opponent2?.source_node_id ? 1 : 0), 0
+      );
+      const tagsMissing = viewerData.matches.filter(m => {
+        const need1 = !!m.opponent1;
+        const need2 = !!m.opponent2;
+        const bad1 = m.opponent1 && Object.getOwnPropertySymbols(m.opponent1).length === 0;
+        const bad2 = m.opponent2 && Object.getOwnPropertySymbols(m.opponent2).length === 0;
+        return (need1 && bad1) || (need2 && bad2);
+      }).length;
+
+      const invariants = {
+        matches: viewerData.matches.length,
+        totalSlots,
+        sourced: sourcedCount,
+        pct: totalSlots ? Math.round((sourcedCount / totalSlots) * 100) : 0,
+        tagsMissing,
+        passesThreshold: totalSlots ? (sourcedCount / totalSlots) >= 0.6 : false,
+        tagsIntact: tagsMissing === 0,
       };
-      console.log('🔬 AUDIT: RENDER_PAYLOAD_CHECK', renderPayload);
+      console.log('✅ RENDER INVARIANTS', invariants);
+
+      // BAIL if invariants fail
+      if (!invariants.passesThreshold || !invariants.tagsIntact) {
+        console.error('❌ INVARIANT FAILED - not rendering to avoid false negatives', invariants);
+        setError(`Bracket data integrity failed: ${!invariants.passesThreshold ? 'insufficient sources' : 'identity tags missing'}`);
+        return;
+      }
+
+      // Log viewer version and options
+      console.log('🌐 BV VERSION:', (window as any).bracketsViewer?.version || 'unknown');
+      console.log('⚙️ RENDER OPTIONS:', {
+        showSlotsOrigin: true,
+        showLowerBracketSlotsOrigin: true,
+        clear: true,
+        selector: '#brackets-viewer-container'
+      });
+
+      // Install MutationObserver to catch connector DOM insertions
+      const renderContainer = containerRef.current;
+      if (renderContainer) {
+        const mo = new MutationObserver((mutations) => {
+          for (const mut of mutations) {
+            const added = Array.from(mut.addedNodes || []);
+            const hasConnector = added.some((n: any) => {
+              if (n?.nodeType !== 1) return false;
+              const t = n.tagName?.toLowerCase();
+              const cls = n.className || '';
+              return t === 'svg' || t === 'path' || t === 'polyline' || t === 'line' || 
+                     String(cls).includes('connector') ||
+                     n.querySelector?.('svg, path, polyline, line, .connector');
+            });
+            if (hasConnector) {
+              console.log('🧿 CONNECTOR DOM ADDED via MutationObserver');
+            }
+          }
+        });
+        mo.observe(renderContainer, { childList: true, subtree: true });
+        console.log('👁️ Connector MutationObserver active on', renderContainer.id);
+        
+        // Cleanup after 5 seconds
+        setTimeout(() => {
+          mo.disconnect();
+          console.log('👁️ MutationObserver disconnected');
+        }, 5000);
+      }
 
       // Render using brackets-viewer v1.8.1 with try/catch
       try {
@@ -298,13 +372,14 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           const matches = container.querySelectorAll('.match');
           const stages = container.querySelectorAll('.stage');
           
-          // Check for ALL SVG-related elements
+          // Comprehensive DOM structure check for connectors
           const allSvgs = container.querySelectorAll('svg');
           const allPaths = container.querySelectorAll('path');
           const allLines = container.querySelectorAll('line');
           const allPolylines = container.querySelectorAll('polyline');
+          const connectorClasses = container.querySelectorAll('.connector, [class*="connector"]');
           
-          console.log('🔍 POST-RENDER CHECK:', {
+          const domAudit = {
             hasBracketElement: !!bracket,
             stageCount: stages.length,
             matchCount: matches.length,
@@ -312,12 +387,25 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
             pathCount: allPaths.length,
             lineCount: allLines.length,
             polylineCount: allPolylines.length,
+            connectorClassCount: connectorClasses.length,
+            totalConnectorElements: allSvgs.length + allPaths.length + allLines.length + allPolylines.length,
             containerHTMLLength: container.innerHTML.length
-          });
+          };
           
-          if (matches.length === 0) {
+          console.log('🔍 POST-RENDER DOM AUDIT:', domAudit);
+          
+          if (domAudit.matchCount === 0) {
             console.error('❌ No matches rendered - brackets-viewer failed silently');
             console.log('🔍 Container HTML preview:', container.innerHTML.substring(0, 1000));
+          } else if (domAudit.matchCount > 0 && domAudit.totalConnectorElements === 0) {
+            console.error('❌ CRITICAL: Matches rendered but ZERO connector elements!');
+            console.log('📋 Sample match HTML:', matches[0]?.outerHTML?.substring(0, 300));
+          } else if (domAudit.totalConnectorElements > 0) {
+            console.log('✅ Connectors successfully rendered!', {
+              svgs: domAudit.svgCount,
+              paths: domAudit.pathCount,
+              lines: domAudit.lineCount
+            });
           } else {
             console.log('✅ Matches rendered successfully!');
           }
