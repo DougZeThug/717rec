@@ -77,10 +77,17 @@
   content: "" !important;           /* CRITICAL: Override Tailwind's --tw-content */
   border-style: solid !important;
   border-color: var(--bv-connector-color) !important;
-  border-width: 1px !important;     /* Explicit width */
+  border-width: 2px !important;     /* Start at 2px for verification; dial back later */
   position: absolute !important;     /* Ensure positioning */
   box-sizing: border-box !important;
   opacity: 1 !important;             /* Ensure visibility */
+}
+
+/* Prevent clipping of connector pseudo-elements */
+.brackets-viewer .round,
+.brackets-viewer .match {
+  position: relative;
+  overflow: visible !important;
 }
 
 /* ============================================
@@ -295,6 +302,12 @@
 .dark .brackets-viewer .bracket-container,
 .dark #brackets-viewer-container {
   background-color: var(--bv-primary-bg) !important;
+}
+
+/* Dark mode connector color override (explicit for safety) */
+.dark .brackets-viewer [class*="connect"]::before,
+.dark .brackets-viewer [class*="connect"]::after {
+  border-color: #4a5a6a !important;
 }
 
 .brackets-viewer .upper-bracket {
