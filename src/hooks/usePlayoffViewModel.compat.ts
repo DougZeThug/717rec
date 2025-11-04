@@ -125,16 +125,15 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
         challonge_tournament_id: br.challonge_tournament_id
       }));
       
-      // Filter out completed brackets for non-admins
-      if (!isAdmin) {
-        const originalCount = brackets.length;
-        brackets = brackets.filter(b => b.state !== 'completed');
-        console.log('🔒 Non-admin filter applied:', {
-          originalCount,
-          filteredCount: brackets.length,
-          removedCompleted: originalCount - brackets.length
-        });
-      }
+      // Filter out completed brackets for all users (admins and non-admins)
+      const originalCount = brackets.length;
+      brackets = brackets.filter(b => b.state !== 'completed');
+      console.log('🔒 Completed brackets filtered (all users):', {
+        originalCount,
+        filteredCount: brackets.length,
+        removedCompleted: originalCount - brackets.length,
+        isAdmin
+      });
       
       console.log('🔍 Brackets Query TRANSFORMED:', {
         count: brackets.length,
