@@ -288,7 +288,7 @@
 @media (max-width: 768px) {
   /* Scale wrapper, NOT the viewer node itself to preserve connectors */
   #brackets-wrapper {
-    transform: scale(0.75);
+    transform: scale(0.8);
     transform-origin: top left;
   }
   
