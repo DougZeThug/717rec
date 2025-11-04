@@ -548,7 +548,6 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
             className="brackets-viewer p-4 md:p-8 font-bebas bg-background"
             style={{ 
               position: 'relative',
-              minHeight: 'calc(100vh - 280px)', 
               minWidth: 'fit-content',
               width: 'max-content',
               overflow: 'visible',
