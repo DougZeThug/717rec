@@ -18,7 +18,6 @@ type DivisionRow = Database["public"]["Tables"]["divisions"]["Row"];
 
 interface BracketRowWithRels extends BracketRow {
   divisions: DivisionRow | null;
-  playoff_matches: PlayoffMatchRow[];
 }
 
 // Row-to-Domain mapper
@@ -77,8 +76,7 @@ export const usePlayoffData = () => {
         .from('brackets')
         .select(`
           *,
-          divisions(*),
-          playoff_matches!fk_playoff_matches_bracket(*)
+          divisions(*)
         `)
         .order('created_at', { ascending: false }) as unknown as {
           data: BracketRowWithRels[] | null;
@@ -95,7 +93,7 @@ export const usePlayoffData = () => {
           state: b.state,
           divisionId: b.division_id,
           divisionName: b.divisions?.name,
-          matchesCount: b.playoff_matches?.length || 0
+          matchesCount: 0 // Matches loaded by BracketsViewerComponent
         })) || []
       });
       
@@ -118,7 +116,7 @@ export const usePlayoffData = () => {
         division: br.divisions?.name,
         divisionId: br.division_id,
         format: br.format ?? "Double Elimination",
-        matches: (br.playoff_matches ?? []).map(mapMatchRow),
+        matches: [], // Matches loaded by BracketsViewerComponent based on bracket type
         champion: undefined,
         state: (br.state === 'underway' ? 'in_progress' : 
                 br.state === 'complete' ? 'completed' : 
