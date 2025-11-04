@@ -122,7 +122,8 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
                 br.state === 'completed' ? 'completed' : 
                 'pending') as PlayoffBracket["state"],
         created_at: br.created_at,
-        challonge_tournament_id: br.challonge_tournament_id
+        challonge_tournament_id: br.challonge_tournament_id,
+        uses_brackets_manager: br.uses_brackets_manager ?? false
       }));
       
       // Filter out completed brackets for all users (admins and non-admins)
