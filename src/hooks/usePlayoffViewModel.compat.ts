@@ -119,7 +119,7 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
         matches: [], // Matches loaded by BracketsViewerComponent based on bracket type
         champion: undefined,
         state: (br.state === 'underway' ? 'in_progress' : 
-                br.state === 'complete' ? 'completed' : 
+                br.state === 'completed' ? 'completed' : 
                 'pending') as PlayoffBracket["state"],
         created_at: br.created_at,
         challonge_tournament_id: br.challonge_tournament_id
