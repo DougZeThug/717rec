@@ -184,6 +184,12 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           usesBracketsManager: bracket.uses_brackets_manager
         });
         
+        // If no onMatchClick handler provided, this is a read-only view
+        if (!onMatchClick) {
+          console.log('🚫 Match click ignored - read-only view (no onMatchClick handler)');
+          return;
+        }
+        
         // Allow BYE matches (one participant) to be clicked for manual scoring
         // Only block if BOTH opponents are missing (match not yet determined)
         if (!match.opponent1?.id && !match.opponent2?.id) {
