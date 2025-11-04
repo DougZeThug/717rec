@@ -78,7 +78,7 @@ export const usePlayoffData = () => {
         .select(`
           *,
           divisions(*),
-          playoff_matches(*)
+          playoff_matches!fk_playoff_matches_bracket(*)
         `)
         .order('created_at', { ascending: false }) as unknown as {
           data: BracketRowWithRels[] | null;
