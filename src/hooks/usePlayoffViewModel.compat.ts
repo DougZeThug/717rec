@@ -45,7 +45,7 @@ const mapMatchRow = (row: PlayoffMatchRow): PlayoffMatch => ({
 });
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
-export const usePlayoffData = () => {
+export const usePlayoffData = (isAdmin: boolean = false) => {
   // Call the view model without a bracketId to get overview data
   const vm = usePlayoffViewModel(null);
   
@@ -110,7 +110,7 @@ export const usePlayoffData = () => {
       }
       
       // Transform to domain objects
-      const brackets: PlayoffBracket[] = (data ?? []).map(br => ({
+      let brackets: PlayoffBracket[] = (data ?? []).map(br => ({
         id: br.id,
         name: br.title,
         division: br.divisions?.name,
@@ -125,8 +125,20 @@ export const usePlayoffData = () => {
         challonge_tournament_id: br.challonge_tournament_id
       }));
       
+      // Filter out completed brackets for non-admins
+      if (!isAdmin) {
+        const originalCount = brackets.length;
+        brackets = brackets.filter(b => b.state !== 'completed');
+        console.log('🔒 Non-admin filter applied:', {
+          originalCount,
+          filteredCount: brackets.length,
+          removedCompleted: originalCount - brackets.length
+        });
+      }
+      
       console.log('🔍 Brackets Query TRANSFORMED:', {
         count: brackets.length,
+        isAdmin,
         transformedBrackets: brackets.map(b => ({
           id: b.id,
           name: b.name,

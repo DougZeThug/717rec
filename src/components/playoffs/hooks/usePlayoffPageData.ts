@@ -186,7 +186,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets: originalRefetchBrackets,
     error: bracketsDataError
-  } = usePlayoffData();
+  } = usePlayoffData(isAdmin);
   
   // DEBUG: Enhanced brackets overview logging
   useEffect(() => {
