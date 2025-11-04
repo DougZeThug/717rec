@@ -14,7 +14,6 @@ interface BracketsManagerMatchEditorProps {
   matchId: number | null;
   bracketId: string;
   isOpen: boolean;
-  isAdmin?: boolean;
   onClose: () => void;
 }
 
@@ -22,7 +21,6 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
   matchId,
   bracketId,
   isOpen,
-  isAdmin = false,
   onClose
 }) => {
   const { toast } = useToast();
@@ -72,16 +70,6 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
   const handleSave = async () => {
     if (!matchId || !matchData) return;
-
-    // SECURITY: Admin check before saving
-    if (!isAdmin) {
-      toast({
-        title: 'Access Denied',
-        description: 'Only administrators can edit match scores.',
-        variant: 'destructive'
-      });
-      return;
-    }
 
     try {
       setIsSaving(true);
@@ -165,16 +153,6 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
   const handleToggleByeStatus = async (clearDownstream: boolean = false) => {
     if (!matchId || !byeEligible) return;
-
-    // SECURITY: Admin check before toggling status
-    if (!isAdmin) {
-      toast({
-        title: 'Access Denied',
-        description: 'Only administrators can toggle match status.',
-        variant: 'destructive'
-      });
-      return;
-    }
 
     try {
       setIsTogglingStatus(true);
