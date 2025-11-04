@@ -540,8 +540,8 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
   return (
     <>
-      <div className="w-full overflow-x-auto overflow-y-visible bg-background">
-        <div ref={wrapperRef} id="brackets-wrapper" style={{ position: 'relative' }}>
+      <div className="w-full h-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background">
+        <div ref={wrapperRef} id="brackets-wrapper" style={{ position: 'relative', height: '100%', minHeight: '350px' }}>
           <div 
             ref={containerRef}
             id={containerId}
