@@ -253,11 +253,30 @@ export class BracketManagerService {
    * Update a match result using brackets-manager with SQL storage
    * Both win and loss must be explicitly set for proper loser propagation
    * Updates are serialized to prevent race conditions during concurrent updates
+   * 
+   * @security ADMIN-ONLY - Non-admin users will receive 403 Forbidden
    */
   async updateMatch(options: UpdateMatchOptions): Promise<void> {
     const { matchId, scores } = options;
 
     bracketLog("🎯 BracketManagerService.updateMatch() START:", { matchId, scores });
+
+    // SECURITY: Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('🚫 updateMatch: Authentication failed', authError);
+      throw new Error('Authentication required');
+    }
+
+    // SECURITY: Check admin status using RPC to avoid RLS recursion
+    const { data: isAdmin, error: adminError } = await supabase
+      .rpc('current_user_is_admin');
+    
+    if (adminError || !isAdmin) {
+      console.error('🚫 updateMatch: Admin check failed', { userId: user.id, isAdmin, error: adminError });
+      throw new Error('Admin privileges required to update match scores');
+    }
 
     // Serialize updates to prevent race conditions
     return matchUpdateQueue.enqueue(async () => {
@@ -838,9 +857,28 @@ export class BracketManagerService {
 
   /**
    * Calculate and store final standings for a completed bracket
+   * 
+   * @security ADMIN-ONLY - Non-admin users will receive 403 Forbidden
    */
   async calculateFinalStandings(bracketId: string): Promise<void> {
     bracketLog("Calculating final standings from SQL tables:", { bracketId });
+
+    // SECURITY: Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('🚫 calculateFinalStandings: Authentication failed', authError);
+      throw new Error('Authentication required');
+    }
+
+    // SECURITY: Check admin status using RPC to avoid RLS recursion
+    const { data: isAdmin, error: adminError } = await supabase
+      .rpc('current_user_is_admin');
+    
+    if (adminError || !isAdmin) {
+      console.error('🚫 calculateFinalStandings: Admin check failed', { userId: user.id, isAdmin, error: adminError });
+      throw new Error('Admin privileges required to calculate final standings');
+    }
 
     try {
       // Get all stages for this bracket from SQL tables
@@ -1049,6 +1087,7 @@ export class BracketManagerService {
    * 
    * Supports reopening completed matches with downstream cascade clearing.
    * 
+   * @security ADMIN-ONLY - Non-admin users will receive 403 Forbidden
    * @param matchId - Match ID in the brackets-manager database
    * @param makeReady - If true, set to Ready (2). If false, revert to Waiting (1)
    * @param clearDownstream - If true, clear downstream matches when reopening completed match
@@ -1060,6 +1099,23 @@ export class BracketManagerService {
     message: string;
   }> {
     bracketLog(`Admin BYE toggle requested for match ${matchId}`, { makeReady, clearDownstream });
+
+    // SECURITY: Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('🚫 adminToggleByeReady: Authentication failed', authError);
+      throw new Error('Authentication required');
+    }
+
+    // SECURITY: Check admin status using RPC to avoid RLS recursion
+    const { data: isAdmin, error: adminError } = await supabase
+      .rpc('current_user_is_admin');
+    
+    if (adminError || !isAdmin) {
+      console.error('🚫 adminToggleByeReady: Admin check failed', { userId: user.id, isAdmin, error: adminError });
+      throw new Error('Admin privileges required to toggle match status');
+    }
 
     try {
       const check = await this.isLosersByeMatch(matchId);

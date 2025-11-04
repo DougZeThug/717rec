@@ -2,6 +2,7 @@
 import React from "react";
 import { BracketsViewerComponent } from "@/components/playoffs/viewer";
 import { PlayoffBracket, PlayoffTeam } from "@/utils/playoffs/playoffTypes";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 interface LocalBracketRendererProps {
   bracket: PlayoffBracket;
@@ -16,6 +17,8 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   onEditMatch,
   ...props
 }) => {
+  const { isAdminAccessGranted } = useAdminAccess();
+  
   if (!bracket) {
     return (
       <div className="text-center p-8">
@@ -29,6 +32,7 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
       bracket={bracket}
       teams={teams}
       onMatchClick={onEditMatch}
+      isAdmin={isAdminAccessGranted}
     />
   );
 };

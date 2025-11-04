@@ -4,18 +4,21 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { log } from '@/utils/logger';
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
   teams: PlayoffTeam[];
   onMatchClick?: (matchId: string) => void;
+  isAdmin?: boolean;
 }
 
 export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = ({
   bracket,
   teams,
-  onMatchClick
+  onMatchClick,
+  isAdmin = false
 }) => {
   // Guard: Require valid bracket with ID
   if (!bracket || !bracket.id) {
@@ -50,6 +53,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   // State for brackets-manager match editor
   const [selectedBMMatchId, setSelectedBMMatchId] = useState<number | null>(null);
   const [isBMEditorOpen, setIsBMEditorOpen] = useState(false);
+  const { toast } = useToast();
   
   renderCount.current++;
   log(`🎨 BracketsViewerComponent render #${renderCount.current}`, {
@@ -181,8 +185,20 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           opponent1: match.opponent1,
           opponent2: match.opponent2,
           status: match.status,
-          usesBracketsManager: bracket.uses_brackets_manager
+          usesBracketsManager: bracket.uses_brackets_manager,
+          isAdmin
         });
+        
+        // SECURITY: Block non-admin users from opening match editor
+        if (!isAdmin) {
+          console.log('🚫 Match click blocked - user is not an admin');
+          toast({
+            title: "View Only",
+            description: "Only administrators can edit match scores.",
+            variant: "default"
+          });
+          return;
+        }
         
         // If no onMatchClick handler provided, this is a read-only view
         if (!onMatchClick) {
@@ -569,6 +585,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
         matchId={selectedBMMatchId}
         bracketId={bracket.id}
         isOpen={isBMEditorOpen}
+        isAdmin={isAdmin}
         onClose={() => {
           setIsBMEditorOpen(false);
           setSelectedBMMatchId(null);

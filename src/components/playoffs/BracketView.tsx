@@ -11,6 +11,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { log } from "@/utils/logger";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 
 interface BracketViewProps {
   bracketId: string; // Required - must be non-empty
@@ -25,6 +26,9 @@ const BracketView: React.FC<BracketViewProps> = ({
   teams: legacyTeams,
   onEditMatch
 }) => {
+  // Get admin access status
+  const { isAdminAccessGranted } = useAdminAccess();
+  
   // Debug logging for React #310 errors
   const hookCallCount = useRef(0);
   const renderCount = useRef(0);
@@ -283,6 +287,7 @@ const BracketView: React.FC<BracketViewProps> = ({
             bracket={displayBracket}
             teams={displayBracket.teams || displayTeams}
             onMatchClick={handleMatchClick}
+            isAdmin={isAdminAccessGranted}
           />
         ) : (
           <div className="text-center p-8 text-gray-500">

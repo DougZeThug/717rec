@@ -2,10 +2,12 @@ import { useMemo, useCallback } from 'react';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 import type { PlayoffBracket } from '@/types/playoffs';
 
 export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
   const { toast } = useToast();
+  const { isAdminAccessGranted } = useAdminAccess();
   
   // Determine which system manages this bracket
   const useBracketsManager = useMemo(() => {
@@ -20,6 +22,16 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
     team1GameWins: number,
     team2GameWins: number
   ) => {
+    // SECURITY: Admin check before updating match
+    if (!isAdminAccessGranted) {
+      console.error('🚫 usePlayoffMatchUpdate: Non-admin attempted to update match');
+      toast({
+        title: 'Access Denied',
+        description: 'Only administrators can edit match scores.',
+        variant: 'destructive'
+      });
+      throw new Error('Admin privileges required to update match scores');
+    }
     
     if (useBracketsManager) {
       // ✅ Use brackets-manager.js for match updates (handles loser propagation automatically)
@@ -169,7 +181,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       });
     }
     
-  }, [useBracketsManager, toast]);
+  }, [useBracketsManager, toast, isAdminAccessGranted]);
   
   return { updateMatch, useBracketsManager };
 };
