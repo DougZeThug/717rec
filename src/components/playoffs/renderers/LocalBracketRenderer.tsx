@@ -17,7 +17,9 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   onEditMatch,
   ...props
 }) => {
-  const { isAdminAccessGranted } = useAdminAccess();
+  const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();
+  
+  console.log('🔐 LocalBracketRenderer admin check:', { isAdminAccessGranted, isAdminLoading });
   
   if (!bracket) {
     return (
@@ -31,7 +33,7 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
     <BracketsViewerComponent
       bracket={bracket}
       teams={teams}
-      onMatchClick={isAdminAccessGranted ? onEditMatch : undefined}
+      onMatchClick={isAdminLoading || isAdminAccessGranted ? onEditMatch : undefined}
     />
   );
 };

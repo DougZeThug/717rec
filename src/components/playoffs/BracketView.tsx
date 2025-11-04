@@ -26,7 +26,9 @@ const BracketView: React.FC<BracketViewProps> = ({
   teams: legacyTeams,
   onEditMatch
 }) => {
-  const { isAdminAccessGranted } = useAdminAccess();
+  const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();
+  
+  console.log('🔐 BracketView admin check:', { isAdminAccessGranted, isAdminLoading });
   
   // Debug logging for React #310 errors
   const hookCallCount = useRef(0);
@@ -285,7 +287,7 @@ const BracketView: React.FC<BracketViewProps> = ({
           <BracketsViewerComponent
             bracket={displayBracket}
             teams={displayBracket.teams || displayTeams}
-            onMatchClick={isAdminAccessGranted ? handleMatchClick : undefined}
+            onMatchClick={isAdminLoading || isAdminAccessGranted ? handleMatchClick : undefined}
           />
         ) : (
           <div className="text-center p-8 text-gray-500">
