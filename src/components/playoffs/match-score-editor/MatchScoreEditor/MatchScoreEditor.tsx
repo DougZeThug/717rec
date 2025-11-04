@@ -125,33 +125,33 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
   // BYE match rendering
   if (isBye && byeWinner) {
     return (
-      <div className={cn("space-y-6", animations.fadeIn)}>
-        <div className="text-center py-8 space-y-4">
-          <div className="text-lg font-semibold text-muted-foreground">
+      <div className={cn("space-y-4 md:space-y-6", animations.fadeIn)}>
+        <div className="text-center py-4 md:py-8 space-y-2 md:space-y-4">
+          <div className="text-base md:text-lg font-semibold text-muted-foreground">
             Match Forfeit - BYE
           </div>
-          <div className="text-2xl font-bold">
+          <div className="text-xl md:text-2xl font-bold px-2">
             {byeWinner.name} wins by walkover
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs md:text-sm text-muted-foreground">
             (Best of {match.bestOf})
           </div>
         </div>
         
         <ValidationErrorDisplay error={validationError} />
         
-        <div className="flex gap-2 justify-end pt-4 border-t">
+        <div className="flex flex-col sm:flex-row gap-2 justify-end pt-3 md:pt-4 border-t">
           <button
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent transition-colors"
+            className="px-4 py-2 text-sm font-medium rounded-md hover:bg-accent transition-colors w-full sm:w-auto"
           >
             Cancel
           </button>
           <button
             onClick={handleByeForfeit}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 w-full sm:w-auto"
           >
             {isSubmitting ? "Saving..." : `Award Win (${match.bestOf}-0)`}
           </button>
