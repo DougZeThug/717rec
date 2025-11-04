@@ -99,7 +99,8 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
 
   return (
     <div className="space-y-8">
-      <ChallongeFallback />
+      {/* Challonge fallback hidden - using brackets-viewer now */}
+      {/* <ChallongeFallback /> */}
       
       {/* Refresh Button */}
       {onRefreshData && allBracketsData.length > 0 && (
@@ -126,7 +127,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
             <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold text-foreground mb-2">No Brackets Available</h3>
             <p className="text-muted-foreground mb-4">
-              Check the Challonge brackets above for current tournament information.
+              Brackets will appear here once they are created.
             </p>
           </div>
         )

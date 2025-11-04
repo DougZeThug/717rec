@@ -27,10 +27,10 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
 
   return (
     <>
-      {/* Challonge Fallback - Always show for everyone */}
-      <div className="mb-8">
+      {/* Challonge Fallback - Hidden, using brackets-viewer now */}
+      {/* <div className="mb-8">
         <ChallongeFallback />
-      </div>
+      </div> */}
 
       {/* Show BracketList only when no bracket is selected */}
       <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
