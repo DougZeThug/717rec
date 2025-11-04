@@ -57,7 +57,7 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
 
   // Fetch brackets data from Supabase with matches included
   const { data: brackets = [], isLoading: bracketsLoading, error: bracketsError, refetch: refetchBrackets } = useQuery({
-    queryKey: ['playoffs-brackets-overview'], // More specific key to avoid cache conflicts
+    queryKey: ['playoffs-brackets-overview', { isAdmin }], // Separate cache per user role
     queryFn: async () => {
       console.log('🔍 Brackets Query START:', {
         timestamp: new Date().toISOString()
