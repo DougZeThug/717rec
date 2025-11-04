@@ -540,12 +540,12 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
   return (
     <>
-      <div className="w-full overflow-x-auto overflow-y-visible" style={{ backgroundColor: 'var(--primary-background, #ffffff)' }}>
+      <div className="w-full overflow-x-auto overflow-y-visible bg-background">
         <div ref={wrapperRef} id="brackets-wrapper" style={{ position: 'relative' }}>
           <div 
             ref={containerRef}
             id={containerId}
-            className="brackets-viewer p-4 md:p-8 font-bebas"
+            className="brackets-viewer p-4 md:p-8 font-bebas bg-background"
             style={{ 
               position: 'relative',
               minHeight: 'calc(100vh - 280px)', 
@@ -554,8 +554,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
               overflow: 'visible',
               pointerEvents: 'auto',
               transform: 'scale(1)',
-              transformOrigin: 'top left',
-              backgroundColor: 'var(--primary-background, #ffffff)'
+              transformOrigin: 'top left'
             }}
           />
         </div>
