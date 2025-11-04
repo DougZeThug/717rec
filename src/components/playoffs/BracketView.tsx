@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBracketData } from "@/hooks/brackets/useBracketData";
 import { useBracketCompletion } from "@/hooks/useBracketCompletion";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { BracketsViewerComponent } from "./viewer";
 import { FinalStandings } from "./FinalStandings";
 import BracketErrorBoundary from "./BracketErrorBoundary";
@@ -26,10 +25,6 @@ const BracketView: React.FC<BracketViewProps> = ({
   teams: legacyTeams,
   onEditMatch
 }) => {
-  const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();
-  
-  console.log('🔐 BracketView admin check:', { isAdminAccessGranted, isAdminLoading });
-  
   // Debug logging for React #310 errors
   const hookCallCount = useRef(0);
   const renderCount = useRef(0);
@@ -287,7 +282,7 @@ const BracketView: React.FC<BracketViewProps> = ({
           <BracketsViewerComponent
             bracket={displayBracket}
             teams={displayBracket.teams || displayTeams}
-            onMatchClick={isAdminLoading || isAdminAccessGranted ? handleMatchClick : undefined}
+            onMatchClick={handleMatchClick}
           />
         ) : (
           <div className="text-center p-8 text-gray-500">

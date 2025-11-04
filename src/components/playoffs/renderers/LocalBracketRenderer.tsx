@@ -1,6 +1,5 @@
 
 import React from "react";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { BracketsViewerComponent } from "@/components/playoffs/viewer";
 import { PlayoffBracket, PlayoffTeam } from "@/utils/playoffs/playoffTypes";
 
@@ -17,10 +16,6 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
   onEditMatch,
   ...props
 }) => {
-  const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();
-  
-  console.log('🔐 LocalBracketRenderer admin check:', { isAdminAccessGranted, isAdminLoading });
-  
   if (!bracket) {
     return (
       <div className="text-center p-8">
@@ -33,7 +28,7 @@ export const LocalBracketRenderer: React.FC<LocalBracketRendererProps> = ({
     <BracketsViewerComponent
       bracket={bracket}
       teams={teams}
-      onMatchClick={isAdminLoading || isAdminAccessGranted ? onEditMatch : undefined}
+      onMatchClick={onEditMatch}
     />
   );
 };
