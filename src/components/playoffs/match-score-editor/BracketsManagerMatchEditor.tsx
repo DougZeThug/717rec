@@ -221,28 +221,28 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
   if (isBye && byeWinner) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Match Forfeit - BYE</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            <div className="text-center py-4">
-              <p className="text-xl font-semibold">{byeWinner.name} wins by walkover</p>
-              <p className="text-sm text-muted-foreground mt-2">Opponent: BYE</p>
+          <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
+            <div className="text-center py-2 sm:py-4">
+              <p className="text-lg sm:text-xl font-semibold px-2">{byeWinner.name} wins by walkover</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2">Opponent: BYE</p>
             </div>
 
             {/* BYE Status Toggle Control - Admin Only */}
             {byeEligible && byeEligible.canToggle && (
-              <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="bg-muted/50 border border-border rounded-lg p-3 sm:p-4 space-y-3">
+                <div className="space-y-3">
                   <div className="space-y-1">
                     <p className="text-sm font-medium">Match Status Control</p>
                     <p className="text-xs text-muted-foreground">
                       Current Status: <span className="font-semibold">{byeEligible.statusName}</span>
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     {byeEligible.currentStatus === 4 ? (
                       // Completed match - show reopen options
                       <>
@@ -251,7 +251,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                           size="sm"
                           onClick={() => handleToggleByeStatus(false)}
                           disabled={isTogglingStatus}
-                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                          className="border-blue-600 text-blue-600 hover:bg-blue-50 w-full sm:w-auto text-xs sm:text-sm"
                         >
                           {isTogglingStatus ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -265,7 +265,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                           size="sm"
                           onClick={() => handleToggleByeStatus(true)}
                           disabled={isTogglingStatus}
-                          className="border-red-600 text-red-600 hover:bg-red-50"
+                          className="border-red-600 text-red-600 hover:bg-red-50 w-full sm:w-auto text-xs sm:text-sm"
                         >
                           {isTogglingStatus ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -281,7 +281,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                         size="sm"
                         onClick={() => handleToggleByeStatus(false)}
                         disabled={isTogglingStatus}
-                        className="border-green-600 text-green-600 hover:bg-green-50"
+                        className="border-green-600 text-green-600 hover:bg-green-50 w-full sm:w-auto text-xs sm:text-sm"
                       >
                         {isTogglingStatus ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -296,7 +296,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
                         size="sm"
                         onClick={() => handleToggleByeStatus(false)}
                         disabled={isTogglingStatus}
-                        className="border-amber-600 text-amber-600 hover:bg-amber-50"
+                        className="border-amber-600 text-amber-600 hover:bg-amber-50 w-full sm:w-auto text-xs sm:text-sm"
                       >
                         {isTogglingStatus ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -336,7 +336,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
             {/* Winner Score */}
             <div className="space-y-2">
-              <Label htmlFor="winner-score">
+              <Label htmlFor="winner-score" className="text-sm">
                 {byeWinner.name} Score (Games Won)
               </Label>
               <Input
@@ -368,13 +368,14 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} disabled={isSaving}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
+            <Button variant="outline" onClick={onClose} disabled={isSaving} className="w-full sm:w-auto">
               Cancel
             </Button>
             <Button 
               onClick={handleSave} 
               disabled={isSaving || (byeEligible && byeEligible.currentStatus !== 2)}
+              className="w-full sm:w-auto"
             >
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Award Win
