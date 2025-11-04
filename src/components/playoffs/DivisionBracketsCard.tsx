@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, RefreshCw, Zap } from "lucide-react";
+import { Trophy, Plus, RefreshCw } from "lucide-react";
 import { PlayoffBracket } from "@/types";
 
 interface DivisionBracketsCardProps {
@@ -54,12 +54,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{bracket.name}</span>
-                  {bracket.uses_brackets_manager ? (
-                    <Badge variant="default" className="text-xs flex items-center gap-1">
-                      <Zap className="h-3 w-3" />
-                      Smart Progression
-                    </Badge>
-                  ) : (
+                  {!bracket.uses_brackets_manager && (
                     <Badge variant="secondary" className="text-xs">
                       Legacy
                     </Badge>
