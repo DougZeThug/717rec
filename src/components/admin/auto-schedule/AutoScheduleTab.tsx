@@ -5,6 +5,7 @@ import AutoScheduleHeader from "./AutoScheduleHeader";
 import DateSettingsPanel from "./DateSettingsPanel";
 import ScheduleWorkflowTabs from "./ScheduleWorkflowTabs";
 import InformationSection from "./InformationSection";
+import { DiagnosticPanel } from "./DiagnosticPanel";
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
 
 /**
@@ -40,6 +41,7 @@ const AutoScheduleTab = () => {
     isSaving,
     timeBlockTeams,
     originalTimeBlockTeams,
+    teamBlockMap,
     setTimeBlockTeams,
     generatedPairings,
     unmatchedTeamIds,
@@ -86,6 +88,13 @@ const AutoScheduleTab = () => {
   return (
     <div className="space-y-6">
       <AutoScheduleHeader />
+      
+      {/* Diagnostic Panel - Shows team-to-block assignments and validation */}
+      <DiagnosticPanel 
+        teamBlockMap={teamBlockMap || {}}
+        timeBlockTeams={timeBlockTeams || {}}
+        isVisible={totalTeams > 0}
+      />
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <DateSettingsPanel 

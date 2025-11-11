@@ -216,6 +216,7 @@ export function useAutoSchedule() {
     isSaving,
     timeBlockTeams,
     originalTimeBlockTeams,
+    teamBlockMap: loadedTeamBlockMap,
     setTimeBlockTeams,
     generatedPairings,
     unmatchedTeamIds,
