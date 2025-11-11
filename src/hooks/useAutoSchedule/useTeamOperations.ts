@@ -12,6 +12,7 @@ export const useTeamOperations = () => {
   const [timeBlockTeams, setTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
   const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>({});
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
+  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string>>({});
 
   /**
    * Load teams for all back-to-back pairs for a specific date
@@ -44,9 +45,28 @@ export const useTeamOperations = () => {
       // Load all back-to-back pairs
       const backToBackTeams = await getAllBackToBackTeams(date);
       
+      // Build team-to-block mapping for defensive validation
+      const blockMap: Record<string, string> = {};
+      
+      console.log('📦 Team Loading Summary by Block:');
+      Object.entries(backToBackTeams).forEach(([pairName, teams]) => {
+        console.log(`  ${pairName}: ${teams.length} teams`);
+        teams.forEach(team => {
+          // Check for duplicate assignments (critical error)
+          if (blockMap[team.id] && blockMap[team.id] !== pairName) {
+            console.error(`❌ CRITICAL: Team "${team.name}" appears in multiple blocks: ${blockMap[team.id]} and ${pairName}`);
+          }
+          blockMap[team.id] = pairName;
+          console.log(`    - ${team.name} (${team.divisionName || 'No Division'})`);
+        });
+      });
+      
+      // Store the team-to-block mapping
+      setTeamBlockMap(blockMap);
+      
       // Calculate total teams loaded
       const totalTeams = Object.values(backToBackTeams).reduce((sum, teams) => sum + teams.length, 0);
-      console.log(`✅ Total teams loaded across all back-to-back pairs: ${totalTeams}`);
+      console.log(`✅ Total teams loaded: ${totalTeams} teams across ${Object.keys(backToBackTeams).length} blocks`);
       
       // Validate the loaded teams
       const validation = validateBackToBackPairAssignments(backToBackTeams);
@@ -181,6 +201,7 @@ export const useTeamOperations = () => {
     timeBlockTeams,
     originalTimeBlockTeams,
     pairedTimeBlockTeams,
+    teamBlockMap,
     setTimeBlockTeams,
     setPairedTimeBlockTeams,
     handleLoadTeams,

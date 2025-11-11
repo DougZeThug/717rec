@@ -1,15 +1,16 @@
 import { useState, useCallback } from 'react';
-import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, MatchQualityMetrics, AutoScheduleMatch } from '@/types/autoSchedule';
+import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, MatchQualityMetrics, AutoScheduleMatch, Team } from '@/types/autoSchedule';
 import { usePairingGenerator } from '@/hooks/usePairingGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { calculateComprehensiveQualityMetrics, logQualityAnalysis } from '@/utils/autoSchedule/qualityAnalysis';
+import { validateNoCrossBlockMatches, logCrossBlockViolations } from '@/utils/autoSchedule/validationUtils';
 
-export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
+export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBlockMap?: Record<string, string>, allTeams?: Team[]) => {
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
-  const { isGenerating, generateMatchPairings } = usePairingGenerator();
+  const { isGenerating, generateMatchPairings, teamBlockMap: generatorBlockMap } = usePairingGenerator();
   const { toast } = useToast();
 
   /**
@@ -77,7 +78,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
         } : undefined
       };
 
-      const result = await generateMatchPairings(selectedDate, timeBlockTeams, config);
+      const result = await generateMatchPairings(selectedDate, timeBlockTeams, config, teamBlockMap);
       
       if (result) {
         const generationTime = performance.now() - startTime;
@@ -203,6 +204,28 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void) => {
       const qualityRating = averageCompatibilityScore >= 7 ? 'Excellent' :
                            averageCompatibilityScore >= 5 ? 'Good' :
                            averageCompatibilityScore >= 3 ? 'Fair' : 'Poor';
+
+      // 🛡️ DEFENSIVE VALIDATION: Check for cross-block matches
+      const activeBlockMap = teamBlockMap || generatorBlockMap;
+      if (activeBlockMap && Object.keys(activeBlockMap).length > 0 && allTeams) {
+        const validation = validateNoCrossBlockMatches(
+          matches,
+          activeBlockMap,
+          allTeams
+        );
+        
+        if (!validation.isValid) {
+          logCrossBlockViolations(validation.violations);
+          
+          toast({
+            title: "⚠️ Schedule Validation Warning",
+            description: `Found ${validation.violations.length} cross-block matches. Check console for details.`,
+            variant: "destructive"
+          });
+        } else {
+          console.log('✅ Schedule validation passed: No cross-block pairings detected');
+        }
+      }
 
       // Use our comprehensive quality metrics if available
       if (qualityMetrics) {

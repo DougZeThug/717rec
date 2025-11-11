@@ -59,6 +59,20 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
     .in('timeslot', [pairConfig.primary, pairConfig.secondary])
     .eq('is_back_to_back', true);
     
+    // 🛡️ DEFENSIVE VALIDATION: Check for unexpected timeslots
+    if (timeslots && timeslots.length > 0) {
+      const unexpectedSlots = timeslots.filter(slot => 
+        slot.timeslot !== pairConfig.primary && 
+        slot.timeslot !== pairConfig.secondary
+      );
+      
+      if (unexpectedSlots.length > 0) {
+        console.error(`❌ DATABASE ERROR: Teams in ${pairName} have unexpected timeslots:`, 
+          unexpectedSlots.map(s => `${s.team_id} -> ${s.timeslot}`)
+        );
+      }
+    }
+    
     if (error) {
       console.error(`❌ Error fetching teams for ${pairName} pair on ${formattedDate}:`, error);
       return [];

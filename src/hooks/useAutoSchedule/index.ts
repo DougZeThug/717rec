@@ -8,9 +8,11 @@ import { useAutoScheduleSave } from './useAutoScheduleSave';
 import { useEditableMatches } from './useEditableMatches';
 import { formatDate } from './utils';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { useTeamFetching } from '@/hooks/useTeamFetching';
 
 export function useAutoSchedule() {
   const { toast } = useToast();
+  const { teams } = useTeamFetching();
   
   // Get state management
   const {
@@ -33,7 +35,9 @@ export function useAutoSchedule() {
     editableMatches,
     setEditableMatches,
     isEditMode,
-    setIsEditMode
+    setIsEditMode,
+    teamBlockMap,
+    setTeamBlockMap
   } = useAutoScheduleState();
 
   // Get editable matches operations
@@ -76,6 +80,7 @@ export function useAutoSchedule() {
     isLoading,
     timeBlockTeams,
     originalTimeBlockTeams,
+    teamBlockMap: loadedTeamBlockMap,
     setTimeBlockTeams, // Expose this function for manual team assignment
     handleLoadTeams,
     getTeamCountStatus
@@ -88,7 +93,7 @@ export function useAutoSchedule() {
     unmatchedTeamIds,
     handleGenerateClick,
     handleApplySchedule
-  } = usePairingOperations(setActiveTab);
+  } = usePairingOperations(setActiveTab, loadedTeamBlockMap, Object.values(teams));
 
   // Get save operations
   const {
@@ -103,7 +108,8 @@ export function useAutoSchedule() {
   const loadTeams = async () => {
     setIsProcessing(true);
     try {
-      await handleLoadTeams(selectedDate);
+      const result = await handleLoadTeams(selectedDate);
+      // The team block map is now set by useTeamOperations
     } finally {
       setIsProcessing(false);
     }

@@ -17,6 +17,7 @@ export const usePairingGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
+  const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string>>({});
   const { teams } = useTeamFetching();
   const { toast } = useToast();
 
@@ -40,15 +41,28 @@ export const usePairingGenerator = () => {
   const generateMatchPairings = useCallback(async (
     date: Date,
     timeBlockTeams: TimeBlockTeamsMap,
-    config: AlgorithmConfig = {}
+    config: AlgorithmConfig = {},
+    providedTeamBlockMap?: Record<string, string>
   ): Promise<PairingResult | null> => {
     setIsGenerating(true);
     
     try {
+      // Use provided block map or build one from timeBlockTeams
+      const blockMap = providedTeamBlockMap || {};
+      if (!providedTeamBlockMap) {
+        Object.entries(timeBlockTeams).forEach(([blockKey, teams]) => {
+          teams?.forEach(team => {
+            blockMap[team.id] = blockKey;
+          });
+        });
+      }
+      setTeamBlockMap(blockMap);
+      
       console.log("Generating match pairings for:", {
         date: normalizeDate(date, 'generateMatchPairings'),
         teamCount: Object.values(timeBlockTeams).reduce((sum, teams) => sum + teams.length, 0),
-        config
+        config,
+        blockMapSize: Object.keys(blockMap).length
       });
       
       const pairings: TeamPairingMap = {};
@@ -133,6 +147,26 @@ export const usePairingGenerator = () => {
             if (!team1 || !team2) {
               console.warn(`Could not find teams for match: ${match.teamAId} vs ${match.teamBId}`);
               continue;
+            }
+            
+            // 🛡️ DEFENSIVE VALIDATION: Ensure both teams are from the same block
+            const team1Block = blockMap[match.teamAId];
+            const team2Block = blockMap[match.teamBId];
+            
+            if (team1Block !== team2Block) {
+              console.error(`❌ CROSS-BLOCK MATCH DETECTED:
+  Team A: ${team1.name} (Block: ${team1Block})
+  Team B: ${team2.name} (Block: ${team2Block})
+  Expected Block: ${pairName}
+  Timeslot: ${match.slot}`);
+              continue; // Skip this invalid match
+            }
+            
+            if (team1Block !== pairName || team2Block !== pairName) {
+              console.warn(`⚠️ BLOCK MISMATCH WARNING:
+  Expected: ${pairName}
+  Team A: ${team1.name} assigned to ${team1Block}
+  Team B: ${team2.name} assigned to ${team2Block}`);
             }
             
             const pairing: TeamPairing = {
@@ -238,6 +272,7 @@ export const usePairingGenerator = () => {
     isGenerating,
     generatedPairings,
     unmatchedTeamIds,
+    teamBlockMap,
     generateMatchPairings
   };
 };

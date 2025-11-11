@@ -30,4 +30,5 @@ export interface UseAutoScheduleState {
 export interface PairingOperationsProps {
   setActiveTab: (tab: string) => void;
   dualMatchMode?: boolean;
+  teamBlockMap?: Record<string, string>;
 }
