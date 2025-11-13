@@ -6,7 +6,7 @@ import { Expand, Minimize, ChevronDown, ChevronUp } from "lucide-react";
 const brackets = [
   { slug: "o4q3dyy2", title: "Competitive" },
   { slug: "e23j3yxy", title: "Intermediate 1" },
-  { slug: "by0l2dec", title: "Intermediate 2" },
+  { slug: "1a2md5x5", title: "Intermediate 2" },
   { slug: "9eg7l6f", title: "Recreational" },
 ];
 
