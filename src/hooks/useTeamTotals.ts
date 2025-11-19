@@ -318,8 +318,14 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   for (const match of regularMatches) {
     if (match.winner_id !== teamId) continue;
     
-    const team1GameWins = match.team1_game_wins || 0;
-    const team2GameWins = match.team2_game_wins || 0;
+    // Skip if game wins data is missing - don't count as sweep
+    if (match.team1_game_wins === undefined || match.team1_game_wins === null ||
+        match.team2_game_wins === undefined || match.team2_game_wins === null) {
+      continue;
+    }
+    
+    const team1GameWins = match.team1_game_wins;
+    const team2GameWins = match.team2_game_wins;
     
     // Check if this was a 2-0 sweep
     if (match.team1_id === teamId && team1GameWins === 2 && team2GameWins === 0) {
@@ -334,8 +340,14 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     for (const match of playoffMatches) {
       if (match.winner_id !== teamId) continue;
       
-      const team1Score = match.team1_score || 0;
-      const team2Score = match.team2_score || 0;
+      // Skip if score data is missing - don't count as sweep
+      if (match.team1_score === undefined || match.team1_score === null ||
+          match.team2_score === undefined || match.team2_score === null) {
+        continue;
+      }
+      
+      const team1Score = match.team1_score;
+      const team2Score = match.team2_score;
       
       // Check if this was a 2-0 sweep
       if (match.team1_id === teamId && team1Score === 2 && team2Score === 0) {
