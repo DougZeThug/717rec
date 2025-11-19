@@ -378,14 +378,16 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     }
   }
 
+  const career_total_matches = career_match_wins + career_match_losses;
+  
   console.log('🎯 Career sweeps result:', {
     career_sweeps,
-    career_total_wins,
-    career_sweep_rate: career_total_wins > 0 ? (career_sweeps / career_total_wins) * 100 : 0
+    career_total_matches,
+    career_sweep_rate: career_total_matches > 0 ? (career_sweeps / career_total_matches) * 100 : 0
   });
 
-  const career_sweep_rate = career_total_wins > 0 
-    ? (career_sweeps / career_total_wins) * 100 
+  const career_sweep_rate = career_total_matches > 0 
+    ? (career_sweeps / career_total_matches) * 100 
     : 0;
 
   // Calculate career SOS as weighted average from season stats

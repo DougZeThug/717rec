@@ -93,7 +93,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
             {totals.career_sweep_rate.toFixed(1)}%
           </div>
           <span className="text-xs text-muted-foreground mt-1">
-            {totals.career_sweeps} sweeps
+            {totals.career_sweeps} sweeps / {totals.career_match_wins + totals.career_match_losses} matches
           </span>
         </div>
 
