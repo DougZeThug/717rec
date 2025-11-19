@@ -32,6 +32,8 @@ interface StatBreakdownProps {
   rank?: number;
   totalTeams?: number;
   rankChange?: number;
+  sweeps?: number;
+  sweepRate?: number;
 }
 
 const StatBreakdown: React.FC<StatBreakdownProps> = ({
@@ -46,7 +48,9 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   powerScore,
   rank,
   totalTeams,
-  rankChange
+  rankChange,
+  sweeps = 0,
+  sweepRate = 0
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
@@ -200,6 +204,21 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
               gradient="bg-gradient-to-br from-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
               icon={<GitBranch size={18} className="text-orange-500" />}
             />
+            
+            {/* Sweep Rate */}
+            {wins > 0 && (
+              <StatBlock 
+                label="Sweep Rate" 
+                value={
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-green-600 dark:text-green-400">{sweepRate.toFixed(1)}%</span>
+                    <span className="text-xs text-muted-foreground">{sweeps} of {wins} wins</span>
+                  </div>
+                }
+                gradient="bg-gradient-to-br from-white to-green-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
+                icon={<Trophy size={18} className="text-green-500" />}
+              />
+            )}
           </div>
         </TabsContent>
         

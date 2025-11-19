@@ -14,6 +14,7 @@ import { useTeamRankings } from "@/hooks/useTeamRankings";
 import { Card } from "@/components/ui/card";
 import HeadToHeadRecords from "@/components/stats/HeadToHeadRecords";
 import TeamTotals from "@/components/teams/TeamTotals";
+import { calculateSweepRate } from "@/utils/teamDetailsUtils/sweepRateUtils";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -58,6 +59,7 @@ const TeamDetails = () => {
 
   const winPct = team.win_percentage ? team.win_percentage * 100 : 0;
   const gamePct = team.game_win_percentage ? team.game_win_percentage * 100 : 0;
+  const sweepStats = calculateSweepRate(teamId || '', pastMatches);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -84,6 +86,8 @@ const TeamDetails = () => {
         rank={teamRank}
         totalTeams={totalTeams}
         rankChange={teamRanking?.rankChange}
+        sweeps={sweepStats.sweeps}
+        sweepRate={sweepStats.sweepRate}
       />
 
       <PlayerList players={team.players || []} />
