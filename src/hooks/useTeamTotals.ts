@@ -12,6 +12,9 @@ interface TeamTotals {
   runner_ups: number;
   playoff_finishes: Array<{ rank: number; season_name: string }>;
   career_power_score: number;
+  career_sweep_rate: number;
+  career_sweeps: number;
+  career_sos: number;
 }
 
 const calculateCareerPowerScore = async (
@@ -168,6 +171,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
       champion,
       runner_up,
       playoff_rank,
+      sos,
       seasons!inner(name)
     `)
     .eq('team_id', teamId);
@@ -194,6 +198,24 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
 
   if (matchError) {
     console.error('Error fetching current matches:', matchError);
+  }
+
+  // Get archived matches for career sweep rate calculation
+  const { data: archivedMatches, error: archivedError } = await supabase
+    .from('matches_archive')
+    .select(`
+      winner_id,
+      loser_id,
+      team1_game_wins,
+      team2_game_wins,
+      team1_id,
+      team2_id
+    `)
+    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+    .eq('iscompleted', true);
+
+  if (archivedError) {
+    console.error('Error fetching archived matches:', archivedError);
   }
 
   // Get playoff matches with bracket information
@@ -286,6 +308,66 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   // Add playoff matches to overall career record
   career_match_wins += career_playoff_wins;
   career_match_losses += career_playoff_losses;
+
+  // Calculate career sweep rate from all matches
+  let career_sweeps = 0;
+  const career_total_wins = career_match_wins;
+
+  // Count sweeps from current and archived matches (2-0 wins)
+  const regularMatches = [...(currentMatches || []), ...(archivedMatches || [])];
+  for (const match of regularMatches) {
+    if (match.winner_id !== teamId) continue;
+    
+    const team1GameWins = match.team1_game_wins || 0;
+    const team2GameWins = match.team2_game_wins || 0;
+    
+    // Check if this was a 2-0 sweep
+    if (match.team1_id === teamId && team1GameWins === 2 && team2GameWins === 0) {
+      career_sweeps++;
+    } else if (match.team2_id === teamId && team2GameWins === 2 && team1GameWins === 0) {
+      career_sweeps++;
+    }
+  }
+
+  // Count sweeps from playoff matches (using team1_score/team2_score)
+  if (playoffMatches) {
+    for (const match of playoffMatches) {
+      if (match.winner_id !== teamId) continue;
+      
+      const team1Score = match.team1_score || 0;
+      const team2Score = match.team2_score || 0;
+      
+      // Check if this was a 2-0 sweep
+      if (match.team1_id === teamId && team1Score === 2 && team2Score === 0) {
+        career_sweeps++;
+      } else if (match.team2_id === teamId && team2Score === 2 && team1Score === 0) {
+        career_sweeps++;
+      }
+    }
+  }
+
+  const career_sweep_rate = career_total_wins > 0 
+    ? (career_sweeps / career_total_wins) * 100 
+    : 0;
+
+  // Calculate career SOS as weighted average from season stats
+  let career_sos = 0.5; // Default fallback
+  if (seasonStats && seasonStats.length > 0) {
+    let totalWeightedSOS = 0;
+    let totalMatches = 0;
+    
+    for (const season of seasonStats) {
+      const seasonMatches = (season.match_wins || 0) + (season.match_losses || 0);
+      if (seasonMatches > 0 && season.sos !== null && season.sos !== undefined) {
+        totalWeightedSOS += season.sos * seasonMatches;
+        totalMatches += seasonMatches;
+      }
+    }
+    
+    if (totalMatches > 0) {
+      career_sos = totalWeightedSOS / totalMatches;
+    }
+  }
   
   // Count championships and runner-ups
   const championships = seasonStats?.filter(stat => stat.champion).length || 0;
@@ -324,7 +406,10 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     championships,
     runner_ups,
     playoff_finishes,
-    career_power_score
+    career_power_score,
+    career_sweep_rate,
+    career_sweeps,
+    career_sos
   };
 };
 
