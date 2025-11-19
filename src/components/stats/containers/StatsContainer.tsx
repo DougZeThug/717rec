@@ -10,6 +10,7 @@ import StatsChartsSection from "./StatsChartsSection";
 import FullRankingsSection from "./FullRankingsSection";
 import LoadingStateContainer from "./LoadingStateContainer";
 import CareerRankingsSection from "../career/CareerRankingsSection";
+import { AllTeamsCareerPowerScoreChart } from "../career/AllTeamsCareerPowerScoreChart";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -57,6 +58,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             />
             
             <StatsChartsSection rankings={rankings} />
+
+            <AllTeamsCareerPowerScoreChart />
 
             <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
               <FullRankingsSection rankings={rankings} />
