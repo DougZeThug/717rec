@@ -8,6 +8,7 @@ export * from './thresholds';
 export * from './divisionColors';
 export * from './winPercentageColors';
 export * from './championshipColors';
+export * from './sweepRateColors';
 export { getDivisionStyles, getDivisionGradientClass } from '@/styles/design-system/divisions';
 
 // Export format utilities

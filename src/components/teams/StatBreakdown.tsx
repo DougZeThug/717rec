@@ -10,9 +10,10 @@ import {
   Scale, 
   Zap, 
   GitBranch, 
-  Users 
+  Users,
+  Wind
 } from "lucide-react";
-import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
+import { formatPowerScore, getPowerScoreColor, getSosColor, getSweepRateColor } from "@/utils/colors";
 import RankTrendIndicator from "@/components/stats/RankTrendIndicator";
 import { useTheme } from "next-themes";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -211,12 +212,12 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                 label="Sweep Rate" 
                 value={
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-green-600 dark:text-green-400">{sweepRate.toFixed(1)}%</span>
+                    <span className={getSweepRateColor(sweepRate)}>{sweepRate.toFixed(1)}%</span>
                     <span className="text-xs text-muted-foreground">{sweeps} of {wins} wins</span>
                   </div>
                 }
-                gradient="bg-gradient-to-br from-white to-green-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
-                icon={<Trophy size={18} className="text-green-500" />}
+                gradient="bg-gradient-to-br from-white to-yellow-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
+                icon={<Wind size={18} className={getSweepRateColor(sweepRate)} />}
               />
             )}
           </div>
