@@ -4,7 +4,7 @@ import { CareerSortOptions } from './CareerRankingsTable';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, ArrowUp, List, LayoutGrid } from 'lucide-react';
-import { getPowerScoreColor } from '@/utils/colors';
+import { getPowerScoreColor, getSosColor } from '@/utils/colors';
 import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
 import { cn } from '@/lib/utils';
@@ -126,6 +126,9 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                       {ranking.championships > 0 && (
                         <span className={getChampionshipColor(ranking.championships)}>🏆{ranking.championships}</span>
                       )}
+                      <span className={getSosColor(ranking.careerSos)}>
+                        SOS: {ranking.careerSos.toFixed(3)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -206,6 +209,12 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                         ? `${ranking.careerPlayoffWins}-${ranking.careerPlayoffLosses}`
                         : '-'
                       }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Career SOS</p>
+                    <p className={cn("font-medium font-mono", getSosColor(ranking.careerSos))}>
+                      {ranking.careerSos.toFixed(3)}
                     </p>
                   </div>
                 </div>
