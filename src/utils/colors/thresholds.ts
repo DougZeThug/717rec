@@ -39,3 +39,15 @@ export const championshipThresholds = {
   single: 1,    // Silver highlighting for 1-2 championships
   // zero championships get no special highlighting
 };
+
+/**
+ * Threshold values for sweep rate (percentage 0-100)
+ * Higher sweep rate indicates more dominant performance
+ */
+export const sweepRateThresholds = {
+  elite: 70,      // Gold (elite dominance)
+  excellent: 55,  // Green (excellent performance)
+  good: 40,       // Blue (good performance)
+  average: 25,    // Orange (average)
+  // below average is anything under 25% (red)
+};
