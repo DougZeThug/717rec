@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { TeamLogo } from "@/components/ui/team";
 import { MatchInteractions } from "@/components/matches";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { MatchHeadToHead } from "./MatchHeadToHead";
 
 interface MatchCardProps {
   match: Match;
@@ -245,6 +246,16 @@ const MatchCard: React.FC<MatchCardProps> = ({
               )}
             </TransitionLink>
           </div>
+          
+          {/* Head-to-Head Record - only for upcoming matches */}
+          {!isCompleted && (
+            <MatchHeadToHead 
+              team1Id={match.team1Id}
+              team2Id={match.team2Id}
+              team1Name={team1Name}
+              team2Name={team2Name}
+            />
+          )}
           
           {/* Countdown for upcoming matches */}
           {!isCompleted && countdownText && (
