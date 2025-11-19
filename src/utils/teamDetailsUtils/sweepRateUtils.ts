@@ -4,25 +4,28 @@ export const calculateSweepRate = (teamId: string, matches: Match[] | undefined)
   if (!matches || matches.length === 0) {
     return {
       sweeps: 0,
-      totalWins: 0,
+      totalMatches: 0,
       sweepRate: 0,
     };
   }
 
-  // Filter for completed matches where this team won
-  const wins = matches.filter(
-    match => match.iscompleted && match.winnerId === teamId
+  // Filter for completed matches involving this team
+  const completedMatches = matches.filter(
+    match => match.iscompleted && (match.team1Id === teamId || match.team2Id === teamId)
   );
 
-  const totalWins = wins.length;
+  const totalMatches = completedMatches.length;
 
-  if (totalWins === 0) {
+  if (totalMatches === 0) {
     return {
       sweeps: 0,
-      totalWins: 0,
+      totalMatches: 0,
       sweepRate: 0,
     };
   }
+
+  // Filter for matches where this team won
+  const wins = completedMatches.filter(match => match.winnerId === teamId);
 
   // Count sweeps (2-0 wins where opponent got 0 game wins)
   const sweeps = wins.filter(match => {
@@ -43,11 +46,11 @@ export const calculateSweepRate = (teamId: string, matches: Match[] | undefined)
     return false;
   }).length;
 
-  const sweepRate = (sweeps / totalWins) * 100;
+  const sweepRate = (sweeps / totalMatches) * 100;
 
   return {
     sweeps,
-    totalWins,
+    totalMatches,
     sweepRate,
   };
 };
