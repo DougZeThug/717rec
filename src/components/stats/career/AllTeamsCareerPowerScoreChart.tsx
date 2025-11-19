@@ -4,7 +4,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, TooltipProps } from 'recharts';
 import { useAllTeamsCareerPowerScores, TeamCareerData } from '@/hooks/useAllTeamsCareerPowerScores';
-import { getDivisionHexColor } from '@/utils/colors/divisionHexColors';
+import { getTeamColor } from '@/utils/colors/teamColors';
 import { useTheme } from 'next-themes';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -163,7 +163,7 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
                 {teamsData?.map(team => {
                   const isSelected = selectedTeamIds.includes(team.teamId);
                   const color = isSelected 
-                    ? getDivisionHexColor(team.divisionName, isDark)
+                    ? getTeamColor(team.teamId, isDark)
                     : '#9ca3af';
                   
                   return (
@@ -189,7 +189,7 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
                 {selectedTeamIds.map(teamId => {
                   const team = teamsData?.find(t => t.teamId === teamId);
                   if (!team) return null;
-                  const color = getDivisionHexColor(team.divisionName, isDark);
+                  const color = getTeamColor(teamId, isDark);
                   return (
                     <div key={teamId} className="flex items-center gap-2 text-sm">
                       <div className="w-6 h-0.5" style={{ backgroundColor: color }} />
