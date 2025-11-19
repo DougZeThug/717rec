@@ -31,10 +31,10 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
         return [];
       }
 
-      // Get current season power scores from v_team_details
+      // Get current season power scores from v_team_details, excluding hidden divisions
       const { data: currentData, error: currentError } = await supabase
         .from('v_team_details')
-        .select('team_id, name, divisionname, logo_url, power_score')
+        .select('team_id, name, divisionname, division_id, logo_url, power_score')
         .not('power_score', 'is', null);
 
       if (currentError || !currentData) {
@@ -59,9 +59,17 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
         previousData.map(team => [team.team_id, team.power_score])
       );
 
-      // Calculate trends for teams that have both current and previous data
+      // Get visible divisions (exclude hidden ones)
+      const { data: visibleDivisions } = await supabase
+        .from('divisions')
+        .select('id')
+        .neq('display_division', 'hidden');
+      
+      const visibleDivisionIds = new Set(visibleDivisions?.map(d => d.id) || []);
+
+      // Calculate trends for teams that have both current and previous data and are in visible divisions
       const trends: PowerScoreTrend[] = currentData
-        .filter(team => previousScoresMap.has(team.team_id))
+        .filter(team => previousScoresMap.has(team.team_id) && visibleDivisionIds.has(team.division_id))
         .map(team => {
           const previousScore = previousScoresMap.get(team.team_id) || 0;
           const currentScore = team.power_score || 0;
