@@ -9,6 +9,7 @@ export * from './divisionColors';
 export * from './winPercentageColors';
 export * from './championshipColors';
 export * from './sweepRateColors';
+export * from './trendColors';
 export { getDivisionStyles, getDivisionGradientClass } from '@/styles/design-system/divisions';
 
 // Export format utilities
