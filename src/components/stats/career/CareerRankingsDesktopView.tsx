@@ -3,7 +3,7 @@ import { CareerRanking } from '@/types/career';
 import { CareerSortOptions } from './CareerRankingsTable';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { ArrowDown, ArrowUp } from 'lucide-react';
-import { getPowerScoreColor } from '@/utils/colors';
+import { getPowerScoreColor, getSosColor } from '@/utils/colors';
 import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
 import { cn } from '@/lib/utils';
@@ -87,6 +87,12 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
             >
               Career Power Score {getSortIcon('careerPowerScore')}
             </TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50 text-center"
+              onClick={() => onSortChange('careerSos')}
+            >
+              Career SOS {getSortIcon('careerSos')}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -147,6 +153,11 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                   getPowerScoreColor(ranking.careerPowerScore)
                 )}>
                   {ranking.careerPowerScore.toFixed(1)}
+                </span>
+              </TableCell>
+              <TableCell className="text-center">
+                <span className={cn("font-mono", getSosColor(ranking.careerSos))}>
+                  {ranking.careerSos.toFixed(3)}
                 </span>
               </TableCell>
             </TableRow>

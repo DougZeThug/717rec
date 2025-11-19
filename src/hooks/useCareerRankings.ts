@@ -59,6 +59,7 @@ export function useCareerRankings() {
             
             // Career power score and meta stats
             careerPowerScore: totals.career_power_score,
+            careerSos: totals.career_sos,
             playoffFinishes: totals.playoff_finishes?.length || 0,
           };
 
