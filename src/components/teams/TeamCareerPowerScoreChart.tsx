@@ -14,8 +14,10 @@ import {
   ResponsiveContainer,
   DotProps
 } from "recharts";
-import { Trophy, Medal } from "lucide-react";
+import { Trophy, Medal, ChevronDown } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
 
 interface TeamCareerPowerScoreChartProps {
   teamId: string;
@@ -132,6 +134,7 @@ const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) =
   const { theme } = useTheme();
   const isMobile = useIsMobile();
   const isDark = theme === 'dark';
+  const [isOpen, setIsOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -150,72 +153,83 @@ const TeamCareerPowerScoreChart = ({ teamId }: TeamCareerPowerScoreChartProps) =
   const chartHeight = isMobile ? 250 : 300;
 
   return (
-    <Card className="p-6 mb-8">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">Career Power Score Trend</h2>
-        <p className="text-sm text-muted-foreground">
-          Season-by-season performance history
-        </p>
-      </div>
-      
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <LineChart
-          data={seasonData}
-          margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
-        >
-          <CartesianGrid 
-            strokeDasharray="3 3" 
-            stroke={isDark ? '#374151' : '#e5e7eb'}
-            opacity={0.5}
-          />
-          <XAxis
-            dataKey="seasonName"
-            angle={isMobile ? -45 : 0}
-            textAnchor={isMobile ? 'end' : 'middle'}
-            height={isMobile ? 80 : 30}
-            tick={{ fontSize: 11, fill: 'currentColor' }}
-            stroke="currentColor"
-          />
-          <YAxis
-            domain={[0, 100]}
-            label={{ 
-              value: 'Power Score', 
-              angle: -90, 
-              position: 'insideLeft',
-              style: { fontSize: 12, fill: 'currentColor' }
-            }}
-            tick={{ fontSize: 11, fill: 'currentColor' }}
-            stroke="currentColor"
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Line
-            type="monotone"
-            dataKey="powerScore"
-            stroke="#8b5cf6"
-            strokeWidth={2}
-            connectNulls={false}
-            dot={<CustomDot />}
-            label={<CustomLabel />}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="p-6 mb-8">
+        <CollapsibleTrigger className="w-full">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-left">
+              <h2 className="text-xl font-semibold">Career Power Score Trend</h2>
+              <p className="text-sm text-muted-foreground">
+                Season-by-season performance history
+              </p>
+            </div>
+            <ChevronDown 
+              className={`h-5 w-5 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`}
+            />
+          </div>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <ResponsiveContainer width="100%" height={chartHeight}>
+            <LineChart
+              data={seasonData}
+              margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
+            >
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke={isDark ? '#374151' : '#e5e7eb'}
+                opacity={0.5}
+              />
+              <XAxis
+                dataKey="seasonName"
+                angle={isMobile ? -45 : 0}
+                textAnchor={isMobile ? 'end' : 'middle'}
+                height={isMobile ? 80 : 30}
+                tick={{ fontSize: 11, fill: 'currentColor' }}
+                stroke="currentColor"
+              />
+              <YAxis
+                domain={[0, 100]}
+                label={{ 
+                  value: 'Power Score', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { fontSize: 12, fill: 'currentColor' }
+                }}
+                tick={{ fontSize: 11, fill: 'currentColor' }}
+                stroke="currentColor"
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="monotone"
+                dataKey="powerScore"
+                stroke="#8b5cf6"
+                strokeWidth={2}
+                connectNulls={false}
+                dot={<CustomDot />}
+                label={<CustomLabel />}
+              />
+            </LineChart>
+          </ResponsiveContainer>
 
-      {/* Division legend */}
-      <div className="flex flex-wrap gap-4 mt-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Competitive', isDark) }} />
-          <span>Competitive</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Intermediate', isDark) }} />
-          <span>Intermediate</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Recreational', isDark) }} />
-          <span>Recreational</span>
-        </div>
-      </div>
-    </Card>
+          {/* Division legend */}
+          <div className="flex flex-wrap gap-4 mt-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Competitive', isDark) }} />
+              <span>Competitive</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Intermediate', isDark) }} />
+              <span>Intermediate</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDivisionHexColor('Recreational', isDark) }} />
+              <span>Recreational</span>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 };
 
