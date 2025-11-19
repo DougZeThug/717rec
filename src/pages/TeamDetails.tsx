@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import HeadToHeadRecords from "@/components/stats/HeadToHeadRecords";
 import TeamTotals from "@/components/teams/TeamTotals";
 import { calculateSweepRate } from "@/utils/teamDetailsUtils/sweepRateUtils";
+import TeamCareerPowerScoreChart from "@/components/teams/TeamCareerPowerScoreChart";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -89,6 +90,9 @@ const TeamDetails = () => {
         sweeps={sweepStats.sweeps}
         sweepRate={sweepStats.sweepRate}
       />
+
+      {/* Career Power Score Trend Chart */}
+      {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
 
       <PlayerList players={team.players || []} />
       
