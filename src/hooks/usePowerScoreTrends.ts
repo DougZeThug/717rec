@@ -63,7 +63,7 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
       const { data: visibleDivisions } = await supabase
         .from('divisions')
         .select('id')
-        .neq('display_division', 'hidden');
+        .neq('display_division', 'Hidden');
       
       const visibleDivisionIds = new Set(visibleDivisions?.map(d => d.id) || []);
 
