@@ -19,7 +19,7 @@ const WinLossChartCard: React.FC<WinLossChartCardProps> = ({
   const { resolvedTheme } = useTheme();
 
   return (
-    <Card className={`${isMobile ? "" : "xl:col-span-2"} bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm`}>
+    <Card className={`bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm`}>
       <CardHeader className="pb-1.5 rounded-t-xl"
         style={resolvedTheme === "light" ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}>
         <CardTitle

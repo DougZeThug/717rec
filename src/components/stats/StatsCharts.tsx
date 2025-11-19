@@ -7,8 +7,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown } from "lucide-react";
 import WinLossChartCard from "./WinLossChartCard";
 import PowerScoreChartCard from "./PowerScoreChartCard";
+import PowerScoreTrendsCard from "./PowerScoreTrendsCard";
 import { useChartData } from "./hooks/useChartData";
-import { ChartBar, ChartPie, ChevronsRight } from "lucide-react";
+import { ChartBar, ChartPie, TrendingUp, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
 
@@ -17,7 +18,7 @@ interface StatsChartsProps {
   chartLimit: number;
 }
 
-type ChartType = "winLoss" | "powerScore";
+type ChartType = "winLoss" | "powerScore" | "trends";
 
 const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
@@ -25,9 +26,13 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const [activeChart, setActiveChart] = useState<ChartType>("winLoss");
   const [isOpen, setIsOpen] = useState(true); // Start uncollapsed
 
-  // Function to toggle between chart types on mobile
+  // Function to cycle between chart types on mobile
   const toggleChart = () => {
-    setActiveChart(prev => prev === "winLoss" ? "powerScore" : "winLoss");
+    setActiveChart(prev => {
+      if (prev === "winLoss") return "powerScore";
+      if (prev === "powerScore") return "trends";
+      return "winLoss";
+    });
   };
 
   return (
@@ -57,7 +62,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
         <CollapsibleContent>
           <div className="p-4 pt-0">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 font-inter">
-              {/* On mobile: show either win-loss or power score chart based on toggle */}
+              {/* On mobile: cycle between win-loss, power score, and trends */}
               {isMobile ? (
                 <div className="relative">
                   <div className="absolute top-3 right-3 z-10">
@@ -69,12 +74,21 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                         <>
                           <ChartBar className="h-4 w-4 text-blue-600" />
                           <ChartPie className="h-4 w-4 text-gray-400" />
+                          <TrendingUp className="h-4 w-4 text-gray-400" />
+                          <ChevronsRight className="h-3.5 w-3.5 text-gray-600" />
+                        </>
+                      ) : activeChart === "powerScore" ? (
+                        <>
+                          <ChartBar className="h-4 w-4 text-gray-400" />
+                          <ChartPie className="h-4 w-4 text-purple-600" />
+                          <TrendingUp className="h-4 w-4 text-gray-400" />
                           <ChevronsRight className="h-3.5 w-3.5 text-gray-600" />
                         </>
                       ) : (
                         <>
                           <ChartBar className="h-4 w-4 text-gray-400" />
-                          <ChartPie className="h-4 w-4 text-purple-600" />
+                          <ChartPie className="h-4 w-4 text-gray-400" />
+                          <TrendingUp className="h-4 w-4 text-green-600" />
                           <ChevronsRight className="h-3.5 w-3.5 text-gray-600" />
                         </>
                       )}
@@ -99,9 +113,17 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                   )}>
                     <PowerScoreChartCard data={powerScoreData} />
                   </div>
+                  
+                  <div className={cn(
+                    "transition-all duration-300",
+                    activeChart !== "trends" && "hidden",
+                    animations.fadeIn
+                  )}>
+                    <PowerScoreTrendsCard />
+                  </div>
                 </div>
               ) : (
-                // On desktop: show both charts side by side
+                // On desktop: show all three charts in a row
                 <>
                   <WinLossChartCard 
                     data={winLossData} 
@@ -110,6 +132,8 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                   />
                   
                   <PowerScoreChartCard data={powerScoreData} />
+                  
+                  <PowerScoreTrendsCard />
                 </>
               )}
             </div>
