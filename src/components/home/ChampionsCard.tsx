@@ -21,14 +21,14 @@ interface DivisionData {
 
 const useChampions = () => {
   const winners = [
-    '2ab2e684-8c28-45c3-801a-ea215433a8e4', // Offdogs
+    '77110b92-d2d8-495b-afed-cac65deb6253', // Offdogs
     '0c7261b9-db22-48d1-8487-ba9eeb90fbef', // Wrong Hole
     '01ec006b-6ee3-47b3-ac8d-f93cc11d3460', // Buttery Nips
     '34b1dacf-0c30-4a4c-8228-432701868f34', // The Cornholy Trinity
   ];
 
   const divisionMap: Record<string, string> = {
-    '2ab2e684-8c28-45c3-801a-ea215433a8e4': 'Competitive',
+    '77110b92-d2d8-495b-afed-cac65deb6253': 'Competitive',
     '0c7261b9-db22-48d1-8487-ba9eeb90fbef': 'Intermediate 1',
     '01ec006b-6ee3-47b3-ac8d-f93cc11d3460': 'Intermediate 2',
     '34b1dacf-0c30-4a4c-8228-432701868f34': 'Recreational',
