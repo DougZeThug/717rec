@@ -132,15 +132,20 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
     
-    // First group by the display division name
-    const grouped = seasonData.reduce((acc, team) => {
-      const displayDivision = getHistoryDivisionDisplayName(team.division_name);
-      if (!acc[displayDivision]) {
-        acc[displayDivision] = [];
-      }
-      acc[displayDivision].push(team);
-      return acc;
-    }, {} as Record<string, SeasonData[]>);
+    // Filter out Hidden division teams and group by display division name
+    const grouped = seasonData
+      .filter(team => {
+        const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+        return displayDivision !== 'Hidden';
+      })
+      .reduce((acc, team) => {
+        const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+        if (!acc[displayDivision]) {
+          acc[displayDivision] = [];
+        }
+        acc[displayDivision].push(team);
+        return acc;
+      }, {} as Record<string, SeasonData[]>);
 
     console.log(`📊 Season ${season.name}: Grouped data by divisions:`, Object.keys(grouped));
     return grouped;
