@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
@@ -65,7 +66,15 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, teamsDat
         const team = teamsData?.find((t: TeamCareerData) => t.teamId === teamId);
         return (
           <p key={index} className="text-xs">
-            <span style={{ color: entry.stroke }}>{team?.teamName}:</span>{' '}
+            <Link
+              to={`/teams/${teamId}`}
+              className="hover:underline transition-colors"
+              style={{ color: entry.stroke }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {team?.teamName}
+            </Link>
+            :{' '}
             <span className="font-bold">{entry.value?.toFixed(1)}</span>
           </p>
         );
@@ -193,7 +202,12 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
                   return (
                     <div key={teamId} className="flex items-center gap-2 text-sm">
                       <div className="w-6 h-0.5" style={{ backgroundColor: color }} />
-                      <span>{team.teamName}</span>
+                      <Link
+                        to={`/teams/${teamId}`}
+                        className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                      >
+                        {team.teamName}
+                      </Link>
                     </div>
                   );
                 })}
