@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { CareerRanking } from '@/types/career';
 import { CareerSortOptions } from './CareerRankingsTable';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
@@ -105,7 +106,11 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                 {index + 1}
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-3">
+                <Link
+                  to={`/teams/${ranking.teamId}`}
+                  className="flex items-center gap-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {ranking.imageUrl && (
                     <img 
                       src={ranking.imageUrl} 
@@ -114,14 +119,16 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                     />
                   )}
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{ranking.teamName}</span>
+                    <span className="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {ranking.teamName}
+                    </span>
                     {showHidden && ranking.divisionName === 'Hidden' && (
                       <span className="px-2 py-1 text-xs bg-muted text-muted-foreground rounded-full border">
                         Hidden
                       </span>
                     )}
                   </div>
-                </div>
+                </Link>
               </TableCell>
               <TableCell className="text-center">
                 {ranking.careerMatchWins}-{ranking.careerMatchLosses}
