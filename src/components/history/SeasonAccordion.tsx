@@ -132,11 +132,11 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const divisionData = React.useMemo(() => {
     if (!seasonData) return {};
     
-    // Filter out Hidden division teams and group by display division name
+    // Filter out Hidden divisions and group by display division name
     const grouped = seasonData
       .filter(team => {
         const displayDivision = getHistoryDivisionDisplayName(team.division_name);
-        return displayDivision !== 'Hidden';
+        return !displayDivision.toLowerCase().startsWith('hidden');
       })
       .reduce((acc, team) => {
         const displayDivision = getHistoryDivisionDisplayName(team.division_name);
