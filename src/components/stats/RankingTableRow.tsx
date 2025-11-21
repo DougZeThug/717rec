@@ -48,7 +48,9 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   return (
     <tr 
       className={cn(
-        "border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors",
+        "border-b border-gray-100 dark:border-slate-700 transition-colors",
+        "even:bg-gray-50 dark:even:bg-white/5",
+        "hover:bg-gray-50 dark:hover:bg-slate-700/50",
         isExpanded && "bg-blue-50 dark:bg-blue-900/20"
       )}
       onClick={onToggleExpand}
