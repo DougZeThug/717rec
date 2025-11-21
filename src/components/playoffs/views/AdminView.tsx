@@ -61,9 +61,10 @@ const AdminView: React.FC<AdminViewProps> = ({
       </TabsList>
       
       <TabsContent value="brackets" className="space-y-6">
-        <div className="mb-8">
+        {/* Challonge embeds temporarily hidden */}
+        {/* <div className="mb-8">
           <ChallongeFallback />
-        </div>
+        </div> */}
 
         <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
           <BracketList 

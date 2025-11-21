@@ -27,9 +27,10 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
 
   return (
     <>
-      <div className="mb-8">
+      {/* Challonge embeds temporarily hidden */}
+      {/* <div className="mb-8">
         <ChallongeFallback />
-      </div>
+      </div> */}
 
       {/* Show BracketList only when no bracket is selected */}
       <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
