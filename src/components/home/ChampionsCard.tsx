@@ -21,17 +21,17 @@ interface DivisionData {
 
 const useChampions = () => {
   const winners = [
-    'ad4ec289-fd85-4322-8ebb-68647607de23', // Cuzzo's Clinic
-    'fcb5fb21-a8f4-4dbd-a04d-7688832ada8c', // Baggin' & Braggin'
-    '56387477-8ba1-43b7-a307-414926ca5f79', // Zoo Pals
-    'aa967a4d-b9a8-496e-81e9-7993ac005763', // Jerm
+    '2ab2e684-8c28-45c3-801a-ea215433a8e4', // Offdogs
+    '0c7261b9-db22-48d1-8487-ba9eeb90fbef', // Wrong Hole
+    '01ec006b-6ee3-47b3-ac8d-f93cc11d3460', // Buttery Nips
+    '34b1dacf-0c30-4a4c-8228-432701868f34', // The Cornholy Trinity
   ];
 
   const divisionMap: Record<string, string> = {
-    'ad4ec289-fd85-4322-8ebb-68647607de23': 'Competitive',
-    'fcb5fb21-a8f4-4dbd-a04d-7688832ada8c': 'Intermediate 1',
-    '56387477-8ba1-43b7-a307-414926ca5f79': 'Intermediate 2',
-    'aa967a4d-b9a8-496e-81e9-7993ac005763': 'Recreational',
+    '2ab2e684-8c28-45c3-801a-ea215433a8e4': 'Competitive',
+    '0c7261b9-db22-48d1-8487-ba9eeb90fbef': 'Intermediate 1',
+    '01ec006b-6ee3-47b3-ac8d-f93cc11d3460': 'Intermediate 2',
+    '34b1dacf-0c30-4a4c-8228-432701868f34': 'Recreational',
   };
 
   return useQuery({
@@ -151,7 +151,7 @@ const ChampionsCard: React.FC = () => {
       animations.fadeIn
     )}>
       <h2 className="text-xl md:text-2xl font-bold font-inter mb-4 flex items-center gap-2">
-        🏆 Summer 2 2025 Champions
+        🏆 Fall 2025 Champions
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
