@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CareerRanking } from '@/types/career';
 import { CareerSortOptions } from './CareerRankingsTable';
 import { Card, CardContent } from '@/components/ui/card';
@@ -102,35 +103,43 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                   <span className="text-sm font-bold text-muted-foreground min-w-[24px]">
                     #{index + 1}
                   </span>
-                  {ranking.imageUrl && (
-                    <img 
-                      src={ranking.imageUrl} 
-                      alt={`${ranking.teamName} logo`}
-                      className="w-6 h-6 rounded object-cover"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-sm truncate">{ranking.teamName}</h3>
-                      {showHidden && ranking.divisionName === 'Hidden' && (
-                        <span className="px-2 py-1 text-xs bg-muted-foreground/20 text-muted-foreground rounded-full border flex-shrink-0">
-                          Hidden
+                  <Link
+                    to={`/teams/${ranking.teamId}`}
+                    className="flex items-center gap-3 flex-1 min-w-0 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {ranking.imageUrl && (
+                      <img 
+                        src={ranking.imageUrl} 
+                        alt={`${ranking.teamName} logo`}
+                        className="w-6 h-6 rounded object-cover"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium text-sm truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {ranking.teamName}
+                        </h3>
+                        {showHidden && ranking.divisionName === 'Hidden' && (
+                          <span className="px-2 py-1 text-xs bg-muted-foreground/20 text-muted-foreground rounded-full border flex-shrink-0">
+                            Hidden
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>{ranking.careerMatchWins}-{ranking.careerMatchLosses}</span>
+                        <span className={getWinPercentageColor(ranking.careerWinPercentage)}>
+                          ({formatPercentage(ranking.careerWinPercentage)})
                         </span>
-                      )}
+                        {ranking.championships > 0 && (
+                          <span className={getChampionshipColor(ranking.championships)}>🏆{ranking.championships}</span>
+                        )}
+                        <span className={getSosColor(ranking.careerSos)}>
+                          SOS: {ranking.careerSos.toFixed(3)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>{ranking.careerMatchWins}-{ranking.careerMatchLosses}</span>
-                      <span className={getWinPercentageColor(ranking.careerWinPercentage)}>
-                        ({formatPercentage(ranking.careerWinPercentage)})
-                      </span>
-                      {ranking.championships > 0 && (
-                        <span className={getChampionshipColor(ranking.championships)}>🏆{ranking.championships}</span>
-                      )}
-                      <span className={getSosColor(ranking.careerSos)}>
-                        SOS: {ranking.careerSos.toFixed(3)}
-                      </span>
-                    </div>
-                  </div>
+                  </Link>
                 </div>
                 <span className={cn(
                   "font-bold px-2 py-1 rounded text-xs",
@@ -147,21 +156,29 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                     <span className="text-lg font-bold text-muted-foreground">
                       #{index + 1}
                     </span>
-                    {ranking.imageUrl && (
-                      <img 
-                        src={ranking.imageUrl} 
-                        alt={`${ranking.teamName} logo`}
-                        className="w-8 h-8 rounded object-cover"
-                      />
-                    )}
-                     <div className="flex items-center gap-2">
-                       <h3 className="font-semibold">{ranking.teamName}</h3>
-                       {showHidden && ranking.divisionName === 'Hidden' && (
-                         <span className="px-2 py-1 text-xs bg-muted-foreground/20 text-muted-foreground rounded-full border">
-                           Hidden
-                         </span>
-                       )}
-                     </div>
+                    <Link
+                      to={`/teams/${ranking.teamId}`}
+                      className="flex items-center gap-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {ranking.imageUrl && (
+                        <img 
+                          src={ranking.imageUrl} 
+                          alt={`${ranking.teamName} logo`}
+                          className="w-8 h-8 rounded object-cover"
+                        />
+                      )}
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {ranking.teamName}
+                        </h3>
+                        {showHidden && ranking.divisionName === 'Hidden' && (
+                          <span className="px-2 py-1 text-xs bg-muted-foreground/20 text-muted-foreground rounded-full border">
+                            Hidden
+                          </span>
+                        )}
+                      </div>
+                    </Link>
                   </div>
                   <span className={cn(
                     "font-bold px-3 py-1 rounded text-sm",
