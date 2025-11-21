@@ -167,7 +167,10 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
                   domain={[0, 100]} 
                   label={{ value: 'Power Score', angle: -90, position: 'insideLeft' }} 
                 />
-                <Tooltip content={<CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />} />
+            <Tooltip 
+              content={<CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />} 
+              wrapperStyle={{ pointerEvents: "auto" }}
+            />
                 
                 {teamsData?.map(team => {
                   const isSelected = selectedTeamIds.includes(team.teamId);
