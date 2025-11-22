@@ -75,7 +75,7 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
           <div>
             <p className="text-gray-600 dark:text-gray-400">Highest Power Score</p>
             <p className="font-medium text-slate-900 dark:text-white">
-              {highestPowerScore.team_name} ({highestPowerScore.power_score?.toFixed(2) || 'N/A'})
+              {highestPowerScore.team_name} ({highestPowerScore.power_score ? (highestPowerScore.power_score * 100).toFixed(1) : 'N/A'})
             </p>
           </div>
         </div>
