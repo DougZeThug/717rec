@@ -54,6 +54,7 @@ export type Database = {
           migrated_at: string | null
           participants: Json | null
           reset_match_needed: boolean | null
+          season_id: string | null
           state: string | null
           title: string
           uses_brackets_manager: boolean
@@ -71,6 +72,7 @@ export type Database = {
           migrated_at?: string | null
           participants?: Json | null
           reset_match_needed?: boolean | null
+          season_id?: string | null
           state?: string | null
           title: string
           uses_brackets_manager?: boolean
@@ -88,6 +90,7 @@ export type Database = {
           migrated_at?: string | null
           participants?: Json | null
           reset_match_needed?: boolean | null
+          season_id?: string | null
           state?: string | null
           title?: string
           uses_brackets_manager?: boolean
@@ -100,6 +103,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "divisions"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brackets_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brackets_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
           },
           {
             foreignKeyName: "brackets_wb_champion_id_fkey"
@@ -148,13 +165,6 @@ export type Database = {
             columns: ["wb_champion_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "brackets_wb_champion_id_fkey"
-            columns: ["wb_champion_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -659,13 +669,6 @@ export type Database = {
             foreignKeyName: "matches_team1_id_fkey"
             columns: ["team1_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "matches_team1_id_fkey"
-            columns: ["team1_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -729,13 +732,6 @@ export type Database = {
             foreignKeyName: "matches_team2_id_fkey"
             columns: ["team2_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "matches_team2_id_fkey"
-            columns: ["team2_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -793,13 +789,6 @@ export type Database = {
             columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "matches_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -1019,13 +1008,6 @@ export type Database = {
             foreignKeyName: "messages_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "messages_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -1166,13 +1148,6 @@ export type Database = {
             foreignKeyName: "participants_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "participants_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -1268,13 +1243,6 @@ export type Database = {
             columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "playoff_games_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -1418,13 +1386,6 @@ export type Database = {
             foreignKeyName: "fk_playoff_matches_team1"
             columns: ["team1_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "fk_playoff_matches_team1"
-            columns: ["team1_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -1482,13 +1443,6 @@ export type Database = {
             columns: ["team2_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "fk_playoff_matches_team2"
-            columns: ["team2_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -1559,13 +1513,6 @@ export type Database = {
             columns: ["loser_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "playoff_matches_loser_id_fkey"
-            columns: ["loser_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -1649,13 +1596,6 @@ export type Database = {
             foreignKeyName: "playoff_matches_team1_id_fkey"
             columns: ["team1_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "playoff_matches_team1_id_fkey"
-            columns: ["team1_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -1719,13 +1659,6 @@ export type Database = {
             foreignKeyName: "playoff_matches_team2_id_fkey"
             columns: ["team2_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "playoff_matches_team2_id_fkey"
-            columns: ["team2_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -1783,13 +1716,6 @@ export type Database = {
             columns: ["winner_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "playoff_matches_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -1900,13 +1826,6 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "playoff_team_records_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -2150,13 +2069,6 @@ export type Database = {
             foreignKeyName: "seasons_champion_team_id_fkey"
             columns: ["champion_team_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "seasons_champion_team_id_fkey"
-            columns: ["champion_team_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -2220,13 +2132,6 @@ export type Database = {
             foreignKeyName: "seasons_runner_up_team_id_fkey"
             columns: ["runner_up_team_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "seasons_runner_up_team_id_fkey"
-            columns: ["runner_up_team_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -2284,13 +2189,6 @@ export type Database = {
             columns: ["third_place_team_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "seasons_third_place_team_id_fkey"
-            columns: ["third_place_team_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -2437,13 +2335,6 @@ export type Database = {
             referencedColumns: ["season_id"]
           },
           {
-            foreignKeyName: "team_badge_events_season_id_fkey"
-            columns: ["season_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["season_id"]
-          },
-          {
             foreignKeyName: "team_badge_events_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
@@ -2490,13 +2381,6 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "team_badge_events_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -2676,13 +2560,6 @@ export type Database = {
             foreignKeyName: "team_memberships_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "team_memberships_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -2724,13 +2601,6 @@ export type Database = {
             columns: ["season_id"]
             isOneToOne: false
             referencedRelation: "v_team_details_with_season"
-            referencedColumns: ["season_id"]
-          },
-          {
-            foreignKeyName: "team_season_opt_out_season_id_fkey"
-            columns: ["season_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["season_id"]
           },
           {
@@ -2780,13 +2650,6 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "team_season_opt_out_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -2867,13 +2730,6 @@ export type Database = {
             referencedColumns: ["season_id"]
           },
           {
-            foreignKeyName: "team_season_stats_season_id_fkey"
-            columns: ["season_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["season_id"]
-          },
-          {
             foreignKeyName: "team_season_stats_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
@@ -2920,13 +2776,6 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "team_season_stats_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
@@ -3045,13 +2894,6 @@ export type Database = {
             foreignKeyName: "team_stats_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
-            referencedRelation: "v_team_season_agg"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "team_stats_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
             referencedRelation: "v_team_strength_of_schedule"
             referencedColumns: ["team_id"]
           },
@@ -3143,13 +2985,6 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "v_team_power_scores"
-            referencedColumns: ["team_id"]
-          },
-          {
-            foreignKeyName: "team_timeslots_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "v_team_season_agg"
             referencedColumns: ["team_id"]
           },
           {
