@@ -4,5 +4,5 @@
  */
 export const formatPowerScore = (powerScore: number | undefined): string => {
   if (powerScore === undefined) return '—';
-  return powerScore.toFixed(1);
+  return (powerScore * 100).toFixed(1);
 };

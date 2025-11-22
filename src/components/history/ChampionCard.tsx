@@ -114,7 +114,7 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
                 <div>
                   <p className="text-gray-600 dark:text-gray-300 font-medium">Power Score</p>
                   <p className={cn("font-bold", getPowerScoreColor(team.power_score))}>
-                    {team.power_score.toFixed(2)}
+                    {(team.power_score * 100).toFixed(1)}
                   </p>
                 </div>
               )}
