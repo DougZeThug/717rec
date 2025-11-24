@@ -316,10 +316,6 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     }
   }
 
-  // Add playoff matches to overall career record
-  career_match_wins += career_playoff_wins;
-  career_match_losses += career_playoff_losses;
-
   // Calculate career sweep rate from all matches
   let career_sweeps = 0;
   const career_total_wins = career_match_wins;
