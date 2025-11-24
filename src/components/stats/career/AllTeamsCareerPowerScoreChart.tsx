@@ -31,7 +31,7 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
       
       teamsData.forEach(team => {
         const seasonStat = team.seasonData.find(s => s.seasonName === seasonName);
-        dataPoint[`team_${team.teamId}`] = seasonStat?.powerScore || null;
+        dataPoint[`team_${team.teamId}`] = seasonStat?.powerScore !== null ? seasonStat.powerScore * 100 : null;
       });
 
       return dataPoint;
