@@ -306,12 +306,8 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
         if (isCompetitiveDivision) {
           competitive_playoff_wins++;
         }
-        career_game_wins += match.team1_id === teamId ? (match.team1_score || 0) : (match.team2_score || 0);
-        career_game_losses += match.team1_id === teamId ? (match.team2_score || 0) : (match.team1_score || 0);
       } else if (match.loser_id === teamId) {
         career_playoff_losses++;
-        career_game_wins += match.team1_id === teamId ? (match.team1_score || 0) : (match.team2_score || 0);
-        career_game_losses += match.team1_id === teamId ? (match.team2_score || 0) : (match.team1_score || 0);
       }
     }
   }
