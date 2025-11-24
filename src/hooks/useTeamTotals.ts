@@ -66,7 +66,7 @@ const calculateCareerPowerScore = async (
     for (const season of seasonStats) {
       const seasonMatches = season.match_wins + season.match_losses;
       if (seasonMatches > 0 && season.power_score !== null) {
-        totalWeightedScore += season.power_score * seasonMatches;
+        totalWeightedScore += (season.power_score * 100) * seasonMatches;
         totalMatches += seasonMatches;
         
         // Check for upward division progression
