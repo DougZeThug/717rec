@@ -45,7 +45,7 @@ export const useTeamCareerPowerScore = (teamId: string | undefined) => {
 
           return {
             seasonName: season.name,
-            powerScore: stat.power_score,
+            powerScore: stat.power_score ? stat.power_score * 100 : null,
             playoffRank: stat.playoff_rank,
             divisionName: stat.division_name,
             isChampion: stat.champion || false,
