@@ -157,7 +157,7 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
               <TableCell className="text-center">
                 <span className={cn(
                   "font-bold px-2 py-1 rounded text-sm",
-                  getPowerScoreColor(ranking.careerPowerScore)
+                  getPowerScoreColor(ranking.careerPowerScore / 100)
                 )}>
                   {ranking.careerPowerScore.toFixed(1)}
                 </span>
