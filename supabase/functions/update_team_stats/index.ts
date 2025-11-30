@@ -14,12 +14,48 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Create Supabase client using the runtime auth from the request
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+    )
+
+    // Verify authentication
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Verify admin status
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      return new Response(
+        JSON.stringify({ error: 'Admin access required' }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Get request body
     const { matchId } = await req.json()
     
-    if (!matchId) {
+    if (!matchId || typeof matchId !== 'string') {
       return new Response(
-        JSON.stringify({ error: 'Match ID is required' }),
+        JSON.stringify({ error: 'Match ID is required and must be a string' }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -27,12 +63,17 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Create Supabase client using the runtime auth from the request
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    )
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(matchId)) {
+      return new Response(
+        JSON.stringify({ error: 'Match ID must be a valid UUID' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
 
     // Fetch the match details
     const { data: match, error: matchError } = await supabaseClient

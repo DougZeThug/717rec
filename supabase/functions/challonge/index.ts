@@ -57,16 +57,74 @@ serve(async req => {
     return json(400, { error: "Invalid JSON" });
   }
 
+  // Validate action field
+  if (!payload.action || typeof payload.action !== 'string') {
+    return json(400, { error: "Invalid action: must be a non-empty string" });
+  }
+
+  const validActions = [
+    "createTournament", "addParticipant", "startTournament", 
+    "getMatches", "getParticipants", "updateMatch", 
+    "finalizeTournament", "getTournamentComplete"
+  ];
+  
+  if (!validActions.includes(payload.action)) {
+    return json(400, { error: `Invalid action: must be one of ${validActions.join(', ')}` });
+  }
+
   try {
     switch (payload.action) {
       case "createTournament": {
         const { name, url, tournament_type, description } = payload.args;
+        
+        // Validate required fields
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+          return json(400, { error: "Tournament name is required" });
+        }
+        if (name.trim().length > 100) {
+          return json(400, { error: "Tournament name must be 100 characters or less" });
+        }
+        
+        if (!url || typeof url !== 'string' || url.trim().length === 0) {
+          return json(400, { error: "Tournament URL is required" });
+        }
+        if (!/^[a-z0-9_-]+$/i.test(url)) {
+          return json(400, { error: "Tournament URL must contain only letters, numbers, hyphens, and underscores" });
+        }
+        if (url.length > 50) {
+          return json(400, { error: "Tournament URL must be 50 characters or less" });
+        }
+        
+        if (!tournament_type || typeof tournament_type !== 'string') {
+          return json(400, { error: "Tournament type is required" });
+        }
+        const validTypes = ['single elimination', 'double elimination', 'round robin', 'swiss'];
+        if (!validTypes.includes(tournament_type.toLowerCase())) {
+          return json(400, { error: `Tournament type must be one of: ${validTypes.join(', ')}` });
+        }
+        
+        if (description && typeof description === 'string' && description.length > 500) {
+          return json(400, { error: "Description must be 500 characters or less" });
+        }
         const body = { tournament: { name, url, tournament_type, description } };
         const data = await challongeFetch("POST", "/tournaments", body);
         return json(200, data);
       }
       case "addParticipant": {
         const { tournamentId, name, seed, misc } = payload.args;
+        
+        if (!tournamentId || typeof tournamentId !== 'string') {
+          return json(400, { error: "Tournament ID is required" });
+        }
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+          return json(400, { error: "Participant name is required" });
+        }
+        if (name.trim().length > 100) {
+          return json(400, { error: "Participant name must be 100 characters or less" });
+        }
+        if (seed !== undefined && seed !== null && (typeof seed !== 'number' || !Number.isInteger(seed) || seed < 1)) {
+          return json(400, { error: "Seed must be a positive integer" });
+        }
         const body = { participant: { name, seed, misc } };
         const data = await challongeFetch(
           "POST",

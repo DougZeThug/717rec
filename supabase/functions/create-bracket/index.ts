@@ -399,19 +399,75 @@ serve(async (req) => {
 
     console.log('[AUTH] User authenticated:', user.id);
 
+    // Verify admin status
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      console.error('[AUTH] Admin check failed:', profileError);
+      throw new Error('Admin access required');
+    }
+
+    console.log('[AUTH] Admin access verified for user:', user.id);
+
     const payload: CreateBracketPayload = await req.json();
     
     console.log('[BRACKET] Creating bracket with payload:', JSON.stringify(payload, null, 2));
 
     // Enhanced validation
-    if (!payload.name || !payload.divisionId || !payload.teams || payload.teams.length < 2) {
-      throw new Error('Invalid payload: name, divisionId, and at least 2 teams are required');
+    if (!payload.name || typeof payload.name !== 'string' || payload.name.trim().length === 0) {
+      throw new Error('Invalid payload: name is required and must be a non-empty string');
+    }
+    
+    if (payload.name.trim().length > 100) {
+      throw new Error('Invalid payload: name must be 100 characters or less');
+    }
+
+    if (!payload.divisionId || typeof payload.divisionId !== 'string') {
+      throw new Error('Invalid payload: divisionId is required and must be a string');
+    }
+
+    // Validate UUID format for divisionId
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(payload.divisionId)) {
+      throw new Error('Invalid payload: divisionId must be a valid UUID');
+    }
+
+    if (!payload.teams || !Array.isArray(payload.teams) || payload.teams.length < 2) {
+      throw new Error('Invalid payload: at least 2 teams are required');
     }
 
     // Check for reasonable maximum (tournament brackets typically support up to 64 teams)
     if (payload.teams.length > 64) {
       throw new Error('Maximum 64 teams allowed per bracket');
     }
+
+    // Validate format
+    const validFormats = ['singleElim', 'doubleElim'];
+    if (payload.format && !validFormats.includes(payload.format)) {
+      throw new Error(`Invalid format: must be one of ${validFormats.join(', ')}`);
+    }
+
+    // Validate each team
+    payload.teams.forEach((team, index) => {
+      if (!team.id || typeof team.id !== 'string' || !uuidRegex.test(team.id)) {
+        throw new Error(`Invalid team at index ${index}: id must be a valid UUID`);
+      }
+      if (!team.name || typeof team.name !== 'string' || team.name.trim().length === 0) {
+        throw new Error(`Invalid team at index ${index}: name is required`);
+      }
+      if (team.name.trim().length > 100) {
+        throw new Error(`Invalid team at index ${index}: name must be 100 characters or less`);
+      }
+      if (team.seed !== undefined && team.seed !== null) {
+        if (typeof team.seed !== 'number' || !Number.isInteger(team.seed) || team.seed < 1 || team.seed > 64) {
+          throw new Error(`Invalid team at index ${index}: seed must be an integer between 1 and 64`);
+        }
+      }
+    });
 
     console.log(`[BRACKET] Validating ${payload.teams.length} teams for ${payload.format} tournament`);
 
