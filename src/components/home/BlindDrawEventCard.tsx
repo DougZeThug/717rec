@@ -1,9 +1,65 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shuffle, Clock, DollarSign, Trophy, Calendar } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Shuffle, Clock, DollarSign, Trophy, Calendar, Timer } from "lucide-react";
 import { motion } from "framer-motion";
 
 const BlindDrawEventCard: React.FC = () => {
+  const [checkInCountdown, setCheckInCountdown] = useState({ text: "", percent: 0 });
+  const [startCountdown, setStartCountdown] = useState({ text: "", percent: 0 });
+
+  useEffect(() => {
+    // Event times for December 4th, 2024
+    const checkInTime = new Date('2024-12-04T18:30:00'); // 6:30 PM
+    const startTime = new Date('2024-12-04T19:00:00'); // 7:00 PM
+
+    const updateCountdowns = () => {
+      const now = new Date();
+      
+      // Check-in countdown
+      const checkInDiff = checkInTime.getTime() - now.getTime();
+      if (checkInDiff > 0) {
+        const hours = Math.floor(checkInDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((checkInDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const maxDiff = 12 * 60 * 60 * 1000;
+        const percent = Math.max(0, Math.min(100, 100 - (checkInDiff / maxDiff) * 100));
+        
+        if (hours > 0) {
+          setCheckInCountdown({ text: `${hours}h ${minutes}m until check-in`, percent });
+        } else if (minutes > 0) {
+          setCheckInCountdown({ text: `${minutes}m until check-in`, percent });
+        } else {
+          setCheckInCountdown({ text: "Check-in open now!", percent: 100 });
+        }
+      } else {
+        setCheckInCountdown({ text: "Check-in open now!", percent: 100 });
+      }
+
+      // Start time countdown
+      const startDiff = startTime.getTime() - now.getTime();
+      if (startDiff > 0) {
+        const hours = Math.floor(startDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((startDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const maxDiff = 12 * 60 * 60 * 1000;
+        const percent = Math.max(0, Math.min(100, 100 - (startDiff / maxDiff) * 100));
+        
+        if (hours > 0) {
+          setStartCountdown({ text: `${hours}h ${minutes}m until start`, percent });
+        } else if (minutes > 0) {
+          setStartCountdown({ text: `${minutes}m until start`, percent });
+        } else {
+          setStartCountdown({ text: "Starting now!", percent: 100 });
+        }
+      } else {
+        setStartCountdown({ text: "Event started!", percent: 100 });
+      }
+    };
+
+    updateCountdowns();
+    const intervalId = setInterval(updateCountdowns, 60000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 shadow-2xl">
       {/* Animated background elements */}
@@ -48,7 +104,7 @@ const BlindDrawEventCard: React.FC = () => {
             <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
               <Clock className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
               <span className="text-xs text-white/80 uppercase tracking-wide">Check-in</span>
-              <span className="text-lg md:text-xl font-bold text-white">6:00 PM</span>
+              <span className="text-lg md:text-xl font-bold text-white">6:30 PM</span>
             </div>
             
             <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
@@ -67,6 +123,24 @@ const BlindDrawEventCard: React.FC = () => {
               <Trophy className="h-5 w-5 md:h-6 md:w-6 text-amber-300" />
               <span className="text-xs text-white/80 uppercase tracking-wide">Payouts</span>
               <span className="text-lg md:text-xl font-bold text-white">1st & 2nd</span>
+            </div>
+          </div>
+
+          {/* Countdown bars */}
+          <div className="w-full max-w-md space-y-3 mt-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm text-white/90">
+                <Timer className="h-4 w-4 text-yellow-300" />
+                <span>{checkInCountdown.text}</span>
+              </div>
+              <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm text-white/90">
+                <Timer className="h-4 w-4 text-green-300" />
+                <span>{startCountdown.text}</span>
+              </div>
+              <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" />
             </div>
           </div>
         </div>
