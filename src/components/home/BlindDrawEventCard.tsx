@@ -9,9 +9,11 @@ const BlindDrawEventCard: React.FC = () => {
   const [startCountdown, setStartCountdown] = useState({ text: "", percent: 0 });
 
   useEffect(() => {
-    // Event times for December 4th, 2024 (using local date constructor - months are 0-indexed)
-    const checkInTime = new Date(2024, 11, 4, 18, 30, 0); // 6:30 PM local time
-    const startTime = new Date(2024, 11, 4, 19, 0, 0); // 7:00 PM local time
+    // Event times in EST, stored as UTC (EST = UTC-5)
+    // 6:30 PM EST = 23:30 UTC on Dec 4
+    // 7:00 PM EST = 00:00 UTC on Dec 5
+    const checkInTime = new Date(Date.UTC(2024, 11, 4, 23, 30, 0));
+    const startTime = new Date(Date.UTC(2024, 11, 5, 0, 0, 0));
 
     const updateCountdowns = () => {
       const now = new Date();
