@@ -12,8 +12,8 @@ const BlindDrawEventCard: React.FC = () => {
     // Event times in EST, stored as UTC (EST = UTC-5)
     // 6:30 PM EST = 23:30 UTC on Dec 4
     // 7:00 PM EST = 00:00 UTC on Dec 5
-    const checkInTime = new Date(Date.UTC(2024, 11, 4, 23, 30, 0));
-    const startTime = new Date(Date.UTC(2024, 11, 5, 0, 0, 0));
+    const checkInTime = new Date(Date.UTC(2025, 11, 4, 23, 30, 0));
+    const startTime = new Date(Date.UTC(2025, 11, 5, 0, 0, 0));
 
     const updateCountdowns = () => {
       const now = new Date();
