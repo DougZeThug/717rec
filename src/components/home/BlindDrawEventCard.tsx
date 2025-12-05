@@ -10,10 +10,10 @@ const BlindDrawEventCard: React.FC = () => {
 
   useEffect(() => {
     // Event times in EST, stored as UTC (EST = UTC-5)
-    // 6:30 PM EST = 23:30 UTC on Dec 4
-    // 7:00 PM EST = 00:00 UTC on Dec 5
-    const checkInTime = new Date(Date.UTC(2025, 11, 4, 23, 30, 0));
-    const startTime = new Date(Date.UTC(2025, 11, 5, 0, 0, 0));
+    // 6:30 PM EST = 23:30 UTC on Dec 11
+    // 7:00 PM EST = 00:00 UTC on Dec 12
+    const checkInTime = new Date(Date.UTC(2025, 11, 11, 23, 30, 0));
+    const startTime = new Date(Date.UTC(2025, 11, 12, 0, 0, 0));
 
     const updateCountdowns = () => {
       const now = new Date();
@@ -85,7 +85,7 @@ const BlindDrawEventCard: React.FC = () => {
               <Shuffle className="h-8 w-8 md:h-10 md:w-10 text-white" />
             </motion.div>
             <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight">
-              BLIND DRAW TONIGHT!
+              Blind Draw
             </h2>
             <motion.div
               animate={{ rotate: [0, -10, 10, 0] }}
@@ -98,7 +98,7 @@ const BlindDrawEventCard: React.FC = () => {
           {/* Date badge */}
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
             <Calendar className="h-4 w-4 text-white" />
-            <span className="text-white font-semibold">Thursday, December 4th</span>
+            <span className="text-white font-semibold">Thursday, December 11th</span>
           </div>
           
           {/* Event details grid */}
