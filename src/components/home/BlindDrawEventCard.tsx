@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Shuffle, Clock, DollarSign, Trophy, Calendar, Timer } from "lucide-react";
+import { Shuffle, Clock, DollarSign, Trophy, Calendar, Timer, Medal } from "lucide-react";
 import { motion } from "framer-motion";
 
 const BlindDrawEventCard: React.FC = () => {
@@ -124,7 +124,52 @@ const BlindDrawEventCard: React.FC = () => {
             <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
               <Trophy className="h-5 w-5 md:h-6 md:w-6 text-amber-300" />
               <span className="text-xs text-white/80 uppercase tracking-wide">Payouts</span>
-              <span className="text-lg md:text-xl font-bold text-white">1st & 2nd</span>
+              <span className="text-lg md:text-xl font-bold text-white">Top 3</span>
+            </div>
+          </div>
+
+          {/* Past Winners */}
+          <div className="w-full max-w-2xl mt-4 space-y-3">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Medal className="h-5 w-5 text-amber-300" />
+              <span className="text-white font-semibold">Past Winners</span>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Week 1 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 1</div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex items-center gap-2 text-white">
+                    <span className="text-amber-400">🥇</span>
+                    <span>Shan & Earl</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <span className="text-gray-300">🥈</span>
+                    <span>Kaitlyn & Scotty</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <span className="text-amber-600">🥉</span>
+                    <span>Katie & Steve</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Week 2 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 2</div>
+                <div className="flex items-center justify-center h-16 text-white/50 text-sm">
+                  TBD
+                </div>
+              </div>
+
+              {/* Week 3 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 3</div>
+                <div className="flex items-center justify-center h-16 text-white/50 text-sm">
+                  TBD
+                </div>
+              </div>
             </div>
           </div>
 
