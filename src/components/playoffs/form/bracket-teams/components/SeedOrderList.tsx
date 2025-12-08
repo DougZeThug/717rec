@@ -1,9 +1,25 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { GripVertical, Users } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { ProcessedTeam } from '../types';
-import { SeedInputField } from './SeedInputField';
-import { handleDragDropReorder } from '../utils/dragAndDrop';
+import { SortableTeamItem } from './SortableTeamItem';
+import { DragOverlayItem } from './DragOverlayItem';
+import { AnimatePresence } from 'framer-motion';
 
 interface SeedOrderListProps {
   teams: ProcessedTeam[];
@@ -20,80 +36,89 @@ export const SeedOrderList: React.FC<SeedOrderListProps> = ({
   onTeamReorder,
   onSeedChange,
 }) => {
-  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    setDraggedIndex(index);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', index.toString());
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const activeTeam = useMemo(() => 
+    teams.find(t => t.id === activeId),
+    [teams, activeId]
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
   };
 
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = teams.findIndex((item) => item.id === active.id);
+    const newIndex = teams.findIndex((item) => item.id === over.id);
+    
+    const reordered = arrayMove(teams, oldIndex, newIndex);
+    
+    // Reassign seeds based on new order
+    const updated = reordered.map((team, idx) => ({
+      ...team,
+      seed: idx + 1
+    }));
+    
+    onTeamReorder(updated);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    
-    if (draggedIndex === null) return;
-    
-    const result = handleDragDropReorder(teams, draggedIndex, dropIndex);
-    
-    if (result.wasReordered) {
-      onTeamReorder(result.reorderedTeams);
-    }
-    
-    setDraggedIndex(null);
-  };
+  const teamIds = useMemo(() => teams.map(t => t.id), [teams]);
 
   return (
-    <div className="space-y-2">
-      {teams.map((team, index) => (
-        <div
-          key={team.id}
-          draggable={isManualMode}
-          onDragStart={(e) => handleDragStart(e, index)}
-          onDragEnd={handleDragEnd}
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, index)}
-          className={`
-            flex items-center gap-3 p-3 rounded-lg border transition-colors
-            ${draggedIndex === index ? 'opacity-50' : ''}
-            ${isManualMode ? 'bg-muted/50 hover:bg-muted cursor-move' : 'bg-background'}
-          `}
-        >
-          {isManualMode && (
-            <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          )}
-          
-          <div className="flex items-center gap-2 flex-1">
-            {team.logoUrl ? (
-              <img
-                src={team.logoUrl}
-                alt={`${team.name} logo`}
-                className="w-6 h-6 object-contain"
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={teamIds} strategy={verticalListSortingStrategy}>
+        <div className="space-y-2">
+          <AnimatePresence mode="popLayout">
+            {teams.map((team) => (
+              <SortableTeamItem
+                key={team.id}
+                id={team.id}
+                name={team.name}
+                seed={team.seed ?? 0}
+                logoUrl={team.logoUrl}
+                disabled={!isManualMode}
+                showSeedInput={isManualMode}
+                hasConflict={conflictTeamIds.has(team.id)}
+                onSeedChange={(seed) => onSeedChange(team.id, seed)}
               />
-            ) : (
-              <Users className="w-4 h-4 text-muted-foreground" />
-            )}
-            <span className="font-medium">{team.name}</span>
-          </div>
-          
-          <SeedInputField
-            teamId={team.id}
-            teamName={team.name}
-            seed={team.seed}
-            isManualMode={isManualMode}
-            hasConflict={conflictTeamIds.has(team.id)}
-            onSeedChange={onSeedChange}
-          />
+            ))}
+          </AnimatePresence>
         </div>
-      ))}
-    </div>
+      </SortableContext>
+
+      <DragOverlay dropAnimation={{
+        duration: 200,
+        easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+      }}>
+        {activeTeam ? (
+          <DragOverlayItem
+            name={activeTeam.name}
+            seed={activeTeam.seed ?? 0}
+            logoUrl={activeTeam.logoUrl}
+          />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 };
