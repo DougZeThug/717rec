@@ -45,7 +45,10 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
           )}>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="font-inter text-base sm:text-xl font-semibold">
+                <CardTitle 
+                  className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                  style={{ letterSpacing: "0.5px" }}
+                >
                   Performance Charts
                 </CardTitle>
                 {!isMobile && (

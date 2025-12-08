@@ -79,12 +79,10 @@ const StatsSummarySection = ({
               )}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className={cn(
-                      "font-semibold text-base sm:text-xl font-inter tracking-wide",
-                      isLight ? 
-                        "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent" :
-                        "text-white"
-                    )}>
+                    <CardTitle 
+                      className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                      style={{ letterSpacing: "0.5px" }}
+                    >
                       Current Standings
                     </CardTitle>
                     {!isMobile && (
@@ -139,12 +137,10 @@ const StatsSummarySection = ({
               )}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className={cn(
-                      "font-semibold text-base sm:text-xl font-inter tracking-wide",
-                      isLight ? 
-                        "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent" :
-                        "text-white"
-                    )}>
+                    <CardTitle 
+                      className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                      style={{ letterSpacing: "0.5px" }}
+                    >
                       League Highlights
                     </CardTitle>
                     {!isMobile && (

@@ -7,8 +7,10 @@ import CareerRankingsTable from './CareerRankingsTable';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CareerRankingsSection: React.FC = () => {
+  const isMobile = useIsMobile();
   const { 
     data: careerRankings, 
     isLoading, 
@@ -39,20 +41,27 @@ const CareerRankingsSection: React.FC = () => {
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-8">
       <Card>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+          <CardHeader className={cn("cursor-pointer hover:bg-muted/50 transition-colors", isMobile ? "py-2.5 px-3" : "py-4")}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-amber-500" />
                 <div>
-                  <CardTitle>Career Statistics</CardTitle>
-                  <CardDescription>
-                    Historical performance across all seasons and playoffs
-                    {showHidden && hiddenTeamCount > 0 && (
-                      <span className="ml-2 text-xs bg-muted px-2 py-1 rounded">
-                        +{hiddenTeamCount} hidden
-                      </span>
-                    )}
-                  </CardDescription>
+                  <CardTitle 
+                    className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                    style={{ letterSpacing: "0.5px" }}
+                  >
+                    Career Statistics
+                  </CardTitle>
+                  {!isMobile && (
+                    <CardDescription>
+                      Historical performance across all seasons and playoffs
+                      {showHidden && hiddenTeamCount > 0 && (
+                        <span className="ml-2 text-xs bg-muted px-2 py-1 rounded">
+                          +{hiddenTeamCount} hidden
+                        </span>
+                      )}
+                    </CardDescription>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">

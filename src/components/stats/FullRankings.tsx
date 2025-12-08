@@ -45,7 +45,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
                 <div>
                   <CardTitle
                     className={cn(
-                      `font-oswald uppercase tracking-wide ${isMobile ? 'text-lg' : 'text-xl sm:text-2xl'} !font-bold`,
+                      "font-bebas uppercase tracking-wide",
+                      isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
                       "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
                     )}
                     style={{ letterSpacing: "0.5px" }}
