@@ -6,6 +6,7 @@ import { TeamLogo } from "@/components/shared/TeamLogo";
 import RankTrendIndicator from "./RankTrendIndicator";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
+import { motion } from "framer-motion";
 
 interface RankingCardProps {
   ranking: Ranking;
@@ -54,9 +55,12 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
   if (compactView) {
     return (
-      <div 
-        className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-3 hover:shadow-md transition-shadow cursor-pointer"
+      <motion.div 
+        className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-3 cursor-pointer"
         onClick={handleToggleExpand}
+        whileHover={{ scale: 1.01, y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -129,12 +133,17 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4 hover:shadow-md transition-shadow">
+    <motion.div 
+      className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4"
+      whileHover={{ scale: 1.01, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-slate-900 dark:text-white whitespace-nowrap">
@@ -227,7 +236,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

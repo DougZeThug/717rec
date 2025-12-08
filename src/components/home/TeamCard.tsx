@@ -9,6 +9,7 @@ import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
 import { blueAmber, blueAmberHeading } from "@/styles/design-system/blueAmber";
+import { motion } from "framer-motion";
 
 interface TeamCardProps {
   team: Team;
@@ -23,13 +24,18 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
   const delayClass = delay ? `animation-delay-${delay * 100}` : '';
 
   return (
-    <div className={cn(
-      "overflow-hidden mb-4 sm:mb-0 transition duration-300 hover:shadow-md",
-      "rounded-lg border border-gray-200 dark:border-gray-700",
-      blueAmber.background.cardAccent,
-      animations.fadeInSlideUp,
-      delayClass
-    )}>
+    <motion.div 
+      className={cn(
+        "overflow-hidden mb-4 sm:mb-0",
+        "rounded-lg border border-gray-200 dark:border-gray-700",
+        blueAmber.background.cardAccent,
+        animations.fadeInSlideUp,
+        delayClass
+      )}
+      whileHover={{ scale: 1.03, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
       <Link to={`/teams/${team.id}`} className="block">
         <div className="h-40 relative flex items-center justify-center p-3 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-800/80 dark:via-gray-800/50 dark:to-gray-900/60">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-amber-50/10 dark:from-blue-900/5 dark:to-amber-900/5"></div>
@@ -55,7 +61,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
           <TeamStats team={team} />
         </div>
       </Link>
-    </div>
+    </motion.div>
   );
 };
 

@@ -2,6 +2,7 @@
 import React from "react";
 import { Team } from "@/types";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { TeamImage } from "../shared/TeamImage";
 import { StatBlock } from "../shared/StatBlock";
 import { Trophy, X, MoreHorizontal, Edit, Trash2, ExternalLink } from "lucide-react";
@@ -30,9 +31,13 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
   const sosColor = getSosColor(team.sos);
 
   return (
-    <div className="bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl 
-      overflow-hidden h-full mb-4 font-inter shadow-sm hover:shadow-md transition-all duration-200 
-      hover:border-opacity-80 dark:hover:bg-[#252525] active:scale-[0.995]">
+    <motion.div 
+      className="bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl 
+        overflow-hidden h-full mb-4 font-inter shadow-sm"
+      whileHover={{ scale: 1.01, y: -2 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
       <div className="flex flex-col md:flex-row h-full">
         <Link to={`/teams/${team.id}`} className="w-full md:w-[180px] lg:w-[200px] h-[180px] md:h-auto flex items-center justify-center p-6 
           bg-gradient-to-br from-blue-50/30 via-white to-orange-50/20 dark:from-gray-800/60 dark:via-black/40 dark:to-gray-800/50">
@@ -138,6 +143,6 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

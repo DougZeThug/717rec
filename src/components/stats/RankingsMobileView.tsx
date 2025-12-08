@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
 import { debugLog } from "@/utils/logger";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -140,20 +141,36 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               </h3>
             )}
             <div className="space-y-1">
-              {divisionRankings.map((ranking) => {
-                const globalIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
-                return (
-                  <RankingCard
-                    key={ranking.teamId}
-                    ranking={ranking}
-                    index={globalIndex}
-                    expandedTeam={expandedTeam}
-                    onToggleExpand={toggleExpand}
-                    compactView={!detailedView}
-                    showDivision={showUnified}
-                  />
-                );
-              })}
+              <AnimatePresence mode="popLayout">
+                {divisionRankings.map((ranking, idx) => {
+                  const globalIndex = rankings.findIndex(r => r.teamId === ranking.teamId);
+                  return (
+                    <motion.div
+                      key={ranking.teamId}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ 
+                        duration: 0.2, 
+                        delay: idx * 0.03,
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30
+                      }}
+                      layout
+                    >
+                      <RankingCard
+                        ranking={ranking}
+                        index={globalIndex}
+                        expandedTeam={expandedTeam}
+                        onToggleExpand={toggleExpand}
+                        compactView={!detailedView}
+                        showDivision={showUnified}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
           </div>
         ))}
