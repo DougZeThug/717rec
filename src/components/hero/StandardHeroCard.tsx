@@ -1,24 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, History, Trophy, Shuffle, Calendar, Star } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HeroCard } from "@/types/heroCard";
+import { HERO_ICON_MAP } from "@/constants/heroCardPresets";
 
 interface StandardHeroCardProps {
   card: HeroCard;
 }
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  History,
-  Trophy,
-  Shuffle,
-  Calendar,
-  Star,
-  ChevronRight,
-};
-
 const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
-  const Icon = card.icon_name ? iconMap[card.icon_name] : null;
+  const Icon = card.icon_name ? HERO_ICON_MAP[card.icon_name] : null;
 
   const content = (
     <div className="relative flex items-center justify-center gap-3 px-6 py-4">
