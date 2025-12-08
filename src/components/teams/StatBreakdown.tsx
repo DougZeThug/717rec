@@ -19,6 +19,7 @@ import { useTheme } from "next-themes";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
+import PowerScoreGauge from "@/components/ui/power-score-gauge";
 
 interface StatBreakdownProps {
   wins: number;
@@ -112,13 +113,15 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
         {/* Core Stats Tab */}
         <TabsContent value="core" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Power Score */}
+            {/* Power Score with Gauge */}
             <StatBlock 
               label="Power Score" 
               value={
-                <span className={powerScoreColorClass}>
-                  {formatPowerScore(powerScore)}
-                </span>
+                <PowerScoreGauge 
+                  score={powerScore / 100} 
+                  size="lg" 
+                  showLabel={false}
+                />
               }
               gradient="bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
               icon={<Zap size={18} className="text-amber-500" />}
