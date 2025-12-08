@@ -10,6 +10,7 @@ import { TrendDirection } from "@/types/powerScoreTrends";
 import { getTrendColor, getTrendArrow } from "@/utils/colors/trendColors";
 import { getPowerScoreColor } from "@/utils/colors/powerScoreColors";
 import { TrendingUp, TrendingDown, Calendar, CalendarDays } from "lucide-react";
+import AnimatedChartWrapper from "@/components/ui/animated-chart-wrapper";
 
 type ViewMode = 'weekly' | 'seasonal';
 
@@ -38,11 +39,12 @@ const PowerScoreTrendsCard: React.FC = () => {
   };
 
   return (
-    <Card className={cn(
-      "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm",
-      animations.fadeInSlideUp,
-      "animation-delay-300"
-    )}>
+    <AnimatedChartWrapper delay={0.2}>
+      <Card className={cn(
+        "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm",
+        animations.fadeInSlideUp,
+        "animation-delay-300"
+      )}>
       <CardHeader className={cn(
         "rounded-t-xl",
         isMobile ? "pb-2 py-3" : "pb-3"
@@ -213,6 +215,7 @@ const PowerScoreTrendsCard: React.FC = () => {
         )}
       </CardContent>
     </Card>
+    </AnimatedChartWrapper>
   );
 };
 

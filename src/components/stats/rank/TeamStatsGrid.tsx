@@ -1,10 +1,10 @@
-
 import React from "react";
 import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
 import { getSosColor } from "@/utils/colors";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import RankTrendIndicator from "../RankTrendIndicator";
+import PowerScoreGauge from "@/components/ui/power-score-gauge";
 
 interface TeamStatsGridProps {
   wins: number;
@@ -56,9 +56,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
         
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Power</span>
-          <span className={cn("font-medium", powerScoreColorClass)}>
-            {formatPowerScore(powerScore)}
-          </span>
+          <PowerScoreGauge score={powerScore / 100} size="sm" showLabel={false} />
         </div>
         
         <div className="flex flex-col items-center">

@@ -1,21 +1,21 @@
-
 import React from "react";
+import { AnimatedRankNumber } from "../AnimatedRankNumber";
 
 interface RankNumberProps {
   index: number;
+  previousRank?: number;
 }
 
-export const RankNumber: React.FC<RankNumberProps> = ({ index }) => {
-  const getRankStyles = (index: number) => {
-    if (index === 0) return "bg-amber-100 text-amber-800 font-bold"; // Gold
-    if (index === 1) return "bg-slate-100 text-slate-700 font-bold"; // Silver
-    if (index === 2) return "bg-orange-100 text-orange-800 font-bold"; // Bronze
-    return "bg-gray-50 text-gray-700";
-  };
-
+export const RankNumber: React.FC<RankNumberProps> = ({ index, previousRank }) => {
+  // Convert 0-based index to 1-based rank for display
+  const rank = index + 1;
+  const prevRank = previousRank !== undefined ? previousRank + 1 : undefined;
+  
   return (
-    <div className={`w-7 h-7 flex items-center justify-center rounded-full ${getRankStyles(index)}`}>
-      {index + 1}
-    </div>
+    <AnimatedRankNumber 
+      rank={rank} 
+      previousRank={prevRank}
+      showFlash={true}
+    />
   );
 };
