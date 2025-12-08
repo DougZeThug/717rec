@@ -12,8 +12,8 @@ import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 import { BracketCreationErrorBoundary } from "./BracketCreationErrorBoundary";
 import { useQueryClient } from "@tanstack/react-query";
 import type { BracketRecord } from "@/types/bracketRecord";
+import { bracketLog, errorLog } from "@/utils/logger";
 
-// Format mapping from UI strings to internal format
 const FORMAT_MAP = {
   "Single Elimination": "singleElim",
   "Double Elimination": "doubleElim",
@@ -43,9 +43,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const queryClient = useQueryClient();
   const { createBracket } = useChallongeAdmin();
   
-  // EXPLICIT form submission handler - ONLY triggered by form submit button
   const handleSubmit = async (data: BracketFormValues) => {
-    // Prevent multiple submissions
     if (isSubmitting) {
       return;
     }
@@ -54,13 +52,12 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       setIsSubmitting(true);
       setDialogError(null);
       
-      console.log("BracketCreationDialog: Starting bracket creation with data:", data);
+      bracketLog("Starting bracket creation with data:", data);
       
-      // Enhanced validation
       const validation = BracketValidationService.validateFormData(data as BracketFormData);
       if (!validation.isValid) {
         const validationErrors = validation.errors.join(", ");
-        console.error("BracketCreationDialog: Validation failed", validation.errors);
+        errorLog("Validation failed", validation.errors);
         setDialogError(`Validation failed: ${validationErrors}`);
         toast({
           title: "Validation Error",
@@ -70,7 +67,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      // Validate teams are available
       if (!teams || teams.length === 0) {
         const error = "No teams available for bracket creation";
         setDialogError(error);
@@ -82,7 +78,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      // Map UI format to internal format
       const internalFormat = FORMAT_MAP[data.format as keyof typeof FORMAT_MAP];
       if (!internalFormat) {
         const error = `Invalid tournament format: ${data.format}`;
@@ -95,7 +90,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      // Filter selected teams and apply seed overrides
       const selectedTeams = teams
         .filter(team => data.teams.includes(team.id))
         .map(team => ({
@@ -125,8 +119,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      // Create tournament via E2E flow
-      console.log("BracketCreationDialog: Creating bracket via Challonge...");
+      bracketLog("Creating bracket via Challonge...");
       const bracket = await createBracket.mutateAsync({
         name: data.title,
         format: internalFormat,
@@ -139,23 +132,19 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         grandFinalType: data.grandFinalType || 'simple'
       });
       
-      console.log("BracketCreationDialog: Bracket created successfully:", bracket);
+      bracketLog("Bracket created successfully:", bracket);
       
-      // Show initial success message
       toast({
         title: "Bracket Created Successfully",
         description: `Tournament "${data.title}" has been created with ${selectedTeams.length} teams.`,
       });
       
-      // Close dialog first
       onOpenChange(false);
       
-      // Start data refresh process
-      console.log("BracketCreationDialog: Starting data refresh...");
+      bracketLog("Starting data refresh...");
       setIsRefreshing(true);
       
       try {
-        // Force complete data refresh
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['brackets'] }),
           queryClient.invalidateQueries({ queryKey: ['playoff-data'] }),
@@ -164,21 +153,19 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
           queryClient.refetchQueries({ queryKey: ['playoff-data'] })
         ]);
         
-        console.log("BracketCreationDialog: Data refresh completed");
+        bracketLog("Data refresh completed");
         
-        // Show refresh completion message
         toast({
           title: "Data Refreshed",
           description: "Bracket data has been updated. Your new bracket should now be visible.",
         });
         
-        // Navigate to the created bracket after a short delay to ensure data is loaded
         setTimeout(() => {
           navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
         }, 1000);
         
       } catch (refreshError) {
-        console.error("BracketCreationDialog: Data refresh failed:", refreshError);
+        errorLog("Data refresh failed:", refreshError);
         toast({
           title: "Refresh Warning",
           description: "Bracket created but data refresh failed. Please reload the page to see your new bracket.",
@@ -188,25 +175,15 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         setIsRefreshing(false);
       }
       
-      // Call parent callback if provided
       if (onBracketCreated) {
         onBracketCreated(bracket);
       }
       
     } catch (error: any) {
-      console.error("BracketCreationDialog: E2E bracket creation failed:", error);
-      console.error("Error details:", {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint,
-        stack: error?.stack,
-        fullError: JSON.stringify(error, null, 2)
-      });
+      errorLog("E2E bracket creation failed:", error);
       
       let errorMessage = "Failed to create bracket. Check your internet or try again.";
       
-      // Categorize errors for better user experience
       if (error?.message) {
         if (error.message.includes("Challonge")) {
           errorMessage = `Challonge API Error: ${error.message}`;
@@ -237,12 +214,10 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
     }
   };
 
-  // Team validity change handler - ONLY updates state, NEVER submits
   const handleTeamsValidityChange = React.useCallback((isValid: boolean) => {
     setTeamsValid(isValid);
   }, []);
 
-  // Enhanced error boundary reset
   const handleErrorReset = () => {
     setIsSubmitting(false);
     setDialogError(null);
@@ -255,7 +230,6 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
         </DialogHeader>
         
-        {/* Show refreshing indicator */}
         {isRefreshing && (
           <div className="mb-4 p-4 border border-blue-500 rounded-lg bg-blue-50 dark:bg-blue-900/20">
             <div className="flex items-center gap-2">
