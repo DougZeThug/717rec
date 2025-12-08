@@ -69,21 +69,21 @@ export const normalizeScheduleDate = (date: Date | string | null, context: strin
  */
 export const validateScheduleDate = (date: Date | null, context: string = 'unknown'): boolean => {
   if (!date) {
-    console.error(`❌ [${context}] Date validation failed: date is null/undefined`);
+    errorLog(`[${context}] Date validation failed: date is null/undefined`);
     return false;
   }
   
   if (!(date instanceof Date)) {
-    console.error(`❌ [${context}] Date validation failed: not a Date instance`);
+    errorLog(`[${context}] Date validation failed: not a Date instance`);
     return false;
   }
   
   if (isNaN(date.getTime())) {
-    console.error(`❌ [${context}] Date validation failed: invalid date`);
+    errorLog(`[${context}] Date validation failed: invalid date`);
     return false;
   }
   
-  console.log(`✅ [${context}] Date validation passed: ${date.toISOString()}`);
+  timezoneLog(`[${context}] Date validation passed: ${date.toISOString()}`);
   return true;
 };
 

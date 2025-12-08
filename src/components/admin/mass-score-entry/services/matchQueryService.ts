@@ -17,7 +17,7 @@ export const buildMatchQuery = (filters: FilterState) => {
     // Use the evening-aware date range for more intuitive filtering
     const { startDate, endDate } = createEveningAwareDateRange(filters.date);
     
-    console.log(`🔍 Filtering matches with evening-aware date range:`, {
+    matchLog(`Filtering matches with evening-aware date range:`, {
       date: filters.date.toDateString(),
       startDateUTC: startDate.toISOString(),
       endDateUTC: endDate.toISOString()

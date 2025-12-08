@@ -12,7 +12,7 @@ export const useMatchValidation = () => {
     const team2GameWins = parseInt(String(match.team2_game_wins)) || 0;
     
     // Log validation attempt
-    console.log(`🔍 DIAGNOSTIC: Validating match before submission:`, {
+    validationLog(`Validating match before submission:`, {
       matchId: match.id,
       matchDate: match.date,
       team1GameWins,

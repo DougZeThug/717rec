@@ -67,12 +67,12 @@ const AutoScheduleTab = () => {
   
   // Track tab changes for analytics
   useEffect(() => {
-    console.log(`Auto schedule tab changed to: ${activeTab}`);
+    scheduleLog(`Auto schedule tab changed to: ${activeTab}`);
   }, [activeTab]);
   
   // Handle manual team assignment
   const handleManualTeamAssign = (updatedTeams: TimeBlockTeamsMap) => {
-    console.log("Manually assigned teams:", updatedTeams);
+    scheduleLog("Manually assigned teams:", updatedTeams);
     setTimeBlockTeams(updatedTeams);
   };
 

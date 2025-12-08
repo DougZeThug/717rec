@@ -1,10 +1,9 @@
-
 /**
  * Format utility functions for timezone display
  */
 
 import { TimeDisplayOptions } from './types';
-import { logTimeOperation } from './logger';
+import { timezoneLog } from '@/utils/logger';
 
 /**
  * Format a UTC date to a local time string
@@ -30,7 +29,7 @@ export const formatUTCToLocalTimeString = (
     const formatter = new Intl.DateTimeFormat(undefined, timeOptions);
     const formattedTime = formatter.format(date);
     
-    logTimeOperation('Formatted UTC date to local time', {
+    timezoneLog('Formatted UTC date to local time', {
       utcInput: date.toISOString(),
       localOutput: formattedTime,
       userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -136,7 +135,7 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
     // Convert UTC to local time for display
     const formattedTime = formatUTCToLocalTimeString(dateObj);
     
-    logTimeOperation('Extracted time slot from UTC date', {
+    timezoneLog('Extracted time slot from UTC date', {
       input: typeof date === 'string' ? date : date.toISOString(),
       output: formattedTime
     });

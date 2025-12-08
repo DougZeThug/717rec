@@ -36,7 +36,7 @@ export const useScoreSubmission = (
       match && match.isEdited && match.isValid && match.iscompleted
     );
     
-    console.log(`[useScoreSubmission] Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`, {
+    scoreLog(`[useScoreSubmission] Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`, {
       editedMatchIds: editedMatches.map(m => m.id),
       allMatches: matches.map(m => ({
         id: m.id,
@@ -54,7 +54,7 @@ export const useScoreSubmission = (
       return;
     }
 
-    console.log(`[useScoreSubmission] Processing ${editedMatches.length} edited matches`);
+    scoreLog(`[useScoreSubmission] Processing ${editedMatches.length} edited matches`);
     setSubmitting(true);
     clearErrors();
     let successCount = 0;
@@ -69,7 +69,7 @@ export const useScoreSubmission = (
           team1_game_wins: match.team1_game_wins ?? 0,
           team2_game_wins: match.team2_game_wins ?? 0,
         })) {
-          console.log(`[useScoreSubmission] Match ${match.id} failed validation`);
+          scoreLog(`[useScoreSubmission] Match ${match.id} failed validation`);
           continue;
         }
 
@@ -104,11 +104,11 @@ export const useScoreSubmission = (
         try {
           await fetchMatches();
         } catch (error) {
-          console.error("Error refreshing matches:", error);
+          errorLog("Error refreshing matches:", error);
         }
       }
     } catch (error: any) {
-      console.error("[useScoreSubmission] Error in batch update:", error.message);
+      errorLog("[useScoreSubmission] Error in batch update:", error.message);
       toast({
         title: "Error",
         description: `Failed to update matches: ${error.message}`,
@@ -120,7 +120,7 @@ export const useScoreSubmission = (
   };
 
   const invalidateAllDataQueries = () => {
-    console.log("[useScoreSubmission] Invalidating all data queries for fresh data");
+    cacheLog("[useScoreSubmission] Invalidating all data queries for fresh data");
     queryClient.invalidateQueries({ queryKey: ['matches'] });
     queryClient.invalidateQueries({ queryKey: ['teams'] });
     queryClient.invalidateQueries({ queryKey: ['rankings'] });

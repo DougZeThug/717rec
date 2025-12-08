@@ -47,7 +47,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
             team2Score: Number(scores.team2Score)
           };
           
-          console.log(`ScoreInput onChange called for match ${matchId}:`, {
+          scoreLog(`ScoreInput onChange called for match ${matchId}:`, {
             matchId,
             matchDate,
             dateType: typeof matchDate,
@@ -64,7 +64,7 @@ const ScoreInput: React.FC<ScoreInputProps> = ({
               team2GameWins: Number(scores.team2GameWins)
             };
             
-            console.log(`ScoreInput onChangeGameWins called for match ${matchId}:`, {
+            scoreLog(`ScoreInput onChangeGameWins called for match ${matchId}:`, {
               matchId,
               matchDate,
               numericGameWins

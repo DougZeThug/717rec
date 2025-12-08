@@ -1,6 +1,5 @@
-
 import { DateRange } from './types';
-import { logTimeOperation } from './logger';
+import { timezoneLog } from '@/utils/logger';
 
 /**
  * Create a date range that includes the evening session
@@ -20,7 +19,7 @@ export const createEveningAwareDateRange = (date: Date): DateRange => {
   // This ensures we catch evening EST matches that fall into the next UTC day
   const endDate = new Date(Date.UTC(year, month, day + 1, 23, 59, 59));
   
-  logTimeOperation('Evening-aware date range', {
+  timezoneLog('Evening-aware date range', {
     selectedDate: date.toDateString(),
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),

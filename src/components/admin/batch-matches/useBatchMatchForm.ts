@@ -103,7 +103,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
           timeslot
         );
         
-        console.log("🌐 Creating match with UTC time:", {
+        timezoneLog("Creating match with UTC time:", {
           localTimeslot: timeslot,
           utcDate: dateWithTime.toISOString(),
           utcHours: dateWithTime.getUTCHours(),
@@ -125,7 +125,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
         };
       });
 
-      console.log("🌐 Batch creating matches:", matchesToCreate);
+      matchLog("Batch creating matches:", matchesToCreate);
 
       const { data, error } = await supabase
         .from('matches')
@@ -134,7 +134,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
 
       if (error) throw error;
 
-      console.log("🌐 Successfully created matches:", data);
+      matchLog("Successfully created matches:", data);
       
       toast({
         title: "Success",
@@ -155,7 +155,7 @@ export const useBatchMatchForm = (teams: Team[]) => {
         description: error.message,
         variant: "destructive"
       });
-      console.error("Error creating matches:", error);
+      errorLog("Error creating matches:", error);
       return false;
     } finally {
       setIsSubmitting(false);

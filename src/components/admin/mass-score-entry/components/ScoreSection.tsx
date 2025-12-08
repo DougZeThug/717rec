@@ -33,7 +33,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
     team1GameWins: number; 
     team2GameWins: number 
   }) => {
-    console.log(`ScoreSection: Score changed for match ${match.id}:`, scores);
+    scoreLog(`ScoreSection: Score changed for match ${match.id}:`, scores);
     
     // Update scores
     onScoreChange({
@@ -50,7 +50,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
 
   // This function will be called to auto-complete the match when a score is selected
   const handleAutoComplete = () => {
-    console.log(`ScoreSection: Auto-completing match ${match.id} after score selection`);
+    scoreLog(`ScoreSection: Auto-completing match ${match.id} after score selection`);
     onAutoComplete?.();
   };
 

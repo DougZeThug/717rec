@@ -42,7 +42,7 @@ export const useAutoScheduleSection = ({ selectedDate, setMatchPairs }: UseAutoS
       return;
     }
     
-    console.log('useAutoScheduleSection - handlePreviewTeams', {
+    scheduleLog('useAutoScheduleSection - handlePreviewTeams', {
       selectedDate,
       selectedDateString: selectedDate.toString(),
       selectedDateIso: selectedDate.toISOString(),

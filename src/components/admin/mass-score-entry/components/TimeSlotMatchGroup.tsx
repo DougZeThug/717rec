@@ -40,7 +40,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   
   // Debug log to track the matches in this group
   useEffect(() => {
-    console.log(`TimeSlotMatchGroup "${timeSlot}" rendering with ${matches.length} matches:`, 
+    scoreLog(`TimeSlotMatchGroup "${timeSlot}" rendering with ${matches.length} matches:`, 
       matches.map((m, idx) => ({
         id: m.id,
         localIndex: idx,
@@ -86,7 +86,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
             // Extract the global index from the match ID
             const globalIndex = parseInt(match.id.split("-index-")[1] || "0", 10);
             
-            console.log(`Rendering match at timeslot "${timeSlot}":`, {
+            scoreLog(`Rendering match at timeslot "${timeSlot}":`, {
               id: match.id,
               localIndex,
               globalIndex,
@@ -108,7 +108,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
                     onGameWinsChange(globalIndex, team1GameWins, team2GameWins)
                   }
                   onMarkCompleted={(checked) => {
-                    console.log(`TimeSlotMatchGroup: Marking match ${match.id} as ${checked ? 'completed' : 'incomplete'}`, {
+                    scoreLog(`TimeSlotMatchGroup: Marking match ${match.id} as ${checked ? 'completed' : 'incomplete'}`, {
                       globalIndex,
                       localIndex
                     });

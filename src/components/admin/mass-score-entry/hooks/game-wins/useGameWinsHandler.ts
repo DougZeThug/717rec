@@ -19,7 +19,7 @@ export const useGameWinsHandler = () => {
     const numericTeam1GameWins = Number(team1GameWins);
     const numericTeam2GameWins = Number(team2GameWins);
     
-    console.log(`useGameWinsHandler handleGameWinsChange for match ${match.id}:`, {
+    scoreLog(`useGameWinsHandler handleGameWinsChange for match ${match.id}:`, {
       matchId: match.id,
       matchDate: match.date,
       newGameWins: {
@@ -34,11 +34,11 @@ export const useGameWinsHandler = () => {
     
     const matchScore = calculateMatchScore(numericTeam1GameWins, numericTeam2GameWins);
     if (!matchScore) {
-      console.warn(`Cannot determine match score from game wins: ${numericTeam1GameWins}-${numericTeam2GameWins}`);
+      warnLog(`Cannot determine match score from game wins: ${numericTeam1GameWins}-${numericTeam2GameWins}`);
       return {};
     }
 
-    console.log(`Match score calculated from game wins ${numericTeam1GameWins}-${numericTeam2GameWins}:`, matchScore);
+    scoreLog(`Match score calculated from game wins ${numericTeam1GameWins}-${numericTeam2GameWins}:`, matchScore);
 
     return {
       team1_game_wins: numericTeam1GameWins,

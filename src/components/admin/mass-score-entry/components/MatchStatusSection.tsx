@@ -23,7 +23,7 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
   // Handle click on the status indicator
   const handleStatusClick = () => {
     if (!disabled) {
-      console.log(`MatchStatusSection: Label clicked, toggling from ${isCompleted} to ${!isCompleted}`);
+      scoreLog(`MatchStatusSection: Label clicked, toggling from ${isCompleted} to ${!isCompleted}`);
       onCompletedChange(!isCompleted);
     }
   };
