@@ -39,15 +39,20 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
       <Card>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+          <CardHeader className={cn(
+            "cursor-pointer hover:bg-muted/50 transition-colors",
+            isMobile ? "py-2.5 px-3" : "py-4"
+          )}>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="font-inter text-lg sm:text-xl font-semibold">
+                <CardTitle className="font-inter text-base sm:text-xl font-semibold">
                   Performance Charts
                 </CardTitle>
-                <CardDescription>
-                  Visual breakdown of team performance metrics
-                </CardDescription>
+                {!isMobile && (
+                  <CardDescription>
+                    Visual breakdown of team performance metrics
+                  </CardDescription>
+                )}
               </div>
               <ChevronDown 
                 className={cn(
