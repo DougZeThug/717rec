@@ -70,7 +70,8 @@ const StatsSummarySection = ({
           <Card className={cardStyle}>
             <CollapsibleTrigger asChild>
               <CardHeader className={cn(
-                `pb-2 rounded-t-xl ${isMobile ? 'py-3 px-4' : 'py-6 px-6'}`,
+                "rounded-t-xl",
+                isMobile ? 'py-2.5 px-3' : 'py-6 px-6 pb-2',
                 isLight ? 
                   "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 border-b border-blue-100" : 
                   "bg-gradient-to-br from-gray-800/95 via-gray-800/90 to-gray-900/90 border-b border-gray-700",
@@ -79,16 +80,18 @@ const StatsSummarySection = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className={cn(
-                      "font-semibold text-lg sm:text-xl font-inter tracking-wide",
+                      "font-semibold text-base sm:text-xl font-inter tracking-wide",
                       isLight ? 
                         "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent" :
                         "text-white"
                     )}>
                       Current Standings
                     </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-300 font-inter mt-1 mb-0">
-                      Top {compactLimit} teams based on performance
-                    </CardDescription>
+                    {!isMobile && (
+                      <CardDescription className="text-gray-600 dark:text-gray-300 font-inter mt-1 mb-0">
+                        Top {compactLimit} teams based on performance
+                      </CardDescription>
+                    )}
                   </div>
                   <ChevronDown 
                     className={cn(
@@ -127,7 +130,8 @@ const StatsSummarySection = ({
           <Card className={cardStyle}>
             <CollapsibleTrigger asChild>
               <CardHeader className={cn(
-                `pb-2 rounded-t-xl ${isMobile ? 'py-3 px-4' : 'py-6 px-6'}`,
+                "rounded-t-xl",
+                isMobile ? 'py-2.5 px-3' : 'py-6 px-6 pb-2',
                 isLight ? 
                   "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 border-b border-blue-100" : 
                   "bg-gradient-to-br from-gray-800/95 via-gray-800/90 to-gray-900/90 border-b border-gray-700",
@@ -136,16 +140,18 @@ const StatsSummarySection = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className={cn(
-                      "font-semibold text-lg sm:text-xl font-inter tracking-wide",
+                      "font-semibold text-base sm:text-xl font-inter tracking-wide",
                       isLight ? 
                         "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent" :
                         "text-white"
                     )}>
                       League Highlights
                     </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-300 font-inter mt-1 mb-0">
-                      Key statistics and performance metrics
-                    </CardDescription>
+                    {!isMobile && (
+                      <CardDescription className="text-gray-600 dark:text-gray-300 font-inter mt-1 mb-0">
+                        Key statistics and performance metrics
+                      </CardDescription>
+                    )}
                   </div>
                   <ChevronDown 
                     className={cn(
