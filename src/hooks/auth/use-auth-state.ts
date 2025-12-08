@@ -6,6 +6,7 @@ import { useThemeConsistency } from "@/hooks/use-theme-consistency";
 import { toast } from "@/hooks/use-toast";
 import { UserProfile } from "@/types/user";
 import { useAuthProfile } from "@/hooks/use-auth-profile";
+import { authLog, errorLog } from "@/utils/logger";
 
 export const useAuthState = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -18,22 +19,22 @@ export const useAuthState = () => {
 
   // Initialize auth state
   useEffect(() => {
-    console.log("Initializing auth state...");
+    authLog("Initializing auth state...");
     let retryCount = 0;
     const maxRetries = 2;
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        console.log("Auth state changed:", event);
+        authLog("Auth state changed:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (!currentSession) {
-          console.log("No session, clearing profile");
+          authLog("No session, clearing profile");
           setProfile(null);
         } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-          console.log(`Fetching profile for event: ${event}, user: ${currentSession.user.email}`);
+          authLog(`Fetching profile for event: ${event}, user: ${currentSession.user.email}`);
           
           // Ensure theme consistency for all session events
           ensureThemeConsistency();
@@ -42,7 +43,7 @@ export const useAuthState = () => {
           setTimeout(async () => {
             try {
               const profileData = await fetchProfile(currentSession.user.id);
-              console.log("Profile loaded successfully:", { 
+              authLog("Profile loaded successfully:", { 
                 username: profileData?.username, 
                 full_name: profileData?.full_name, 
                 is_admin: profileData?.is_admin 
@@ -54,7 +55,7 @@ export const useAuthState = () => {
                 checkProfileSetup(profileData);
               }
             } catch (error) {
-              console.error(`Error fetching user profile for ${event}:`, error);
+              errorLog(`Error fetching user profile for ${event}:`, error);
               if (event === 'SIGNED_IN') {
                 toast({
                   title: "Profile error",
@@ -72,7 +73,7 @@ export const useAuthState = () => {
       setIsLoading(true);
       
       try {
-        console.log(`Checking for session (attempt ${retryCount + 1}/${maxRetries + 1})`);
+        authLog(`Checking for session (attempt ${retryCount + 1}/${maxRetries + 1})`);
         // Check for existing session
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
@@ -80,7 +81,7 @@ export const useAuthState = () => {
           throw sessionError;
         }
         
-        console.log("Session check result:", currentSession ? "Session found" : "No session");
+        authLog("Session check result:", currentSession ? "Session found" : "No session");
         
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
@@ -94,21 +95,21 @@ export const useAuthState = () => {
             setProfile(profileData);
             checkProfileSetup(profileData);
           } catch (profileError) {
-            console.error("Error fetching initial profile:", profileError);
+            errorLog("Error fetching initial profile:", profileError);
           }
         }
         
         setAuthInitialized(true);
         setIsLoading(false);
       } catch (error) {
-        console.error("Error checking session:", error);
+        errorLog("Error checking session:", error);
         
         if (retryCount < maxRetries) {
           retryCount++;
-          console.log(`Retrying session check in 1s (attempt ${retryCount + 1}/${maxRetries + 1})`);
+          authLog(`Retrying session check in 1s (attempt ${retryCount + 1}/${maxRetries + 1})`);
           setTimeout(initializeAuth, 1000); // Retry after 1 second
         } else {
-          console.log("Max retries reached, marking auth as initialized");
+          authLog("Max retries reached, marking auth as initialized");
           setAuthInitialized(true);
           setIsLoading(false);
         }

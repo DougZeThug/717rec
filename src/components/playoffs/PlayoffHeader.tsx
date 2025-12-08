@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { playoffLog } from "@/utils/logger";
 
 interface PlayoffHeaderProps {
   onCreateBracket: () => void;
@@ -13,14 +14,9 @@ const PlayoffHeader: React.FC<PlayoffHeaderProps> = ({ onCreateBracket }) => {
   const { isAdminAccessGranted } = useAdminAccess();
 
   const handleCreateClick = () => {
-    console.log('🎯 PlayoffHeader: New Bracket button clicked');
-    console.log('🎯 PlayoffHeader: isAdminAccessGranted:', isAdminAccessGranted);
+    playoffLog('New Bracket button clicked, isAdminAccessGranted:', isAdminAccessGranted);
     onCreateBracket();
   };
-
-  React.useEffect(() => {
-    console.log('🎯 PlayoffHeader: Rendered with isAdminAccessGranted:', isAdminAccessGranted);
-  }, [isAdminAccessGranted]);
 
   return (
     <PageHeader 

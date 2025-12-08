@@ -1,8 +1,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { BracketMeta } from "@/types/bracket";
 import type { PlayoffBracket, BracketState } from "@/types/playoffs";
+import { bracketLog, errorLog } from "@/utils/logger";
 
 // Helper to compute bracket state
 const computeBracketState = (state: string): BracketState =>
@@ -12,16 +12,16 @@ const computeBracketState = (state: string): BracketState =>
 
 // Normalization function to convert Supabase rows to PlayoffBracket objects
 const mapRowToBracket = (row: any): PlayoffBracket => {
-  console.log('🔄 mapRowToBracket: Raw row data:', row);
+  bracketLog('mapRowToBracket: Raw row data:', row);
   
   const bracket = {
     ...row,
-    name: row.title || row.name, // Map database 'title' to frontend 'name'
-    matches: [], // Initialize empty - matches will be populated separately
+    name: row.title || row.name,
+    matches: [],
     state: computeBracketState(row.state || 'pending'),
   };
   
-  console.log('🔄 mapRowToBracket: Mapped bracket:', bracket);
+  bracketLog('mapRowToBracket: Mapped bracket:', bracket);
   return bracket;
 };
 
@@ -29,14 +29,14 @@ export const usePlayoffBracketData = (bracketId: string | null) => {
   return useQuery({
     queryKey: ['bracket', bracketId],
     queryFn: async (): Promise<PlayoffBracket | null> => {
-      console.log('🎯 usePlayoffBracketData: Starting query for bracketId:', bracketId);
+      bracketLog('usePlayoffBracketData: Starting query for bracketId:', bracketId);
       
       if (!bracketId) {
-        console.log('🎯 usePlayoffBracketData: No bracketId provided, returning null');
+        bracketLog('usePlayoffBracketData: No bracketId provided, returning null');
         return null;
       }
       
-      console.log('🎯 usePlayoffBracketData: Fetching bracket data from database...');
+      bracketLog('usePlayoffBracketData: Fetching bracket data from database...');
       const { data, error } = await supabase
         .from('brackets')
         .select('*')
@@ -44,37 +44,35 @@ export const usePlayoffBracketData = (bracketId: string | null) => {
         .single();
         
       if (error) {
-        console.error('🎯 usePlayoffBracketData: Database error:', error);
+        errorLog('usePlayoffBracketData: Database error:', error);
         throw error;
       }
       
       if (!data) {
-        console.log('🎯 usePlayoffBracketData: No bracket found with id:', bracketId);
+        bracketLog('usePlayoffBracketData: No bracket found with id:', bracketId);
         return null;
       }
       
-      console.log('🎯 usePlayoffBracketData: Raw database result:', data);
+      bracketLog('usePlayoffBracketData: Raw database result:', data);
       
       const bracket = mapRowToBracket(data);
       
       // Calculate and update the bracket state if needed
       const calculatedState = computeBracketState(bracket.state);
       if (bracket.state !== calculatedState) {
-        console.log('🎯 usePlayoffBracketData: Updating bracket state from', bracket.state, 'to', calculatedState);
+        bracketLog('usePlayoffBracketData: Updating bracket state from', bracket.state, 'to', calculatedState);
         
-        // Update the bracket state in the database
         await supabase
           .from('brackets')
           .update({ state: calculatedState })
           .eq('id', bracketId);
         
-        // Update the local state
         bracket.state = calculatedState as BracketState;
       }
       
-      console.log('🎯 usePlayoffBracketData: Final bracket result:', bracket);
+      bracketLog('usePlayoffBracketData: Final bracket result:', bracket);
       return bracket;
     },
-    enabled: true // Always enabled - null check handled in queryFn
+    enabled: true
   });
 };

@@ -5,6 +5,7 @@ import { useTeamRecordUpdate } from "./useTeamRecordUpdate";
 import { updateMatchScore } from "./utils/matchDatabaseUtils";
 import { invalidateMatchRelatedQueries } from "./utils/queryCacheUtils";
 import { SubmitScoreParams } from "./types/matchSubmissionTypes";
+import { matchLog, warnLog, errorLog } from "@/utils/logger";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
@@ -23,14 +24,14 @@ export const useMatchSubmission = () => {
       const parsedTeam1GameWins = parseInt(String(team1GameWins)) || 0;
       const parsedTeam2GameWins = parseInt(String(team2GameWins)) || 0;
       
-      console.log('🎮 handleSubmitScore received game wins:', {
+      matchLog('handleSubmitScore received game wins:', {
         team1GameWins: parsedTeam1GameWins,
         team2GameWins: parsedTeam2GameWins
       });
       
       // Validation for completed matches with zero game wins
       if (parsedTeam1GameWins === 0 && parsedTeam2GameWins === 0) {
-        console.warn("⚠️ Attempting to submit match with zero game wins:", matchId);
+        warnLog("Attempting to submit match with zero game wins:", matchId);
       }
       
       // Update match score and get result details
@@ -61,7 +62,7 @@ export const useMatchSubmission = () => {
       
       return true;
     } catch (error: any) {
-      console.error('[useMatchSubmission] Error updating scores:', error);
+      errorLog('[useMatchSubmission] Error updating scores:', error);
       toast({
         title: 'Error',
         description: 'Failed to update scores. Please try again.',

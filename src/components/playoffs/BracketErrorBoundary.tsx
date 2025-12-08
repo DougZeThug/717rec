@@ -22,33 +22,26 @@ class BracketErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    console.error('🎯 PHASE 4 DIAGNOSIS: BracketErrorBoundary caught error:', error);
+    // Note: Using console.error here as this is an error boundary - structured logging not available
+    console.error('[717REC] BracketErrorBoundary caught error:', error);
     return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('🎯 PHASE 4 DIAGNOSIS: BracketErrorBoundary componentDidCatch:', {
+    console.error('[717REC] BracketErrorBoundary componentDidCatch:', {
       error,
       errorInfo,
-      bracketId: this.props.bracketId,
-      componentStack: errorInfo.componentStack
+      bracketId: this.props.bracketId
     });
     this.setState({ error, errorInfo });
   }
 
   handleRetry = () => {
-    console.log('🎯 PHASE 4 DIAGNOSIS: BracketErrorBoundary retry attempted');
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   render() {
     if (this.state.hasError) {
-      console.log('🎯 PHASE 4 DIAGNOSIS: BracketErrorBoundary rendering error state:', {
-        error: this.state.error,
-        errorInfo: this.state.errorInfo,
-        bracketId: this.props.bracketId
-      });
-
       return (
         <div className="space-y-4">
           <Alert variant="destructive">
@@ -60,16 +53,6 @@ class BracketErrorBoundary extends Component<Props, State> {
                 {this.props.bracketId && (
                   <p className="text-xs opacity-80">Bracket ID: {this.props.bracketId}</p>
                 )}
-                <details className="mt-2">
-                  <summary className="text-xs cursor-pointer">Technical Details</summary>
-                  <div className="mt-1 text-xs">
-                    <p>Error: {this.state.error?.message}</p>
-                    <p>Stack: {this.state.error?.stack}</p>
-                    {this.state.errorInfo && (
-                      <p>Component Stack: {this.state.errorInfo.componentStack}</p>
-                    )}
-                  </div>
-                </details>
               </div>
             </AlertDescription>
           </Alert>

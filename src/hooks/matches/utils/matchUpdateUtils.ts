@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { MatchResultData } from "../types/matchSubmissionTypes";
+import { matchLog, errorLog, warnLog } from "@/utils/logger";
 
 export const updateMatchInDatabase = async (
   matchId: string,
@@ -18,7 +19,7 @@ export const updateMatchInDatabase = async (
   const parsedTeam1GameWins = Number.isInteger(team1GameWins) ? team1GameWins : parseInt(String(team1GameWins)) || 0;
   const parsedTeam2GameWins = Number.isInteger(team2GameWins) ? team2GameWins : parseInt(String(team2GameWins)) || 0;
   
-  console.log(`[matchUpdateUtils] Processing match ${matchId}:`, {
+  matchLog(`Processing match ${matchId}:`, {
     match_scores: {
       team1: { id: matchResult.team1Id, matchScore: team1MatchScore },
       team2: { id: matchResult.team2Id, matchScore: team2MatchScore }
@@ -33,13 +34,13 @@ export const updateMatchInDatabase = async (
   
   // Validation to ensure match scores are binary
   if (team1MatchScore + team2MatchScore !== 1) {
-    console.error('Invalid match scores - exactly one team must win');
+    errorLog('Invalid match scores - exactly one team must win');
     throw new Error('Match scores must be 1/0 based on winner/loser');
   }
   
   // Validation for completed matches with zero game wins
   if (parsedTeam1GameWins === 0 && parsedTeam2GameWins === 0) {
-    console.warn("⚠️ Completed match has zero game wins:", matchId);
+    warnLog("Completed match has zero game wins:", matchId);
   }
   
   const updateData = {
@@ -53,7 +54,7 @@ export const updateMatchInDatabase = async (
   };
 
   // Debug log to confirm payload just before Supabase update
-  console.log('✅ Final updateData to Supabase:', {
+  matchLog('Final updateData to Supabase:', {
     ...updateData,
     team1_game_wins_type: typeof updateData.team1_game_wins,
     team2_game_wins_type: typeof updateData.team2_game_wins
@@ -66,15 +67,15 @@ export const updateMatchInDatabase = async (
     .select();
     
   if (matchError) {
-    console.error(`[matchUpdateUtils] Error updating match ${matchId}:`, matchError);
+    errorLog(`Error updating match ${matchId}:`, matchError);
     throw matchError;
   }
 
   // Check if no rows were updated
   if (!matchData || matchData.length === 0) {
-    console.warn(`⚠️ Supabase update returned 0 rows affected — possible match ID mismatch:`, matchId);
+    warnLog(`Supabase update returned 0 rows affected — possible match ID mismatch:`, matchId);
   }
 
-  console.log(`[matchUpdateUtils] Match ${matchId} updated successfully:`, matchData);
+  matchLog(`Match ${matchId} updated successfully:`, matchData);
   return matchData;
 };

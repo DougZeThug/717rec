@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { log } from "@/utils/logger";
+import { bracketLog, errorLog, debugLog } from "@/utils/logger";
 
 export interface SimpleBracketData {
   id: string;
@@ -48,29 +48,21 @@ export interface SimpleBracketData {
 }
 
 export const useBracketData = (bracketId: string | null) => {
-  log('🎣 useBracketData hook called', { bracketId });
+  bracketLog('useBracketData hook called', { bracketId });
   
   return useQuery({
     queryKey: ['bracket-data', bracketId],
     queryFn: async (): Promise<SimpleBracketData | null> => {
-      log('🎯 useBracketData: Starting fetch for bracket:', bracketId);
-      log('🔍 Query state change: FETCHING');
-      
-      console.log('🎯 DEBUG: useBracketData queryFn called:', {
-        bracketId,
-        bracketIdType: typeof bracketId,
-        bracketIdValid: !!bracketId,
-        timestamp: new Date().toISOString()
-      });
+      bracketLog('Starting fetch for bracket:', bracketId);
       
       if (!bracketId) {
-        console.log('🎯 DEBUG: No bracketId provided, returning null');
+        debugLog('No bracketId provided, returning null');
         return null;
       }
 
       try {
         // Step 1: Get bracket info with state field
-        console.log('🎯 DEBUG: Step 1 - Fetching bracket info for ID:', bracketId);
+        bracketLog('Step 1 - Fetching bracket info for ID:', bracketId);
       const { data: bracket, error: bracketError } = await supabase
         .from('brackets')
         .select(`
@@ -88,58 +80,54 @@ export const useBracketData = (bracketId: string | null) => {
         .single();
 
         if (bracketError) {
-          console.error('🎯 DEBUG: Bracket query error:', bracketError);
+          errorLog('Bracket query error:', bracketError);
           throw bracketError;
         }
 
         if (!bracket) {
-          console.log('🎯 DEBUG: No bracket found with ID:', bracketId);
+          bracketLog('No bracket found with ID:', bracketId);
           return null;
         }
 
-        console.log('🎯 DEBUG: Step 1 Complete - Bracket found:', {
+        bracketLog('Step 1 Complete - Bracket found:', {
           id: bracket.id,
           title: bracket.title,
-          division_id: bracket.division_id,
-          state: bracket.state,
-          format: bracket.format,
-          uses_brackets_manager: bracket.uses_brackets_manager,
-          has_bracket_data: !!bracket.bracket_data
+          uses_brackets_manager: bracket.uses_brackets_manager
         });
 
         // Step 2: Check if this is a brackets-manager bracket
         if (bracket.uses_brackets_manager) {
-          console.log('🎯 DEBUG: Step 2 - Fetching from SQL tables (brackets-manager)');
+          bracketLog('Step 2 - Fetching from SQL tables (brackets-manager)');
           
           // Step 3: Fetch stage, matches, participants from SQL tables
-          console.log('🎯 DEBUG: Step 3 - Fetching stage data');
+          bracketLog('Step 3 - Fetching stage data');
           const { data: stages, error: stageError } = await supabase
             .from('stage')
             .select('*')
             .eq('tournament_id', bracketId);
 
           if (stageError) {
-            console.error('🎯 DEBUG: Stage query error:', stageError);
+            errorLog('Stage query error:', stageError);
             throw stageError;
           }
 
           if (!stages || stages.length === 0) {
-            console.log('🎯 DEBUG: No stage found for bracket:', bracketId);
+            bracketLog('No stage found for bracket:', bracketId);
             return null;
           }
 
           const stage = stages[0];
-          console.log('🎯 DEBUG: Stage found:', { stageId: stage.id, type: stage.type });
+          bracketLog('Stage found:', { stageId: stage.id, type: stage.type });
 
           // Step 3.5: Fetch groups to map group_id to group.number for match types
-          console.log('🎯 DEBUG: Step 3.5 - Fetching groups');
+          bracketLog('Step 3.5 - Fetching groups');
           const { data: groups, error: groupError } = await supabase
             .from('group')
             .select('*')
             .eq('stage_id', stage.id);
 
           if (groupError) {
-            console.error('🎯 DEBUG: Group query error:', groupError);
+            errorLog('Group query error:', groupError);
             throw groupError;
           }
 
@@ -148,35 +136,35 @@ export const useBracketData = (bracketId: string | null) => {
           groups?.forEach(group => {
             groupIdToNumberMap.set(group.id, group.number);
           });
-          console.log('🎯 DEBUG: Groups mapped:', groupIdToNumberMap.size);
+          bracketLog('Groups mapped:', groupIdToNumberMap.size);
 
           // Step 4: Fetch matches from SQL and transform opponent fields back to objects
-          console.log('🎯 DEBUG: Step 4 - Fetching matches');
+          bracketLog('Step 4 - Fetching matches');
           const { data: matches, error: matchError } = await supabase
             .from('match')
             .select('*')
             .eq('stage_id', stage.id);
 
           if (matchError) {
-            console.error('🎯 DEBUG: Match query error:', matchError);
+            errorLog('Match query error:', matchError);
             throw matchError;
           }
 
-          console.log('🎯 DEBUG: Raw matches fetched:', matches?.length || 0);
+          bracketLog('Raw matches fetched:', matches?.length || 0);
 
           // Step 5: Fetch participants
-          console.log('🎯 DEBUG: Step 5 - Fetching participants');
+          bracketLog('Step 5 - Fetching participants');
           const { data: participants, error: participantsError } = await supabase
             .from('participant')
             .select('*')
             .eq('tournament_id', bracketId);
 
           if (participantsError) {
-            console.error('🎯 DEBUG: Participants query error:', participantsError);
+            errorLog('Participants query error:', participantsError);
             throw participantsError;
           }
 
-          console.log('🎯 DEBUG: Participants fetched:', participants?.length || 0);
+          bracketLog('Participants fetched:', participants?.length || 0);
 
           // Step 6: Build participant to team mapping
           const participantToTeamMap = new Map<number, string>();
@@ -192,7 +180,7 @@ export const useBracketData = (bracketId: string | null) => {
             .in('name', teamNames);
 
           if (teamsError) {
-            console.error('🎯 DEBUG: Teams query error:', teamsError);
+            errorLog('Teams query error:', teamsError);
             throw teamsError;
           }
 
@@ -201,7 +189,7 @@ export const useBracketData = (bracketId: string | null) => {
             teamLookup.set(team.name, team);
           });
 
-          console.log('🎯 DEBUG: Teams fetched:', teamDetails?.length || 0);
+          bracketLog('Teams fetched:', teamDetails?.length || 0);
 
           // Helper function to map group.number to matchType
           const getMatchType = (groupNumber: number): string => {
@@ -257,7 +245,7 @@ export const useBracketData = (bracketId: string | null) => {
             };
           });
 
-          console.log('🎯 DEBUG: Matches transformed:', transformedMatches.length);
+          bracketLog('Matches transformed:', transformedMatches.length);
 
           // Step 9: Transform participants
           const transformedParticipants = participants?.map(p => {
@@ -271,7 +259,7 @@ export const useBracketData = (bracketId: string | null) => {
           }) || [];
 
           if (!bracket.divisions) {
-            console.warn('🎯 DEBUG: Bracket has no division data:', bracketId);
+            debugLog('Bracket has no division data:', bracketId);
           }
 
           const result: SimpleBracketData = {
@@ -287,27 +275,24 @@ export const useBracketData = (bracketId: string | null) => {
             participants: transformedParticipants
           };
 
-          console.log('🎯 DEBUG: Final result built from SQL tables:', {
+          bracketLog('Final result built from SQL tables:', {
             bracketId: result.id,
             matchesCount: result.matches.length,
-            teamsCount: result.teams.length,
-            participantsCount: result.participants?.length || 0
+            teamsCount: result.teams.length
           });
 
           return result;
         }
 
         // Fallback: Non-brackets-manager bracket
-        console.warn('🎯 DEBUG: Not a brackets-manager bracket');
+        debugLog('Not a brackets-manager bracket');
         return null;
 
 
       } catch (error) {
-        console.error('🚨 DEBUG: CRITICAL ERROR in useBracketData:', {
+        errorLog('CRITICAL ERROR in useBracketData:', {
           bracketId,
-          error: error.message,
-          stack: error.stack,
-          timestamp: new Date().toISOString()
+          error: error.message
         });
         throw error;
       }
@@ -315,7 +300,7 @@ export const useBracketData = (bracketId: string | null) => {
     enabled: true, // Always enabled - null check handled in queryFn
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: (failureCount, error) => {
-      console.log(`🔄 DEBUG: Query retry attempt ${failureCount} for bracket ${bracketId}:`, {
+      debugLog(`Query retry attempt ${failureCount} for bracket ${bracketId}:`, {
         error: error?.message,
         willRetry: failureCount < 2
       });
@@ -325,4 +310,3 @@ export const useBracketData = (bracketId: string | null) => {
     refetchOnWindowFocus: false
   });
 };
-

@@ -1,12 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
+import { teamLog, errorLog } from "@/utils/logger";
 
 export const fetchTeamsForMatch = async (
   teamIds: string[]
 ): Promise<Team[]> => {
   try {
-    console.log(`[teamDataUtils] Fetching teams for ids:`, teamIds);
+    teamLog(`Fetching teams for ids:`, teamIds);
     
     // Return early if there are no team IDs
     if (!teamIds.length) {
@@ -19,12 +20,12 @@ export const fetchTeamsForMatch = async (
       .in('team_id', teamIds);
       
     if (error) {
-      console.error("[teamDataUtils] Error fetching team data:", error);
+      errorLog("Error fetching team data:", error);
       throw error;
     }
     
     if (!data || data.length === 0) {
-      console.error("[teamDataUtils] No teams found for ids:", teamIds);
+      errorLog("No teams found for ids:", teamIds);
       return [];
     }
     
@@ -38,7 +39,7 @@ export const fetchTeamsForMatch = async (
     });
     
     const teamArray = Array.from(uniqueTeams.values());
-    console.log(`[teamDataUtils] Found ${teamArray.length} unique teams out of ${data.length} total records`);
+    teamLog(`Found ${teamArray.length} unique teams out of ${data.length} total records`);
     
     const formattedTeams: Team[] = teamArray.map(team => ({
       id: team.team_id,
@@ -63,7 +64,7 @@ export const fetchTeamsForMatch = async (
     
     return formattedTeams;
   } catch (error) {
-    console.error("[teamDataUtils] Error in fetchTeamsForMatch:", error);
+    errorLog("Error in fetchTeamsForMatch:", error);
     throw error;
   }
 };
