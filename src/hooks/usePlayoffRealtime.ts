@@ -2,20 +2,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
 import { PlayoffMatch } from '@/types';
-import { bracketLog } from '@/utils/logger';
 
 export function usePlayoffRealtime(bracketId: string | null) {
   const [realtimeEnabled, setRealtimeEnabled] = useState(false);
   const [lastUpdatedMatch, setLastUpdatedMatch] = useState<PlayoffMatch | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   
   useEffect(() => {
     if (!bracketId) return;
-    
-    bracketLog('Setting up playoff realtime for bracket:', bracketId);
     
     // Establish realtime subscription for playoff matches
     const channel = supabase
@@ -29,7 +24,7 @@ export function usePlayoffRealtime(bracketId: string | null) {
           filter: `bracket_id=eq.${bracketId}`
         },
         (payload) => {
-          bracketLog('Playoff match updated:', payload.new);
+          console.log('Playoff match updated:', payload.new);
           
           // Transform database match to app format
           const updatedMatch = {
@@ -54,10 +49,6 @@ export function usePlayoffRealtime(bracketId: string | null) {
           
           setLastUpdatedMatch(updatedMatch);
           
-          // Invalidate queries to trigger UI refresh
-          queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
-          queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
-          
           // Show toast notification
           toast({
             title: "Match Updated",
@@ -68,18 +59,18 @@ export function usePlayoffRealtime(bracketId: string | null) {
       )
       .subscribe(status => {
         if (status === 'SUBSCRIBED') {
-          bracketLog('Realtime subscription to playoff matches active');
+          console.log('Realtime subscription to playoff matches active');
           setRealtimeEnabled(true);
         }
       });
 
     // Clean up subscription on unmount
     return () => {
-      bracketLog('Cleaning up playoff realtime subscription');
+      console.log('Cleaning up playoff realtime subscription');
       supabase.removeChannel(channel);
       setRealtimeEnabled(false);
     };
-  }, [bracketId, toast, queryClient]);
+  }, [bracketId, toast]);
 
   return {
     realtimeEnabled,
