@@ -29,7 +29,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   onMarkCompleted,
   onClearError
 }) => {
-  console.log(`MatchRow render for match ${match.id}:`, {
+  scoreLog(`MatchRow render for match ${match.id}:`, {
     matchId: match.id,
     index: index,
     isCompleted: match.iscompleted,
@@ -40,12 +40,12 @@ const MatchRow: React.FC<MatchRowProps> = ({
   });
 
   const handleCompletedChange = (checked: boolean) => {
-    console.log(`MatchRow: handleCompletedChange called with ${checked} for match ${match.id} at index ${index}`);
+    scoreLog(`MatchRow: handleCompletedChange called with ${checked} for match ${match.id} at index ${index}`);
     onMarkCompleted(checked);
   };
 
   const handleAutoComplete = () => {
-    console.log(`MatchRow: Auto-completing match ${match.id} at index ${index}`);
+    scoreLog(`MatchRow: Auto-completing match ${match.id} at index ${index}`);
     onMarkCompleted(true);
   };
 

@@ -1,7 +1,5 @@
-
-
 import { parseTimeString } from './parsers';
-import { logTimeOperation } from './logger';
+import { timezoneLog } from '@/utils/logger';
 
 /**
  * Convert a local date to a UTC date
@@ -25,14 +23,14 @@ export const toLocalDate = (utcDate: Date | string): Date => {
  * Create a date object with the correct UTC time for storage
  */
 export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
-  logTimeOperation('createUTCDateWithTime inputs', {
+  timezoneLog('createUTCDateWithTime inputs', {
     date: date.toISOString(),
     timeString,
     localDateString: date.toString()
   });
   
   if (!timeString) {
-    logTimeOperation('No time string provided, returning date as is', null);
+    timezoneLog('No time string provided, returning date as is');
     return date;
   }
 
@@ -45,7 +43,7 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   // Set the hours and minutes in local time
   localDate.setHours(hours, minutes, 0, 0);
   
-  logTimeOperation('Local date with time set', {
+  timezoneLog('Local date with time set', {
     localDateWithTime: localDate.toString(),
     localHours: localDate.getHours(),
     localMinutes: localDate.getMinutes()
@@ -55,7 +53,7 @@ export const createUTCDateWithTime = (date: Date, timeString: string): Date => {
   // This automatically handles the timezone offset conversion
   const utcDate = new Date(localDate.toISOString());
 
-  logTimeOperation('createUTCDateWithTime detailed debugging', {
+  timezoneLog('createUTCDateWithTime detailed debugging', {
     original: {
       timeString,
       dateString: date.toString()
@@ -91,7 +89,7 @@ export const formatTimeToUTC = (date: Date, timeString: string): string => {
       return '';
     }
     
-    logTimeOperation('formatTimeToUTC input', {
+    timezoneLog('formatTimeToUTC input', {
       date: date.toString(),
       timeString
     });
@@ -102,7 +100,7 @@ export const formatTimeToUTC = (date: Date, timeString: string): string => {
     // Format to ISO string
     const isoString = utcDate.toISOString();
     
-    logTimeOperation('formatTimeToUTC result', {
+    timezoneLog('formatTimeToUTC result', {
       input: timeString,
       output: isoString
     });

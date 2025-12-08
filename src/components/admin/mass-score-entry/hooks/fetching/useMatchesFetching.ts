@@ -22,7 +22,7 @@ export const useMatchesFetching = () => {
       // Use the evening-aware date range for more intuitive filtering
       const { startDate, endDate } = createEveningAwareDateRange(filters.date);
       
-      console.log(`🔍 Fetching matches with evening-aware date range:`, {
+      matchLog(`Fetching matches with evening-aware date range:`, {
         date: filters.date.toDateString(),
         startDateUTC: startDate.toISOString(),
         endDateUTC: endDate.toISOString()
@@ -42,7 +42,7 @@ export const useMatchesFetching = () => {
 
       return data.map(transformDatabaseMatchToMatchWithTeams) as MatchWithTeams[];
     } catch (error: any) {
-      console.error("Error fetching matches:", error.message);
+      errorLog("Error fetching matches:", error.message);
       toast({
         title: "Error",
         description: `Failed to fetch matches: ${error.message}`,

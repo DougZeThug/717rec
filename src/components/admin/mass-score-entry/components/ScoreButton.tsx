@@ -26,7 +26,7 @@ const ScoreButton = ({
   // Handle click event with detailed logging
   const handleClick = () => {
     if (!disabled) {
-      console.log("%c ScoreButton clicked:", "background: #e0f7fa; color: #006064; font-weight: bold", {
+      scoreLog("ScoreButton clicked:", {
         matchId,
         matchDate,
         dateType: typeof matchDate,
@@ -42,7 +42,7 @@ const ScoreButton = ({
       
       // Log state after a small delay to see if it updated correctly
       setTimeout(() => {
-        console.log("%c ScoreButton after click:", "background: #b2ebf2; color: #006064", {
+        scoreLog("ScoreButton after click:", {
           matchId,
           matchDate,
           dateType: typeof matchDate,
@@ -59,7 +59,7 @@ const ScoreButton = ({
   // This is critical for correctly rendering selected state with 0 values
   const selected = Boolean(isSelected);
   
-  console.log(`ScoreButton render [${matchId?.substring(0, 8) || 'unknown'}] [${matchDate || 'unknown'}] - option: ${option.label} isSelected:`, selected);
+  scoreLog(`ScoreButton render [${matchId?.substring(0, 8) || 'unknown'}] [${matchDate || 'unknown'}] - option: ${option.label} isSelected:`, selected);
 
   return (
     <motion.button

@@ -100,13 +100,13 @@ async function checkTeamsPlayedHistory(team1Id: string, team2Id: string): Promis
       .limit(1);
 
     if (error) {
-      console.error('Error checking if teams have played:', error);
+      errorLog('Error checking if teams have played:', error);
       throw error;
     }
 
     return data && data.length > 0;
   } catch (error) {
-    console.error('Error in checkTeamsPlayedHistory:', error);
+    errorLog('Error in checkTeamsPlayedHistory:', error);
     // Return false as a fallback to avoid blocking match generation
     return false;
   }
@@ -122,7 +122,7 @@ async function checkTeamsPlayedHistory(team1Id: string, team2Id: string): Promis
 export function calculateDivisionOnlyCompatibility(team1: Team, team2: Team): number {
   const tierDistance = getTierDistance(team1, team2);
   
-  console.log(`Division compatibility: ${team1.name} (${team1.divisionName || team1.division}) vs ${team2.name} (${team2.divisionName || team2.division}) - Distance: ${tierDistance}`);
+  debugLog(`Division compatibility: ${team1.name} (${team1.divisionName || team1.division}) vs ${team2.name} (${team2.divisionName || team2.division}) - Distance: ${tierDistance}`);
   
   // Simple scoring based on tier distance
   if (tierDistance === 0) {

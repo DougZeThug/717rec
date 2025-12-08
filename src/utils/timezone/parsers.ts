@@ -1,5 +1,4 @@
-
-import { logTimeError } from './logger';
+import { errorLog } from '@/utils/logger';
 
 /**
  * Parse a time string into hours and minutes
@@ -37,7 +36,7 @@ export const parseTimeString = (timeString: string): { hours: number, minutes: n
     
     return { hours, minutes };
   } catch (error) {
-    logTimeError('Error parsing time string', error);
+    errorLog('Error parsing time string', error);
     return { hours: 0, minutes: 0 };
   }
 };

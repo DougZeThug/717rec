@@ -25,7 +25,7 @@ export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerPro
       return;
     }
     
-    console.log("ThursdayDatePicker - Date selected:", {
+    timezoneLog("ThursdayDatePicker - Date selected:", {
       date,
       dateString: date.toString(),
       dateIso: date.toISOString(),
