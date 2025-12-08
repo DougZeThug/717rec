@@ -4,6 +4,7 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { log } from '@/utils/logger';
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
+import { useBracketsManagerRealtime } from '@/hooks/playoffs/useBracketsManagerRealtime';
 
 
 interface BracketsViewerComponentProps {
@@ -38,6 +39,9 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
   const isMountingRef = useRef(true);
   
   const containerId = 'brackets-viewer-container';
+  
+  // Enable realtime updates for brackets-manager SQL tables
+  useBracketsManagerRealtime(bracket.id);
   
   // Fingerprint function to detect identical data
   const fingerprint = (matches: any[]): string => {

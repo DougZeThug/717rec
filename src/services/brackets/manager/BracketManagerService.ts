@@ -340,39 +340,13 @@ export class BracketManagerService {
           ? parseInt(currentMatch.stage_id) 
           : currentMatch.stage_id;
         
-        // Run normalization multiple times to catch timing issues
-        for (let i = 0; i < 3; i++) {
-          await this.normalizeLosersR1(stageId);
-          // Small delay to let propagation complete
-          if (i < 2) await new Promise(resolve => setTimeout(resolve, 100));
-        }
+        // Run normalization once (reduced from 3x loop for performance)
+        await this.normalizeLosersR1(stageId);
         
-        // ⭐ Normalize Grand Final population after every update (defensive)
+        // Normalize Grand Final population after every update (defensive)
         await this.normalizeGrandFinalPopulation(stageId);
         
-        // ⭐ Fetch and log next matches to see propagation results
-        const updatedMatch = await this.storage.select('match', matchId);
-        console.log(`📊 UPDATED MATCH STATE - Match ${matchId}:`, {
-          opponent1: updatedMatch.opponent1,
-          opponent2: updatedMatch.opponent2
-        });
-        
-        // Log all LB matches to see propagation
-        const allMatches = await this.storage.select('match', { 
-          stage_id: updatedMatch.stage_id,
-          group_id: 2 // Loser bracket group
-        });
-        console.log(`📊 ALL LB MATCHES after Match ${matchId} update:`, 
-          allMatches.map(m => ({
-            id: m.id,
-            round: m.round_id,
-            number: m.number,
-            opponent1_id: m.opponent1?.id,
-            opponent2_id: m.opponent2?.id,
-            opponent1_result: m.opponent1?.result,
-            opponent2_result: m.opponent2?.result
-          }))
-        );
+        bracketLog(`Match ${matchId} update complete`);
 
         bracketLog("Match updated successfully in SQL tables");
         successLog("Match updated successfully", String(matchId));
