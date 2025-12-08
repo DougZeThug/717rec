@@ -1,9 +1,9 @@
-
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { toast } from "@/hooks/use-toast";
+import { authLog } from "@/utils/logger";
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
@@ -18,22 +18,22 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   
   // Log whenever component mounts or updates
   useEffect(() => {
-    console.log("ProtectedAdminRoute - Mount/Update");
-    console.log("Auth initialized:", authInitialized);
-    console.log("User:", user?.email);
-    console.log("User profile:", profile);
-    console.log("Is admin:", isAdminAccessGranted);
-    console.log("Is loading:", isLoading);
+    authLog("ProtectedAdminRoute - Mount/Update", {
+      authInitialized,
+      userEmail: user?.email,
+      isAdmin: isAdminAccessGranted,
+      isLoading
+    });
     
     // Only show admin access debug message if user exists and initial auth check is complete
     if (authInitialized && user) {
       if (isAdminAccessGranted) {
-        console.log(`Admin access GRANTED for ${user.email}`);
+        authLog(`Admin access GRANTED for ${user.email}`);
         // Clear any previous access denied toasts
         setShowAccessDenied(false);
       } else if (!isLoading && initialCheckComplete) {
         // Only show access denied after loading is complete AND we've waited for profile
-        console.log(`Admin access DENIED for ${user.email}`);
+        authLog(`Admin access DENIED for ${user.email}`);
         setShowAccessDenied(true);
       }
     }
@@ -43,7 +43,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   useEffect(() => {
     if (authInitialized && user) {
       const timer = setTimeout(() => {
-        console.log("ProtectedAdminRoute - Initial check timeout complete");
+        authLog("Initial check timeout complete");
         setInitialCheckComplete(true);
       }, 1000); // 1 second delay
       
@@ -64,7 +64,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
 
   // Still loading auth or admin status
   if (!authInitialized || isLoading) {
-    console.log("ProtectedAdminRoute - Loading state");
+    authLog("Loading state");
     return (
       <div className="container mx-auto py-8 px-4 flex items-center justify-center h-[60vh]">
         <div className="text-center">
@@ -77,18 +77,18 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   
   // Not logged in
   if (!user) {
-    console.log("ProtectedAdminRoute - Not logged in, redirecting to auth");
+    authLog("Not logged in, redirecting to auth");
     return <Navigate to="/auth" state={{ returnTo: location.pathname }} replace />;
   }
   
   // Logged in but not an admin and initial check is done
   if (!isAdminAccessGranted && initialCheckComplete) {
-    console.log("ProtectedAdminRoute - Not admin, redirecting to home");
+    authLog("Not admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
   
   // User is logged in and has admin access or we're still waiting for the final check
-  console.log("ProtectedAdminRoute - Access granted or still checking, rendering admin content");
+  authLog("Access granted or still checking, rendering admin content");
   return <>{children}</>;
 };
 

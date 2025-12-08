@@ -1,5 +1,5 @@
-
 import { MatchWithTeams } from "../types";
+import { scoreLog, errorLog } from "@/utils/logger";
 
 export const useMatchScores = (
   matches: MatchWithTeams[],
@@ -11,16 +11,13 @@ export const useMatchScores = (
   };
 
   const handleScoreChange = (index: number, team1Score: number, team2Score: number) => {
-    console.log(`useMatchScores.handleScoreChange for match at index ${index}:`, {
-      team1Score,
-      team2Score
-    });
+    scoreLog(`handleScoreChange for match at index ${index}`, { team1Score, team2Score });
     
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
+      errorLog(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
@@ -36,16 +33,13 @@ export const useMatchScores = (
   };
   
   const handleGameWinsChange = (index: number, team1GameWins: number, team2GameWins: number) => {
-    console.log(`useMatchScores.handleGameWinsChange for match at index ${index}:`, {
-      team1GameWins,
-      team2GameWins
-    });
+    scoreLog(`handleGameWinsChange for match at index ${index}`, { team1GameWins, team2GameWins });
     
     const newMatches = [...matches];
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
+      errorLog(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
@@ -60,7 +54,7 @@ export const useMatchScores = (
   };
   
   const handleMarkCompleted = (index: number, checked: boolean) => {
-    console.log(`useMatchScores.handleMarkCompleted for match at index ${index}:`, {
+    scoreLog(`handleMarkCompleted for match at index ${index}`, {
       checked,
       matches: matches.length,
       matchExists: Boolean(matches[index])
@@ -70,11 +64,11 @@ export const useMatchScores = (
     const match = newMatches[index];
     
     if (!match) {
-      console.error(`Match at index ${index} not found in array of ${matches.length} matches`);
+      errorLog(`Match at index ${index} not found in array of ${matches.length} matches`);
       return;
     }
     
-    console.log(`Updating completion status for match ${match.id}`, {
+    scoreLog(`Updating completion status for match ${match.id}`, {
       before: match.iscompleted,
       after: checked
     });

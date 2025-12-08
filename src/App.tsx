@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,6 +12,7 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import AppNavigation from "./components/navigation/AppNavigation";
 import ProtectedAdminRoute from "./components/auth/ProtectedAdminRoute";
+import { routeLog } from "@/utils/logger";
 
 // Lazy load all page components
 const Index = lazy(() => import("./pages/Index"));
@@ -43,7 +43,7 @@ const AppContent = () => {
   const location = useLocation();
   
   // Log every route change to help debug navigation issues
-  console.log(`App routing to: ${location.pathname}`);
+  routeLog(`Navigating to: ${location.pathname}`);
   
   return (
     <NavigationProvider>

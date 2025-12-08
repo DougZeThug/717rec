@@ -10,6 +10,7 @@ import { useErrorHandling } from "./error/useErrorHandling";
 import { useMatchEventListeners } from "./useMatchEventListeners";
 import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
 import { MatchWithTeams } from "../types";
+import { scoreLog, errorLog, filterLog } from "@/utils/logger";
 
 export const useScoreEntryData = () => {
   const queryClient = useQueryClient();
@@ -64,7 +65,7 @@ export const useScoreEntryData = () => {
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         })[0];
         if (latestMatch && latestMatch.date) {
-          console.log("Auto-setting filter date to latest match date:", latestMatch.date);
+          filterLog("Auto-setting filter date to latest match date", latestMatch.date);
           updateFiltersForMatchDate(new Date(latestMatch.date));
         }
       }
@@ -76,7 +77,7 @@ export const useScoreEntryData = () => {
   }, [filters.date, filters.bracketId]);
 
   const handleSubmitAll = async () => {
-    console.log("Starting match submission process");
+    scoreLog("Starting match submission process");
 
     const validMatches = matches.filter(match => 
       match.isEdited && match.isValid && match.iscompleted
@@ -90,7 +91,7 @@ export const useScoreEntryData = () => {
       return;
     }
 
-    console.log(`Found ${validMatches.length} valid matches to submit`);
+    scoreLog(`Found ${validMatches.length} valid matches to submit`);
     setSubmitting(true);
 
     try {
@@ -123,11 +124,12 @@ export const useScoreEntryData = () => {
           variant: "destructive"
         });
       }
-    } catch (error: any) {
-      console.error("Error submitting matches:", error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      errorLog("Error submitting matches:", error);
       toast({
         title: "Error",
-        description: `Failed to submit matches: ${error.message}`,
+        description: `Failed to submit matches: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
