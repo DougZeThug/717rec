@@ -5,6 +5,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import HistoryPageContent from "@/components/history/HistoryPageContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PageTransition from "@/components/transitions/PageTransition";
+import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
 
 const History: React.FC = () => {
   const isMobile = useIsMobile();
@@ -16,6 +17,9 @@ const History: React.FC = () => {
       gradientVariant="blueOrange"
     >
       <PageTransition animation="fadeInSlideDown">
+        <div className="container mx-auto px-4">
+          <AnimatedBreadcrumbs className="mb-2" />
+        </div>
         <PageHeader
           title="Season History"
           description="Explore past seasons, champions, and standings"

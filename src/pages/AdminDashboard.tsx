@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { AdminAccessModal } from "@/components/admin/AdminAccessModal";
-import AdminTabs from "@/components/admin/dashboard/AdminTabs";
+import AdminSidebar from "@/components/admin/dashboard/AdminSidebar";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -56,7 +56,7 @@ const AdminDashboard = () => {
       transition={{ duration: 0.3 }}
     >
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-      <AdminTabs />
+      <AdminSidebar />
     </motion.div>
   );
 };
