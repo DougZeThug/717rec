@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useTheme } from "next-themes";
@@ -6,17 +5,37 @@ import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePowerScoreTrends } from "@/hooks/usePowerScoreTrends";
+import { useWeeklyPowerScoreTrends } from "@/hooks/useWeeklyPowerScoreTrends";
 import { TrendDirection } from "@/types/powerScoreTrends";
 import { getTrendColor, getTrendArrow } from "@/utils/colors/trendColors";
 import { getPowerScoreColor } from "@/utils/colors/powerScoreColors";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Calendar, CalendarDays } from "lucide-react";
+
+type ViewMode = 'weekly' | 'seasonal';
 
 const PowerScoreTrendsCard: React.FC = () => {
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
   const [direction, setDirection] = useState<TrendDirection>('up');
+  const [viewMode, setViewMode] = useState<ViewMode>('weekly');
   
-  const { data: trends, isLoading } = usePowerScoreTrends(direction, 10);
+  const { data: seasonalTrends, isLoading: seasonalLoading } = usePowerScoreTrends(direction, 10);
+  const { data: weeklyData, isLoading: weeklyLoading } = useWeeklyPowerScoreTrends(direction, 10);
+
+  const isLoading = viewMode === 'weekly' ? weeklyLoading : seasonalLoading;
+  const trends = viewMode === 'weekly' ? weeklyData?.trends : seasonalTrends;
+  const hasWeeklyData = weeklyData?.hasData && weeklyData?.trends && weeklyData.trends.length > 0;
+
+  const getDescription = () => {
+    if (viewMode === 'weekly') {
+      if (weeklyData?.trends && weeklyData.trends.length > 0) {
+        const { currentWeek, previousWeek } = weeklyData.trends[0];
+        return `Week ${previousWeek} → Week ${currentWeek} changes`;
+      }
+      return 'Week-over-week performance changes';
+    }
+    return 'Season-over-season performance changes';
+  };
 
   return (
     <Card className={cn(
@@ -44,11 +63,41 @@ const PowerScoreTrendsCard: React.FC = () => {
             isMobile ? "text-xs" : "text-sm"
           )}
         >
-          Season-over-season performance changes
+          {getDescription()}
         </CardDescription>
 
-        {/* Toggle for Trending Up/Down */}
+        {/* View Mode Toggle */}
         <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => setViewMode('weekly')}
+            className={cn(
+              "flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors",
+              "flex items-center justify-center gap-1.5",
+              viewMode === 'weekly'
+                ? "bg-primary/10 text-primary dark:bg-primary/20"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <Calendar className="h-4 w-4" />
+            Weekly
+          </button>
+          <button
+            onClick={() => setViewMode('seasonal')}
+            className={cn(
+              "flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors",
+              "flex items-center justify-center gap-1.5",
+              viewMode === 'seasonal'
+                ? "bg-primary/10 text-primary dark:bg-primary/20"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <CalendarDays className="h-4 w-4" />
+            Seasonal
+          </button>
+        </div>
+
+        {/* Direction Toggle */}
+        <div className="flex gap-2 mt-2">
           <button
             onClick={() => setDirection('up')}
             className={cn(
@@ -82,6 +131,18 @@ const PowerScoreTrendsCard: React.FC = () => {
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-muted-foreground">Loading trends...</div>
+          </div>
+        ) : viewMode === 'weekly' && !hasWeeklyData ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <Calendar className="h-8 w-8 text-muted-foreground mb-2" />
+            <div className="text-muted-foreground text-sm">
+              {weeklyData?.hasData 
+                ? "Need at least 2 weeks of snapshots to show trends."
+                : "No weekly snapshots captured yet."}
+            </div>
+            <div className="text-muted-foreground text-xs mt-1">
+              Snapshots are captured every Thursday at 11pm EST.
+            </div>
           </div>
         ) : trends && trends.length > 0 ? (
           <div className="space-y-2">
@@ -144,7 +205,9 @@ const PowerScoreTrendsCard: React.FC = () => {
         ) : (
           <div className="flex items-center justify-center py-8">
             <div className="text-muted-foreground text-sm">
-              No trend data available. Teams need at least two seasons of data.
+              {viewMode === 'weekly' 
+                ? "No weekly trend data available yet."
+                : "No trend data available. Teams need at least two seasons of data."}
             </div>
           </div>
         )}

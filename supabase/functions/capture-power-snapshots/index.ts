@@ -1,0 +1,149 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    console.log('[capture-power-snapshots] Starting weekly snapshot capture...');
+
+    // 1. Get active season
+    const { data: activeSeason, error: seasonError } = await supabase
+      .from('seasons')
+      .select('id, name, start_date')
+      .eq('is_active', true)
+      .single();
+
+    if (seasonError || !activeSeason) {
+      console.error('[capture-power-snapshots] No active season found:', seasonError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'No active season found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    console.log(`[capture-power-snapshots] Active season: ${activeSeason.name} (${activeSeason.id})`);
+
+    // 2. Calculate current week number
+    const { data: weekData, error: weekError } = await supabase
+      .rpc('get_season_week_number', { 
+        p_season_id: activeSeason.id,
+        p_date: new Date().toISOString().split('T')[0]
+      });
+
+    if (weekError) {
+      console.error('[capture-power-snapshots] Error calculating week number:', weekError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to calculate week number' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
+    const weekNumber = weekData as number;
+    console.log(`[capture-power-snapshots] Current week number: ${weekNumber}`);
+
+    // 3. Check if snapshot already exists for this week
+    const { data: existingSnapshot } = await supabase
+      .from('power_score_snapshots')
+      .select('id')
+      .eq('season_id', activeSeason.id)
+      .eq('week_number', weekNumber)
+      .limit(1);
+
+    if (existingSnapshot && existingSnapshot.length > 0) {
+      console.log(`[capture-power-snapshots] Snapshot already exists for week ${weekNumber}`);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: `Snapshot already exists for week ${weekNumber}`,
+          skipped: true 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 4. Query v_team_details for all teams with power scores
+    const { data: teams, error: teamsError } = await supabase
+      .from('v_team_details')
+      .select('team_id, power_score, sos, wins, losses, game_wins, game_losses, division_id')
+      .not('power_score', 'is', null);
+
+    if (teamsError) {
+      console.error('[capture-power-snapshots] Error fetching team data:', teamsError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to fetch team data' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
+    console.log(`[capture-power-snapshots] Found ${teams?.length || 0} teams with power scores`);
+
+    if (!teams || teams.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, message: 'No teams with power scores to snapshot', count: 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 5. Prepare snapshot records
+    const snapshotDate = new Date().toISOString().split('T')[0];
+    const snapshots = teams.map(team => ({
+      team_id: team.team_id,
+      season_id: activeSeason.id,
+      week_number: weekNumber,
+      snapshot_date: snapshotDate,
+      power_score: team.power_score,
+      sos: team.sos,
+      match_wins: team.wins || 0,
+      match_losses: team.losses || 0,
+      game_wins: team.game_wins || 0,
+      game_losses: team.game_losses || 0,
+      division_id: team.division_id
+    }));
+
+    // 6. Batch insert into power_score_snapshots
+    const { error: insertError, count } = await supabase
+      .from('power_score_snapshots')
+      .insert(snapshots);
+
+    if (insertError) {
+      console.error('[capture-power-snapshots] Error inserting snapshots:', insertError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to insert snapshots', details: insertError.message }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
+    console.log(`[capture-power-snapshots] Successfully captured ${snapshots.length} team snapshots for week ${weekNumber}`);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: `Captured ${snapshots.length} team snapshots`,
+        season: activeSeason.name,
+        week: weekNumber,
+        count: snapshots.length
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('[capture-power-snapshots] Unexpected error:', error);
+    return new Response(
+      JSON.stringify({ success: false, error: 'Unexpected error', details: String(error) }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
+  }
+});

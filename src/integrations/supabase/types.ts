@@ -1913,6 +1913,139 @@ export type Database = {
           },
         ]
       }
+      power_score_snapshots: {
+        Row: {
+          created_at: string | null
+          division_id: string | null
+          game_losses: number | null
+          game_wins: number | null
+          id: string
+          match_losses: number | null
+          match_wins: number | null
+          power_score: number | null
+          season_id: string
+          snapshot_date: string
+          sos: number | null
+          team_id: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string | null
+          division_id?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          id?: string
+          match_losses?: number | null
+          match_wins?: number | null
+          power_score?: number | null
+          season_id: string
+          snapshot_date: string
+          sos?: number | null
+          team_id: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string | null
+          division_id?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          id?: string
+          match_losses?: number | null
+          match_wins?: number | null
+          power_score?: number | null
+          season_id?: string
+          snapshot_date?: string
+          sos?: number | null
+          team_id?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "power_score_snapshots_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team1_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team2_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "power_score_snapshots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -3502,6 +3635,10 @@ export type Database = {
           season_id: string
           team_id: string
         }[]
+      }
+      get_season_week_number: {
+        Args: { p_date?: string; p_season_id: string }
+        Returns: number
       }
       get_team_badges: {
         Args: { p_team_id: string }
