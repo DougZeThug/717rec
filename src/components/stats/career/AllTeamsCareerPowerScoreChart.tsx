@@ -10,6 +10,7 @@ import { useTheme } from 'next-themes';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   if (!teamsData) return [];
@@ -123,15 +124,23 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-8">
       <Card>
         <CollapsibleTrigger className="w-full">
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+          <CardHeader className={cn(
+            "cursor-pointer hover:bg-muted/50 transition-colors",
+            isMobile ? "py-2.5 px-3" : "py-4"
+          )}>
             <div className="flex items-center justify-between">
               <div className="text-left">
-                <CardTitle>Career Power Score Trends (All Teams)</CardTitle>
-                <CardDescription>
-                  Compare team performance across multiple seasons
-                </CardDescription>
+                <CardTitle className="text-base sm:text-xl">Career Power Score Trends (All Teams)</CardTitle>
+                {!isMobile && (
+                  <CardDescription>
+                    Compare team performance across multiple seasons
+                  </CardDescription>
+                )}
               </div>
-              <ChevronDown className={`h-5 w-5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={cn(
+                "h-5 w-5 transition-transform",
+                isOpen && "rotate-180"
+              )} />
             </div>
           </CardHeader>
         </CollapsibleTrigger>
