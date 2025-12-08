@@ -1,125 +1,161 @@
 /**
- * Structured logging utility for 717REC
- * All console.log statements should use these loggers for consistent formatting
- * and automatic suppression in production builds
+ * Centralized logging utilities for 717REC
+ * Provides:
+ *  - Consistent log formatting
+ *  - Environment-based log level filtering
+ *  - Domain-specific loggers for easy filtering
+ *  - Automatic production log suppression
  */
 
-// Use Vite-compatible environment check
-const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV;
+// Vite-compatible environment detection
+const isDev = typeof import.meta !== 'undefined' && import.meta.env?.DEV === true;
 
-// Base log function - only logs in development
-export const log = (...args: unknown[]) =>
-  isDev && console.log("[717REC]", ...args);
+// Log level control (can be overridden via environment variable)
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'none';
+const LOG_LEVEL: LogLevel = (typeof import.meta !== 'undefined' 
+  ? import.meta.env?.VITE_LOG_LEVEL as LogLevel 
+  : 'info') || 'info';
 
-// Base error log - only logs in development
-export const errorLog = (...args: unknown[]) =>
-  isDev && console.error("[717REC ERROR]", ...args);
+const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+  none: 99
+};
 
-// Base warn log - only logs in development
-export const warnLog = (...args: unknown[]) =>
-  isDev && console.warn("[717REC WARN]", ...args);
+const shouldLog = (level: LogLevel): boolean => {
+  if (!isDev) return false;
+  return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[LOG_LEVEL];
+};
 
-// ============= Domain-Specific Loggers =============
+// Base logging functions
+export const log = (...args: unknown[]) => {
+  if (shouldLog('info')) console.log('[717REC]', ...args);
+};
+
+export const errorLog = (...args: unknown[]) => {
+  if (shouldLog('error')) console.error('[717REC ERROR]', ...args);
+};
+
+export const warnLog = (...args: unknown[]) => {
+  if (shouldLog('warn')) console.warn('[717REC WARN]', ...args);
+};
+
+export const debugLog = (...args: unknown[]) => {
+  if (shouldLog('debug')) console.log('[717REC DEBUG]', ...args);
+};
+
+// ============================================
+// Domain-specific loggers
+// ============================================
+
+// Auth operations
+export const authLog = (...args: unknown[]) =>
+  log('🔐 Auth:', ...args);
 
 // Bracket operations
 export const bracketLog = (...args: unknown[]) =>
-  log("🎲 Bracket:", ...args);
-
-// Team operations
-export const teamLog = (...args: unknown[]) =>
-  log("👥 Team:", ...args);
-
-// Challonge API operations
-export const challongeLog = (...args: unknown[]) =>
-  log("🏆 Challonge:", ...args);
+  log('🎲 Bracket:', ...args);
 
 // Match operations
 export const matchLog = (...args: unknown[]) =>
-  log("⚽ Match:", ...args);
+  log('🎯 Match:', ...args);
 
-// Authentication operations
-export const authLog = (...args: unknown[]) =>
-  log("🔐 Auth:", ...args);
+// Team operations
+export const teamLog = (...args: unknown[]) =>
+  log('👥 Team:', ...args);
 
-// Score entry operations
-export const scoreLog = (...args: unknown[]) =>
-  log("📝 Score:", ...args);
-
-// Admin operations
-export const adminLog = (...args: unknown[]) =>
-  log("⚙️ Admin:", ...args);
-
-// Database/query operations
-export const dbLog = (...args: unknown[]) =>
-  log("💾 DB:", ...args);
-
-// Scheduling operations
-export const scheduleLog = (...args: unknown[]) =>
-  log("📅 Schedule:", ...args);
-
-// Season/history operations
-export const historyLog = (...args: unknown[]) =>
-  log("📜 History:", ...args);
-
-// Routing operations
-export const routeLog = (...args: unknown[]) =>
-  log("🧭 Route:", ...args);
-
-// Filter operations
-export const filterLog = (...args: unknown[]) =>
-  log("🔍 Filter:", ...args);
-
-// Playoff operations
+// Playoffs operations
 export const playoffLog = (...args: unknown[]) =>
-  log("🏅 Playoff:", ...args);
+  log('🏆 Playoff:', ...args);
+
+// Score operations
+export const scoreLog = (...args: unknown[]) =>
+  log('📊 Score:', ...args);
 
 // Badge operations
 export const badgeLog = (...args: unknown[]) =>
-  log("🏆 Badge:", ...args);
+  log('🏅 Badge:', ...args);
 
-// ============= Status Loggers =============
+// Database operations
+export const dbLog = (...args: unknown[]) =>
+  log('💾 DB:', ...args);
 
-// Progress logging for long operations
+// Schedule operations
+export const scheduleLog = (...args: unknown[]) =>
+  log('📅 Schedule:', ...args);
+
+// Admin operations
+export const adminLog = (...args: unknown[]) =>
+  log('⚡ Admin:', ...args);
+
+// Challonge operations
+export const challongeLog = (...args: unknown[]) =>
+  log('🎮 Challonge:', ...args);
+
+// Timezone operations
+export const timezoneLog = (...args: unknown[]) =>
+  log('🌐 Timezone:', ...args);
+
+// Chart/visualization operations
+export const chartLog = (...args: unknown[]) =>
+  log('📈 Chart:', ...args);
+
+// Validation operations
+export const validationLog = (...args: unknown[]) =>
+  log('✓ Validation:', ...args);
+
+// Cache operations
+export const cacheLog = (...args: unknown[]) =>
+  log('💨 Cache:', ...args);
+
+// Route/navigation operations
+export const routeLog = (...args: unknown[]) =>
+  log('🧭 Route:', ...args);
+
+// Filter operations
+export const filterLog = (...args: unknown[]) =>
+  log('🔍 Filter:', ...args);
+
+// ============================================
+// Status loggers
+// ============================================
+
 export const progressLog = (step: number, total: number, message: string, details?: string) => {
-  log(`📊 Progress ${step}/${total}: ${message}`);
-  if (details) log(`   ${details}`);
+  if (!isDev) return;
+  const percentage = Math.round((step / total) * 100);
+  log(`[${step}/${total}] ${percentage}% - ${message}`, details || '');
 };
 
-// Success logging
-export const successLog = (operation: string, details?: string) => {
-  log(`✅ ${operation} completed successfully`);
-  if (details) log(`   ${details}`);
-};
+export const successLog = (operation: string, details?: string) =>
+  log(`✅ ${operation}`, details || '');
 
-// Failure logging
-export const failureLog = (operation: string, error: string | Error) => {
-  errorLog(`❌ ${operation} failed:`, error);
-};
+export const failureLog = (operation: string, error: string | Error) =>
+  errorLog(`❌ ${operation}:`, error instanceof Error ? error.message : error);
 
-// ============= Supabase-Specific Logging =============
+// ============================================
+// Supabase-specific logging
+// ============================================
 
-// Supabase error logging with structured output
 export const supabaseErrorLog = (operation: string, error: unknown) => {
-  if (error && typeof error === 'object' && 'code' in error) {
-    const supabaseError = error as { code?: string; message?: string; details?: string; hint?: string; statusCode?: number };
-    errorLog(`🔴 Supabase Error in ${operation}:`, {
+  if (!isDev) return;
+  
+  if (error && typeof error === 'object' && 'message' in error) {
+    const supabaseError = error as { message: string; code?: string; details?: string };
+    errorLog(`Supabase ${operation} failed:`, {
       code: supabaseError.code,
       message: supabaseError.message,
-      details: supabaseError.details,
-      hint: supabaseError.hint,
-      statusCode: supabaseError.statusCode
+      details: supabaseError.details
     });
   } else {
-    errorLog(`❌ ${operation} error:`, error);
+    errorLog(`Supabase ${operation} failed:`, error);
   }
 };
 
-// ============= Verbose Debug Logging =============
-// Only use for detailed debugging - more verbose than normal logs
+// ============================================
+// Diagnostic logging
+// ============================================
 
-export const debugLog = (...args: unknown[]) =>
-  isDev && console.log("[717REC DEBUG]", ...args);
-
-// Diagnostic logging for troubleshooting
 export const diagnosticLog = (context: string, data: Record<string, unknown>) =>
   isDev && console.log(`[717REC DIAGNOSTIC] ${context}:`, data);

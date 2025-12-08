@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { BadgeProcessingService } from '@/services/BadgeProcessingService';
+import { matchLog, badgeLog, errorLog, warnLog } from "@/utils/logger";
 
 export interface UpdateMatchScoreParams {
   matchId: string;
@@ -24,7 +25,7 @@ export const updateMatchScore = async ({
   team1GameWins,
   team2GameWins
 }: UpdateMatchScoreParams): Promise<UpdateMatchScoreResult> => {
-  console.log('🎯 updateMatchScore called with:', {
+  matchLog('updateMatchScore called with:', {
     matchId,
     team1Score,
     team2Score,
@@ -50,7 +51,7 @@ export const updateMatchScore = async ({
   const winnerId = team1Win ? team1_id : team2_id;
   const loserId = team1Win ? team2_id : team1_id;
 
-  console.log('🏆 Match result:', {
+  matchLog('Match result:', {
     team1Win,
     winnerId,
     loserId,
@@ -75,31 +76,31 @@ export const updateMatchScore = async ({
     .single();
 
   if (error) {
-    console.error('❌ Failed to update match:', error);
+    errorLog('Failed to update match:', error);
     throw error;
   }
 
-  console.log('✅ Match updated successfully:', data);
+  matchLog('Match updated successfully:', data);
 
   // Process all badges for both teams after match completion
   try {
     // Process streak badges first
     const badgeResult = await BadgeProcessingService.processMatchBadges(team1_id, team2_id);
-    console.log('🏆 Badge processing completed:', badgeResult);
+    badgeLog('Badge processing completed:', badgeResult);
 
     // Process kingslayer badge separately
     const kingslayerResult = await BadgeProcessingService.processKingslayerBadge(winnerId, loserId);
-    console.log('⚔️ Kingslayer badge processing completed:', kingslayerResult);
+    badgeLog('Kingslayer badge processing completed:', kingslayerResult);
 
     // Process clutch performer badge for the winner
     const clutchResult = await BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins);
-    console.log('🎯 Clutch performer badge processing completed:', clutchResult);
+    badgeLog('Clutch performer badge processing completed:', clutchResult);
 
     // Process consistent performer badge for the winner
     const consistentResult = await BadgeProcessingService.processConsistentPerformerBadge(winnerId);
-    console.log('📈 Consistent performer badge processing completed:', consistentResult);
+    badgeLog('Consistent performer badge processing completed:', consistentResult);
   } catch (badgeError) {
-    console.warn('⚠️ Badge processing failed (non-critical):', badgeError);
+    warnLog('Badge processing failed (non-critical):', badgeError);
     // Don't throw here - badge processing failure shouldn't prevent match completion
   }
 

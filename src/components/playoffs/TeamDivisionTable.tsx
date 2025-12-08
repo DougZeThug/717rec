@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import TeamLogo from "@/components/ui/team/TeamLogo";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { teamLog } from "@/utils/logger";
 
 interface TeamDivisionTableProps {
   divisions: string[];
@@ -28,25 +29,21 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>("all");
   
-  // Set initial active tab to the first available division or "all"
   useEffect(() => {
     if (divisions.length > 0) {
       setActiveTab("all");
     }
   }, [divisions]);
   
-  // Improved team grouping by division name
   const teamsByDivision = React.useMemo(() => {
     const grouped: Record<string, Team[]> = {
       "Unassigned": []
     };
     
-    // Initialize all divisions
     divisions.forEach(division => {
       grouped[division] = [];
     });
     
-    // Group teams by division name
     teams.forEach(team => {
       const divisionName = team.divisionName || "Unassigned";
       
@@ -57,27 +54,23 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({
       grouped[divisionName].push(team);
     });
     
-    // Sort teams alphabetically within each division
     Object.keys(grouped).forEach(division => {
       grouped[division].sort((a, b) => a.name.localeCompare(b.name));
     });
     
-    console.log("Teams by division in TeamDivisionTable:", grouped);
+    teamLog("Teams by division in TeamDivisionTable:", grouped);
     return grouped;
   }, [teams, divisions]);
   
-  // Add "All" option and filter out empty divisions for tab display
   const tabOptions = React.useMemo(() => {
     const options = ["all"];
     
-    // Only include divisions that actually have teams
     divisions.forEach(division => {
       if (teamsByDivision[division]?.length > 0) {
         options.push(division);
       }
     });
     
-    // Add "Unassigned" if there are unassigned teams
     if (teamsByDivision["Unassigned"]?.length > 0) {
       options.push("Unassigned");
     }
@@ -158,7 +151,6 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({
               </TableBody>
             </Table>
             
-            {/* Show message when no teams are in a division */}
             {division !== "all" && teamsByDivision[division]?.length === 0 && (
               <div className="text-center py-6 text-muted-foreground">
                 No teams in this division

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Plus, RefreshCw } from "lucide-react";
 import { PlayoffBracket } from "@/types";
+import { bracketLog } from "@/utils/logger";
 
 interface DivisionBracketsCardProps {
   division: string;
@@ -22,14 +23,13 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   brackets,
   onCreateBracket,
   onViewBracket,
-  onEditBracket,
   onDeleteBracket,
   onResyncBracket,
   isResyncLoading = false,
 }) => {
   
   const handleViewBracket = (bracketId: string) => {
-    console.log('🎯 DivisionBracketsCard: View bracket clicked for ID:', bracketId);
+    bracketLog('View bracket clicked for ID:', bracketId);
     onViewBracket(bracketId);
   };
 
@@ -108,7 +108,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
               variant="outline" 
               className="w-full" 
               onClick={() => {
-                console.log('🎯 DivisionBracketsCard: Create bracket button clicked for division:', division);
+                bracketLog('Create bracket button clicked for division:', division);
                 onCreateBracket();
               }}
             >

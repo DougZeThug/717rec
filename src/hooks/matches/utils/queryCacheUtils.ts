@@ -1,8 +1,9 @@
 
 import { QueryClient } from "@tanstack/react-query";
+import { cacheLog } from "@/utils/logger";
 
 export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) => {
-  console.log("Invalidating all match and team related queries...");
+  cacheLog("Invalidating all match and team related queries...");
   
   // Use predicate to catch all variations of team queries
   await queryClient.invalidateQueries({ 
@@ -23,7 +24,7 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
   );
   
   await Promise.all(promises);
-  console.log("Query cache invalidation complete for:", queriesToInvalidate.join(", "));
+  cacheLog("Query cache invalidation complete for:", queriesToInvalidate.join(", "));
 };
 
 export const batchInvalidateQueries = async (queryClient: QueryClient, keys: string[]) => {
