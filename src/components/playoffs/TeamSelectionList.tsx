@@ -4,16 +4,17 @@ import { FormMessage } from "@/components/ui/form";
 import { Team } from "@/types";
 import { TeamLogo } from "@/components/ui/team";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
+import { teamLog } from "@/utils/logger";
 
 interface TeamSelectionListProps {
-  teams?: Team[] | undefined; // Make teams optional
+  teams?: Team[] | undefined;
   selectedTeams: string[];
   selectedTeamIds?: string[];
   onTeamToggle: (teamId: string) => void;
   onChange?: (selectedIds: string[]) => void;
   isLoading?: boolean;
   maxTeams?: number;
-  divisionName?: string; // Add division filtering
+  divisionName?: string;
 }
 
 const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
@@ -25,18 +26,14 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
   maxTeams,
   divisionName
 }) => {
-  // Fetch our own teams data with power scores - don't rely on the teams prop
   const { rankings, isLoading: rankingsLoading } = useTeamRankings();
   
-  console.log("TeamSelectionList: Fresh rankings data:", rankings.slice(0, 3).map(r => ({
+  teamLog("TeamSelectionList: Fresh rankings data:", rankings.slice(0, 3).map(r => ({
     team: r.teamName,
     powerScore: r.powerScore,
-    wins: r.wins,
-    losses: r.losses,
     divisionName: r.divisionName
   })));
   
-  // Convert rankings to team format with seed numbers
   const rankedTeams = rankings.map((ranking, index) => ({
     id: ranking.teamId,
     name: ranking.teamName,
@@ -60,33 +57,28 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
     close_match_losses: ranking.closeMatchLosses || 0
   }));
   
-  // Filter by division if specified
   const filteredTeams = divisionName 
     ? rankedTeams.filter(team => team.divisionName === divisionName)
     : rankedTeams;
   
-  console.log("TeamSelectionList: Filtered teams for division:", filteredTeams.map(t => ({
+  teamLog("TeamSelectionList: Filtered teams for division:", filteredTeams.map(t => ({
     name: t.name,
     divisionName: t.divisionName,
     powerScore: t.powerScore
   })));
   
-  // Use either selectedTeamIds or selectedTeams
   const selectedIds = selectedTeamIds || selectedTeams || [];
   
-  // Check if a team is selected
   const isTeamSelected = (teamId: string) => selectedIds.includes(teamId);
   
-  // Handle team toggle with either callback style
   const handleToggle = (teamId: string) => {
     if (onChange) {
       const newSelection = isTeamSelected(teamId)
         ? selectedIds.filter(id => id !== teamId)
         : [...selectedIds, teamId];
       
-      // If maxTeams is defined, enforce the limit
       if (maxTeams && !isTeamSelected(teamId) && selectedIds.length >= maxTeams) {
-        return; // Don't add more teams if at max
+        return;
       }
       
       onChange(newSelection);
@@ -105,7 +97,6 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
         ) : filteredTeams.length > 0 ? (
           <div className="space-y-2">
             {filteredTeams.map((team) => {
-              // Skip rendering invalid teams
               if (!team || !team.id) return null;
               
               return (
