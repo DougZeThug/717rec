@@ -1,10 +1,12 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, CheckCircle } from "lucide-react";
 import { Match, Team } from "@/types";
 import DateMatchGroup from "./DateMatchGroup";
+import SwipeableDateGroups from "./SwipeableDateGroups";
 import { format, isToday, parseISO, isSameDay } from "date-fns";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ScheduleContentProps {
   activeTab: string;
@@ -25,6 +27,10 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   onEditMatch,
   onDeleteMatch
 }) => {
+  const isMobile = useIsMobile();
+  const [upcomingIndex, setUpcomingIndex] = useState(0);
+  const [completedIndex, setCompletedIndex] = useState(0);
+
   // Group matches by date
   const groupedMatches = useMemo(() => {
     const isCompletedTab = activeTab === "completed";
@@ -66,13 +72,54 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   const emptyStateMessage = activeTab === "upcoming" 
     ? "No upcoming matches scheduled." 
     : "No completed matches found.";
+
+  const renderMatchGroups = (showSwipeable: boolean) => {
+    if (isEmptyState) {
+      return (
+        <div className="text-center py-12 font-inter dark:text-gray-300">
+          <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">
+            {emptyStateMessage}
+          </h3>
+        </div>
+      );
+    }
+
+    if (showSwipeable && isMobile) {
+      return (
+        <SwipeableDateGroups
+          groupedMatches={groupedMatches}
+          selectedDate={selectedDate}
+          onEditMatch={onEditMatch}
+          onDeleteMatch={onDeleteMatch}
+          activeIndex={activeTab === "upcoming" ? upcomingIndex : completedIndex}
+          onIndexChange={activeTab === "upcoming" ? setUpcomingIndex : setCompletedIndex}
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {groupedMatches.map((group, index) => (
+          <DateMatchGroup
+            key={format(group.date, "yyyy-MM-dd")}
+            date={group.date}
+            matches={group.matches}
+            isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
+            isFirstGroup={index === 0}
+            onEditMatch={onEditMatch}
+            onDeleteMatch={onDeleteMatch}
+          />
+        ))}
+      </div>
+    );
+  };
   
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
       <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">
         <TabsTrigger 
           value="upcoming" 
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6"
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6 min-h-[44px]"
         >
           <div className="flex items-center justify-center">
             <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
@@ -81,7 +128,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         </TabsTrigger>
         <TabsTrigger 
           value="completed" 
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6"
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6 min-h-[44px]"
         >
           <div className="flex items-center justify-center">
             <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" />
@@ -91,50 +138,11 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       </TabsList>
       
       <TabsContent value="upcoming" className="mt-6 dark:bg-gray-900">
-        {isEmptyState ? (
-          <div className="text-center py-12 font-inter dark:text-gray-300">
-            <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">
-              {emptyStateMessage}
-            </h3>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {groupedMatches.map((group, index) => (
-              <DateMatchGroup
-                key={format(group.date, "yyyy-MM-dd")}
-                date={group.date}
-                matches={group.matches}
-                isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
-                isFirstGroup={index === 0}
-                onEditMatch={onEditMatch}
-                onDeleteMatch={onDeleteMatch}
-              />
-            ))}
-          </div>
-        )}
+        {renderMatchGroups(true)}
       </TabsContent>
       
       <TabsContent value="completed" className="mt-6 dark:bg-gray-900">
-        {isEmptyState ? (
-          <div className="text-center py-12 font-inter dark:text-gray-300">
-            <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">
-              {emptyStateMessage}
-            </h3>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {groupedMatches.map((group, index) => (
-              <DateMatchGroup
-                key={format(group.date, "yyyy-MM-dd")}
-                date={group.date}
-                matches={group.matches}
-                isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
-                isFirstGroup={index === 0}
-                onDeleteMatch={onDeleteMatch}
-              />
-            ))}
-          </div>
-        )}
+        {renderMatchGroups(true)}
       </TabsContent>
     </Tabs>
   );

@@ -1,11 +1,11 @@
 
 import React from "react";
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle
-} from "@/components/ui/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import MatchFormRHF from "./MatchFormRHF";
 import { Match, Team } from "@/types";
 
@@ -25,19 +25,19 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
   onSubmit
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle>{match ? "Edit Match" : "Create New Match"}</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog open={isOpen} onOpenChange={onClose}>
+      <ResponsiveDialogContent className="sm:max-w-[550px]">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>{match ? "Edit Match" : "Create New Match"}</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <MatchFormRHF 
           match={match}
           teams={teams}
           onSubmit={onSubmit}
           onCancel={onClose}
         />
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };
 
