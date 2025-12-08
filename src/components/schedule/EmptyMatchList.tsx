@@ -1,7 +1,7 @@
-
 import React from "react";
-import { CalendarX } from "lucide-react";
-import { useTheme } from "next-themes";
+import { CalendarX, Calendar, Search } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useNavigate } from "react-router-dom";
 
 interface EmptyMatchListProps {
   searchTerm: string;
@@ -9,24 +9,50 @@ interface EmptyMatchListProps {
 }
 
 const EmptyMatchList: React.FC<EmptyMatchListProps> = ({ searchTerm, isCompleted }) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  
+  const navigate = useNavigate();
+
+  const getEmptyStateContent = () => {
+    if (searchTerm) {
+      return {
+        icon: Search,
+        title: "No Matches Found",
+        description: `No matches found for "${searchTerm}". Try a different search term.`,
+        actions: [],
+      };
+    }
+
+    if (isCompleted) {
+      return {
+        icon: CalendarX,
+        title: "No Completed Matches",
+        description: "Once matches are played and scores are recorded, they'll appear here.",
+        actions: [],
+      };
+    }
+
+    return {
+      icon: Calendar,
+      title: "No Upcoming Matches",
+      description: "There are no scheduled matches yet. Check back later for updates.",
+      actions: [
+        {
+          label: "View Teams",
+          onClick: () => navigate("/teams"),
+          variant: "outline" as const,
+        },
+      ],
+    };
+  };
+
+  const { icon, title, description, actions } = getEmptyStateContent();
+
   return (
-    <div className="text-center py-12 font-inter">
-      <CalendarX className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
-      <h3 className="text-xl font-medium mb-2 text-gray-700 dark:text-gray-300">
-        {isCompleted ? "No completed matches found" : "No upcoming matches found"}
-      </h3>
-      <p className="text-gray-500 dark:text-gray-400">
-        {searchTerm 
-          ? "Try a different search term" 
-          : isCompleted 
-            ? "Once matches are played, they'll appear here" 
-            : "Get started by creating a new match"
-        }
-      </p>
-    </div>
+    <EmptyState
+      icon={icon}
+      title={title}
+      description={description}
+      actions={actions}
+    />
   );
 };
 

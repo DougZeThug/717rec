@@ -1,6 +1,7 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
+import { ShimmerSkeleton, AvatarSkeleton } from "@/components/ui/shimmer-skeleton";
+import { motion } from "framer-motion";
 
 interface TeamListSkeletonProps {
   viewMode: 'grid' | 'list';
@@ -12,41 +13,38 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
 
   if (viewMode === 'list') {
     return (
-      <div className="space-y-4 animate-pulse">
+      <div className="space-y-4">
         {skeletons.map((index) => (
-          <Card key={index} className="bg-[#1E1E1E] rounded-xl shadow-md overflow-hidden">
-            <div className="flex flex-col md:flex-row">
-              <div className="w-full md:w-[150px] h-[150px] bg-black/40 flex items-center justify-center">
-                <div className="w-24 h-24 rounded-full bg-gray-700"></div>
-              </div>
-              <div className="flex flex-col flex-grow p-4 space-y-4">
-                <div className="flex justify-between">
-                  <div className="h-6 bg-gray-700 rounded w-1/3"></div>
-                  <div className="h-6 bg-gray-700 rounded w-8"></div>
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.3 }}
+          >
+            <Card className="bg-card border-border rounded-xl shadow-md overflow-hidden">
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-[150px] h-[150px] bg-muted/50 flex items-center justify-center">
+                  <AvatarSkeleton size="lg" />
                 </div>
-                <div className="h-5 bg-gray-700 rounded w-1/4"></div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-black/30 p-2 rounded">
-                    <div className="h-3 bg-gray-700 rounded w-1/2 mb-1"></div>
-                    <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+                <div className="flex flex-col flex-grow p-4 space-y-4">
+                  <div className="flex justify-between">
+                    <ShimmerSkeleton className="h-6 w-1/3" />
+                    <ShimmerSkeleton className="h-6 w-8" />
                   </div>
-                  <div className="bg-black/30 p-2 rounded">
-                    <div className="h-3 bg-gray-700 rounded w-1/2 mb-1"></div>
-                    <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+                  <ShimmerSkeleton className="h-5 w-1/4" />
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="bg-muted/30 p-2 rounded space-y-1">
+                        <ShimmerSkeleton className="h-3 w-1/2" />
+                        <ShimmerSkeleton className="h-4 w-2/3" />
+                      </div>
+                    ))}
                   </div>
-                  <div className="bg-black/30 p-2 rounded">
-                    <div className="h-3 bg-gray-700 rounded w-1/2 mb-1"></div>
-                    <div className="h-4 bg-gray-700 rounded w-2/3"></div>
-                  </div>
-                  <div className="bg-black/30 p-2 rounded">
-                    <div className="h-3 bg-gray-700 rounded w-1/2 mb-1"></div>
-                    <div className="h-4 bg-gray-700 rounded w-2/3"></div>
-                  </div>
+                  <ShimmerSkeleton className="h-3 w-3/4 mt-4" />
                 </div>
-                <div className="h-3 bg-gray-700 rounded w-3/4 mt-4"></div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </motion.div>
         ))}
       </div>
     );
@@ -54,23 +52,30 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
 
   // Grid view skeleton
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 animate-pulse">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {skeletons.map((index) => (
-        <Card key={index} className="bg-[#1E1E1E] rounded-xl shadow-md overflow-hidden h-[220px] flex flex-col">
-          <div className="h-24 bg-black/40"></div>
-          <div className="p-4 space-y-3 flex-grow">
-            <div className="flex justify-between">
-              <div className="h-5 bg-gray-700 rounded w-2/3"></div>
-              <div className="h-5 bg-gray-700 rounded w-6"></div>
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1, duration: 0.3 }}
+        >
+          <Card className="bg-card border-border rounded-xl shadow-md overflow-hidden h-[220px] flex flex-col">
+            <ShimmerSkeleton className="h-24 w-full rounded-none" />
+            <div className="p-4 space-y-3 flex-grow">
+              <div className="flex justify-between">
+                <ShimmerSkeleton className="h-5 w-2/3" />
+                <ShimmerSkeleton className="h-5 w-6" />
+              </div>
+              <ShimmerSkeleton className="h-4 w-1/4" />
+              <div className="grid grid-cols-2 gap-2">
+                <ShimmerSkeleton className="h-14 w-full" />
+                <ShimmerSkeleton className="h-14 w-full" />
+              </div>
+              <ShimmerSkeleton className="h-3 w-full mt-auto" />
             </div>
-            <div className="h-4 bg-gray-700 rounded w-1/4"></div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-black/30 p-1.5 rounded h-14"></div>
-              <div className="bg-black/30 p-1.5 rounded h-14"></div>
-            </div>
-            <div className="h-3 bg-gray-700 rounded w-full mt-auto"></div>
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
       ))}
     </div>
   );
