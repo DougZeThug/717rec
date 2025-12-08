@@ -1,4 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +26,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertTriangle, GripVertical } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { SortableTeamItem } from './form/bracket-teams/components/SortableTeamItem';
+import { DragOverlayItem } from './form/bracket-teams/components/DragOverlayItem';
+import { AnimatePresence } from 'framer-motion';
 
 interface Participant {
   id: number;
@@ -29,6 +49,12 @@ interface SeedingUpdateDialogProps {
   bracketState: 'pending' | 'in_progress' | 'completed';
 }
 
+interface TeamItem {
+  id: string;
+  name: string;
+  seed: number;
+}
+
 export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   open,
   onOpenChange,
@@ -37,9 +63,24 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   currentParticipants,
   bracketState
 }) => {
-  // State for reordered teams
-  const [teams, setTeams] = useState<Array<{id: string; name: string; seed: number}>>([]);
-  
+  const [teams, setTeams] = useState<TeamItem[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before activating drag
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   // Update teams whenever currentParticipants changes
   useEffect(() => {
     const processedTeams = currentParticipants
@@ -53,46 +94,36 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
     
     setTeams(processedTeams);
   }, [currentParticipants]);
-  
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Disable if bracket has started
   const canUpdate = bracketState === 'pending';
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    setDraggedIndex(index);
-    e.dataTransfer.effectAllowed = 'move';
+  const activeTeam = useMemo(() => 
+    teams.find(t => t.id === activeId),
+    [teams, activeId]
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
   };
 
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-  };
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
+    if (!over || active.id === over.id) return;
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    
-    if (draggedIndex === null || draggedIndex === dropIndex) return;
-    
-    const reordered = [...teams];
-    const [removed] = reordered.splice(draggedIndex, 1);
-    reordered.splice(dropIndex, 0, removed);
-    
-    // Reassign seeds based on new order
-    const updated = reordered.map((team, idx) => ({
-      ...team,
-      seed: idx + 1
-    }));
-    
-    setTeams(updated);
-    setDraggedIndex(null);
+    setTeams((items) => {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over.id);
+      
+      const reordered = arrayMove(items, oldIndex, newIndex);
+      
+      // Reassign seeds based on new order
+      return reordered.map((team, idx) => ({
+        ...team,
+        seed: idx + 1
+      }));
+    });
   };
 
   const handleSubmit = async () => {
@@ -109,7 +140,6 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
         description: `Successfully updated seeding for ${bracketName}`,
       });
 
-      // Invalidate queries to refresh bracket view
       queryClient.invalidateQueries({ queryKey: ['bracket', bracketId] });
       queryClient.invalidateQueries({ queryKey: ['brackets'] });
       queryClient.invalidateQueries({ queryKey: ['bracket-participants', bracketId] });
@@ -147,6 +177,8 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
     return matchups;
   };
 
+  const teamIds = useMemo(() => teams.map(t => t.id), [teams]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -169,32 +201,41 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
 
         <div className="py-4">
           <h3 className="text-sm font-medium mb-3">Drag to Reorder Teams:</h3>
-          <div className="space-y-2">
-            {teams.map((team, index) => (
-              <div
-                key={team.id}
-                draggable={canUpdate}
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-                className={`
-                  flex items-center gap-3 p-3 rounded-lg border transition-colors
-                  ${draggedIndex === index ? 'opacity-50' : ''}
-                  ${canUpdate ? 'bg-muted/50 hover:bg-muted cursor-move' : 'bg-background'}
-                `}
-              >
-                {canUpdate && (
-                  <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                )}
-                
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="font-semibold text-primary min-w-[2rem]">#{team.seed}</span>
-                  <span className="font-medium">{team.name}</span>
-                </div>
+          
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={teamIds} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2">
+                <AnimatePresence mode="popLayout">
+                  {teams.map((team) => (
+                    <SortableTeamItem
+                      key={team.id}
+                      id={team.id}
+                      name={team.name}
+                      seed={team.seed}
+                      disabled={!canUpdate}
+                    />
+                  ))}
+                </AnimatePresence>
               </div>
-            ))}
-          </div>
+            </SortableContext>
+
+            <DragOverlay dropAnimation={{
+              duration: 200,
+              easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+            }}>
+              {activeTeam ? (
+                <DragOverlayItem
+                  name={activeTeam.name}
+                  seed={activeTeam.seed}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </div>
 
         <div className="bg-muted/50 p-4 rounded-lg">

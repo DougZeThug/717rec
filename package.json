@@ -13,6 +13,9 @@
   "dependencies": {
     "@capacitor/core": "^7.2.0",
     "@capgo/capacitor-social-login": "^7.5.8",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@ewanmellor/brackets-viewer": "^1.6.911",
     "@g-loot/react-tournament-brackets": "^1.0.31-rc",
     "@hookform/resolvers": "^3.9.0",
