@@ -45,6 +45,7 @@ export interface SimpleBracketData {
     logo_url?: string;
     image_url?: string;
   }>;
+  stageId?: number;  // Stage ID for realtime subscriptions
 }
 
 export const useBracketData = (bracketId: string | null) => {
@@ -272,13 +273,15 @@ export const useBracketData = (bracketId: string | null) => {
             uses_brackets_manager: true,
             matches: transformedMatches,
             teams: Array.from(teamLookup.values()),
-            participants: transformedParticipants
+            participants: transformedParticipants,
+            stageId: stage.id  // Include stageId for realtime subscriptions
           };
 
           bracketLog('Final result built from SQL tables:', {
             bracketId: result.id,
             matchesCount: result.matches.length,
-            teamsCount: result.teams.length
+            teamsCount: result.teams.length,
+            stageId: stage.id
           });
 
           return result;
@@ -298,7 +301,7 @@ export const useBracketData = (bracketId: string | null) => {
       }
     },
     enabled: true, // Always enabled - null check handled in queryFn
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds - reduced for faster updates
     retry: (failureCount, error) => {
       debugLog(`Query retry attempt ${failureCount} for bracket ${bracketId}:`, {
         error: error?.message,

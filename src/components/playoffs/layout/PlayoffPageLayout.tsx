@@ -4,7 +4,7 @@ import PlayoffHeader from "@/components/playoffs/PlayoffHeader";
 import RealtimeIndicator from "@/components/playoffs/indicators/RealtimeIndicator";
 import PlayoffDialogs from "@/components/playoffs/dialogs/PlayoffDialogs";
 import { PlayoffViewSelector } from "./PlayoffViewSelector";
-import { usePlayoffRealtime } from "@/hooks/usePlayoffRealtime";
+import { useBracketsManagerRealtime } from "@/hooks/brackets/useBracketsManagerRealtime";
 import { useViewSelection } from "../hooks/useViewSelection";
 import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
 import { usePlayoffViewState } from "../hooks/usePlayoffViewState";
@@ -19,15 +19,11 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
   const view = usePlayoffViewState(data, handlers);
   const selectedView = useViewSelection(data);
   
-  // Subscribe to real-time updates for the selected bracket
-  const { realtimeEnabled, lastUpdatedMatch } = usePlayoffRealtime(data.selectedBracketId);
+  // Get stageId from bracket data for realtime subscription
+  const stageId = data.bracket?.stageId ?? null;
   
-  // Refetch bracket data when we receive a real-time update
-  React.useEffect(() => {
-    if (lastUpdatedMatch && data.selectedBracketId) {
-      data.refetchBrackets();
-    }
-  }, [lastUpdatedMatch, data.refetchBrackets, data.selectedBracketId]);
+  // Subscribe to real-time updates for the match table (brackets-manager)
+  const { realtimeEnabled } = useBracketsManagerRealtime(data.selectedBracketId, stageId);
 
   // Create a wrapper function that includes refetchBrackets with all 7 parameters
   const handleSaveMatchScore = React.useCallback(async (
