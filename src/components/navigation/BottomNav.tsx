@@ -38,7 +38,8 @@ export const BottomNav = () => {
 
   return (
     <nav className={cn(
-      "fixed bottom-[var(--sab)] left-0 right-0 z-40 mt-[-0.75rem] border-t", 
+      "fixed bottom-0 left-0 right-0 z-40 border-t",
+      "pb-[env(safe-area-inset-bottom,0px)]",
       "border-gray-300 dark:border-gray-700/50",
       "shadow-[0_-4px_16px_rgba(30,58,95,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]",
       "bg-gradient-to-r from-white via-gray-50 to-white",

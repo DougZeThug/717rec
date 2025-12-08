@@ -47,9 +47,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   return (
     <div 
       className={cn(
-        "min-h-screen transition-colors duration-300",
+        "min-h-screen transition-colors duration-300 overflow-x-hidden",
         getGradientClass(),
-        isMobile ? (compact ? "py-3 pb-[calc(5rem+var(--sab))]" : "py-3 pb-[calc(6rem+var(--sab))]") : "py-5 pb-6", 
+        isMobile ? (compact ? "py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]" : "py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]") : "py-5 pb-6", 
         "px-1 sm:px-3 md:px-4 lg:px-5",
         animations.fadeIn,
         className
