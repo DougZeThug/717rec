@@ -47,7 +47,7 @@ const AppContent = () => {
   
   return (
     <NavigationProvider>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen overflow-x-hidden">
         <Navbar />
         <PageTransition>
           <main className="flex-grow">
