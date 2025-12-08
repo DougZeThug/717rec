@@ -111,6 +111,15 @@ export class BracketsViewerAdapter {
       reverseMatchIdMap.set(match.id, match.id.toString());
     });
 
+    // Build participant position map for seeding display
+    const positionMap = new Map<number, number>();
+    participants.forEach(p => {
+      if (p.id !== null && p.position !== null) {
+        positionMap.set(p.id, p.position);
+      }
+    });
+    console.log('🏅 Position map built:', positionMap.size, 'participants with positions');
+
     // Transform matches to viewer format (always create opponent objects for connectors)
     const transformedMatches = matches.map(match => ({
       id: match.id,
@@ -122,12 +131,14 @@ export class BracketsViewerAdapter {
       opponent1: BracketsViewerAdapter.toViewerOpponent(
         match.opponent1_id,
         match.opponent1_score,
-        match.opponent1_result
+        match.opponent1_result,
+        match.opponent1_id ? positionMap.get(match.opponent1_id) : undefined
       ),
       opponent2: BracketsViewerAdapter.toViewerOpponent(
         match.opponent2_id,
         match.opponent2_score,
-        match.opponent2_result
+        match.opponent2_result,
+        match.opponent2_id ? positionMap.get(match.opponent2_id) : undefined
       ),
       status: this.mapStatusToString(match.status)
     }));
@@ -213,12 +224,14 @@ export class BracketsViewerAdapter {
   private static toViewerOpponent(
     id: number | null | undefined,
     score?: number | null,
-    result?: string | null
+    result?: string | null,
+    position?: number
   ): any {
     return {
       id: id ?? null,
       score: score ?? undefined,
       result: result as 'win' | 'loss' | undefined,
+      position: position, // Seeding position for display (e.g., #1, #2)
       // These will be populated by calculateSourceNodeIds() for connector drawing
       source_node_id: undefined as string | undefined,
       source_type: undefined as ('winner' | 'loser') | undefined
