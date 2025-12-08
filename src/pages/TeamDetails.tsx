@@ -17,6 +17,7 @@ import TeamTotals from "@/components/teams/TeamTotals";
 import { calculateSweepRate } from "@/utils/teamDetailsUtils/sweepRateUtils";
 import TeamCareerPowerScoreChart from "@/components/teams/TeamCareerPowerScoreChart";
 import { teamLog } from "@/utils/logger";
+import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -63,8 +64,17 @@ const TeamDetails = () => {
   const gamePct = team.game_win_percentage ? team.game_win_percentage * 100 : 0;
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
 
+  // Custom breadcrumbs with team name
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Teams", href: "/teams" },
+    { label: team.name },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
+      
       <Button 
         variant="ghost" 
         className="mb-6" 
