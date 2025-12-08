@@ -1,4 +1,8 @@
-import { Trophy, Star, Calendar, Shuffle, History, Sparkles, Megaphone, Medal, Flag, Zap, PartyPopper, Target, Users, Crown } from 'lucide-react';
+import { 
+  Trophy, Star, Calendar, Shuffle, History, Sparkles, Megaphone, Medal, Flag, Zap, 
+  PartyPopper, Target, Users, Crown, Bell, Gift, Heart, Flame, Award, TrendingUp,
+  Clock, MapPin, Info, AlertTriangle, CheckCircle, Rocket, Gamepad2, CircleDot
+} from 'lucide-react';
 
 export const HERO_CARD_COLOR_PRESETS = [
   {
@@ -56,6 +60,62 @@ export const HERO_CARD_COLOR_PRESETS = [
     background_color: 'bg-gradient-to-r from-slate-100 to-gray-200',
     text_color: 'text-slate-800',
     preview: 'linear-gradient(to right, #f1f5f9, #e5e7eb)'
+  },
+  {
+    id: 'ocean-blue',
+    name: 'Ocean Blue',
+    description: 'Cool blue tones',
+    background_color: 'bg-gradient-to-r from-blue-500 to-indigo-600',
+    text_color: 'text-white',
+    preview: 'linear-gradient(to right, #3b82f6, #4f46e5)'
+  },
+  {
+    id: 'sunset-pink',
+    name: 'Sunset Pink',
+    description: 'Warm pink & orange',
+    background_color: 'bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400',
+    text_color: 'text-white',
+    preview: 'linear-gradient(to right, #ec4899, #f43f5e, #fb923c)'
+  },
+  {
+    id: 'forest-green',
+    name: 'Forest Green',
+    description: 'Natural green tones',
+    background_color: 'bg-gradient-to-r from-green-600 to-emerald-700',
+    text_color: 'text-white',
+    preview: 'linear-gradient(to right, #16a34a, #047857)'
+  },
+  {
+    id: 'midnight',
+    name: 'Midnight',
+    description: 'Deep blue-purple night',
+    background_color: 'bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900',
+    text_color: 'text-white',
+    preview: 'linear-gradient(to right, #312e81, #581c87, #0f172a)'
+  },
+  {
+    id: 'fire',
+    name: 'Fire',
+    description: 'Hot red & yellow',
+    background_color: 'bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500',
+    text_color: 'text-white',
+    preview: 'linear-gradient(to right, #dc2626, #f97316, #eab308)'
+  },
+  {
+    id: 'steel',
+    name: 'Steel',
+    description: 'Industrial gray',
+    background_color: 'bg-gradient-to-r from-zinc-600 to-zinc-800',
+    text_color: 'text-white',
+    preview: 'linear-gradient(to right, #52525b, #27272a)'
+  },
+  {
+    id: 'bronze',
+    name: 'Bronze',
+    description: 'Warm bronze tones',
+    background_color: 'bg-gradient-to-r from-amber-700 via-orange-700 to-amber-800',
+    text_color: 'text-white',
+    preview: 'linear-gradient(to right, #b45309, #c2410c, #92400e)'
   }
 ] as const;
 
@@ -65,16 +125,30 @@ export const HERO_CARD_ICONS = [
   { id: 'Crown', name: 'Crown', icon: Crown, description: 'Royalty & champions' },
   { id: 'Star', name: 'Star', icon: Star, description: 'Featured content' },
   { id: 'Medal', name: 'Medal', icon: Medal, description: 'Awards & recognition' },
+  { id: 'Award', name: 'Award', icon: Award, description: 'Achievements' },
   { id: 'Calendar', name: 'Calendar', icon: Calendar, description: 'Events & dates' },
+  { id: 'Clock', name: 'Clock', icon: Clock, description: 'Time-sensitive' },
   { id: 'Shuffle', name: 'Shuffle', icon: Shuffle, description: 'Blind draw events' },
   { id: 'History', name: 'History', icon: History, description: 'Past seasons & records' },
   { id: 'Sparkles', name: 'Sparkles', icon: Sparkles, description: 'Special announcements' },
   { id: 'Megaphone', name: 'Megaphone', icon: Megaphone, description: 'Important announcements' },
+  { id: 'Bell', name: 'Bell', icon: Bell, description: 'Notifications & alerts' },
   { id: 'Flag', name: 'Flag', icon: Flag, description: 'Milestones & goals' },
   { id: 'Zap', name: 'Zap', icon: Zap, description: 'Action & energy' },
+  { id: 'Flame', name: 'Flame', icon: Flame, description: 'Hot & trending' },
+  { id: 'Rocket', name: 'Rocket', icon: Rocket, description: 'Launch & excitement' },
   { id: 'PartyPopper', name: 'Party', icon: PartyPopper, description: 'Celebrations' },
+  { id: 'Gift', name: 'Gift', icon: Gift, description: 'Prizes & rewards' },
+  { id: 'Heart', name: 'Heart', icon: Heart, description: 'Favorites & love' },
   { id: 'Target', name: 'Target', icon: Target, description: 'Goals & focus' },
+  { id: 'TrendingUp', name: 'Trending', icon: TrendingUp, description: 'Stats & growth' },
   { id: 'Users', name: 'Team', icon: Users, description: 'Team-related content' },
+  { id: 'MapPin', name: 'Location', icon: MapPin, description: 'Venues & locations' },
+  { id: 'Info', name: 'Info', icon: Info, description: 'Information' },
+  { id: 'AlertTriangle', name: 'Warning', icon: AlertTriangle, description: 'Warnings & alerts' },
+  { id: 'CheckCircle', name: 'Success', icon: CheckCircle, description: 'Completed & success' },
+  { id: 'Gamepad2', name: 'Game', icon: Gamepad2, description: 'Games & play' },
+  { id: 'CircleDot', name: 'Cornhole', icon: CircleDot, description: 'Cornhole boards' },
 ] as const;
 
 export const HERO_CARD_TYPES = [
@@ -90,6 +164,13 @@ export const TARGET_TYPE_OPTIONS = [
   { id: 'division', name: 'Highlight a Division', description: 'Feature a division' },
   { id: 'season', name: 'Highlight a Season', description: 'Feature a season' },
 ] as const;
+
+// Icon map for rendering - used by hero card components
+export const HERO_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Trophy, Star, Calendar, Shuffle, History, Sparkles, Megaphone, Medal, Flag, Zap,
+  PartyPopper, Target, Users, Crown, Bell, Gift, Heart, Flame, Award, TrendingUp,
+  Clock, MapPin, Info, AlertTriangle, CheckCircle, Rocket, Gamepad2, CircleDot
+};
 
 // Helper to find preset by background color
 export const findPresetByColors = (bgColor: string, textColor: string) => {
