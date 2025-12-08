@@ -2,6 +2,7 @@
 import React from "react";
 import { Team } from "@/types";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { TeamImage } from "../shared/TeamImage";
 import { StatBlock } from "../shared/StatBlock";
 import { Trophy, X, MoreHorizontal, Edit, Trash2, ExternalLink } from "lucide-react";
@@ -36,13 +37,17 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   const contentGradient = "bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90";
 
   return (
-    <div className={cn(
-      "rounded-lg border border-gray-200 dark:border-gray-800/60",
-      "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
-      "h-full shadow-sm transition-all duration-200",
-      "hover:shadow-md hover:scale-[1.01] active:scale-[0.99]",
-      gradients.card.blueOrange
-    )}>
+    <motion.div 
+      className={cn(
+        "rounded-lg border border-gray-200 dark:border-gray-800/60",
+        "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
+        "h-full shadow-sm",
+        gradients.card.blueOrange
+      )}
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    >
       <Link to={`/teams/${team.id}`} className="block">
         <div className={cn(
           "h-24 sm:h-24 relative flex items-center justify-center p-3",
@@ -119,6 +124,6 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
