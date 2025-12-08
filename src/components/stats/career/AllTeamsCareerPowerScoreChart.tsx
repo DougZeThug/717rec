@@ -130,7 +130,12 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
           )}>
             <div className="flex items-center justify-between">
               <div className="text-left">
-                <CardTitle className="text-base sm:text-xl">Career Power Score Trends (All Teams)</CardTitle>
+                <CardTitle 
+                  className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                  style={{ letterSpacing: "0.5px" }}
+                >
+                  Career Power Score Trends
+                </CardTitle>
                 {!isMobile && (
                   <CardDescription>
                     Compare team performance across multiple seasons
