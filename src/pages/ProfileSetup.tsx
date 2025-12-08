@@ -9,6 +9,7 @@ import TeamMembershipSection from "@/components/teams/TeamMembershipSection";
 import { Separator } from "@/components/ui/separator";
 import ProfileForm from "@/components/profile/ProfileForm";
 import ProfileLoadingState from "@/components/profile/ProfileLoadingState";
+import { authLog } from "@/utils/logger";
 
 const ProfileSetup = () => {
   const { user, profile, refreshProfile, isLoading, authInitialized } = useAuth();
@@ -20,7 +21,7 @@ const ProfileSetup = () => {
   useEffect(() => {
     // If authentication is still initializing, wait
     if (!authInitialized) {
-      console.log("Auth not initialized yet, waiting...");
+      authLog("Auth not initialized yet, waiting...");
       return;
     }
 
@@ -28,7 +29,7 @@ const ProfileSetup = () => {
     if (!isLoading && !user) {
       if (retries < maxRetries) {
         // Try a few more times with a delay
-        console.log(`No user found, retrying in 1s (${retries + 1}/${maxRetries})`);
+        authLog(`No user found, retrying in 1s (${retries + 1}/${maxRetries})`);
         const timer = setTimeout(() => {
           setRetries(prev => prev + 1);
         }, 1000);
@@ -36,7 +37,7 @@ const ProfileSetup = () => {
         return () => clearTimeout(timer);
       } else {
         // After max retries, redirect to auth
-        console.log("Max retries reached, redirecting to auth");
+        authLog("Max retries reached, redirecting to auth");
         navigate("/auth", { state: { returnTo: "/setup-profile" } });
       }
     }

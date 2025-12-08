@@ -7,6 +7,7 @@ import RankingTableRow from "../RankingTableRow";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
+import { debugLog } from "@/utils/logger";
 
 interface DivisionRankingsSectionProps {
   divisionName: string;
@@ -46,7 +47,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
   // Add debug logging for each team's rank change
   React.useEffect(() => {
     // Log all teams' rank changes to help debugging
-    console.log(`Desktop ${divisionName} rankings trends:`, 
+    debugLog(`Desktop ${divisionName} rankings trends:`, 
       rankings.map(r => ({
         team: r.teamName,
         rankChange: r.rankChange !== undefined ? r.rankChange : 'undefined',

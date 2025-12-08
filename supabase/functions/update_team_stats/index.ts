@@ -1,6 +1,10 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
+// Edge function logger with prefix
+const log = (...args: unknown[]) => console.log('[TEAM_STATS]', ...args);
+const errorLog = (...args: unknown[]) => console.error('[TEAM_STATS ERROR]', ...args);
+
 // Define the corsHeaders for browser requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -83,7 +87,7 @@ Deno.serve(async (req) => {
       .single()
 
     if (matchError || !match) {
-      console.error('Error fetching match:', matchError)
+      errorLog('Error fetching match:', matchError)
       return new Response(
         JSON.stringify({ error: 'Match not found', details: matchError }),
         {
@@ -128,7 +132,7 @@ Deno.serve(async (req) => {
     const winnerGameWins = winnerId === team1Id ? team1GameWins : team2GameWins
     const loserGameWins = loserId === team1Id ? team1GameWins : team2GameWins
 
-    console.log(`Processing match ${matchId}: Winner ${winnerId} (+1 W / +${winnerGameWins} GW), Loser ${loserId} (+1 L / +${loserGameWins} GL)`)
+    log(`Processing match ${matchId}: Winner ${winnerId} (+1 W / +${winnerGameWins} GW), Loser ${loserId} (+1 L / +${loserGameWins} GL)`)
 
     // Update both teams in a single transaction
     const { data: updateResult, error: updateError } = await supabaseClient.rpc(
@@ -142,7 +146,7 @@ Deno.serve(async (req) => {
     )
 
     if (updateError) {
-      console.error('Error updating team stats:', updateError)
+      errorLog('Error updating team stats:', updateError)
       return new Response(
         JSON.stringify({ error: 'Failed to update team stats', details: updateError }),
         {
@@ -167,7 +171,7 @@ Deno.serve(async (req) => {
       }
     )
   } catch (err) {
-    console.error('Unexpected error:', err)
+    errorLog('Unexpected error:', err)
     return new Response(
       JSON.stringify({ error: 'Internal server error', details: err.message }),
       {

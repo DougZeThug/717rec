@@ -15,6 +15,7 @@ import { Clock } from "lucide-react";
 import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { normalizeDate } from "@/utils/dateNormalization";
+import { scheduleLog } from "@/utils/logger";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,7 +54,7 @@ const Schedule = () => {
   
   // Log date for debugging
   React.useEffect(() => {
-    console.log("Schedule - Current selected date:", {
+    scheduleLog("Current selected date:", {
       selectedDate,
       selectedDateString: selectedDate.toString(),
       selectedDateIso: selectedDate.toISOString(),
@@ -92,7 +93,7 @@ const Schedule = () => {
     const day = date.getDate();
     
     const normalizedDate = new Date(Date.UTC(year, month, day));
-    console.log("Schedule - Date selection changed:", {
+    scheduleLog("Date selection changed:", {
       originalDate: date,
       normalizedDate,
       dateString: normalizedDate.toString(),

@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import WinLossTooltip from "./WinLossTooltip";
 import { useTheme } from "next-themes";
+import { chartLog } from "@/utils/logger";
 
 // Label truncation util (local to component)
 const truncateLabel = (label: string, max = 10) =>
@@ -64,10 +65,10 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   };
 
   // Add more detailed logging to help diagnose the issue
-  console.log("WinLossBarChart rendering with data length:", data?.length);
+  chartLog("WinLossBarChart rendering with data length:", data?.length);
   
   if (!data || !Array.isArray(data) || data.length === 0) {
-    console.log("No valid chart data available:", data);
+    chartLog("No valid chart data available:", data);
     return (
       <div className="w-full h-[230px] rounded-xl overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-800">
         <p className="text-gray-500 dark:text-gray-400">No data available</p>
@@ -76,8 +77,8 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   }
 
   // Log final data for debugging - ensure displayName is unique and in correct order
-  console.log(
-    "🔥 Rendering chart with data",
+  chartLog(
+    "Rendering chart with data",
     data.map((t: any, i: number) => ({
       displayName: t.displayName,
       tooltipName: t.tooltipName,

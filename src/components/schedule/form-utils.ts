@@ -1,5 +1,6 @@
 
 import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezone';
+import { timezoneLog } from "@/utils/logger";
 
 /**
  * Format a date object for use in an HTML date input
@@ -13,11 +14,11 @@ export const formatDateForInput = (date: Date): string => {
  */
 export const createDateWithTime = (date: Date, timeSlot: string | null): Date => {
   if (!timeSlot) {
-    console.log("🌐 No time slot provided, returning date with default time");
+    timezoneLog("No time slot provided, returning date with default time");
     return date;
   }
   
-  console.log("🌐 Creating date with time:", {
+  timezoneLog("Creating date with time:", {
     date: date.toString(),
     timeSlot,
     action: "Converting to UTC for storage"
@@ -27,7 +28,7 @@ export const createDateWithTime = (date: Date, timeSlot: string | null): Date =>
   const utcDate = createUTCDateWithTime(date, timeSlot);
   
   // Add extra validation logging
-  console.log("🌐 Time conversion complete:", {
+  timezoneLog("Time conversion complete:", {
     originalTimeSlot: timeSlot,
     resultTime: utcDate.toISOString(),
     utcHours: utcDate.getUTCHours(),

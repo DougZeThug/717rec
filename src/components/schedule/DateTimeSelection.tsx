@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatDateForInput } from "./form-utils";
 import { DateTimeSelectionProps } from "./types";
+import { timezoneLog } from "@/utils/logger";
 
 const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
   selectedDate,
@@ -15,7 +16,7 @@ const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
 }) => {
   // Add debug logging when time slot is selected
   const handleTimeSlotSelect = (timeSlot: string) => {
-    console.log(`🌐 Time slot selected: "${timeSlot}" (will be converted to UTC for storage)`);
+    timezoneLog(`Time slot selected: "${timeSlot}" (will be converted to UTC for storage)`);
     setSelectedTimeSlot(timeSlot);
   };
   

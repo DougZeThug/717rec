@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// Edge function logger with prefix
+const log = (...args: unknown[]) => console.log('[BRACKET]', ...args);
+const errorLog = (...args: unknown[]) => console.error('[BRACKET ERROR]', ...args);
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -78,7 +82,7 @@ class BracketGenerator {
 
   static generateSingleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
     // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
-    console.log(`[BRACKET] Teams for single elimination:`, teams.map(t => `${t.name} (seed ${t.seed})`));
+    log(`Teams for single elimination:`, teams.map(t => `${t.name} (seed ${t.seed})`));
     
     const bracketSize = this.calculateBracketSize(teams.length);
     const rounds = this.calculateRounds(bracketSize);
@@ -160,7 +164,7 @@ class BracketGenerator {
       pairs.push({ team1, team2 });
     }
     
-    console.log(`[BRACKET] Generated seeding pairs:`, pairs.map(p => 
+    log(`Generated seeding pairs:`, pairs.map(p => 
       `${p.team1?.name || 'BYE'} (${p.team1?.seed || 'N/A'}) vs ${p.team2?.name || 'BYE'} (${p.team2?.seed || 'N/A'})`
     ));
     
@@ -169,13 +173,13 @@ class BracketGenerator {
 
   static generateDoubleElimination(teams: Array<{id: string, name: string, seed?: number}>, bracketId: string) {
     // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
-    console.log(`[BRACKET] Teams for double elimination:`, teams.map(t => `${t.name} (seed ${t.seed})`));
+    log(`Teams for double elimination:`, teams.map(t => `${t.name} (seed ${t.seed})`));
     
     const bracketSize = this.calculateBracketSize(teams.length);
     const rounds = this.calculateRounds(bracketSize);
     const matches: any[] = [];
     
-    console.log(`[BRACKET] Generating double elimination for ${teams.length} teams, ${rounds} winners rounds`);
+    log(`Generating double elimination for ${teams.length} teams, ${rounds} winners rounds`);
     
     // Generate proper seeding pairs for first round
     const seedingPairs = this.generateSeedingPairs(teams, bracketSize);
@@ -197,7 +201,7 @@ class BracketGenerator {
     
     // Fixed losers bracket round calculation
     const losersRounds = (rounds - 1) * 2; // Correct formula without Math.max
-    console.log(`[BRACKET] Losers bracket will have ${losersRounds} rounds`);
+    log(`Losers bracket will have ${losersRounds} rounds`);
     
     // Generate loser bracket match IDs with corrected logic
     for (let round = 1; round <= losersRounds; round++) {
@@ -214,7 +218,7 @@ class BracketGenerator {
         matchesInRound = Math.pow(2, rounds - Math.ceil(round / 2) - 1);
       }
       
-      console.log(`[BRACKET] Losers Round ${round}: ${matchesInRound} matches`);
+      log(`Losers Round ${round}: ${matchesInRound} matches`);
       
       for (let position = 0; position < matchesInRound; position++) {
         const key = `l-${round}-${position}`;
@@ -331,7 +335,7 @@ class BracketGenerator {
     matches.push(grandFinalsR1);
     matches.push(grandFinalsR2);
     
-    console.log(`[BRACKET] Generated ${matches.length} total matches`);
+    log(`Generated ${matches.length} total matches`);
     
     return { matches, winnersMatchIds, losersMatchIds, grandFinalsR1Id, grandFinalsR2Id };
   }
@@ -379,7 +383,7 @@ serve(async (req) => {
       throw new Error('Challonge API key not configured');
     }
 
-    console.log('[ENV] All required environment variables are configured');
+    log('[ENV] All required environment variables are configured');
 
     const supabaseClient = createClient(
       supabaseUrl,
@@ -397,7 +401,7 @@ serve(async (req) => {
       throw new Error('Authentication required');
     }
 
-    console.log('[AUTH] User authenticated:', user.id);
+    log('[AUTH] User authenticated:', user.id);
 
     // Verify admin status
     const { data: profile, error: profileError } = await supabaseClient
@@ -407,15 +411,15 @@ serve(async (req) => {
       .single();
 
     if (profileError || !profile?.is_admin) {
-      console.error('[AUTH] Admin check failed:', profileError);
+      errorLog('[AUTH] Admin check failed:', profileError);
       throw new Error('Admin access required');
     }
 
-    console.log('[AUTH] Admin access verified for user:', user.id);
+    log('[AUTH] Admin access verified for user:', user.id);
 
     const payload: CreateBracketPayload = await req.json();
     
-    console.log('[BRACKET] Creating bracket with payload:', JSON.stringify(payload, null, 2));
+    log('Creating bracket with payload:', JSON.stringify(payload, null, 2));
 
     // Enhanced validation
     if (!payload.name || typeof payload.name !== 'string' || payload.name.trim().length === 0) {
@@ -469,10 +473,10 @@ serve(async (req) => {
       }
     });
 
-    console.log(`[BRACKET] Validating ${payload.teams.length} teams for ${payload.format} tournament`);
+    log(`Validating ${payload.teams.length} teams for ${payload.format} tournament`);
 
     // Teams are already sorted by ranking in bracket-creator.ts, preserve this order
-    console.log('[BRACKET] Team seeding order:', payload.teams.map(t => `${t.name} (seed ${t.seed})`));
+    log('Team seeding order:', payload.teams.map(t => `${t.name} (seed ${t.seed})`));
     
     // Validate team seeding is consecutive starting from 1
     const expectedSeeds = Array.from({ length: payload.teams.length }, (_, i) => i + 1);
@@ -485,14 +489,14 @@ serve(async (req) => {
       misc: JSON.stringify({ teamId: team.id })
     }));
 
-    console.log('[BRACKET] Prepared participants:', JSON.stringify(participants, null, 2));
+    log('Prepared participants:', JSON.stringify(participants, null, 2));
 
-    console.log('[CHALLONGE] API key configured, proceeding with tournament creation');
+    log('[CHALLONGE] API key configured, proceeding with tournament creation');
 
     const tournamentType = payload.format === 'singleElim' ? 'single elimination' : 'double elimination';
     const tournamentUrl = `${payload.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${Date.now()}`;
 
-    console.log('[CHALLONGE] Creating tournament with type:', tournamentType, 'and URL:', tournamentUrl);
+    log('[CHALLONGE] Creating tournament with type:', tournamentType, 'and URL:', tournamentUrl);
 
     // Create tournament using v1 API with challongeFetch helper
     const tournamentData = await challongeFetch('POST', '/tournaments', {
@@ -504,20 +508,20 @@ serve(async (req) => {
       }
     });
 
-    console.log('[CHALLONGE] Tournament created successfully:', JSON.stringify(tournamentData, null, 2));
+    log('[CHALLONGE] Tournament created successfully:', JSON.stringify(tournamentData, null, 2));
 
     const tournament = tournamentData.tournament;
     const tournamentId = tournament.id;
     const tournamentUrlSlug = tournament.url;
 
-    console.log('[CHALLONGE] Tournament details - ID:', tournamentId, 'URL:', tournamentUrlSlug);
+    log('[CHALLONGE] Tournament details - ID:', tournamentId, 'URL:', tournamentUrlSlug);
 
     // Add participants to tournament using v1 API
-    console.log('[CHALLONGE] Adding participants to tournament...');
+    log('[CHALLONGE] Adding participants to tournament...');
     
     for (let i = 0; i < participants.length; i++) {
       const participant = participants[i];
-      console.log(`[CHALLONGE] Adding participant ${i + 1}/${participants.length}:`, participant.name);
+      log(`[CHALLONGE] Adding participant ${i + 1}/${participants.length}:`, participant.name);
       
       try {
         const participantData = await challongeFetch('POST', `/tournaments/${tournamentId}/participants`, {
@@ -528,24 +532,24 @@ serve(async (req) => {
           }
         });
         
-        console.log(`[CHALLONGE] Successfully added participant:`, participantData.participant?.name || 'Unknown');
+        log(`[CHALLONGE] Successfully added participant:`, participantData.participant?.name || 'Unknown');
       } catch (error) {
-        console.error(`[CHALLONGE] Failed to add participant ${participant.name}:`, error);
+        errorLog(`[CHALLONGE] Failed to add participant ${participant.name}:`, error);
         throw new Error(`Failed to add participant ${participant.name}: ${error.message}`);
       }
     }
 
-    console.log('[CHALLONGE] All participants added successfully');
+    log('[CHALLONGE] All participants added successfully');
 
     // Start tournament using v1 API - Use tournament URL, not ID
-    console.log('[CHALLONGE] Starting tournament using URL:', tournamentUrlSlug);
+    log('[CHALLONGE] Starting tournament using URL:', tournamentUrlSlug);
     
     try {
       const startData = await challongeFetch('POST', `/tournaments/${tournamentUrlSlug}/start`);
-      console.log('[CHALLONGE] Tournament started successfully:', startData.tournament?.state || 'Unknown state');
+      log('[CHALLONGE] Tournament started successfully:', startData.tournament?.state || 'Unknown state');
     } catch (error) {
-      console.error('[CHALLONGE] Failed to start tournament:', error);
-      console.log('[CHALLONGE] Tournament will remain in pending state and can be started manually later');
+      errorLog('[CHALLONGE] Failed to start tournament:', error);
+      log('[CHALLONGE] Tournament will remain in pending state and can be started manually later');
       // Don't throw here - allow bracket creation to continue even if starting fails
     }
 
@@ -555,7 +559,7 @@ serve(async (req) => {
       supabaseServiceKey
     );
 
-    console.log('[DATABASE] Inserting bracket record...');
+    log('[DATABASE] Inserting bracket record...');
 
     // Insert bracket record into Supabase
     const { data: bracketData, error: insertError } = await supabaseAdmin
@@ -571,14 +575,14 @@ serve(async (req) => {
       .single();
 
     if (insertError || !bracketData) {
-      console.error('[DATABASE] Failed to insert bracket:', insertError);
+      errorLog('[DATABASE] Failed to insert bracket:', insertError);
       throw new Error(`Failed to save bracket: ${insertError?.message || 'No data returned'}`);
     }
 
-    console.log('[DATABASE] Bracket record created:', bracketData.id);
+    log('[DATABASE] Bracket record created:', bracketData.id);
 
     // Create participants records using the dedicated participants table
-    console.log('[DATABASE] Creating participant records...');
+    log('[DATABASE] Creating participant records...');
     
     const participantRecords = payload.teams.map(team => ({
       bracket_id: bracketData.id,
@@ -592,15 +596,15 @@ serve(async (req) => {
       .insert(participantRecords);
     
     if (participantsError) {
-      console.error('[DATABASE] Failed to create participant records:', participantsError);
+      errorLog('[DATABASE] Failed to create participant records:', participantsError);
       // Don't fail the entire operation for participant record issues
-      console.log('[DATABASE] Bracket created but participant records may be incomplete');
+      log('[DATABASE] Bracket created but participant records may be incomplete');
     } else {
-      console.log('[DATABASE] Created participant records for all teams');
+      log('[DATABASE] Created participant records for all teams');
     }
 
     // Generate and insert playoff matches using three-pass approach
-    console.log('[MATCHES] Generating playoff match structure...');
+    log('[MATCHES] Generating playoff match structure...');
     
     // Declare bracketResult outside the try block so it's accessible in the return statement
     let bracketResult: any = null;
@@ -608,30 +612,30 @@ serve(async (req) => {
     try {
       if (payload.format === 'singleElim') {
         bracketResult = BracketGenerator.generateSingleElimination(payload.teams, bracketData.id);
-        console.log(`[MATCHES] Generated ${bracketResult.matches.length} single elimination matches`);
+        log(`[MATCHES] Generated ${bracketResult.matches.length} single elimination matches`);
       } else if (payload.format === 'doubleElim') {
         bracketResult = BracketGenerator.generateDoubleElimination(payload.teams, bracketData.id);
-        console.log(`[MATCHES] Generated ${bracketResult.matches.length} double elimination matches`);
+        log(`[MATCHES] Generated ${bracketResult.matches.length} double elimination matches`);
       }
 
       if (bracketResult?.matches?.length > 0) {
-        console.log('[MATCHES] Starting three-pass insertion process...');
+        log('[MATCHES] Starting three-pass insertion process...');
         
         // PASS 1: Insert all matches with NULL foreign key references
-        console.log('[MATCHES] Pass 1: Inserting all matches with NULL references...');
+        log('[MATCHES] Pass 1: Inserting all matches with NULL references...');
         const { error: insertError } = await supabaseAdmin
           .from('playoff_matches')
           .insert(bracketResult.matches);
         
         if (insertError) {
-          console.error('[MATCHES] Failed to insert matches in pass 1:', insertError);
+          errorLog('[MATCHES] Failed to insert matches in pass 1:', insertError);
           throw new Error(`Failed to insert playoff matches: ${insertError.message}`);
         }
         
-        console.log(`[MATCHES] Pass 1 completed: Inserted ${bracketResult.matches.length} matches`);
+        log(`[MATCHES] Pass 1 completed: Inserted ${bracketResult.matches.length} matches`);
         
         // PASS 2: Update next_win_match_id references with fixed logic
-        console.log('[MATCHES] Pass 2: Updating next_win_match_id references...');
+        log('[MATCHES] Pass 2: Updating next_win_match_id references...');
         
         if (payload.format === 'singleElim') {
           const { matchIdMap } = bracketResult;
@@ -653,7 +657,7 @@ serve(async (req) => {
                   .eq('id', currentMatchId);
                 
                 if (updateError) {
-                  console.error('[MATCHES] Failed to update next_win_match_id:', updateError);
+                  errorLog('[MATCHES] Failed to update next_win_match_id:', updateError);
                   throw new Error(`Failed to update match references: ${updateError.message}`);
                 }
               }
@@ -688,7 +692,7 @@ serve(async (req) => {
                   .eq('id', currentMatchId);
                 
                 if (updateError) {
-                  console.error('[MATCHES] Failed to update winners next_win_match_id:', updateError);
+                  errorLog('[MATCHES] Failed to update winners next_win_match_id:', updateError);
                   throw new Error(`Failed to update winners match references: ${updateError.message}`);
                 }
               }
@@ -729,7 +733,7 @@ serve(async (req) => {
                   .eq('id', currentMatchId);
                 
                 if (updateError) {
-                  console.error('[MATCHES] Failed to update losers next_win_match_id:', updateError);
+                  errorLog('[MATCHES] Failed to update losers next_win_match_id:', updateError);
                   throw new Error(`Failed to update losers match references: ${updateError.message}`);
                 }
               }
@@ -737,11 +741,11 @@ serve(async (req) => {
           }
         }
         
-        console.log('[MATCHES] Pass 2 completed: Updated all next_win_match_id references');
+        log('[MATCHES] Pass 2 completed: Updated all next_win_match_id references');
         
         // PASS 3: Update next_lose_match_id references (only for double elimination)
         if (payload.format === 'doubleElim') {
-          console.log('[MATCHES] Pass 3: Updating next_lose_match_id references...');
+          log('[MATCHES] Pass 3: Updating next_lose_match_id references...');
           
           const { winnersMatchIds, losersMatchIds } = bracketResult;
           const rounds = BracketGenerator.calculateRounds(BracketGenerator.calculateBracketSize(payload.teams.length));
@@ -771,25 +775,25 @@ serve(async (req) => {
                   .eq('id', currentMatchId);
                 
                 if (updateError) {
-                  console.error('[MATCHES] Failed to update next_lose_match_id:', updateError);
+                  errorLog('[MATCHES] Failed to update next_lose_match_id:', updateError);
                   throw new Error(`Failed to update lose match references: ${updateError.message}`);
                 }
               }
             }
           }
           
-          console.log('[MATCHES] Pass 3 completed: Updated all next_lose_match_id references');
+          log('[MATCHES] Pass 3 completed: Updated all next_lose_match_id references');
         }
         
-        console.log(`[MATCHES] Successfully completed three-pass insertion for ${bracketResult.matches.length} playoff matches`);
+        log(`[MATCHES] Successfully completed three-pass insertion for ${bracketResult.matches.length} playoff matches`);
       }
     } catch (matchError) {
-      console.error('[MATCHES] Error generating or inserting matches:', matchError);
+      errorLog('[MATCHES] Error generating or inserting matches:', matchError);
       // Don't fail the entire bracket creation, but log the issue
-      console.log('[MATCHES] Bracket created but match generation failed - matches can be generated later');
+      log('[MATCHES] Bracket created but match generation failed - matches can be generated later');
     }
 
-    console.log('[BRACKET] Bracket creation completed successfully:', bracketData.id);
+    log('Bracket creation completed successfully:', bracketData.id);
 
     const bracketRecord: BracketRecord = {
       id: bracketData.id,
@@ -816,7 +820,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[BRACKET] Error in create-bracket function:', error);
+    errorLog('Error in create-bracket function:', error);
     
     // Parse specific Challonge errors for better user feedback
     let errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

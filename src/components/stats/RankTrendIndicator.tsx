@@ -1,6 +1,7 @@
 
 import React from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { debugLog } from "@/utils/logger";
 
 interface RankTrendIndicatorProps {
   rankChange?: number;
@@ -10,7 +11,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
   // Add debug info to component
   React.useEffect(() => {
     if (rankChange !== undefined && rankChange !== 0) {
-      console.log(`Rendering trend indicator with change: ${rankChange}`);
+      debugLog(`Rendering trend indicator with change: ${rankChange}`);
     }
   }, [rankChange]);
 

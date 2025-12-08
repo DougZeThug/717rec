@@ -1,5 +1,6 @@
 
 import React from "react";
+import { chartLog } from "@/utils/logger";
 
 export interface ChartDataItem {
   name: string;
@@ -19,11 +20,11 @@ export function useSortedWinLossData(
 ) {
   return React.useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) {
-      console.log("❌ No data provided to useSortedWinLossData or data is not an array");
+      chartLog("No data provided to useSortedWinLossData or data is not an array");
       return [];
     }
 
-    console.log("🔍 Raw data received in useSortedWinLossData:", 
+    chartLog("Raw data received in useSortedWinLossData:", 
       data.map(team => ({
         name: team.name,
         wins: team.wins,
@@ -87,8 +88,8 @@ export function useSortedWinLossData(
       });
 
     // Debug output for chart order and win pct
-    console.log(
-      "✅ Win–Loss Chart Final Sorted Data:",
+    chartLog(
+      "Win–Loss Chart Final Sorted Data:",
       sortedData.map((t, i) => ({
         name: t.name,
         displayName: t.displayName,

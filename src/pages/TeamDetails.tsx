@@ -16,6 +16,7 @@ import HeadToHeadRecords from "@/components/stats/HeadToHeadRecords";
 import TeamTotals from "@/components/teams/TeamTotals";
 import { calculateSweepRate } from "@/utils/teamDetailsUtils/sweepRateUtils";
 import TeamCareerPowerScoreChart from "@/components/teams/TeamCareerPowerScoreChart";
+import { teamLog } from "@/utils/logger";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -29,7 +30,7 @@ const TeamDetails = () => {
   const teamRank = teamRanking ? rankings.findIndex(r => r.teamId === teamId) + 1 : undefined;
   const totalTeams = rankings?.length;
 
-  console.log("TeamDetails rendering with team data:", team ? {
+  teamLog("TeamDetails rendering with team data:", team ? {
     name: team.name,
     power_score: team.power_score,
     sos: team.sos,
