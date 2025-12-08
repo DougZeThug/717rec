@@ -3,6 +3,7 @@ import { MatchWithTeams } from "../types";
 import { useSubmissionState } from "./useSubmissionState";
 import { useMatchValidation } from "./submission/useMatchValidation";
 import { useMatchUpdateService } from "../services/matchUpdateService";
+import { scoreLog, errorLog, dbLog } from "@/utils/logger";
 
 export const useScoreSubmission = (
   matches: MatchWithTeams[],
@@ -34,7 +35,7 @@ export const useScoreSubmission = (
       match && match.isEdited && match.isValid && match.iscompleted
     );
     
-    console.log(`[useScoreSubmission] Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`);
+    scoreLog(`Found ${editedMatches.length} edited, valid, and completed matches out of ${matches.length} total matches`);
     
     if (editedMatches.length === 0) {
       toast({
@@ -44,7 +45,7 @@ export const useScoreSubmission = (
       return;
     }
 
-    console.log(`[useScoreSubmission] Processing ${editedMatches.length} edited matches`);
+    scoreLog(`Processing ${editedMatches.length} edited matches`);
     setSubmitting(true);
     clearErrors();
     let successCount = 0;
@@ -58,7 +59,7 @@ export const useScoreSubmission = (
           team1_game_wins: match.team1_game_wins ?? 0,
           team2_game_wins: match.team2_game_wins ?? 0,
         })) {
-          console.log(`[useScoreSubmission] Match ${match.id} failed validation`);
+          scoreLog(`Match ${match.id} failed validation`);
           continue;
         }
 
@@ -93,14 +94,15 @@ export const useScoreSubmission = (
         try {
           await fetchMatches();
         } catch (error) {
-          console.error("Error refreshing matches:", error);
+          errorLog("Error refreshing matches:", error);
         }
       }
-    } catch (error: any) {
-      console.error("[useScoreSubmission] Error in batch update:", error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      errorLog("Error in batch update:", errorMessage);
       toast({
         title: "Error",
-        description: `Failed to update matches: ${error.message}`,
+        description: `Failed to update matches: ${errorMessage}`,
         variant: "destructive"
       });
     } finally {
@@ -109,7 +111,7 @@ export const useScoreSubmission = (
   };
 
   const invalidateAllDataQueries = () => {
-    console.log("[useScoreSubmission] Invalidating all data queries for fresh data");
+    dbLog("Invalidating all data queries for fresh data");
     queryClient.invalidateQueries({ queryKey: ['matches'] });
     queryClient.invalidateQueries({ queryKey: ['teams'] });
     queryClient.invalidateQueries({ queryKey: ['rankings'] });
