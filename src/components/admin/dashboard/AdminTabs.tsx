@@ -8,10 +8,11 @@ import BatchMatchCreationTab from "@/components/admin/batch-matches/BatchMatchCr
 import MassScoresTab from "@/components/admin/scores/MassScoresTab";
 import AutoScheduleTab from "@/components/admin/auto-schedule/AutoScheduleTab";
 import SeasonManagementTab from "@/components/admin/seasons/SeasonManagementTab";
+import HeroCardsTab from "@/components/admin/hero-cards/HeroCardsTab";
 
 const AdminTabs = () => {
   return (
-    <Tabs defaultValue="teams" className="space-y-4">
+  <Tabs defaultValue="teams" className="space-y-4">
       <TabsList className="flex flex-wrap md:flex-nowrap gap-2 h-auto md:h-10">
         <TabsTrigger value="teams">Team Management</TabsTrigger>
         <TabsTrigger value="pending-matches">Pending Matches</TabsTrigger>
@@ -20,6 +21,7 @@ const AdminTabs = () => {
         <TabsTrigger value="batch-matches">Batch Matches</TabsTrigger>
         <TabsTrigger value="auto-schedule">Auto Schedule</TabsTrigger>
         <TabsTrigger value="timeslots">Timeslots</TabsTrigger>
+        <TabsTrigger value="hero-cards">Hero Cards</TabsTrigger>
       </TabsList>
 
       <TabsContent value="teams" className="space-y-4">
@@ -48,6 +50,10 @@ const AdminTabs = () => {
 
       <TabsContent value="timeslots" className="space-y-4">
         <TimeslotsTab />
+      </TabsContent>
+
+      <TabsContent value="hero-cards" className="space-y-4">
+        <HeroCardsTab />
       </TabsContent>
     </Tabs>
   );

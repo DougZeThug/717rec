@@ -318,6 +318,75 @@ export type Database = {
           },
         ]
       }
+      hero_cards: {
+        Row: {
+          accent_color: string | null
+          background_color: string | null
+          body: string | null
+          card_type: string | null
+          created_at: string | null
+          cta_label: string | null
+          cta_url: string | null
+          icon_name: string | null
+          id: string
+          image_url: string | null
+          is_visible: boolean | null
+          metadata: Json | null
+          slug: string
+          sort_order: number | null
+          subtitle: string | null
+          target_id: string | null
+          target_type: string | null
+          text_color: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          background_color?: string | null
+          body?: string | null
+          card_type?: string | null
+          created_at?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          icon_name?: string | null
+          id?: string
+          image_url?: string | null
+          is_visible?: boolean | null
+          metadata?: Json | null
+          slug: string
+          sort_order?: number | null
+          subtitle?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          text_color?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          background_color?: string | null
+          body?: string | null
+          card_type?: string | null
+          created_at?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          icon_name?: string | null
+          id?: string
+          image_url?: string | null
+          is_visible?: boolean | null
+          metadata?: Json | null
+          slug?: string
+          sort_order?: number | null
+          subtitle?: string | null
+          target_id?: string | null
+          target_type?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       match: {
         Row: {
           child_count: number
