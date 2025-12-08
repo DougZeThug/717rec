@@ -1,7 +1,7 @@
-
 import { MatchWithTeams } from "../../types";
 import { useSubmissionState } from "../useSubmissionState";
 import { validateMatchSubmission } from "../../utils/matchSubmissionUtils";
+import { validationLog } from "@/utils/logger";
 
 export const useMatchValidation = () => {
   const { addError } = useSubmissionState();

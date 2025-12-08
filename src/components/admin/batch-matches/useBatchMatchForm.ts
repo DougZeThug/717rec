@@ -7,6 +7,7 @@ import { createDateWithTime } from "@/components/schedule/form-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { normalizeTimeFormat } from "@/utils/timeUtils";
 import { formatTimeToUTC } from "@/utils/timezoneUtils";
+import { matchLog, timezoneLog, errorLog } from "@/utils/logger";
 
 export const useBatchMatchForm = (teams: Team[]) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);

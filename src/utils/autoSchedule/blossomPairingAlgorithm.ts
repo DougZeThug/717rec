@@ -1,6 +1,7 @@
 import { Team } from "@/types";
 import { TeamPairing } from "@/types/autoSchedule";
 import edmondsBlossom from "edmonds-blossom";
+import { scheduleLog, debugLog, warnLog, errorLog } from "@/utils/logger";
 
 type TeamPairingConfig = {
   avoidRematches?: boolean;
@@ -37,15 +38,15 @@ export async function generatePairingsWithBlossom(
   const targetMatchesPerTeam = 2;
   const expectedMatches = teams.length; // For N teams, we need N matches (each team gets 2)
   
-  console.log(`Starting Blossom algorithm for ${teams.length} teams`);
-  console.log(`Expected to generate ${expectedMatches} matches (${targetMatchesPerTeam} per team)`);
+  scheduleLog(`Starting Blossom algorithm for ${teams.length} teams`);
+  debugLog(`Expected to generate ${expectedMatches} matches (${targetMatchesPerTeam} per team)`);
   
   const startTime = performance.now();
   
   try {
     // Build weighted graph with all valid edges
     const edges = await buildWeightedGraph(teams, config);
-    console.log(`Built graph with ${edges.length} valid edges`);
+    debugLog(`Built graph with ${edges.length} valid edges`);
     
     // Run Blossom algorithm twice to ensure each team gets 2 matches
     const round1Pairings = runBlossomMatching(teams, edges, 1);
@@ -58,7 +59,7 @@ export async function generatePairingsWithBlossom(
     validatePairings(teams, allPairings, targetMatchesPerTeam);
     
     const endTime = performance.now();
-    console.log(`Blossom algorithm took ${(endTime - startTime).toFixed(2)}ms`);
+    debugLog(`Blossom algorithm took ${(endTime - startTime).toFixed(2)}ms`);
     
     // Log final statistics
     logFinalStatistics(teams, allPairings, targetMatchesPerTeam);
@@ -66,10 +67,10 @@ export async function generatePairingsWithBlossom(
     return allPairings;
     
   } catch (error) {
-    console.error('Blossom algorithm failed:', error);
+    errorLog('Blossom algorithm failed:', error);
     
     // Fallback to relaxed solution
-    console.warn('Falling back to relaxed constraints...');
+    warnLog('Falling back to relaxed constraints...');
     return await findRelaxedSolution(teams, config, targetMatchesPerTeam);
   }
 }
@@ -127,7 +128,7 @@ async function shouldExcludeEdge(
 ): Promise<boolean> {
   // Hard constraint: Block T1 vs T3 (extreme tier difference)
   if (isExtremeTierDifference(team1, team2)) {
-    console.log(`Blocking extreme tier difference: ${team1.name} vs ${team2.name}`);
+    debugLog(`Blocking extreme tier difference: ${team1.name} vs ${team2.name}`);
     return true;
   }
   
@@ -135,7 +136,7 @@ async function shouldExcludeEdge(
   if (config.avoidRematches) {
     const hasPlayedBefore = await config.haveTeamsPlayedFn(team1.id, team2.id);
     if (hasPlayedBefore && !isBothRecreational(team1, team2)) {
-      console.log(`Blocking rematch: ${team1.name} vs ${team2.name}`);
+      debugLog(`Blocking rematch: ${team1.name} vs ${team2.name}`);
       return true;
     }
   }
@@ -199,10 +200,10 @@ function runBlossomMatching(
   edges: Edge[],
   round: number
 ): TeamPairing[] {
-  console.log(`Running Blossom matching round ${round} with ${edges.length} edges`);
+  debugLog(`Running Blossom matching round ${round} with ${edges.length} edges`);
   
   if (edges.length === 0) {
-    console.warn(`No valid edges for round ${round}`);
+    warnLog(`No valid edges for round ${round}`);
     return [];
   }
   
@@ -258,15 +259,15 @@ function runBlossomMatching(
           hasPlayedBefore: edge.hasPlayedBefore
         });
         
-        console.log(`Round ${round}: ${team1.name} vs ${team2.name} (score: ${edge.weight.toFixed(1)})`);
+        debugLog(`Round ${round}: ${team1.name} vs ${team2.name} (score: ${edge.weight.toFixed(1)})`);
       }
     }
     
-    console.log(`Round ${round} completed: ${pairings.length} pairings`);
+    debugLog(`Round ${round} completed: ${pairings.length} pairings`);
     return pairings;
     
   } catch (error) {
-    console.error(`Blossom matching failed for round ${round}:`, error);
+    errorLog(`Blossom matching failed for round ${round}:`, error);
     return [];
   }
 }
@@ -321,7 +322,7 @@ function validatePairings(
   );
   
   if (incorrectTeams.length > 0) {
-    console.warn('Teams with incorrect match counts:', incorrectTeams.map(team => 
+    warnLog('Teams with incorrect match counts:', incorrectTeams.map(team => 
       `${team.name}: ${teamMatchCounts.get(team.id) || 0} matches`
     ));
     throw new Error(`${incorrectTeams.length} teams don't have ${targetMatchesPerTeam} matches`);
@@ -342,7 +343,7 @@ async function findRelaxedSolution(
   config: TeamPairingConfig,
   targetMatchesPerTeam: number
 ): Promise<TeamPairing[]> {
-  console.log('Applying relaxed constraints: allowing rematches if necessary');
+  debugLog('Applying relaxed constraints: allowing rematches if necessary');
   
   const edges = await buildRelaxedGraph(teams, config);
   const teamMatchCounts = new Map<string, number>();
@@ -391,7 +392,7 @@ async function findRelaxedSolution(
     }
   }
   
-  console.log(`Relaxed solution: ${finalPairings.length} pairings`);
+  debugLog(`Relaxed solution: ${finalPairings.length} pairings`);
   return finalPairings;
 }
 
@@ -454,24 +455,24 @@ function logFinalStatistics(
     matchDistribution.set(matchCount, (matchDistribution.get(matchCount) || 0) + 1);
   });
   
-  console.log('=== BLOSSOM ALGORITHM STATISTICS ===');
-  console.log(`Target matches per team: ${targetMatchesPerTeam}`);
-  console.log(`Total pairings generated: ${finalPairings.length}`);
-  console.log(`Expected pairings: ${teams.length}`);
+  debugLog('=== BLOSSOM ALGORITHM STATISTICS ===');
+  debugLog(`Target matches per team: ${targetMatchesPerTeam}`);
+  debugLog(`Total pairings generated: ${finalPairings.length}`);
+  debugLog(`Expected pairings: ${teams.length}`);
   
-  console.log('Match distribution:');
+  debugLog('Match distribution:');
   matchDistribution.forEach((teamCount, matchCount) => {
     const status = matchCount === targetMatchesPerTeam ? '✓' : '⚠️';
-    console.log(`  ${status} ${teamCount} teams with ${matchCount} matches`);
+    debugLog(`  ${status} ${teamCount} teams with ${matchCount} matches`);
   });
   
   // Count rematches
   const rematchCount = finalPairings.filter(p => p.hasPlayedBefore).length;
-  console.log(`Rematches: ${rematchCount}/${finalPairings.length}`);
+  debugLog(`Rematches: ${rematchCount}/${finalPairings.length}`);
   
   // Calculate average compatibility score
   const avgScore = finalPairings.reduce((sum, p) => sum + p.compatibilityScore, 0) / finalPairings.length;
-  console.log(`Average compatibility score: ${avgScore.toFixed(2)}`);
+  debugLog(`Average compatibility score: ${avgScore.toFixed(2)}`);
   
   // Analyze tier distribution
   const tierPairings = new Map<string, number>();
@@ -482,12 +483,12 @@ function logFinalStatistics(
     tierPairings.set(tierKey, (tierPairings.get(tierKey) || 0) + 1);
   });
   
-  console.log('Tier distribution:');
+  debugLog('Tier distribution:');
   tierPairings.forEach((count, tierKey) => {
-    console.log(`  ${tierKey}: ${count} pairings`);
+    debugLog(`  ${tierKey}: ${count} pairings`);
   });
   
-  console.log('=== END STATISTICS ===');
+  debugLog('=== END STATISTICS ===');
 }
 
 /**

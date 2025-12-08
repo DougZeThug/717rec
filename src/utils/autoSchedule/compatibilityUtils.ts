@@ -1,8 +1,8 @@
-
 import { Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { getCachedCompatibilityScore, getCachedMatchHistory } from "./cachingUtils";
 import { getDisplayDivision } from "@/styles/design-system/divisions";
+import { debugLog, errorLog } from "@/utils/logger";
 
 /**
  * Get tier distance between two teams (0 = same tier, 1 = adjacent, 2 = extreme)

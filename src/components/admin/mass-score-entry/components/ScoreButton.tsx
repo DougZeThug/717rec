@@ -1,8 +1,8 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ScoreOption } from "./types";
+import { scoreLog } from "@/utils/logger";
 
 interface ScoreButtonProps {
   option: ScoreOption;

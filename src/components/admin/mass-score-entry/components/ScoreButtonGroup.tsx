@@ -1,7 +1,7 @@
-
 import React, { useEffect, useState } from "react";
 import ScoreButton from "./ScoreButton";
 import { SCORE_OPTIONS } from "./types";
+import { scoreLog } from "@/utils/logger";
 
 interface ScoreButtonGroupProps {
   value: { team1Score: number; team2Score: number; team1GameWins?: number; team2GameWins?: number } | null;

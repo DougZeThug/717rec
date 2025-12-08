@@ -1,7 +1,7 @@
-
 import { useState } from "react";
 import { FilterState } from "../../types";
 import { supabase } from "@/integrations/supabase/client";
+import { filterLog, errorLog } from "@/utils/logger";
 
 export const useFiltersState = () => {
   const [filters, setFilters] = useState<FilterState>({});

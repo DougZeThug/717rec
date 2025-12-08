@@ -1,10 +1,10 @@
-
 import React from "react";
 import { MatchWithTeams } from "./types";
 import TeamDisplay from "./components/TeamDisplay";
 import ScoreSection from "./components/ScoreSection";
 import MatchStatusSection from "./components/MatchStatusSection";
 import { Switch } from "@/components/ui/switch";
+import { scoreLog } from "@/utils/logger";
 
 interface MatchRowProps {
   match: MatchWithTeams;

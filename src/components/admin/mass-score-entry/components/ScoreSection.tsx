@@ -1,10 +1,10 @@
-
 import React from "react";
 import { MatchWithTeams } from "../types";
 import ScoreButtonGroup from "./ScoreButtonGroup";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { scoreLog } from "@/utils/logger";
 
 interface ScoreSectionProps {
   match: MatchWithTeams;

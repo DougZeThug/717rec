@@ -1,4 +1,3 @@
-
 import { TeamPairing, TeamPairingMap, TimeBlockTeamsMap, PairingResult, DualBlockConfig } from '@/types/autoSchedule';
 import { Team } from '@/types';
 import { NotificationCallback } from '@/types/dualBlock';
@@ -7,6 +6,7 @@ import { generatePairingsWithBlossom } from '../blossomPairingAlgorithm';
 import { calculateConfigurableCompatibility } from '../compatibilityUtils';
 import { haveTeamsPlayedBefore } from '../matchHistoryService';
 import { findTeamsWithSameOpponent } from './opponentUtils';
+import { scheduleLog, warnLog, errorLog } from '@/utils/logger';
 
 /**
  * Generate dual block pairings
@@ -30,7 +30,7 @@ export const generateDualBlockPairings = async (
     
     // Ensure both blocks exist in the timeBlockTeams
     if (!timeBlockTeams[primaryBlock] || !timeBlockTeams[secondaryBlock]) {
-      console.error(`Missing required blocks for dual mode: ${primaryBlock} or ${secondaryBlock}`);
+      errorLog(`Missing required blocks for dual mode: ${primaryBlock} or ${secondaryBlock}`);
       
       if (notifyCallback) {
         notifyCallback({
@@ -48,7 +48,7 @@ export const generateDualBlockPairings = async (
     const secondaryTeams = timeBlockTeams[secondaryBlock];
     
     // First generate optimal pairings for the primary block
-    console.log(`Generating primary block pairings for ${primaryTeams.length} teams`);
+    scheduleLog(`Generating primary block pairings for ${primaryTeams.length} teams`);
     const primaryPairings = await generatePairingsWithBlossom(primaryTeams, {
       avoidRematches: config.avoidRematches,
       haveTeamsPlayedFn: haveTeamsPlayedBefore,
@@ -95,7 +95,7 @@ export const generateDualBlockPairings = async (
     };
     
     // Generate secondary block pairings with constraints
-    console.log(`Generating secondary block pairings for ${secondaryTeams.length} teams with opponent constraints`);
+    scheduleLog(`Generating secondary block pairings for ${secondaryTeams.length} teams with opponent constraints`);
     const secondaryPairings = await generatePairingsWithBlossom(secondaryTeams, {
       ...secondaryConstraints,
       weights: config.weights
@@ -133,7 +133,7 @@ export const generateDualBlockPairings = async (
     // If teams have the same opponent in both blocks, log and track them
     const teamsWithSameOpponent = findTeamsWithSameOpponent(primaryPairings, secondaryPairings);
     if (teamsWithSameOpponent.length > 0) {
-      console.warn(`Session rematch detected: ${teamsWithSameOpponent.length} teams have the same opponent in both blocks`);
+      warnLog(`Session rematch detected: ${teamsWithSameOpponent.length} teams have the same opponent in both blocks`);
       
       // Look up team names for better logging
       const teamNameMap = new Map<string, string>();
@@ -143,7 +143,7 @@ export const generateDualBlockPairings = async (
       
       teamsWithSameOpponent.forEach(teamId => {
         const teamName = teamNameMap.get(teamId) || `Team ${teamId}`;
-        console.warn(`  ${teamName} plays the same opponent in both blocks`);
+        warnLog(`  ${teamName} plays the same opponent in both blocks`);
       });
       
       if (notifyCallback) {
@@ -154,7 +154,7 @@ export const generateDualBlockPairings = async (
         });
       }
     } else {
-      console.log('Session rematch validation passed: All teams have different opponents in each block');
+      scheduleLog('Session rematch validation passed: All teams have different opponents in each block');
     }
     
     return {
@@ -163,7 +163,7 @@ export const generateDualBlockPairings = async (
     };
     
   } catch (error) {
-    console.error("Error generating dual block pairings:", error);
+    errorLog("Error generating dual block pairings:", error);
     
     if (notifyCallback) {
       notifyCallback({

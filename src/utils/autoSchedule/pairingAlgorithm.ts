@@ -1,6 +1,6 @@
-
 import { Team } from "@/types";
 import { TeamPairing } from "@/types/autoSchedule";
+import { scheduleLog, debugLog, warnLog, errorLog } from "@/utils/logger";
 
 type TeamPairingConfig = {
   avoidRematches?: boolean;
@@ -30,8 +30,8 @@ export async function generatePairingsWithConfig(
   const targetMatchesPerTeam = 2;
   const expectedMatches = teams.length; // For N teams, we need N matches (each team gets 2)
   
-  console.log(`Starting backtracking algorithm for ${teams.length} teams`);
-  console.log(`Expected to generate ${expectedMatches} matches (${targetMatchesPerTeam} per team)`);
+  scheduleLog(`Starting backtracking algorithm for ${teams.length} teams`);
+  debugLog(`Expected to generate ${expectedMatches} matches (${targetMatchesPerTeam} per team)`);
   
   // Start tracking time for performance monitoring
   const startTime = performance.now();
@@ -39,7 +39,7 @@ export async function generatePairingsWithConfig(
   // Pre-calculate all potential pairings with scores and metadata
   const potentialPairings = await calculateAllPotentialPairings(teams, config);
   
-  console.log(`Generated ${potentialPairings.length} potential pairings`);
+  debugLog(`Generated ${potentialPairings.length} potential pairings`);
   
   // Use backtracking algorithm to find optimal solution
   const result = await findOptimalPairingsWithBacktracking(
@@ -51,8 +51,8 @@ export async function generatePairingsWithConfig(
   
   // Log performance metrics and results
   const endTime = performance.now();
-  console.log(`Backtracking algorithm took ${(endTime - startTime).toFixed(2)}ms`);
-  console.log(`Generated ${result.length} pairings (expected ${expectedMatches})`);
+  debugLog(`Backtracking algorithm took ${(endTime - startTime).toFixed(2)}ms`);
+  debugLog(`Generated ${result.length} pairings (expected ${expectedMatches})`);
   
   // Log final statistics
   logFinalStatistics(teams, result, targetMatchesPerTeam);
@@ -146,7 +146,7 @@ async function findOptimalPairingsWithBacktracking(
   let exploredStates = 0;
   const maxBacktracks = 1000; // Prevent infinite recursion
   
-  console.log('Starting recursive backtracking...');
+  debugLog('Starting recursive backtracking...');
   
   /**
    * Recursive backtracking function
@@ -160,7 +160,7 @@ async function findOptimalPairingsWithBacktracking(
     );
     
     if (allTeamsComplete) {
-      console.log(`SUCCESS: Found complete solution with ${finalPairings.length} pairings`);
+      debugLog(`SUCCESS: Found complete solution with ${finalPairings.length} pairings`);
       return true;
     }
     
@@ -171,7 +171,7 @@ async function findOptimalPairingsWithBacktracking(
     
     // Prevent infinite recursion
     if (backtrackCount > maxBacktracks) {
-      console.warn(`Reached maximum backtrack limit (${maxBacktracks})`);
+      warnLog(`Reached maximum backtrack limit (${maxBacktracks})`);
       return false;
     }
     
@@ -190,7 +190,7 @@ async function findOptimalPairingsWithBacktracking(
       applyPairing(team1, team2, pairingKey, teamMatchCounts, usedPairings, 
                    sessionOpponents, finalPairings, pairing.score, hasPlayedBefore);
       
-      console.log(`Applied pairing: ${team1.name} vs ${team2.name} (${finalPairings.length} total)`);
+      debugLog(`Applied pairing: ${team1.name} vs ${team2.name} (${finalPairings.length} total)`);
       
       // Recursively try to complete the solution
       if (await backtrack(i + 1)) {
@@ -202,7 +202,7 @@ async function findOptimalPairingsWithBacktracking(
       undoPairing(team1, team2, pairingKey, teamMatchCounts, usedPairings, 
                   sessionOpponents, finalPairings);
       
-      console.log(`Backtracked from: ${team1.name} vs ${team2.name} (attempt ${backtrackCount})`);
+      debugLog(`Backtracked from: ${team1.name} vs ${team2.name} (attempt ${backtrackCount})`);
       
       // Yield control to prevent UI freezing
       if (backtrackCount % 10 === 0) {
@@ -216,15 +216,15 @@ async function findOptimalPairingsWithBacktracking(
   // Start the backtracking process
   const success = await backtrack(0);
   
-  console.log(`Backtracking completed:`);
-  console.log(`- Success: ${success}`);
-  console.log(`- States explored: ${exploredStates}`);
-  console.log(`- Backtracks performed: ${backtrackCount}`);
-  console.log(`- Final pairings: ${finalPairings.length}`);
+  debugLog(`Backtracking completed:`);
+  debugLog(`- Success: ${success}`);
+  debugLog(`- States explored: ${exploredStates}`);
+  debugLog(`- Backtracks performed: ${backtrackCount}`);
+  debugLog(`- Final pairings: ${finalPairings.length}`);
   
   // If backtracking failed to find perfect solution, try relaxed constraints
   if (!success || finalPairings.length < teams.length) {
-    console.warn('Perfect solution not found, trying with relaxed constraints...');
+    warnLog('Perfect solution not found, trying with relaxed constraints...');
     return await findRelaxedSolution(teams, potentialPairings, targetMatchesPerTeam);
   }
   
@@ -342,7 +342,7 @@ async function findRelaxedSolution(
   }>,
   targetMatchesPerTeam: number
 ): Promise<TeamPairing[]> {
-  console.log('Applying relaxed constraints: allowing rematches if necessary');
+  debugLog('Applying relaxed constraints: allowing rematches if necessary');
   
   const teamMatchCounts = new Map<string, number>();
   const usedPairings = new Set<string>();
@@ -393,7 +393,7 @@ async function findRelaxedSolution(
     }
   }
   
-  console.log(`Relaxed solution: ${finalPairings.length} pairings with ${rematchCount} rematches`);
+  debugLog(`Relaxed solution: ${finalPairings.length} pairings with ${rematchCount} rematches`);
   return finalPairings;
 }
 
@@ -421,30 +421,30 @@ function logFinalStatistics(
     matchDistribution.set(matchCount, (matchDistribution.get(matchCount) || 0) + 1);
   });
   
-  console.log('=== FINAL STATISTICS ===');
-  console.log(`Target matches per team: ${targetMatchesPerTeam}`);
-  console.log(`Total pairings generated: ${finalPairings.length}`);
-  console.log(`Expected pairings: ${teams.length}`);
+  debugLog('=== FINAL STATISTICS ===');
+  debugLog(`Target matches per team: ${targetMatchesPerTeam}`);
+  debugLog(`Total pairings generated: ${finalPairings.length}`);
+  debugLog(`Expected pairings: ${teams.length}`);
   
-  console.log('Match distribution:');
+  debugLog('Match distribution:');
   matchDistribution.forEach((teamCount, matchCount) => {
     const status = matchCount === targetMatchesPerTeam ? '✓' : '⚠️';
-    console.log(`  ${status} ${teamCount} teams with ${matchCount} matches`);
+    debugLog(`  ${status} ${teamCount} teams with ${matchCount} matches`);
   });
   
   // Count rematches
   const rematchCount = finalPairings.filter(p => p.hasPlayedBefore).length;
-  console.log(`Rematches: ${rematchCount}/${finalPairings.length}`);
+  debugLog(`Rematches: ${rematchCount}/${finalPairings.length}`);
   
   // Validate session rematches
   const validationResult = validateNoSessionRematches(finalPairings);
   if (validationResult.hasRematches) {
-    console.error('⚠️ Session rematch validation failed:', validationResult.rematches);
+    errorLog('⚠️ Session rematch validation failed:', validationResult.rematches);
   } else {
-    console.log('✓ No duplicate opponents in session');
+    debugLog('✓ No duplicate opponents in session');
   }
   
-  console.log('=== END STATISTICS ===');
+  debugLog('=== END STATISTICS ===');
 }
 
 /**

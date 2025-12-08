@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MatchWithTeams } from "../types";
 import { ChevronDown } from "lucide-react";
@@ -10,6 +9,7 @@ import {
 } from "@/components/ui/collapsible";
 import MatchRow from "../MatchRow";
 import { motion } from "framer-motion";
+import { scoreLog } from "@/utils/logger";
 
 interface TimeSlotMatchGroupProps {
   timeSlot: string;
