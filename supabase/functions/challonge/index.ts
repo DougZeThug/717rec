@@ -3,6 +3,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { challongeFetch } from "./lib.ts";
 
+// Edge function logger with prefix
+const log = (...args: unknown[]) => console.log('[CHALLONGE]', ...args);
+const errorLog = (...args: unknown[]) => console.error('[CHALLONGE ERROR]', ...args);
+
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -32,7 +36,7 @@ serve(async req => {
   // Verify authentication
   const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
   if (userError || !user) {
-    console.error('Authentication failed:', userError);
+    errorLog('Authentication failed:', userError);
     return json(401, { error: 'Authentication required' });
   }
 
@@ -44,11 +48,11 @@ serve(async req => {
     .single();
 
   if (profileError || !profile?.is_admin) {
-    console.error('Admin check failed:', profileError);
+    errorLog('Admin check failed:', profileError);
     return json(403, { error: 'Admin access required' });
   }
 
-  console.log('Authenticated admin user:', user.id);
+  log('Authenticated admin user:', user.id);
 
   let payload: { action: string; args?: any };
   try {

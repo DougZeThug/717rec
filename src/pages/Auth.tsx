@@ -9,6 +9,7 @@ import AuthForm from "@/components/auth/AuthForm";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import { useAuthForm } from "@/hooks/useAuthForm";
 import { useNativePlatform } from "@/hooks/useNativePlatform";
+import { authLog } from "@/utils/logger";
 
 interface LocationState {
   returnTo?: string;
@@ -39,7 +40,7 @@ const Auth = () => {
   useEffect(() => {
     // Only redirect if authentication check has completed
     if (authInitialized && user) {
-      console.log("User already logged in, redirecting to:", returnTo);
+      authLog("User already logged in, redirecting to:", returnTo);
       navigate(returnTo);
     }
   }, [user, navigate, returnTo, authInitialized]);

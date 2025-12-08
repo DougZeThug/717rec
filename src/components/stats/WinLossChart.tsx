@@ -5,6 +5,7 @@ import { useSortedWinLossData } from "./hooks/useSortedWinLossData";
 import { ChartDataItem } from "@/types/chart";
 import { animations } from "@/styles/design-system";
 import { cn } from "@/lib/utils";
+import { chartLog } from "@/utils/logger";
 
 interface WinLossChartProps {
   data: ChartDataItem[];
@@ -18,8 +19,8 @@ const WinLossChart: React.FC<WinLossChartProps> = ({
   isMobile,
 }) => {
   // Add debug logging to see what's coming from upstream
-  console.log(
-    "📊 WinLossChart received data:",
+  chartLog(
+    "WinLossChart received data:",
     data?.length,
     "teams with win_percentage example:",
     data?.[0]?.win_percentage
@@ -28,8 +29,8 @@ const WinLossChart: React.FC<WinLossChartProps> = ({
   const sortedData = useSortedWinLossData(data, chartLimit);
   
   // More debugging information
-  console.log(
-    "✅ Final sorted chart data (as used by WinLossChart):",
+  chartLog(
+    "Final sorted chart data (as used by WinLossChart):",
     sortedData.map((t) => ({
       name: t.displayName,
       wins: t.wins,
