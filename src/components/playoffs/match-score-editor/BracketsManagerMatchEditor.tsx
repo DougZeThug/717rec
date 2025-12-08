@@ -128,10 +128,13 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
         });
       }
 
-      // Invalidate all bracket-related queries to trigger refresh
-      await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
-      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
-      await queryClient.invalidateQueries({ queryKey: ['playoff-matches'] });
+      // Invalidate all bracket-related queries in parallel for faster refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] }),
+        queryClient.invalidateQueries({ queryKey: ['bracket-data'] }),
+        queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoff-matches'] })
+      ]);
 
       toast({
         title: 'Match Updated',
