@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import MatchStatusIndicator from "./MatchStatusIndicator";
 import { Check } from "lucide-react";
 import { motion } from "framer-motion";
+import { scoreLog } from "@/utils/logger";
 
 interface MatchStatusSectionProps {
   isCompleted: boolean;

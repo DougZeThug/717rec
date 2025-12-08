@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useAutoSchedule } from "@/hooks/useAutoSchedule/index";
 import AutoScheduleHeader from "./AutoScheduleHeader";
@@ -7,6 +6,7 @@ import ScheduleWorkflowTabs from "./ScheduleWorkflowTabs";
 import InformationSection from "./InformationSection";
 import { DiagnosticPanel } from "./DiagnosticPanel";
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
+import { scheduleLog } from "@/utils/logger";
 
 /**
  * AutoScheduleTab provides a workflow to generate and manage match schedules

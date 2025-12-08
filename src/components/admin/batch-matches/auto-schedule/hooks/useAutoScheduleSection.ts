@@ -1,9 +1,9 @@
-
 import { useState, useCallback } from "react";
 import { useSchedulePreview } from "@/hooks/useSchedulePreview";
 import { useToast } from "@/hooks/use-toast";
 import { normalizeDate } from "@/utils/dateNormalization";
 import { MatchPair } from "@/components/admin/batch-matches/MatchPairsList";
+import { scheduleLog } from "@/utils/logger";
 
 interface UseAutoScheduleSectionProps {
   selectedDate: Date | null;

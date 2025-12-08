@@ -1,3 +1,4 @@
+import { timezoneLog, warnLog, errorLog } from "@/utils/logger";
 
 /**
  * Unified date handling utility for auto-schedule functionality
@@ -9,7 +10,7 @@
  * Always returns YYYY-MM-DD format in local timezone
  */
 export const normalizeScheduleDate = (date: Date | string | null, context: string = 'unknown'): string => {
-  console.log(`🕒 [${context}] normalizeScheduleDate input:`, {
+  timezoneLog(`[${context}] normalizeScheduleDate input:`, {
     value: date,
     type: typeof date,
     isDate: date instanceof Date,
@@ -21,7 +22,7 @@ export const normalizeScheduleDate = (date: Date | string | null, context: strin
   const fallbackDate = new Date().toISOString().split('T')[0];
   
   if (!date) {
-    console.warn(`⚠️ [${context}] Null/undefined date, using fallback: ${fallbackDate}`);
+    warnLog(`[${context}] Null/undefined date, using fallback: ${fallbackDate}`);
     return fallbackDate;
   }
   
@@ -33,13 +34,13 @@ export const normalizeScheduleDate = (date: Date | string | null, context: strin
     } else if (typeof date === 'string') {
       dateObj = new Date(date);
     } else {
-      console.warn(`⚠️ [${context}] Invalid date type, using fallback`);
+      warnLog(`[${context}] Invalid date type, using fallback`);
       return fallbackDate;
     }
     
     // Check if date is valid
     if (isNaN(dateObj.getTime())) {
-      console.warn(`⚠️ [${context}] Invalid date value, using fallback`);
+      warnLog(`[${context}] Invalid date value, using fallback`);
       return fallbackDate;
     }
     
@@ -50,7 +51,7 @@ export const normalizeScheduleDate = (date: Date | string | null, context: strin
     
     const normalizedDate = `${year}-${month}-${day}`;
     
-    console.log(`✅ [${context}] Normalized date: ${normalizedDate}`, {
+    timezoneLog(`[${context}] Normalized date: ${normalizedDate}`, {
       original: date,
       dateObj: dateObj.toString(),
       normalized: normalizedDate
@@ -58,7 +59,7 @@ export const normalizeScheduleDate = (date: Date | string | null, context: strin
     
     return normalizedDate;
   } catch (error) {
-    console.error(`❌ [${context}] Date normalization error:`, error);
+    errorLog(`[${context}] Date normalization error:`, error);
     return fallbackDate;
   }
 };

@@ -1,5 +1,5 @@
-
 import { useEffect } from 'react';
+import { matchLog } from '@/utils/logger';
 
 interface UseMatchEventListenersProps {
   updateFiltersForMatchDate: (date: Date) => void;

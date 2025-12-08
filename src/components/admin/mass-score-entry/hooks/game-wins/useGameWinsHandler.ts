@@ -1,5 +1,5 @@
-
 import { MatchWithTeams } from '../../types';
+import { scoreLog, warnLog } from '@/utils/logger';
 
 export const useGameWinsHandler = () => {
   const calculateMatchScore = (team1GameWins: number, team2GameWins: number) => {

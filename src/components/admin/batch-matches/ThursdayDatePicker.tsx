@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -7,6 +6,7 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { normalizeDate } from "@/utils/dateNormalization";
+import { timezoneLog } from "@/utils/logger";
 
 interface ThursdayDatePickerProps {
   selected: Date | null;

@@ -1,9 +1,9 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useErrorHandling } from "../error/useErrorHandling";
 import { MatchWithTeams } from "../../types";
 import { useMatchSubmission as useGlobalMatchSubmission } from "@/hooks/matches/useMatchSubmission";
+import { scoreLog, errorLog } from "@/utils/logger";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();

@@ -1,5 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { scheduleLog, dbLog, errorLog } from "@/utils/logger";
 
 /**
  * Check if two teams have played against each other before
@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): Promise<boolean> {
   try {
-    console.log(`Checking match history between teams: ${team1Id} and ${team2Id}`);
+    dbLog(`Checking match history between teams: ${team1Id} and ${team2Id}`);
     
     // Fixed SQL query: Check if these two teams have played each other
     // Either team1_id=A AND team2_id=B OR team1_id=B AND team2_id=A
@@ -21,16 +21,16 @@ export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): P
       .eq('iscompleted', true);
     
     if (error) {
-      console.error('Error checking match history:', error);
+      errorLog('Error checking match history:', error);
       return false;
     }
     
     const hasPlayed = count !== null && count > 0;
-    console.log(`Teams ${team1Id} vs ${team2Id}: ${hasPlayed ? 'HAVE' : 'HAVE NOT'} played before (${count} matches)`);
+    dbLog(`Teams ${team1Id} vs ${team2Id}: ${hasPlayed ? 'HAVE' : 'HAVE NOT'} played before (${count} matches)`);
     
     return hasPlayed;
   } catch (error) {
-    console.error('Unexpected error checking if teams played before:', error);
+    errorLog('Unexpected error checking if teams played before:', error);
     return false;
   }
 }
@@ -43,7 +43,7 @@ export async function fetchSeasonHistoryForTeams(teamIds: string[]): Promise<Arr
   try {
     if (teamIds.length === 0) return [];
     
-    console.log(`Fetching season history for ${teamIds.length} teams`);
+    scheduleLog(`Fetching season history for ${teamIds.length} teams`);
     
     // Get active season
     const { data: seasonData, error: seasonError } = await supabase
@@ -53,7 +53,7 @@ export async function fetchSeasonHistoryForTeams(teamIds: string[]): Promise<Arr
       .single();
     
     if (seasonError || !seasonData) {
-      console.error('Error fetching active season:', seasonError);
+      errorLog('Error fetching active season:', seasonError);
       return [];
     }
     
@@ -67,7 +67,7 @@ export async function fetchSeasonHistoryForTeams(teamIds: string[]): Promise<Arr
       .in('team2_id', teamIds);
     
     if (error) {
-      console.error('Error fetching season history:', error);
+      errorLog('Error fetching season history:', error);
       return [];
     }
     
@@ -81,10 +81,10 @@ export async function fetchSeasonHistoryForTeams(teamIds: string[]): Promise<Arr
       }
     }
     
-    console.log(`Found ${pairs.length} historical match pairs for current season`);
+    scheduleLog(`Found ${pairs.length} historical match pairs for current season`);
     return pairs;
   } catch (error) {
-    console.error('Unexpected error fetching season history:', error);
+    errorLog('Unexpected error fetching season history:', error);
     return [];
   }
 }

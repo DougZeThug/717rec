@@ -1,8 +1,8 @@
-
 import React from "react";
 import ScoreButtonGroup from "./ScoreButtonGroup";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { scoreLog } from "@/utils/logger";
 
 interface ScoreInputProps {
   value: {

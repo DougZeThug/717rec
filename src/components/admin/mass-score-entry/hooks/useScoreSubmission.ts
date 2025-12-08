@@ -1,9 +1,9 @@
-
 import { useQueryClient } from "@tanstack/react-query";
 import { MatchWithTeams } from "../types";
 import { useSubmissionState } from "./useSubmissionState";
 import { useMatchValidation } from "./submission/useMatchValidation";
 import { useMatchUpdateService } from "../services/matchUpdateService";
+import { scoreLog, errorLog, cacheLog } from "@/utils/logger";
 
 export const useScoreSubmission = (
   matches: MatchWithTeams[],
