@@ -37,6 +37,10 @@ export const TeamImage: React.FC<TeamImageProps> = ({
         <img 
           src={imageUrl} 
           alt={teamName}
+          width={size === 'sm' ? 80 : size === 'md' ? 112 : 144}
+          height={size === 'sm' ? 80 : size === 'md' ? 112 : 144}
+          loading="lazy"
+          decoding="async"
           className={`max-w-full object-contain ${sizeClasses[size]} ${className}`}
           onError={onError || defaultOnError}
         />
