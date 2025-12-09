@@ -25,6 +25,7 @@ const HeroSection = () => {
             alt="717 Rec Logo" 
             width={96}
             height={96}
+            fetchPriority="high"
             className="h-16 md:h-24 w-auto transition-all duration-200 drop-shadow-sm"
           />
         </div>
