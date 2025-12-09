@@ -60,11 +60,11 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
         <TableHeader>
           <TableRow>
             <TableHead className="w-12 text-sm font-mono font-semibold text-gray-800 dark:text-white tracking-wide">Rank</TableHead>
-            <TableHead className="text-sm font-semibold font-oswald uppercase tracking-wide text-gray-800 dark:text-white">
+            <TableHead className="text-sm font-semibold font-bebas uppercase tracking-wide text-gray-800 dark:text-white">
               Team
             </TableHead>
             {showUnified && (
-              <TableHead className="text-sm font-semibold font-oswald uppercase tracking-wide text-gray-800 dark:text-white">Division</TableHead>
+              <TableHead className="text-sm font-semibold font-bebas uppercase tracking-wide text-gray-800 dark:text-white">Division</TableHead>
             )}
             <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">
               <div className="flex items-center justify-center gap-1">

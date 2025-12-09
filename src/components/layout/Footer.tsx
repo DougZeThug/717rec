@@ -37,7 +37,7 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-3 text-center text-[0.85rem] text-gray-400 dark:text-gray-500 font-source transition-colors duration-300" style={{ fontSize: "0.85rem" }}>
+        <div className="mt-3 text-center text-[0.85rem] text-gray-400 dark:text-gray-500 font-inter transition-colors duration-300" style={{ fontSize: "0.85rem" }}>
           &copy; {currentYear} 717 Rec. All rights reserved.
         </div>
       </div>

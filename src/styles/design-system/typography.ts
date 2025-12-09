@@ -5,10 +5,10 @@
 export const typography = {
   // Heading styles
   heading: {
-    h1: "text-3xl font-oswald uppercase tracking-wide font-semibold",
-    h2: "text-2xl font-oswald uppercase tracking-wide font-medium",
-    h3: "text-xl font-oswald uppercase tracking-wide",
-    h4: "text-lg font-oswald uppercase tracking-wide",
+    h1: "text-3xl font-bebas uppercase tracking-wide font-semibold",
+    h2: "text-2xl font-bebas uppercase tracking-wide font-medium",
+    h3: "text-xl font-bebas uppercase tracking-wide",
+    h4: "text-lg font-bebas uppercase tracking-wide",
   },
   
   // Body text styles
@@ -22,6 +22,6 @@ export const typography = {
   // Special text treatments
   special: {
     stat: "font-bebas tracking-wide uppercase",
-    accent: "font-source tracking-wide",
+    accent: "font-inter tracking-wide",
   }
 };

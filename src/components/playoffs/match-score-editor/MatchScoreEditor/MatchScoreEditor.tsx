@@ -2,6 +2,7 @@
 import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
+import { errorLog } from "@/utils/logger";
 import { useMatchScoreState } from "./hooks/useMatchScoreState";
 import { useGameManagement } from "./hooks/useGameManagement";
 import { useMatchScoreValidation } from "./hooks/useMatchScoreValidation";
@@ -79,7 +80,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       );
       onCancel();
     } catch (error) {
-      console.error("Error saving BYE forfeit:", error);
+      errorLog("Error saving BYE forfeit:", error);
       setValidationError("Failed to save BYE forfeit");
     } finally {
       setIsSubmitting(false);
@@ -113,7 +114,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({
       );
       onCancel();
     } catch (error) {
-      console.error("Error saving match scores:", error);
+      errorLog("Error saving match scores:", error);
       setValidationError("Failed to save match scores");
     } finally {
       setIsSubmitting(false);

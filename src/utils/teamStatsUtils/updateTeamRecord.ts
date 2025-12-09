@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { dbLog, errorLog } from "@/utils/logger";
 
 interface UpdateTeamRecordParams {
   teamId: string;
@@ -29,10 +30,10 @@ export const updateTeamRecord = async ({
   const newGameWins = currentGameWins + gameWins;
   const newGameLosses = currentGameLosses + gameLosses;
   
-  console.log(`Updating ${isWinner ? 'winner' : 'loser'} team ${teamId}:`);
-  console.log(`Match record: ${currentWins}-${currentLosses} → ${newWins}-${newLosses}`);
-  console.log(`Game stats: ${currentGameWins}-${currentGameLosses} → ${newGameWins}-${newGameLosses}`);
-  console.log("Game stats details:", {
+  dbLog(`Updating ${isWinner ? 'winner' : 'loser'} team ${teamId}:`);
+  dbLog(`Match record: ${currentWins}-${currentLosses} → ${newWins}-${newLosses}`);
+  dbLog(`Game stats: ${currentGameWins}-${currentGameLosses} → ${newGameWins}-${newGameLosses}`);
+  dbLog("Game stats details:", {
     teamId: teamId,
     game_wins: gameWins,
     game_losses: gameLosses
@@ -50,7 +51,7 @@ export const updateTeamRecord = async ({
     .select();
     
   if (error || !data?.length) {
-    console.error(`CRITICAL ERROR updating ${isWinner ? 'winner' : 'loser'} record:`, error);
+    errorLog(`CRITICAL ERROR updating ${isWinner ? 'winner' : 'loser'} record:`, error);
     return false;
   }
   

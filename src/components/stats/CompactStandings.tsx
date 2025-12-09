@@ -90,10 +90,10 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                     {formatPowerScore(team.powerScore)}
                   </span>
                   <span className={cn(
-                    getSosColor(team.sos),
+                    team.wins + team.losses > 0 ? getSosColor(team.sos) : 'text-muted-foreground',
                     "bg-gradient-to-r from-transparent to-orange-50/50 dark:to-orange-900/10 px-1 rounded"
                   )}>
-                    {team.sos.toFixed(3)}
+                    {team.wins + team.losses > 0 ? team.sos.toFixed(3) : '—'}
                   </span>
                 </div>
               </div>
@@ -121,7 +121,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               Rank
             </TableHead>
             <TableHead
-              className="font-semibold uppercase tracking-wide font-oswald text-gray-700 dark:text-gray-200"
+              className="font-semibold uppercase tracking-wide font-bebas text-gray-700 dark:text-gray-200"
             >
               Team
             </TableHead>
