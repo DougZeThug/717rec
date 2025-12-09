@@ -239,14 +239,14 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                   <Timer className="h-4 w-4 text-yellow-300" />
                   <span>{checkInCountdown.text}</span>
                 </div>
-                <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" />
+                <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" aria-label="Check-in countdown progress" />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm font-inter text-white/90">
                   <Timer className="h-4 w-4 text-green-300" />
                   <span>{startCountdown.text}</span>
                 </div>
-                <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" />
+                <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" aria-label="Event start countdown progress" />
               </div>
             </div>
           )}
