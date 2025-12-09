@@ -128,128 +128,151 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
       {/* Inner glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
       
-      <CardContent className="relative z-10 p-6 md:p-8">
-        <div className={cn("flex flex-col items-center text-center space-y-4", card.text_color)}>
-          {/* Header with animated icon */}
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-            >
-              <Shuffle className="h-8 w-8 md:h-10 md:w-10" />
-            </motion.div>
-            <h2 className="text-2xl md:text-4xl font-bebas uppercase tracking-wide">
-              {card.title}
-            </h2>
-            <motion.div
-              animate={{ rotate: [0, -10, 10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-            >
-              <Shuffle className="h-8 w-8 md:h-10 md:w-10" />
-            </motion.div>
-          </div>
-          
-          {/* Date badge */}
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-            <Calendar className="h-4 w-4" />
-            <span className="font-inter font-semibold">{card.subtitle || formatDate(checkInTimeStr)}</span>
-          </div>
-          
-          {/* Event details grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-2xl mt-4">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
-            >
-              <Clock className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
-              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Check-in</span>
-              <span className="text-lg md:text-xl font-bebas">{formatTime(checkInTimeStr)}</span>
-            </motion.div>
+      <CardContent className="relative z-10 p-4 md:p-6">
+        <div className={cn("flex flex-col md:flex-row md:gap-8", card.text_color)}>
+          {/* Left Column - Header, Date, Countdowns */}
+          <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:flex-shrink-0">
+            {/* Header with animated icon */}
+            <div className="flex items-center gap-2">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+              >
+                <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
+              </motion.div>
+              <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
+                {card.title}
+              </h2>
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+              >
+                <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
+              </motion.div>
+            </div>
             
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
-            >
-              <Clock className="h-5 w-5 md:h-6 md:w-6 text-green-300" />
-              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Start</span>
-              <span className="text-lg md:text-xl font-bebas">{formatTime(startTimeStr)}</span>
-            </motion.div>
-            
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
-            >
-              <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-emerald-300" />
-              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Buy-in</span>
-              <span className="text-lg md:text-xl font-bebas">{buyIn}</span>
-            </motion.div>
-            
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
-            >
-              <Trophy className="h-5 w-5 md:h-6 md:w-6 text-amber-300" />
-              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Payouts</span>
-              <span className="text-lg md:text-xl font-bebas">{payouts}</span>
-            </motion.div>
-          </div>
+            {/* Date badge */}
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+              <Calendar className="h-4 w-4" />
+              <span className="font-inter font-semibold text-sm">{card.subtitle || formatDate(checkInTimeStr)}</span>
+            </div>
 
-          {/* Section divider */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent my-4" />
-
-          {/* Past Winners */}
-          {pastWinners.length > 0 && (
-            <div className="w-full max-w-2xl mt-4 space-y-3">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Medal className="h-5 w-5 text-amber-300" />
-                <span className="font-bebas uppercase tracking-wide text-lg">Past Winners</span>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {pastWinners.map((weekData) => (
-                  <div key={weekData.week} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-                    <div className="text-xs font-bebas uppercase tracking-wide text-white/70 text-center mb-2">
-                      Week {weekData.week}
-                    </div>
-                    {weekData.winners.length > 0 ? (
-                      <div className="space-y-1 text-sm font-inter">
-                        {weekData.winners.map((winner) => (
-                          <div key={winner.place} className="flex items-center gap-2">
-                            <span>{placeEmojis[winner.place - 1] || `#${winner.place}`}</span>
-                            <span>{winner.names}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-center h-16 text-white/50 text-sm font-inter">
-                        TBD
-                      </div>
-                    )}
+            {/* Countdown bars - desktop only in left column */}
+            {checkInTimeStr && startTimeStr && (
+              <div className="hidden md:block w-full space-y-2 mt-2">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-inter text-white/90">
+                    <Timer className="h-3 w-3 text-yellow-300" />
+                    <span>{checkInCountdown.text}</span>
                   </div>
-                ))}
+                  <Progress value={checkInCountdown.percent} className="h-1.5 bg-white/20 [&>div]:bg-yellow-400" aria-label="Check-in countdown progress" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-inter text-white/90">
+                    <Timer className="h-3 w-3 text-green-300" />
+                    <span>{startCountdown.text}</span>
+                  </div>
+                  <Progress value={startCountdown.percent} className="h-1.5 bg-white/20 [&>div]:bg-green-400" aria-label="Event start countdown progress" />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Countdown bars */}
-          {checkInTimeStr && startTimeStr && (
-            <div className="w-full max-w-md space-y-3 mt-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-inter text-white/90">
-                  <Timer className="h-4 w-4 text-yellow-300" />
-                  <span>{checkInCountdown.text}</span>
-                </div>
-                <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" aria-label="Check-in countdown progress" />
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-inter text-white/90">
-                  <Timer className="h-4 w-4 text-green-300" />
-                  <span>{startCountdown.text}</span>
-                </div>
-                <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" aria-label="Event start countdown progress" />
-              </div>
+          {/* Right Column - Event Details & Past Winners */}
+          <div className="flex-1 flex flex-col items-center md:items-stretch space-y-3 mt-4 md:mt-0">
+            {/* Event details grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full">
+              <motion.div 
+                whileHover={{ scale: 1.03 }}
+                className="flex flex-col items-center gap-0.5 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-white/20 hover:border-white/40 transition-all"
+              >
+                <Clock className="h-4 w-4 md:h-5 md:w-5 text-yellow-300" />
+                <span className="text-[10px] font-bebas uppercase tracking-wide text-white/80">Check-in</span>
+                <span className="text-base md:text-lg font-bebas">{formatTime(checkInTimeStr)}</span>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ scale: 1.03 }}
+                className="flex flex-col items-center gap-0.5 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-white/20 hover:border-white/40 transition-all"
+              >
+                <Clock className="h-4 w-4 md:h-5 md:w-5 text-green-300" />
+                <span className="text-[10px] font-bebas uppercase tracking-wide text-white/80">Start</span>
+                <span className="text-base md:text-lg font-bebas">{formatTime(startTimeStr)}</span>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ scale: 1.03 }}
+                className="flex flex-col items-center gap-0.5 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-white/20 hover:border-white/40 transition-all"
+              >
+                <DollarSign className="h-4 w-4 md:h-5 md:w-5 text-emerald-300" />
+                <span className="text-[10px] font-bebas uppercase tracking-wide text-white/80">Buy-in</span>
+                <span className="text-base md:text-lg font-bebas">{buyIn}</span>
+              </motion.div>
+              
+              <motion.div 
+                whileHover={{ scale: 1.03 }}
+                className="flex flex-col items-center gap-0.5 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-lg p-2 md:p-3 border border-white/20 hover:border-white/40 transition-all"
+              >
+                <Trophy className="h-4 w-4 md:h-5 md:w-5 text-amber-300" />
+                <span className="text-[10px] font-bebas uppercase tracking-wide text-white/80">Payouts</span>
+                <span className="text-base md:text-lg font-bebas">{payouts}</span>
+              </motion.div>
             </div>
-          )}
+
+            {/* Past Winners */}
+            {pastWinners.length > 0 && (
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-center md:justify-start gap-2">
+                  <Medal className="h-4 w-4 text-amber-300" />
+                  <span className="font-bebas uppercase tracking-wide text-sm">Past Winners</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  {pastWinners.map((weekData) => (
+                    <div key={weekData.week} className="bg-white/10 backdrop-blur-sm rounded-lg p-2 border border-white/10">
+                      <div className="text-[10px] font-bebas uppercase tracking-wide text-white/70 text-center mb-1">
+                        Week {weekData.week}
+                      </div>
+                      {weekData.winners.length > 0 ? (
+                        <div className="space-y-0.5 text-xs font-inter">
+                          {weekData.winners.map((winner) => (
+                            <div key={winner.place} className="flex items-center gap-1 justify-center md:justify-start">
+                              <span>{placeEmojis[winner.place - 1] || `#${winner.place}`}</span>
+                              <span>{winner.names}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-10 text-white/50 text-xs font-inter">
+                          TBD
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Countdown bars - mobile only */}
+            {checkInTimeStr && startTimeStr && (
+              <div className="md:hidden w-full max-w-sm space-y-2 mt-2">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-inter text-white/90">
+                    <Timer className="h-3 w-3 text-yellow-300" />
+                    <span>{checkInCountdown.text}</span>
+                  </div>
+                  <Progress value={checkInCountdown.percent} className="h-1.5 bg-white/20 [&>div]:bg-yellow-400" aria-label="Check-in countdown progress" />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-inter text-white/90">
+                    <Timer className="h-3 w-3 text-green-300" />
+                    <span>{startCountdown.text}</span>
+                  </div>
+                  <Progress value={startCountdown.percent} className="h-1.5 bg-white/20 [&>div]:bg-green-400" aria-label="Event start countdown progress" />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
