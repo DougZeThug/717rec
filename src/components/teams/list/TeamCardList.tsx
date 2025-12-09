@@ -126,8 +126,8 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             
             <StatBlock 
               label="SOS" 
-              value={<span className={`font-mono text-lg justify-end flex ${sosColor}`}>
-                {team.sos?.toFixed(3) || '0.000'}
+              value={<span className={`font-mono text-lg justify-end flex ${(team.wins || 0) + (team.losses || 0) > 0 ? sosColor : 'text-muted-foreground'}`}>
+                {(team.wins || 0) + (team.losses || 0) > 0 ? (team.sos?.toFixed(3) || 'N/A') : 'N/A'}
               </span>}
             />
           </div>

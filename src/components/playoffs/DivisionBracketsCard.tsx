@@ -102,19 +102,27 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
             </div>
           ))
         ) : (
-          onCreateBracket && (
-            <Button 
-              size="sm" 
-              variant="outline" 
-              className="w-full" 
-              onClick={() => {
-                bracketLog('Create bracket button clicked for division:', division);
-                onCreateBracket();
-              }}
-            >
-              <Plus className="h-4 w-4 mr-1" /> Create Bracket
-            </Button>
-          )
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-amber-50 dark:from-blue-900/30 dark:to-amber-900/20 flex items-center justify-center mb-3">
+              <Trophy className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              No brackets yet for this division
+            </p>
+            {onCreateBracket && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="gap-1.5" 
+                onClick={() => {
+                  bracketLog('Create bracket button clicked for division:', division);
+                  onCreateBracket();
+                }}
+              >
+                <Plus className="h-4 w-4" /> Create Bracket
+              </Button>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

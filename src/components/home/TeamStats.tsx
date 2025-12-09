@@ -30,8 +30,8 @@ export const TeamStats: React.FC<TeamStatsProps> = ({ team }) => {
       {team.sos !== undefined && (
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-gray-500 dark:text-gray-400">SOS</span>
-          <span className={`font-mono text-base font-medium ${getSosColor(team.sos)}`}>
-            {team.sos.toFixed(3)}
+          <span className={`font-mono text-base font-medium ${(team.wins || 0) + (team.losses || 0) > 0 ? getSosColor(team.sos) : 'text-muted-foreground'}`}>
+            {(team.wins || 0) + (team.losses || 0) > 0 ? team.sos.toFixed(3) : 'N/A'}
           </span>
         </div>
       )}
