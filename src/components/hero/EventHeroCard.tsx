@@ -110,7 +110,9 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
 
   return (
     <Card className={cn(
-      "relative overflow-hidden border-0 shadow-2xl",
+      "relative overflow-hidden shadow-2xl",
+      "border-t-4 border-t-emerald-400 dark:border-t-emerald-500",
+      "border border-white/20",
       card.background_color
     )}>
       {/* Animated background elements */}
@@ -123,6 +125,9 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
         </div>
       </div>
       
+      {/* Inner glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
+      
       <CardContent className="relative z-10 p-6 md:p-8">
         <div className={cn("flex flex-col items-center text-center space-y-4", card.text_color)}>
           {/* Header with animated icon */}
@@ -133,7 +138,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
             >
               <Shuffle className="h-8 w-8 md:h-10 md:w-10" />
             </motion.div>
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tight">
+            <h2 className="text-2xl md:text-4xl font-bebas uppercase tracking-wide">
               {card.title}
             </h2>
             <motion.div
@@ -147,33 +152,33 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
           {/* Date badge */}
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
             <Calendar className="h-4 w-4" />
-            <span className="font-semibold">{card.subtitle || formatDate(checkInTimeStr)}</span>
+            <span className="font-inter font-semibold">{card.subtitle || formatDate(checkInTimeStr)}</span>
           </div>
           
           {/* Event details grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-2xl mt-4">
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
+            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
               <Clock className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Check-in</span>
-              <span className="text-lg md:text-xl font-bold">{formatTime(checkInTimeStr)}</span>
+              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Check-in</span>
+              <span className="text-lg md:text-xl font-bebas">{formatTime(checkInTimeStr)}</span>
             </div>
             
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
+            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
               <Clock className="h-5 w-5 md:h-6 md:w-6 text-green-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Start</span>
-              <span className="text-lg md:text-xl font-bold">{formatTime(startTimeStr)}</span>
+              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Start</span>
+              <span className="text-lg md:text-xl font-bebas">{formatTime(startTimeStr)}</span>
             </div>
             
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
+            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
               <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-emerald-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Buy-in</span>
-              <span className="text-lg md:text-xl font-bold">{buyIn}</span>
+              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Buy-in</span>
+              <span className="text-lg md:text-xl font-bebas">{buyIn}</span>
             </div>
             
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
+            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
               <Trophy className="h-5 w-5 md:h-6 md:w-6 text-amber-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Payouts</span>
-              <span className="text-lg md:text-xl font-bold">{payouts}</span>
+              <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Payouts</span>
+              <span className="text-lg md:text-xl font-bebas">{payouts}</span>
             </div>
           </div>
 
@@ -182,17 +187,17 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
             <div className="w-full max-w-2xl mt-4 space-y-3">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Medal className="h-5 w-5 text-amber-300" />
-                <span className="font-semibold">Past Winners</span>
+                <span className="font-bebas uppercase tracking-wide text-lg">Past Winners</span>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {pastWinners.map((weekData) => (
-                  <div key={weekData.week} className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                    <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">
+                  <div key={weekData.week} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                    <div className="text-xs font-bebas uppercase tracking-wide text-white/70 text-center mb-2">
                       Week {weekData.week}
                     </div>
                     {weekData.winners.length > 0 ? (
-                      <div className="space-y-1 text-sm">
+                      <div className="space-y-1 text-sm font-inter">
                         {weekData.winners.map((winner) => (
                           <div key={winner.place} className="flex items-center gap-2">
                             <span>{placeEmojis[winner.place - 1] || `#${winner.place}`}</span>
@@ -201,7 +206,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                         ))}
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center h-16 text-white/50 text-sm">
+                      <div className="flex items-center justify-center h-16 text-white/50 text-sm font-inter">
                         TBD
                       </div>
                     )}
@@ -215,14 +220,14 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
           {checkInTimeStr && startTimeStr && (
             <div className="w-full max-w-md space-y-3 mt-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-white/90">
+                <div className="flex items-center gap-2 text-sm font-inter text-white/90">
                   <Timer className="h-4 w-4 text-yellow-300" />
                   <span>{checkInCountdown.text}</span>
                 </div>
                 <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" />
               </div>
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-white/90">
+                <div className="flex items-center gap-2 text-sm font-inter text-white/90">
                   <Timer className="h-4 w-4 text-green-300" />
                   <span>{startCountdown.text}</span>
                 </div>

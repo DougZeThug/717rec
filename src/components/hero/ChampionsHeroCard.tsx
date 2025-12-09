@@ -21,7 +21,7 @@ const ChampionDisplay: React.FC<{
   division: string; 
 }> = ({ team, division }) => {
   return (
-    <div className="flex items-center gap-3 group">
+    <div className="flex items-center gap-3 group p-2 rounded-lg hover:bg-amber-50/50 dark:hover:bg-amber-900/10 transition-colors duration-200">
       <div className="relative">
         <div className="ring-4 ring-amber-400 dark:ring-amber-500 rounded-lg p-1 bg-white dark:bg-slate-700 transition-transform duration-200 group-hover:scale-105">
           {team.image_url ? (
@@ -48,10 +48,10 @@ const ChampionDisplay: React.FC<{
       </div>
       
       <div className="flex-1">
-        <p className="text-xs uppercase tracking-wide font-medium mb-1 text-amber-600 dark:text-amber-400">
+        <p className="text-xs font-bebas uppercase tracking-wide mb-1 text-amber-600 dark:text-amber-400">
           Champion
         </p>
-        <p className="font-semibold text-slate-900 dark:text-white text-sm">
+        <p className="font-inter font-semibold text-slate-900 dark:text-white text-sm">
           {team.name}
         </p>
       </div>
@@ -131,13 +131,23 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
     <section className={cn(
       card.background_color || "bg-white dark:bg-slate-800",
       "rounded-2xl shadow-xl p-4 md:p-6",
+      "border-t-4 border-t-amber-500 dark:border-t-amber-400",
+      "border border-border/30",
+      "bg-gradient-to-br from-white via-white to-amber-50/30",
+      "dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-900",
       "transition-opacity duration-500 ease-out",
       animations.fadeIn
     )}>
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-100/10 via-transparent to-amber-50/5 dark:from-amber-900/5 dark:to-transparent rounded-2xl pointer-events-none" />
+      
       <h2 className={cn(
-        "text-xl md:text-2xl font-bold font-inter mb-4 flex items-center gap-2",
-        card.text_color
+        "text-xl md:text-2xl font-bebas uppercase tracking-wide mb-4 flex items-center gap-2",
+        "bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500",
+        "dark:from-amber-400 dark:to-yellow-400",
+        "bg-clip-text text-transparent"
       )}>
+        <Trophy className="w-6 h-6 text-amber-500 dark:text-amber-400" />
         {card.title}
       </h2>
       
@@ -149,11 +159,11 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
           if (!team) return null;
           
           return (
-            <div key={divisionName} className="space-y-3">
-              <h3 className="text-sm font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+            <div key={divisionName} className="space-y-2">
+              <h3 className="text-sm font-bebas uppercase tracking-wide text-slate-600 dark:text-slate-300">
                 {divisionName}
               </h3>
-              <div className="pl-2">
+              <div className="pl-1">
                 <ChampionDisplay team={team} division={divisionName} />
               </div>
             </div>

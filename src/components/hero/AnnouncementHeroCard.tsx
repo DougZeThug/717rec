@@ -22,6 +22,8 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
   const content = (
     <div className={cn(
       "relative overflow-hidden rounded-xl shadow-lg",
+      "border-t-4 border-t-amber-500 dark:border-t-amber-400",
+      "border border-white/20",
       card.background_color
     )}>
       {/* Animated background shimmer */}
@@ -30,6 +32,9 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
         animate={{ x: ['-100%', '100%'] }}
         transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
       />
+      
+      {/* Inner glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
       
       {/* Decorative elements */}
       <div className="absolute top-2 left-4 opacity-30">
@@ -53,9 +58,9 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
         )}
         
         <div className="text-center">
-          <h3 className="text-xl md:text-2xl font-bold">{card.title}</h3>
+          <h3 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">{card.title}</h3>
           {card.subtitle && (
-            <p className="text-sm opacity-90 mt-1">{card.subtitle}</p>
+            <p className="text-sm font-inter opacity-90 mt-1">{card.subtitle}</p>
           )}
         </div>
         

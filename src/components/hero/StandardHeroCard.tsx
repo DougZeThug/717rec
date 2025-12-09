@@ -15,7 +15,7 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
   const content = (
     <div className="relative flex items-center justify-center gap-3 px-6 py-4">
       {Icon && <Icon className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />}
-      <span className="font-semibold text-lg">{card.title}</span>
+      <span className="font-bebas uppercase tracking-wide text-lg">{card.title}</span>
       {card.cta_url && <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />}
     </div>
   );
@@ -25,7 +25,9 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
     card.background_color,
     card.text_color,
     "transition-all duration-200",
-    "rounded-lg shadow-md hover:shadow-lg",
+    "rounded-xl shadow-md hover:shadow-lg",
+    "border-t-[3px] border-t-blue-500 dark:border-t-blue-400",
+    "border border-border/30",
     "overflow-hidden"
   );
 
