@@ -99,9 +99,9 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
 
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Career SOS</span>
-          <div className={`font-mono text-lg font-medium flex items-center ${getSosColor(totals.career_sos)}`}>
+          <div className={`font-mono text-lg font-medium flex items-center ${totals.career_sos > 0 ? getSosColor(totals.career_sos) : 'text-muted-foreground'}`}>
             <Scale size={16} className="mr-2" />
-            {totals.career_sos.toFixed(3)}
+            {totals.career_match_wins + totals.career_match_losses > 0 ? totals.career_sos.toFixed(3) : 'N/A'}
           </div>
         </div>
       </div>

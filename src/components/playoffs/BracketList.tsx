@@ -2,9 +2,10 @@
 import React from "react";
 import { PlayoffBracket } from "@/types";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trophy } from "lucide-react";
 import DivisionBracketsCard from "./DivisionBracketsCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface BracketListProps {
   divisions: string[];
@@ -58,19 +59,21 @@ const BracketList: React.FC<BracketListProps> = ({
       </div>
       
       {divisions.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            {onCreateBracket 
-              ? "No divisions available. Create a bracket to get started."
-              : "No brackets are currently available. Check back later!"}
-          </p>
-          {onCreateBracket && (
-            <Button onClick={onCreateBracket} className="mt-4 flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Create First Bracket
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Trophy}
+          title="No Playoff Brackets Yet"
+          description={onCreateBracket 
+            ? "Get started by creating your first playoff bracket for the season."
+            : "Playoff brackets will appear here once they're created. Check back during playoff season!"}
+          actions={onCreateBracket ? [
+            {
+              label: "Create First Bracket",
+              onClick: onCreateBracket,
+              variant: "default",
+              icon: PlusCircle,
+            }
+          ] : []}
+        />
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           {divisions.map(division => (

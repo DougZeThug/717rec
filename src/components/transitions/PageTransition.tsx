@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
 import { useLocation } from 'react-router-dom';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { routeLog } from "@/utils/logger";
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -20,20 +21,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   const { isNavigating } = useNavigation();
   
   useEffect(() => {
-    console.log(`PageTransition: Route changed to ${location.pathname}`);
-    
-    // Special handling for admin route
-    if (location.pathname === '/admin') {
-      console.log('PageTransition: Admin route detected');
-      console.log('PageTransition state:', location.state);
-      
-      // Check if this is an app navigation (not a direct URL entry)
-      if (location.state && (location.state as any).isAppNavigating) {
-        console.log('PageTransition: App navigation to admin route');
-      } else {
-        console.log('PageTransition: Direct URL navigation to admin route');
-      }
-    }
+    routeLog(`Route changed to ${location.pathname}`);
   }, [location]);
   
   const delayClass = {

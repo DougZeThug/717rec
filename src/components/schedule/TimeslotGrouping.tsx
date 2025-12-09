@@ -46,7 +46,13 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
   
   if (Object.keys(groupedTimeslots).length === 0) {
     return (
-      <div className="text-center py-6">
+      <div className={cn(
+        "text-center py-8 rounded-xl",
+        "bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30",
+        "dark:from-gray-800/50 dark:via-gray-800/30 dark:to-gray-900/50",
+        "border border-gray-200 dark:border-gray-700"
+      )}>
+        <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
         <p className="text-gray-500 dark:text-gray-400">No timeslots scheduled for this date.</p>
       </div>
     );

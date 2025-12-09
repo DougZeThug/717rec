@@ -37,9 +37,6 @@ export const TransitionLink: React.FC<TransitionLinkProps> = ({
       onClick(e);
       if (e.defaultPrevented) return;
     }
-    
-    // Don't prevent default behavior - allow React Router to handle navigation
-    console.log(`TransitionLink clicked: allowing default navigation to ${to.toString()}`);
   };
 
   return (

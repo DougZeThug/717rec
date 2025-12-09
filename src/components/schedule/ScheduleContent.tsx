@@ -153,7 +153,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">
         <TabsTrigger 
           value="upcoming" 
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6 min-h-[44px]"
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition-all"
         >
           <div className="flex items-center justify-center">
             <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
@@ -162,7 +162,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         </TabsTrigger>
         <TabsTrigger 
           value="completed" 
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6 min-h-[44px]"
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition-all"
         >
           <div className="flex items-center justify-center">
             <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" />

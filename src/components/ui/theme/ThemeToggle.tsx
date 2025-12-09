@@ -29,7 +29,6 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     const newTheme = resolvedTheme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
-    console.log(`Theme changed to: ${newTheme}`);
   };
 
   // Don't render anything until mounted to prevent hydration mismatch
