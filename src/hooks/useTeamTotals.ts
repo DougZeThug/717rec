@@ -21,17 +21,13 @@ const calculateCareerPowerScore = async (
   teamId: string,
   championships: number,
   runnerUps: number,
-  careerMatchWins: number,
-  careerMatchLosses: number,
-  careerGameWins: number,
-  careerGameLosses: number,
   careerPlayoffWins: number,
   careerPlayoffLosses: number,
   competitivePlayoffWins: number
 ): Promise<number> => {
-  // Career Power Score using historical season data as foundation + playoff bonuses
+  // Career Power Score = weighted average of season power scores + playoff bonuses
   
-  // Get team's current division weight for scaling bonuses
+  // Get team's current division weight for playoff bonus scaling
   const { data: teamData } = await supabase
     .from('teams')
     .select('divisions(division_weight)')
@@ -43,49 +39,33 @@ const calculateCareerPowerScore = async (
   // Get historical season power scores from team_season_stats
   const { data: seasonStats } = await supabase
     .from('team_season_stats')
-    .select('power_score, match_wins, match_losses, division_name')
+    .select('power_score, match_wins, match_losses')
     .eq('team_id', teamId)
     .not('power_score', 'is', null);
 
-  // ALWAYS get current season data from v_team_details
+  // Get current season data from v_team_details
   const { data: currentTeamData } = await supabase
     .from('v_team_details')
     .select('power_score, wins, losses')
     .eq('team_id', teamId)
     .single();
 
-  // Calculate weighted average including BOTH historical AND current season data
+  // Calculate weighted average of season power scores (no division penalties)
   let totalWeightedScore = 0;
   let totalMatches = 0;
-  let hasUpwardProgression = false;
   
-  // Add historical season data and check for division progression
+  // Add historical season data (power scores are already on 0-1 scale, multiply by 100)
   if (seasonStats && seasonStats.length > 0) {
-    let previousDivisionName = null;
-    
     for (const season of seasonStats) {
-      const seasonMatches = season.match_wins + season.match_losses;
+      const seasonMatches = (season.match_wins || 0) + (season.match_losses || 0);
       if (seasonMatches > 0 && season.power_score !== null) {
         totalWeightedScore += (season.power_score * 100) * seasonMatches;
         totalMatches += seasonMatches;
-        
-        // Check for upward division progression
-        if (previousDivisionName && season.division_name) {
-          const divisionRankings = ['recreational', 'intermediate 2', 'intermediate', 'competitive'];
-          const previousRank = divisionRankings.indexOf(previousDivisionName.toLowerCase());
-          const currentRank = divisionRankings.indexOf(season.division_name.toLowerCase());
-          
-          if (currentRank > previousRank && season.power_score > 60) {
-            hasUpwardProgression = true;
-          }
-        }
-        
-        previousDivisionName = season.division_name;
       }
     }
   }
   
-  // ALWAYS add current season data if available
+  // Add current season data if available (power score already on 0-100 scale)
   if (currentTeamData?.power_score !== null && currentTeamData?.wins !== null && currentTeamData?.losses !== null) {
     const currentSeasonMatches = (currentTeamData.wins || 0) + (currentTeamData.losses || 0);
     if (currentSeasonMatches > 0) {
@@ -94,28 +74,10 @@ const calculateCareerPowerScore = async (
     }
   }
   
-  // Calculate base career score and apply division penalty system
-  let baseCareerScore = 50; // Default fallback
+  // Base career score is the weighted average (no division penalties applied)
+  let baseCareerScore = totalMatches > 0 ? totalWeightedScore / totalMatches : 50;
   
-  // Determine division penalty multiplier based on division tier
-  const getDivisionPenaltyMultiplier = (divisionWeight: number): number => {
-    if (divisionWeight >= 0.89) return 1.0;   // Competitive: no penalty
-    if (divisionWeight >= 0.5) return 0.9;    // Intermediate: 10% penalty
-    return 0.75;                              // Recreational: 25% penalty
-  };
-  
-  if (totalMatches > 0) {
-    const rawScore = totalWeightedScore / totalMatches;
-    // Apply division penalty to base score (less harsh than previous system)
-    const divisionPenaltyMultiplier = getDivisionPenaltyMultiplier(teamDivisionWeight);
-    baseCareerScore = rawScore * divisionPenaltyMultiplier;
-  } else {
-    // Final fallback - use division penalty * 50 (baseline)
-    const divisionPenaltyMultiplier = getDivisionPenaltyMultiplier(teamDivisionWeight);
-    baseCareerScore = divisionPenaltyMultiplier * 50;
-  }
-  
-  // Get championship weight based on division tier
+  // Get championship weight based on division tier for playoff bonuses
   const getChampionshipWeight = (divisionWeight: number): number => {
     if (divisionWeight >= 0.89) return 1.0;   // Competitive: full weight
     if (divisionWeight >= 0.7) return 0.75;   // Intermediate 1: 75% weight
@@ -123,28 +85,12 @@ const calculateCareerPowerScore = async (
     return 0.25;                              // Recreational: 25% weight
   };
 
-  // Get championship division weight from season data instead of current division
-  const getChampionshipDivisionWeight = (): number => {
-    if (seasonStats && seasonStats.length > 0) {
-      // Look for championship seasons and use the most recent championship division
-      const championshipSeasons = seasonStats.filter(season => season.division_name);
-      if (championshipSeasons.length > 0) {
-        // Use Intermediate 1 division weight for championship bonus calculation
-        // Based on historical data showing championship was won in Intermediate 1
-        return 0.75; // Intermediate 1 weight
-      }
-    }
-    // Fallback to a conservative weight for unknown championship divisions
-    return 0.75; // Default to Intermediate 1 level
-  };
-
-  // Calculate playoff bonuses using championship division weight instead of current division
-  const championshipDivisionWeight = getChampionshipDivisionWeight();
-  const championshipWeight = getChampionshipWeight(championshipDivisionWeight);
+  // Calculate playoff bonuses
+  const championshipWeight = getChampionshipWeight(teamDivisionWeight);
   const championshipBonus = championships * 7 * championshipWeight;
   const runnerUpBonus = runnerUps * 4 * championshipWeight;
   
-  // Calculate other playoff performance bonus from playoff record
+  // Playoff performance bonus from playoff record
   const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
   const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
   const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4 * teamDivisionWeight);
@@ -152,7 +98,7 @@ const calculateCareerPowerScore = async (
   // Competitive playoff bonus: +0.5 for each win in competitive division playoffs
   const competitivePlayoffBonus = competitivePlayoffWins * 0.5;
   
-  // Total playoff bonus (capped at +15 points but higher divisions get more value within cap)
+  // Total playoff bonus (capped at +15 points)
   const totalPlayoffBonus = Math.min(15, championshipBonus + runnerUpBonus + otherPlayoffBonus + competitivePlayoffBonus);
   
   // Final career power score
@@ -419,10 +365,6 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     teamId,
     championships,
     runner_ups,
-    career_match_wins,
-    career_match_losses,
-    career_game_wins,
-    career_game_losses,
     career_playoff_wins,
     career_playoff_losses,
     competitive_playoff_wins
