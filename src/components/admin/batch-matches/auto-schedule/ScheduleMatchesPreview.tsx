@@ -100,7 +100,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
           />
           <CardContent className="p-3">
             {blockPairings.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 overflow-hidden">
                 {blockPairings.map((pairing, idx) => (
                   <MatchPairingItem 
                     key={`${pairing.team1.id}-${pairing.team2.id}`}
