@@ -174,7 +174,7 @@ export function useAutoSchedule() {
       }
     }
     
-    return await saveMatches(matchesToSave, selectedDate);
+    return await saveMatches(matchesToSave, selectedDate, dualMatchMode);
   };
 
   // Team statistics 

@@ -11,7 +11,7 @@ export const useAutoScheduleState = () => {
   // Algorithm settings
   const [avoidRematches, setAvoidRematches] = useState(true);
   const [prioritizeQuality, setPrioritizeQuality] = useState(false);
-  const [dualMatchMode, setDualMatchMode] = useState(false);
+  const [dualMatchMode, setDualMatchMode] = useState(true);
   
   // Processing state
   const [isProcessing, setIsProcessing] = useState(false);
