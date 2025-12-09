@@ -30,8 +30,8 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
           field: parsed.field || 'powerScore', 
           direction 
         };
-      } catch (e) {
-        console.error("Failed to parse saved sort options");
+      } catch {
+        // Silently use defaults if parsing fails
       }
     }
     return { field: 'powerScore', direction: 'desc' };

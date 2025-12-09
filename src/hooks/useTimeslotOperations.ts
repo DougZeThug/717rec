@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TeamTimeslot } from "@/types";
+import { scheduleLog, errorLog } from "@/utils/logger";
 
 export const useTimeslotOperations = () => {
   const { toast } = useToast();
@@ -55,7 +55,7 @@ export const useTimeslotOperations = () => {
       
       return formattedData;
     } catch (error: any) {
-      console.error('Error fetching timeslots:', error);
+      errorLog('Error fetching timeslots:', error);
       throw error;
     }
   };
@@ -63,7 +63,7 @@ export const useTimeslotOperations = () => {
   // Add a new timeslot assignment
   const addTimeslot = async (date: Date, teamId: string, timeslot: string) => {
     try {
-      console.log('Adding timeslot:', { date: format(date, 'yyyy-MM-dd'), teamId, timeslot });
+      scheduleLog('Adding timeslot:', { date: format(date, 'yyyy-MM-dd'), teamId, timeslot });
       
       const { data, error } = await supabase
         .from('team_timeslots')
@@ -76,7 +76,7 @@ export const useTimeslotOperations = () => {
         .single();
       
       if (error) {
-        console.error('Error details:', error);
+        errorLog('Error adding timeslot:', error);
         throw error;
       }
       
@@ -94,7 +94,7 @@ export const useTimeslotOperations = () => {
       return formattedData;
       
     } catch (error: any) {
-      console.error('Error adding timeslot:', error);
+      errorLog('Error adding timeslot:', error);
       toast({
         title: "Error",
         description: `Failed to assign timeslot: ${error.message || 'Unknown error'}`,
@@ -113,12 +113,12 @@ export const useTimeslotOperations = () => {
         .eq('id', id);
       
       if (error) {
-        console.error('Error details:', error);
+        errorLog('Error deleting timeslot:', error);
         throw error;
       }
       
     } catch (error: any) {
-      console.error('Error deleting timeslot:', error);
+      errorLog('Error deleting timeslot:', error);
       toast({
         title: "Error",
         description: `Failed to remove timeslot: ${error.message || 'Unknown error'}`,
@@ -131,11 +131,10 @@ export const useTimeslotOperations = () => {
   // Batch assign multiple teams to the same timeslot
   const batchAssignTimeslots = async (date: Date, teamIds: string[], timeslot: string) => {
     try {
-      console.log('Batch assigning timeslots:', { 
+      scheduleLog('Batch assigning timeslots:', { 
         date: format(date, 'yyyy-MM-dd'), 
-        teamIds, 
-        timeslot,
-        count: teamIds.length 
+        count: teamIds.length,
+        timeslot
       });
       
       // Create an array of objects for batch insert
@@ -152,11 +151,11 @@ export const useTimeslotOperations = () => {
         .select('*, teams:team_id(id, name, logo_url)');
       
       if (error) {
-        console.error('Batch insert error details:', error);
+        errorLog('Batch insert error:', error);
         throw error;
       }
       
-      console.log('Batch assignment successful:', data);
+      scheduleLog('Batch assignment successful, count:', data?.length);
       
       // Format the returned data to match TeamTimeslot type
       const formattedData: TeamTimeslot[] = data?.map(item => ({
@@ -172,7 +171,7 @@ export const useTimeslotOperations = () => {
       return formattedData;
       
     } catch (error: any) {
-      console.error('Error in batch assignment:', error);
+      errorLog('Error in batch assignment:', error);
       toast({
         title: "Error",
         description: `Failed to batch assign timeslots: ${error.message || 'Unknown error'}`,

@@ -25,6 +25,9 @@ const StatsSummarySection = ({
   const isLight = resolvedTheme === 'light';
 
   const compactLimit = isMobile ? 5 : 5;
+  
+  // Check if all teams have 0-0 records (new season starting)
+  const isNewSeason = rankings.length > 0 && rankings.every(team => team.wins === 0 && team.losses === 0);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
@@ -74,6 +77,13 @@ const StatsSummarySection = ({
             isMobile ? "p-3" : "p-4",
             "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900"
           )}>
+            {isNewSeason && (
+              <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50">
+                <p className="text-sm text-blue-700 dark:text-blue-300 font-inter text-center">
+                  🏆 New season starting — standings will update once matches are played
+                </p>
+              </div>
+            )}
             <CompactStandings rankings={rankings.slice(0, compactLimit)} />
             <div className="mt-4 text-center">
               <Button

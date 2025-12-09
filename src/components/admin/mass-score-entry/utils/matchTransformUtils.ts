@@ -1,23 +1,10 @@
-
 import { MatchWithTeams } from "../types";
 import { normalizeDateWithTime } from "@/utils/dateNormalization";
+import { matchLog } from "@/utils/logger";
 
 export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTeams => {
   // Use the new normalizeDateWithTime function to preserve time information
   const normalizedDate = normalizeDateWithTime(match.date, `transformDatabaseMatchToMatchWithTeams(${match.id})`);
-  
-  // Enhanced logging to debug date transformation
-  console.log(`🔄 transformDatabaseMatchToMatchWithTeams for match ${match.id}:`, {
-    originalDate: match.date,
-    originalDateType: typeof match.date,
-    originalDateString: match.date ? match.date.toString() : null,
-    normalizedDate,
-    normalizedDateType: typeof normalizedDate,
-    team1_game_wins: match.team1_game_wins,
-    team1_game_wins_type: typeof match.team1_game_wins,
-    team2_game_wins: match.team2_game_wins,
-    team2_game_wins_type: typeof match.team2_game_wins
-  });
   
   // Ensure game wins are properly parsed as numbers
   const team1GameWins = typeof match.team1_game_wins === 'number' ? 
@@ -25,21 +12,6 @@ export const transformDatabaseMatchToMatchWithTeams = (match: any): MatchWithTea
     
   const team2GameWins = typeof match.team2_game_wins === 'number' ? 
     match.team2_game_wins : parseInt(String(match.team2_game_wins || 0));
-    
-  console.log(`Game wins parsing for match ${match.id}:`, {
-    original: {
-      team1_game_wins: match.team1_game_wins,
-      team1_game_wins_type: typeof match.team1_game_wins,
-      team2_game_wins: match.team2_game_wins,
-      team2_game_wins_type: typeof match.team2_game_wins,
-    },
-    parsed: {
-      team1GameWins,
-      team2GameWins,
-      team1GameWinsType: typeof team1GameWins,
-      team2GameWinsType: typeof team2GameWins,
-    }
-  });
   
   return {
     id: match.id,

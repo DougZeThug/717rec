@@ -29,6 +29,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
 }) => {
   const globalRank = index + 1;
   const divisionRank = ranking.divisionRank;
+  const hasGames = ranking.wins + ranking.losses > 0;
   const winPercentage = ranking.winPercentage * 100;
   const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
   const isExpanded = expandedTeam === ranking.teamId;
@@ -116,12 +117,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 <p className="text-gray-600 dark:text-gray-400">Win %</p>
                 <p className={cn(
                   "font-bold",
+                  !hasGames ? "text-gray-500 dark:text-gray-400" :
                   winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
                   winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
                   winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
                   "text-red-600 dark:text-red-500"
                 )}>
-                  {winPercentage.toFixed(1)}%
+                  {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
                 </p>
               </div>
               <div>
@@ -197,12 +199,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
           <p className="text-gray-600 dark:text-gray-400 font-medium">Win %</p>
           <p className={cn(
             "font-bold",
+            !hasGames ? "text-gray-500 dark:text-gray-400" :
             winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
             winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
             winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
             "text-red-600 dark:text-red-500"
           )}>
-            {winPercentage.toFixed(1)}%
+            {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
           </p>
         </div>
         <div>

@@ -1,19 +1,18 @@
-
 import { MatchWithTeams } from "../types";
 import { extractTimeSlotFromUTC } from "@/utils/timezoneUtils";
+import { matchLog, errorLog } from "@/utils/logger";
 
 /**
  * Groups matches by their time slot for the mass score entry page
  * Now enhanced to handle evening games that span UTC days properly
  */
 export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string, MatchWithTeams[]> => {
-  console.log(`⏰ Grouping ${matches.length} matches by time slot`);
+  matchLog(`Grouping ${matches.length} matches by time slot`);
   
   return matches.reduce((acc, match, index) => {
     if (!match.date) {
       // For matches without dates, group them under "No Time"
       const key = "No Time";
-      console.log(`⏰ Match ${match.id} (index ${index}) has no date, assigned to "${key}"`);
       
       if (!acc[key]) {
         acc[key] = [];
@@ -25,21 +24,8 @@ export const groupMatchesByTimeSlot = (matches: MatchWithTeams[]): Record<string
       return acc;
     }
     
-    // Enhanced logging for date object investigation
-    console.log(`⏰ groupMatchesByTimeSlot processing match ${match.id} (index ${index}):`, {
-      matchDate: match.date,
-      matchDateType: typeof match.date,
-      matchDateObj: typeof match.date === 'string' ? new Date(match.date) : match.date,
-      localDate: new Date(match.date).toLocaleDateString(),
-      localTime: new Date(match.date).toLocaleTimeString(),
-      utcHours: (typeof match.date === 'string' ? new Date(match.date) : match.date).getUTCHours(),
-      utcMinutes: (typeof match.date === 'string' ? new Date(match.date) : match.date).getUTCMinutes()
-    });
-    
     // Use our updated timezone-aware utility
     const timeSlot = extractTimeSlotFromUTC(match.date);
-    
-    console.log(`⏰ Match ${match.id} (index ${index}) assigned to time slot: "${timeSlot}"`);
     
     if (!acc[timeSlot]) {
       acc[timeSlot] = [];
@@ -85,7 +71,7 @@ export const sortTimeSlots = (timeSlots: string[]): string[] => {
         // Last resort, just compare strings
         return 0;
       } catch (e) {
-        console.error(`Error parsing time "${timeStr}":`, e);
+        errorLog(`Error parsing time "${timeStr}":`, e);
         return 0;
       }
     };
