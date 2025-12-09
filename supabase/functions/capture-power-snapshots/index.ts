@@ -11,6 +11,26 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Validate webhook secret for cron calls
+  const webhookSecret = Deno.env.get('CRON_WEBHOOK_SECRET');
+  const authHeader = req.headers.get('Authorization');
+  
+  if (!webhookSecret) {
+    console.error('[capture-power-snapshots] CRON_WEBHOOK_SECRET not configured');
+    return new Response(
+      JSON.stringify({ success: false, error: 'Server configuration error' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
+  }
+  
+  if (authHeader !== `Bearer ${webhookSecret}`) {
+    console.warn('[capture-power-snapshots] Unauthorized request attempt');
+    return new Response(
+      JSON.stringify({ success: false, error: 'Unauthorized' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
