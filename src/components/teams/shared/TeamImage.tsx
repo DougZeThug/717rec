@@ -1,5 +1,6 @@
 
 import React from "react";
+import { errorLog } from "@/utils/logger";
 
 interface TeamImageProps {
   imageUrl: string | null | undefined;
@@ -23,7 +24,7 @@ export const TeamImage: React.FC<TeamImageProps> = ({
   };
 
   const defaultOnError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error(`Image load error for ${teamName}:`, imageUrl);
+    errorLog(`Image load error for ${teamName}:`, imageUrl);
     (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
   };
 

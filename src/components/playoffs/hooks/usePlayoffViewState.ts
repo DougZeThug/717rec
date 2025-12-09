@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { PlayoffPageData } from './usePlayoffPageData';
 import { usePlayoffHandlers } from './usePlayoffHandlers';
+import { bracketLog, errorLog } from '@/utils/logger';
 
 export function usePlayoffViewState(
   data: PlayoffPageData, 
@@ -15,26 +16,26 @@ export function usePlayoffViewState(
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleCreateBracket = () => {
-    console.log('🎯 usePlayoffViewState: Create bracket clicked, setting dialog open to true');
-    console.log('🎯 usePlayoffViewState: Current bracketDialogOpen state:', bracketDialogOpen);
+    bracketLog('usePlayoffViewState: Create bracket clicked, setting dialog open to true');
+    bracketLog('usePlayoffViewState: Current bracketDialogOpen state:', bracketDialogOpen);
     setBracketDialogOpen(true);
-    console.log('🎯 usePlayoffViewState: Dialog open state should now be true');
+    bracketLog('usePlayoffViewState: Dialog open state should now be true');
   };
 
   const handleDeleteBracket = (bracketId: string, bracketName: string) => {
-    console.log('🎯 usePlayoffViewState: Delete bracket requested:', bracketId, bracketName);
+    bracketLog('usePlayoffViewState: Delete bracket requested:', bracketId, bracketName);
     setDeletingBracket({ id: bracketId, name: bracketName });
   };
 
   const handleConfirmDeleteBracket = async () => {
     if (!deletingBracket) return;
     
-    console.log('🎯 usePlayoffViewState: Confirming bracket deletion:', deletingBracket);
+    bracketLog('usePlayoffViewState: Confirming bracket deletion:', deletingBracket);
     setIsDeleting(true);
     
     try {
       await data.deleteBracket(deletingBracket.id, deletingBracket.name);
-      console.log('🎯 usePlayoffViewState: Bracket deleted successfully');
+      bracketLog('usePlayoffViewState: Bracket deleted successfully');
       
       // Clear selection if we deleted the currently selected bracket
       if (data.selectedBracketId === deletingBracket.id) {
@@ -44,7 +45,7 @@ export function usePlayoffViewState(
       // Refresh the brackets list
       await data.refetchBrackets();
     } catch (error) {
-      console.error('🎯 usePlayoffViewState: Error deleting bracket:', error);
+      errorLog('usePlayoffViewState: Error deleting bracket:', error);
     } finally {
       setIsDeleting(false);
       setDeletingBracket(null);
@@ -57,9 +58,9 @@ export function usePlayoffViewState(
       // Use the handler that includes navigation
       await handlers.handleBracketCreatedWithNavigation();
       setBracketDialogOpen(false);
-      console.log('🎯 usePlayoffViewState: Bracket creation and navigation completed');
+      bracketLog('usePlayoffViewState: Bracket creation and navigation completed');
     } catch (error) {
-      console.error('🎯 usePlayoffViewState: Error in bracket creation flow:', error);
+      errorLog('usePlayoffViewState: Error in bracket creation flow:', error);
     }
   };
 

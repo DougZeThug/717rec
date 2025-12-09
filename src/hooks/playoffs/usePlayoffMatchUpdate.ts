@@ -3,6 +3,7 @@ import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { PlayoffBracket } from '@/types/playoffs';
+import { scoreLog } from '@/utils/logger';
 
 export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
   const { toast } = useToast();
@@ -23,7 +24,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
     
     if (useBracketsManager) {
       // ✅ Use brackets-manager.js for match updates (handles loser propagation automatically)
-      console.log('🚀 usePlayoffMatchUpdate - START: Using brackets-manager', {
+      scoreLog('usePlayoffMatchUpdate - START: Using brackets-manager', {
         matchId,
         team1GameWins,
         team2GameWins,
@@ -44,14 +45,14 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       // Handle BYE matches (one team is null) as forfeits
       const isBye = !matchData.team1_id || !matchData.team2_id;
       if (isBye) {
-        console.log("🚩 BYE match detected - treating as forfeit");
+        scoreLog("BYE match detected - treating as forfeit");
         // For BYE matches, the scores are already set correctly (winner gets all games)
         // Just pass through to bracket manager with the forfeit scores
       }
       
       const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
       
-      console.log(`🚀 Calling bracketManagerService.updateMatch for Match ${matchId}`, {
+      scoreLog(`Calling bracketManagerService.updateMatch for Match ${matchId}`, {
         matchId: parseInt(matchId),
         scores: {
           opponent1: { score: team1GameWins, result: team1GameWins > team2GameWins ? "win" : "loss" },
@@ -73,7 +74,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         }
       });
       
-      console.log(`✅ usePlayoffMatchUpdate - COMPLETED: Match ${matchId}`);
+      scoreLog(`usePlayoffMatchUpdate - COMPLETED: Match ${matchId}`);
       
       // Save individual games
       if (games && games.length > 0) {
@@ -110,7 +111,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       
     } else {
       // ✅ LEGACY: Direct Supabase update (no auto-progression)
-      console.log('📊 Using legacy direct update (no auto-progression)');
+      scoreLog('Using legacy direct update (no auto-progression)');
       
       const { data: matchData, error: fetchError } = await supabase
         .from('playoff_matches')

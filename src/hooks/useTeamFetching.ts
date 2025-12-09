@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from '@/types';
+import { teamLog, errorLog } from '@/utils/logger';
 
 export function useTeamFetching() {
   const [teams, setTeams] = useState<Record<string, Team>>({});
@@ -52,14 +53,14 @@ export function useTeamFetching() {
       });
       
       setTeams(teamsMap);
-      console.log(`Loaded ${Object.keys(teamsMap).length} teams with stats from v_team_details`);
+      teamLog(`Loaded ${Object.keys(teamsMap).length} teams with stats from v_team_details`);
 
       // Log SOS and Power Score for debugging
       Object.values(teamsMap).forEach(team => {
-        console.log(`Team: ${team.name}, SOS: ${team.sos}, PowerScore: ${team.power_score}`);
+        teamLog(`Team: ${team.name}, SOS: ${team.sos}, PowerScore: ${team.power_score}`);
       });
     } catch (error) {
-      console.error('Error fetching teams:', error);
+      errorLog('Error fetching teams:', error);
       toast({
         title: 'Error',
         description: 'Failed to load teams with game statistics. Please try again.',
