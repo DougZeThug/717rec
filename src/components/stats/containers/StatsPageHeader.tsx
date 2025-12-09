@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const StatsPageHeader = () => {
   return (
     <PageHeader 
-      title="Team Statistics" 
+      title="Standings" 
       description="Current season rankings and performance metrics"
       className={cn("mt-1", animations.fadeInSlideDown)} 
       withGradient={true}
