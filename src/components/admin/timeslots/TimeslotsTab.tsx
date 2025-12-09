@@ -58,8 +58,6 @@ const TimeslotsTab = () => {
 
   const handleBatchTimeslotAssign = async (teamIds: string[], timeslot: string) => {
     try {
-      console.log("Starting batch assignment for teams:", teamIds, "with timeslot:", timeslot);
-      
       if (timeslot === 'BYE') {
         // Handle bye week batch assignment separately
         await ByeWeekService.batchAssignByeWeeks(selectedDate, teamIds);

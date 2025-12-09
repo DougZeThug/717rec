@@ -63,12 +63,6 @@ const MatchScoreItem = ({
       const team1Wins = parseInt(team1GameWins) || 0;
       const team2Wins = parseInt(team2GameWins) || 0;
       
-      console.log(`Submitting match ${match.id}:`);
-      console.log(`Team 1 (${teams[match.team1Id]?.name}):`);
-      console.log(`- Game wins: ${team1Wins}`);
-      console.log(`Team 2 (${teams[match.team2Id]?.name}):`);
-      console.log(`- Game wins: ${team2Wins}`);
-      
       await onSubmitScore(team1Wins, team2Wins);
     } finally {
       setIsSubmitting(false);

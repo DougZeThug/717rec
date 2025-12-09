@@ -8,6 +8,7 @@ import SeasonMetaBar from "./SeasonMetaBar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getHistoryDivisionDisplayName, sortHistoryDivisions } from "@/utils/historyDivisionUtils";
+import { dbLog, errorLog } from "@/utils/logger";
 
 interface Season {
   id: string;
@@ -39,7 +40,7 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
   return useQuery({
     queryKey: ['season-data', seasonId],
     queryFn: async () => {
-      console.log(`🔍 Season ${seasonId}: Starting season data query...`);
+      dbLog(`Season ${seasonId}: Starting season data query...`);
       
       try {
         const { data, error } = await supabase
@@ -67,17 +68,8 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           .order('division_name', { ascending: true })
           .order('playoff_rank', { ascending: true, nullsFirst: false });
 
-        console.log(`📊 Season ${seasonId}: Query completed`);
-        console.log(`📊 Season ${seasonId}: Raw data:`, data);
-        console.log(`❌ Season ${seasonId}: Error (if any):`, error);
-
         if (error) {
-          console.error(`❌ Season ${seasonId}: Database error:`, {
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code
-          });
+          errorLog(`Season ${seasonId}: Database error:`, error);
           throw error;
         }
 
@@ -100,10 +92,10 @@ const useSeasonData = (seasonId: string, enabled: boolean) => {
           team_image_url: item.teams?.image_url,
         })) as SeasonData[];
 
-        console.log(`✅ Season ${seasonId}: Transformed ${transformedData.length} team records`);
+        dbLog(`Season ${seasonId}: Transformed ${transformedData.length} team records`);
         return transformedData;
       } catch (err) {
-        console.error(`💥 Season ${seasonId}: Exception in query:`, err);
+        errorLog(`Season ${seasonId}: Exception in query:`, err);
         throw err;
       }
     },

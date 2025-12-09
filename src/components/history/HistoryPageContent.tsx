@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SeasonAccordion from "./SeasonAccordion";
+import { dbLog, errorLog } from "@/utils/logger";
 
 interface SeasonData {
   team_id: string;
@@ -41,7 +42,7 @@ const HistoryPageContent: React.FC = () => {
 
   const fetchHistoricalData = async () => {
     try {
-      console.log("Fetching historical seasons...");
+      dbLog("Fetching historical seasons...");
 
       // Fetch all seasons
       const { data: seasonsData, error: seasonsError } = await supabase
@@ -50,7 +51,7 @@ const HistoryPageContent: React.FC = () => {
         .order('start_date', { ascending: false });
 
       if (seasonsError) {
-        console.error("Error fetching seasons:", seasonsError);
+        errorLog("Error fetching seasons:", seasonsError);
         toast({
           title: "Error",
           description: "Failed to fetch seasons data",
@@ -59,11 +60,11 @@ const HistoryPageContent: React.FC = () => {
         return;
       }
 
-      console.log("Seasons fetched:", seasonsData);
+      dbLog("Seasons fetched:", seasonsData);
       setSeasons(seasonsData || []);
 
     } catch (error) {
-      console.error("Unexpected error fetching historical data:", error);
+      errorLog("Unexpected error fetching historical data:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",

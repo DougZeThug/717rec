@@ -21,7 +21,6 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
   data
 }) => {
   const handleCreateBracketClick = () => {
-    console.log('🎯 PlayoffView: Create bracket button clicked');
     onCreateBracket();
   };
 

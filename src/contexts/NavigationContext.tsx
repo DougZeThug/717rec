@@ -3,6 +3,7 @@ import React, { createContext, useContext, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
+import { routeLog } from '@/utils/logger';
 
 interface NavigationContextType {
   navigateWithTransition: (
@@ -42,17 +43,11 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
       replace?: boolean;
     }
   ) => {
-    console.log(`NavigationContext: Navigating to ${to}`);
+    routeLog(`Navigating to ${to}`);
     setIsNavigating(true);
     
     // Handle protected routes (like admin) specially
     const isProtectedRoute = to === '/admin';
-    
-    if (isProtectedRoute) {
-      console.log('NavigationContext: Handling protected route navigation');
-      console.log('Navigation to admin - Current admin access:', isAdminAccessGranted);
-      console.log('Navigation to admin - User logged in:', !!user);
-    }
     
     // Small delay to ensure state updates before navigation
     setTimeout(() => {

@@ -29,27 +29,24 @@ const AdminView: React.FC<AdminViewProps> = ({
   const [activeTab, setActiveTab] = React.useState("brackets");
 
   const handleResyncBracket = (bracketId: string, challongeTournamentId: number) => {
-    console.log('🔄 AdminView: Initiating bracket resync:', { bracketId, challongeTournamentId });
     resyncMatches.mutate(
       { bracketId, challongeTournamentId },
       {
         onSuccess: () => {
-          console.log('🔄 AdminView: Bracket resync completed successfully');
           // Trigger a refetch of the bracket data
           if (data.selectedBracketId === bracketId) {
             // Force a refresh if this is the currently selected bracket
             window.location.reload();
           }
         },
-        onError: (error) => {
-          console.error('🔄 AdminView: Bracket resync failed:', error);
+        onError: () => {
+          // Error handled by mutation
         }
       }
     );
   };
 
   const handleCreateBracketClick = () => {
-    console.log('🎯 AdminView: Create bracket button clicked');
     onCreateBracket();
   };
 
