@@ -99,6 +99,23 @@ const CallToAction = () => {
             <a href={currentMessage.buttonLink}>{currentMessage.buttonText}</a>
           </Button>
         </motion.div>
+        
+        {/* Navigation dots */}
+        <div className="flex justify-center gap-2 mt-5">
+          {ctaMessages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentMessageIndex(index)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all duration-300",
+                index === currentMessageIndex
+                  ? "bg-blue-600 dark:bg-blue-400 w-6"
+                  : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
+              )}
+              aria-label={`Go to message ${index + 1}`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

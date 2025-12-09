@@ -1,9 +1,8 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { gradients } from "@/styles/design-system";
 
 // Import component files
 import NavBrand from "./navbar/NavBrand";
@@ -12,15 +11,6 @@ import NavActions from "./navbar/NavActions";
 import MobileMenu from "./navbar/MobileMenu";
 
 const Navbar: React.FC = () => {
-  const { user, profile } = useAuth();
-  const { isAdminAccessGranted } = useAdminAccess();
-  
-  // Log admin status on render
-  useEffect(() => {
-    console.log("Navbar: Rendering with admin status:", isAdminAccessGranted);
-    console.log("Navbar: User profile:", profile);
-  }, [isAdminAccessGranted, profile]);
-  
   // Base nav items that everyone can see
   const navItems = [
     { label: "Home", href: "/" },

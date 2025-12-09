@@ -6,12 +6,38 @@ import { Team } from "@/types";
 import TeamCard from "./TeamCard";
 import { cn } from "@/lib/utils";
 import { gradients, animations } from "@/styles/design-system";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Trophy } from "lucide-react";
 
 interface TopTeamsProps {
   teams: Team[];
 }
 
 const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
+  if (teams.length === 0) {
+    return (
+      <section id="top-teams-section" className={cn(
+        "py-6 md:py-8 rounded-xl shadow-sm mb-4",
+        "bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30",
+        "dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80",
+        animations.fadeIn
+      )}>
+        <EmptyState
+          icon={Trophy}
+          title="No Teams Ranked Yet"
+          description="Teams will appear here once the season starts and matches are played."
+          actions={[
+            {
+              label: "View All Teams",
+              onClick: () => window.location.href = "/teams",
+              variant: "default"
+            }
+          ]}
+        />
+      </section>
+    );
+  }
+
   return (
     <section id="top-teams-section" className={cn(
       "py-6 md:py-8 rounded-xl shadow-sm mb-4",
