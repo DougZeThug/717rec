@@ -157,30 +157,45 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
           
           {/* Event details grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-2xl mt-4">
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
+            >
               <Clock className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
               <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Check-in</span>
               <span className="text-lg md:text-xl font-bebas">{formatTime(checkInTimeStr)}</span>
-            </div>
+            </motion.div>
             
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
+            >
               <Clock className="h-5 w-5 md:h-6 md:w-6 text-green-300" />
               <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Start</span>
               <span className="text-lg md:text-xl font-bebas">{formatTime(startTimeStr)}</span>
-            </div>
+            </motion.div>
             
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
+            >
               <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-emerald-300" />
               <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Buy-in</span>
               <span className="text-lg md:text-xl font-bebas">{buyIn}</span>
-            </div>
+            </motion.div>
             
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="flex flex-col items-center gap-1 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border-2 border-white/20 hover:border-white/40 transition-all"
+            >
               <Trophy className="h-5 w-5 md:h-6 md:w-6 text-amber-300" />
               <span className="text-xs font-bebas uppercase tracking-wide text-white/80">Payouts</span>
               <span className="text-lg md:text-xl font-bebas">{payouts}</span>
-            </div>
+            </motion.div>
           </div>
+
+          {/* Section divider */}
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/30 to-transparent my-4" />
 
           {/* Past Winners */}
           {pastWinners.length > 0 && (
