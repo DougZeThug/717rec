@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Team } from "@/types";
 import { fetchTeamsFromApi } from "@/services/teams/TeamFetchService";
 import { useToast } from "@/hooks/use-toast";
+import { teamLog, errorLog } from "@/utils/logger";
 
 export function useTeamsData() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -14,16 +15,7 @@ export function useTeamsData() {
       setIsLoading(true);
       const teamsData = await fetchTeamsFromApi();
       
-      // Enhanced logging to verify power score and SOS values
-      console.log("Teams data loaded in useTeamsData:", teamsData.map(t => ({
-        name: t.name,
-        power_score: t.power_score,
-        sos: t.sos,
-        win_percentage: t.win_percentage,
-        game_win_percentage: t.game_win_percentage,
-        record: `${t.wins}-${t.losses}`,
-        game_record: `${t.game_wins}-${t.game_losses}`
-      })));
+      teamLog(`Loaded ${teamsData.length} teams`);
       
       setTeams(teamsData);
       
@@ -35,7 +27,7 @@ export function useTeamsData() {
         });
       }
     } catch (error) {
-      console.error("Error fetching teams:", error);
+      errorLog("Error fetching teams:", error);
       toast({
         title: "Error",
         description: "Failed to fetch teams. Please try again.",

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Team } from "@/types";
 import { useTeams } from "@/hooks/useTeams";
 import { useToast } from "@/hooks/use-toast";
+import { errorLog } from "@/utils/logger";
 
 export function useTeamManagement() {
   const { teams, isLoading, fetchTeams, updateTeam, deleteTeam } = useTeams();
@@ -19,7 +20,7 @@ export function useTeamManagement() {
       await updateTeam(teamToEdit.id, teamData);
       setTeamToEdit(null);
     } catch (error) {
-      console.error("Error updating team:", error);
+      errorLog("Error updating team:", error);
     }
   };
 
@@ -35,7 +36,7 @@ export function useTeamManagement() {
         description: "The team has been successfully deleted.",
       });
     } catch (error) {
-      console.error("Error deleting team:", error);
+      errorLog("Error deleting team:", error);
       toast({
         title: "Deletion Failed",
         description: "There was a problem deleting the team. Please try again.",
@@ -55,7 +56,7 @@ export function useTeamManagement() {
         description: "Team list has been refreshed successfully.",
       });
     } catch (error) {
-      console.error("Error refreshing teams:", error);
+      errorLog("Error refreshing teams:", error);
     } finally {
       setIsRefreshing(false);
     }

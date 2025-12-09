@@ -3,6 +3,7 @@ import React from "react";
 import { Team } from "@/types";
 import { TeamCardGrid } from "./grid/TeamCardGrid";
 import { TeamCardList } from "./list/TeamCardList";
+import { warnLog } from "@/utils/logger";
 
 interface TeamCardProps {
   team: Team;
@@ -18,7 +19,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, onDelete, onEdit, viewMode })
     case 'grid':
       return <TeamCardGrid team={team} onDelete={onDelete} onEdit={onEdit} />;
     default:
-      console.warn(`Unknown viewMode: ${viewMode}, falling back to grid view`);
+      warnLog(`Unknown viewMode: ${viewMode}, falling back to grid view`);
       return <TeamCardGrid team={team} onDelete={onDelete} onEdit={onEdit} />;
   }
 };
