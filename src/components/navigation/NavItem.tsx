@@ -48,9 +48,10 @@ export const NavItem: React.FC<NavItemProps> = ({
         <motion.div 
           layoutId="bottomNavIndicator"
           className={cn(
-            "absolute bottom-0 left-1/2 transform -translate-x-1/2 h-1 rounded-full",
-            "bg-gradient-to-r from-cornhole-navy via-blue-600 to-amber-500/70",
-            "w-1/2 dark:from-blue-500 dark:via-blue-400 dark:to-amber-400/90"
+            "absolute bottom-0 left-1/2 transform -translate-x-1/2 h-[3px] rounded-full",
+            "bg-gradient-to-r from-cornhole-navy via-blue-600 to-amber-500",
+            "w-2/3 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
+            "dark:from-blue-400 dark:via-blue-300 dark:to-amber-400"
           )}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
         />

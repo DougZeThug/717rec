@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Trophy, Calendar, RefreshCw } from "lucide-react";
+import { ChevronDown, Trophy, Calendar, RefreshCw, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import DivisionPanel from "./DivisionPanel";
@@ -113,10 +113,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: seasonData, isLoading, error, refetch, isRefetching } = useSeasonData(season.id, isExpanded);
 
-  console.log(`🎯 Season ${season.name}: Accordion state - expanded: ${isExpanded}, loading: ${isLoading}, hasData: ${!!seasonData}`);
-
   const handleToggle = () => {
-    console.log(`🎯 Season ${season.name}: Toggling accordion from ${isExpanded} to ${!isExpanded}`);
     setIsExpanded(!isExpanded);
   };
 
@@ -139,38 +136,61 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
         return acc;
       }, {} as Record<string, SeasonData[]>);
 
-    console.log(`📊 Season ${season.name}: Grouped data by divisions:`, Object.keys(grouped));
     return grouped;
   }, [seasonData, season.name]);
 
   const hasChampions = seasonData?.some(team => team.champion) || false;
 
+  // Count total teams and matches
+  const teamCount = seasonData?.length || 0;
+  const totalMatches = seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
+  const matchCount = Math.floor(totalMatches / 2); // Each match counted twice (once per team)
+
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-slate-700">
       <button
         onClick={handleToggle}
         className={cn(
           "w-full p-4 md:p-6 text-left transition-all duration-200",
-          "hover:bg-gray-50 dark:hover:bg-slate-700",
+          "hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-amber-50/30",
+          "dark:hover:from-slate-700/50 dark:hover:to-slate-700/30",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset",
-          isExpanded && "bg-gray-50 dark:bg-slate-700"
+          isExpanded && "bg-gradient-to-r from-blue-50/30 to-amber-50/20 dark:from-slate-700/40 dark:to-slate-700/20"
         )}
         aria-expanded={isExpanded}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Trophy className={cn(
-              "w-5 h-5",
-              hasChampions ? "text-yellow-500" : "text-gray-400"
-            )} />
+            <div className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center",
+              hasChampions 
+                ? "bg-gradient-to-br from-yellow-100 to-amber-200 dark:from-yellow-900/40 dark:to-amber-800/40" 
+                : "bg-gray-100 dark:bg-gray-700"
+            )}>
+              <Trophy className={cn(
+                "w-5 h-5",
+                hasChampions ? "text-yellow-600 dark:text-yellow-400" : "text-gray-400"
+              )} />
+            </div>
             <div>
-              <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">
+              <h3 className="text-lg md:text-xl font-bebas uppercase tracking-wide text-slate-900 dark:text-white">
                 {season.name}
               </h3>
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                <Calendar className="w-4 h-4" />
+              <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                {teamCount > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5" />
+                    {teamCount} teams
+                  </span>
+                )}
+                {matchCount > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {matchCount} matches
+                  </span>
+                )}
                 {season.is_active && (
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-xs font-medium">
+                  <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
                     Active
                   </span>
                 )}
