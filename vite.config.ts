@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
           'vendor-charts': ['recharts'],
           'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
           'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-brackets': ['brackets-manager', 'brackets-model', 'brackets-viewer', 'brackets-memory-db'],
+          'vendor-brackets': ['brackets-manager', 'brackets-model', 'brackets-memory-db'],
         }
       }
     }
