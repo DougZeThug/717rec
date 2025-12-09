@@ -4,6 +4,7 @@ import { TeamTimeslot } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
+import { scheduleLog, errorLog } from "@/utils/logger";
 
 export const useMatchTimeslots = (date: Date | null) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
@@ -36,7 +37,7 @@ export const useMatchTimeslots = (date: Date | null) => {
       try {
         // Format date as YYYY-MM-DD for database queries
         const formattedDate = format(date, 'yyyy-MM-dd');
-        console.log("Fetching timeslots for date:", formattedDate);
+        scheduleLog("Fetching timeslots for date:", formattedDate);
         
         const { data, error } = await supabase
           .from('team_timeslots')
@@ -59,12 +60,12 @@ export const useMatchTimeslots = (date: Date | null) => {
           .eq('match_date', formattedDate);
         
         if (error) {
-          console.error("Error fetching timeslots:", error);
+          errorLog("Error fetching timeslots:", error);
           throw error;
         }
         
-        // Console log for debugging
-        console.log('Timeslots raw data:', data);
+        // Log for debugging
+        scheduleLog('Timeslots raw data:', data);
         
         // Map the data to match the TeamTimeslot type
         const formattedData: TeamTimeslot[] = data?.map(item => ({
@@ -78,11 +79,11 @@ export const useMatchTimeslots = (date: Date | null) => {
           } : undefined
         })) || [];
         
-        console.log('Formatted timeslots data:', formattedData);
+        scheduleLog('Formatted timeslots data:', formattedData);
         
         // Filter to show only primary timeslots
         const filteredData = filterToPrimaryTimeslots(formattedData);
-        console.log('Filtered timeslots (primary only):', filteredData);
+        scheduleLog('Filtered timeslots (primary only):', filteredData);
         
         setTimeslots(filteredData);
         
@@ -106,10 +107,10 @@ export const useMatchTimeslots = (date: Date | null) => {
             return acc;
           }, {});
         
-        console.log('Grouped timeslots:', sortedGrouped);  
+        scheduleLog('Grouped timeslots:', sortedGrouped);  
         setGroupedTimeslots(sortedGrouped);
       } catch (error: any) {
-        console.error('Error fetching timeslots:', error);
+        errorLog('Error fetching timeslots:', error);
       } finally {
         setIsLoading(false);
       }
@@ -147,7 +148,7 @@ export const useMatchTimeslots = (date: Date | null) => {
           .eq('match_date', formattedDate)
           .then(({ data, error }) => {
             if (error) {
-              console.error("Error refreshing timeslots:", error);
+              errorLog("Error refreshing timeslots:", error);
               return;
             }
             

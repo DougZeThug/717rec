@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { useBracketsManagerMatch } from '@/hooks/playoffs/useBracketsManagerMatch';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
-import { log } from '@/utils/logger';
+import { log, errorLog } from '@/utils/logger';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface BracketsManagerMatchEditorProps {
@@ -61,7 +61,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
           reason: result.reason
         });
       } catch (err) {
-        console.error('Error checking BYE eligibility:', err);
+        errorLog('Error checking BYE eligibility:', err);
       }
     };
 
@@ -140,7 +140,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
 
       onClose();
     } catch (err) {
-      console.error('Error updating match:', err);
+      errorLog('Error updating match:', err);
       toast({
         title: 'Error',
         description: err instanceof Error ? err.message : 'Failed to update match',
@@ -175,7 +175,7 @@ export const BracketsManagerMatchEditor: React.FC<BracketsManagerMatchEditorProp
         statusName: result.statusName
       });
     } catch (err) {
-      console.error('Error toggling BYE status:', err);
+      errorLog('Error toggling BYE status:', err);
       toast({
         title: 'Toggle Failed',
         description: err instanceof Error ? err.message : 'Failed to toggle match status',
