@@ -36,7 +36,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
       )}>
         <CollapsibleTrigger asChild>
           <CardHeader className={cn(
-            isMobile ? "pb-1 pt-3" : "pb-2",
+            isMobile ? "py-2.5 px-3" : "py-4",
             isLight ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
             "border-b border-blue-100 dark:border-blue-900/30 rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
           )}>
@@ -53,14 +53,15 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
                   >
                     Complete Team Rankings
                   </CardTitle>
-                  <CardDescription
-                    className={cn(
-                      isLight ? "!text-[#444444] !font-medium font-source" : "text-gray-400 font-source",
-                      isMobile ? "text-xs" : ""
-                    )}
-                  >
-                    Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
-                  </CardDescription>
+                  {!isMobile && (
+                    <CardDescription
+                      className={cn(
+                        isLight ? "!text-[#444444] !font-medium font-source" : "text-gray-400 font-source"
+                      )}
+                    >
+                      Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
+                    </CardDescription>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">

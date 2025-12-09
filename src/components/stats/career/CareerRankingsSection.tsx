@@ -44,10 +44,13 @@ const CareerRankingsSection: React.FC = () => {
           <CardHeader className={cn("cursor-pointer hover:bg-muted/50 transition-colors", isMobile ? "py-2.5 px-3" : "py-4")}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-amber-500" />
+                <Trophy className={cn("text-amber-500", isMobile ? "h-4 w-4" : "h-5 w-5")} />
                 <div>
                   <CardTitle 
-                    className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                    className={cn(
+                      "font-bebas uppercase tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400",
+                      isMobile ? "text-lg" : "text-xl sm:text-2xl"
+                    )}
                     style={{ letterSpacing: "0.5px" }}
                   >
                     Career Statistics
