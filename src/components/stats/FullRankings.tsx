@@ -65,8 +65,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <ViewToggle view={view} onViewChange={setView} />
-                <ChevronDown 
+                {isOpen && <ViewToggle view={view} onViewChange={setView} />}
+                <ChevronDown
                   className={cn(
                     "h-5 w-5 transition-transform",
                     isOpen && "rotate-180"

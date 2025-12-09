@@ -72,7 +72,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError, onRefresh }: 
 
             <AllTeamsCareerPowerScoreChart />
 
-            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16">
+            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16 mb-4">
               <FullRankingsSection rankings={rankings} />
             </div>
             
