@@ -164,12 +164,6 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     console.error('Error fetching archived matches:', archivedError);
   }
 
-  // Debug logging for data fetching
-  console.log('🎯 Sweep calculation debug - Data fetched:', {
-    currentMatchesCount: currentMatches?.length || 0,
-    archivedMatchesCount: archivedMatches?.length || 0,
-    teamId
-  });
 
   // Get playoff matches with bracket information
   const { data: playoffMatches, error: playoffError } = await supabase
@@ -190,9 +184,6 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     console.error('Error fetching playoff matches:', playoffError);
   }
 
-  console.log('🎯 Playoff matches fetched:', {
-    playoffMatchesCount: playoffMatches?.length || 0
-  });
 
   // Get bracket division weights for competitive playoff detection
   let bracketDivisionWeights: Record<string, number> = {};
@@ -268,11 +259,6 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     ...(Array.isArray(archivedMatches) ? archivedMatches : [])
   ];
   
-  console.log('🎯 Regular matches combined:', {
-    regularMatchesCount: regularMatches.length,
-    currentMatchesIsArray: Array.isArray(currentMatches),
-    archivedMatchesIsArray: Array.isArray(archivedMatches)
-  });
   for (const match of regularMatches) {
     if (match.winner_id !== teamId) continue;
     
@@ -318,11 +304,6 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
 
   const career_total_matches = career_match_wins + career_match_losses;
   
-  console.log('🎯 Career sweeps result:', {
-    career_sweeps,
-    career_total_matches,
-    career_sweep_rate: career_total_matches > 0 ? (career_sweeps / career_total_matches) * 100 : 0
-  });
 
   const career_sweep_rate = career_total_matches > 0 
     ? (career_sweeps / career_total_matches) * 100 
