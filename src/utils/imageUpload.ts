@@ -60,33 +60,35 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
  */
 export const uploadTeamImage = async (file: File, teamId?: string) => {
   let fileToUpload = file;
-  const maxSizeMB = 0.5; // 500KB max size
+  const maxSizeMB = 0.1; // 100KB max size for better performance
   const maxWidthOrHeight = 300; // Max dimensions 300x300px
   
   try {
-    // Attempt to compress and resize the image
+    // Attempt to compress and resize the image, converting to WebP for better compression
     const compressedFile = await imageCompression(file, {
       maxSizeMB,
       maxWidthOrHeight,
       useWebWorker: true,
-      fileType: file.type,
+      fileType: 'image/webp', // Use WebP for better compression
+      initialQuality: 0.8, // 80% quality for good balance
     });
-    
-    console.log('Original file size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
-    console.log('Compressed file size:', (compressedFile.size / 1024 / 1024).toFixed(2), 'MB');
     
     // Verify the compressed image meets quality standards
     const isValid = await isValidCompressedImage(compressedFile);
     
     if (isValid) {
-      console.log('Using compressed image for upload');
       fileToUpload = compressedFile;
     } else {
-      console.warn('Compressed image failed validation, using original file');
-      fileToUpload = file;
+      // Fallback: try with original format if WebP fails
+      const fallbackFile = await imageCompression(file, {
+        maxSizeMB: 0.2,
+        maxWidthOrHeight,
+        useWebWorker: true,
+        fileType: file.type,
+      });
+      fileToUpload = fallbackFile;
     }
   } catch (error) {
-    console.warn('Image compression failed, uploading original file:', error);
     // Continue with the original file if compression fails
     fileToUpload = file;
   }
