@@ -2,8 +2,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { interactive, gradients } from "@/styles/design-system";
-import { motion } from "framer-motion";
 
 export interface NavItemProps {
   to: string;
@@ -45,15 +43,14 @@ export const NavItem: React.FC<NavItemProps> = ({
         {label && <span className="text-sm font-medium">{label}</span>}
       </div>
       {isActive && (
-        <motion.div 
-          layoutId="bottomNavIndicator"
+        <span 
           className={cn(
-            "absolute bottom-0 left-1/2 transform -translate-x-1/2 h-[3px] rounded-full",
+            "absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-full",
             "bg-gradient-to-r from-cornhole-navy via-blue-600 to-amber-500",
             "w-2/3 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
-            "dark:from-blue-400 dark:via-blue-300 dark:to-amber-400"
+            "dark:from-blue-400 dark:via-blue-300 dark:to-amber-400",
+            "transition-all duration-300 ease-out"
           )}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
         />
       )}
     </Link>

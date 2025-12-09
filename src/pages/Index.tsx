@@ -1,9 +1,8 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { useTeams } from "@/hooks/useTeams";
 import { usePendingScoresMatches } from "@/hooks/usePendingScoresMatches";
 import { useHeroCards } from "@/hooks/useHeroCards";
 import TopTeams from "@/components/home/TopTeams";
-import CallToAction from "@/components/home/CallToAction";
 import HeroSection from "@/components/home/HeroSection";
 import PendingScoresCard from "@/components/home/PendingScoresCard";
 import HeroCard from "@/components/hero/HeroCard";
@@ -12,6 +11,9 @@ import PageLayout from "@/components/layout/PageLayout";
 import LoadingState from "@/components/ui/loading-state";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PageTransition from "@/components/transitions/PageTransition";
+
+// Lazy load CallToAction since it's below the fold
+const CallToAction = lazy(() => import("@/components/home/CallToAction"));
 
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
@@ -77,7 +79,9 @@ const Index: React.FC = () => {
         </PageTransition>
 
         <PageTransition animation="fadeIn" delay="long">
-          <CallToAction />
+          <Suspense fallback={<div className="h-32" />}>
+            <CallToAction />
+          </Suspense>
         </PageTransition>
       </div>
     </PageLayout>
