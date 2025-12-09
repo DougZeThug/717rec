@@ -40,21 +40,22 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
 
   return (
     <section id="top-teams-section" className={cn(
-      "py-6 md:py-8 rounded-xl shadow-sm mb-4",
+      "py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4",
       "bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30",
       "dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80",
       animations.fadeIn
     )}>
-      <div className="flex flex-wrap justify-between items-center px-3 md:px-0 mb-4">
+      <div className="flex flex-wrap justify-between items-center mb-6">
         <div>
           <h2 className={cn(
-            "text-2xl md:text-3xl font-bold text-cornhole-navy dark:text-white font-sans",
-            "bg-gradient-to-r from-cornhole-navy to-blue-600/90 dark:from-blue-400 dark:to-blue-500/90",
+            "text-2xl md:text-3xl font-bebas uppercase tracking-wide",
+            "bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700",
+            "dark:from-blue-400 dark:to-amber-400",
             "bg-clip-text text-transparent"
           )}>
             Top Teams
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-sans">Based on highest power score ranking</p>
+          <p className="text-sm text-muted-foreground mt-1">Based on highest power score ranking</p>
         </div>
         <Button 
           asChild 
@@ -64,26 +65,13 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
           <Link to="/teams">View All</Link>
         </Button>
       </div>
-      <div className="flex flex-col space-y-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:space-y-0 px-3 md:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {teams.map((team, index) => (
-          <div 
+          <TeamCard 
             key={team.id} 
-            className={cn(
-              "rounded-xl shadow-sm border border-gray-200 dark:border-gray-700",
-              "bg-gradient-to-br from-white via-white to-gray-50 dark:from-[#1E1E1E] dark:via-gray-800/90 dark:to-gray-900",
-              "hover:bg-gradient-to-br hover:from-white hover:via-blue-50/10 hover:to-orange-50/20",
-              "dark:hover:from-gray-800/90 dark:hover:via-gray-800/80 dark:hover:to-gray-900",
-              "transition-all duration-300",
-              animations.fadeInSlideUp,
-              // Stagger the animation delay
-              index === 0 ? "" : 
-              index === 1 ? animations.delay.short :
-              index === 2 ? animations.delay.medium : 
-              animations.delay.long
-            )}
-          >
-            <TeamCard team={team} />
-          </div>
+            team={team} 
+            delay={index * 0.1}
+          />
         ))}
       </div>
     </section>
