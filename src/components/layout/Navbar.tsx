@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
   return (
     <nav className={cn(
       "text-white shadow-lg sticky top-0 z-50 safe-area-top",
-      "bg-gradient-to-r from-cornhole-navy via-cornhole-navy to-[#1d3761]",
+      "bg-gradient-to-r from-[#0f2647] via-cornhole-navy to-[#1d4068]",
       "dark:from-gray-900 dark:via-gray-900 dark:to-gray-800",
     )}>
       <div className="container mx-auto px-4">

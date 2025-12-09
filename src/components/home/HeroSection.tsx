@@ -10,7 +10,7 @@ const HeroSection = () => {
     <section 
       className={cn(
         "text-white py-10 md:py-16 px-4 transition-all duration-200 relative",
-        "bg-gradient-to-b from-cornhole-navy to-[#1d3761]"
+        "bg-gradient-to-br from-[#0f2647] via-cornhole-navy to-[#1d3761]"
       )}
       style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}
     >
