@@ -99,9 +99,13 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         
         {team.divisionName && (
           <Badge 
-            variant={team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
+            variant={team.divisionName.toLowerCase().includes("hidden") ? "secondary" :
+              team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
               team.divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
-            className="self-start mb-2 font-inter uppercase text-xs tracking-widest"
+            className={cn(
+              "self-start mb-2 font-inter uppercase text-xs tracking-widest",
+              team.divisionName.toLowerCase().includes("hidden") && "bg-muted text-muted-foreground border-muted"
+            )}
           >
             {team.divisionName}
           </Badge>

@@ -60,7 +60,7 @@ export const blueAmber = {
 // Helper utility to apply blue-amber heading style to any element
 export function blueAmberHeading(className?: string) {
   return cn(
-    "font-oswald uppercase tracking-wide bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-300",
+    "font-bebas uppercase tracking-wide bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-300",
     className
   );
 }

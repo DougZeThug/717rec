@@ -14,8 +14,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
-import { getSosColor } from "@/utils/colors";
+import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
 import { PlayerChip } from "../shared/PlayerChip";
 
 interface TeamCardListProps {
@@ -86,9 +85,12 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
           
           {team.divisionName && (
             <Badge 
-              variant={team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
+              variant={team.divisionName.toLowerCase().includes("hidden") ? "secondary" :
+                team.divisionName.toLowerCase().includes("competitive") ? "competitive" : 
                 team.divisionName.toLowerCase().includes("intermediate") ? "intermediate" : "recreational"}
-              className="mb-4 self-start font-inter uppercase text-xs tracking-widest"
+              className={`mb-4 self-start font-inter uppercase text-xs tracking-widest ${
+                team.divisionName.toLowerCase().includes("hidden") ? "bg-muted text-muted-foreground border-muted" : ""
+              }`}
             >
               {team.divisionName}
             </Badge>

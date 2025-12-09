@@ -73,7 +73,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   
   return (
     <Card className="p-5 mb-6 overflow-hidden" variant="elevated">
-      <h2 className="text-xl font-semibold mb-4 font-oswald uppercase tracking-wider">Team Stats</h2>
+      <h2 className="text-xl font-semibold mb-4 font-bebas uppercase tracking-wider">Team Stats</h2>
       
       <Tabs 
         defaultValue="core" 

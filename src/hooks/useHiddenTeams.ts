@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { hideTeam, unhideTeam, getHiddenTeams, HideTeamResult, UnhideTeamResult } from '@/services/teams/TeamHiddenService';
 import { useToast } from '@/hooks/use-toast';
+import { teamLog, errorLog } from '@/utils/logger';
 
 export function useHiddenTeams() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,7 @@ export function useHiddenTeams() {
       
       return result;
     } catch (error) {
-      console.error('Error hiding team:', error);
+      errorLog('Error hiding team:', error);
       const errorResult: HideTeamResult = {
         success: false,
         message: 'An unexpected error occurred'
@@ -64,7 +65,7 @@ export function useHiddenTeams() {
       
       return result;
     } catch (error) {
-      console.error('Error unhiding team:', error);
+      errorLog('Error unhiding team:', error);
       const errorResult: UnhideTeamResult = {
         success: false,
         message: 'An unexpected error occurred'
@@ -88,7 +89,7 @@ export function useHiddenTeams() {
       const result = await getHiddenTeams();
       return result;
     } catch (error) {
-      console.error('Error fetching hidden teams:', error);
+      errorLog('Error fetching hidden teams:', error);
       return { data: [], error };
     } finally {
       setIsLoading(false);

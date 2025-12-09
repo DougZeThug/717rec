@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { authLog, errorLog } from "@/utils/logger";
 
 export const emailSchema = z.string().email("Please enter a valid email address");
 export const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
@@ -73,7 +74,7 @@ export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
         // Navigation will happen in the Auth page based on user state
       }
     } catch (error) {
-      console.error(error);
+      errorLog("Sign in error:", error);
       // Error is already handled in the signIn function
     } finally {
       setIsSubmitting(false);
@@ -95,7 +96,7 @@ export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
       }
       // Navigation will happen automatically on auth state change
     } catch (error) {
-      console.error(error);
+      errorLog("Sign up error:", error);
       // Error is already handled in the signUp function
     } finally {
       setIsSubmitting(false);
@@ -108,7 +109,7 @@ export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
       await signInWithGoogle();
       // Redirect happens at the OAuth provider level
     } catch (error) {
-      console.error(error);
+      errorLog("Google sign in error:", error);
       // Error is already handled in the signInWithGoogle function
     } finally {
       setIsSubmitting(false);
@@ -121,7 +122,7 @@ export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
       const { success, error } = await signInWithGoogleNative();
       
       if (!success) {
-        console.error("Native Google login error:", error);
+        authLog("Native Google login error:", error);
         toast({
           title: "Login Failed",
           description: error?.message || "Google login failed. Please try again.",
@@ -129,7 +130,7 @@ export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
         });
       }
     } catch (error) {
-      console.error("Exception during native Google login:", error);
+      errorLog("Exception during native Google login:", error);
       toast({
         title: "Login Error",
         description: "An unexpected error occurred during login",
