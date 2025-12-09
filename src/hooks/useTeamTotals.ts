@@ -19,22 +19,14 @@ interface TeamTotals {
 
 const calculateCareerPowerScore = async (
   teamId: string,
-  championships: number,
-  runnerUps: number,
+  championshipDivisions: string[],  // Division names where championships were won
+  runnerUpDivisions: string[],      // Division names where runner-ups were earned
   careerPlayoffWins: number,
   careerPlayoffLosses: number,
-  competitivePlayoffWins: number
+  competitivePlayoffWins: number,
+  teamDivisionWeight: number        // Current team division weight for other bonuses
 ): Promise<number> => {
   // Career Power Score = weighted average of season power scores + playoff bonuses
-  
-  // Get team's current division weight for playoff bonus scaling
-  const { data: teamData } = await supabase
-    .from('teams')
-    .select('divisions(division_weight)')
-    .eq('id', teamId)
-    .single();
-  
-  const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
   
   // Get historical season power scores from team_season_stats
   const { data: seasonStats } = await supabase
@@ -77,20 +69,32 @@ const calculateCareerPowerScore = async (
   // Base career score is the weighted average (no division penalties applied)
   let baseCareerScore = totalMatches > 0 ? totalWeightedScore / totalMatches : 50;
   
-  // Get championship weight based on division tier for playoff bonuses
-  const getChampionshipWeight = (divisionWeight: number): number => {
-    if (divisionWeight >= 0.89) return 1.0;   // Competitive: full weight
-    if (divisionWeight >= 0.7) return 0.75;   // Intermediate 1: 75% weight
-    if (divisionWeight >= 0.35) return 0.5;   // Intermediate 2: 50% weight
-    return 0.25;                              // Recreational: 25% weight
+  // Get championship weight based on division name - matches 4 playoff division tiers
+  const getChampionshipWeight = (divisionName: string): number => {
+    const name = divisionName.toLowerCase();
+    // Competitive playoff (weight 1.0)
+    if (name.includes('competitive')) return 1.0;
+    // Intermediate High playoff (weight 0.70)
+    if (name.includes('intermediate high') || name.includes('intermediate 1') || name === 'cuspers') return 0.70;
+    // Intermediate Low playoff (weight 0.45)
+    if (name.includes('intermediate low') || name.includes('intermediate 2') || name === 'intermediate') return 0.45;
+    // Recreational (weight 0.25)
+    return 0.25;
   };
 
-  // Calculate playoff bonuses
-  const championshipWeight = getChampionshipWeight(teamDivisionWeight);
-  const championshipBonus = championships * 7 * championshipWeight;
-  const runnerUpBonus = runnerUps * 4 * championshipWeight;
+  // Calculate championship bonus - each scaled by its historical division weight
+  let championshipBonus = 0;
+  for (const divName of championshipDivisions) {
+    championshipBonus += 7 * getChampionshipWeight(divName);
+  }
+
+  // Calculate runner-up bonus - each scaled by its historical division weight
+  let runnerUpBonus = 0;
+  for (const divName of runnerUpDivisions) {
+    runnerUpBonus += 4 * getChampionshipWeight(divName);
+  }
   
-  // Playoff performance bonus from playoff record
+  // Playoff performance bonus from playoff record (uses current division weight)
   const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
   const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
   const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4 * teamDivisionWeight);
@@ -106,7 +110,16 @@ const calculateCareerPowerScore = async (
 };
 
 export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
-  // Get career stats from team_season_stats
+  // Get team's current division weight for playoff bonus scaling
+  const { data: teamData } = await supabase
+    .from('teams')
+    .select('divisions(division_weight)')
+    .eq('id', teamId)
+    .single();
+  
+  const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
+
+  // Get career stats from team_season_stats with division info
   const { data: seasonStats, error: seasonError } = await supabase
     .from('team_season_stats')
     .select(`
@@ -118,6 +131,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
       runner_up,
       playoff_rank,
       sos,
+      division_name,
       seasons!inner(name)
     `)
     .eq('team_id', teamId);
@@ -328,9 +342,18 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     }
   }
   
-  // Count championships and runner-ups
+  // Count championships and runner-ups with their historical division names
   const championships = seasonStats?.filter(stat => stat.champion).length || 0;
   const runner_ups = seasonStats?.filter(stat => stat.runner_up).length || 0;
+  
+  // Extract division names for championships and runner-ups
+  const championshipDivisions = seasonStats
+    ?.filter(stat => stat.champion)
+    .map(stat => stat.division_name || 'Unknown') || [];
+  
+  const runnerUpDivisions = seasonStats
+    ?.filter(stat => stat.runner_up)
+    .map(stat => stat.division_name || 'Unknown') || [];
   
   // Get playoff finishes (sorted by rank)
   const playoff_finishes = seasonStats
@@ -344,11 +367,12 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   // Calculate career power score
   const career_power_score = await calculateCareerPowerScore(
     teamId,
-    championships,
-    runner_ups,
+    championshipDivisions,
+    runnerUpDivisions,
     career_playoff_wins,
     career_playoff_losses,
-    competitive_playoff_wins
+    competitive_playoff_wins,
+    teamDivisionWeight
   );
 
   return {
