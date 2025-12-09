@@ -8,9 +8,13 @@ import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from 'next-themes';
+import { gradients } from '@/styles/design-system';
 
 const CareerRankingsSection: React.FC = () => {
   const isMobile = useIsMobile();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const { 
     data: careerRankings, 
     isLoading, 
@@ -23,7 +27,7 @@ const CareerRankingsSection: React.FC = () => {
 
   if (error) {
     return (
-      <Card className="mt-8">
+      <Card className="mb-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5" />
@@ -38,25 +42,36 @@ const CareerRankingsSection: React.FC = () => {
   }
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-8">
-      <Card>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
+      <Card className={cn(
+        "border-t-2 border-blue-300 dark:border-blue-700/80",
+        "shadow-lg hover:shadow-xl transition-shadow duration-300",
+        isLight ? gradients.card.blueOrange : ""
+      )}>
         <CollapsibleTrigger asChild>
-          <CardHeader className={cn("cursor-pointer hover:bg-muted/50 transition-colors", isMobile ? "py-2.5 px-3" : "py-4")}>
+          <CardHeader className={cn(
+            isMobile ? "py-2.5 px-3" : "py-4",
+            isLight ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
+            "border-b border-blue-100 dark:border-blue-900/30 rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
+          )}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Trophy className={cn("text-amber-500", isMobile ? "h-4 w-4" : "h-5 w-5")} />
                 <div>
                   <CardTitle 
                     className={cn(
-                      "font-bebas uppercase tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400",
-                      isMobile ? "text-lg" : "text-xl sm:text-2xl"
+                      "font-bebas uppercase tracking-wide",
+                      isMobile ? "text-lg" : "text-xl sm:text-2xl",
+                      "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
                     )}
                     style={{ letterSpacing: "0.5px" }}
                   >
                     Career Statistics
                   </CardTitle>
                   {!isMobile && (
-                    <CardDescription>
+                    <CardDescription className={cn(
+                      isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter"
+                    )}>
                       Historical performance across all seasons and playoffs
                       {showHidden && hiddenTeamCount > 0 && (
                         <span className="ml-2 text-xs bg-muted px-2 py-1 rounded">
