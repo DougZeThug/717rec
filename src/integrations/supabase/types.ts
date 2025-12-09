@@ -3682,7 +3682,7 @@ export type Database = {
       }
       snapshot_current_season: { Args: never; Returns: undefined }
       update_team_stats:
-        | { Args: { team_id: string }; Returns: undefined }
+        | { Args: never; Returns: undefined }
         | {
             Args: {
               p_loser_game_wins?: number
@@ -3692,7 +3692,7 @@ export type Database = {
             }
             Returns: Json
           }
-        | { Args: never; Returns: undefined }
+        | { Args: { team_id: string }; Returns: undefined }
       upsert_team_season_stats: { Args: never; Returns: undefined }
       user_belongs_to_team: { Args: { p_team_id: string }; Returns: boolean }
       user_is_team_member: {

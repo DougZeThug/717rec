@@ -7,6 +7,7 @@ import CallToAction from "@/components/home/CallToAction";
 import HeroSection from "@/components/home/HeroSection";
 import PendingScoresCard from "@/components/home/PendingScoresCard";
 import HeroCard from "@/components/hero/HeroCard";
+import HeroCardSkeleton from "@/components/hero/HeroCardSkeleton";
 import PageLayout from "@/components/layout/PageLayout";
 import LoadingState from "@/components/ui/loading-state";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -51,15 +52,19 @@ const Index: React.FC = () => {
       
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
         {/* Dynamic hero cards from database */}
-        {heroCards?.map((card, index) => (
-          <PageTransition 
-            key={card.id} 
-            animation="fadeInSlideUp" 
-            delay={getDelay(index)}
-          >
-            <HeroCard card={card} />
-          </PageTransition>
-        ))}
+        {heroCardsLoading ? (
+          <HeroCardSkeleton />
+        ) : (
+          heroCards?.map((card, index) => (
+            <PageTransition 
+              key={card.id} 
+              animation="fadeInSlideUp" 
+              delay={getDelay(index)}
+            >
+              <HeroCard card={card} />
+            </PageTransition>
+          ))
+        )}
 
         {hasPendingScores && (
           <PageTransition animation="fadeInSlideUp" delay="long">

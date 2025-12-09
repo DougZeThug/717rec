@@ -3,7 +3,8 @@ import React, { useMemo } from 'react';
 import { Team } from "@/types";
 import TeamCard from "@/components/teams/TeamCard";
 import { TeamListSkeleton } from "@/components/teams/TeamListSkeleton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Users } from "lucide-react";
 
 interface TeamListProps {
   teams: Team[];
@@ -14,8 +15,6 @@ interface TeamListProps {
 }
 
 export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, onDelete, viewMode }) => {
-  const isMobile = useIsMobile();
-  
   // Create a deduplicated array of teams by team ID
   const uniqueTeams = useMemo(() => {
     const uniqueTeamMap = new Map<string, Team>();
@@ -35,9 +34,18 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
 
   if (uniqueTeams.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No teams available. Add a team to get started.</p>
-      </div>
+      <EmptyState
+        icon={Users}
+        title="No Teams Found"
+        description="No teams match your current filters. Try adjusting your search or add a new team to get started."
+        actions={[
+          {
+            label: "View All Teams",
+            onClick: () => window.location.reload(),
+            variant: "outline"
+          }
+        ]}
+      />
     );
   }
 
