@@ -95,37 +95,39 @@ export const TeamSelectionForm: React.FC<TeamSelectionFormProps> = ({
         onClick={() => safeFormState.handleTeamToggle(team.id)}
         disabled={isDisabled}
         className={`
-          flex items-center gap-2 p-3 h-auto justify-start
+          flex items-center gap-2 p-3 h-auto justify-start min-w-0 overflow-hidden
           ${isSelected ? 'bg-primary text-primary-foreground' : ''}
           ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted'}
           ${hasConflict ? 'border-destructive' : ''}
           ${isPending ? 'border-dashed' : ''}
         `}
       >
-        <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
           {team.logoUrl ? (
             <img 
               src={team.logoUrl} 
               alt={`${team.name} logo`}
-              className="w-6 h-6 object-contain"
+              className="w-6 h-6 object-contain flex-shrink-0"
             />
           ) : (
-            <Users className="w-4 h-4" />
+            <Users className="w-4 h-4 flex-shrink-0" />
           )}
-          <span className="font-medium">{team.name || 'Unnamed Team'}</span>
+          <span className="font-medium truncate">{team.name || 'Unnamed Team'}</span>
         </div>
         
-        <SeedStatusBadge
-          seed={team.seed || 0}
-          isManual={isManual}
-          hasConflict={hasConflict}
-          isPending={isPending}
-          size="sm"
-          onEdit={() => setActiveTab('seeds')}
-        />
+        <div className="flex-shrink-0">
+          <SeedStatusBadge
+            seed={team.seed || 0}
+            isManual={isManual}
+            hasConflict={hasConflict}
+            isPending={isPending}
+            size="sm"
+            onEdit={() => setActiveTab('seeds')}
+          />
+        </div>
         
         {team.powerScore && (
-          <div className="flex items-center gap-1 text-xs opacity-75">
+          <div className="flex items-center gap-1 text-xs opacity-75 flex-shrink-0">
             <Zap className="w-3 h-3" />
             <span>{Math.round(team.powerScore)}</span>
           </div>
