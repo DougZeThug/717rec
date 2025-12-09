@@ -16,6 +16,8 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
           width={144}
           height={144}
           loading="lazy"
+          decoding="async"
+          fetchPriority="low"
           className="max-h-36 max-w-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
           tabIndex={0}
           aria-label={`View ${teamName} details`}
