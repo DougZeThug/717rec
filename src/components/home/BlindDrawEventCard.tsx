@@ -74,120 +74,146 @@ const BlindDrawEventCard: React.FC = () => {
         </div>
       </div>
       
-      <CardContent className="relative z-10 p-6 md:p-8">
-        <div className="flex flex-col items-center text-center space-y-4">
-          {/* Header with animated icon */}
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-            >
-              <Shuffle className="h-8 w-8 md:h-10 md:w-10 text-white" />
-            </motion.div>
-            <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight">
-              Blind Draw
-            </h2>
-            <motion.div
-              animate={{ rotate: [0, -10, 10, 0] }}
-              transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-            >
-              <Shuffle className="h-8 w-8 md:h-10 md:w-10 text-white" />
-            </motion.div>
-          </div>
+      <CardContent className="relative z-10 p-6 md:p-6">
+        {/* Mobile: stacked layout, Desktop: two-column layout */}
+        <div className="flex flex-col md:flex-row md:gap-8 md:items-start">
           
-          {/* Date badge */}
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-            <Calendar className="h-4 w-4 text-white" />
-            <span className="text-white font-semibold">Thursday, December 11th</span>
-          </div>
-          
-          {/* Event details grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-2xl mt-4">
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
-              <Clock className="h-5 w-5 md:h-6 md:w-6 text-yellow-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Check-in</span>
-              <span className="text-lg md:text-xl font-bold text-white">6:30 PM</span>
+          {/* Left column: Header, Date, Countdowns */}
+          <div className="flex flex-col items-center text-center space-y-4 md:w-1/3 md:flex-shrink-0">
+            {/* Header with animated icon */}
+            <div className="flex items-center gap-3">
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+              >
+                <Shuffle className="h-8 w-8 md:h-8 md:w-8 text-white" />
+              </motion.div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                Blind Draw
+              </h2>
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+              >
+                <Shuffle className="h-8 w-8 md:h-8 md:w-8 text-white" />
+              </motion.div>
             </div>
             
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
-              <Clock className="h-5 w-5 md:h-6 md:w-6 text-green-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Start</span>
-              <span className="text-lg md:text-xl font-bold text-white">7:00 PM</span>
+            {/* Date badge */}
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
+              <Calendar className="h-4 w-4 text-white" />
+              <span className="text-white font-semibold text-sm md:text-base">Thursday, December 11th</span>
             </div>
-            
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
-              <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-emerald-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Buy-in</span>
-              <span className="text-lg md:text-xl font-bold text-white">$10</span>
-            </div>
-            
-            <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
-              <Trophy className="h-5 w-5 md:h-6 md:w-6 text-amber-300" />
-              <span className="text-xs text-white/80 uppercase tracking-wide">Payouts</span>
-              <span className="text-lg md:text-xl font-bold text-white">Top 3</span>
-            </div>
-          </div>
 
-          {/* Past Winners */}
-          <div className="w-full max-w-2xl mt-4 space-y-3">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Medal className="h-5 w-5 text-amber-300" />
-              <span className="text-white font-semibold">Past Winners</span>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* Week 1 */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 1</div>
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2 text-white">
-                    <span className="text-amber-400">🥇</span>
-                    <span>Shan & Earl</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-white">
-                    <span className="text-gray-300">🥈</span>
-                    <span>Kaitlyn & Scotty</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-white">
-                    <span className="text-amber-600">🥉</span>
-                    <span>Katie & Steve</span>
-                  </div>
+            {/* Countdown bars - Desktop only in left column */}
+            <div className="hidden md:block w-full space-y-3 mt-2">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm text-white/90">
+                  <Timer className="h-4 w-4 text-yellow-300" />
+                  <span>{checkInCountdown.text}</span>
                 </div>
+                <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" />
               </div>
-
-              {/* Week 2 */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 2</div>
-                <div className="flex items-center justify-center h-16 text-white/50 text-sm">
-                  TBD
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm text-white/90">
+                  <Timer className="h-4 w-4 text-green-300" />
+                  <span>{startCountdown.text}</span>
                 </div>
-              </div>
-
-              {/* Week 3 */}
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 3</div>
-                <div className="flex items-center justify-center h-16 text-white/50 text-sm">
-                  TBD
-                </div>
+                <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" />
               </div>
             </div>
           </div>
 
-          {/* Countdown bars */}
-          <div className="w-full max-w-md space-y-3 mt-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm text-white/90">
-                <Timer className="h-4 w-4 text-yellow-300" />
-                <span>{checkInCountdown.text}</span>
+          {/* Right column: Event details grid and Past Winners */}
+          <div className="flex-1 flex flex-col items-center md:items-stretch space-y-4 mt-4 md:mt-0">
+            {/* Event details grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
+              <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <Clock className="h-5 w-5 text-yellow-300" />
+                <span className="text-xs text-white/80 uppercase tracking-wide">Check-in</span>
+                <span className="text-lg font-bold text-white">6:30 PM</span>
               </div>
-              <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" />
+              
+              <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <Clock className="h-5 w-5 text-green-300" />
+                <span className="text-xs text-white/80 uppercase tracking-wide">Start</span>
+                <span className="text-lg font-bold text-white">7:00 PM</span>
+              </div>
+              
+              <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <DollarSign className="h-5 w-5 text-emerald-300" />
+                <span className="text-xs text-white/80 uppercase tracking-wide">Buy-in</span>
+                <span className="text-lg font-bold text-white">$10</span>
+              </div>
+              
+              <div className="flex flex-col items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <Trophy className="h-5 w-5 text-amber-300" />
+                <span className="text-xs text-white/80 uppercase tracking-wide">Payouts</span>
+                <span className="text-lg font-bold text-white">Top 3</span>
+              </div>
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm text-white/90">
-                <Timer className="h-4 w-4 text-green-300" />
-                <span>{startCountdown.text}</span>
+
+            {/* Past Winners */}
+            <div className="w-full space-y-2">
+              <div className="flex items-center justify-center md:justify-start gap-2">
+                <Medal className="h-5 w-5 text-amber-300" />
+                <span className="text-white font-semibold">Past Winners</span>
               </div>
-              <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Week 1 */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                  <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 1</div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-amber-400">🥇</span>
+                      <span>Shan & Earl</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-gray-300">🥈</span>
+                      <span>Kaitlyn & Scotty</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-amber-600">🥉</span>
+                      <span>Katie & Steve</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Week 2 */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                  <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 2</div>
+                  <div className="flex items-center justify-center h-16 text-white/50 text-sm">
+                    TBD
+                  </div>
+                </div>
+
+                {/* Week 3 */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                  <div className="text-xs text-white/70 uppercase tracking-wide text-center mb-2">Week 3</div>
+                  <div className="flex items-center justify-center h-16 text-white/50 text-sm">
+                    TBD
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Countdown bars - Mobile only */}
+            <div className="md:hidden w-full max-w-md space-y-3 mt-2">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm text-white/90">
+                  <Timer className="h-4 w-4 text-yellow-300" />
+                  <span>{checkInCountdown.text}</span>
+                </div>
+                <Progress value={checkInCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-yellow-400" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-sm text-white/90">
+                  <Timer className="h-4 w-4 text-green-300" />
+                  <span>{startCountdown.text}</span>
+                </div>
+                <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" />
+              </div>
             </div>
           </div>
         </div>
