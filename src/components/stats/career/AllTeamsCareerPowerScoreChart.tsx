@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { gradients } from '@/styles/design-system';
 
 const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   if (!teamsData) return [];
@@ -93,6 +94,7 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
 
   const chartData = useMemo(() => transformDataForChart(teamsData), [teamsData]);
+  const isLight = theme !== 'dark';
 
   const teamOptions = useMemo(
     () => teamsData?.map(t => ({
@@ -104,7 +106,7 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Card className="mt-8">
+      <Card className="mb-4">
         <CardHeader>
           <Skeleton className="h-6 w-64" />
           <Skeleton className="h-4 w-96 mt-2" />
@@ -121,23 +123,34 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
   }
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-8">
-      <Card>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
+      <Card className={cn(
+        "border-t-2 border-blue-300 dark:border-blue-700/80",
+        "shadow-lg hover:shadow-xl transition-shadow duration-300",
+        isLight ? gradients.card.blueOrange : ""
+      )}>
         <CollapsibleTrigger className="w-full">
           <CardHeader className={cn(
-            "cursor-pointer hover:bg-muted/50 transition-colors",
-            isMobile ? "py-2.5 px-3" : "py-4"
+            isMobile ? "py-2.5 px-3" : "py-4",
+            isLight ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
+            "border-b border-blue-100 dark:border-blue-900/30 rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
           )}>
             <div className="flex items-center justify-between">
               <div className="text-left">
                 <CardTitle 
-                  className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                  className={cn(
+                    "font-bebas uppercase tracking-wide",
+                    isMobile ? "text-lg" : "text-xl sm:text-2xl",
+                    "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                  )}
                   style={{ letterSpacing: "0.5px" }}
                 >
                   Career Power Score Trends
                 </CardTitle>
                 {!isMobile && (
-                  <CardDescription>
+                  <CardDescription className={cn(
+                    isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter"
+                  )}>
                     Compare team performance across multiple seasons
                   </CardDescription>
                 )}

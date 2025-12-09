@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,7 +10,8 @@ import PowerScoreTrendsCard from "./PowerScoreTrendsCard";
 import { useChartData } from "./hooks/useChartData";
 import { ChartBar, ChartPie, TrendingUp, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { animations } from "@/styles/design-system";
+import { animations, gradients } from "@/styles/design-system";
+import { useTheme } from "next-themes";
 
 interface StatsChartsProps {
   rankings: Ranking[];
@@ -22,11 +22,12 @@ type ChartType = "winLoss" | "powerScore" | "trends";
 
 const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const { winLossData, powerScoreData } = useChartData(rankings, chartLimit);
   const [activeChart, setActiveChart] = useState<ChartType>("winLoss");
-  const [isOpen, setIsOpen] = useState(true); // Start uncollapsed
+  const [isOpen, setIsOpen] = useState(true);
 
-  // Function to cycle between chart types on mobile
   const toggleChart = () => {
     setActiveChart(prev => {
       if (prev === "winLoss") return "powerScore";
@@ -37,22 +38,33 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
-      <Card>
+      <Card className={cn(
+        "border-t-2 border-blue-300 dark:border-blue-700/80",
+        "shadow-lg hover:shadow-xl transition-shadow duration-300",
+        isLight ? gradients.card.blueOrange : ""
+      )}>
         <CollapsibleTrigger asChild>
           <CardHeader className={cn(
-            "cursor-pointer hover:bg-muted/50 transition-colors",
-            isMobile ? "py-2.5 px-3" : "py-4"
+            isMobile ? "py-2.5 px-3" : "py-4",
+            isLight ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
+            "border-b border-blue-100 dark:border-blue-900/30 rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
           )}>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle 
-                  className="font-bebas uppercase text-base sm:text-xl tracking-wide bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                  className={cn(
+                    "font-bebas uppercase tracking-wide",
+                    isMobile ? "text-lg" : "text-xl sm:text-2xl",
+                    "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                  )}
                   style={{ letterSpacing: "0.5px" }}
                 >
                   Performance Charts
                 </CardTitle>
                 {!isMobile && (
-                  <CardDescription>
+                  <CardDescription className={cn(
+                    isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter"
+                  )}>
                     Visual breakdown of team performance metrics
                   </CardDescription>
                 )}
@@ -66,7 +78,6 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
             </div>
           </CardHeader>
         </CollapsibleTrigger>
-        
         <CollapsibleContent>
           <div className="p-4 pt-0">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 font-inter">
