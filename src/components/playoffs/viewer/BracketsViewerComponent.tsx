@@ -5,6 +5,30 @@ import { InMemoryDatabase } from 'brackets-memory-db';
 import { log } from '@/utils/logger';
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
 
+// Dynamic script loader for brackets-viewer (loads only when needed)
+const BRACKETS_VIEWER_URL = 'https://cdn.jsdelivr.net/npm/brackets-viewer@1.8.1/dist/brackets-viewer.min.js';
+let scriptLoadPromise: Promise<void> | null = null;
+
+const loadBracketsViewerScript = (): Promise<void> => {
+  // Return existing promise if already loading/loaded
+  if (scriptLoadPromise) return scriptLoadPromise;
+  
+  // Check if already loaded
+  if (window.bracketsViewer) {
+    return Promise.resolve();
+  }
+  
+  scriptLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = BRACKETS_VIEWER_URL;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load brackets-viewer script'));
+    document.head.appendChild(script);
+  });
+  
+  return scriptLoadPromise;
+};
 
 interface BracketsViewerComponentProps {
   bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
@@ -87,17 +111,30 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       return;
     }
 
-    // Check if brackets-viewer is loaded
-    console.log('🔍 Checking window.bracketsViewer:', {
-      exists: !!window.bracketsViewer,
-      hasRender: !!(window.bracketsViewer?.render)
-    });
+    // Dynamically load brackets-viewer script if not already loaded
+    const initAndRender = async () => {
+      try {
+        await loadBracketsViewerScript();
+      } catch (err) {
+        console.error('❌ Failed to load brackets-viewer script:', err);
+        setError('Failed to load bracket viewer library');
+        return;
+      }
 
-    if (!window.bracketsViewer) {
-      setError('brackets-viewer library not loaded');
-      console.error('❌ brackets-viewer is not available on window object');
-      return;
-    }
+      // Check if brackets-viewer is loaded
+      console.log('🔍 Checking window.bracketsViewer:', {
+        exists: !!window.bracketsViewer,
+        hasRender: !!(window.bracketsViewer?.render)
+      });
+
+      if (!window.bracketsViewer) {
+        setError('brackets-viewer library not loaded');
+        console.error('❌ brackets-viewer is not available on window object');
+        return;
+      }
+
+      await renderBracket();
+    };
 
     const renderBracket = async () => {
       try {
@@ -508,7 +545,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
       }
     };
 
-    renderBracket();
+    initAndRender();
 
     // Cleanup on unmount
     return () => {
