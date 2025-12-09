@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
+import { dbLog } from "@/utils/logger";
 
 export const fetchTeamsFromApi = async () => {
   const { data, error } = await supabase
@@ -26,19 +27,8 @@ export const fetchTeamsFromApi = async () => {
     `)
     .order('name');
 
-  // Enhanced logging to verify values for the 40/45/15 power score formula
-  if (data && data.length > 0) {
-    console.log("Power scores from v_team_details with preserved NULL values:", data.slice(0, 3).map(t => ({
-      name: t.name,
-      power_score: t.power_score,
-      sos: t.sos,
-      win_pct: t.win_percentage,
-      game_win_pct: t.game_win_percentage
-    })));
-  }
-
   if (error) {
-    console.error("Error fetching teams:", error);
+    dbLog("Error fetching teams:", error);
     throw error;
   }
 
