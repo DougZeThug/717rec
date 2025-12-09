@@ -9,12 +9,12 @@ import ScheduleContent from "@/components/schedule/ScheduleContent";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
 import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
-import { useTheme } from "next-themes";
 import { Clock } from "lucide-react";
 import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { normalizeDate } from "@/utils/dateNormalization";
 import { scheduleLog } from "@/utils/logger";
+import PageLayout from "@/components/layout/PageLayout";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,7 +49,6 @@ const Schedule = () => {
   
   const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
-  const { resolvedTheme } = useTheme();
   
   // Log date for debugging
   React.useEffect(() => {
@@ -125,8 +124,8 @@ const Schedule = () => {
   const isLoading = matchesLoading || teamsLoading;
 
   return (
-    <div className="min-h-screen cornhole-bg dark:bg-gray-900 py-8 px-4 md:px-8 font-inter">
-      <div className="max-w-7xl mx-auto">
+    <PageLayout withBackground={true} gradientVariant="blueOrange">
+      <div className="max-w-7xl mx-auto font-inter">
         <ScheduleHeader 
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -134,7 +133,7 @@ const Schedule = () => {
           onDateSelect={handleDateSelect}
         />
 
-        {/* REORDERED: Matches section appears first now */}
+        {/* Matches section */}
         {isLoading ? (
           <ScheduleContentSkeleton activeTab={activeTab} />
         ) : (
@@ -152,7 +151,7 @@ const Schedule = () => {
           />
         )}
 
-        {/* Timeslots section now appears second */}
+        {/* Timeslots section */}
         <div className="mb-8 mt-8">
           <div className="bg-muted dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4 shadow-sm transition-all">
             <div className="flex items-center gap-2 mb-2">
@@ -193,7 +192,7 @@ const Schedule = () => {
         onClose={() => setDeleteMatchId(null)}
         onConfirm={handleDeleteMatchAdapter}
       />
-    </div>
+    </PageLayout>
   );
 };
 

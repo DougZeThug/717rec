@@ -1,18 +1,15 @@
 
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Award, Calendar, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NavItem } from "@/components/navigation/NavItem";
-import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import { gradients } from "@/styles/design-system";
+import { AnimatePresence } from "framer-motion";
 
 export const BottomNav = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { resolvedTheme } = useTheme();
 
   const navItems = [
     {
@@ -45,22 +42,24 @@ export const BottomNav = () => {
       "bg-gradient-to-r from-white via-gray-50 to-white",
       "dark:from-gray-900 dark:via-gray-800 dark:to-gray-900",
     )}>
-      <div className="flex justify-around items-center max-w-md mx-auto h-16">
-        {navItems.map((item) => (
-          <NavItem
-            key={item.path}
-            to={item.path}
-            label={item.label}
-            icon={item.icon}
-            className={cn(
-              "flex-1 px-3 py-1.5 text-sm",
-              "flex flex-col items-center justify-center",
-              location.pathname === item.path && 
-                "bg-gradient-to-b from-transparent to-blue-50/40 dark:to-blue-900/10"
-            )}
-          />
-        ))}
-      </div>
+      <AnimatePresence>
+        <div className="flex justify-around items-center max-w-md mx-auto h-16">
+          {navItems.map((item) => (
+            <NavItem
+              key={item.path}
+              to={item.path}
+              label={item.label}
+              icon={item.icon}
+              className={cn(
+                "flex-1 px-3 py-1.5 text-sm",
+                "flex flex-col items-center justify-center",
+                location.pathname === item.path && 
+                  "bg-gradient-to-b from-transparent to-blue-50/40 dark:to-blue-900/10"
+              )}
+            />
+          ))}
+        </div>
+      </AnimatePresence>
     </nav>
   );
 };
