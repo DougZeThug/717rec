@@ -32,6 +32,8 @@ const HeroSection = () => {
           <img 
             src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
             alt="717 Rec Logo" 
+            width={96}
+            height={96}
             className="h-16 md:h-24 w-auto transition-all duration-200 drop-shadow-sm"
           />
         </div>
