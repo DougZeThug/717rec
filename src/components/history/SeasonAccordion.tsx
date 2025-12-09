@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Trophy, Calendar, RefreshCw, Users } from "lucide-react";
+import { ChevronDown, Trophy, Calendar, RefreshCw, Users, Crown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 import DivisionPanel from "./DivisionPanel";
 import SeasonMetaBar from "./SeasonMetaBar";
 import { Button } from "@/components/ui/button";
@@ -140,11 +141,27 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   }, [seasonData, season.name]);
 
   const hasChampions = seasonData?.some(team => team.champion) || false;
+  
+  // Get champion names for preview
+  const champions = seasonData?.filter(team => team.champion).map(team => team.team_name) || [];
 
   // Count total teams and matches
   const teamCount = seasonData?.length || 0;
   const totalMatches = seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
   const matchCount = Math.floor(totalMatches / 2); // Each match counted twice (once per team)
+  
+  // Format date range
+  const formatDateRange = () => {
+    if (!season.start_date) return null;
+    const startMonth = format(new Date(season.start_date), 'MMM yyyy');
+    if (season.end_date) {
+      const endMonth = format(new Date(season.end_date), 'MMM yyyy');
+      return startMonth === endMonth ? startMonth : `${startMonth} - ${endMonth}`;
+    }
+    return startMonth;
+  };
+  
+  const dateRange = formatDateRange();
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-slate-700">
@@ -173,10 +190,23 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               )} />
             </div>
             <div>
-              <h3 className="text-lg md:text-xl font-bebas uppercase tracking-wide text-slate-900 dark:text-white">
-                {season.name}
-              </h3>
-              <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg md:text-xl font-bebas uppercase tracking-wide text-slate-900 dark:text-white">
+                  {season.name}
+                </h3>
+                {dateRange && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-inter">
+                    ({dateRange})
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
+                {champions.length > 0 && (
+                  <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                    <Crown className="w-3.5 h-3.5" />
+                    {champions.slice(0, 2).join(', ')}{champions.length > 2 ? ` +${champions.length - 2}` : ''}
+                  </span>
+                )}
                 {teamCount > 0 && (
                   <span className="flex items-center gap-1">
                     <Users className="w-3.5 h-3.5" />

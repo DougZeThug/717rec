@@ -3,6 +3,7 @@ import { TimeBlockTeamsMap, PairedTimeBlockTeamsMap, DualBlockConfig } from '@/t
 import { getTeamsByTimeBlock, getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { normalizeDate } from '@/utils/dateNormalization';
+import { scheduleLog, errorLog } from '@/utils/logger';
 
 /**
  * Hook for loading team schedules and handling team count status
@@ -27,10 +28,8 @@ export const useTeamScheduleLoader = () => {
     setIsLoading(true);
     
     try {
-      console.log("useTeamScheduleLoader - loadTeamsForDate called with:", {
+      scheduleLog("loadTeamsForDate called with:", {
         date: date,
-        dateString: date.toString(),
-        dateIso: date.toISOString(),
         normalizedDate: normalizeDate(date, 'loadTeamsForDate'),
         dualBlockMode
       });
@@ -38,13 +37,6 @@ export const useTeamScheduleLoader = () => {
       // Ensure the date is properly formatted to prevent timezone issues
       const safeDate = new Date(date);
       safeDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone edge cases
-      
-      console.log("Using safe date for team loading:", {
-        safeDate,
-        safeDateString: safeDate.toString(),
-        safeDateIso: safeDate.toISOString(),
-        normalizedSafeDate: normalizeDate(safeDate, 'safeDate')
-      });
       
       // Use the new back-to-back team loading function
       const timeBlocksData = await getAllBackToBackTeams(safeDate);
@@ -73,15 +65,13 @@ export const useTeamScheduleLoader = () => {
         
         setPairedTimeBlockTeams(pairedBlocks);
         
-        console.log("Loaded paired blocks for dual mode:", pairedBlocks);
+        scheduleLog("Loaded paired blocks for dual mode:", pairedBlocks);
       } else {
         // Reset paired blocks state if not in dual mode
         setPairedTimeBlockTeams({});
       }
       
-      console.log("Team loading completed", {
-        date: safeDate,
-        normalizedDate: normalizeDate(safeDate, 'complete'),
+      scheduleLog("Team loading completed", {
         timeBlockCount: Object.keys(timeBlocksData).length,
         totalTeams: Object.values(timeBlocksData).flat().length,
         dualMode: dualBlockMode
@@ -90,7 +80,7 @@ export const useTeamScheduleLoader = () => {
       // Return standard time blocks
       return timeBlocksData;
     } catch (error) {
-      console.error('Error loading teams for date:', error);
+      errorLog('Error loading teams for date:', error);
       // Return empty object on error
       setTimeBlockTeams({});
       setPairedTimeBlockTeams({});

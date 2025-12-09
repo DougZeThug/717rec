@@ -80,7 +80,9 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 </div>
                 <div className="flex items-center space-x-4 text-sm font-mono mt-0.5">
                   <span className="text-gray-900 dark:text-white">{team.wins}-{team.losses}</span>
-                  <span className="text-gray-900 dark:text-white">{(team.winPercentage * 100).toFixed(1)}%</span>
+                  <span className="text-gray-900 dark:text-white">
+                    {team.wins + team.losses > 0 ? `${(team.winPercentage * 100).toFixed(1)}%` : '—'}
+                  </span>
                   <span className={cn(
                     getPowerScoreColor(team.powerScore),
                     "bg-gradient-to-r from-transparent to-blue-50/50 dark:to-blue-900/10 px-1 rounded"
@@ -196,7 +198,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 className="text-center font-mono text-gray-900 dark:text-white"
               >
                 <span>
-                  {(team.winPercentage * 100).toFixed(1)}%
+                  {team.wins + team.losses > 0 ? `${(team.winPercentage * 100).toFixed(1)}%` : '—'}
                 </span>
               </TableCell>
               <TableCell

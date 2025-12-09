@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
 import StatsContainer from "@/components/stats/containers/StatsContainer";
+import { errorLog } from "@/utils/logger";
 import PageLayout from "@/components/layout/PageLayout";
 
 const Stats = () => {
@@ -45,7 +45,7 @@ const Stats = () => {
       setMatches(matchData);
       setMatchesError(null);
     } catch (error) {
-      console.error('Error fetching matches:', error);
+      errorLog('Error fetching matches:', error);
       setMatchesError(error as Error);
     } finally {
       setIsLoadingMatches(false);
