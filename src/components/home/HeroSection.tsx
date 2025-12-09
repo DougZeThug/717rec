@@ -3,9 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Trophy, Calendar } from "lucide-react";
-import ThemeToggle from "@/components/ui/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { typography } from "@/styles/design-system";
 
 const HeroSection = () => {
   return (
@@ -16,13 +14,6 @@ const HeroSection = () => {
       )}
       style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}
     >
-      {/* Theme toggle positioned in the top-right corner */}
-      <div className="absolute top-4 right-4">
-        <ThemeToggle 
-          variant="outline" 
-          className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border-white/20"
-        />
-      </div>
       
       {/* Simple gradient overlay - just one layer for better performance */}
       <div className="absolute inset-0 -z-10 opacity-30 bg-gradient-to-b from-black/5 to-transparent" />

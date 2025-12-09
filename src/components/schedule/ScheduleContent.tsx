@@ -1,12 +1,14 @@
 
 import React, { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, CheckCircle } from "lucide-react";
+import { Calendar, CheckCircle, CalendarDays, Trophy } from "lucide-react";
 import { Match, Team } from "@/types";
 import DateMatchGroup from "./DateMatchGroup";
 import SwipeableDateGroups from "./SwipeableDateGroups";
 import { format, isToday, parseISO, isSameDay } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useNavigate } from "react-router-dom";
 
 interface ScheduleContentProps {
   activeTab: string;
@@ -28,6 +30,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   onDeleteMatch
 }) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [upcomingIndex, setUpcomingIndex] = useState(0);
   const [completedIndex, setCompletedIndex] = useState(0);
 
@@ -75,12 +78,43 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
 
   const renderMatchGroups = (showSwipeable: boolean) => {
     if (isEmptyState) {
+      if (activeTab === "upcoming") {
+        return (
+          <EmptyState
+            icon={CalendarDays}
+            title="No Upcoming Matches"
+            description="Check back soon for new match schedules, or view completed matches to see recent results."
+            actions={[
+              {
+                label: "View Completed",
+                onClick: () => setActiveTab("completed"),
+                variant: "default",
+                icon: CheckCircle,
+              },
+              {
+                label: "View Standings",
+                onClick: () => navigate("/stats"),
+                variant: "outline",
+                icon: Trophy,
+              },
+            ]}
+          />
+        );
+      }
       return (
-        <div className="text-center py-12 font-inter dark:text-gray-300">
-          <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">
-            {emptyStateMessage}
-          </h3>
-        </div>
+        <EmptyState
+          icon={Trophy}
+          title="No Completed Matches"
+          description="Matches will appear here once they've been played. Check the upcoming schedule to see what's next."
+          actions={[
+            {
+              label: "View Upcoming",
+              onClick: () => setActiveTab("upcoming"),
+              variant: "default",
+              icon: CalendarDays,
+            },
+          ]}
+        />
       );
     }
 

@@ -37,7 +37,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4 w-full">
           {/* Main Title */}
           <h1
-            className="font-oswald text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-cornhole-navy dark:text-white"
+            className="font-bebas text-2xl sm:text-3xl font-semibold uppercase tracking-wide text-cornhole-navy dark:text-white"
             style={{ letterSpacing: "0.07em" }}
           >
             Schedule
