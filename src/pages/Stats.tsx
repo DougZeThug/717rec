@@ -62,7 +62,6 @@ const Stats = () => {
         matches={matches} 
         isLoadingMatches={isLoadingMatches} 
         matchesError={matchesError}
-        onRefresh={fetchMatches}
       />
     </PageLayout>
   );

@@ -1,5 +1,5 @@
 
-import React, { useRef, useCallback } from "react";
+import React, { useRef } from "react";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import { useTeamData } from "@/hooks/useTeamData";
 import { Match } from "@/types";
@@ -11,8 +11,6 @@ import FullRankingsSection from "./FullRankingsSection";
 import LoadingStateContainer from "./LoadingStateContainer";
 import CareerRankingsSection from "../career/CareerRankingsSection";
 import { AllTeamsCareerPowerScoreChart } from "../career/AllTeamsCareerPowerScoreChart";
-import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StatsContainerProps {
   matches: Match[];
@@ -20,27 +18,18 @@ interface StatsContainerProps {
   matchesError: Error | null;
 }
 
-const StatsContainer = ({ matches, isLoadingMatches, matchesError, onRefresh }: StatsContainerProps & { onRefresh?: () => Promise<void> }) => {
-  const isMobile = useIsMobile();
+const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
   const [selectedDivision, setSelectedDivision] = React.useState<string | null>(null);
   const { 
     data: teams, 
     isLoading: isLoadingTeams, 
     error: teamsError,
-    refetch: refetchTeams
   } = useTeamData(selectedDivision);
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
   const fullRankingsRef = useRef<HTMLDivElement>(null);
 
   const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
-
-  const handleRefresh = useCallback(async () => {
-    await Promise.all([
-      refetchTeams(),
-      onRefresh?.()
-    ]);
-  }, [refetchTeams, onRefresh]);
 
   const scrollToFullRankings = () => {
     if (fullRankingsRef.current) {
@@ -56,7 +45,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError, onRefresh }: 
     return <LoadingStateContainer />;
   }
 
-  const content = (
+  return (
     <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent px-2 sm:px-4">
       <StatsPageHeader />
       
@@ -84,17 +73,8 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError, onRefresh }: 
       </div>
     </div>
   );
-
-  if (isMobile) {
-    return (
-      <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
-        {content}
-      </PullToRefresh>
-    );
-  }
-
-  return content;
 };
+
 const NoTeamsAvailable = () => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
