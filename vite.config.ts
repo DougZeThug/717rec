@@ -12,6 +12,18 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-charts': ['recharts'],
+          'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-brackets': ['brackets-manager', 'brackets-model', 'brackets-viewer', 'brackets-memory-db'],
+        }
+      }
+    }
   },
   plugins: [
     react(),
