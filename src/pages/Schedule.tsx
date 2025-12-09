@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
@@ -9,20 +9,14 @@ import ScheduleContent from "@/components/schedule/ScheduleContent";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
 import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
-import { Card } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import { Clock } from "lucide-react";
 import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { normalizeDate } from "@/utils/dateNormalization";
 import { scheduleLog } from "@/utils/logger";
-import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useQueryClient } from "@tanstack/react-query";
 
 const Schedule = () => {
-  const isMobile = useIsMobile();
-  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   
   // Smart default tab based on day of week
@@ -130,12 +124,7 @@ const Schedule = () => {
   // Consider both matches and teams loading states
   const isLoading = matchesLoading || teamsLoading;
 
-  const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['matches'] });
-    await queryClient.invalidateQueries({ queryKey: ['teams'] });
-  }, [queryClient]);
-
-  const content = (
+  return (
     <div className="min-h-screen cornhole-bg dark:bg-gray-900 py-8 px-4 md:px-8 font-inter">
       <div className="max-w-7xl mx-auto">
         <ScheduleHeader 
@@ -206,16 +195,6 @@ const Schedule = () => {
       />
     </div>
   );
-
-  if (isMobile) {
-    return (
-      <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
-        {content}
-      </PullToRefresh>
-    );
-  }
-
-  return content;
 };
 
 export default Schedule;
