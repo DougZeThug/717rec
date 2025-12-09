@@ -27,6 +27,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
           size="icon" 
           className="text-white min-h-11 min-w-11" 
           onClick={toggleMenu}
+          aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
