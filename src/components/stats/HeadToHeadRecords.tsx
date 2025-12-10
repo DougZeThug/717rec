@@ -4,14 +4,14 @@ import { useNavigate } from "react-router-dom";
 
 import { HeadToHeadRecord } from "@/types/headToHead";
 import { useHeadToHead } from "@/hooks/useHeadToHead";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ArrowUpDown, Search, Calendar, Trophy, X, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowUpDown, Search, Calendar, Trophy, X, ChevronDown } from "lucide-react";
 import { OpponentHistoryModal } from "./OpponentHistoryModal";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface HeadToHeadRecordsProps {
   teamId: string;
@@ -80,25 +80,25 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
   if (isLoading) {
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-            </CardHeader>
+        <div className="border rounded-lg bg-card shadow-sm">
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
+                Head-to-Head Records
+              </h2>
+            </div>
+            <ChevronDown className={cn(
+              "h-5 w-5 text-muted-foreground transition-transform duration-200",
+              isOpen && "rotate-180"
+            )} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="pt-0">
+            <div className="p-3 md:p-4 pt-0 border-t">
               <div className="text-center py-4 text-muted-foreground">Loading head-to-head records...</div>
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
+        </div>
       </Collapsible>
     );
   }
@@ -106,25 +106,25 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
   if (error) {
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-            </CardHeader>
+        <div className="border rounded-lg bg-card shadow-sm">
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
+                Head-to-Head Records
+              </h2>
+            </div>
+            <ChevronDown className={cn(
+              "h-5 w-5 text-muted-foreground transition-transform duration-200",
+              isOpen && "rotate-180"
+            )} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="pt-0">
+            <div className="p-3 md:p-4 pt-0 border-t">
               <div className="text-center py-4 text-rose-600">Error loading head-to-head records</div>
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
+        </div>
       </Collapsible>
     );
   }
@@ -132,25 +132,25 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
   if (displayRecords.length === 0) {
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-            </CardHeader>
+        <div className="border rounded-lg bg-card shadow-sm">
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
+                Head-to-Head Records
+              </h2>
+            </div>
+            <ChevronDown className={cn(
+              "h-5 w-5 text-muted-foreground transition-transform duration-200",
+              isOpen && "rotate-180"
+            )} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="pt-0">
+            <div className="p-3 md:p-4 pt-0 border-t">
               <div className="text-center py-4 text-muted-foreground">No head-to-head records available</div>
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
+        </div>
       </Collapsible>
     );
   }
@@ -158,22 +158,22 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Head-to-Head Records</CardTitle>
-                {isOpen ? (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-            </CardHeader>
+        <div className="border rounded-lg bg-card shadow-sm">
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
+                Head-to-Head Records
+              </h2>
+            </div>
+            <ChevronDown className={cn(
+              "h-5 w-5 text-muted-foreground transition-transform duration-200",
+              isOpen && "rotate-180"
+            )} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="pt-0">
-              <div className="flex items-center space-x-2 mb-4">
+            <div className="p-3 md:p-4 pt-0 border-t">
+              <div className="flex items-center space-x-2 mb-4 pt-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -284,9 +284,9 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
               </table>
               </div>
              )}
-            </CardContent>
+            </div>
           </CollapsibleContent>
-        </Card>
+        </div>
       </Collapsible>
 
       {selectedOpponent && (
