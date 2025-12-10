@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamDeleteDialog } from "@/components/teams/TeamDeleteDialog";
@@ -7,23 +6,17 @@ import { TeamsByDivision } from "@/components/teams/TeamsByDivision";
 import { TeamEditForm } from "@/components/teams/TeamEditForm";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
 import { useDivisions } from "@/hooks/useDivisions";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from 'framer-motion';
-import TeamsSortToggle, { SortMode } from './TeamsSortToggle';
-import { DisplayMode } from "./TeamsPageContainer";
+import { DisplayMode, SortMode } from "./TeamsPageContainer";
 import { groupTeamsByDisplayDivision } from "@/utils/teamGrouping";
-
-const SORT_MODES = [
-  { key: 'rank', label: 'Rank' },
-  { key: 'alpha', label: 'A–Z' }
-] as const;
 
 interface TeamsContainerProps {
   displayMode: DisplayMode;
   viewMode: 'grid' | 'list';
+  sortMode: SortMode;
 }
 
-const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }) => {
+const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, sortMode }) => {
   const { 
     teams, 
     isLoading, 
@@ -37,27 +30,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
   } = useTeamManagement();
   
   const { divisions } = useDivisions();
-  const [scrolled, setScrolled] = useState(false);
-  const isMobile = useIsMobile();
-
-  const [sortMode, setSortMode] = useState<SortMode>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("teamsSortMode") as SortMode) || "rank";
-    }
-    return "rank";
-  });
-
-  useEffect(() => {
-    localStorage.setItem("teamsSortMode", sortMode);
-  }, [sortMode]);
-  
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
   
   const uniqueTeams = useMemo(() => {
     const uniqueTeamMap = new Map<string, Team>();
@@ -101,11 +73,6 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode }
 
   return (
     <div>
-      <div className={`${scrolled ? 'shadow-md' : ''} transition-shadow sticky top-0 z-30 bg-background/95 backdrop-blur-sm pb-2`}>
-        <div className="flex flex-wrap gap-2 mb-6">
-        </div>
-        <TeamsSortToggle sortMode={sortMode} setSortMode={setSortMode} />
-      </div>
       <AnimatePresence mode="wait">
         {teamToEdit && (
           <motion.div

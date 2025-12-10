@@ -1,9 +1,6 @@
-
 import React, { useMemo } from 'react';
 import { Team } from "@/types";
 import { TeamsDivisionSection } from "@/components/teams/TeamsDivisionSection";
-import { Button } from "@/components/ui/button";
-import { ChevronsDown, ChevronsUp } from "lucide-react";
 
 interface TeamsByDivisionProps {
   teamsByDivision: Record<string, Team[]>;
@@ -25,21 +22,21 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   sortMode
 }) => {
   const [expandedDivision, setExpandedDivision] = React.useState<string | null>(null);
+  
+  // Auto-expand first division on mount
+  React.useEffect(() => {
+    const firstDivision = Object.keys(teamsByDivision).find(
+      d => teamsByDivision[d].length > 0
+    );
+    if (firstDivision && expandedDivision === null) {
+      setExpandedDivision(firstDivision);
+    }
+  }, [teamsByDivision]);
+
   const toggleDivision = (displayDivision: string) => {
     setExpandedDivision(prevExpanded => 
       prevExpanded === displayDivision ? null : displayDivision
     );
-  };
-
-  const expandAll = () => {
-    const firstDivisionWithTeams = Object.keys(teamsByDivision).find(
-      displayDivision => teamsByDivision[displayDivision].length > 0
-    );
-    setExpandedDivision(firstDivisionWithTeams || null);
-  };
-
-  const collapseAll = () => {
-    setExpandedDivision(null);
   };
 
   // Filter out empty divisions
@@ -53,12 +50,10 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
       const divisionTeams = teamsByDivision[displayDivision] || [];
       
       if (sortMode === "alpha") {
-        // Sort alphabetically by team name
         sorted[displayDivision] = [...divisionTeams].sort((a, b) => 
           a.name.toLowerCase().localeCompare(b.name.toLowerCase())
         );
       } else {
-        // Sort by power_score (descending)
         sorted[displayDivision] = [...divisionTeams].sort((a, b) => 
           (b.power_score ?? 0) - (a.power_score ?? 0)
         );
@@ -76,28 +71,7 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   }
   
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="flex justify-end gap-2 mb-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-1 h-8"
-          onClick={expandAll}
-        >
-          <ChevronsDown size={16} />
-          <span className="hidden sm:inline">Expand All</span>
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-1 h-8"
-          onClick={collapseAll}
-        >
-          <ChevronsUp size={16} />
-          <span className="hidden sm:inline">Collapse All</span>
-        </Button>
-      </div>
-
+    <div className="space-y-3 sm:space-y-6">
       {nonEmptyDivisions.map(displayDivision => {
         const divisionTeams = sortedTeamsByDivision[displayDivision];
         const divisionName = getDivisionName(displayDivision);

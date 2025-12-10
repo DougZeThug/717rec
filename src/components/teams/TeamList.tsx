@@ -49,9 +49,9 @@ export const TeamList: React.FC<TeamListProps> = ({ teams, isLoading, onEdit, on
     );
   }
 
-  // Enhanced grid classes with better mobile responsiveness
+  // Enhanced grid classes with tighter mobile layout
   const gridClasses = viewMode === 'grid'
-    ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3"
+    ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 sm:gap-3"
     : "space-y-4";
 
   return (
