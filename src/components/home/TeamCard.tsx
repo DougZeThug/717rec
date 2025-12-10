@@ -39,7 +39,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
       <Link to={`/teams/${team.id}`} className="block">
-        <div className="h-32 sm:h-44 relative flex items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-800/80 dark:via-gray-800/50 dark:to-gray-900/60">
+        <div className="h-44 relative flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-800/80 dark:via-gray-800/50 dark:to-gray-900/60">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-amber-50/20 dark:from-blue-900/10 dark:to-amber-900/10"></div>
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
           
@@ -54,7 +54,7 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, delay = 0 }) => {
           </div>
         </div>
         <div className="border-t border-border/30 dark:border-border/20" />
-        <div className="p-3 sm:p-4 bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90">
+        <div className="p-4 bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90">
           <h3 className={cn(
             "font-bebas font-normal uppercase tracking-wide text-xl mb-2 truncate",
             blueAmberHeading()
