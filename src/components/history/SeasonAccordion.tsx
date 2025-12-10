@@ -112,7 +112,7 @@ interface SeasonAccordionProps {
 
 const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data: seasonData, isLoading, error, refetch, isRefetching } = useSeasonData(season.id, isExpanded);
+  const { data: seasonData, isLoading, error, refetch, isRefetching } = useSeasonData(season.id, true);
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -201,23 +201,29 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                 )}
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
-                {champions.length > 0 && (
-                  <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                    <Crown className="w-3.5 h-3.5" />
-                    {champions.slice(0, 2).join(', ')}{champions.length > 2 ? ` +${champions.length - 2}` : ''}
-                  </span>
-                )}
-                {teamCount > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5" />
-                    {teamCount} teams
-                  </span>
-                )}
-                {matchCount > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {matchCount} matches
-                  </span>
+                {isLoading ? (
+                  <span className="text-gray-400 text-xs">Loading...</span>
+                ) : (
+                  <>
+                    {champions.length > 0 && (
+                      <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                        <Crown className="w-3.5 h-3.5" />
+                        {champions.join(', ')}
+                      </span>
+                    )}
+                    {teamCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5" />
+                        {teamCount} teams
+                      </span>
+                    )}
+                    {matchCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {matchCount} matches
+                      </span>
+                    )}
+                  </>
                 )}
                 {season.is_active && (
                   <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
