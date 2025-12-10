@@ -41,6 +41,30 @@ export type Database = {
         }
         Relationships: []
       }
+      blind_draw_signups: {
+        Row: {
+          created_at: string | null
+          event_date: string
+          first_name: string
+          id: string
+          last_initial: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_date: string
+          first_name: string
+          id?: string
+          last_initial: string
+        }
+        Update: {
+          created_at?: string | null
+          event_date?: string
+          first_name?: string
+          id?: string
+          last_initial?: string
+        }
+        Relationships: []
+      }
       brackets: {
         Row: {
           bracket_data: Json | null
