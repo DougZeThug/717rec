@@ -5,6 +5,7 @@ import { Shuffle, Clock, DollarSign, Trophy, Calendar, Timer, Medal } from "luci
 import { motion } from "framer-motion";
 import { HeroCard } from "@/types/heroCard";
 import { cn } from "@/lib/utils";
+import BlindDrawSignupForm from "@/components/home/BlindDrawSignupForm";
 
 interface EventHeroCardProps {
   card: HeroCard;
@@ -256,6 +257,13 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                   </div>
                   <Progress value={startCountdown.percent} className="h-1.5 bg-white/20 [&>div]:bg-green-400" aria-label="Event start countdown progress" />
                 </div>
+              </div>
+            )}
+
+            {/* Signup Form - only for blind-draw events */}
+            {card.slug === 'blind-draw' && startTimeStr && (
+              <div className="w-full mt-3">
+                <BlindDrawSignupForm eventDate={startTimeStr.split('T')[0]} />
               </div>
             )}
           </div>
