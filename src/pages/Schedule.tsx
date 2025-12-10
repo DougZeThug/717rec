@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
@@ -8,23 +7,13 @@ import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import ScheduleContent from "@/components/schedule/ScheduleContent";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
 import MatchFormDialog from "@/components/schedule/MatchFormDialog";
-import TimeslotGrouping from "@/components/schedule/TimeslotGrouping";
-import { Clock } from "lucide-react";
 import ScheduleContentSkeleton from "@/components/schedule/ScheduleContentSkeleton";
-import { Skeleton } from "@/components/ui/skeleton";
 import { normalizeDate } from "@/utils/dateNormalization";
 import { scheduleLog } from "@/utils/logger";
 import PageLayout from "@/components/layout/PageLayout";
 
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Smart default tab based on day of week
-  const getDefaultTab = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 4 = Thursday
-    return dayOfWeek === 4 ? "upcoming" : "completed"; // Thursday = upcoming
-  };
   
   // Get upcoming Thursday (or today if it's Thursday)
   const getUpcomingThursday = () => {
@@ -47,11 +36,11 @@ const Schedule = () => {
     return upcomingThursday;
   };
   
-  const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
+  const [activeTab, setActiveTab] = useState("timeslots"); // Initial value, will be updated by useEffect
   
   // Log date for debugging
-  React.useEffect(() => {
+  useEffect(() => {
     scheduleLog("Current selected date:", {
       selectedDate,
       selectedDateString: selectedDate.toString(),
@@ -82,6 +71,33 @@ const Schedule = () => {
     handleUpdateMatch,
     handleDeleteMatch
   } = useMatchManagement(matchesData || []);
+
+  // Smart default tab logic based on selected date and data availability
+  useEffect(() => {
+    // Wait for data to load before setting smart default
+    if (matchesLoading) return;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    
+    // If selected date is in the past, default to completed
+    if (selected < today) {
+      setActiveTab("completed");
+      return;
+    }
+    
+    // For today or future dates:
+    // If there are upcoming matches, show upcoming tab
+    // Otherwise show timeslots tab
+    if (upcomingMatches && upcomingMatches.length > 0) {
+      setActiveTab("upcoming");
+    } else {
+      setActiveTab("timeslots");
+    }
+  }, [selectedDate, matchesLoading, upcomingMatches]);
 
   // Handle date selection with proper normalization
   const handleDateSelect = (date: Date) => {
@@ -133,7 +149,7 @@ const Schedule = () => {
           onDateSelect={handleDateSelect}
         />
 
-        {/* Matches section */}
+        {/* Matches section with Timeslots tab */}
         {isLoading ? (
           <ScheduleContentSkeleton activeTab={activeTab} />
         ) : (
@@ -143,6 +159,8 @@ const Schedule = () => {
             filteredMatches={filteredMatches}
             teams={teams || []}
             selectedDate={selectedDate}
+            groupedTimeslots={groupedTimeslots}
+            timeslotsLoading={timeslotsLoading}
             onEditMatch={(match) => {
               setEditingMatch(match);
               setIsFormOpen(true);
@@ -150,33 +168,6 @@ const Schedule = () => {
             onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
           />
         )}
-
-        {/* Timeslots section */}
-        <div className="mb-8 mt-8">
-          <div className="bg-muted dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4 shadow-sm transition-all">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-              <span className="text-base font-inter tracking-wide font-semibold dark:text-white">
-                Timeslots for {selectedDate.toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </span>
-            </div>
-            {timeslotsLoading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-3/4" />
-              </div>
-            ) : (
-              <TimeslotGrouping 
-                groupedTimeslots={groupedTimeslots} 
-                isLoading={timeslotsLoading} 
-              />
-            )}
-          </div>
-        </div>
       </div>
       
       <MatchFormDialog
