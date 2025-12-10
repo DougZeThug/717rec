@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,33 +8,39 @@ import WinLossChartCard from "./WinLossChartCard";
 import PowerScoreChartCard from "./PowerScoreChartCard";
 import PowerScoreTrendsCard from "./PowerScoreTrendsCard";
 import { useChartData } from "./hooks/useChartData";
-import { ChartBar, ChartPie, TrendingUp, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { animations, gradients } from "@/styles/design-system";
+import { gradients } from "@/styles/design-system";
 import { useTheme } from "next-themes";
+import useEmblaCarousel from "embla-carousel-react";
 
 interface StatsChartsProps {
   rankings: Ranking[];
   chartLimit: number;
 }
 
-type ChartType = "winLoss" | "powerScore" | "trends";
-
 const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
   const { winLossData, powerScoreData } = useChartData(rankings, chartLimit);
-  const [activeChart, setActiveChart] = useState<ChartType>("winLoss");
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Carousel for mobile
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+  
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    onSelect();
+  }, [emblaApi, onSelect]);
 
-  const toggleChart = () => {
-    setActiveChart(prev => {
-      if (prev === "winLoss") return "powerScore";
-      if (prev === "powerScore") return "trends";
-      return "winLoss";
-    });
-  };
+  const chartLabels = ["Win-Loss", "Power Score", "Trends"];
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
@@ -81,64 +87,42 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
         <CollapsibleContent>
           <div className="p-4 pt-0">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 font-inter">
-              {/* On mobile: cycle between win-loss, power score, and trends */}
+              {/* On mobile: swipeable carousel */}
               {isMobile ? (
-                <div className="relative">
-                  <div className="absolute top-3 right-3 z-10">
-                    <button 
-                      onClick={toggleChart}
-                      className="bg-white dark:bg-gray-800 shadow-md rounded-full p-1.5 flex items-center gap-1 border border-gray-200 dark:border-gray-700"
-                    >
-                      {activeChart === "winLoss" ? (
-                        <>
-                          <ChartBar className="h-4 w-4 text-blue-600" />
-                          <ChartPie className="h-4 w-4 text-gray-400" />
-                          <TrendingUp className="h-4 w-4 text-gray-400" />
-                          <ChevronsRight className="h-3.5 w-3.5 text-gray-600" />
-                        </>
-                      ) : activeChart === "powerScore" ? (
-                        <>
-                          <ChartBar className="h-4 w-4 text-gray-400" />
-                          <ChartPie className="h-4 w-4 text-purple-600" />
-                          <TrendingUp className="h-4 w-4 text-gray-400" />
-                          <ChevronsRight className="h-3.5 w-3.5 text-gray-600" />
-                        </>
-                      ) : (
-                        <>
-                          <ChartBar className="h-4 w-4 text-gray-400" />
-                          <ChartPie className="h-4 w-4 text-gray-400" />
-                          <TrendingUp className="h-4 w-4 text-green-600" />
-                          <ChevronsRight className="h-3.5 w-3.5 text-gray-600" />
-                        </>
-                      )}
-                    </button>
+                <div className="col-span-1">
+                  <div className="overflow-hidden" ref={emblaRef}>
+                    <div className="flex">
+                      <div className="flex-[0_0_100%] min-w-0 pr-2">
+                        <WinLossChartCard 
+                          data={winLossData} 
+                          chartLimit={chartLimit} 
+                          isMobile={isMobile} 
+                        />
+                      </div>
+                      <div className="flex-[0_0_100%] min-w-0 pr-2">
+                        <PowerScoreChartCard data={powerScoreData} />
+                      </div>
+                      <div className="flex-[0_0_100%] min-w-0">
+                        <PowerScoreTrendsCard />
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className={cn(
-                    "transition-all duration-300",
-                    activeChart !== "winLoss" && "hidden"
-                  )}>
-                    <WinLossChartCard 
-                      data={winLossData} 
-                      chartLimit={chartLimit} 
-                      isMobile={isMobile} 
-                    />
-                  </div>
-                  
-                  <div className={cn(
-                    "transition-all duration-300",
-                    activeChart !== "powerScore" && "hidden",
-                    animations.fadeIn
-                  )}>
-                    <PowerScoreChartCard data={powerScoreData} />
-                  </div>
-                  
-                  <div className={cn(
-                    "transition-all duration-300",
-                    activeChart !== "trends" && "hidden",
-                    animations.fadeIn
-                  )}>
-                    <PowerScoreTrendsCard />
+                  {/* Dot indicators */}
+                  <div className="flex justify-center gap-2 mt-3">
+                    {chartLabels.map((label, index) => (
+                      <button
+                        key={index}
+                        onClick={() => emblaApi?.scrollTo(index)}
+                        className={cn(
+                          "px-2 py-1 rounded-full text-xs transition-all",
+                          selectedIndex === index
+                            ? "bg-blue-600 text-white"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        )}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               ) : (
