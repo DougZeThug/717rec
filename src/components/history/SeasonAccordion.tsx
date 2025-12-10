@@ -146,7 +146,10 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const champions = seasonData?.filter(team => team.champion).map(team => team.team_name) || [];
 
   // Count total teams and matches
-  const teamCount = seasonData?.length || 0;
+  const teamCount = seasonData?.filter(team => {
+    const displayDivision = getHistoryDivisionDisplayName(team.division_name);
+    return !displayDivision.toLowerCase().startsWith('hidden');
+  }).length || 0;
   const totalMatches = seasonData?.reduce((sum, t) => sum + (t.match_wins || 0) + (t.match_losses || 0), 0) || 0;
   const matchCount = Math.floor(totalMatches / 2); // Each match counted twice (once per team)
   
