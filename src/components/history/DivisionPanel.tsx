@@ -1,10 +1,11 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ChampionCard from "./ChampionCard";
 import HistoricalStandingsTable from "./HistoricalStandingsTable";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SeasonData {
   team_id: string;
@@ -30,7 +31,16 @@ interface DivisionPanelProps {
 }
 
 const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
+  const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(true);
+  
+  // Collapse divisions on mobile after initial mount
+  useEffect(() => {
+    if (isMobile) {
+      setIsExpanded(false);
+    }
+  }, []);
+  
   const champion = teams.find(team => team.champion);
   
   // Sort teams by playoff_rank (1st, 2nd, 3rd, etc.) with fallback to match wins
@@ -83,7 +93,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
             className="overflow-hidden"
           >
             <div className="pt-2 space-y-4">
-              {champion && (
+              {champion && !isMobile && (
                 <ChampionCard team={champion} />
               )}
               
