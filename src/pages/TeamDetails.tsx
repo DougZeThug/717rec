@@ -30,6 +30,9 @@ const TeamDetails = () => {
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
   
+  // All hooks must be called before any early returns
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
+  
   const teamRanking = rankings?.find(r => r.teamId === teamId);
   const teamRank = teamRanking ? rankings.findIndex(r => r.teamId === teamId) + 1 : undefined;
   const totalTeams = rankings?.length;
@@ -73,8 +76,6 @@ const TeamDetails = () => {
     { label: "Teams", href: "/teams" },
     { label: team.name },
   ];
-
-  const [achievementsOpen, setAchievementsOpen] = useState(false);
 
   return (
     <div className="container mx-auto px-4 py-4 md:py-8 space-y-4">
