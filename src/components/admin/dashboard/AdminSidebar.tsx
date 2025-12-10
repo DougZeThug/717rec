@@ -40,19 +40,19 @@ interface AdminMenuItem {
 }
 
 const adminMenuItems: AdminMenuItem[] = [
-  { id: "teams", label: "Team Management", icon: Users, component: <TeamManagementTab /> },
-  { id: "pending-matches", label: "Pending Matches", icon: Clock, component: <PendingMatchesSection /> },
-  { id: "seasons", label: "Season Management", icon: Calendar, component: <SeasonManagementTab /> },
-  { id: "scores", label: "Mass Scores", icon: ListChecks, component: <MassScoresTab /> },
-  { id: "batch-matches", label: "Batch Matches", icon: Sparkles, component: <BatchMatchCreationTab /> },
-  { id: "auto-schedule", label: "Auto Schedule", icon: CalendarClock, component: <AutoScheduleTab /> },
   { id: "timeslots", label: "Timeslots", icon: Timer, component: <TimeslotsTab /> },
-  { id: "hero-cards", label: "Hero Cards", icon: LayoutGrid, component: <HeroCardsTab /> },
+  { id: "batch-matches", label: "Match Creation", icon: Sparkles, component: <BatchMatchCreationTab /> },
+  { id: "auto-schedule", label: "Auto Schedule", icon: CalendarClock, component: <AutoScheduleTab /> },
+  { id: "scores", label: "Scores", icon: ListChecks, component: <MassScoresTab /> },
+  { id: "seasons", label: "Season", icon: Calendar, component: <SeasonManagementTab /> },
+  { id: "teams", label: "Teams", icon: Users, component: <TeamManagementTab /> },
+  { id: "pending-matches", label: "Pending", icon: Clock, component: <PendingMatchesSection /> },
+  { id: "hero-cards", label: "Hero", icon: LayoutGrid, component: <HeroCardsTab /> },
 ];
 
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState("teams");
+  const [activeTab, setActiveTab] = useState("timeslots");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -65,7 +65,7 @@ const AdminSidebar: React.FC = () => {
   // Mobile: Use tabs with labels
   if (isMobile) {
     return (
-      <Tabs defaultValue="teams" className="space-y-3">
+      <Tabs defaultValue="timeslots" className="space-y-3">
         <TabsList className="grid grid-cols-4 gap-1 h-auto p-1.5 bg-muted/50">
           {adminMenuItems.map((item) => (
             <TabsTrigger 
