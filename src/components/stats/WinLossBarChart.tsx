@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   BarChart,
@@ -8,13 +7,12 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import WinLossTooltip from "./WinLossTooltip";
 import { useTheme } from "next-themes";
 import { chartLog } from "@/utils/logger";
+import ChartEmptyState from "./ChartEmptyState";
 
-// Label truncation util (local to component)
 const truncateLabel = (label: string, max = 10) =>
   label.length > max ? label.slice(0, max - 1) + "…" : label;
 
@@ -23,19 +21,15 @@ interface BarChartProps {
   isMobile: boolean;
 }
 
-/**
- * Presentational chart only, expects sorted data with .displayName and .tooltipName.
- */
 const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const chartBgColor = isDark ? "#1f2937" : "#ffffff";
   const chartGridColor = isDark ? "#374151" : "#e5e7eb";
-  const barColorWin = "#45c47e";
-  const barColorLoss = "#e13d3d";
+  const barColorWin = "#10b981";
+  const barColorLoss = "#ef4444";
   const maxLabelLength = isMobile ? 7 : 12;
 
-  // X-Axis tick for truncation
   const CustomXAxisTick = (props: any) => {
     const { x, y, payload } = props;
     if (!payload || typeof payload.value === "undefined") return null;
@@ -64,58 +58,36 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
     );
   };
 
-  // Add more detailed logging to help diagnose the issue
   chartLog("WinLossBarChart rendering with data length:", data?.length);
+
+  // Check for empty/zero data
+  const hasData = data && Array.isArray(data) && data.length > 0 && 
+    data.some(d => (d.wins || 0) + (d.losses || 0) > 0);
   
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    chartLog("No valid chart data available:", data);
-    return (
-      <div className="w-full h-[230px] rounded-xl overflow-hidden flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-        <p className="text-gray-500 dark:text-gray-400">No data available</p>
-      </div>
-    );
+  if (!hasData) {
+    return <ChartEmptyState message="Records available after matches" />;
   }
 
-  // Log final data for debugging - ensure displayName is unique and in correct order
   chartLog(
     "Rendering chart with data",
     data.map((t: any, i: number) => ({
       displayName: t.displayName,
-      tooltipName: t.tooltipName,
       wins: t.wins,
       losses: t.losses,
-      winPct: t.calculatedWinPct?.toFixed(3),
       idx: i
     }))
   );
 
   return (
     <div
-      className="w-full max-h-[310px] h-[230px] rounded-xl overflow-hidden pb-0"
+      className="w-full h-[220px] rounded-xl overflow-hidden"
       style={{ backgroundColor: chartBgColor }}
     >
-      <div className="flex flex-row justify-end pl-2 pr-4 py-2">
-        <Legend
-          payload={[
-            { value: "Wins", type: "square", color: barColorWin, id: "wins" },
-            { value: "Losses", type: "square", color: barColorLoss, id: "losses" },
-          ]}
-          iconType="rect"
-          wrapperStyle={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 12,
-            display: "flex",
-          }}
-          formatter={(value: string) => (
-            <span className="ml-1 text-xs text-gray-700 dark:text-gray-300 font-medium">{value}</span>
-          )}
-        />
-      </div>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={data}
           margin={{
-            top: 8,
+            top: 12,
             right: 14,
             left: 8,
             bottom: isMobile ? 38 : 32,
@@ -145,8 +117,8 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
             }}
           />
           <Tooltip content={<WinLossTooltip />} />
-          <Bar dataKey="wins" fill={barColorWin} name="Wins" />
-          <Bar dataKey="losses" fill={barColorLoss} name="Losses" />
+          <Bar dataKey="wins" fill={barColorWin} name="Wins" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="losses" fill={barColorLoss} name="Losses" radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
