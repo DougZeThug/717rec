@@ -53,22 +53,25 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
           <CardTitle>Schedule Settings</CardTitle>
         </CardHeader>
         
-        <CardContent className="space-y-6">
-          {/* Date Selection */}
+        <CardContent className="space-y-4">
+          {/* Date Section */}
           <div>
-            <h4 className="text-sm font-medium mb-2">Date Selection</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Date</h4>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal"
+                  className="w-full justify-between text-left font-normal"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? (
-                    format(selectedDate, "PPP")
-                  ) : (
-                    <span>Select a date</span>
-                  )}
+                  <span className="flex items-center">
+                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {selectedDate ? (
+                      format(selectedDate, "PPP")
+                    ) : (
+                      <span className="text-muted-foreground">Select a date</span>
+                    )}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -77,17 +80,18 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
                   selected={selectedDate || undefined}
                   onSelect={(date) => setSelectedDate(date)}
                   initialFocus
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
           </div>
           
-          {/* Algorithm Settings */}
+          {/* Match Rules Section */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium mb-2">Algorithm Settings</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Match Rules</h4>
             
             <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="avoid-rematches" className="flex-1">
+              <Label htmlFor="avoid-rematches" className="flex-1 text-sm">
                 Avoid Rematches
               </Label>
               <Switch
@@ -99,7 +103,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
             
             {!dualMatchMode && (
               <div className="flex items-center justify-between space-x-2">
-                <Label htmlFor="prioritize-quality" className="flex-1">
+                <Label htmlFor="prioritize-quality" className="flex-1 text-sm">
                   Prioritize Match Quality
                 </Label>
                 <Switch
@@ -112,7 +116,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
             
             <div className="space-y-2">
               <div className="flex items-center justify-between space-x-2">
-                <Label htmlFor="dual-match-mode" className="flex-1">
+                <Label htmlFor="dual-match-mode" className="flex-1 text-sm">
                   Dual Match Mode
                 </Label>
                 <Switch
