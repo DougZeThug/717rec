@@ -1,11 +1,10 @@
 
-import React, { useRef } from "react";
+import React from "react";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import { useTeamData } from "@/hooks/useTeamData";
 import { Match } from "@/types";
 import StatsErrorState from "../StatsErrorState";
 import StatsPageHeader from "./StatsPageHeader";
-import StatsSummarySection from "./StatsSummarySection";
 import StatsChartsSection from "./StatsChartsSection";
 import FullRankingsSection from "./FullRankingsSection";
 import LoadingStateContainer from "./LoadingStateContainer";
@@ -26,16 +25,9 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     error: teamsError,
   } = useTeamData(selectedDivision);
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
-  const fullRankingsRef = useRef<HTMLDivElement>(null);
 
   const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
-
-  const scrollToFullRankings = () => {
-    if (fullRankingsRef.current) {
-      fullRankingsRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   if (hasError) {
     return <StatsErrorState teamsError={teamsError} matchesError={matchesError} />;
@@ -52,18 +44,11 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       <div className="font-inter">
         {rankings.length > 0 ? (
           <>
-            <StatsSummarySection 
-              rankings={rankings} 
-              scrollToFullRankings={scrollToFullRankings} 
-            />
+            <FullRankingsSection rankings={rankings} />
             
             <StatsChartsSection rankings={rankings} />
 
             <AllTeamsCareerPowerScoreChart />
-
-            <div ref={fullRankingsRef} id="rankings" className="scroll-mt-16 mb-4">
-              <FullRankingsSection rankings={rankings} />
-            </div>
             
             <CareerRankingsSection />
           </>
