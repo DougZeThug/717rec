@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Shuffle, Clock, DollarSign, Trophy, Calendar, Timer, Medal } from "lucide-react";
 import { motion } from "framer-motion";
+import BlindDrawSignupForm from "./BlindDrawSignupForm";
 
 const BlindDrawEventCard: React.FC = () => {
   const [checkInCountdown, setCheckInCountdown] = useState({ text: "", percent: 0 });
@@ -215,6 +216,9 @@ const BlindDrawEventCard: React.FC = () => {
                 <Progress value={startCountdown.percent} className="h-2 bg-white/20 [&>div]:bg-green-400" />
               </div>
             </div>
+
+            {/* Signup Form */}
+            <BlindDrawSignupForm eventDate="2025-12-11" />
           </div>
         </div>
       </CardContent>
