@@ -107,6 +107,21 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
     });
   };
 
+  // Get event date in EST (YYYY-MM-DD format) for signup form
+  const getEventDateEST = (isoString: string): string | null => {
+    if (!isoString) return null;
+    const date = new Date(isoString);
+    // Format as YYYY-MM-DD in America/New_York timezone
+    return date.toLocaleDateString('en-CA', { 
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  const eventDate = startTimeStr ? getEventDateEST(startTimeStr) : null;
+
   const placeEmojis = ['🥇', '🥈', '🥉'];
 
   return (
@@ -261,9 +276,9 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
             )}
 
             {/* Signup Form - only for blind-draw events */}
-            {card.slug === 'blind-draw' && startTimeStr && (
+            {card.slug === 'blind-draw' && eventDate && (
               <div className="w-full mt-3">
-                <BlindDrawSignupForm eventDate={startTimeStr.split('T')[0]} />
+                <BlindDrawSignupForm eventDate={eventDate} />
               </div>
             )}
           </div>
