@@ -94,10 +94,10 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
           <div className="w-14">
             <Input
               type="text"
-              placeholder="Last Init."
+              placeholder="L.I."
               value={lastInitial}
-              onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-9 text-sm text-center uppercase"
+              onChange={(e) => setLastInitial(e.target.value.slice(0, 1).toUpperCase())}
+              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-9 text-sm text-center"
               maxLength={1}
             />
             {errors.lastInitial && (
