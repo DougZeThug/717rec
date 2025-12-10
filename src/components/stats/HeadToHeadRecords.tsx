@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ArrowUpDown, Search, Calendar, Trophy, X, ChevronDown } from "lucide-react";
+import { ArrowUpDown, Search, Calendar, Trophy, X, ChevronDown, Swords } from "lucide-react";
 import { OpponentHistoryModal } from "./OpponentHistoryModal";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -83,7 +83,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
         <div className="border rounded-lg bg-card shadow-sm">
           <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <Swords className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
               <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
                 Head-to-Head Records
               </h2>
@@ -109,7 +109,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
         <div className="border rounded-lg bg-card shadow-sm">
           <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <Swords className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
               <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
                 Head-to-Head Records
               </h2>
@@ -135,7 +135,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
         <div className="border rounded-lg bg-card shadow-sm">
           <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <Swords className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
               <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
                 Head-to-Head Records
               </h2>
@@ -161,7 +161,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
         <div className="border rounded-lg bg-card shadow-sm">
           <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
             <div className="flex items-center gap-2">
-              <Trophy className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+              <Swords className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
               <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
                 Head-to-Head Records
               </h2>
