@@ -14,9 +14,9 @@ export const useChartColors = () => {
     textColor: isDark ? "#e5e7eb" : "#334155",
     mutedTextColor: isDark ? "#9ca3af" : "#64748b",
     powerScore: {
-      bar: "#3b82f6",      // blue-500 - matches core palette
-      highlight: "#f59e0b", // amber-500 - accent color
-      background: isDark ? '#1e293b' : '#eff6ff', // slate-800 / blue-50
+      bar: "#a288f5",
+      highlight: "#805fff",
+      background: isDark ? '#26282d' : '#f1f0fb',
     },
     winLoss: {
       win: "#10b981",
