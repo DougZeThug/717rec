@@ -50,12 +50,12 @@ const AdminDashboard = () => {
 
   return (
     <motion.div 
-      className="container mx-auto py-8 px-4"
+      className="container mx-auto py-4 md:py-8 px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8">Admin Dashboard</h1>
       <AdminSidebar />
     </motion.div>
   );

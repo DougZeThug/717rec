@@ -62,21 +62,25 @@ const AdminSidebar: React.FC = () => {
 
   const activeItem = adminMenuItems.find((item) => item.id === activeTab);
 
-  // Mobile: Use tabs
+  // Mobile: Use tabs with labels
   if (isMobile) {
     return (
-      <Tabs defaultValue="teams" className="space-y-4">
-        <TabsList className="flex flex-wrap gap-2 h-auto">
+      <Tabs defaultValue="teams" className="space-y-3">
+        <TabsList className="grid grid-cols-4 gap-1 h-auto p-1.5 bg-muted/50">
           {adminMenuItems.map((item) => (
-            <TabsTrigger key={item.id} value={item.id} className="flex items-center gap-1.5">
+            <TabsTrigger 
+              key={item.id} 
+              value={item.id} 
+              className="flex flex-col items-center gap-0.5 py-1.5 px-1 text-[10px] uppercase tracking-wide min-h-0"
+            >
               <item.icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{item.label}</span>
+              <span className="leading-tight text-center">{item.label.split(' ')[0]}</span>
             </TabsTrigger>
           ))}
         </TabsList>
 
         {adminMenuItems.map((item) => (
-          <TabsContent key={item.id} value={item.id} className="space-y-4">
+          <TabsContent key={item.id} value={item.id} className="space-y-3">
             {item.component}
           </TabsContent>
         ))}
