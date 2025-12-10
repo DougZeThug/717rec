@@ -26,7 +26,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isLight = resolvedTheme === 'light';
   const { winLossData, powerScoreData } = useChartData(rankings, chartLimit);
   const [activeChart, setActiveChart] = useState<ChartType>("winLoss");
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const toggleChart = () => {
     setActiveChart(prev => {
