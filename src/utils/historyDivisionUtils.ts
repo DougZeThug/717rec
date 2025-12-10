@@ -9,8 +9,12 @@ export function getHistoryDivisionDisplayName(divisionName: string | null): stri
   const normalized = divisionName.toLowerCase().trim();
   
   // Handle specific mappings for history display
-  if (normalized === 'intermediate 2') {
-    return 'Intermediate Low';
+  if (normalized === 'intermediate 2' || normalized === 'intermediate low') {
+    return 'Intermediate 2';
+  }
+  
+  if (normalized === 'intermediate high') {
+    return 'Intermediate 1';
   }
   
   // For recreational divisions, just return "Recreational" to avoid split

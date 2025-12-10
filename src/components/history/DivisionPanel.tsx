@@ -39,7 +39,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
     if (isMobile) {
       setIsExpanded(false);
     }
-  }, []);
+  }, [isMobile]);
   
   const champion = teams.find(team => team.champion);
   
