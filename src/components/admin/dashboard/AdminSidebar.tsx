@@ -12,19 +12,12 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 import TeamManagementTab from "@/components/admin/teams/TeamManagementTab";
 import PendingMatchesSection from "@/components/admin/PendingMatchesSection";
@@ -42,20 +35,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface AdminMenuItem {
   id: string;
   label: string;
-  shortLabel: string;
   icon: React.ElementType;
   component: React.ReactNode;
 }
 
 const adminMenuItems: AdminMenuItem[] = [
-  { id: "teams", label: "Team Management", shortLabel: "Teams", icon: Users, component: <TeamManagementTab /> },
-  { id: "pending-matches", label: "Pending Matches", shortLabel: "Pending", icon: Clock, component: <PendingMatchesSection /> },
-  { id: "seasons", label: "Season Management", shortLabel: "Seasons", icon: Calendar, component: <SeasonManagementTab /> },
-  { id: "scores", label: "Mass Scores", shortLabel: "Scores", icon: ListChecks, component: <MassScoresTab /> },
-  { id: "batch-matches", label: "Batch Matches", shortLabel: "Batch", icon: Sparkles, component: <BatchMatchCreationTab /> },
-  { id: "auto-schedule", label: "Auto Schedule", shortLabel: "Auto", icon: CalendarClock, component: <AutoScheduleTab /> },
-  { id: "timeslots", label: "Timeslots", shortLabel: "Timeslots", icon: Timer, component: <TimeslotsTab /> },
-  { id: "hero-cards", label: "Hero Cards", shortLabel: "Hero", icon: LayoutGrid, component: <HeroCardsTab /> },
+  { id: "teams", label: "Team Management", icon: Users, component: <TeamManagementTab /> },
+  { id: "pending-matches", label: "Pending Matches", icon: Clock, component: <PendingMatchesSection /> },
+  { id: "seasons", label: "Season Management", icon: Calendar, component: <SeasonManagementTab /> },
+  { id: "scores", label: "Mass Scores", icon: ListChecks, component: <MassScoresTab /> },
+  { id: "batch-matches", label: "Batch Matches", icon: Sparkles, component: <BatchMatchCreationTab /> },
+  { id: "auto-schedule", label: "Auto Schedule", icon: CalendarClock, component: <AutoScheduleTab /> },
+  { id: "timeslots", label: "Timeslots", icon: Timer, component: <TimeslotsTab /> },
+  { id: "hero-cards", label: "Hero Cards", icon: LayoutGrid, component: <HeroCardsTab /> },
 ];
 
 const AdminSidebar: React.FC = () => {
@@ -70,55 +62,29 @@ const AdminSidebar: React.FC = () => {
 
   const activeItem = adminMenuItems.find((item) => item.id === activeTab);
 
-  // Mobile: Compact dropdown nav
+  // Mobile: Use tabs with labels
   if (isMobile) {
-    const ActiveIcon = activeItem?.icon || Users;
-    
     return (
-      <div className="space-y-3">
-        {/* Compact dropdown nav */}
-        <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex-1 justify-between h-9 px-3">
-                <span className="flex items-center gap-2">
-                  <ActiveIcon className="h-4 w-4" />
-                  <span className="font-medium text-sm">{activeItem?.shortLabel}</span>
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              {adminMenuItems.map((item) => (
-                <DropdownMenuItem
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={cn(
-                    "flex items-center gap-2",
-                    activeTab === item.id && "bg-accent"
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.shortLabel}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <Tabs defaultValue="teams" className="space-y-3">
+        <TabsList className="grid grid-cols-4 gap-1 h-auto p-1.5 bg-muted/50">
+          {adminMenuItems.map((item) => (
+            <TabsTrigger 
+              key={item.id} 
+              value={item.id} 
+              className="flex flex-col items-center gap-0.5 py-1.5 px-1 text-[10px] uppercase tracking-wide min-h-0"
+            >
+              <item.icon className="h-4 w-4" />
+              <span className="leading-tight text-center">{item.label.split(' ')[0]}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-        {/* Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.15 }}
-          >
-            {activeItem?.component}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+        {adminMenuItems.map((item) => (
+          <TabsContent key={item.id} value={item.id} className="space-y-3">
+            {item.component}
+          </TabsContent>
+        ))}
+      </Tabs>
     );
   }
 
