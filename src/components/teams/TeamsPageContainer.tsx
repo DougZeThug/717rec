@@ -79,6 +79,17 @@ const TeamsPageContainer: React.FC = () => {
               <DropdownMenuItem onClick={() => setDisplayMode('all')}>All Teams</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <span className="text-muted-foreground mx-1">·</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-0.5 text-muted-foreground hover:text-foreground">
+              Style: <span className="text-foreground font-medium">{viewMode === 'grid' ? 'Grid' : 'List'}</span>
+              <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setViewMode('grid')}>Grid</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setViewMode('list')}>List</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Desktop: Original toggle buttons */}
