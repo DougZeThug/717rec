@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { useTeamDetails } from "@/hooks/useTeamDetails";
 import TeamHeader from "@/components/teams/TeamHeader";
 import StatBreakdown from "@/components/teams/StatBreakdown";
@@ -11,13 +11,16 @@ import PlayerList from "@/components/teams/PlayerList";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { useTeamMatches } from "@/hooks/useTeamMatches";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
-import { Card } from "@/components/ui/card";
 import HeadToHeadRecords from "@/components/stats/HeadToHeadRecords";
 import TeamTotals from "@/components/teams/TeamTotals";
 import { calculateSweepRate } from "@/utils/teamDetailsUtils/sweepRateUtils";
 import TeamCareerPowerScoreChart from "@/components/teams/TeamCareerPowerScoreChart";
 import { teamLog } from "@/utils/logger";
 import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -71,20 +74,27 @@ const TeamDetails = () => {
     { label: team.name },
   ];
 
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
+    <div className="container mx-auto px-4 py-4 md:py-8 space-y-4">
+      {/* Breadcrumbs - hidden on mobile */}
+      <div className="hidden md:block">
+        <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
+      </div>
       
       <Button 
         variant="ghost" 
-        className="mb-6" 
+        className="mb-2 md:mb-4 h-8 px-2 md:h-10 md:px-4" 
         onClick={() => navigate(-1)}
       >
-        <ArrowLeft size={16} className="mr-2" /> Back
+        <ArrowLeft size={16} className="mr-1 md:mr-2" /> Back
       </Button>
       
+      {/* Hero Section - Tighter on mobile */}
       <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
       
+      {/* 1. Team Stats */}
       <StatBreakdown
         wins={team.wins}
         losses={team.losses}
@@ -102,35 +112,13 @@ const TeamDetails = () => {
         sweepRate={sweepStats.sweepRate}
       />
 
-      {/* Career Power Score Trend Chart */}
-      {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
-
+      {/* 2. Players */}
       <PlayerList players={team.players || []} />
       
-      {/* Head-to-Head Records Section */}
+      {/* 3. Head-to-Head Records */}
       {teamId && <HeadToHeadRecords teamId={teamId} />}
       
-      {/* Team Career Statistics */}
-      {teamId && <TeamTotals teamId={teamId} />}
-      
-      {/* Team Achievements Section - moved below PlayerList */}
-      {teamId && (
-        <Card className="p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Team Achievements</h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <TeamBadgeCollection
-              teamId={teamId}
-              size="lg"
-              maxDisplay={12}
-              orientation="horizontal"
-              className="gap-3"
-            />
-          </div>
-        </Card>
-      )}
-      
+      {/* 4. Match History */}
       <MatchList
         title="Match History"
         matches={pastMatches}
@@ -141,6 +129,45 @@ const TeamDetails = () => {
         collapsible={true}
         defaultOpen={false}
       />
+
+      {/* 5. Career Stats */}
+      {teamId && <TeamTotals teamId={teamId} />}
+
+      {/* 6. Career Power Score Trend */}
+      {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
+      
+      {/* 7. Team Achievements */}
+      {teamId && (
+        <Collapsible open={achievementsOpen} onOpenChange={setAchievementsOpen}>
+          <div className="border rounded-lg bg-card shadow-sm">
+            <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 md:h-5 md:w-5 text-amber-500" />
+                <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
+                  Team Achievements
+                </h2>
+              </div>
+              <ChevronDown className={cn(
+                "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                achievementsOpen && "rotate-180"
+              )} />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="p-3 md:p-4 pt-0 border-t">
+                <div className="flex flex-wrap gap-2 pt-3">
+                  <TeamBadgeCollection
+                    teamId={teamId}
+                    size="lg"
+                    maxDisplay={12}
+                    orientation="horizontal"
+                    className="gap-3"
+                  />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
+      )}
     </div>
   );
 };
