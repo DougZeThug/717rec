@@ -69,45 +69,47 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <UserPlus className="h-5 w-5 text-white" />
-        <span className="text-white font-semibold">Sign Up</span>
+    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <UserPlus className="h-4 w-4 text-white" />
+        <span className="text-white font-semibold text-sm">Sign Up</span>
       </div>
       
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
-        <div className="flex-1">
-          <Input
-            type="text"
-            placeholder="First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-10"
-            maxLength={30}
-          />
-          {errors.firstName && (
-            <span className="text-xs text-red-300 mt-1">{errors.firstName}</span>
-          )}
-        </div>
-        
-        <div className="w-full sm:w-20">
-          <Input
-            type="text"
-            placeholder="Last Initial"
-            value={lastInitial}
-            onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
-            className="bg-white/20 border-white/30 text-white placeholder:text-white/60 h-10 text-center uppercase"
-            maxLength={1}
-          />
-          {errors.lastInitial && (
-            <span className="text-xs text-red-300 mt-1">{errors.lastInitial}</span>
-          )}
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Input
+              type="text"
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-9 text-sm"
+              maxLength={30}
+            />
+            {errors.firstName && (
+              <span className="text-xs text-red-300 mt-0.5 block">{errors.firstName}</span>
+            )}
+          </div>
+          
+          <div className="w-14">
+            <Input
+              type="text"
+              placeholder="Initial"
+              value={lastInitial}
+              onChange={(e) => setLastInitial(e.target.value.slice(0, 1))}
+              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-9 text-sm text-center uppercase"
+              maxLength={1}
+            />
+            {errors.lastInitial && (
+              <span className="text-xs text-red-300 mt-0.5 block">{errors.lastInitial}</span>
+            )}
+          </div>
         </div>
         
         <Button
           type="submit"
           disabled={addSignup.isPending}
-          className="bg-white/20 hover:bg-white/30 text-white border border-white/30 h-10 px-6"
+          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 h-9 text-sm"
         >
           {addSignup.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
