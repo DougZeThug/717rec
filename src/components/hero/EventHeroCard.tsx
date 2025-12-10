@@ -157,16 +157,9 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               <span className="font-inter font-semibold text-sm">{card.subtitle || formatDate(checkInTimeStr)}</span>
             </div>
 
-            {/* Countdown bars - desktop only in left column */}
-            {checkInTimeStr && startTimeStr && (
-              <div className="hidden md:block w-full space-y-2 mt-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-inter text-white/90">
-                    <Timer className="h-3 w-3 text-yellow-300" />
-                    <span>{checkInCountdown.text}</span>
-                  </div>
-                  <Progress value={checkInCountdown.percent} className="h-1.5 bg-white/20 [&>div]:bg-yellow-400" aria-label="Check-in countdown progress" />
-                </div>
+            {/* Countdown bar - desktop only in left column */}
+            {startTimeStr && (
+              <div className="hidden md:block w-full mt-2">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs font-inter text-white/90">
                     <Timer className="h-3 w-3 text-green-300" />
@@ -253,16 +246,9 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               </div>
             )}
 
-            {/* Countdown bars - mobile only */}
-            {checkInTimeStr && startTimeStr && (
-              <div className="md:hidden w-full max-w-sm space-y-2 mt-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-inter text-white/90">
-                    <Timer className="h-3 w-3 text-yellow-300" />
-                    <span>{checkInCountdown.text}</span>
-                  </div>
-                  <Progress value={checkInCountdown.percent} className="h-1.5 bg-white/20 [&>div]:bg-yellow-400" aria-label="Check-in countdown progress" />
-                </div>
+            {/* Countdown bar - mobile only */}
+            {startTimeStr && (
+              <div className="md:hidden w-full max-w-sm mt-2">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-xs font-inter text-white/90">
                     <Timer className="h-3 w-3 text-green-300" />
