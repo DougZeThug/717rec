@@ -15,7 +15,7 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank }) => {
     <Link 
       to={`/teams/${team.id}`} 
       className={cn(
-        "flex flex-col items-center p-3 rounded-lg",
+        "relative flex flex-col items-center p-3 rounded-lg",
         "bg-gradient-to-br from-white via-white to-gray-50",
         "dark:from-[#1E1E1E] dark:via-gray-800/90 dark:to-gray-900",
         "border border-border/50",
