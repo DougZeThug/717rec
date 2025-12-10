@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
@@ -37,7 +37,8 @@ const Schedule = () => {
   };
   
   const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
-  const [activeTab, setActiveTab] = useState("timeslots"); // Initial value, will be updated by useEffect
+  const [activeTab, setActiveTab] = useState("timeslots");
+  const hasInitializedTab = useRef(false);
   
   // Log date for debugging
   useEffect(() => {
@@ -72,16 +73,27 @@ const Schedule = () => {
     handleDeleteMatch
   } = useMatchManagement(matchesData || []);
 
-  // Smart default tab logic based on selected date and data availability
+  // Reset initialization flag when date changes
   useEffect(() => {
-    // Wait for data to load before setting smart default
-    if (matchesLoading) return;
+    hasInitializedTab.current = false;
+  }, [selectedDate]);
+
+  // Smart default tab logic - only set once per date selection
+  useEffect(() => {
+    // Don't override if already initialized for this date
+    if (hasInitializedTab.current) return;
+    
+    // Wait for data to load
+    if (matchesLoading || timeslotsLoading) return;
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const selected = new Date(selectedDate);
     selected.setHours(0, 0, 0, 0);
+    
+    // Mark as initialized
+    hasInitializedTab.current = true;
     
     // If selected date is in the past, default to completed
     if (selected < today) {
@@ -90,14 +102,22 @@ const Schedule = () => {
     }
     
     // For today or future dates:
-    // If there are upcoming matches, show upcoming tab
-    // Otherwise show timeslots tab
+    // Priority 1: If there are upcoming matches, show upcoming tab
     if (upcomingMatches && upcomingMatches.length > 0) {
       setActiveTab("upcoming");
-    } else {
-      setActiveTab("timeslots");
+      return;
     }
-  }, [selectedDate, matchesLoading, upcomingMatches]);
+    
+    // Priority 2: If there are timeslots, show timeslots tab
+    const hasTimeslots = Object.keys(groupedTimeslots).length > 0;
+    if (hasTimeslots) {
+      setActiveTab("timeslots");
+      return;
+    }
+    
+    // Default fallback to timeslots
+    setActiveTab("timeslots");
+  }, [selectedDate, matchesLoading, timeslotsLoading, upcomingMatches, groupedTimeslots]);
 
   // Handle date selection with proper normalization
   const handleDateSelect = (date: Date) => {
