@@ -55,40 +55,42 @@ const BlindDrawSignupsTab: React.FC = () => {
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+        <CardHeader className="pb-3 px-3 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Shuffle className="h-5 w-5 text-primary" />
               Blind Draw Signups
             </CardTitle>
-            <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full w-fit">
               <Users className="h-4 w-4 text-primary" />
-              <span className="font-semibold text-primary">
+              <span className="font-semibold text-primary text-sm">
                 {signups?.length || 0} signed up
               </span>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-3 sm:px-6">
           {/* Date selector */}
-          <div className="flex items-center gap-3">
-            <Label htmlFor="event-date" className="text-sm font-medium whitespace-nowrap">
-              Event Date
-            </Label>
-            <div className="relative flex-1 max-w-xs">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="event-date"
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                className="pl-10"
-              />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1">
+              <Label htmlFor="event-date" className="text-sm font-medium whitespace-nowrap">
+                Event Date
+              </Label>
+              <div className="relative flex-1 sm:max-w-xs">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="event-date"
+                  type="date"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  className="pl-10"
+                />
+              </div>
             </div>
             {signups && signups.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" className="w-full sm:w-auto">
                     <Trash2 className="h-4 w-4 mr-1" />
                     Clear All
                   </Button>
@@ -124,28 +126,32 @@ const BlindDrawSignupsTab: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="text-left px-4 py-2 text-sm font-medium">#</th>
-                    <th className="text-left px-4 py-2 text-sm font-medium">Name</th>
-                    <th className="text-left px-4 py-2 text-sm font-medium">Signed Up</th>
-                    <th className="text-right px-4 py-2 text-sm font-medium">Actions</th>
+                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-8">#</th>
+                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium">Name</th>
+                    <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">Signed Up</th>
+                    <th className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {signups.map((signup, index) => (
                     <tr key={signup.id} className="hover:bg-muted/30">
-                      <td className="px-4 py-2 text-sm text-muted-foreground">
+                      <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground">
                         {index + 1}
                       </td>
-                      <td className="px-4 py-2 font-medium">
-                        {signup.first_name} {signup.last_initial}.
+                      <td className="px-2 sm:px-4 py-2">
+                        <div className="font-medium text-sm">{signup.first_name} {signup.last_initial}.</div>
+                        <div className="text-xs text-muted-foreground sm:hidden">
+                          {format(new Date(signup.created_at), "MMM d, h:mm a")}
+                        </div>
                       </td>
-                      <td className="px-4 py-2 text-sm text-muted-foreground">
+                      <td className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell">
                         {format(new Date(signup.created_at), "MMM d, h:mm a")}
                       </td>
-                      <td className="px-4 py-2 text-right">
+                      <td className="px-2 sm:px-4 py-2 text-right">
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-8 w-8 p-0"
                           onClick={() => deleteSignup.mutate(signup.id)}
                           disabled={deleteSignup.isPending}
                         >
