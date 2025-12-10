@@ -47,24 +47,24 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   
   const baseClasses = cn(
     getGradient(), 
-    "p-3 rounded-lg text-left transition-all duration-200 hover:shadow-md border",
+    "p-2 sm:p-3 rounded-lg text-left transition-all duration-200 hover:shadow-md border",
     highlight ? "shadow-md border-blue-200 dark:border-blue-900/40" : "border-gray-200 dark:border-gray-700/50",
     isLight ? "border-gray-200" : "border-gray-700/50"
   );
   
-  const labelClasses = "font-inter uppercase text-xs tracking-widest text-gray-600 dark:text-gray-400";
+  const labelClasses = "font-inter uppercase text-[10px] sm:text-xs tracking-widest text-gray-600 dark:text-gray-400";
   
   // Apply gradient to the value text based on variant
   const valueClasses = cn(
-    "font-mono text-base font-medium",
+    "font-mono text-sm sm:text-base font-medium",
     highlight ? "text-blue-700 dark:text-blue-300" : "text-[#2c2c2c] dark:text-white"
   );
 
   if (orientation === 'horizontal') {
     return (
       <div className={`${baseClasses} flex items-center justify-between ${className}`}>
-        <div className="flex items-center gap-2">
-          {icon && <span className="text-gray-600 dark:text-gray-300">{icon}</span>}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {icon && <span className="text-gray-600 dark:text-gray-300 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">{icon}</span>}
           <span className={labelClasses}>{label}</span>
         </div>
         <span className={valueClasses}>{value}</span>
@@ -74,11 +74,11 @@ export const StatBlock: React.FC<StatBlockProps> = ({
 
   return (
     <div className={`${baseClasses} flex flex-col ${className}`}>
-      <div className="flex items-center gap-2 mb-1">
-        {icon && <span className="text-gray-600 dark:text-gray-300">{icon}</span>}
+      <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1">
+        {icon && <span className="text-gray-600 dark:text-gray-300 [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">{icon}</span>}
         <span className={labelClasses}>{label}</span>
       </div>
-      <div className={`${valueClasses} text-center text-lg`}>{value}</div>
+      <div className={`${valueClasses} text-center text-base sm:text-lg`}>{value}</div>
     </div>
   );
 };
