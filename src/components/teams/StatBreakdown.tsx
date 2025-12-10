@@ -58,7 +58,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
   const sos = parseFloat(strengthOfSchedule);
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("core");
   const [isOpen, setIsOpen] = useState(true);
   
