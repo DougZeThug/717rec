@@ -88,7 +88,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
           <CarouselContent className="-ml-2">
             {topTenTeams.map((team, index) => (
               <CarouselItem key={team.id} className="pl-2 basis-[140px]">
-                <div className="relative pt-3">
+                <div className="relative pt-4 pb-1">
                   <TeamCardCompact team={team} rank={index + 1} />
                 </div>
               </CarouselItem>
