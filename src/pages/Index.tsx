@@ -29,7 +29,7 @@ const Index: React.FC = () => {
     if (!teams?.length) return [];
     return [...teams]
       .sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0))
-      .slice(0, 4);
+      .slice(0, 10);
   }, [teams]);
   
   if (isLoading) {
