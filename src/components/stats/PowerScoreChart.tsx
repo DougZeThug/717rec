@@ -1,13 +1,13 @@
-
 import React from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Cell,
 } from "recharts";
 import { useTheme } from "next-themes";
 import { formatPowerScore } from "@/utils/colors/powerScoreColors";
 import { useChartColors } from "@/utils/charts/chartStyleUtils";
 import { PowerScoreDataItem } from "@/types/chart";
 import { useIsMobile } from "@/hooks/use-mobile";
+import ChartEmptyState from "./ChartEmptyState";
 
 interface PowerScoreChartProps {
   data: PowerScoreDataItem[];
@@ -18,6 +18,13 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const isDark = resolvedTheme === "dark";
   const colors = useChartColors();
   const isMobile = useIsMobile();
+
+  // Check for empty/zero data
+  const hasData = data && data.length > 0 && data.some(d => d.powerScore > 0);
+
+  if (!hasData) {
+    return <ChartEmptyState message="Power scores available after matches" />;
+  }
 
   const renderCustomizedLabel = (props: any) => {
     const { x, y, width, value } = props;
@@ -48,12 +55,10 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
     );
   };
 
-  // Determine chart margins and number of teams to show based on mobile/desktop
   const chartMargins = isMobile 
     ? { top: 5, right: 45, left: 35, bottom: 5 } 
     : { top: 5, right: 45, left: 40, bottom: 5 };
 
-  // For mobile, show fewer teams to avoid overcrowding
   const displayData = isMobile && data.length > 5 ? data.slice(0, 5) : data;
 
   return (
@@ -61,8 +66,8 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
       className="w-full rounded-xl overflow-hidden" 
       style={{ 
         backgroundColor: colors.background,
-        height: isMobile ? "240px" : "260px",
-        maxHeight: isMobile ? "240px" : "310px"
+        height: isMobile ? "220px" : "240px",
+        maxHeight: isMobile ? "220px" : "280px"
       }}
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -114,15 +119,6 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
               content={renderCustomizedLabel}
             />
           </Bar>
-          <Legend
-            wrapperStyle={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: "12px"
-            }}
-            formatter={(value) => (
-              <span className="text-gray-700 dark:text-gray-300 font-medium">{value}</span>
-            )}
-          />
         </BarChart>
       </ResponsiveContainer>
     </div>
