@@ -45,18 +45,15 @@ export const useAddBlindDrawSignup = () => {
       firstName: string;
       lastInitial: string;
     }) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("blind_draw_signups")
         .insert({
           event_date: eventDate,
           first_name: firstName.trim(),
           last_initial: lastInitial.trim().toUpperCase(),
-        })
-        .select()
-        .single();
+        });
 
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
