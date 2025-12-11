@@ -130,8 +130,8 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
     <Card className={cn(
       "relative overflow-hidden shadow-2xl",
       "border-t-4 border-t-emerald-400 dark:border-t-emerald-500",
-      "border border-white/20",
-      card.background_color
+      "border border-emerald-200 dark:border-white/20",
+      "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"
     )}>
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-20">
@@ -147,7 +147,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
       
       <CardContent className="relative z-10 p-4 md:p-6">
-        <div className={cn("flex flex-col md:flex-row md:gap-8", card.text_color)}>
+        <div className="flex flex-col md:flex-row md:gap-8 text-white">
           {/* Left Column - Header, Date, Countdowns */}
           <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:flex-shrink-0">
             {/* Header with animated icon */}
