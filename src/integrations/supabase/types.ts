@@ -3609,6 +3609,10 @@ export type Database = {
           team_id: string
         }[]
       }
+      get_blind_draw_signup_count: {
+        Args: { p_event_date: string }
+        Returns: number
+      }
       get_head_to_head_records: {
         Args: { p_team_id?: string }
         Returns: {

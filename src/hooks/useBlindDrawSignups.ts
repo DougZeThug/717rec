@@ -10,6 +10,22 @@ export interface BlindDrawSignup {
   created_at: string;
 }
 
+// Fetch signup count for public display (no auth required)
+export const useBlindDrawSignupCount = (eventDate?: string) => {
+  return useQuery({
+    queryKey: ["blind-draw-signup-count", eventDate],
+    queryFn: async () => {
+      if (!eventDate) return 0;
+      const { data, error } = await supabase.rpc("get_blind_draw_signup_count", {
+        p_event_date: eventDate,
+      });
+      if (error) throw error;
+      return data as number;
+    },
+    enabled: !!eventDate,
+  });
+};
+
 // Fetch signups for admin view (requires admin role)
 export const useBlindDrawSignups = (eventDate?: string) => {
   return useQuery({
@@ -57,6 +73,7 @@ export const useAddBlindDrawSignup = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
+      queryClient.invalidateQueries({ queryKey: ["blind-draw-signup-count"] });
       toast.success("You're signed up! See you Thursday!");
     },
     onError: (error) => {

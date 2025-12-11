@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Shuffle, Clock, DollarSign, Trophy, Calendar, Timer, Medal } from "lucide-react";
+import { Shuffle, Clock, DollarSign, Trophy, Calendar, Timer, Medal, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { HeroCard } from "@/types/heroCard";
 import { cn } from "@/lib/utils";
 import BlindDrawSignupForm from "@/components/home/BlindDrawSignupForm";
+import { useBlindDrawSignupCount } from "@/hooks/useBlindDrawSignups";
 
 interface EventHeroCardProps {
   card: HeroCard;
@@ -31,6 +32,21 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const buyIn = metadata.buy_in as string || "$10";
   const payouts = metadata.payouts as string || "Top 3";
   const pastWinners = metadata.past_winners as WeekWinners[] || [];
+
+  // Get event date in EST for signup count
+  const getEventDateEST = (isoString: string): string | null => {
+    if (!isoString) return null;
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-CA', { 
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  const eventDate = startTimeStr ? getEventDateEST(startTimeStr) : null;
+  const { data: signupCount } = useBlindDrawSignupCount(eventDate || undefined);
 
   useEffect(() => {
     if (!checkInTimeStr || !startTimeStr) return;
@@ -107,20 +123,6 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
     });
   };
 
-  // Get event date in EST (YYYY-MM-DD format) for signup form
-  const getEventDateEST = (isoString: string): string | null => {
-    if (!isoString) return null;
-    const date = new Date(isoString);
-    // Format as YYYY-MM-DD in America/New_York timezone
-    return date.toLocaleDateString('en-CA', { 
-      timeZone: 'America/New_York',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-  };
-
-  const eventDate = startTimeStr ? getEventDateEST(startTimeStr) : null;
 
   const placeEmojis = ['🥇', '🥈', '🥉'];
 
@@ -277,7 +279,15 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
 
             {/* Signup Form - only for blind-draw events */}
             {card.slug === 'blind-draw' && eventDate && (
-              <div className="w-full mt-3">
+              <div className="w-full mt-3 space-y-2">
+                {signupCount !== undefined && signupCount > 0 && (
+                  <div className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 w-fit mx-auto">
+                    <Users className="h-4 w-4 text-emerald-300" />
+                    <span className="font-inter font-semibold text-sm">
+                      {signupCount} signed up
+                    </span>
+                  </div>
+                )}
                 <BlindDrawSignupForm eventDate={eventDate} />
               </div>
             )}
