@@ -1,10 +1,14 @@
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Crown, Medal } from "lucide-react";
+import { Trophy, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 
 interface TeamData {
   id: string;
@@ -52,6 +56,7 @@ const useChampions = () => {
   });
 };
 
+// Desktop display component
 const ChampionDisplay: React.FC<{ 
   team: TeamData; 
   division: string; 
@@ -69,7 +74,6 @@ const ChampionDisplay: React.FC<{
               loading="lazy"
               className="h-20 w-20 rounded-lg object-cover"
               onError={(e) => {
-                console.error(`Image load error for ${team.name}:`, team.image_url);
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
@@ -96,8 +100,50 @@ const ChampionDisplay: React.FC<{
   );
 };
 
+// Mobile carousel card component
+const ChampionCardCompact: React.FC<{ 
+  team: TeamData; 
+  division: string; 
+}> = ({ team, division }) => {
+  return (
+    <div className="flex flex-col items-center text-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+      <p className="text-xs uppercase tracking-wide font-medium mb-2 text-slate-600 dark:text-slate-300">
+        {division}
+      </p>
+      <div className="relative mb-2">
+        <div className="ring-3 ring-amber-400 dark:ring-amber-500 rounded-lg p-0.5 bg-white dark:bg-slate-700">
+          {team.image_url ? (
+            <img
+              src={team.image_url}
+              alt={`${division} champion logo for ${team.name}`}
+              width={64}
+              height={64}
+              loading="lazy"
+              className="h-16 w-16 rounded-lg object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="h-16 w-16 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <Trophy className="w-8 h-8 text-slate-500" />
+            </div>
+          )}
+        </div>
+        <div className="absolute -top-1 -right-1 rounded-full p-1 bg-amber-500">
+          <Crown className="w-3 h-3 text-white" />
+        </div>
+      </div>
+      <p className="font-semibold text-slate-900 dark:text-white text-xs leading-tight">
+        {team.name}
+      </p>
+    </div>
+  );
+};
+
 const ChampionsCard: React.FC = () => {
   const { data, isLoading, error } = useChampions();
+  const divisions = ['Competitive', 'Intermediate 1', 'Intermediate 2', 'Recreational'];
 
   if (isLoading) {
     return (
@@ -106,24 +152,22 @@ const ChampionsCard: React.FC = () => {
         "animate-pulse"
       )}>
         <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-48"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {/* Mobile skeleton */}
+        <div className="flex gap-2 md:hidden overflow-hidden">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex-shrink-0 w-[130px] h-28 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+          ))}
+        </div>
+        {/* Desktop skeleton */}
+        <div className="hidden md:grid grid-cols-2 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-3">
               <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                  <div className="space-y-1">
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                  <div className="space-y-1">
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="h-20 w-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
                 </div>
               </div>
             </div>
@@ -157,12 +201,31 @@ const ChampionsCard: React.FC = () => {
         🏆 Fall 2025 Champions
       </h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        {['Competitive', 'Intermediate 1', 'Intermediate 2', 'Recreational'].map((divisionName) => {
+      {/* Mobile Carousel */}
+      <div className="block md:hidden">
+        <Carousel opts={{ align: "start", loop: false }} className="w-full">
+          <CarouselContent className="-ml-2">
+            {divisions.map((divisionName) => {
+              const team = data.teams.find((t) => data.divisionMap[t.id] === divisionName);
+              if (!team) return null;
+              return (
+                <CarouselItem key={divisionName} className="pl-2 basis-[140px]">
+                  <ChampionCardCompact team={team} division={divisionName} />
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
+        <p className="text-xs text-muted-foreground text-center mt-3">
+          Swipe to see all champions →
+        </p>
+      </div>
+
+      {/* Desktop Grid */}
+      <div className="hidden md:grid grid-cols-2 gap-4 md:gap-6">
+        {divisions.map((divisionName) => {
           const team = data.teams.find((t) => data.divisionMap[t.id] === divisionName);
-          
           if (!team) return null;
-          
           return (
             <div key={divisionName} className="space-y-3">
               <h3 className="text-sm font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide">
