@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Shuffle, Users, Trash2, Calendar, AlertCircle } from "lucide-react";
-import { format, addDays, nextThursday } from "date-fns";
+import { format, nextThursday, isThursday } from "date-fns";
 import {
   useBlindDrawSignups,
   useDeleteBlindDrawSignup,
@@ -26,8 +26,11 @@ const BlindDrawSignupsTab: React.FC = () => {
   // Default to next Thursday
   const getNextThursday = () => {
     const today = new Date();
-    const thursday = nextThursday(today);
-    return format(thursday, "yyyy-MM-dd");
+    // If today is Thursday, use today. Otherwise, get the next Thursday.
+    if (isThursday(today)) {
+      return format(today, "yyyy-MM-dd");
+    }
+    return format(nextThursday(today), "yyyy-MM-dd");
   };
 
   const [selectedDate, setSelectedDate] = useState(getNextThursday());
