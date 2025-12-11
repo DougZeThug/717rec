@@ -194,21 +194,15 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
       "transition-opacity duration-500 ease-out",
       animations.fadeIn
     )}>
-      {/* Header with badge */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <Trophy className="w-6 h-6 text-white" />
         <h2 className={cn(
-          "text-xl md:text-2xl font-bebas uppercase tracking-wide flex items-center gap-2",
+          "text-xl md:text-2xl font-bebas uppercase tracking-wide",
           "text-white"
         )}>
-          <Trophy className="w-6 h-6 text-white" />
           {card.title}
         </h2>
-        
-        {/* Season Badge with Glassmorphism */}
-        <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5">
-          <Calendar className="h-4 w-4 text-white" />
-          <span className="text-white font-semibold text-sm">Fall 2025 Season</span>
-        </div>
       </div>
       
       {/* Mobile Carousel */}
