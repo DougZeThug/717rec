@@ -5,6 +5,11 @@ import { Trophy, Crown, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HeroCard } from "@/types/heroCard";
 import { animations } from "@/styles/design-system";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
 
 interface ChampionsHeroCardProps {
   card: HeroCard;
@@ -16,6 +21,48 @@ interface TeamData {
   image_url: string | null;
 }
 
+// Compact card for mobile carousel
+const ChampionCardCompact: React.FC<{ 
+  team: TeamData; 
+  division: string; 
+}> = ({ team, division }) => {
+  return (
+    <div className="flex flex-col items-center bg-white/10 backdrop-blur-sm rounded-xl p-3 w-[130px]">
+      <p className="text-[10px] font-bebas uppercase tracking-wide text-white/80 mb-2 text-center">
+        {division}
+      </p>
+      <div className="relative mb-2">
+        <div className="ring-2 ring-white/40 rounded-lg p-0.5 bg-white/20">
+          {team.image_url ? (
+            <img
+              src={team.image_url}
+              alt={`${division} champion`}
+              width={56}
+              height={56}
+              loading="lazy"
+              className="h-14 w-14 rounded-lg object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          ) : (
+            <div className="h-14 w-14 rounded-lg bg-white/20 flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-white/70" />
+            </div>
+          )}
+        </div>
+        <div className="absolute -top-1 -right-1 rounded-full p-0.5 bg-white/30 backdrop-blur-sm">
+          <Crown className="w-2.5 h-2.5 text-white" />
+        </div>
+      </div>
+      <p className="font-inter font-semibold text-white text-xs text-center line-clamp-2">
+        {team.name}
+      </p>
+    </div>
+  );
+};
+
+// Desktop card with more detail
 const ChampionDisplay: React.FC<{ 
   team: TeamData; 
   division: string; 
@@ -164,8 +211,30 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
         </div>
       </div>
       
-      {/* Glassmorphism Division Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      {/* Mobile Carousel */}
+      <div className="block md:hidden">
+        <Carousel opts={{ align: "start", loop: false }}>
+          <CarouselContent className="-ml-2">
+            {divisionOrder.map((divisionName) => {
+              const teamId = championsMap[divisionName];
+              const team = data.teams.find((t) => t.id === teamId);
+              if (!team) return null;
+              
+              return (
+                <CarouselItem key={divisionName} className="pl-2 basis-[140px]">
+                  <ChampionCardCompact team={team} division={divisionName} />
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
+        <p className="text-xs text-white/60 text-center mt-3">
+          Swipe to see all champions →
+        </p>
+      </div>
+
+      {/* Desktop Grid */}
+      <div className="hidden md:grid grid-cols-2 gap-4 md:gap-6">
         {divisionOrder.map((divisionName) => {
           const teamId = championsMap[divisionName];
           const team = data.teams.find((t) => t.id === teamId);
