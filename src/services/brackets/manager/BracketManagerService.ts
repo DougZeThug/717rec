@@ -195,7 +195,7 @@ export class BracketManagerService {
           // Fixed seedOrdering for double elimination:
           // [WB R1, LB minor R1 (reverse), LB major R1 (natural), LB minor R2 (reverse)]
           // Alternates between 'reverse' (losers intake) and 'natural' (LB progression)
-          seedOrdering: ['natural', 'reverse', 'natural', 'reverse'] as any,
+          seedOrdering: ['inner_outer', 'natural', 'reverse_half_shift', 'reverse'] as any,
           grandFinal: (format === "double_elimination" 
             ? (options.grandFinalType || "simple")
             : "none") as "simple" | "double" | "none"
@@ -208,13 +208,7 @@ export class BracketManagerService {
 
       bracketLog("✅ Stage created successfully in SQL tables");
       
-      // Recalculate child_count for proper connector rendering
-      const stages = await this.storage.select('stage', { tournament_id: bracketId } as any);
-      const stage = Array.isArray(stages) ? stages[0] : stages;
-      if (stage) {
-        await this.recalculateChildCounts((stage as any).id);
-        await this.normalizeLosersR1((stage as any).id);
-      }
+      // Note: brackets-manager handles child_count and BYE propagation automatically
       
       successLog("Bracket created successfully", bracketId);
     } catch (error) {
@@ -597,99 +591,10 @@ export class BracketManagerService {
       // No automatic BYE detection needed
       
       console.log(`[BRACKETS][NORMALIZE] LB R1 normalization complete`);
-      
-      // Recalculate child_count after normalization to fix connectors
-      await this.recalculateChildCounts(stageId);
     } catch (error) {
       console.error('Error normalizing LB R1:', error);
       // Don't throw - normalization is defensive, not critical
     }
-  }
-
-  /**
-   * Recalculate child_count for all matches in a stage
-   * This fixes missing connector lines in brackets-viewer.js
-   */
-  private async recalculateChildCounts(stageId: number): Promise<void> {
-    try {
-      console.log(`[BRACKETS][CHILD_COUNT] Recalculating child_count for stage ${stageId}`);
-      
-      // Get all matches for this stage
-      const allMatches = await this.storage.select('match', { stage_id: stageId } as any);
-      const matchesArray = Array.isArray(allMatches) ? allMatches : [allMatches];
-      
-      // Build a map of match IDs to their child matches
-      const childCountMap = new Map<number, number>();
-      
-      // Initialize all matches with child_count = 0
-      for (const match of matchesArray) {
-        childCountMap.set((match as any).id, 0);
-      }
-      
-      // Count how many matches reference each match as their source
-      for (const match of matchesArray) {
-        const m = match as any;
-        
-        // Check opponent1 position (references a previous match)
-        if (m.opponent1?.position !== undefined) {
-          const sourceMatchNumber = m.opponent1.position;
-          const sourceMatch = matchesArray.find((sm: any) => 
-            sm.round_id === this.findPreviousRoundId(m.round_id, matchesArray) &&
-            sm.number === sourceMatchNumber
-          );
-          if (sourceMatch) {
-            const currentCount = childCountMap.get((sourceMatch as any).id) || 0;
-            childCountMap.set((sourceMatch as any).id, currentCount + 1);
-          }
-        }
-        
-        // Check opponent2 position (references a previous match)
-        if (m.opponent2?.position !== undefined) {
-          const sourceMatchNumber = m.opponent2.position;
-          const sourceMatch = matchesArray.find((sm: any) => 
-            sm.round_id === this.findPreviousRoundId(m.round_id, matchesArray) &&
-            sm.number === sourceMatchNumber
-          );
-          if (sourceMatch) {
-            const currentCount = childCountMap.get((sourceMatch as any).id) || 0;
-            childCountMap.set((sourceMatch as any).id, currentCount + 1);
-          }
-        }
-      }
-      
-      // Update all matches with their new child_count
-      for (const [matchId, childCount] of childCountMap.entries()) {
-        await supabase
-          .from('match')
-          .update({ child_count: childCount })
-          .eq('id', matchId);
-      }
-      
-      console.log(`[BRACKETS][CHILD_COUNT] ✅ Updated ${childCountMap.size} matches`);
-      
-    } catch (error) {
-      console.error('[BRACKETS][CHILD_COUNT] Error recalculating child counts:', error);
-      // Don't throw - this is defensive
-    }
-  }
-  
-  /**
-   * Helper to find the previous round ID for a given round
-   */
-  private findPreviousRoundId(currentRoundId: number, allMatches: any[]): number | null {
-    // Get the current round
-    const currentMatches = allMatches.filter((m: any) => m.round_id === currentRoundId);
-    if (currentMatches.length === 0) return null;
-    
-    const currentGroupId = currentMatches[0].group_id;
-    const currentRoundNumber = currentMatches[0].number;
-    
-    // Find the previous round in the same group
-    const previousRoundMatches = allMatches.filter((m: any) => 
-      m.group_id === currentGroupId && m.number === currentRoundNumber - 1
-    );
-    
-    return previousRoundMatches.length > 0 ? previousRoundMatches[0].round_id : null;
   }
 
 
