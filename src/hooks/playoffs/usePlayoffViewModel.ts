@@ -39,7 +39,9 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   
   // Defensive: return safe defaults immediately if bracketId is invalid
   if (!bracketId || (typeof bracketId === 'string' && bracketId.trim() === '')) {
-    console.warn('⚠️ usePlayoffViewModel: Returning safe defaults for invalid bracketId', { bracketId });
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ usePlayoffViewModel: Returning safe defaults for invalid bracketId', { bracketId });
+    }
     return {
       bracket: null,
       isLoading: false,
