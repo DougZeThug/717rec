@@ -110,31 +110,21 @@ export class BracketManagerService {
       const teamsBySeed = [...teams].sort((a, b) => a.seed - b.seed);
       bracketLog("✅ Teams sorted:", { teams: teamsBySeed.map(t => `${t.name} (seed ${t.seed})`) });
 
-      // Step 3: Create seeding array using standard bracket seeding
-      // This ensures proper matchups (1v16, 8v9, 4v13, 5v12, 2v15, 7v10, 3v14, 6v11)
-      bracketLog("📝 Step 3/5: Creating seeding array with standard bracket seeding...");
+      // Step 3: Create seeding array in simple seed order
+      // brackets-manager will apply seedOrdering: 'inner_outer' to create proper matchups
+      bracketLog("📝 Step 3/5: Creating seeding array in seed order...");
       
-      // Generate standard bracket seeding order
-      const bracketOrder = this.generateBracketOrder(bracketSize);
-      bracketLog("Bracket order for size", bracketSize, ":", bracketOrder);
-      
-      // Create seeding array by mapping teams to their bracket positions
-      // Teams are sorted by seed, so team at index 0 is seed 1, index 1 is seed 2, etc.
-      const seeding: (string | null)[] = bracketOrder.map(position => {
-        // position is 1-based (1-16 for 16-team bracket)
-        // teamsBySeed is 0-based array
-        const teamIndex = position - 1;
-        if (teamIndex < teamsBySeed.length) {
-          return teamsBySeed[teamIndex].name;
-        }
-        return null; // BYE for positions beyond team count
-      });
+      // Pass teams in seed order [seed1, seed2, ..., null, null] 
+      // brackets-manager's seedOrdering handles the bracket positioning
+      const seeding: (string | null)[] = teamsBySeed
+        .map(t => t.name)
+        .concat(Array(byesNeeded).fill(null));
       
       bracketLog("✅ Seeding array created:", { 
         length: seeding.length,
         teams: seeding.filter(s => s !== null).length,
         byes: seeding.filter(s => s === null).length,
-        order: seeding.map((name, idx) => `Pos ${idx + 1}: ${name || 'BYE'}`)
+        order: seeding.map((name, idx) => `Seed ${idx + 1}: ${name || 'BYE'}`)
       });
 
       // Step 4: Prepare participant inserts (including BYEs)
@@ -627,23 +617,18 @@ export class BracketManagerService {
       // Step 2: Sort teams by seed
       const teamsBySeed = [...newSeeding].sort((a, b) => a.seed - b.seed);
       
-      // Step 3: Calculate bracket size
+      // Step 3: Calculate bracket size and BYEs needed
       let bracketSize = 2;
       while (bracketSize < teamsBySeed.length) {
         bracketSize *= 2;
       }
+      const byesNeeded = bracketSize - teamsBySeed.length;
 
-      // Step 4: Generate bracket order
-      const bracketOrder = this.generateBracketOrder(bracketSize);
-
-      // Step 5: Create new seeding array
-      const seedingArray: (string | null)[] = bracketOrder.map(position => {
-        const teamIndex = position - 1;
-        if (teamIndex < teamsBySeed.length) {
-          return teamsBySeed[teamIndex].name;
-        }
-        return null; // Will be treated as TBD (not BYE) per docs
-      });
+      // Step 4: Create simple seeding array in seed order
+      // brackets-manager's seedOrdering handles bracket positioning
+      const seedingArray: (string | null)[] = teamsBySeed
+        .map(t => t.name)
+        .concat(Array(byesNeeded).fill(null));
 
       bracketLog("📝 New seeding array prepared:", {
         length: seedingArray.length,
@@ -692,31 +677,6 @@ export class BracketManagerService {
       
       throw new Error(`Seeding update failed: ${errorMsg}`);
     }
-  }
-
-  /**
-   * Generate standard bracket seeding order
-   * For a 16-team bracket: [1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11]
-   * This creates proper matchups: 1v16, 8v9, 4v13, 5v12, 2v15, 7v10, 3v14, 6v11
-   */
-  private generateBracketOrder(bracketSize: number): number[] {
-    let order = [1];
-    let currentSize = 1;
-    
-    while (currentSize < bracketSize) {
-      const newOrder: number[] = [];
-      const complement = currentSize * 2 + 1;
-      
-      for (const seed of order) {
-        newOrder.push(seed);
-        newOrder.push(complement - seed);
-      }
-      
-      order = newOrder;
-      currentSize *= 2;
-    }
-    
-    return order;
   }
 
   /**
