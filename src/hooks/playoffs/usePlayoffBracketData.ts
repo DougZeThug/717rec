@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import type { PlayoffBracket, BracketState } from "@/types/playoffs";
 import { bracketLog, errorLog } from "@/utils/logger";
 
-// Helper to compute bracket state
+// Helper to normalize bracket state - handles both legacy and current DB values
 const computeBracketState = (state: string): BracketState =>
-  state === 'underway' ? 'in_progress'
-  : state === 'complete' ? 'completed'
+  state === 'in_progress' || state === 'underway' ? 'in_progress'
+  : state === 'completed' || state === 'complete' ? 'completed'
   : 'pending';
 
 // Normalization function to convert Supabase rows to PlayoffBracket objects
@@ -56,19 +56,6 @@ export const usePlayoffBracketData = (bracketId: string | null) => {
       bracketLog('usePlayoffBracketData: Raw database result:', data);
       
       const bracket = mapRowToBracket(data);
-      
-      // Calculate and update the bracket state if needed
-      const calculatedState = computeBracketState(bracket.state);
-      if (bracket.state !== calculatedState) {
-        bracketLog('usePlayoffBracketData: Updating bracket state from', bracket.state, 'to', calculatedState);
-        
-        await supabase
-          .from('brackets')
-          .update({ state: calculatedState })
-          .eq('id', bracketId);
-        
-        bracket.state = calculatedState as BracketState;
-      }
       
       bracketLog('usePlayoffBracketData: Final bracket result:', bracket);
       return bracket;
