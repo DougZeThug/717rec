@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import {
   Users,
+  Users2,
   Clock,
   Calendar,
   ListChecks,
@@ -29,6 +30,7 @@ import AutoScheduleTab from "@/components/admin/auto-schedule/AutoScheduleTab";
 import SeasonManagementTab from "@/components/admin/seasons/SeasonManagementTab";
 import HeroCardsTab from "@/components/admin/hero-cards/HeroCardsTab";
 import BlindDrawSignupsTab from "@/components/admin/blind-draw/BlindDrawSignupsTab";
+import OpponentHistoryTab from "@/components/admin/opponent-history/OpponentHistoryTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mobile tabs version
@@ -45,6 +47,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: "timeslots", label: "Timeslots", icon: Timer, component: <TimeslotsTab /> },
   { id: "batch-matches", label: "Match Creation", icon: Sparkles, component: <BatchMatchCreationTab /> },
   { id: "auto-schedule", label: "Auto Schedule", icon: CalendarClock, component: <AutoScheduleTab /> },
+  { id: "matchups", label: "Matchups", icon: Users2, component: <OpponentHistoryTab /> },
   { id: "scores", label: "Scores", icon: ListChecks, component: <MassScoresTab /> },
   { id: "seasons", label: "Season", icon: Calendar, component: <SeasonManagementTab /> },
   { id: "teams", label: "Teams", icon: Users, component: <TeamManagementTab /> },
