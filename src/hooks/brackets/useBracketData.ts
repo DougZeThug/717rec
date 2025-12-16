@@ -252,7 +252,7 @@ export const useBracketData = (bracketId: string | null) => {
           const transformedParticipants = participants?.map(p => {
             const team = teamLookup.get(p.name);
             return {
-              position: p.id,
+              position: p.position,
               team_id: team?.id || '',
               name: p.name,
               image_url: team?.image_url
