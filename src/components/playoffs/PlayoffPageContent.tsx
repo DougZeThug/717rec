@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
 import { ChallongeFallback } from "@/components/playoffs/embeds/ChallongeFallback";
-import { PlayoffBracket } from "@/types/playoffs";
+import { PlayoffBracket } from "@/utils/playoffs/playoffTypes";
 
 interface PlayoffPageContentProps {
   availableDivisions: string[];

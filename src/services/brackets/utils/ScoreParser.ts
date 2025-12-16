@@ -1,5 +1,5 @@
 
-import { PlayoffGame } from "@/types/playoffs";
+import { PlayoffGame } from "@/utils/playoffs/playoffTypes";
 
 export interface ParsedScore {
   team1Score: number;

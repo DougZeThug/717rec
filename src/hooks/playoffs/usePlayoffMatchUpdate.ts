@@ -2,7 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import type { PlayoffBracket } from '@/types/playoffs';
+import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { scoreLog } from '@/utils/logger';
 
 export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {

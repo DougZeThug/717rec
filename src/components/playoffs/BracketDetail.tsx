@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Loader2, Trash, ListOrdered } from "lucide-react";
 import BracketView from "@/components/playoffs/BracketView";
 import ChampionDisplay from "@/components/playoffs/ChampionDisplay";
-import { PlayoffBracket, Team } from "@/types/playoffs";
+import { PlayoffBracket, Team } from "@/utils/playoffs/playoffTypes";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";

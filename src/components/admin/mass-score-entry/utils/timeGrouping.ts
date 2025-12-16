@@ -1,5 +1,5 @@
 import { MatchWithTeams } from "../types";
-import { extractTimeSlotFromUTC } from "@/utils/timezoneUtils";
+import { extractTimeSlotFromUTC } from "@/utils/timezone/formatters";
 import { matchLog, errorLog } from "@/utils/logger";
 
 /**

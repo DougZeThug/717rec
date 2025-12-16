@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FilterState, MatchWithTeams } from "../../types";
 import { useToast } from "@/hooks/use-toast";
 import { transformDatabaseMatchToMatchWithTeams } from "../../utils/matchTransformUtils";
-import { createEveningAwareDateRange } from "@/utils/timezoneUtils";
+import { createEveningAwareDateRange } from "@/utils/timezone";
 import { matchLog, errorLog } from "@/utils/logger";
 
 export const useMatchesFetching = () => {

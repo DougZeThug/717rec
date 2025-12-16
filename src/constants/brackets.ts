@@ -20,4 +20,4 @@ export const BRACKET_STATES = {
 
 // Use the BracketState type from types/playoffs.ts
 // This is now used for compatibility
-export type { BracketState } from '@/types/playoffs';
+export type { BracketState } from '@/utils/playoffs/playoffTypes';

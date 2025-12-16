@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { FilterState } from "../types";
-import { createEveningAwareDateRange } from "@/utils/timezoneUtils";
+import { createEveningAwareDateRange } from "@/utils/timezone";
 import { matchLog } from "@/utils/logger";
 
 export const buildMatchQuery = (filters: FilterState) => {
