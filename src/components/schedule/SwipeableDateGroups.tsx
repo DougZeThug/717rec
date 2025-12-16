@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Match } from "@/types";
 import DateMatchGroup from "./DateMatchGroup";
@@ -29,6 +29,13 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
   activeIndex,
   onIndexChange,
 }) => {
+  // Reset index when it goes out of bounds (e.g., after filtering or tab change)
+  useEffect(() => {
+    if (groupedMatches.length > 0 && activeIndex >= groupedMatches.length) {
+      onIndexChange(groupedMatches.length - 1);
+    }
+  }, [activeIndex, groupedMatches.length, onIndexChange]);
+
   const handleDragEnd = (
     _event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
@@ -54,9 +61,11 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
     return null;
   }
 
-  const currentGroup = groupedMatches[activeIndex];
-  const canGoPrev = activeIndex > 0;
-  const canGoNext = activeIndex < groupedMatches.length - 1;
+  // Defensive safe index calculation (prevents crash before effect runs)
+  const safeIndex = Math.min(Math.max(0, activeIndex), groupedMatches.length - 1);
+  const currentGroup = groupedMatches[safeIndex];
+  const canGoPrev = safeIndex > 0;
+  const canGoNext = safeIndex < groupedMatches.length - 1;
 
   return (
     <div className="relative">
@@ -84,7 +93,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               onClick={() => onIndexChange(idx)}
               className={cn(
                 "w-2 h-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center",
-                idx === activeIndex
+                idx === safeIndex
                   ? "bg-primary scale-125"
                   : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
               )}
@@ -114,7 +123,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
       <div className="overflow-hidden touch-pan-y">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
-            key={activeIndex}
+            key={safeIndex}
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
@@ -129,7 +138,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
               date={currentGroup.date}
               matches={currentGroup.matches}
               isCurrentDay={isToday(currentGroup.date) || isSameDay(currentGroup.date, selectedDate)}
-              isFirstGroup={activeIndex === 0}
+              isFirstGroup={safeIndex === 0}
               onEditMatch={onEditMatch}
               onDeleteMatch={onDeleteMatch}
             />
