@@ -31,9 +31,26 @@ export function validateNoCrossBlockMatches(
     const team1Block = teamBlockMap[match.team1Id];
     const team2Block = teamBlockMap[match.team2Id];
     
-    // Check if teams are in the block map
+    // Check if teams are in the block map - fail-safe if missing
     if (!team1Block || !team2Block) {
-      console.warn(`⚠️ Team missing from block map: ${match.team1Id} or ${match.team2Id}`);
+      console.error(`❌ Team missing from block map: ${match.team1Id} or ${match.team2Id}`);
+      const team1 = teams.find(t => t.id === match.team1Id);
+      const team2 = teams.find(t => t.id === match.team2Id);
+      
+      violations.push({
+        matchId: match.id,
+        team1: { 
+          id: match.team1Id, 
+          name: team1?.name || 'Unknown Team', 
+          block: team1Block || 'MISSING' 
+        },
+        team2: { 
+          id: match.team2Id, 
+          name: team2?.name || 'Unknown Team', 
+          block: team2Block || 'MISSING' 
+        },
+        timeslot: match.timeslot
+      });
       continue;
     }
     
