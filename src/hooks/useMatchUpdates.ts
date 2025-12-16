@@ -77,7 +77,21 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       // If match is newly completed or winner changed, update team records
       if ((isNowCompleted && !wasCompleted) || (isNowCompleted && winnerChanged)) {
         if (updatedMatch.winnerId && updatedMatch.loserId) {
-          await updateTeamRecords(updatedMatch.winnerId, updatedMatch.loserId, teams);
+          // Determine game wins for winner and loser based on who won
+          const winnerGameWins = updatedMatch.winnerId === updatedMatch.team1Id 
+            ? (updatedMatch.team1_game_wins || 0) 
+            : (updatedMatch.team2_game_wins || 0);
+          const loserGameWins = updatedMatch.loserId === updatedMatch.team1Id 
+            ? (updatedMatch.team1_game_wins || 0) 
+            : (updatedMatch.team2_game_wins || 0);
+          
+          await updateTeamRecords(
+            updatedMatch.winnerId, 
+            updatedMatch.loserId, 
+            teams,
+            winnerGameWins,
+            loserGameWins
+          );
         }
       }
       
