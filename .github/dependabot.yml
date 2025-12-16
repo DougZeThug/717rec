@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      production-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@types/*"
+          - "eslint*"
+          - "typescript*"
+          - "@testing-library/*"
+          - "vitest*"
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "eslint*"
+          - "typescript*"
+          - "@testing-library/*"
+          - "vitest*"
+    ignore:
+      # Avoid React 19.x until ecosystem stabilizes
+      - dependency-name: "react"
+        versions: [">=19.0.0"]
+      - dependency-name: "react-dom"
+        versions: [">=19.0.0"]
