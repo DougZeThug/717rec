@@ -19,9 +19,6 @@ enable_confirmations = false
 [db]
 port = 54322
 
-[functions.challonge]
-verify_jwt = false
-
 [functions.create-bracket]
 verify_jwt = true
 

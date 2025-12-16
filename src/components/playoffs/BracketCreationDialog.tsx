@@ -8,9 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
-import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
+import { createBracket } from "@/services/bracket-creator";
 import { BracketCreationErrorBoundary } from "./BracketCreationErrorBoundary";
 import { useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import type { BracketRecord } from "@/types/bracketRecord";
 import { bracketLog, errorLog } from "@/utils/logger";
 
@@ -41,7 +42,16 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { createBracket } = useChallongeAdmin();
+  
+  const createBracketMutation = useMutation({
+    mutationFn: createBracket,
+    onSuccess: (bracket) => {
+      bracketLog("Bracket created successfully:", bracket);
+    },
+    onError: (error) => {
+      errorLog("Failed to create bracket:", error);
+    }
+  });
   
   const handleSubmit = async (data: BracketFormValues) => {
     if (isSubmitting) {
@@ -119,8 +129,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
       
-      bracketLog("Creating bracket via Challonge...");
-      const bracket = await createBracket.mutateAsync({
+      bracketLog("Creating bracket...");
+      const bracket = await createBracketMutation.mutateAsync({
         name: data.title,
         format: internalFormat,
         teams: selectedTeams.map((team, index) => ({ 
@@ -185,9 +195,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       let errorMessage = "Failed to create bracket. Check your internet or try again.";
       
       if (error?.message) {
-        if (error.message.includes("Challonge")) {
-          errorMessage = `Challonge API Error: ${error.message}`;
-        } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        if (error.message.includes("network") || error.message.includes("fetch")) {
           errorMessage = "Network Error: Please check your internet connection and try again";
         } else if (error.message.includes("validation")) {
           errorMessage = `Validation Error: ${error.message}`;

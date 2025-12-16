@@ -4,10 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BracketList from "../BracketList";
 import BracketDetail from "../BracketDetail";
 import TeamDivisionTable from "../TeamDivisionTable";
-import { ChallongeFallback } from "../embeds/ChallongeFallback";
 import { PlayoffPageData } from "../hooks/usePlayoffPageData";
 import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
-import { useChallongeAdmin } from "@/hooks/useChallongeAdmin";
 
 interface AdminViewProps {
   bracketDialogOpen: boolean;
@@ -25,26 +23,7 @@ const AdminView: React.FC<AdminViewProps> = ({
   data
 }) => {
   const handlers = usePlayoffHandlers(data);
-  const { resyncMatches } = useChallongeAdmin();
   const [activeTab, setActiveTab] = React.useState("brackets");
-
-  const handleResyncBracket = (bracketId: string, challongeTournamentId: number) => {
-    resyncMatches.mutate(
-      { bracketId, challongeTournamentId },
-      {
-        onSuccess: () => {
-          // Trigger a refetch of the bracket data
-          if (data.selectedBracketId === bracketId) {
-            // Force a refresh if this is the currently selected bracket
-            window.location.reload();
-          }
-        },
-        onError: () => {
-          // Error handled by mutation
-        }
-      }
-    );
-  };
 
   const handleCreateBracketClick = () => {
     onCreateBracket();
@@ -58,11 +37,6 @@ const AdminView: React.FC<AdminViewProps> = ({
       </TabsList>
       
       <TabsContent value="brackets" className="space-y-6">
-        {/* Challonge embeds temporarily hidden */}
-        {/* <div className="mb-8">
-          <ChallongeFallback />
-        </div> */}
-
         <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
           <BracketList 
             divisions={data.availableDivisions}
@@ -71,8 +45,6 @@ const AdminView: React.FC<AdminViewProps> = ({
             onViewBracket={data.setSelectedBracketId}
             onEditBracket={handleCreateBracketClick}
             onDeleteBracket={onDeleteBracket}
-            onResyncBracket={handleResyncBracket}
-            isResyncLoading={resyncMatches.isPending}
             isLoading={data.isLoading}
           />
         </div>
