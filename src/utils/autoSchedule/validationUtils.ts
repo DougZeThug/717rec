@@ -1,4 +1,5 @@
 import { AutoScheduleMatch, Team } from '@/types/autoSchedule';
+import { errorLog, log } from '@/utils/logger';
 
 export interface CrossBlockViolation {
   matchId: string;
@@ -33,7 +34,7 @@ export function validateNoCrossBlockMatches(
     
     // Check if teams are in the block map - fail-safe if missing
     if (!team1Block || !team2Block) {
-      console.error(`❌ Team missing from block map: ${match.team1Id} or ${match.team2Id}`);
+      errorLog(`Team missing from block map: ${match.team1Id} or ${match.team2Id}`);
       const team1 = teams.find(t => t.id === match.team1Id);
       const team2 = teams.find(t => t.id === match.team2Id);
       
@@ -87,15 +88,15 @@ export function validateNoCrossBlockMatches(
  */
 export function logCrossBlockViolations(violations: CrossBlockViolation[]): void {
   if (violations.length === 0) {
-    console.log('✅ All matches validated: No cross-block pairings detected');
+    log('All matches validated: No cross-block pairings detected');
     return;
   }
   
-  console.error(`🚨 FOUND ${violations.length} CROSS-BLOCK VIOLATIONS:`);
+  errorLog(`FOUND ${violations.length} CROSS-BLOCK VIOLATIONS:`);
   violations.forEach((v, index) => {
-    console.error(`  ${index + 1}. ${v.team1.name} (${v.team1.block}) vs ${v.team2.name} (${v.team2.block})`);
-    console.error(`     Match ID: ${v.matchId}, Timeslot: ${v.timeslot}`);
+    errorLog(`  ${index + 1}. ${v.team1.name} (${v.team1.block}) vs ${v.team2.name} (${v.team2.block})`);
+    errorLog(`     Match ID: ${v.matchId}, Timeslot: ${v.timeslot}`);
   });
-  console.error('\n💡 This indicates teams were incorrectly assigned to multiple back-to-back pairs.');
-  console.error('   Check team_timeslots table in database for duplicate assignments.');
+  errorLog('\nThis indicates teams were incorrectly assigned to multiple back-to-back pairs.');
+  errorLog('   Check team_timeslots table in database for duplicate assignments.');
 }

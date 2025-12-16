@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { TeamTimeslot, TimeslotOperationResult } from "@/types/timeslots";
 import { TimeslotTransformer } from "./TimeslotTransformer";
 import { getBackToBackPair, getMatchSequence, getBackToBackPairName, getPairConfig } from "@/utils/autoSchedule/constants";
+import { scheduleLog, errorLog, warnLog } from "@/utils/logger";
 
 export class TimeslotService {
   /**
@@ -34,7 +35,7 @@ export class TimeslotService {
         .eq('match_date', formattedDate);
       
       if (error) {
-        console.error('Error fetching timeslots:', error);
+        errorLog('Error fetching timeslots:', error);
         return { 
           success: false, 
           error: `Failed to fetch timeslots: ${error.message}` 
@@ -48,7 +49,7 @@ export class TimeslotService {
         data: formattedData
       };
     } catch (error: any) {
-      console.error('Unexpected error fetching timeslots:', error);
+      errorLog('Unexpected error fetching timeslots:', error);
       return { 
         success: false, 
         error: `Unexpected error: ${error.message || 'Unknown error'}` 
@@ -96,7 +97,7 @@ export class TimeslotService {
         }
       ];
       
-      console.log(`Adding back-to-back timeslots for team ${teamId} in ${pairName} pair:`, timeslotData);
+      scheduleLog(`Adding back-to-back timeslots for team ${teamId} in ${pairName} pair:`, timeslotData);
       
       const { data, error } = await supabase
         .from('team_timeslots')
@@ -104,7 +105,7 @@ export class TimeslotService {
         .select('*, teams:team_id(id, name, logo_url, image_url)');
       
       if (error) {
-        console.error('Error adding back-to-back timeslots:', error);
+        errorLog('Error adding back-to-back timeslots:', error);
         return { 
           success: false, 
           error: `Failed to add back-to-back timeslots: ${error.message}` 
@@ -118,7 +119,7 @@ export class TimeslotService {
         data: formattedData
       };
     } catch (error: any) {
-      console.error('Error adding back-to-back timeslot:', error);
+      errorLog('Error adding back-to-back timeslot:', error);
       return { 
         success: false, 
         error: `Failed to assign back-to-back timeslot: ${error.message || 'Unknown error'}` 
@@ -131,7 +132,7 @@ export class TimeslotService {
    * @deprecated Use addBackToBackTimeslot instead
    */
   static async addTimeslot(date: Date, teamId: string, timeslot: string): Promise<TimeslotOperationResult> {
-    console.warn('⚠️ addTimeslot is deprecated. Converting to back-to-back assignment.');
+    warnLog('addTimeslot is deprecated. Converting to back-to-back assignment.');
     
     const pairName = getBackToBackPairName(timeslot);
     if (!pairName) {
@@ -195,7 +196,7 @@ export class TimeslotService {
       
       return { success: true };
     } catch (error: any) {
-      console.error('Error deleting timeslot:', error);
+      errorLog('Error deleting timeslot:', error);
       return { 
         success: false, 
         error: `Failed to remove timeslot: ${error.message || 'Unknown error'}` 
@@ -246,7 +247,7 @@ export class TimeslotService {
         );
       });
       
-      console.log(`Batch assigning back-to-back timeslots for ${teamIds.length} teams in ${pairName} pair`);
+      scheduleLog(`Batch assigning back-to-back timeslots for ${teamIds.length} teams in ${pairName} pair`);
       
       const { data, error } = await supabase
         .from('team_timeslots')
@@ -254,7 +255,7 @@ export class TimeslotService {
         .select('*, teams:team_id(id, name, logo_url, image_url)');
       
       if (error) {
-        console.error('Batch insert error:', error);
+        errorLog('Batch insert error:', error);
         return { 
           success: false, 
           error: `Failed to batch assign back-to-back timeslots: ${error.message}` 
@@ -268,7 +269,7 @@ export class TimeslotService {
         data: formattedData
       };
     } catch (error: any) {
-      console.error('Error in batch back-to-back assignment:', error);
+      errorLog('Error in batch back-to-back assignment:', error);
       return { 
         success: false, 
         error: `Failed to batch assign back-to-back timeslots: ${error.message || 'Unknown error'}` 
@@ -285,7 +286,7 @@ export class TimeslotService {
     teamIds: string[], 
     timeslot: string
   ): Promise<TimeslotOperationResult> {
-    console.warn('⚠️ batchAssignTimeslots is deprecated. Converting to back-to-back batch assignment.');
+    warnLog('batchAssignTimeslots is deprecated. Converting to back-to-back batch assignment.');
     
     const pairName = getBackToBackPairName(timeslot);
     if (!pairName) {

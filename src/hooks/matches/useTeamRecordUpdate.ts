@@ -2,6 +2,7 @@
 import { useTeamRecords } from "@/hooks/useTeamRecords";
 import { useToast } from "@/hooks/use-toast";
 import { useTeamStatsValidation } from "./validation/useTeamStatsValidation";
+import { warnLog } from "@/utils/logger";
 
 export const useTeamRecordUpdate = () => {
   const { updateTeamRecords } = useTeamRecords();
@@ -18,7 +19,7 @@ export const useTeamRecordUpdate = () => {
     // Validate team stats
     const validation = validateTeamStats(winnerId, loserId, winnerGameWins, loserGameWins);
     if (!validation.isValid) {
-      console.warn(validation.errorMessage);
+      warnLog(validation.errorMessage);
       toast({
         title: 'Validation Error',
         description: validation.errorMessage,
@@ -36,7 +37,7 @@ export const useTeamRecordUpdate = () => {
     );
 
     if (!teamsUpdateSuccess) {
-      console.warn('Team records update partially failed');
+      warnLog('Team records update partially failed');
       toast({
         title: 'Partial Update',
         description: 'Match scores updated, but team records may not be fully synchronized.',

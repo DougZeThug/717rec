@@ -1,13 +1,14 @@
 
 import { Match } from "@/types";
 import { normalizeDateWithTime } from "./dateNormalization";
+import { matchLog } from "@/utils/logger";
 
 export const transformMatchData = (match: any): Match => {
   // Force date normalization with detailed context but preserve time
   const normalizedDate = normalizeDateWithTime(match.date, `transformMatchData(${match.id})`);
   
   // Log before/after state for debugging
-  console.log(`🔄 transformMatchData for match ${match.id}:`, {
+  matchLog(`transformMatchData for match ${match.id}:`, {
     originalDate: match.date, 
     originalDateType: typeof match.date,
     normalizedDate,

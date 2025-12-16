@@ -9,6 +9,7 @@ import { validateTeamCounts } from "@/utils/autoSchedule/edgeCaseUtils";
 import { normalizeDate } from "@/utils/dateNormalization";
 import { createTimeBlockPairs } from "@/utils/autoSchedule/dualBlockUtils";
 import { balanceTeamsBetweenBlocks } from "@/utils/autoSchedule/dualBlock";
+import { scheduleLog, errorLog, warnLog } from "@/utils/logger";
 
 export type AutoScheduleStep = 'teams' | 'pairings';
 
@@ -22,7 +23,7 @@ export const useSchedulePreview = () => {
   const previewSchedule = async (date: Date, dualBlockMode = false, blockConfig?: DualBlockConfig): Promise<PreviewResult | null> => {
     try {
       // Log the date being used
-      console.log("useSchedulePreview - previewSchedule date:", {
+      scheduleLog("previewSchedule date:", {
         date,
         dateString: date.toString(),
         dateIso: date.toISOString(),
@@ -101,7 +102,7 @@ export const useSchedulePreview = () => {
       };
       
     } catch (error) {
-      console.error('Error previewing schedule:', error);
+      errorLog('Error previewing schedule:', error);
       toast({
         title: "Error",
         description: "Failed to preview schedule. Please try again.",
@@ -165,7 +166,7 @@ export const useSchedulePreview = () => {
     const startTime = performance.now();
     
     // Log the date being used
-    console.log("useSchedulePreview - handleGenerateSchedule date:", {
+    scheduleLog("handleGenerateSchedule date:", {
       date,
       dateString: date.toString(),
       dateIso: date.toISOString(),
@@ -189,7 +190,7 @@ export const useSchedulePreview = () => {
       const { balancedTeams } = performTeamBalancing(timeBlockTeams, dualConfig);
       teamsToUse = balancedTeams;
       
-      console.log("Using balanced teams for dual match mode:", teamsToUse);
+      scheduleLog("Using balanced teams for dual match mode:", teamsToUse);
     }
     
     const result = await generateMatchPairings(date, teamsToUse, {
@@ -200,7 +201,7 @@ export const useSchedulePreview = () => {
     
     // Log performance metrics
     const endTime = performance.now();
-    console.log(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
+    scheduleLog(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
     
     if (result) {
       const { pairings, unmatchedTeamIds } = result;
@@ -247,7 +248,7 @@ export const useSchedulePreview = () => {
     blockType?: 'primary' | 'secondary';
   }[] => {
     if (!pairings || !date) {
-      console.warn("Missing pairings or date in convertPairingsToMatches");
+      warnLog("Missing pairings or date in convertPairingsToMatches");
       return [];
     }
     
@@ -259,7 +260,7 @@ export const useSchedulePreview = () => {
       const primaryBlock = blocks[0]; // Usually 'Early'
       const secondaryBlock = blocks[1]; // Usually 'Late'
       
-      console.log(`Processing dual match mode with blocks: ${primaryBlock} and ${secondaryBlock}`);
+      scheduleLog(`Processing dual match mode with blocks: ${primaryBlock} and ${secondaryBlock}`);
       
       // Track teams and their opponents to ensure no duplicates
       const teamOpponents: Record<string, string[]> = {};
@@ -323,14 +324,14 @@ export const useSchedulePreview = () => {
         .map(([teamId]) => teamId);
         
       if (teamsWithDuplicates.length > 0) {
-        console.warn(`Warning: ${teamsWithDuplicates.length} teams have duplicate opponents in dual blocks`);
+        warnLog(`Warning: ${teamsWithDuplicates.length} teams have duplicate opponents in dual blocks`);
       }
     } else {
       // Standard single-block processing
       Object.entries(pairings).forEach(([block, blockPairings]) => {
         // Ensure we can access the TIME_BLOCKS for this block
         if (!TIME_BLOCKS[block]) {
-          console.error(`Missing time block data for ${block}`);
+          errorLog(`Missing time block data for ${block}`);
           return;
         }
         

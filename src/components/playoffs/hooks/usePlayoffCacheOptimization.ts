@@ -1,6 +1,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { useQueryClient } from "@tanstack/react-query";
+import { warnLog } from "@/utils/logger";
 
 /**
  * Hook for optimizing React Query cache management in playoffs
@@ -22,7 +23,7 @@ export function usePlayoffCacheOptimization() {
         })
       ]);
     } catch (error) {
-      console.warn('Failed to preload data:', error);
+      warnLog('Failed to preload data:', error);
     }
   }, [queryClient]);
 

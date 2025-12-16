@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { teamLog, warnLog, errorLog } from "@/utils/logger";
 
 /**
  * Delete a team and clean up associated storage files
@@ -16,7 +17,7 @@ export const deleteTeamApi = async (teamId: string) => {
     
     // If files exist for this team, delete them
     if (storageFiles && storageFiles.length > 0) {
-      console.log(`Found ${storageFiles.length} files to delete for team ${teamId}`);
+      teamLog(`Found ${storageFiles.length} files to delete for team ${teamId}`);
       
       const filesToDelete = storageFiles.map(file => `${teamPath}/${file.name}`);
       
@@ -25,10 +26,10 @@ export const deleteTeamApi = async (teamId: string) => {
         .remove(filesToDelete);
         
       if (deleteFilesError) {
-        console.warn('Error deleting team files:', deleteFilesError);
+        warnLog('Error deleting team files:', deleteFilesError);
         // Continue with team deletion even if file cleanup fails
       } else {
-        console.log('Successfully deleted team files');
+        teamLog('Successfully deleted team files');
       }
     }
     
@@ -39,13 +40,13 @@ export const deleteTeamApi = async (teamId: string) => {
       .eq('id', teamId);
       
     if (error) {
-      console.error('Error deleting team from database:', error);
+      errorLog('Error deleting team from database:', error);
       throw error;
     }
     
     return true;
   } catch (error) {
-    console.error('Team deletion failed:', error);
+    errorLog('Team deletion failed:', error);
     throw error;
   }
 };

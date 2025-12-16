@@ -1,6 +1,7 @@
 
 import * as React from "react";
 import { ChartConfig } from "./ChartContainer";
+import { warnLog } from "@/utils/logger";
 
 const THEMES = { light: "", dark: ".dark" } as const;
 
@@ -46,7 +47,7 @@ export const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) 
   // SECURITY: Sanitize the chart ID to prevent CSS injection
   const sanitizedId = sanitizeCSSValue(id);
   if (!sanitizedId) {
-    console.warn('ChartStyle: Invalid chart ID provided');
+    warnLog('ChartStyle: Invalid chart ID provided');
     return null;
   }
 

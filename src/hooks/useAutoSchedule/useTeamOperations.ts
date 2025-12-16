@@ -6,6 +6,7 @@ import { getAllBackToBackTeams, getTeamsByBackToBackPair } from '@/utils/autoSch
 import { BACK_TO_BACK_PAIRS } from '@/utils/autoSchedule/constants';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
+import { scheduleLog, errorLog, warnLog } from '@/utils/logger';
 
 export const useTeamOperations = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,19 +25,19 @@ export const useTeamOperations = () => {
     dualBlockConfig: DualBlockConfig = {}
   ): Promise<TimeBlockTeamsMap> => {
     if (!date) {
-      console.error("❌ No date provided to handleLoadTeams");
+      errorLog("No date provided to handleLoadTeams");
       return {};
     }
     
     if (!validateScheduleDate(date, 'handleLoadTeams')) {
-      console.error("❌ Invalid date provided to handleLoadTeams");
+      errorLog("Invalid date provided to handleLoadTeams");
       return {};
     }
     
     setIsLoading(true);
     
     try {
-      console.log("🔄 useTeamOperations - Loading teams for back-to-back pairs:", {
+      scheduleLog("Loading teams for back-to-back pairs:", {
         date: date.toISOString(),
         normalizedDate: normalizeScheduleDate(date, 'loadTeamsForDate'),
         dualBlockMode
@@ -48,16 +49,16 @@ export const useTeamOperations = () => {
       // Build team-to-block mapping for defensive validation
       const blockMap: Record<string, string> = {};
       
-      console.log('📦 Team Loading Summary by Block:');
+      scheduleLog('Team Loading Summary by Block:');
       Object.entries(backToBackTeams).forEach(([pairName, teams]) => {
-        console.log(`  ${pairName}: ${teams.length} teams`);
+        scheduleLog(`  ${pairName}: ${teams.length} teams`);
         teams.forEach(team => {
           // Check for duplicate assignments (critical error)
           if (blockMap[team.id] && blockMap[team.id] !== pairName) {
-            console.error(`❌ CRITICAL: Team "${team.name}" appears in multiple blocks: ${blockMap[team.id]} and ${pairName}`);
+            errorLog(`CRITICAL: Team "${team.name}" appears in multiple blocks: ${blockMap[team.id]} and ${pairName}`);
           }
           blockMap[team.id] = pairName;
-          console.log(`    - ${team.name} (${team.divisionName || 'No Division'})`);
+          scheduleLog(`    - ${team.name} (${team.divisionName || 'No Division'})`);
         });
       });
       
@@ -66,20 +67,20 @@ export const useTeamOperations = () => {
       
       // Calculate total teams loaded
       const totalTeams = Object.values(backToBackTeams).reduce((sum, teams) => sum + teams.length, 0);
-      console.log(`✅ Total teams loaded: ${totalTeams} teams across ${Object.keys(backToBackTeams).length} blocks`);
+      scheduleLog(`Total teams loaded: ${totalTeams} teams across ${Object.keys(backToBackTeams).length} blocks`);
       
       // Validate the loaded teams
       const validation = validateBackToBackPairAssignments(backToBackTeams);
       if (!validation.isValid) {
-        console.error('❌ Validation errors in back-to-back assignments:', validation.errors);
+        errorLog('Validation errors in back-to-back assignments:', validation.errors);
       }
       if (validation.warnings.length > 0) {
-        console.warn('⚠️ Validation warnings:', validation.warnings);
+        warnLog('Validation warnings:', validation.warnings);
       }
       
       // Warn if no teams were loaded
       if (totalTeams === 0) {
-        console.warn(`⚠️ WARNING: No teams loaded for date ${normalizeScheduleDate(date, 'loadTeamsComplete')}. Check database and date format.`);
+        warnLog(`WARNING: No teams loaded for date ${normalizeScheduleDate(date, 'loadTeamsComplete')}. Check database and date format.`);
       }
       
       // Update state with back-to-back structure
@@ -90,14 +91,14 @@ export const useTeamOperations = () => {
       if (dualBlockMode) {
         const pairedBlocks = createPairedBlocksFromBackToBack(backToBackTeams, dualBlockConfig);
         setPairedTimeBlockTeams(pairedBlocks);
-        console.log("Created paired time blocks from back-to-back data:", pairedBlocks);
+        scheduleLog("Created paired time blocks from back-to-back data:", pairedBlocks);
       } else {
         setPairedTimeBlockTeams({});
       }
       
       return backToBackTeams;
     } catch (error) {
-      console.error('❌ Error loading back-to-back teams for date:', error);
+      errorLog('Error loading back-to-back teams for date:', error);
       setTimeBlockTeams({});
       setOriginalTimeBlockTeams({});
       setPairedTimeBlockTeams({});
@@ -120,10 +121,10 @@ export const useTeamOperations = () => {
     
     try {
       const teams = await getTeamsByBackToBackPair(date, pairName);
-      console.log(`Loaded ${teams.length} teams for ${pairName} pair`);
+      scheduleLog(`Loaded ${teams.length} teams for ${pairName} pair`);
       return teams;
     } catch (error) {
-      console.error(`Error loading teams for ${pairName} pair:`, error);
+      errorLog(`Error loading teams for ${pairName} pair:`, error);
       return [];
     }
   }, []);
@@ -172,7 +173,7 @@ export const useTeamOperations = () => {
         
         if (removedTeam) {
           unmatchedTeamIds.push(removedTeam.id);
-          console.log(`Removed team ${removedTeam.name} from ${pairName} pair to balance team count`);
+          scheduleLog(`Removed team ${removedTeam.name} from ${pairName} pair to balance team count`);
         }
         
         balancedTeams[pairName] = teamsCopy;

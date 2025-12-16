@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from 'uuid';
 import imageCompression from 'browser-image-compression';
+import { warnLog, errorLog } from "@/utils/logger";
 
 /**
  * Verifies that a compressed image meets minimum quality requirements
@@ -13,13 +14,13 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
   const minSizeKB = 10;
   const fileSizeKB = file.size / 1024;
   if (fileSizeKB < minSizeKB) {
-    console.warn(`Compressed image too small (${fileSizeKB.toFixed(2)}KB < ${minSizeKB}KB)`);
+    warnLog(`Compressed image too small (${fileSizeKB.toFixed(2)}KB < ${minSizeKB}KB)`);
     return false;
   }
   
   // Verify MIME type
   if (!file.type.startsWith('image/')) {
-    console.warn(`Invalid MIME type: ${file.type}`);
+    warnLog(`Invalid MIME type: ${file.type}`);
     return false;
   }
   
@@ -33,21 +34,21 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
         URL.revokeObjectURL(imageUrl);
         const isValid = image.width > 0 && image.height > 0;
         if (!isValid) {
-          console.warn(`Invalid image dimensions: ${image.width}x${image.height}`);
+          warnLog(`Invalid image dimensions: ${image.width}x${image.height}`);
         }
         resolve(isValid);
       };
       
       image.onerror = () => {
         URL.revokeObjectURL(imageUrl);
-        console.warn('Failed to load image for validation');
+        warnLog('Failed to load image for validation');
         resolve(false);
       };
       
       image.src = imageUrl;
     });
   } catch (error) {
-    console.warn('Error validating image:', error);
+    warnLog('Error validating image:', error);
     return false;
   }
 };
@@ -109,7 +110,7 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
       .upload(filePath, fileToUpload);
 
     if (error) {
-      console.error('Error uploading image:', error);
+      errorLog('Error uploading image:', error);
       throw error;
     }
 
@@ -120,7 +121,7 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
 
     return publicUrl;
   } catch (error) {
-    console.error('Image upload failed:', error);
+    errorLog('Image upload failed:', error);
     throw error;
   }
 };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { authLog } from '@/utils/logger';
+import { authLog, warnLog } from '@/utils/logger';
 
 export const useAdminAccess = () => {
   const [isAdminAccessGranted, setIsAdminAccessGranted] = useState(false);
@@ -28,7 +28,7 @@ export const useAdminAccess = () => {
 
   // DEPRECATED: This function is no longer needed and always returns false
   const checkAdminAccess = (inputCode: string) => {
-    console.warn('checkAdminAccess is deprecated and insecure. Admin status is now checked server-side.');
+    warnLog('checkAdminAccess is deprecated and insecure. Admin status is now checked server-side.');
     return false;
   };
 
@@ -42,7 +42,7 @@ export const useAdminAccess = () => {
 
   // SECURITY: Admin access can only be revoked by updating the database
   const revokeAdminAccess = () => {
-    console.warn('Admin access cannot be revoked client-side for security. Contact an administrator.');
+    warnLog('Admin access cannot be revoked client-side for security. Contact an administrator.');
     toast({
       title: "Security Notice",
       description: "Admin access can only be modified by existing administrators.",
