@@ -10,6 +10,15 @@ export const formatDateForInput = (date: Date): string => {
 };
 
 /**
+ * Parse an HTML date input value (yyyy-MM-dd) as a local date
+ * This avoids timezone issues caused by new Date() parsing date-only strings as UTC
+ */
+export const parseDateFromInput = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day); // Local date at midnight
+};
+
+/**
  * Create a date with the selected time slot, properly converted to UTC for storage
  */
 export const createDateWithTime = (date: Date, timeSlot: string | null): Date => {

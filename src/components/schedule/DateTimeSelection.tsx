@@ -3,7 +3,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { formatDateForInput } from "./form-utils";
+import { formatDateForInput, parseDateFromInput } from "./form-utils";
 import { DateTimeSelectionProps } from "./types";
 import { timezoneLog } from "@/utils/logger";
 
@@ -28,7 +28,7 @@ const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
           id="date"
           type="date"
           value={formatDateForInput(selectedDate)}
-          onChange={(e) => setSelectedDate(new Date(e.target.value))}
+          onChange={(e) => setSelectedDate(parseDateFromInput(e.target.value))}
           required
         />
       </div>

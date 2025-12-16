@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Match } from "@/types";
 import { MatchFormProps, MatchFormValues } from "./types";
-import { createDateWithTime, determineMatchOutcome, getTimeSlotFromDate } from "./form-utils";
+import { createDateWithTime, determineMatchOutcome, getTimeSlotFromDate, parseDateFromInput } from "./form-utils";
 import { 
   Form, 
   FormField, 
@@ -162,7 +162,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
                 <Input
                   type="date"
                   value={field.value ? `${field.value.getFullYear()}-${String(field.value.getMonth() + 1).padStart(2, '0')}-${String(field.value.getDate()).padStart(2, '0')}` : ""}
-                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                  onChange={(e) => field.onChange(parseDateFromInput(e.target.value))}
                   required
                 />
               </FormControl>
