@@ -93,6 +93,17 @@ export const useBatchMatchForm = (teams: Team[]) => {
     setIsSubmitting(true);
 
     try {
+      // Get active season
+      const { data: activeSeason, error: seasonError } = await supabase
+        .from('seasons')
+        .select('id')
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (seasonError) {
+        errorLog('Error fetching active season:', seasonError);
+      }
+
       const matchesToCreate = matchPairs.map(pair => {
         // Ensure the timeslot is properly formatted
         const timeslot = pair.timeslot || "6:30 PM"; // Default to 6:30 PM if missing
@@ -121,7 +132,8 @@ export const useBatchMatchForm = (teams: Team[]) => {
           team1_score: 0,
           team2_score: 0,
           team1_game_wins: 0,
-          team2_game_wins: 0
+          team2_game_wins: 0,
+          season_id: activeSeason?.id || null
         };
       });
 
