@@ -36,7 +36,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
 }) => {
   const [selectedTeams, setSelectedTeams] = React.useState<string[]>([]);
   const [teamsValidationState, setTeamsValidationState] = React.useState(false);
-  const [isExplicitSubmission, setIsExplicitSubmission] = React.useState(false);
+  const isExplicitSubmissionRef = React.useRef(false);
   const [teamSeeds, setTeamSeeds] = React.useState<Record<string, number>>({});
 
   const form = useForm<BracketFormValues>({
@@ -97,12 +97,12 @@ const BracketForm: React.FC<BracketFormProps> = ({
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {
     // Guard: Only proceed if this is an explicit submission
-    if (!isExplicitSubmission) {
+    if (!isExplicitSubmissionRef.current) {
       return;
     }
     
     // Reset the explicit submission flag
-    setIsExplicitSubmission(false);
+    isExplicitSubmissionRef.current = false;
     
     // Additional validation before submission
     if (!data.teams || data.teams.length < 2) {
@@ -123,13 +123,13 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
   // Handle explicit submit button click
   const handleSubmitButtonClick = () => {
-    setIsExplicitSubmission(true);
+    isExplicitSubmissionRef.current = true;
     // Trigger form validation and submission
     form.trigger().then((isValid) => {
       if (isValid && teamsValidationState) {
         form.handleSubmit(onFormSubmit)();
       } else {
-        setIsExplicitSubmission(false);
+        isExplicitSubmissionRef.current = false;
       }
     });
   };
