@@ -2,23 +2,36 @@ import { supabase } from "@/integrations/supabase/client";
 import { scheduleLog, dbLog, errorLog } from "@/utils/logger";
 
 /**
- * Check if two teams have played against each other before
+ * Check if two teams have played against each other in the current season
  * 
  * @param team1Id ID of the first team
  * @param team2Id ID of the second team
- * @returns Promise that resolves to true if teams have played before, false otherwise
+ * @returns Promise that resolves to true if teams have played this season, false otherwise
  */
 export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): Promise<boolean> {
   try {
     dbLog(`Checking match history between teams: ${team1Id} and ${team2Id}`);
     
-    // Fixed SQL query: Check if these two teams have played each other
+    // Get active season
+    const { data: seasonData, error: seasonError } = await supabase
+      .from('seasons')
+      .select('id')
+      .eq('is_active', true)
+      .single();
+    
+    if (seasonError || !seasonData) {
+      errorLog('Error fetching active season:', seasonError);
+      return false; // If no active season, can't determine history
+    }
+    
+    // Check if these two teams have played each other THIS SEASON
     // Either team1_id=A AND team2_id=B OR team1_id=B AND team2_id=A
     const { count, error } = await supabase
       .from('matches')
       .select('id', { count: 'exact', head: true })
       .or(`and(team1_id.eq.${team1Id},team2_id.eq.${team2Id}),and(team1_id.eq.${team2Id},team2_id.eq.${team1Id})`)
-      .eq('iscompleted', true);
+      .eq('iscompleted', true)
+      .eq('season_id', seasonData.id);
     
     if (error) {
       errorLog('Error checking match history:', error);
@@ -26,7 +39,7 @@ export async function haveTeamsPlayedBefore(team1Id: string, team2Id: string): P
     }
     
     const hasPlayed = count !== null && count > 0;
-    dbLog(`Teams ${team1Id} vs ${team2Id}: ${hasPlayed ? 'HAVE' : 'HAVE NOT'} played before (${count} matches)`);
+    dbLog(`Teams ${team1Id} vs ${team2Id}: ${hasPlayed ? 'HAVE' : 'HAVE NOT'} played in current season (${count} matches)`);
     
     return hasPlayed;
   } catch (error) {
