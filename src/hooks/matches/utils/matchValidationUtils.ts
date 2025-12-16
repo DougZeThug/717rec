@@ -87,12 +87,10 @@ export function validateGameScore(
     return { isValid: false, errorMessage: `Incomplete score: a team must win at least ${minGamesForWin} games in a best of ${bestOf}` };
   }
   
-  // Validate the game counts
-  const totalGamesResult = team1HasEnoughWins ? 
-    (gameWins1 === minGamesForWin && gameWins2 < minGamesForWin) || 
-    (gameWins1 > minGamesForWin && totalGames <= maxGames) : 
-    (team2HasEnoughWins && gameWins2 === minGamesForWin && gameWins1 < minGamesForWin) || 
-    (team2HasEnoughWins && gameWins2 > minGamesForWin && totalGames <= maxGames);
+  // Validate the game counts - winner must have EXACTLY minGamesForWin (match ends when reached)
+  const totalGamesResult = team1HasEnoughWins 
+    ? (gameWins1 === minGamesForWin && gameWins2 < minGamesForWin)
+    : (team2HasEnoughWins && gameWins2 === minGamesForWin && gameWins1 < minGamesForWin);
   
   if (!totalGamesResult) {
     errorLog(`Validation failed: invalid score combination`);
