@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { getPowerScoreColor, formatPowerScore } from "@/utils/colors/powerScoreColors";
 
 interface PowerScoreGaugeProps {
-  score: number; // 0-1 scale from database
+  score: number; // 0-100 scale from v_team_details view
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
   className?: string;
@@ -26,8 +26,8 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
   const radius = (config.width - config.strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   
-  // Convert 0-1 to 0-100 for display
-  const displayScore = score * 100;
+  // Score is already on 0-100 scale
+  const displayScore = score;
   const colorClass = getPowerScoreColor(score);
   
   // Animate the score number
