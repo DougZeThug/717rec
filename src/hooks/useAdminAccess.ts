@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { authLog } from '@/utils/logger';
 
 export const useAdminAccess = () => {
   const [isAdminAccessGranted, setIsAdminAccessGranted] = useState(false);
@@ -13,13 +14,14 @@ export const useAdminAccess = () => {
       const isAdmin = profile.is_admin === true;
       setIsAdminAccessGranted(isAdmin);
       
-      console.log('Admin access check:', {
+      authLog('Admin access check:', {
         userId: user.id,
         isAdmin,
         profileData: profile
       });
-    } else if (authInitialized && !user) {
-      // If no user is logged in, revoke admin access
+    } else if (authInitialized) {
+      // If auth is initialized but we don't have BOTH user AND profile, revoke access
+      // This covers: no user logged in, OR user logged in but profile is null/failed to load
       setIsAdminAccessGranted(false);
     }
   }, [user, profile, authInitialized]);
