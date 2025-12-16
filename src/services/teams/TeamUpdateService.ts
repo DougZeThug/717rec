@@ -62,21 +62,29 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
 
   console.log("Team updated successfully:", data);
 
-  // Update team_season_stats division_name for this team
-  console.log("Updating team_season_stats division_name to:", divisionName);
-  const { error: seasonStatsError } = await supabase
-    .from('team_season_stats')
-    .update({
-      division_name: divisionName
-    })
-    .eq('team_id', teamId);
+  // Update team_season_stats division_name for this team (current season only)
+  // First, get the active season to avoid overwriting historical records
+  const { data: activeSeason, error: seasonError } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('is_active', true)
+    .single();
 
-  if (seasonStatsError) {
-    console.error("Error updating team_season_stats division_name:", seasonStatsError);
-    // Don't throw here as the main team update succeeded
-    // Just log the error for debugging
-  } else {
-    console.log("Successfully updated team_season_stats division_name");
+  if (seasonError) {
+    console.error("Error fetching active season:", seasonError);
+  } else if (activeSeason) {
+    // Update only the current season's record to preserve historical data
+    const { error: seasonStatsError } = await supabase
+      .from('team_season_stats')
+      .update({
+        division_name: divisionName
+      })
+      .eq('team_id', teamId)
+      .eq('season_id', activeSeason.id);
+
+    if (seasonStatsError) {
+      console.error("Error updating team_season_stats division_name:", seasonStatsError);
+    }
   }
 
   // The database response doesn't include wins/losses fields, so we need to use
