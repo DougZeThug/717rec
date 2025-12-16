@@ -218,10 +218,12 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBl
           logCrossBlockViolations(validation.violations);
           
           toast({
-            title: "⚠️ Schedule Validation Warning",
-            description: `Found ${validation.violations.length} cross-block matches. Check console for details.`,
+            title: "⚠️ Schedule Validation Failed",
+            description: `Cannot apply schedule: Found ${validation.violations.length} cross-block matches. Check console for details.`,
             variant: "destructive"
           });
+          
+          return null; // Abort operation - don't apply invalid schedule
         } else {
           console.log('✅ Schedule validation passed: No cross-block pairings detected');
         }
