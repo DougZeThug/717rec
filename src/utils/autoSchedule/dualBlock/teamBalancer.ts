@@ -85,34 +85,48 @@ export const balanceTeamsBetweenBlocks = (
     // For 'manual' strategy, we don't automatically adjust teams
     
   } else if (!primaryIsEven) {
-    // Only primary block has odd count
-    // Move one team from secondary to primary
-    if (secondaryAdjusted.length > 0) {
-      // Sort secondary by power score for better matching
-      secondaryAdjusted.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
-      const movedTeam = secondaryAdjusted.pop();
-      
-      if (movedTeam) {
-        primaryAdjusted.push(movedTeam);
+    // Only primary block has odd count - remove one team from primary to make it even
+    const strategy = config.unmatchedTeamStrategy || 'lowest-rank';
+    
+    if (strategy === 'lowest-rank') {
+      primaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
+      const removedTeam = primaryAdjusted.shift();
+      if (removedTeam) {
+        unmatchedTeamIds.push(removedTeam.id);
+        if (notifyCallback) {
+          notifyCallback({
+            title: "Team Balancing",
+            description: `Team "${removedTeam.name}" was removed from scheduling due to odd team count.`,
+            variant: "default"
+          });
+        }
       }
     } else {
-      // No teams to move, remove one team from primary
-      primaryAdjusted.pop();
+      // Random or other strategy
+      const removedTeam = primaryAdjusted.pop();
+      if (removedTeam) unmatchedTeamIds.push(removedTeam.id);
     }
   } else if (!secondaryIsEven) {
-    // Only secondary block has odd count
-    // Move one team from primary to secondary
-    if (primaryAdjusted.length > 0) {
-      // Sort primary by power score for better matching
-      primaryAdjusted.sort((a, b) => (b.power_score || 0) - (a.power_score || 0));
-      const movedTeam = primaryAdjusted.pop();
-      
-      if (movedTeam) {
-        secondaryAdjusted.push(movedTeam);
+    // Only secondary block has odd count - remove one team from secondary to make it even
+    const strategy = config.unmatchedTeamStrategy || 'lowest-rank';
+    
+    if (strategy === 'lowest-rank') {
+      secondaryAdjusted.sort((a, b) => (a.power_score || 0) - (b.power_score || 0));
+      const removedTeam = secondaryAdjusted.shift();
+      if (removedTeam) {
+        unmatchedTeamIds.push(removedTeam.id);
+        if (notifyCallback) {
+          notifyCallback({
+            title: "Team Balancing",
+            description: `Team "${removedTeam.name}" was removed from scheduling due to odd team count.`,
+            variant: "default"
+          });
+        }
       }
     } else {
-      // No teams to move, remove one team from secondary
-      secondaryAdjusted.pop();
+      // Random or other strategy
+      const removedTeam = secondaryAdjusted.pop();
+      if (removedTeam) unmatchedTeamIds.push(removedTeam.id);
     }
   }
   
