@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { PlayoffBracket, BracketState } from "@/types/playoffs";
+import type { PlayoffBracket, BracketState } from "@/utils/playoffs/playoffTypes";
 import { bracketLog, errorLog } from "@/utils/logger";
 
 // Helper to normalize bracket state - handles both legacy and current DB values

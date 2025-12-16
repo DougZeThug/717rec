@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { usePlayoffMatchUpdate } from "./usePlayoffMatchUpdate";
-import type { PlayoffMatch, PlayoffBracket } from "@/types/playoffs";
+import type { PlayoffMatch, PlayoffBracket } from "@/utils/playoffs/playoffTypes";
 
 export const usePlayoffEditMatch = () => {
   const [editingMatch, setEditingMatch] = useState<PlayoffMatch | null>(null);

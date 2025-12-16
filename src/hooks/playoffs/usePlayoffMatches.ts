@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { PlayoffMatch } from "@/types/playoffs";
+import type { PlayoffMatch } from "@/utils/playoffs/playoffTypes";
 
 export const usePlayoffMatches = (bracketId: string | null) => {
   return useQuery({

@@ -1,5 +1,5 @@
 
-import { PlayoffBracket, PlayoffMatch, BracketState } from '@/types/playoffs';
+import { PlayoffBracket, PlayoffMatch, BracketState } from '@/utils/playoffs/playoffTypes';
 import { BRACKET_STATES, BRACKET_FORMATS } from '@/constants/brackets';
 
 /**

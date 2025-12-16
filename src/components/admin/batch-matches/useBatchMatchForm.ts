@@ -6,7 +6,7 @@ import { MatchPair } from "./MatchPairsList";
 import { createDateWithTime } from "@/components/schedule/form-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { normalizeTimeFormat } from "@/utils/timeUtils";
-import { formatTimeToUTC } from "@/utils/timezoneUtils";
+import { formatTimeToUTC } from "@/utils/timezone/converters";
 import { matchLog, timezoneLog, errorLog } from "@/utils/logger";
 
 export const useBatchMatchForm = (teams: Team[]) => {

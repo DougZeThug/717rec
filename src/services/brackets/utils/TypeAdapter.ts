@@ -1,5 +1,5 @@
 
-import { PlayoffMatchType } from "@/types/playoffs";
+import { PlayoffMatchType } from "@/utils/playoffs/playoffTypes";
 
 /**
  * Type adapter for converting between different match type systems

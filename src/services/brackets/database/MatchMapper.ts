@@ -1,5 +1,5 @@
 
-import { PlayoffMatch, PlayoffMatchType } from "@/types/playoffs";
+import { PlayoffMatch, PlayoffMatchType } from "@/utils/playoffs/playoffTypes";
 
 /**
  * Maps database match records to the PlayoffMatch type used in the application

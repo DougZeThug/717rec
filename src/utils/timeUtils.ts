@@ -1,6 +1,6 @@
 
 import { Match } from "@/types";
-import { extractTimeSlotFromUTC, formatTimeToUTC } from "./timezoneUtils";
+import { extractTimeSlotFromUTC, formatTimeToUTC } from "./timezone";
 
 /**
  * Groups an array of matches by time slot.
