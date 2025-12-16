@@ -129,6 +129,3 @@ export interface PlayoffViewModel {
     games?: PlayoffGame[]
   ) => Promise<void>;
 }
-
-// Re-export Challonge API types so callers import everything here
-export type { ChallongeTournament, ChallongeParticipant, ChallongeMatch } from '@/services/challonge/types';

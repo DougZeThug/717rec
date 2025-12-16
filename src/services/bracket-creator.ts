@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { bracketLog, successLog, failureLog } from "@/utils/logger";
 import { bracketManagerService } from "@/services/brackets/manager";
-import type { BracketRecord, CreateBracketPayload } from "@/types/bracketRecord";
+import type { BracketRecord } from "@/types/bracketRecord";
 
 export interface BracketCreationOptions {
   name: string;
@@ -10,14 +10,13 @@ export interface BracketCreationOptions {
   divisionId: string;
   teams: { id: string; name: string; seed?: number }[];
   onProgress?: (step: string) => void;
-  useBracketsManager?: boolean;
   grandFinalType?: "simple" | "double";
 }
 
 export async function createBracket(options: BracketCreationOptions): Promise<BracketRecord> {
-  const { name, format, divisionId, teams, onProgress, useBracketsManager = true, grandFinalType } = options;
+  const { name, format, divisionId, teams, onProgress, grandFinalType } = options;
   
-  bracketLog("Starting E2E bracket creation:", { name, format, teamCount: teams.length, useBracketsManager });
+  bracketLog("Starting bracket creation:", { name, format, teamCount: teams.length });
   
   try {
     onProgress?.("Creating tournament and saving to database...");
@@ -93,110 +92,77 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       };
     });
 
-    // Branch: Use brackets-manager.js OR legacy Challonge
-    if (useBracketsManager) {
-      // === NEW PATH: brackets-manager.js ===
-      onProgress?.("Creating bracket record...");
-      
-      // Create bracket record in database
-      const { data: bracketData, error: bracketError } = await supabase
-        .from('brackets')
-        .insert({
-          title: name,
-          division_id: divisionId,
-          format: format === 'singleElim' ? 'Single Elimination' : 'Double Elimination',
-          state: 'pending',
-          uses_brackets_manager: true,
-          participants: {
-            grandFinalType: grandFinalType || 'simple'
-          }
-        })
-        .select()
-        .single();
-
-      if (bracketError) throw bracketError;
-
-      onProgress?.("Storing participants...");
-
-      // Insert participants into the participants table
-      const participantInserts = sortedTeams.map((team) => ({
-        bracket_id: bracketData.id,
-        team_id: team.id,
-        position: team.seed || 0
-      }));
-
-      const { error: participantsError } = await supabase
-        .from('participants')
-        .insert(participantInserts);
-
-      if (participantsError) {
-        console.error("Failed to insert participants:", participantsError);
-        // Don't throw - bracket is already created, just log the error
-      }
-
-      onProgress?.("Generating matches with brackets-manager...");
-
-      // Use brackets-manager to create matches
-      await bracketManagerService.createBracket({
-        bracketId: bracketData.id,
-        format: format === 'singleElim' ? 'single_elimination' : 'double_elimination',
-        teams: sortedTeams,
-        grandFinalType: grandFinalType || 'simple'
-      });
-
-      const bracket: BracketRecord = {
-        id: bracketData.id,
-        challonge_tournament_id: 0, // Not used for brackets-manager
-        division_id: divisionId,
+    onProgress?.("Creating bracket record...");
+    
+    // Create bracket record in database
+    const { data: bracketData, error: bracketError } = await supabase
+      .from('brackets')
+      .insert({
         title: name,
-        format: bracketData.format,
+        division_id: divisionId,
+        format: format === 'singleElim' ? 'Single Elimination' : 'Double Elimination',
         state: 'pending',
-        created_at: bracketData.created_at,
         uses_brackets_manager: true,
-        participants: sortedTeams.map(t => ({
-          teamId: t.id,
-          name: t.name,
-          seed: t.seed
-        }))
-      };
+        participants: {
+          grandFinalType: grandFinalType || 'simple'
+        }
+      })
+      .select()
+      .single();
 
-      onProgress?.("Complete!");
-      successLog("Bracket created with brackets-manager", `ID: ${bracket.id}`);
-      return bracket;
+    if (bracketError) throw bracketError;
 
-    } else {
-      // === LEGACY PATH: Challonge ===
-      const payload: CreateBracketPayload = {
-        name,
-        divisionId,
-        format,
-        teams: sortedTeams
-      };
+    onProgress?.("Storing participants...");
 
-      const { data, error } = await supabase.functions.invoke('create-bracket', {
-        body: payload
-      });
+    // Insert participants into the participants table
+    const participantInserts = sortedTeams.map((team) => ({
+      bracket_id: bracketData.id,
+      team_id: team.id,
+      position: team.seed || 0
+    }));
 
-      if (error) {
-        throw new Error(`Edge function error: ${error.message}`);
-      }
+    const { error: participantsError } = await supabase
+      .from('participants')
+      .insert(participantInserts);
 
-      if (!data.success) {
-        throw new Error(data.error || 'Unknown error occurred');
-      }
-
-      const bracket = data.bracket as BracketRecord;
-      bracket.uses_brackets_manager = false;
-      
-      onProgress?.("Complete!");
-      successLog("E2E bracket creation completed (Challonge)", `ID: ${bracket.id}`);
-      
-      return bracket;
+    if (participantsError) {
+      console.error("Failed to insert participants:", participantsError);
+      // Don't throw - bracket is already created, just log the error
     }
+
+    onProgress?.("Generating matches with brackets-manager...");
+
+    // Use brackets-manager to create matches
+    await bracketManagerService.createBracket({
+      bracketId: bracketData.id,
+      format: format === 'singleElim' ? 'single_elimination' : 'double_elimination',
+      teams: sortedTeams,
+      grandFinalType: grandFinalType || 'simple'
+    });
+
+    const bracket: BracketRecord = {
+      id: bracketData.id,
+      challonge_tournament_id: 0, // Not used
+      division_id: divisionId,
+      title: name,
+      format: bracketData.format,
+      state: 'pending',
+      created_at: bracketData.created_at,
+      uses_brackets_manager: true,
+      participants: sortedTeams.map(t => ({
+        teamId: t.id,
+        name: t.name,
+        seed: t.seed
+      }))
+    };
+
+    onProgress?.("Complete!");
+    successLog("Bracket created successfully", `ID: ${bracket.id}`);
+    return bracket;
     
   } catch (error) {
     // Log full error details
-    console.error("🔴 E2E bracket creation error - full context:", {
+    console.error("Bracket creation error - full context:", {
       error,
       errorType: error?.constructor?.name,
       errorMessage: (error as any)?.message,
@@ -205,7 +171,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       fullErrorString: JSON.stringify(error, null, 2)
     });
     
-    failureLog("E2E bracket creation failed", error);
+    failureLog("Bracket creation failed", error);
     
     // Preserve detailed error message if available
     const errorMessage = error instanceof Error 

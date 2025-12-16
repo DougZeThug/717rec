@@ -1,27 +1,6 @@
 
 
-import { ChallongeMatch, PlayoffMatch, PlayoffBracket } from './playoffTypes';
-
-// Narrow common checks into tiny helpers
-export const isChallongeBracket = (b: { challonge_tournament_id?: number }): boolean =>
-  typeof b.challonge_tournament_id === 'number';
-
-export const toPlayoffMatch = (m: ChallongeMatch): PlayoffMatch => ({
-  id: String(m.id),
-  bracket_id: String(m.tournament_id ?? ''),
-  round: 0,
-  position: 0,
-  team1Id: m.player1_id ? String(m.player1_id) : null,
-  team2Id: m.player2_id ? String(m.player2_id) : null,
-  winnerId: m.winner_id ? String(m.winner_id) : null,
-  team1Score: null,
-  team2Score: null,
-  team1GameWins: null,
-  team2GameWins: null,
-  matchType: "winners",
-  bestOf: 3,
-  status: m.state === 'complete' ? 'completed' : 'pending',
-});
+import { PlayoffBracket } from './playoffTypes';
 
 // UUID validation utility
 export const isValidUuidSafe = (str: string): boolean => {

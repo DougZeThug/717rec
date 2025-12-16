@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, RefreshCw } from "lucide-react";
+import { Trophy, Plus } from "lucide-react";
 import { PlayoffBracket } from "@/types";
 import { bracketLog } from "@/utils/logger";
 
@@ -14,8 +14,6 @@ interface DivisionBracketsCardProps {
   onCreateBracket?: () => void;
   onEditBracket?: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
-  onResyncBracket?: (bracketId: string, challongeTournamentId: number) => void;
-  isResyncLoading?: boolean;
 }
 
 const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
@@ -24,8 +22,6 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   onCreateBracket,
   onViewBracket,
   onDeleteBracket,
-  onResyncBracket,
-  isResyncLoading = false,
 }) => {
   
   const handleViewBracket = (bracketId: string) => {
@@ -70,22 +66,6 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
                     onClick={() => handleViewBracket(bracket.id!)}
                   >
                     View
-                  </Button>
-                )}
-                {onResyncBracket && bracket.challonge_tournament_id && (
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    onClick={() => onResyncBracket(bracket.id!, bracket.challonge_tournament_id!)}
-                    disabled={isResyncLoading}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    {isResyncLoading ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4" />
-                    )}
-                    Resync
                   </Button>
                 )}
                 {onDeleteBracket && (
