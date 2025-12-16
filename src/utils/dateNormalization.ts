@@ -1,3 +1,5 @@
+import { timezoneLog, warnLog, errorLog } from "@/utils/logger";
+
 /**
  * Normalizes a date value to an ISO string with validation and tracing
  * Handles timezone offsets consistently to prevent date shifts
@@ -7,7 +9,7 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
   const fallbackDate = new Date().toISOString().split('T')[0];
   
   // Log the incoming value for detailed tracing
-  console.log(`🕒 [${context}] normalizeDate input:`, {
+  timezoneLog(`[${context}] normalizeDate input:`, {
     value: date,
     type: typeof date,
     isDate: typeof date === 'object' && date instanceof Date,
@@ -17,7 +19,7 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
   
   // Early exit for null/undefined
   if (!date) {
-    console.warn(`⚠️ [${context}] Null/undefined date, using fallback`);
+    warnLog(`[${context}] Null/undefined date, using fallback`);
     return fallbackDate;
   }
   
@@ -32,12 +34,11 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
       
       const simpleDateString = `${year}-${month}-${day}`;
       
-      console.log(`🔍 [${context}] Normalized to YYYY-MM-DD using UTC:`, {
+      timezoneLog(`[${context}] Normalized to YYYY-MM-DD using UTC:`, {
         original: date,
         originalToString: date.toString(),
         originalISOString: date.toISOString(),
         normalized: simpleDateString,
-        // Add extra info for debugging
         getDate: date.getDate(),
         getUTCDate: date.getUTCDate(),
         getMonth: date.getMonth(),
@@ -53,7 +54,7 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
         // It's an ISO string, extract just the date part
         const simpleDateString = date.split('T')[0];
         
-        console.log(`🔍 [${context}] Extracted date from ISO string:`, {
+        timezoneLog(`[${context}] Extracted date from ISO string:`, {
           original: date,
           simplified: simpleDateString
         });
@@ -63,7 +64,7 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
       
       // It might already be a simple date string
       if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        console.log(`🔍 [${context}] Date is already in YYYY-MM-DD format:`, date);
+        timezoneLog(`[${context}] Date is already in YYYY-MM-DD format:`, date);
         return date;
       }
       
@@ -76,7 +77,7 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
         
         const simpleDateString = `${year}-${month}-${day}`;
         
-        console.log(`🔍 [${context}] Parsed string date to YYYY-MM-DD using UTC:`, {
+        timezoneLog(`[${context}] Parsed string date to YYYY-MM-DD using UTC:`, {
           original: date,
           parsed: simpleDateString
         });
@@ -86,14 +87,14 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
     }
     
     // Invalid format
-    console.warn(`⚠️ [${context}] Unrecognized date format:`, {
+    warnLog(`[${context}] Unrecognized date format:`, {
       value: date,
       type: typeof date
     });
     return fallbackDate;
     
   } catch (error) {
-    console.error(`❌ [${context}] Date normalization error:`, error);
+    errorLog(`[${context}] Date normalization error:`, error);
     return fallbackDate;
   }
 };
@@ -107,7 +108,7 @@ export const normalizeDateWithTime = (date: Date | string | null, context: strin
   const fallbackDate = new Date().toISOString();
   
   // Log the incoming value for detailed tracing
-  console.log(`🕒 [${context}] normalizeDateWithTime input:`, {
+  timezoneLog(`[${context}] normalizeDateWithTime input:`, {
     value: date,
     type: typeof date,
     isDate: typeof date === 'object' && date instanceof Date,
@@ -117,7 +118,7 @@ export const normalizeDateWithTime = (date: Date | string | null, context: strin
   
   // Early exit for null/undefined
   if (!date) {
-    console.warn(`⚠️ [${context}] Null/undefined date, using fallback`);
+    warnLog(`[${context}] Null/undefined date, using fallback`);
     return fallbackDate;
   }
   
@@ -126,7 +127,7 @@ export const normalizeDateWithTime = (date: Date | string | null, context: strin
     if (typeof date === 'object' && date instanceof Date) {
       const isoString = date.toISOString();
       
-      console.log(`🔍 [${context}] Normalized with time preservation:`, {
+      timezoneLog(`[${context}] Normalized with time preservation:`, {
         original: date,
         originalToString: date.toString(),
         normalized: isoString
@@ -139,14 +140,14 @@ export const normalizeDateWithTime = (date: Date | string | null, context: strin
     if (typeof date === 'string') {
       // Check if it already has time info
       if (date.includes('T')) {
-        console.log(`🔍 [${context}] Already has time information:`, date);
+        timezoneLog(`[${context}] Already has time information:`, date);
         return date;
       }
       
       // If it's just a date (YYYY-MM-DD), append time
       if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         const withTime = `${date}T12:00:00.000Z`;
-        console.log(`🔍 [${context}] Added default time to date:`, {
+        timezoneLog(`[${context}] Added default time to date:`, {
           original: date,
           withTime: withTime
         });
@@ -158,7 +159,7 @@ export const normalizeDateWithTime = (date: Date | string | null, context: strin
       if (!isNaN(parsed.getTime())) {
         const isoString = parsed.toISOString();
         
-        console.log(`🔍 [${context}] Parsed string date with time:`, {
+        timezoneLog(`[${context}] Parsed string date with time:`, {
           original: date,
           parsed: isoString
         });
@@ -168,14 +169,14 @@ export const normalizeDateWithTime = (date: Date | string | null, context: strin
     }
     
     // Invalid format
-    console.warn(`⚠️ [${context}] Unrecognized date format for time preservation:`, {
+    warnLog(`[${context}] Unrecognized date format for time preservation:`, {
       value: date,
       type: typeof date
     });
     return fallbackDate;
     
   } catch (error) {
-    console.error(`❌ [${context}] Date normalization with time error:`, error);
+    errorLog(`[${context}] Date normalization with time error:`, error);
     return fallbackDate;
   }
 };

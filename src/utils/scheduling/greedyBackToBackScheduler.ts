@@ -43,6 +43,7 @@
  */
 
 import { Team } from '@/types/autoSchedule';
+import { scheduleLog, warnLog } from '@/utils/logger';
 
 export interface GreedySchedulerInput {
   teams: Team[];
@@ -99,7 +100,7 @@ function getTier(team: Team): number {
   }
   
   // Default to tier 2 (middle) if unknown
-  console.warn(`Unknown division for team ${team.name}: "${team.divisionName}"`);
+  warnLog(`Unknown division for team ${team.name}: "${team.divisionName}"`);
   return 2;
 }
 
@@ -243,7 +244,7 @@ function generateSlotPairings(
     );
     
     if (!opponent) {
-      console.warn(`No opponent found for team ${team.name} in slot ${slotName}`);
+      warnLog(`No opponent found for team ${team.name} in slot ${slotName}`);
       continue;
     }
     
@@ -306,7 +307,7 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
   
   if (!isOdd) {
     // ============ EVEN TEAM COUNT ============
-    console.log(`Scheduling ${teams.length} teams (even) for slots ${slot1} and ${slot2}`);
+    scheduleLog(`Scheduling ${teams.length} teams (even) for slots ${slot1} and ${slot2}`);
     
     // Generate S1 pairings
     const s1Matches = generateSlotPairings(
@@ -335,19 +336,19 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
     const allHaveTwoMatches = matchCountsArray.every(count => count === 2);
     
     if (!allHaveTwoMatches) {
-      console.warn('Warning: Not all teams have exactly 2 matches', Object.fromEntries(teamMatchCounts));
+      warnLog('Warning: Not all teams have exactly 2 matches', Object.fromEntries(teamMatchCounts));
     }
     
-    console.log(`Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2})`);
+    scheduleLog(`Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2})`);
     return allMatches;
     
   } else {
     // ============ ODD TEAM COUNT ============
-    console.log(`Scheduling ${teams.length} teams (odd) for slots ${slot1}, ${slot2}, and ${thirdSlot || 'S3'}`);
+    scheduleLog(`Scheduling ${teams.length} teams (odd) for slots ${slot1}, ${slot2}, and ${thirdSlot || 'S3'}`);
     
     // Select Bye1 for S1
     const bye1 = pickBye(sortedTeams, byeStrategy, playedSet, maxTierGap);
-    console.log(`Selected Bye1: ${bye1.name} (sits out ${slot1})`);
+    scheduleLog(`Selected Bye1: ${bye1.name} (sits out ${slot1})`);
     
     // Generate S1 pairings (excluding Bye1)
     const s1Matches = generateSlotPairings(
@@ -378,9 +379,9 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
     if (!bye2) {
       // Fallback: just pick any team that isn't Bye1
       bye2 = sortedTeams.find(t => t.id !== bye1.id) || sortedTeams[0];
-      console.warn(`Could not find ideal Bye2, using fallback: ${bye2.name}`);
+      warnLog(`Could not find ideal Bye2, using fallback: ${bye2.name}`);
     } else {
-      console.log(`Selected Bye2: ${bye2.name} (sits out ${slot2})`);
+      scheduleLog(`Selected Bye2: ${bye2.name} (sits out ${slot2})`);
     }
     
     // Generate S2 pairings (excluding Bye2)
@@ -419,12 +420,12 @@ export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMa
     const allHaveTwoMatches = matchCountsArray.every(count => count === 2);
     
     if (!allHaveTwoMatches) {
-      console.warn('Warning: Not all teams have exactly 2 matches', Object.fromEntries(teamMatchCounts));
+      warnLog('Warning: Not all teams have exactly 2 matches', Object.fromEntries(teamMatchCounts));
     }
     
-    console.log(`Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, 1 in ${slot3Name})`);
-    console.log(`Bye1 (${bye1.name}) plays in ${slot2} + ${slot3Name}`);
-    console.log(`Bye2 (${bye2.name}) plays in ${slot1} + ${slot3Name}`);
+    scheduleLog(`Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, 1 in ${slot3Name})`);
+    scheduleLog(`Bye1 (${bye1.name}) plays in ${slot2} + ${slot3Name}`);
+    scheduleLog(`Bye2 (${bye2.name}) plays in ${slot1} + ${slot3Name}`);
     
     return allMatches;
   }

@@ -4,6 +4,7 @@ import { Team } from "@/types";
 import { normalizeScheduleDate, validateScheduleDate, createSafeScheduleDate } from "./dateUtils";
 import { PairedTimeBlockTeamsMap } from "@/types/autoSchedule";
 import { BACK_TO_BACK_PAIRS, getBackToBackPairName, getPairConfig } from "./constants";
+import { scheduleLog, errorLog, warnLog } from "@/utils/logger";
 
 /**
  * Get teams by back-to-back pair name (e.g., 'Early', 'Mid', 'Late')
@@ -11,20 +12,20 @@ import { BACK_TO_BACK_PAIRS, getBackToBackPairName, getPairConfig } from "./cons
  */
 export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Promise<Team[]> => {
   if (!validateScheduleDate(date, `getTeamsByBackToBackPair-${pairName}`)) {
-    console.error(`Invalid date provided to getTeamsByBackToBackPair for ${pairName}`);
+    errorLog(`Invalid date provided to getTeamsByBackToBackPair for ${pairName}`);
     return [];
   }
   
   const pairConfig = getPairConfig(pairName);
   if (!pairConfig) {
-    console.error(`Invalid pair name: ${pairName}`);
+    errorLog(`Invalid pair name: ${pairName}`);
     return [];
   }
   
   const safeDate = createSafeScheduleDate(date);
   const formattedDate = normalizeScheduleDate(safeDate, `getTeamsByBackToBackPair-${pairName}`);
   
-  console.log(`Loading teams for ${pairName} pair (${pairConfig.primary}-${pairConfig.secondary}) on date: ${formattedDate}`);
+  scheduleLog(`Loading teams for ${pairName} pair (${pairConfig.primary}-${pairConfig.secondary}) on date: ${formattedDate}`);
   
   try {
     // Query for teams in both timeslots of the pair
@@ -59,7 +60,7 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
     .in('timeslot', [pairConfig.primary, pairConfig.secondary])
     .eq('is_back_to_back', true);
     
-    // 🛡️ DEFENSIVE VALIDATION: Check for unexpected timeslots
+    // Defensive validation: Check for unexpected timeslots
     if (timeslots && timeslots.length > 0) {
       const unexpectedSlots = timeslots.filter(slot => 
         slot.timeslot !== pairConfig.primary && 
@@ -67,19 +68,19 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
       );
       
       if (unexpectedSlots.length > 0) {
-        console.error(`❌ DATABASE ERROR: Teams in ${pairName} have unexpected timeslots:`, 
+        errorLog(`DATABASE ERROR: Teams in ${pairName} have unexpected timeslots:`, 
           unexpectedSlots.map(s => `${s.team_id} -> ${s.timeslot}`)
         );
       }
     }
     
     if (error) {
-      console.error(`❌ Error fetching teams for ${pairName} pair on ${formattedDate}:`, error);
+      errorLog(`Error fetching teams for ${pairName} pair on ${formattedDate}:`, error);
       return [];
     }
 
     if (!timeslots || timeslots.length === 0) {
-      console.warn(`⚠️ No back-to-back teams found for ${pairName} pair on ${formattedDate}`);
+      warnLog(`No back-to-back teams found for ${pairName} pair on ${formattedDate}`);
       return [];
     }
     
@@ -105,7 +106,7 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
     
     teamSlotMap.forEach((slots, teamId) => {
       if (!slots.primary || !slots.secondary) {
-        console.warn(`⚠️ Team ${teamId} missing complete back-to-back assignment for ${pairName} pair`);
+        warnLog(`Team ${teamId} missing complete back-to-back assignment for ${pairName} pair`);
         return;
       }
       
@@ -128,11 +129,11 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
       });
     });
     
-    console.log(`✅ Loaded ${validTeams.length} teams for ${pairName} pair (all with complete back-to-back assignments)`);
+    scheduleLog(`Loaded ${validTeams.length} teams for ${pairName} pair (all with complete back-to-back assignments)`);
     return validTeams;
     
   } catch (error) {
-    console.error(`❌ Unexpected error fetching teams for ${pairName} pair:`, error);
+    errorLog(`Unexpected error fetching teams for ${pairName} pair:`, error);
     return [];
   }
 };
@@ -142,7 +143,7 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
  * @deprecated Use getTeamsByBackToBackPair instead
  */
 export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promise<Team[]> => {
-  console.warn(`⚠️ getTeamsByTimeBlock is deprecated. Converting ${timeBlock} to back-to-back pair.`);
+  warnLog(`getTeamsByTimeBlock is deprecated. Converting ${timeBlock} to back-to-back pair.`);
   
   // Map legacy time blocks to pair names
   const pairName = timeBlock === 'Early' ? 'Early' : 
@@ -150,7 +151,7 @@ export const getTeamsByTimeBlock = async (date: Date, timeBlock: string): Promis
                    timeBlock === 'Late' ? 'Late' : null;
   
   if (!pairName) {
-    console.error(`Cannot map legacy time block ${timeBlock} to back-to-back pair`);
+    errorLog(`Cannot map legacy time block ${timeBlock} to back-to-back pair`);
     return [];
   }
   
@@ -209,7 +210,7 @@ export const validateTeamBackToBackAssignment = async (
     return sequences.includes(1) && sequences.includes(2);
     
   } catch (error) {
-    console.error('Error validating team back-to-back assignment:', error);
+    errorLog('Error validating team back-to-back assignment:', error);
     return false;
   }
 };

@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
+import { teamLog } from "@/utils/logger";
 
 export const useTeamDetails = (teamId: string | undefined) => {
   const teamQuery = useQuery({
@@ -37,7 +38,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
       if (!data) throw new Error("Team not found");
       
       // Enhanced logging to verify values from v_team_details with the new weighted power score
-      console.log("Team details from v_team_details with weighted Power Score:", {
+      teamLog("Team details from v_team_details with weighted Power Score:", {
         id: data.team_id,
         name: data.name,
         sos: data.sos,

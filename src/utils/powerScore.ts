@@ -1,4 +1,6 @@
 
+import { warnLog } from "@/utils/logger";
+
 // Power score utilities - now handling NULL values for teams with no matches
 // Teams with 0 wins and 0 losses will have NULL power scores instead of 50.0
 // The power score calculation is handled in v_team_details using the 40/45/15 formula:
@@ -16,7 +18,7 @@ export const calculatePowerScore = (
   sos: number,
   divisionWeight: number = 0.85
 ): number => {
-  console.warn('calculatePowerScore is deprecated - power scores are now calculated in the database using corrected weighted formulas');
+  warnLog('calculatePowerScore is deprecated - power scores are now calculated in the database using corrected weighted formulas');
   
   // Return baseline for teams with no data
   if (wins === 0 && losses === 0) {

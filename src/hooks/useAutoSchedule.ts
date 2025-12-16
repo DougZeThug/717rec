@@ -2,6 +2,7 @@
 import { useAutoSchedule as useModularAutoSchedule } from './useAutoSchedule/index';
 import { useState } from 'react';
 import { normalizeDate } from '@/utils/dateNormalization';
+import { scheduleLog } from '@/utils/logger';
 
 /**
  * @deprecated Use the modular useAutoSchedule from './useAutoSchedule/index' instead
@@ -20,7 +21,7 @@ export const useAutoSchedule = () => {
   
   const generateAndExportSchedule = async (date: Date, options: any = {}) => {
     // Log the date being used
-    console.log("useAutoSchedule - generateAndExportSchedule date:", {
+    scheduleLog("generateAndExportSchedule date:", {
       date,
       dateString: date.toString(),
       dateIso: date.toISOString(),

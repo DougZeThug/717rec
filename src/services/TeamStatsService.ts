@@ -1,6 +1,7 @@
 
 import { Team } from "@/types";
 import { applyMatchResult } from "@/hooks/team-stats/utils/teamRecordUtils";
+import { teamLog, errorLog } from "@/utils/logger";
 
 export const updateTeamStatsRecord = async (
   winnerId: string,
@@ -14,7 +15,7 @@ export const updateTeamStatsRecord = async (
     const parsedWinnerGameWins = parseInt(String(winnerGameWins)) || 0;
     const parsedLoserGameWins = parseInt(String(loserGameWins)) || 0;
     
-    console.log(`[TeamStatsService] Updating team stats: Winner (${winnerId}): ${parsedWinnerGameWins} game wins, Loser (${loserId}): ${parsedLoserGameWins} game wins`);
+    teamLog(`Updating team stats: Winner (${winnerId}): ${parsedWinnerGameWins} game wins, Loser (${loserId}): ${parsedLoserGameWins} game wins`);
     
     const success = await applyMatchResult(
       winnerId,
@@ -24,13 +25,13 @@ export const updateTeamStatsRecord = async (
     );
 
     if (!success) {
-      console.error("Failed to update team statistics");
+      errorLog("Failed to update team statistics");
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error("Error updating team statistics:", error);
+    errorLog("Error updating team statistics:", error);
     return false;
   }
 };

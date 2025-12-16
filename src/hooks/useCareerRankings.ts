@@ -2,6 +2,7 @@ import { CareerRanking } from '@/types/career';
 import { useTeamData } from './useTeamData';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTeamTotals } from './useTeamTotals';
+import { warnLog, errorLog } from '@/utils/logger';
 
 export function useCareerRankings() {
   const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamData();
@@ -19,7 +20,7 @@ export function useCareerRankings() {
           const totals = await fetchTeamTotals(team.id);
 
           if (!totals) {
-            console.warn(`No career totals found for team: ${team.name}`);
+            warnLog(`No career totals found for team: ${team.name}`);
             return null;
           }
 
@@ -65,7 +66,7 @@ export function useCareerRankings() {
 
           return careerRanking;
         } catch (error) {
-          console.error(`Error fetching career stats for team ${team.name}:`, error);
+          errorLog(`Error fetching career stats for team ${team.name}:`, error);
           return null;
         }
       });

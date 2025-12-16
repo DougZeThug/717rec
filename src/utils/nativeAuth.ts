@@ -2,6 +2,7 @@
 import { Capacitor } from '@capacitor/core';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { supabase } from '@/integrations/supabase/client';
+import { authLog, errorLog } from '@/utils/logger';
 
 export const isNativePlatform = (): boolean => {
   return Capacitor.isNativePlatform();
@@ -21,7 +22,7 @@ export const loginWithGoogleNative = async () => {
     });
 
     // Log the response structure to understand what we're getting
-    console.log("Google login response structure:", JSON.stringify(response));
+    authLog("Google login response structure:", JSON.stringify(response));
 
     // Based on the GoogleLoginResponseOnline type, we need to access the id token differently
     // The structure is different between platforms, so we need to handle multiple possible locations
@@ -52,13 +53,13 @@ export const loginWithGoogleNative = async () => {
     });
 
     if (error) {
-      console.error("Error signing in with Google Native:", error);
+      errorLog("Error signing in with Google Native:", error);
       return { success: false, error };
     }
 
     return { success: true, user: data.user };
   } catch (err: any) {
-    console.error("Exception during native Google login:", err);
+    errorLog("Exception during native Google login:", err);
     return { success: false, error: err.message || "An error occurred during native Google login" };
   }
 };

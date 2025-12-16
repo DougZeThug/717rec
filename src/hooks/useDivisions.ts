@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { teamLog, errorLog } from "@/utils/logger";
 
 interface Division {
   id: string;
@@ -20,11 +21,11 @@ export const useDivisions = () => {
         .order('division_weight', { ascending: false }); // Order by weight (highest first)
       
       if (error) {
-        console.error('Error fetching divisions:', error);
+        errorLog('Error fetching divisions:', error);
         throw error;
       }
       
-      console.log('Divisions loaded with new divisions:', data?.map(d => ({
+      teamLog('Divisions loaded with new divisions:', data?.map(d => ({
         name: d.name,
         weight: d.division_weight,
         display: d.display_division

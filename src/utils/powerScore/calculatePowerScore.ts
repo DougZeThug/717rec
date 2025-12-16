@@ -1,4 +1,6 @@
 
+import { warnLog } from "@/utils/logger";
+
 /**
  * DEPRECATED: Power score calculation is now handled in the database
  * The v_team_details view now uses the 40/45/15 formula:
@@ -11,7 +13,7 @@ export const calculatePowerScore = (
   strengthOfSchedule: number, 
   gameWinPercentage: number
 ): number => {
-  console.warn('calculatePowerScore is deprecated - power scores are now calculated in the database using corrected weighted formulas');
+  warnLog('calculatePowerScore is deprecated - power scores are now calculated in the database using corrected weighted formulas');
   
   // Fallback calculation for edge cases (should not be used in normal operation)
   const validWinPct = isNaN(winPercentage) ? 0 : winPercentage;

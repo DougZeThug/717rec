@@ -1,10 +1,11 @@
 
 import { MatchWithTeams } from "../types";
 import { supabase } from "@/integrations/supabase/client";
+import { matchLog, errorLog } from "@/utils/logger";
 
 export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<boolean> => {
   try {
-    console.log("🚀 Submitting match to database:", {
+    matchLog("Submitting match to database:", {
       matchId: match.id,
       team1Score: match.team1Score,
       team2Score: match.team2Score,
@@ -28,13 +29,13 @@ export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<bool
       .eq('id', match.id);
 
     if (error) {
-      console.error(`Error updating match ${match.id}:`, error);
+      errorLog(`Error updating match ${match.id}:`, error);
       return false;
     }
 
     return true;
   } catch (error: any) {
-    console.error(`Error in updateMatchInDatabase for match ${match.id}:`, error);
+    errorLog(`Error in updateMatchInDatabase for match ${match.id}:`, error);
     return false;
   }
 };
