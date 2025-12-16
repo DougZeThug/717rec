@@ -93,7 +93,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
 
               <div className="flex flex-col">
                 <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Career Power Score</span>
-                <div className={`font-mono text-base md:text-lg font-medium flex items-center ${getPowerScoreColor(totals.career_power_score / 100)}`}>
+                <div className={`font-mono text-base md:text-lg font-medium flex items-center ${getPowerScoreColor(totals.career_power_score)}`}>
                   <Zap size={16} className="mr-2" />
                   {totals.career_power_score.toFixed(1)}
                 </div>

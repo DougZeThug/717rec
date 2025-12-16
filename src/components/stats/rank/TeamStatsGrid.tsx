@@ -56,7 +56,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
         
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Power</span>
-          <PowerScoreGauge score={powerScore / 100} size="sm" showLabel={false} />
+          <PowerScoreGauge score={powerScore} size="sm" showLabel={false} />
         </div>
         
         <div className="flex flex-col items-center">

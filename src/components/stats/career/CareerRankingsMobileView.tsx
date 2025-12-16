@@ -143,7 +143,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                 </div>
                 <span className={cn(
                   "font-bold px-2 py-1 rounded text-xs",
-                  getPowerScoreColor(ranking.careerPowerScore / 100)
+                  getPowerScoreColor(ranking.careerPowerScore)
                 )}>
                   {ranking.careerPowerScore.toFixed(1)}
                 </span>
@@ -182,7 +182,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                   </div>
                   <span className={cn(
                     "font-bold px-3 py-1 rounded text-sm",
-                    getPowerScoreColor(ranking.careerPowerScore / 100)
+                    getPowerScoreColor(ranking.careerPowerScore)
                   )}>
                     {ranking.careerPowerScore.toFixed(1)}
                   </span>

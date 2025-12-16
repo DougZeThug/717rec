@@ -1,8 +1,8 @@
-
 /**
  * Format power score for display
+ * Expects 0-100 scale input (from v_team_details view)
  */
 export const formatPowerScore = (powerScore: number | undefined): string => {
   if (powerScore === undefined) return '—';
-  return (powerScore * 100).toFixed(1);
+  return powerScore.toFixed(1);
 };

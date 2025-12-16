@@ -97,7 +97,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                 {team.power_score !== null && (
                   <div>
                     <span className="text-gray-600 dark:text-gray-300">Power Score:</span>
-                    <span className={cn("ml-2 font-medium", getPowerScoreColor(team.power_score))}>
+                    <span className={cn("ml-2 font-medium", getPowerScoreColor(team.power_score * 100))}>
                       {(team.power_score * 100).toFixed(1)}
                     </span>
                   </div>
@@ -183,7 +183,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                 <td className={cn("py-2 px-3 text-center font-medium", getWinPercentageColor(gameWinPercentage))}>
                   {gameWinPercentage.toFixed(1)}%
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getPowerScoreColor(team.power_score))}>
+                <td className={cn("py-2 px-3 text-center font-medium", getPowerScoreColor(team.power_score ? team.power_score * 100 : null))}>
                   {team.power_score ? (team.power_score * 100).toFixed(1) : '-'}
                 </td>
                 <td className={cn("py-2 px-3 text-center font-medium", getSosColor(team.sos))}>
