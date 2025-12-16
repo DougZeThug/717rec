@@ -22,6 +22,17 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         dateWithTime = createDateWithTime(new Date(matchData.date), matchData.timeSlot);
       }
       
+      // Get active season
+      const { data: activeSeason, error: seasonError } = await supabase
+        .from('seasons')
+        .select('id')
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (seasonError) {
+        console.error('Error fetching active season:', seasonError);
+      }
+      
       // Create the match in Supabase
       const { data, error } = await supabase
         .from('matches')
@@ -37,7 +48,8 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
           loser_id: matchData.loserId,
           team1_game_wins: matchData.team1_game_wins || 0,
           team2_game_wins: matchData.team2_game_wins || 0,
-          round_number: 0 // Adding required field with default value
+          round_number: 0,
+          season_id: activeSeason?.id || null
         })
         .select()
         .single();
