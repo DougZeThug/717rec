@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { badgeLog, errorLog } from '@/utils/logger';
 
 export class BadgeProcessingService {
   /**
@@ -6,7 +7,7 @@ export class BadgeProcessingService {
    */
   static async processMatchBadges(team1Id: string, team2Id: string): Promise<any> {
     try {
-      console.log('🏆 Processing match badges for teams:', { team1Id, team2Id });
+      badgeLog('Processing match badges for teams:', team1Id, team2Id);
       
       const { data, error } = await supabase.rpc('process_match_badges', {
         p_team1_id: team1Id,
@@ -14,14 +15,14 @@ export class BadgeProcessingService {
       });
 
       if (error) {
-        console.error('❌ Error processing match badges:', error);
+        errorLog('Error processing match badges:', error);
         throw error;
       }
 
-      console.log('✅ Badge processing result:', data);
+      badgeLog('Badge processing complete');
       return data;
     } catch (error) {
-      console.error('❌ Badge processing service error:', error);
+      errorLog('Badge processing service error:', error);
       throw error;
     }
   }
@@ -31,7 +32,7 @@ export class BadgeProcessingService {
    */
   static async processKingslayerBadge(winnerId: string, loserId: string): Promise<any> {
     try {
-      console.log('⚔️ Processing kingslayer badge:', { winnerId, loserId });
+      badgeLog('Processing kingslayer badge:', winnerId, 'defeated', loserId);
       
       const { data, error } = await supabase.rpc('award_kingslayer_badge', {
         p_winner_id: winnerId,
@@ -39,14 +40,14 @@ export class BadgeProcessingService {
       });
 
       if (error) {
-        console.error('❌ Error processing kingslayer badge:', error);
+        errorLog('Error processing kingslayer badge:', error);
         throw error;
       }
 
-      console.log('✅ Kingslayer badge processing result:', data);
+      badgeLog('Kingslayer badge processed');
       return data;
     } catch (error) {
-      console.error('❌ Kingslayer badge processing error:', error);
+      errorLog('Kingslayer badge processing error:', error);
       throw error;
     }
   }
@@ -60,25 +61,25 @@ export class BadgeProcessingService {
       const isClutchWin = (team1GameWins === 2 && team2GameWins === 1) || (team1GameWins === 1 && team2GameWins === 2);
       
       if (!isClutchWin) {
-        console.log('⏸️ Not a 2-1 match, skipping clutch performer badge processing');
+        badgeLog('Not a 2-1 match, skipping clutch performer');
         return { awarded: false, reason: 'Not a 2-1 match' };
       }
 
-      console.log('🎯 Processing clutch performer badge for winner:', winnerId);
+      badgeLog('Processing clutch performer badge for:', winnerId);
       
       const { data, error } = await supabase.rpc('award_clutch_performer_badge', {
         p_team_id: winnerId
       });
 
       if (error) {
-        console.error('❌ Error processing clutch performer badge:', error);
+        errorLog('Error processing clutch performer badge:', error);
         throw error;
       }
 
-      console.log('✅ Clutch performer badge processing result:', data);
+      badgeLog('Clutch performer badge processed');
       return data;
     } catch (error) {
-      console.error('❌ Clutch performer badge processing error:', error);
+      errorLog('Clutch performer badge processing error:', error);
       throw error;
     }
   }
@@ -88,21 +89,21 @@ export class BadgeProcessingService {
    */
   static async processConsistentPerformerBadge(winnerId: string): Promise<any> {
     try {
-      console.log('📈 Processing consistent performer badge for winner:', winnerId);
+      badgeLog('Processing consistent performer badge for:', winnerId);
       
       const { data, error } = await supabase.rpc('award_consistent_performer_badge', {
         p_team_id: winnerId
       });
 
       if (error) {
-        console.error('❌ Error processing consistent performer badge:', error);
+        errorLog('Error processing consistent performer badge:', error);
         throw error;
       }
 
-      console.log('✅ Consistent performer badge processing result:', data);
+      badgeLog('Consistent performer badge processed');
       return data;
     } catch (error) {
-      console.error('❌ Consistent performer badge processing error:', error);
+      errorLog('Consistent performer badge processing error:', error);
       throw error;
     }
   }
@@ -117,13 +118,13 @@ export class BadgeProcessingService {
       });
 
       if (error) {
-        console.error('❌ Error calculating team streak:', error);
+        errorLog('Error calculating team streak:', error);
         throw error;
       }
 
       return data && data.length > 0 ? data[0] : null;
     } catch (error) {
-      console.error('❌ Team streak calculation error:', error);
+      errorLog('Team streak calculation error:', error);
       throw error;
     }
   }
@@ -138,13 +139,13 @@ export class BadgeProcessingService {
       });
 
       if (error) {
-        console.error('❌ Error awarding streak badges:', error);
+        errorLog('Error awarding streak badges:', error);
         throw error;
       }
 
       return data;
     } catch (error) {
-      console.error('❌ Streak badge awarding error:', error);
+      errorLog('Streak badge awarding error:', error);
       throw error;
     }
   }

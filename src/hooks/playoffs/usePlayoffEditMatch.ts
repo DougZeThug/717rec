@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { usePlayoffMatchUpdate } from "./usePlayoffMatchUpdate";
+import { playoffLog, errorLog } from "@/utils/logger";
 import type { PlayoffMatch, PlayoffBracket } from "@/utils/playoffs/playoffTypes";
 
 export const usePlayoffEditMatch = () => {
@@ -15,7 +16,7 @@ export const usePlayoffEditMatch = () => {
   const { updateMatch } = usePlayoffMatchUpdate(currentBracket);
 
   const handleEditMatch = useCallback(async (matchId: string, quickEdit: boolean = false) => {
-    console.log('🎯 handleEditMatch called with:', { matchId, quickEdit });
+    playoffLog('Edit match requested:', matchId);
     
     try {
       // Check if matchId is an integer (brackets-manager SQL) or UUID (playoff_matches)
@@ -23,7 +24,6 @@ export const usePlayoffEditMatch = () => {
       
       if (isInteger) {
         // Fetch from brackets-manager match table
-        console.log('🎯 Fetching from brackets-manager match table');
         const { data: matchData, error } = await supabase
           .from('match')
           .select('*, stage:stage_id(*)')
@@ -31,7 +31,7 @@ export const usePlayoffEditMatch = () => {
           .single();
 
         if (error || !matchData) {
-          console.error('🎯 Error fetching match from brackets-manager:', error);
+          errorLog('Error fetching brackets-manager match:', error);
           toast({
             title: "Error",
             description: "Failed to load match data. Please try again.",
@@ -92,13 +92,12 @@ export const usePlayoffEditMatch = () => {
           status: matchData.status === 4 ? 'completed' : matchData.status === 3 ? 'in_progress' : 'pending',
         };
 
-        console.log('🎯 Successfully fetched brackets-manager match:', playoffMatch);
+        playoffLog('Loaded brackets-manager match:', playoffMatch.id);
         setEditingMatch(playoffMatch);
         setIsQuickEdit(quickEdit);
         
       } else {
         // Fetch from playoff_matches table (UUID)
-        console.log('🎯 Fetching from playoff_matches table');
         const { data: matchData, error } = await supabase
           .from('playoff_matches')
           .select(`
@@ -109,7 +108,7 @@ export const usePlayoffEditMatch = () => {
           .single();
 
         if (error) {
-          console.error('🎯 Error fetching match:', error);
+          errorLog('Error fetching playoff match:', error);
           toast({
             title: "Error",
             description: "Failed to load match data. Please try again.",
@@ -119,7 +118,7 @@ export const usePlayoffEditMatch = () => {
         }
 
         if (!matchData) {
-          console.error('🎯 No match found with ID:', matchId);
+          errorLog('Match not found:', matchId);
           toast({
             title: "Error", 
             description: "Match not found.",
@@ -168,13 +167,13 @@ export const usePlayoffEditMatch = () => {
           status: (matchData.status as "pending" | "in_progress" | "completed") || 'pending',
         };
 
-        console.log('🎯 Successfully fetched match data:', playoffMatch);
+        playoffLog('Loaded playoff match:', playoffMatch.id);
         setEditingMatch(playoffMatch);
         setIsQuickEdit(quickEdit);
       }
       
     } catch (error) {
-      console.error('🎯 Unexpected error in handleEditMatch:', error);
+      errorLog('Unexpected error in handleEditMatch:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -184,7 +183,7 @@ export const usePlayoffEditMatch = () => {
   }, [toast]);
 
   const handleCloseMatchEditor = useCallback(() => {
-    console.log('🎯 handleCloseMatchEditor called');
+    playoffLog('Match editor closed');
     setEditingMatch(null);
     setIsQuickEdit(false);
   }, []);
@@ -198,12 +197,7 @@ export const usePlayoffEditMatch = () => {
     team2GameWins: number,
     refetchBrackets: () => Promise<any>
   ) => {
-    console.log('🎯 handleSaveMatchScore called:', {
-      matchId,
-      team1GameWins,
-      team2GameWins,
-      useBracketsManager: currentBracket?.uses_brackets_manager
-    });
+    playoffLog('Saving match score:', { matchId, team1GameWins, team2GameWins });
 
     try {
       // Use unified update hook (routes to brackets-manager or legacy)
@@ -226,7 +220,7 @@ export const usePlayoffEditMatch = () => {
       setIsQuickEdit(false);
 
     } catch (error) {
-      console.error('🎯 Error in handleSaveMatchScore:', error);
+      errorLog('Error saving match score:', error);
       toast({
         title: "Error",
         description: "Failed to save match score. Please try again.",
@@ -244,4 +238,3 @@ export const usePlayoffEditMatch = () => {
     handleSaveMatchScore
   };
 };
-
