@@ -38,7 +38,7 @@ export const useRankingsData = () => {
         best_of: match.best_of
       }));
     },
-    staleTime: 10000,
+    staleTime: 1000 * 60 * 3, // 3 minutes - rankings only update after match completions
   });
 
   return {
