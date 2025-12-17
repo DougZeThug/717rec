@@ -5,6 +5,8 @@ import { useTeamsData } from "../useTeamsData";
 import { useRankingsData } from "./useRankingsData";
 import { createRankingObject } from "@/utils/rankingUtils/createRankingObject";
 import { sortAndUpdateRankings } from "@/utils/rankingUtils/sortAndUpdateRankings";
+import { fetchDivisionWeights } from "@/utils/rankingUtils/divisionWeightsCache";
+import { errorLog } from "@/utils/logger";
 
 export const useRankings = () => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
@@ -22,22 +24,19 @@ export const useRankings = () => {
       }
 
       try {
-        console.log("Calculating rankings with teams that have display_division grouping:", 
-          teams.map(t => ({ name: t.name, divisionName: t.divisionName }))
-        );
-
         setIsLoading(true);
+        
+        // Fetch division weights ONCE before processing all teams
+        const divisionWeights = await fetchDivisionWeights();
         
         // Load previous rankings from localStorage
         const savedRankings = localStorage.getItem("previousRankings");
         const previousRankings: Record<string, number> = savedRankings ? JSON.parse(savedRankings) : {};
         
-        // Create ranking objects for all teams
-        const rankingPromises = teams.map(team => 
-          createRankingObject(team, teams, latestMatches, previousRankings)
+        // Create ranking objects for all teams (now synchronous)
+        const unsortedRankings = teams.map(team => 
+          createRankingObject(team, teams, latestMatches, previousRankings, divisionWeights)
         );
-        
-        const unsortedRankings = await Promise.all(rankingPromises);
         
         // Sort and update rank changes
         const sortedRankings = sortAndUpdateRankings(unsortedRankings, previousRankings);
@@ -49,18 +48,10 @@ export const useRankings = () => {
         });
         localStorage.setItem("previousRankings", JSON.stringify(currentRankings));
         
-        console.log("Rankings calculated with display_division grouping:", 
-          sortedRankings.map(r => ({ 
-            team: r.teamName, 
-            division: r.divisionName, 
-            powerScore: r.powerScore 
-          }))
-        );
-        
         setRankings(sortedRankings);
         setError(null);
       } catch (err) {
-        console.error("Error calculating rankings:", err);
+        errorLog("Error calculating rankings:", err);
         setError(err instanceof Error ? err.message : "Failed to calculate rankings");
       } finally {
         setIsLoading(false);

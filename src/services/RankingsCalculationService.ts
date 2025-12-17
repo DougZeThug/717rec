@@ -2,6 +2,8 @@
 import { Team, Match, Ranking } from "@/types";
 import { createRankingObject } from "@/utils/rankingUtils/createRankingObject";
 import { sortRankings, updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
+import { fetchDivisionWeights } from "@/utils/rankingUtils/divisionWeightsCache";
+import { errorLog } from "@/utils/logger";
 
 export const calculateRankings = async (
   teams: Team[] | undefined,
@@ -13,9 +15,12 @@ export const calculateRankings = async (
   }
 
   try {
-    // Create ranking objects for each team
-    const unsortedRankings = await Promise.all(
-      teams.map(team => createRankingObject(team, teams, matches, previousRankings))
+    // Fetch division weights ONCE before processing all teams
+    const divisionWeights = await fetchDivisionWeights();
+    
+    // Create ranking objects for each team (now synchronous)
+    const unsortedRankings = teams.map(team => 
+      createRankingObject(team, teams, matches, previousRankings, divisionWeights)
     );
 
     // Sort the rankings by power score
@@ -29,7 +34,7 @@ export const calculateRankings = async (
 
     return finalRankings;
   } catch (error) {
-    console.error('Error calculating rankings:', error);
+    errorLog('Error calculating rankings:', error);
     return [];
   }
 };
