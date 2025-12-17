@@ -86,7 +86,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     <div className="font-inter">
       <div className="mb-2 space-y-1">
         <div className="flex flex-col gap-1">
-          <div className="overflow-x-auto pb-1">
+          <div className="overflow-x-auto pb-1 touch-pan-x">
             <div className="flex space-x-1">
               {sortableFields.map((field) => (
                 <Button

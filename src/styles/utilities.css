@@ -49,3 +49,32 @@
   .touch-manipulation {
     touch-action: manipulation;
   }
+
+  /* iOS momentum scrolling for horizontal scroll areas */
+  .overflow-x-auto,
+  .overflow-x-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Horizontal pan touch action for carousels/swipeable areas */
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+
+  /* Cleaner mobile scrollbars */
+  @media (max-width: 640px) {
+    .overflow-x-auto::-webkit-scrollbar,
+    .overflow-x-scroll::-webkit-scrollbar {
+      height: 4px;
+    }
+    .overflow-x-auto::-webkit-scrollbar-track,
+    .overflow-x-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .overflow-x-auto::-webkit-scrollbar-thumb,
+    .overflow-x-scroll::-webkit-scrollbar-thumb {
+      background: hsl(var(--muted-foreground) / 0.3);
+      border-radius: 4px;
+    }
+  }
