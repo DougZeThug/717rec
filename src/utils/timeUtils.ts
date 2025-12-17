@@ -1,6 +1,7 @@
 
 import { Match } from "@/types";
 import { extractTimeSlotFromUTC, formatTimeToUTC } from "./timezone";
+import { timezoneLog, errorLog } from "@/utils/logger";
 
 /**
  * Groups an array of matches by time slot.
@@ -45,7 +46,7 @@ export const normalizeTimeFormat = (timeString: string): string => {
     const hours12 = hours % 12 || 12;
     return `${hours12}:${minutes.toString().padStart(2, '0')} ${meridiem}`;
   } catch (error) {
-    console.error('Error normalizing time format:', error);
+    errorLog('Error normalizing time format:', error);
     return timeString;
   }
 };
@@ -92,7 +93,7 @@ export const extractTimeSlot = (dateString: string): string => {
  * Useful for debugging timezone issues
  */
 export const testTimeConversion = (timeString: string): void => {
-  console.log(`🧪 Testing time conversion for "${timeString}":`, {
+  timezoneLog(`Testing time conversion for "${timeString}":`, {
     original: timeString,
     normalized: normalizeTimeFormat(timeString)
   });
@@ -122,7 +123,7 @@ export const testTimeConversion = (timeString: string): void => {
   // Set the UTC time directly
   utcDate.setUTCHours(hours, minutes, 0, 0);
   
-  console.log(`🧪 Conversion results:`, {
+  timezoneLog(`Conversion results:`, {
     localTimeString: testDate.toLocaleTimeString(),
     localISOString: testDate.toISOString(),
     directUTCISOString: utcDate.toISOString(),

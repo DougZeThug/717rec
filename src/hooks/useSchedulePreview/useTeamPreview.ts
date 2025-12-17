@@ -6,6 +6,7 @@ import { useTeamScheduleLoader } from '../useTeamScheduleLoader';
 import { validateTeamCounts } from '@/utils/autoSchedule/edgeCaseUtils';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { TeamCountsStatus } from './types';
+import { scheduleLog, errorLog } from '@/utils/logger';
 
 export const useTeamPreview = (
   setTimeBlockTeams: (teams: TimeBlockTeamsMap) => void,
@@ -28,7 +29,7 @@ export const useTeamPreview = (
     setIsLoading(true);
     try {
       // Enhanced logging for date debugging
-      console.log("useTeamPreview - previewSchedule date:", {
+      scheduleLog("useTeamPreview - previewSchedule date:", {
         date,
         dateString: date.toString(),
         dateIso: date.toISOString(),
@@ -40,7 +41,7 @@ export const useTeamPreview = (
       const safeDate = new Date(date);
       safeDate.setHours(12, 0, 0, 0);
       
-      console.log('Using safe date for preview schedule:', {
+      scheduleLog('Using safe date for preview schedule:', {
         safeDate,
         safeDateString: safeDate.toString(),
         safeDateIso: safeDate.toISOString(),
@@ -93,7 +94,7 @@ export const useTeamPreview = (
         unmatchableBlocks
       };
     } catch (error) {
-      console.error('Error previewing schedule:', error);
+      errorLog('Error previewing schedule:', error);
       toast({
         title: "Error",
         description: "Failed to preview schedule. Please try again.",
