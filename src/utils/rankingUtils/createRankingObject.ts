@@ -9,24 +9,28 @@ import { calculateGameStats } from "@/utils/teamDetailsUtils/gameStatsUtils";
 /**
  * Create a ranking object for a team
  * Now uses the display_division from v_team_details for consistent grouping
+ * 
+ * @param team - Team to create ranking for
+ * @param allTeams - All teams in the league
+ * @param allMatches - All matches
+ * @param previousRankings - Previous rankings map for calculating rank changes
+ * @param divisionWeights - Pre-fetched division weights map
  */
-export const createRankingObject = async (
+export const createRankingObject = (
   team: Team, 
   allTeams: Team[], 
   allMatches: Match[] | undefined,
-  previousRankings: Record<string, number>
-): Promise<Ranking> => {
+  previousRankings: Record<string, number>,
+  divisionWeights: Map<string, number>
+): Ranking => {
   // Parse and ensure we're working with numbers
   const wins = parseInt(String(team.wins)) || 0;
   const losses = parseInt(String(team.losses)) || 0;
   
-  console.log(`Creating ranking for team ${team.name} with record ${wins}-${losses}`);
-  
   // Calculate win percentage using wins and losses
   const winPercentage = calculateWinPercentage(wins, losses);
-  console.log(`Win percentage calculated for ${team.name}: ${winPercentage} (${winPercentage * 100}%)`);
   
-  const sos = await calculateSOS(team, allTeams, allMatches);
+  const sos = calculateSOS(team, allTeams, allMatches, divisionWeights);
   const streak = calculateStreak(team.id, allMatches);
   const headToHead = calculateHeadToHead(team.id, allTeams, allMatches);
   const previousRank = previousRankings[team.id];
@@ -42,8 +46,6 @@ export const createRankingObject = async (
   // Use power_score directly from the database view (v_team_details)
   // which now includes the weighted calculation with division weights
   const powerScore = team.power_score || 0;
-  
-  console.log(`Team ${team.name} final stats: Record ${wins}-${losses}, Win% ${(winPercentage * 100).toFixed(1)}%, Games ${gamesWon}-${gamesLost}, Power ${powerScore.toFixed(1)}`);
   
   return {
     teamId: team.id,

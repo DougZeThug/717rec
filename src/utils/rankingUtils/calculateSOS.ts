@@ -1,29 +1,25 @@
 
 import { Team, Match } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { getDefaultDivisionWeight } from "./divisionWeightsCache";
 
 /**
  * Calculate the strength of schedule (SOS) for a team
+ * SOS is calculated as the average of opponent division weights
+ * 
+ * @param team - The team to calculate SOS for
+ * @param allTeams - All teams in the league
+ * @param allMatches - All matches
+ * @param divisionWeights - Pre-fetched division weights map (avoids redundant DB calls)
  */
-export const calculateSOS = async (team: Team, allTeams: Team[], allMatches: Match[] | undefined) => {
+export const calculateSOS = (
+  team: Team, 
+  allTeams: Team[], 
+  allMatches: Match[] | undefined,
+  divisionWeights: Map<string, number>
+): number => {
   if (!team || !allTeams || allTeams.length === 0) return 0.5;
   
-  // Get division weights from the database
-  const { data: divisionsData, error } = await supabase
-    .from('divisions')
-    .select('id, name, division_weight')
-    .order('name');
-  
-  if (error) {
-    console.error("Error fetching division weights:", error);
-    return 0.5;
-  }
-  
-  // Create a map of division IDs to weights
-  const divisionWeights = new Map<string, number>();
-  divisionsData?.forEach(div => {
-    divisionWeights.set(div.id, div.division_weight || 0.85);
-  });
+  const defaultWeight = getDefaultDivisionWeight();
   
   // Get matches involving this team
   const teamMatches = allMatches?.filter(match => 
@@ -47,7 +43,7 @@ export const calculateSOS = async (team: Team, allTeams: Team[], allMatches: Mat
   uniqueOpponentIds.forEach(opponentId => {
     const opponent = allTeams.find(t => t.id === opponentId);
     if (opponent && opponent.division) {
-      const weight = divisionWeights.get(opponent.division) || 0.85;
+      const weight = divisionWeights.get(opponent.division) || defaultWeight;
       totalWeight += weight;
       countedOpponents++;
     }

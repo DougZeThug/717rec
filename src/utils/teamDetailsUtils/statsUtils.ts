@@ -2,6 +2,7 @@
 import { Team, Match } from "@/types";
 import { calculateSOS } from "@/utils/rankingUtils/calculateSOS";
 import { calculateWinPercentage as calculateWinPercentageUtil } from "@/utils/rankingUtils/calculateWinPercentage";
+import { fetchDivisionWeights } from "@/utils/rankingUtils/divisionWeightsCache";
 
 /**
  * Calculate win percentage
@@ -13,21 +14,19 @@ export const calculateWinPercentage = (team: Team | undefined) => {
   const wins = typeof team.wins === 'number' ? team.wins : 0;
   const losses = typeof team.losses === 'number' ? team.losses : 0;
   
-  // Log the calculation for debugging
-  console.log(`Team win percentage calculation for ${team.name}: ${wins} wins, ${losses} losses`);
-  
   // Use the common utility function to ensure consistency
   const percentage = calculateWinPercentageUtil(wins, losses);
   
   // Format as percentage string with 1 decimal place
   const formattedPercentage = (percentage * 100).toFixed(1);
-  console.log(`Calculated win percentage for ${team.name}: ${formattedPercentage}%`);
   
   return formattedPercentage;
 };
 
 /**
  * Calculate detailed team statistics
+ * Note: This function may be deprecated - TeamDetails uses database view for stats.
+ * Kept for backward compatibility with any remaining call sites.
  */
 export const calculateTeamStats = async (
   team: Team | undefined, 
@@ -73,17 +72,12 @@ export const calculateTeamStats = async (
   const totalGames = gamesWon + gamesLost;
   const gameWinPercentage = totalGames > 0 ? ((gamesWon / totalGames) * 100).toFixed(1) : "0.0";
   
-  // Calculate SOS - this should already incorporate division weights from the database
+  // Calculate SOS using cached division weights
   let strengthOfSchedule = 0.5;
   if (team && allTeams) {
-    strengthOfSchedule = await calculateSOS(team, allTeams, matches);
+    const divisionWeights = await fetchDivisionWeights();
+    strengthOfSchedule = calculateSOS(team, allTeams, matches, divisionWeights);
   }
-  
-  console.log(`Team ${team.name} stats calculated:`, { 
-    wins: team.wins, losses: team.losses, 
-    gameWinPercentage,
-    strengthOfSchedule
-  });
   
   // Note: We now rely on the database view to calculate the power score with the weighted algorithm
   // We provide a simple version here as fallback, but the actual weighted calculations

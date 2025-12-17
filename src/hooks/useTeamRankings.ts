@@ -6,6 +6,7 @@ import { usePreviousRankings } from "./rankings/usePreviousRankings";
 import { updateRankChanges, saveRankingsToStorage } from "@/utils/rankingUtils";
 import { calculateStreak } from "@/utils/rankingUtils/calculateStreak";
 import { useTeams } from "./useTeams";
+import { debugLog, errorLog } from "@/utils/logger";
 
 export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
@@ -15,7 +16,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
   const { teams: latestTeams, isLoading: teamsLoading } = useTeams();
 
   useEffect(() => {
-    console.log("Previous rankings loaded for trend calculation:", previousRankings, "Last updated:", lastUpdated);
+    debugLog("Previous rankings loaded for trend calculation:", previousRankings, "Last updated:", lastUpdated);
 
     const updateRankings = async () => {
       const teamsToUse = teams || latestTeams;
@@ -23,7 +24,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       
       // Wait for teams data to be loaded
       if (!teamsToUse || teamsToUse.length === 0 || teamsLoading) {
-        console.log("Teams not loaded yet or empty:", { teamsCount: teamsToUse?.length, teamsLoading });
+        debugLog("Teams not loaded yet or empty:", { teamsCount: teamsToUse?.length, teamsLoading });
         setRankings([]);
         return;
       }
@@ -31,16 +32,13 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
       setIsLoading(true);
       
       try {
-        console.log(`Processing ${teamsToUse.length} teams with power scores (NULL for 0-0 teams)`);
+        debugLog(`Processing ${teamsToUse.length} teams with power scores (NULL for 0-0 teams)`);
         
         // Create rankings directly from team data, handling NULL power scores
         const calculatedRankings = teamsToUse.map((team): Ranking => {
           // Calculate streak from matches
           const streak = calculateStreak(team.id, matchesToUse);
           const previousRank = previousRankings[team.id];
-          
-          // Debug log for power score data (including NULL values)
-          console.log(`Team ${team.name}: power_score=${team.power_score}, wins=${team.wins}, losses=${team.losses}`);
           
           // Use the power_score from v_team_details (NULL for teams with no matches)
           return {
@@ -93,17 +91,6 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
           // Tertiary sort by name
           return a.teamName.localeCompare(b.teamName);
         });
-        
-        console.log("Sorted rankings with NULL power scores at end:", 
-          sortedRankings.slice(0, 5).map(r => {
-            const originalTeam = teamsToUse.find(t => t.id === r.teamId);
-            return {
-              team: r.teamName,
-              powerScore: originalTeam?.power_score, // Show actual value (NULL or number)
-              winPct: r.winPercentage
-            };
-          })
-        );
 
         // Update rank changes based on previous rankings
         const finalRankings = updateRankChanges(sortedRankings);
@@ -113,7 +100,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         
         setRankings(finalRankings);
       } catch (error) {
-        console.error("Error calculating rankings:", error);
+        errorLog("Error calculating rankings:", error);
         setRankings([]);
       } finally {
         setIsLoading(false);
