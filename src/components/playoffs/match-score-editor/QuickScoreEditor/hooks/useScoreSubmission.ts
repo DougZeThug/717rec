@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { PlayoffMatch } from "@/types";
 import { ScoreOption } from "../types";
 import { generateGameData } from "../utils/scoreOptionUtils";
+import { scoreLog, errorLog } from "@/utils/logger";
 
 interface UseScoreSubmissionProps {
   match: PlayoffMatch;
@@ -28,7 +29,7 @@ export const useScoreSubmission = ({
   
   const handleQuickScore = useCallback(async (option: ScoreOption) => {
     if (!match.team1Id || !match.team2Id) {
-      console.error('🎯 Cannot save score - missing team IDs:', {
+      errorLog('Cannot save score - missing team IDs:', {
         matchId: match.id,
         team1Id: match.team1Id,
         team2Id: match.team2Id
@@ -43,7 +44,7 @@ export const useScoreSubmission = ({
       // Generate mock game data based on the score pattern
       const games = generateGameData(option);
       
-      console.log('🎯 Saving quick score with team IDs:', {
+      scoreLog('Saving quick score with team IDs:', {
         matchId: match.id,
         team1Id: match.team1Id,
         team2Id: match.team2Id,
@@ -65,7 +66,7 @@ export const useScoreSubmission = ({
         dummyRefetch
       );
     } catch (error) {
-      console.error("🎯 Error saving quick score:", error);
+      errorLog("Error saving quick score:", error);
       setIsSubmitting(false);
     }
   }, [match, onSave, setIsSubmitting, setSelectedOption]);

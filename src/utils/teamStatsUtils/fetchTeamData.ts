@@ -1,8 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { teamLog, errorLog } from "@/utils/logger";
 
 export const fetchTeamData = async (teamId: string) => {
-  console.log("Fetching team data for ID:", teamId);
+  teamLog("Fetching team data for ID:", teamId);
   
   const { data: team, error } = await supabase
     .from('teams')
@@ -19,11 +20,11 @@ export const fetchTeamData = async (teamId: string) => {
     .maybeSingle();
   
   if (error || !team) {
-    console.error("ERROR FETCHING TEAM:", error || "No team found with ID: " + teamId);
+    errorLog("ERROR FETCHING TEAM:", error || "No team found with ID: " + teamId);
     return null;
   }
   
-  console.log("Team data fetched:", {
+  teamLog("Team data fetched:", {
     name: team.name,
     wins: team.wins,
     losses: team.losses,

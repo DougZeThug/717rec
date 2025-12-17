@@ -2,6 +2,7 @@ import { PlayoffBracket, PlayoffMatch, PlayoffGame, PlayoffTeam } from '@/utils/
 import { ViewerData, ViewerStage, ViewerMatch, ViewerMatchGame, ViewerParticipant, ViewerDataWithMapping } from './types';
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { supabase } from '@/integrations/supabase/client';
+import { bracketLog, warnLog, errorLog, debugLog } from '@/utils/logger';
 
 export class BracketsViewerAdapter {
   private static teamIdMap: Map<string, number> = new Map();
@@ -10,7 +11,7 @@ export class BracketsViewerAdapter {
    * Transform from brackets-manager SQL tables
    */
   static async transformFromSql(bracketId: string): Promise<ViewerDataWithMapping> {
-    console.log('🔍 transformFromSql: Fetching from SQL tables for bracket:', bracketId);
+    bracketLog('transformFromSql: Fetching from SQL tables for bracket:', bracketId);
     
     // Reset team map
     this.teamIdMap.clear();
@@ -48,14 +49,14 @@ export class BracketsViewerAdapter {
     const groups = groupsResult.data || [];
     const rounds = roundsResult.data || [];
     
-    console.log('🔍 Raw participants from DB:', participants.map(p => ({ id: p.id, name: p.name })));
+    debugLog('Raw participants from DB:', participants.map(p => ({ id: p.id, name: p.name })));
     
     // Fetch team data to get logos - participant names match team names
     const teamNames = participants
       .filter(p => p.name !== null)
       .map(p => p.name);
     
-    console.log('🔍 Fetching logos for teams:', teamNames);
+    debugLog('Fetching logos for teams:', teamNames);
     
     const { data: teamsData, error: teamsError } = await supabase
       .from('teams')
@@ -63,10 +64,10 @@ export class BracketsViewerAdapter {
       .in('name', teamNames);
     
     if (teamsError) {
-      console.error('❌ Error fetching team logos:', teamsError);
+      errorLog('Error fetching team logos:', teamsError);
     }
     
-    console.log('✅ Teams data fetched:', teamsData);
+    debugLog('Teams data fetched:', teamsData);
     
     // Create a map of team name -> logo/image
     const teamLogoMap = new Map<string, { logo_url?: string; image_url?: string }>();
@@ -77,14 +78,14 @@ export class BracketsViewerAdapter {
       });
     });
     
-    console.log('📊 Team logo map size:', teamLogoMap.size);
+    debugLog('Team logo map size:', teamLogoMap.size);
     
     // Transform participants to include logos
     const transformedParticipants = participants.map(p => {
       const teamData = p.name ? teamLogoMap.get(p.name) : null;
       const hasLogo = !!(teamData?.logo_url || teamData?.image_url);
       
-      console.log(`🔍 Participant "${p.name}":`, {
+      debugLog(`Participant "${p.name}":`, {
         id: p.id,
         hasTeamData: !!teamData,
         hasLogo,
@@ -118,7 +119,7 @@ export class BracketsViewerAdapter {
         positionMap.set(p.id, p.position);
       }
     });
-    console.log('🏅 Position map built:', positionMap.size, 'participants with positions');
+    bracketLog('Position map built:', positionMap.size, 'participants with positions');
 
     // Transform matches to viewer format (always create opponent objects for connectors)
     const transformedMatches = matches.map(match => ({
@@ -150,7 +151,7 @@ export class BracketsViewerAdapter {
       rounds
     );
 
-    console.log('✅ Calculated source_node_ids:', {
+    bracketLog('Calculated source_node_ids:', {
       totalMatches: matchesWithSources.length,
       matchesWithSources: matchesWithSources.filter(m => 
         m.opponent1?.source_node_id || m.opponent2?.source_node_id
@@ -178,7 +179,7 @@ export class BracketsViewerAdapter {
       }
     }));
 
-    console.log('✅ transformFromSql: Fetched data:', {
+    bracketLog('transformFromSql: Fetched data:', {
       stages: stages.length,
       groups: groups.length,
       rounds: rounds.length,
@@ -208,7 +209,7 @@ export class BracketsViewerAdapter {
       },
       getPlayoffMatchId: (viewerMatchId: number) => {
         const result = reverseMatchIdMap.get(viewerMatchId);
-        console.log('🔍 getPlayoffMatchId:', viewerMatchId, '→', result);
+        debugLog('getPlayoffMatchId:', viewerMatchId, '→', result);
         return result;
       }
     };
@@ -259,7 +260,7 @@ export class BracketsViewerAdapter {
     rounds: any[]
   ): any[] {
     // AUDIT LOG: Track object references at start
-    console.log('🔬 AUDIT: calculateSourceNodeIds START', {
+    debugLog('AUDIT: calculateSourceNodeIds START', {
       matchCount: matches.length,
       sampleMatch: matches[0],
       opponent1Ref: matches[0]?.opponent1
@@ -484,7 +485,7 @@ export class BracketsViewerAdapter {
       if (m.opponent1) (m.opponent1 as any)[TAG] = `o1:${m.id}`;
       if (m.opponent2) (m.opponent2 as any)[TAG] = `o2:${m.id}`;
     }
-    console.info('🔖 IDENTITY TAGS APPLIED to', matches.length, 'matches');
+    bracketLog('IDENTITY TAGS APPLIED to', matches.length, 'matches');
 
     // Detect dangling source_node_id references
     const ids = new Set(matches.map(m => m.id));
@@ -493,11 +494,11 @@ export class BracketsViewerAdapter {
       const s1 = m.opponent1?.source_node_id;
       const s2 = m.opponent2?.source_node_id;
       if (s1 && !ids.has(String(s1))) {
-        console.warn('⚠️ Dangling source_node_id (o1)', m.id, '→', s1);
+        warnLog('Dangling source_node_id (o1)', m.id, '→', s1);
         dangling++;
       }
       if (s2 && !ids.has(String(s2))) {
-        console.warn('⚠️ Dangling source_node_id (o2)', m.id, '→', s2);
+        warnLog('Dangling source_node_id (o2)', m.id, '→', s2);
         dangling++;
       }
     }
@@ -506,14 +507,14 @@ export class BracketsViewerAdapter {
     const sourcedSlots = matches.reduce((n, m) =>
       n + (m.opponent1?.source_node_id ? 1 : 0) + (m.opponent2?.source_node_id ? 1 : 0), 0
     );
-    console.info('📊 Connector Stats (final pre-render):', {
+    bracketLog('Connector Stats (final pre-render):', {
       matches: matches.length,
       sourcedSlots,
       percentage: matches.length * 2 > 0 ? Math.round((sourcedSlots / (matches.length * 2)) * 100) + '%' : '0%'
     });
 
     if (dangling > 0) {
-      console.error(`❌ Found ${dangling} dangling source_node_id(s) - connectors will fail!`);
+      errorLog(`Found ${dangling} dangling source_node_id(s) - connectors will fail!`);
     }
 
     return matches;
@@ -529,7 +530,7 @@ export class BracketsViewerAdapter {
     // Reset team map
     this.teamIdMap.clear();
     
-    console.log('🔍 transformFromJsonb: Using in-memory data');
+    bracketLog('transformFromJsonb: Using in-memory data');
     
     // Create match ID mapping (brackets-manager match ID -> playoff match UUID)
     const matchIdMap = new Map<string, number>();
@@ -542,7 +543,7 @@ export class BracketsViewerAdapter {
     // Calculate source_node_id for connectors (CRITICAL FIX)
     const matchesWithSources = this.calculateSourceNodeIds(matches, groups, rounds);
 
-    console.log('✅ transformFromJsonb: Wired sources for JSONB path', {
+    bracketLog('transformFromJsonb: Wired sources for JSONB path', {
       totalMatches: matchesWithSources.length,
       withSources: matchesWithSources.filter(m => m.opponent1?.source_node_id || m.opponent2?.source_node_id).length
     });
@@ -617,7 +618,7 @@ export class BracketsViewerAdapter {
     // Wire source_node_id for connectors (CRITICAL FIX)
     const matchesWithSources = this.calculateSourceNodeIds(matches, groups, rounds);
 
-    console.log('✅ transform: Wired sources for internal transform path', {
+    bracketLog('transform: Wired sources for internal transform path', {
       totalMatches: matchesWithSources.length,
       withSources: matchesWithSources.filter(m => m.opponent1?.source_node_id || m.opponent2?.source_node_id).length,
       groupsCount: groups.length,

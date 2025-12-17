@@ -2,15 +2,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { PlayoffMatch } from "@/utils/playoffs/playoffTypes";
+import { playoffLog, errorLog } from "@/utils/logger";
 
 export const usePlayoffMatches = (bracketId: string | null) => {
   return useQuery({
     queryKey: ['playoff-matches', bracketId],
     queryFn: async (): Promise<PlayoffMatch[]> => {
-      console.log('🔄 usePlayoffMatches: Fetching matches for bracketId:', bracketId);
+      playoffLog('Fetching matches for bracketId:', bracketId);
       
       if (!bracketId) {
-        console.log('🔄 usePlayoffMatches: No bracketId provided, returning empty array');
+        playoffLog('No bracketId provided, returning empty array');
         return [];
       }
       
@@ -28,11 +29,11 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         .order('position');
         
       if (error) {
-        console.error('🔄 usePlayoffMatches: Database error:', error);
+        errorLog('usePlayoffMatches: Database error:', error);
         throw error;
       }
       
-      console.log('🔄 usePlayoffMatches: Found', data?.length || 0, 'matches');
+      playoffLog('Found', data?.length || 0, 'matches');
       
       if (!data || data.length === 0) {
         return [];
@@ -87,7 +88,7 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         };
       }) as PlayoffMatch[];
       
-      console.log('🔄 usePlayoffMatches: Returning', transformedMatches.length, 'matches with team data');
+      playoffLog('Returning', transformedMatches.length, 'matches with team data');
       return transformedMatches;
     },
     enabled: !!bracketId,

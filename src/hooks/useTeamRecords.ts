@@ -4,6 +4,7 @@ import { updateTeamStatsRecord } from "@/services/TeamStatsService";
 import { Team } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { teamLog, errorLog, debugLog } from "@/utils/logger";
 
 export const useTeamRecords = () => {
   const { updateTeamRecords: updateWinLoss } = useTeamWinLossUpdate();
@@ -25,14 +26,14 @@ export const useTeamRecords = () => {
     winnerGameWins: number = 0, 
     loserGameWins: number = 0
   ) => {
-    console.log("===== TEAM RECORDS UPDATE PROCESS STARTING =====");
-    console.log("Winner ID:", winnerId, "Loser ID:", loserId);
-    console.log("Game wins - Winner:", winnerGameWins, "Loser:", loserGameWins);
+    teamLog("===== TEAM RECORDS UPDATE PROCESS STARTING =====");
+    teamLog("Winner ID:", winnerId, "Loser ID:", loserId);
+    teamLog("Game wins - Winner:", winnerGameWins, "Loser:", loserGameWins);
     
     // Log types and values of team data
     if (teams && teams.length > 0) {
       teams.forEach(team => {
-        console.log(`Team ${team.name} (${team.id}) current data:`, {
+        debugLog(`Team ${team.name} (${team.id}) current data:`, {
           wins: team.wins,
           winsType: typeof team.wins,
           losses: team.losses,
@@ -48,11 +49,11 @@ export const useTeamRecords = () => {
     try {
       // With our new approach, we only need to invalidate queries
       // since the stats are calculated dynamically from the matches table
-      console.log("Step 1: Invalidating queries to refresh team stats");
+      teamLog("Step 1: Invalidating queries to refresh team stats");
       const success = await updateWinLoss();
       
       if (!success) {
-        console.error("CRITICAL ERROR: Failed to update team records");
+        errorLog("CRITICAL ERROR: Failed to update team records");
         toast({
           title: "Error",
           description: "Failed to update team records. Please try again.",
@@ -61,8 +62,8 @@ export const useTeamRecords = () => {
         return false;
       }
       
-      console.log("Step 1 SUCCESSFUL: Team stats refreshed");
-      console.log("Step 2: Updating detailed team statistics");
+      teamLog("Step 1 SUCCESSFUL: Team stats refreshed");
+      teamLog("Step 2: Updating detailed team statistics");
   
       // Then update the detailed team stats - pass all required parameters
       const statsSuccess = await updateTeamStatsRecord(
@@ -74,17 +75,17 @@ export const useTeamRecords = () => {
       );
       
       if (!statsSuccess) {
-        console.error("WARNING: Failed to update detailed team stats (power scores, etc.)");
+        errorLog("WARNING: Failed to update detailed team stats (power scores, etc.)");
         toast({
           title: "Warning",
           description: "Team win/loss records updated, but detailed stats failed to update.",
           variant: "destructive"
         });
       } else {
-        console.log("Step 2 SUCCESSFUL: Team detailed statistics updated");
+        teamLog("Step 2 SUCCESSFUL: Team detailed statistics updated");
       }
       
-      console.log("Step 3: Invalidating all relevant queries to ensure data freshness");
+      teamLog("Step 3: Invalidating all relevant queries to ensure data freshness");
       
       // Force invalidate all relevant queries to ensure data freshness across the app
       const queriesToInvalidate = [
@@ -93,7 +94,7 @@ export const useTeamRecords = () => {
       
       for (const queryKey of queriesToInvalidate) {
         await queryClient.invalidateQueries({ queryKey: [queryKey] });
-        console.log(`Query cache invalidated for ${queryKey}`);
+        debugLog(`Query cache invalidated for ${queryKey}`);
       }
       
       toast({
@@ -101,11 +102,11 @@ export const useTeamRecords = () => {
         description: "Team records and statistics have been updated successfully.",
       });
       
-      console.log("===== TEAM RECORDS UPDATE PROCESS COMPLETED SUCCESSFULLY =====");
+      teamLog("===== TEAM RECORDS UPDATE PROCESS COMPLETED SUCCESSFULLY =====");
       return true;
     } catch (error) {
-      console.error("===== TEAM RECORDS UPDATE PROCESS FAILED =====");
-      console.error("Error:", error);
+      errorLog("===== TEAM RECORDS UPDATE PROCESS FAILED =====");
+      errorLog("Error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while updating team records.",
