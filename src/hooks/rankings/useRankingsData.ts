@@ -6,7 +6,7 @@ import { Match } from "@/types";
 export const useRankingsData = () => {
   const queryClient = useQueryClient();
 
-  const { data: latestMatches, isLoading: matchesLoading } = useQuery({
+  const { data: latestMatches, isLoading: matchesLoading, error } = useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -44,5 +44,6 @@ export const useRankingsData = () => {
   return {
     latestMatches,
     matchesLoading,
+    matchesError: error as Error | null,
   };
 };
