@@ -1,5 +1,4 @@
 
-
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useDivisions } from '@/hooks/useDivisions';
 import { useTeamsData } from '@/hooks/useTeamsData';
@@ -7,6 +6,7 @@ import { groupTeamsByDivision } from '@/utils/teamGrouping';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { bracketLog, errorLog } from '@/utils/logger';
 import type { Database } from "@/integrations/supabase/types";
 import type { PlayoffBracket, PlayoffMatch } from "@/utils/playoffs/playoffTypes";
 
@@ -59,18 +59,10 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
   const { data: brackets = [], isLoading: bracketsLoading, error: bracketsError, refetch: refetchBrackets } = useQuery({
     queryKey: ['playoffs-brackets-overview', { isAdmin }], // Separate cache per user role
     queryFn: async () => {
-      console.log('🔍 Brackets Query START:', {
-        timestamp: new Date().toISOString()
-      });
+      bracketLog('Fetching brackets overview');
       
       // Check authentication state
       const { data: { user } } = await supabase.auth.getUser();
-      
-      console.log('🔍 Brackets Query User Check:', {
-        timestamp: new Date().toISOString(),
-        userAuthenticated: !!user,
-        userId: user?.id || 'none'
-      });
       
       const { data, error } = await supabase
         .from('brackets')
@@ -83,29 +75,8 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
           error: any;
         };
       
-      console.log('🔍 Brackets Query RAW RESULT:', {
-        dataLength: data?.length || 0,
-        hasError: !!error,
-        errorMessage: error?.message || null,
-        rawBrackets: data?.map(b => ({
-          id: b.id,
-          title: b.title,
-          state: b.state,
-          divisionId: b.division_id,
-          divisionName: b.divisions?.name,
-          matchesCount: 0 // Matches loaded by BracketsViewerComponent
-        })) || []
-      });
-      
       if (error) {
-        console.error('🚨 Brackets query failed:', {
-          error,
-          errorMessage: error.message,
-          errorDetails: error.details,
-          errorHint: error.hint,
-          errorCode: error.code,
-          userAuthenticated: !!user
-        });
+        errorLog('Brackets query failed:', error.message);
         throw error;
       }
       
@@ -129,25 +100,7 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
       // Filter out completed brackets for all users (admins and non-admins)
       const originalCount = brackets.length;
       brackets = brackets.filter(b => b.state !== 'completed');
-      console.log('🔒 Completed brackets filtered (all users):', {
-        originalCount,
-        filteredCount: brackets.length,
-        removedCompleted: originalCount - brackets.length,
-        isAdmin
-      });
-      
-      console.log('🔍 Brackets Query TRANSFORMED:', {
-        count: brackets.length,
-        isAdmin,
-        transformedBrackets: brackets.map(b => ({
-          id: b.id,
-          name: b.name,
-          division: b.division,
-          divisionId: b.divisionId,
-          state: b.state,
-          matchesCount: b.matches.length
-        }))
-      });
+      bracketLog('Filtered brackets:', { total: originalCount, active: brackets.length });
       
       return brackets;
     },
@@ -160,22 +113,6 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
   // Group brackets by display_division (consolidates to 3 main divisions)
   const bracketsByDivision = useMemo(() => {
     const grouped: Record<string, PlayoffBracket[]> = {};
-    
-    console.log('🔍 bracketsByDivision grouping - Input data:', {
-      bracketsCount: brackets?.length || 0,
-      brackets: brackets?.map(b => ({
-        id: b.id,
-        name: b.name,
-        division: b.division,
-        divisionId: b.divisionId
-      })),
-      divisionsCount: divisions?.length || 0,
-      divisions: divisions?.map(d => ({
-        id: d.id,
-        name: d.name,
-        display_division: d.display_division
-      }))
-    });
     
     if (divisions && brackets) {
       // Initialize with empty arrays for unique display divisions (excluding Hidden)
@@ -196,23 +133,10 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
         divisionNameToDisplay.set(div.name, div.display_division || div.name);
       });
       
-      console.log('🔍 Division name to display mapping:', {
-        mapping: Array.from(divisionNameToDisplay.entries())
-      });
-      
       // Group brackets by display_division
       brackets.forEach(bracket => {
         const divisionName = bracket.division;
         const displayDivision = divisionName ? divisionNameToDisplay.get(divisionName) : null;
-        
-        console.log('🔍 Processing bracket:', {
-          bracketId: bracket.id,
-          bracketName: bracket.name,
-          bracketDivision: bracket.division,
-          bracketDivisionId: bracket.divisionId,
-          lookupResult: displayDivision,
-          willBeAdded: !!(displayDivision && displayDivision !== 'Hidden' && grouped[displayDivision])
-        });
         
         // Skip Hidden division brackets
         if (displayDivision && displayDivision !== 'Hidden' && grouped[displayDivision]) {
@@ -220,8 +144,6 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
         }
       });
     }
-    
-    console.log('🔍 Final bracketsByDivision grouped:', grouped);
     
     return grouped;
   }, [divisions, brackets]);
@@ -268,4 +190,3 @@ export type BracketMatchesByType = {
   losers: any[][];
   finals: any[];
 };
-

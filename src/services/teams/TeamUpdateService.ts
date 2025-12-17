@@ -1,14 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
+import { teamLog, errorLog } from "@/utils/logger";
 
 /**
  * Update an existing team
  */
 export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | "created_at">) => {
-  console.log("Updating team with ID:", teamId);
-  console.log("Update data:", teamData);
-  console.log("Division value:", teamData.division_id, typeof teamData.division_id);
+  teamLog("Updating team:", teamId);
   
   // Validate the team exists before attempting an update
   const { data: teamExists, error: checkError } = await supabase
@@ -18,7 +17,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     .single();
   
   if (checkError || !teamExists) {
-    console.error("Team not found or error checking team:", checkError);
+    errorLog("Team not found:", teamId);
     throw new Error(`Team with ID ${teamId} not found.`);
   }
   
@@ -34,7 +33,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
       .single();
     
     if (divCheckError || !divisionExists) {
-      console.error("Division not found or error checking division:", divCheckError);
+      errorLog("Division not found:", teamData.division_id);
       throw new Error(`Division with ID ${teamData.division_id} not found.`);
     }
     
@@ -56,11 +55,11 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     .single();
     
   if (error) {
-    console.error("Error updating team:", error);
+    errorLog("Error updating team:", error);
     throw error;
   }
 
-  console.log("Team updated successfully:", data);
+  teamLog("Team updated successfully:", data.id);
 
   // Update team_season_stats division_name for this team (current season only)
   // First, get the active season to avoid overwriting historical records
@@ -71,7 +70,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
     .single();
 
   if (seasonError) {
-    console.error("Error fetching active season:", seasonError);
+    errorLog("Error fetching active season:", seasonError);
   } else if (activeSeason) {
     // Update only the current season's record to preserve historical data
     const { error: seasonStatsError } = await supabase
@@ -83,7 +82,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
       .eq('season_id', activeSeason.id);
 
     if (seasonStatsError) {
-      console.error("Error updating team_season_stats division_name:", seasonStatsError);
+      errorLog("Error updating team_season_stats division_name:", seasonStatsError);
     }
   }
 
