@@ -1,12 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types";
+import { teamLog, errorLog } from "@/utils/logger";
 
 /**
  * Create a new team
  */
 export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) => {
-  console.log("Creating team with data:", teamData);
+  teamLog("Creating team:", teamData.name);
   
   const { data, error } = await supabase
     .from('teams')
@@ -22,11 +23,11 @@ export const createTeamApi = async (teamData: Omit<Team, "id" | "created_at">) =
     .single();
     
   if (error) {
-    console.error("Error creating team:", error);
+    errorLog("Error creating team:", error);
     throw error;
   }
   
-  console.log("Team created successfully:", data);
+  teamLog("Team created successfully:", data.id);
   
   // Transform the new team to our application Team type
   return {

@@ -1,5 +1,6 @@
 import { CrudInterface, DataTypes, OmitId } from 'brackets-manager';
 import { supabase } from '@/integrations/supabase/client';
+import { bracketLog, errorLog } from '@/utils/logger';
 
 type Id = number | string;
 
@@ -25,7 +26,7 @@ function mergeOpponentSlots(prev: any, patch: any): any {
       const incoming = patch[slot];
       // If incoming is null but previous slot has a value, don't overwrite
       if (incoming === null && prev?.[slot] != null) {
-        console.log(`🛡️ [DEFENSIVE MERGE] Prevented null overwrite of ${slot}: keeping ${prev[slot]}`);
+        bracketLog(`Defensive merge: Prevented null overwrite of ${slot}`);
         delete out[slot];
       }
     }
@@ -51,7 +52,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     
     const participantArray = Array.isArray(participants) ? participants : [participants];
     
-    console.log(`🔵 Loading ${participantArray.length} participants into cache for tournament ${tournamentId}`);
+    bracketLog(`Loading ${participantArray.length} participants into cache for tournament ${tournamentId}`);
     
     for (const p of participantArray) {
       const participant = p as any;
@@ -63,7 +64,7 @@ export class SupabaseSqlStorage implements CrudInterface {
       }
     }
     
-    console.log(`✅ Participant cache loaded:`, Array.from(this.participantCache.entries()));
+    bracketLog(`Participant cache loaded: ${this.participantCache.size} entries`);
   }
 
   /**
@@ -71,7 +72,7 @@ export class SupabaseSqlStorage implements CrudInterface {
    */
   clearParticipantCache(): void {
     this.participantCache.clear();
-    console.log(`🗑️ Participant cache cleared`);
+    bracketLog('Participant cache cleared');
   }
 
   /**
@@ -218,21 +219,10 @@ export class SupabaseSqlStorage implements CrudInterface {
     const isArray = Array.isArray(values);
     const items = isArray ? values : [values];
     
-    console.log(`🔵 SupabaseSqlStorage.insert() - Table: ${table}, Count: ${items.length}`, {
-      table,
-      itemCount: items.length,
-      firstItem: items[0]
-    });
+    bracketLog(`Insert ${items.length} row(s) into ${table}`);
     
     // Transform data for database storage
     const transformedItems = items.map(item => this.transformDataForDb(table, item));
-    
-    if (table === 'match') {
-      console.log(`🔄 SupabaseSqlStorage.insert() - MATCH TRANSFORMATION`, {
-        before: items[0],
-        after: transformedItems[0]
-      });
-    }
     
     const { data, error } = await client
       .from(table)
@@ -240,22 +230,11 @@ export class SupabaseSqlStorage implements CrudInterface {
       .select('id');
     
     if (error) {
-      console.error(`❌ SupabaseSqlStorage.insert() FAILED - Table: ${table}`, {
-        error,
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        statusCode: error.statusCode,
-        items
-      });
+      errorLog(`Insert failed for ${table}:`, error);
       throw error;
     }
     
-    console.log(`✅ SupabaseSqlStorage.insert() SUCCESS - Table: ${table}`, {
-      insertedCount: data?.length || 0,
-      returnedIds: data?.map(d => d.id)
-    });
+    bracketLog(`Insert success: ${data?.length || 0} row(s) in ${table}`);
     
     // Single insert returns the ID, array insert returns true
     if (isArray) {
@@ -279,7 +258,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     // Transform data for database storage
     let transformedValues = this.transformDataForDb(table, values);
     
-    console.log(`🔵 SupabaseSqlStorage.update() - Table: ${table}`, { filter, values });
+    bracketLog(`Update ${table}`, { filter });
     
     // ⭐ DEFENSIVE MERGE: Prevent null from overwriting filled opponent slots
     if (table === 'match' && ('opponent1' in values || 'opponent2' in values)) {
@@ -290,23 +269,8 @@ export class SupabaseSqlStorage implements CrudInterface {
         .eq('id', matchId)
         .single();
       
-      console.log(`[BRACKETS][ROW BEFORE]`, pick(currentMatch, [
-        'id', 'group_id', 'round_id', 'number', 'status',
-        'opponent1_id', 'opponent2_id', 'opponent1_result', 'opponent2_result'
-      ]));
-      
-      console.log(`[BRACKETS][PATCH IN]`, {
-        id: matchId,
-        patch: transformedValues,
-      });
-      
       // Apply defensive merge
       transformedValues = mergeOpponentSlots(currentMatch, transformedValues);
-      
-      console.log(`[BRACKETS][PATCH MERGED]`, {
-        id: matchId,
-        merged: transformedValues
-      });
     }
     
     let query = client.from(table).update(transformedValues);
@@ -322,34 +286,11 @@ export class SupabaseSqlStorage implements CrudInterface {
     const { error } = await query;
     
     if (error) {
-      console.error(`❌ SupabaseSqlStorage.update() FAILED - Table: ${table}`, {
-        error,
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        filter,
-        values
-      });
+      errorLog(`Update failed for ${table}:`, error);
       throw error;
     }
     
-    console.log(`✅ SupabaseSqlStorage.update() SUCCESS - Table: ${table}`);
-    
-    // ⭐ Fetch and log final state AFTER update for match opponent changes
-    if (table === 'match' && ('opponent1' in values || 'opponent2' in values)) {
-      const matchId = typeof filter === 'number' || typeof filter === 'string' ? filter : (filter as any).id;
-      const { data: finalMatch } = await client
-        .from('match')
-        .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number, status')
-        .eq('id', matchId)
-        .single();
-      
-      console.log(`[BRACKETS][ROW AFTER]`, pick(finalMatch, [
-        'id', 'group_id', 'round_id', 'number', 'status',
-        'opponent1_id', 'opponent2_id', 'opponent1_result', 'opponent2_result'
-      ]));
-    }
+    bracketLog(`Update success: ${table}`);
     
     return true;
   }
@@ -362,7 +303,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     const client = supabase as any;
     let query = client.from(table).delete();
     
-    console.log(`🔵 SupabaseSqlStorage.delete() - Table: ${table}`, { filter });
+    bracketLog(`Delete from ${table}`, { filter });
     
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -373,18 +314,11 @@ export class SupabaseSqlStorage implements CrudInterface {
     const { error } = await query;
     
     if (error) {
-      console.error(`❌ SupabaseSqlStorage.delete() FAILED - Table: ${table}`, {
-        error,
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        filter
-      });
+      errorLog(`Delete failed for ${table}:`, error);
       throw error;
     }
     
-    console.log(`✅ SupabaseSqlStorage.delete() SUCCESS - Table: ${table}`);
+    bracketLog(`Delete success: ${table}`);
     return true;
   }
 }

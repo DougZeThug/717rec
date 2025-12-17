@@ -5,6 +5,7 @@ import { usePairingGenerator } from '../usePairingGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { AlgorithmOptions } from './types';
+import { scheduleLog, errorLog } from '@/utils/logger';
 
 export const usePairingPreview = (
   timeBlockTeams: TimeBlockTeamsMap,
@@ -35,27 +36,11 @@ export const usePairingPreview = (
     
     setIsGenerating(true);
     try {
-      // Enhanced logging for date debugging
-      console.log("usePairingPreview - generateSchedule date:", {
-        date,
-        dateType: typeof date,
-        dateObj: date instanceof Date,
-        dateString: date.toString(),
-        dateIso: date.toISOString(),
-        dateTime: date.getTime(),
-        simpleDateString: normalizeDate(date, 'generateSchedule')
-      });
+      scheduleLog('Generating schedule for date:', normalizeDate(date, 'generateSchedule'));
       
       // Create a safe date copy to ensure time is set to noon
       const safeDate = new Date(date);
       safeDate.setHours(12, 0, 0, 0);
-      
-      console.log('Using safe date for generating schedule:', {
-        safeDate,
-        safeDateString: safeDate.toString(),
-        safeDateIso: safeDate.toISOString(),
-        normalizedSafeDate: normalizeDate(safeDate, 'safeGenerateSchedule')
-      });
       
       // Generate pairings with the provided options using the safe date
       const result = await generateMatchPairings(safeDate, timeBlockTeams, {
@@ -103,7 +88,7 @@ export const usePairingPreview = (
       }
       
     } catch (error) {
-      console.error('Error generating schedule:', error);
+      errorLog('Error generating schedule:', error);
       toast({
         title: "Error",
         description: "Failed to generate schedule. Please try again.",
@@ -112,7 +97,7 @@ export const usePairingPreview = (
     } finally {
       // Log performance metrics
       const endTime = performance.now();
-      console.log(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
+      scheduleLog(`Schedule generation took ${(endTime - startTime).toFixed(2)}ms`);
       
       setIsGenerating(false);
     }

@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { calculateComprehensiveQualityMetrics, logQualityAnalysis } from '@/utils/autoSchedule/qualityAnalysis';
 import { validateNoCrossBlockMatches, logCrossBlockViolations } from '@/utils/autoSchedule/validationUtils';
+import { scheduleLog, errorLog } from '@/utils/logger';
 
 export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBlockMap?: Record<string, string>, allTeams?: Team[]) => {
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
@@ -56,11 +57,10 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBl
 
     const startTime = performance.now();
     
-    console.log(`🎯 Starting pairing generation for ${totalTeams} teams with settings:`, {
+    scheduleLog(`Starting pairing generation for ${totalTeams} teams`, {
       avoidRematches,
       prioritizeQuality,
-      dualMatchMode,
-      date: selectedDate.toISOString()
+      dualMatchMode
     });
 
     setIsProcessing(true);
@@ -104,21 +104,10 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBl
         setUnmatchedTeamIds(result.unmatchedTeamIds);
         setQualityMetrics(metrics);
         
-        // Enhanced toast with quality information
-        const qualityInfo = metrics.qualityRating === 'Excellent' ? '🏆' :
-                           metrics.qualityRating === 'Good' ? '✅' :
-                           metrics.qualityRating === 'Fair' ? '⚠️' : '❌';
-        
-        console.log(`✅ Pairing generation complete:`, {
-          totalPairings: metrics.totalMatches,
-          unmatchedTeams: result.unmatchedTeamIds.length,
-          blocks: Object.keys(result.pairings),
-          qualityRating: metrics.qualityRating,
-          diversityScore: metrics.opponentDiversity.diversityScore
-        });
+        scheduleLog(`Pairing generation complete: ${metrics.totalMatches} matches, ${result.unmatchedTeamIds.length} unmatched, quality: ${metrics.qualityRating}`);
         
         toast({
-          title: `Schedule Generated ${qualityInfo}`,
+          title: `Schedule Generated ${metrics.qualityRating === 'Excellent' ? '🏆' : metrics.qualityRating === 'Good' ? '✅' : metrics.qualityRating === 'Fair' ? '⚠️' : '❌'}`,
           description: `Generated ${metrics.totalMatches} ${metrics.qualityRating.toLowerCase()} quality matches. ${result.unmatchedTeamIds.length} teams unmatched. Diversity: ${metrics.opponentDiversity.diversityScore}%`,
         });
         
@@ -132,7 +121,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBl
         });
       }
     } catch (error) {
-      console.error('❌ Error during pairing generation:', error);
+      errorLog('Error during pairing generation:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred while generating the schedule. Please try again.",
@@ -225,7 +214,7 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBl
           
           return null; // Abort operation - don't apply invalid schedule
         } else {
-          console.log('✅ Schedule validation passed: No cross-block pairings detected');
+          scheduleLog('Schedule validation passed: No cross-block pairings detected');
         }
       }
 
@@ -246,16 +235,11 @@ export const usePairingOperations = (setActiveTab: (tab: string) => void, teamBl
         setEditableMatches(structuredClone(matches));
       }
 
-      console.log(`✅ Applied schedule:`, {
-        totalMatches: matches.length,
-        rematchCount,
-        averageCompatibilityScore: averageCompatibilityScore.toFixed(2),
-        qualityRating
-      });
+      scheduleLog(`Applied schedule: ${matches.length} matches, ${rematchCount} rematches, quality: ${qualityRating}`);
 
       return matches;
     } catch (error) {
-      console.error('❌ Error applying schedule:', error);
+      errorLog('Error applying schedule:', error);
       toast({
         title: "Error",
         description: "Failed to apply the generated schedule. Please try again.",
