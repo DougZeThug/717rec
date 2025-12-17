@@ -82,6 +82,9 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
           opts={{
             align: "start",
             loop: false,
+            dragFree: true,
+            skipSnaps: true,
+            duration: 20,
           }}
           className="w-full"
         >
