@@ -1,6 +1,7 @@
 
 import { Team } from '@/types';
 import { TeamPairingMap, MatchQualityMetrics, TeamPair } from '@/types/autoSchedule';
+import { scheduleLog } from '@/utils/logger';
 
 /**
  * Analyze opponent diversity across all pairings
@@ -305,31 +306,19 @@ function calculateBlockQuality(blockPairings: TeamPair[]): number {
  * Log detailed quality analysis for debugging
  */
 export function logQualityAnalysis(metrics: MatchQualityMetrics, label: string = 'Quality Analysis'): void {
-  console.group(`📊 ${label}`);
-  
-  console.log(`🎯 Overall: ${metrics.qualityRating} (${metrics.averageCompatibilityScore.toFixed(1)}/10)`);
-  console.log(`🔄 Matches: ${metrics.totalMatches} total, ${metrics.rematchCount} rematches`);
-  console.log(`🎲 Diversity: ${metrics.opponentDiversity.diversityScore}% (${metrics.opponentDiversity.duplicateOpponents} duplicates)`);
-  console.log(`⚖️ Balance: ${metrics.powerScoreAnalysis.balancedMatches}/${metrics.totalMatches} balanced matches`);
-  
-  if (metrics.blockAnalysis) {
-    console.log(`🕐 Blocks: Primary ${metrics.blockAnalysis.primaryBlockQuality.toFixed(1)}, Secondary ${metrics.blockAnalysis.secondaryBlockQuality.toFixed(1)}`);
-    console.log(`🔀 Cross-block diversity: ${metrics.blockAnalysis.crossBlockDiversity}%`);
-  }
-  
-  console.log(`⏱️ Performance: ${metrics.performanceMetrics.generationTimeMs}ms using ${metrics.performanceMetrics.algorithmsUsed.join(', ')}`);
-  
-  if (metrics.feedback.strengths.length > 0) {
-    console.log(`✅ Strengths:`, metrics.feedback.strengths);
-  }
-  
-  if (metrics.feedback.improvements.length > 0) {
-    console.log(`⚠️ Improvements:`, metrics.feedback.improvements);
-  }
-  
-  if (metrics.feedback.recommendations.length > 0) {
-    console.log(`💡 Recommendations:`, metrics.feedback.recommendations);
-  }
-  
-  console.groupEnd();
+  scheduleLog(`${label}:`, {
+    overall: `${metrics.qualityRating} (${metrics.averageCompatibilityScore.toFixed(1)}/10)`,
+    matches: `${metrics.totalMatches} total, ${metrics.rematchCount} rematches`,
+    diversity: `${metrics.opponentDiversity.diversityScore}% (${metrics.opponentDiversity.duplicateOpponents} duplicates)`,
+    balance: `${metrics.powerScoreAnalysis.balancedMatches}/${metrics.totalMatches} balanced matches`,
+    blocks: metrics.blockAnalysis ? {
+      primary: metrics.blockAnalysis.primaryBlockQuality.toFixed(1),
+      secondary: metrics.blockAnalysis.secondaryBlockQuality.toFixed(1),
+      crossBlockDiversity: `${metrics.blockAnalysis.crossBlockDiversity}%`
+    } : undefined,
+    performance: `${metrics.performanceMetrics.generationTimeMs}ms using ${metrics.performanceMetrics.algorithmsUsed.join(', ')}`,
+    strengths: metrics.feedback.strengths,
+    improvements: metrics.feedback.improvements,
+    recommendations: metrics.feedback.recommendations
+  });
 }

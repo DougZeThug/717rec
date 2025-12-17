@@ -1,7 +1,7 @@
 import { BracketsManager } from "brackets-manager";
 import { SupabaseSqlStorage } from "./SupabaseSqlStorage";
 import { supabase } from "@/integrations/supabase/client";
-import { bracketLog, successLog, failureLog } from "@/utils/logger";
+import { bracketLog, successLog, failureLog, errorLog } from "@/utils/logger";
 import { matchUpdateQueue } from "./MatchUpdateQueue";
 
 /**
@@ -150,7 +150,7 @@ export class BracketManagerService {
         .select('*');
 
       if (participantsError) {
-        console.error("❌ Participant insertion failed - FULL ERROR:", {
+        errorLog("Participant insertion failed - FULL ERROR:", {
           error: participantsError,
           errorType: participantsError?.constructor?.name,
           code: participantsError.code,
@@ -225,7 +225,7 @@ export class BracketManagerService {
         });
       }
       
-      console.error("🔴 BracketManagerService.createBracket FAILED - Full Debug Info:", errorDetails);
+      errorLog("BracketManagerService.createBracket FAILED - Full Debug Info:", errorDetails);
       
       failureLog("Failed to create bracket", serializeError(error));
       
@@ -248,7 +248,7 @@ export class BracketManagerService {
       try {
         // ⭐ Fetch current match state before update
         const currentMatch = await this.storage.select('match', matchId);
-        console.log(`📊 CURRENT MATCH STATE - Match ${matchId}:`, {
+        bracketLog(`CURRENT MATCH STATE - Match ${matchId}:`, {
           opponent1: currentMatch.opponent1,
           opponent2: currentMatch.opponent2,
           round_id: currentMatch.round_id,
@@ -264,7 +264,7 @@ export class BracketManagerService {
         // ⭐ If it's a BYE match and locked/waiting, unlock it for manual advancement
         // Status: 0 = Locked, 1 = Waiting, 2 = Ready, 3 = Running, 4 = Completed, 5 = Archived
         if (isByeMatch && (currentMatch.status === 0 || currentMatch.status === 1)) {
-          console.log(`🔓 Unlocking BYE match ${matchId} for manual advancement (status: ${currentMatch.status} -> 2)`);
+          bracketLog(`Unlocking BYE match ${matchId} for manual advancement (status: ${currentMatch.status} -> 2)`);
           
           // Directly update the match status in the database to Ready (2)
           await supabase
@@ -275,7 +275,7 @@ export class BracketManagerService {
           // ⭐ Update the local object to match the database
           currentMatch.status = 2;
             
-          console.log(`✅ BYE match ${matchId} unlocked successfully`);
+          bracketLog(`BYE match ${matchId} unlocked successfully`);
           
           // ⭐ FIX: Return early to prevent calling manager.update.match() without scores
           // This prevents BYE matches from being marked as Completed (status 4) without a winner
@@ -289,7 +289,7 @@ export class BracketManagerService {
             .loadParticipantsForTournament((stage as any).tournament_id);
         }
         
-        console.log(`🎯 CALLING manager.update.match() with:`, {
+        bracketLog(`CALLING manager.update.match() with:`, {
           id: matchId,
           opponent1: scores.opponent1,
           opponent2: scores.opponent2
@@ -312,12 +312,12 @@ export class BracketManagerService {
           };
         }
         
-        console.log(`🎯 Final update payload:`, updatePayload);
+        bracketLog(`Final update payload:`, updatePayload);
         
         // Update match using brackets-manager (automatically saves to SQL and handles propagation)
         await this.manager.update.match(updatePayload);
 
-        console.log(`✅ manager.update.match() COMPLETED for Match ${matchId}`);
+        bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
         
         // ⭐ Normalize LB R1 to fix same-side-twice issues
         const stageId = typeof currentMatch.stage_id === 'string' 
@@ -336,7 +336,7 @@ export class BracketManagerService {
         
         // ⭐ Fetch and log next matches to see propagation results
         const updatedMatch = await this.storage.select('match', matchId);
-        console.log(`📊 UPDATED MATCH STATE - Match ${matchId}:`, {
+        bracketLog(`UPDATED MATCH STATE - Match ${matchId}:`, {
           opponent1: updatedMatch.opponent1,
           opponent2: updatedMatch.opponent2
         });
@@ -346,7 +346,7 @@ export class BracketManagerService {
           stage_id: updatedMatch.stage_id,
           group_id: 2 // Loser bracket group
         });
-        console.log(`📊 ALL LB MATCHES after Match ${matchId} update:`, 
+        bracketLog(`ALL LB MATCHES after Match ${matchId} update:`, 
           allMatches.map(m => ({
             id: m.id,
             round: m.round_id,
@@ -362,7 +362,7 @@ export class BracketManagerService {
         successLog("Match updated successfully", String(matchId));
       } catch (error) {
         failureLog("Failed to update match", error);
-        console.error(`❌ FULL ERROR DETAILS for Match ${matchId}:`, error);
+        errorLog(`FULL ERROR DETAILS for Match ${matchId}:`, error);
         throw new Error(
           `Match update failed: ${error instanceof Error ? error.message : "Unknown error"}`
         );
@@ -412,7 +412,7 @@ export class BracketManagerService {
       
       return Array.isArray(matches) ? matches[0] : matches;
     } catch (error) {
-      console.error('Error finding LB Final match:', error);
+      errorLog('Error finding LB Final match:', error);
       return null;
     }
   }
@@ -487,7 +487,7 @@ export class BracketManagerService {
         }
       }
     } catch (error) {
-      console.error('Error normalizing Grand Final:', error);
+      errorLog('Error normalizing Grand Final:', error);
       // Don't throw - normalization is defensive, not critical
     }
   }
@@ -507,7 +507,7 @@ export class BracketManagerService {
       const lbGroup = groupsArray.find((g: any) => g.number === 2);
       
       if (!lbGroup) {
-        console.log('No LB group found, skipping normalization');
+        bracketLog('No LB group found, skipping normalization');
         return;
       }
       
@@ -520,7 +520,7 @@ export class BracketManagerService {
       const lbR1 = roundsArray.find((r: any) => r.number === minRoundNumber);
       
       if (!lbR1) {
-        console.log('No LB R1 found, skipping normalization');
+        bracketLog('No LB R1 found, skipping normalization');
         return;
       }
       
@@ -530,7 +530,7 @@ export class BracketManagerService {
       const matches = await this.storage.select('match', { round_id: lbR1Id } as any);
       const matchesArray = Array.isArray(matches) ? matches : [matches];
       
-      console.log(`[BRACKETS][NORMALIZE] Checking ${matchesArray.length} LB R1 matches for duplicates`);
+      bracketLog(`[NORMALIZE] Checking ${matchesArray.length} LB R1 matches for duplicates`);
       
       for (const match of matchesArray) {
         const m = match as any;
@@ -539,8 +539,8 @@ export class BracketManagerService {
         
         // CRITICAL FIX: Detect if same participant is in both slots (duplicate bug)
         if (opponent1Id && opponent2Id && opponent1Id === opponent2Id) {
-          console.log(`[BRACKETS][NORMALIZE] ⚠️ DUPLICATE DETECTED in LB R1 Match ${m.id}: Participant ${opponent1Id} in both slots`);
-          console.log(`[BRACKETS][NORMALIZE] Force-clearing opponent2 using direct SQL to bypass defensive merge`);
+          bracketLog(`[NORMALIZE] DUPLICATE DETECTED in LB R1 Match ${m.id}: Participant ${opponent1Id} in both slots`);
+          bracketLog(`[NORMALIZE] Force-clearing opponent2 using direct SQL to bypass defensive merge`);
           
           // Bypass storage adapter's defensive merge and use direct SQL
           // Use service role to ensure permissions
@@ -555,11 +555,11 @@ export class BracketManagerService {
             .eq('id', m.id);
             
           if (error) {
-            console.error(`[BRACKETS][NORMALIZE] ❌ Failed to clear duplicate in match ${m.id}:`, error);
+            errorLog(`[NORMALIZE] Failed to clear duplicate in match ${m.id}:`, error);
             // Log full error details for debugging
-            console.error(`[BRACKETS][NORMALIZE] Error details:`, JSON.stringify(error, null, 2));
+            errorLog(`[NORMALIZE] Error details:`, JSON.stringify(error, null, 2));
           } else {
-            console.log(`[BRACKETS][NORMALIZE] ✅ Successfully cleared duplicate in match ${m.id}, converted to BYE`);
+            bracketLog(`[NORMALIZE] Successfully cleared duplicate in match ${m.id}, converted to BYE`);
             // Clear cache to reflect changes
             (this.storage as SupabaseSqlStorage).clearParticipantCache();
           }
@@ -568,7 +568,7 @@ export class BracketManagerService {
         
         // If only opponent2 is filled, shift to opponent1
         if (!opponent1Id && opponent2Id) {
-          console.log(`[BRACKETS][NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${m.id}`);
+          bracketLog(`[NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${m.id}`);
           await this.storage.update('match', m.id, {
             opponent1: { id: opponent2Id, score: null, result: null },
             opponent2: { id: null, score: null, result: null },
@@ -580,9 +580,9 @@ export class BracketManagerService {
       // BYE matches are handled manually via forfeit scoring in the match editor
       // No automatic BYE detection needed
       
-      console.log(`[BRACKETS][NORMALIZE] LB R1 normalization complete`);
+      bracketLog(`[NORMALIZE] LB R1 normalization complete`);
     } catch (error) {
-      console.error('Error normalizing LB R1:', error);
+      errorLog('Error normalizing LB R1:', error);
       // Don't throw - normalization is defensive, not critical
     }
   }
