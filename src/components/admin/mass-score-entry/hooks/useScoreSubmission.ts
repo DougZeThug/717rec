@@ -3,7 +3,8 @@ import { MatchWithTeams } from "../types";
 import { useSubmissionState } from "./useSubmissionState";
 import { useMatchValidation } from "./submission/useMatchValidation";
 import { useMatchUpdateService } from "../services/matchUpdateService";
-import { scoreLog, errorLog, cacheLog } from "@/utils/logger";
+import { scoreLog, errorLog } from "@/utils/logger";
+import { invalidateMatchRelatedQueries } from "@/hooks/matches/utils/queryCacheUtils";
 
 export const useScoreSubmission = (
   matches: MatchWithTeams[],
@@ -98,7 +99,8 @@ export const useScoreSubmission = (
         });
       }
 
-      invalidateAllDataQueries();
+      // Invalidate all match-related queries to ensure fresh data
+      await invalidateMatchRelatedQueries(queryClient);
 
       if (successCount > 0) {
         try {
@@ -117,16 +119,6 @@ export const useScoreSubmission = (
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const invalidateAllDataQueries = () => {
-    cacheLog("[useScoreSubmission] Invalidating all data queries for fresh data");
-    queryClient.invalidateQueries({ queryKey: ['matches'] });
-    queryClient.invalidateQueries({ queryKey: ['teams'] });
-    queryClient.invalidateQueries({ queryKey: ['rankings'] });
-    queryClient.invalidateQueries({ queryKey: ['teamStats'] });
-    queryClient.invalidateQueries({ queryKey: ['team'] });
-    queryClient.invalidateQueries({ queryKey: ['team-matches'] });
   };
 
   return {

@@ -16,7 +16,18 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
     'teamStats', 
     'team-matches',
     'standings',
-    'v_team_details'
+    'v_team_details',
+    // Career data
+    'careerRankings',
+    'all-teams-career-power-scores',
+    'team-career-power-score',
+    // Schedule and opponent data
+    'season-opponent-history',
+    'schedule',
+    'upcoming-matches',
+    // Playoff data
+    'playoff-matches',
+    'bracket-data'
   ];
   
   const promises = queriesToInvalidate.map(queryKey => 

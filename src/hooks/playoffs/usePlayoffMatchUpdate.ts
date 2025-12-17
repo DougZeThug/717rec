@@ -1,12 +1,15 @@
 import { useMemo, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { scoreLog } from '@/utils/logger';
+import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 
 export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Determine which system manages this bracket
   const useBracketsManager = useMemo(() => {
@@ -104,6 +107,9 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         }
       }
       
+      // Invalidate all match-related queries to ensure fresh data
+      await invalidateMatchRelatedQueries(queryClient);
+      
       toast({
         title: "Success",
         description: "Match updated with automatic winner progression",
@@ -164,13 +170,16 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
           .insert(gameInserts);
       }
       
+      // Invalidate all match-related queries to ensure fresh data
+      await invalidateMatchRelatedQueries(queryClient);
+      
       toast({
         title: "Success", 
         description: "Match score saved successfully",
       });
     }
     
-  }, [useBracketsManager, toast]);
+  }, [useBracketsManager, toast, queryClient]);
   
   return { updateMatch, useBracketsManager };
 };

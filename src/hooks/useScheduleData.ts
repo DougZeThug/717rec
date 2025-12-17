@@ -1,13 +1,10 @@
 
-import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
 import { scheduleLog, errorLog } from "@/utils/logger";
 
 export const useScheduleData = () => {
-  const queryClient = useQueryClient();
-
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
@@ -85,15 +82,6 @@ export const useScheduleData = () => {
     refetchOnMount: false, // Don't double-fetch if cache is fresh
     staleTime: 1000 * 60 * 2, // 2 minutes - schedule rarely changes
   });
-
-  // Set up polling to refresh matches data
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
-    }, 30000);
-    
-    return () => clearInterval(intervalId);
-  }, [queryClient]);
 
   // Process and separate upcoming vs completed matches
   const upcomingMatches = matchesData?.filter(match => !match.iscompleted) || [];
