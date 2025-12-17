@@ -127,47 +127,54 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const placeEmojis = ['🥇', '🥈', '🥉'];
 
   return (
-    <Card className={cn(
-      "relative overflow-hidden shadow-2xl",
-      "border-t-4 border-t-emerald-400 dark:border-t-emerald-500",
-      "border border-emerald-200 dark:border-white/20",
-      "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"
-    )}>
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-4 right-8 animate-pulse">
-          <Shuffle className="h-24 w-24 text-white/30" />
+    <motion.div
+      whileHover={{ scale: 1.01, y: -2 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Card className={cn(
+        "relative overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow duration-200",
+        "border-t-4 border-t-emerald-400 dark:border-t-emerald-500",
+        "border border-emerald-200 dark:border-white/20",
+        "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"
+      )}>
+        {/* Static background elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-4 right-8">
+            <Shuffle className="h-24 w-24 text-white/30" />
+          </div>
+          <div className="absolute bottom-4 left-8">
+            <Shuffle className="h-16 w-16 text-white/20 rotate-45" />
+          </div>
         </div>
-        <div className="absolute bottom-4 left-8 animate-pulse delay-300">
-          <Shuffle className="h-16 w-16 text-white/20 rotate-45" />
-        </div>
-      </div>
-      
-      {/* Inner glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
-      
-      <CardContent className="relative z-10 p-4 md:p-6">
-        <div className="flex flex-col md:flex-row md:gap-8 text-white">
-          {/* Left Column - Header, Date, Countdowns */}
-          <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:flex-shrink-0">
-            {/* Header with animated icon */}
-            <div className="flex items-center gap-2">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-              >
-                <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
-              </motion.div>
-              <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
-                {card.title}
-              </h2>
-              <motion.div
-                animate={{ rotate: [0, -10, 10, 0] }}
-                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-              >
-                <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
-              </motion.div>
-            </div>
+        
+        {/* Inner glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
+        
+        <CardContent className="relative z-10 p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:gap-8 text-white">
+            {/* Left Column - Header, Date, Countdowns */}
+            <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:flex-shrink-0">
+              {/* Header with subtle entrance animation */}
+              <div className="flex items-center gap-2">
+                <motion.div
+                  initial={{ rotate: -10, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
+                </motion.div>
+                <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
+                  {card.title}
+                </h2>
+                <motion.div
+                  initial={{ rotate: 10, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
+                </motion.div>
+              </div>
             
             {/* Date badge */}
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
@@ -292,9 +299,10 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               </div>
             )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 

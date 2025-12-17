@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HeroCard } from "@/types/heroCard";
 import { HERO_ICON_MAP } from "@/constants/heroCardPresets";
+import { motion } from "framer-motion";
 
 interface StandardHeroCardProps {
   card: HeroCard;
@@ -31,10 +32,20 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
     "overflow-hidden"
   );
 
+  const cardWrapper = (children: React.ReactNode) => (
+    <motion.div
+      whileHover={{ scale: 1.02, y: -1 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.15 }}
+    >
+      {children}
+    </motion.div>
+  );
+
   if (card.cta_url) {
     // Handle both internal and external links
     if (card.cta_url.startsWith('http')) {
-      return (
+      return cardWrapper(
         <a
           href={card.cta_url}
           target="_blank"
@@ -47,7 +58,7 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
       );
     }
     
-    return (
+    return cardWrapper(
       <Link to={card.cta_url} className={baseClasses}>
         <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         {content}
@@ -55,7 +66,7 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
     );
   }
 
-  return (
+  return cardWrapper(
     <div className={baseClasses}>
       <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
       {content}

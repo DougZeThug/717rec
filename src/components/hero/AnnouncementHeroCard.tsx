@@ -20,55 +20,55 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
   const Icon = card.icon_name ? iconMap[card.icon_name] : Trophy;
 
   const content = (
-    <div className={cn(
-      "relative overflow-hidden rounded-xl shadow-lg",
-      "border-t-4 border-t-amber-500 dark:border-t-amber-400",
-      "border border-white/20",
-      card.background_color
-    )}>
-      {/* Animated background shimmer */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-        animate={{ x: ['-100%', '100%'] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-      />
-      
-      {/* Inner glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
-      
-      {/* Decorative elements */}
-      <div className="absolute top-2 left-4 opacity-30">
-        {Icon && <Icon className="w-8 h-8" />}
-      </div>
-      <div className="absolute bottom-2 right-4 opacity-30">
-        {Icon && <Icon className="w-8 h-8" />}
-      </div>
-      
+    <motion.div
+      whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
+    >
       <div className={cn(
-        "relative z-10 flex items-center justify-center gap-3 px-6 py-5",
-        card.text_color
+        "relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200",
+        "border-t-4 border-t-amber-500 dark:border-t-amber-400",
+        "border border-white/20",
+        card.background_color
       )}>
-        {Icon && (
-          <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <Icon className="w-6 h-6" />
-          </motion.div>
-        )}
+        {/* Static inner glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
         
-        <div className="text-center">
-          <h3 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">{card.title}</h3>
-          {card.subtitle && (
-            <p className="text-sm font-inter opacity-90 mt-1">{card.subtitle}</p>
-          )}
+        {/* Decorative elements - static */}
+        <div className="absolute top-2 left-4 opacity-30">
+          {Icon && <Icon className="w-8 h-8" />}
+        </div>
+        <div className="absolute bottom-2 right-4 opacity-30">
+          {Icon && <Icon className="w-8 h-8" />}
         </div>
         
-        {card.cta_url && (
-          <ChevronRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
-        )}
+        <div className={cn(
+          "relative z-10 flex items-center justify-center gap-3 px-6 py-5",
+          card.text_color
+        )}>
+          {Icon && (
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Icon className="w-6 h-6" />
+            </motion.div>
+          )}
+          
+          <div className="text-center">
+            <h3 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">{card.title}</h3>
+            {card.subtitle && (
+              <p className="text-sm font-inter opacity-90 mt-1">{card.subtitle}</p>
+            )}
+          </div>
+          
+          {card.cta_url && (
+            <ChevronRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
+          )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   if (card.cta_url) {
