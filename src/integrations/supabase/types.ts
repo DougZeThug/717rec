@@ -3708,6 +3708,15 @@ export type Database = {
         Args: { p_division_id: string }
         Returns: undefined
       }
+      reverse_team_stats: {
+        Args: {
+          p_loser_game_wins?: number
+          p_loser_id: string
+          p_winner_game_wins?: number
+          p_winner_id: string
+        }
+        Returns: Json
+      }
       snapshot_current_season: { Args: never; Returns: undefined }
       update_team_stats:
         | { Args: never; Returns: undefined }

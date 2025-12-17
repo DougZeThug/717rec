@@ -120,6 +120,28 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         throw new Error("Match not found");
       }
       
+      // If match was completed, reverse the team stats BEFORE deleting
+      if (matchToDelete.iscompleted && matchToDelete.winnerId && matchToDelete.loserId) {
+        const winnerGameWins = matchToDelete.winnerId === matchToDelete.team1Id 
+          ? (matchToDelete.team1_game_wins || 0) 
+          : (matchToDelete.team2_game_wins || 0);
+        const loserGameWins = matchToDelete.loserId === matchToDelete.team1Id 
+          ? (matchToDelete.team1_game_wins || 0) 
+          : (matchToDelete.team2_game_wins || 0);
+        
+        // Call the RPC to reverse team stats
+        const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
+          p_winner_id: matchToDelete.winnerId,
+          p_loser_id: matchToDelete.loserId,
+          p_winner_game_wins: winnerGameWins,
+          p_loser_game_wins: loserGameWins
+        });
+        
+        if (reverseError) {
+          throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
+        }
+      }
+      
       // Delete the match from Supabase
       const { error } = await supabase
         .from('matches')
