@@ -1,10 +1,11 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Crown, Calendar } from "lucide-react";
+import { Trophy, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HeroCard } from "@/types/heroCard";
 import { animations } from "@/styles/design-system";
+import { motion } from "framer-motion";
 import {
   Carousel,
   CarouselContent,
@@ -27,7 +28,10 @@ const ChampionCardCompact: React.FC<{
   division: string; 
 }> = ({ team, division }) => {
   return (
-    <div className="flex flex-col items-center bg-white/10 backdrop-blur-sm rounded-xl p-3 w-[130px]">
+    <motion.div 
+      whileTap={{ scale: 0.97 }}
+      className="flex flex-col items-center bg-white/10 backdrop-blur-sm rounded-xl p-3 w-[130px]"
+    >
       <p className="text-[10px] font-bebas uppercase tracking-wide text-white/80 mb-2 text-center">
         {division}
       </p>
@@ -58,7 +62,7 @@ const ChampionCardCompact: React.FC<{
       <p className="font-inter font-semibold text-white text-xs text-center line-clamp-2">
         {team.name}
       </p>
-    </div>
+    </motion.div>
   );
 };
 
@@ -187,13 +191,18 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   });
 
   return (
-    <section className={cn(
-      "relative overflow-hidden",
-      "bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500",
-      "rounded-2xl shadow-2xl p-4 md:p-6",
-      "transition-opacity duration-500 ease-out",
-      animations.fadeIn
-    )}>
+    <motion.section 
+      whileHover={{ scale: 1.01, y: -2 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ duration: 0.2 }}
+      className={cn(
+        "relative overflow-hidden",
+        "bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500",
+        "rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6",
+        "transition-shadow duration-200",
+        animations.fadeIn
+      )}
+    >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Trophy className="w-6 h-6 text-white" />
@@ -245,7 +254,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
           );
         })}
       </div>
-    </section>
+    </motion.section>
   );
 };
 
