@@ -216,7 +216,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
       
       {/* Mobile Carousel */}
       <div className="block md:hidden">
-        <Carousel opts={{ align: "start", loop: false }}>
+        <Carousel opts={{ align: "start", loop: false, dragFree: true, skipSnaps: true, duration: 20 }}>
           <CarouselContent className="-ml-2">
             {divisionOrder.map((divisionName) => {
               const teamId = championsMap[divisionName];

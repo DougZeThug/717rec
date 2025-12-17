@@ -26,7 +26,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
   // Carousel for mobile
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: true, skipSnaps: true, duration: 20 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   
   const onSelect = useCallback(() => {
