@@ -1,6 +1,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect } from "react";
+import { log } from "@/utils/logger";
 
 /**
  * Custom hook to ensure theme consistency across the application
@@ -19,9 +20,9 @@ export const useThemeConsistency = () => {
       // If no theme preference stored, default to system preference
       const defaultTheme = prefersDark ? "dark" : "light";
       setTheme(defaultTheme);
-      console.log(`No stored theme preference, defaulting to system preference: ${defaultTheme}`);
+      log(`Applying stored theme preference: ${defaultTheme}`);
     } else {
-      console.log(`Applying stored theme preference: ${storedTheme}`);
+      log(`Applying stored theme preference: ${storedTheme}`);
       setTheme(storedTheme);
     }
   }, [setTheme]);
@@ -33,12 +34,12 @@ export const useThemeConsistency = () => {
   const ensureThemeConsistency = () => {
     const storedTheme = localStorage.getItem("theme");
     if (storedTheme) {
-      console.log(`Ensuring theme consistency: applying ${storedTheme}`);
+      log(`Applying stored theme preference: ${storedTheme}`);
       setTheme(storedTheme);
     } else {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const defaultTheme = prefersDark ? "dark" : "light";
-      console.log(`No stored theme, applying system preference: ${defaultTheme}`);
+      log(`Applying stored theme preference: ${defaultTheme}`);
       setTheme(defaultTheme);
     }
   };

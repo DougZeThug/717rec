@@ -5,6 +5,7 @@ import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
 import { PreviewMatch } from './types';
 import { useToast } from '@/hooks/use-toast';
 import { calculateDualBlockMetrics, findTeamsWithSameOpponent } from '@/utils/autoSchedule/dualBlock';
+import { scheduleLog, errorLog } from '@/utils/logger';
 
 export const useMatchConverter = () => {
   const { toast } = useToast();
@@ -36,7 +37,7 @@ export const useMatchConverter = () => {
       if (options.dualMatchMode) {
         // In dual match mode, pairings are keyed by actual timeslot (e.g., "6:30 PM", "7:00 PM")
         // Process each timeslot independently
-        console.log("Converting dual match pairings - timeslots:", Object.keys(pairings));
+        scheduleLog("Converting dual match pairings - timeslots:", Object.keys(pairings));
         
         Object.entries(pairings).forEach(([timeslot, blockPairings]) => {
           blockPairings.forEach((pairing, index) => {
@@ -63,13 +64,13 @@ export const useMatchConverter = () => {
           });
         });
         
-        console.log(`Converted ${matches.length} matches across ${Object.keys(pairings).length} timeslots`)
+        scheduleLog(`Converted ${matches.length} matches across ${Object.keys(pairings).length} timeslots`);
       } else {
         // Standard single-block conversion logic
         Object.entries(pairings).forEach(([block, blockPairings]) => {
           // Skip if block doesn't exist in TIME_BLOCKS
           if (!TIME_BLOCKS[block]) {
-            console.error(`Missing time block data for ${block}`);
+            errorLog(`Missing time block data for ${block}`);
             return;
           }
           
@@ -91,7 +92,7 @@ export const useMatchConverter = () => {
       
       return matches;
     } catch (error) {
-      console.error('Error converting pairings to matches:', error);
+      errorLog('Error converting pairings to matches:', error);
       toast({
         title: "Error",
         description: "Failed to convert pairings to matches",

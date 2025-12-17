@@ -1,6 +1,7 @@
 
 import { BracketFormData } from '../types/BracketFormData';
 import { isValidUUID } from '@/utils/validation';
+import { validationLog } from '@/utils/logger';
 
 export interface ValidationResult {
   isValid: boolean;
@@ -34,7 +35,7 @@ export class BracketValidationService {
   static validateFormData(data: unknown): ValidationResult {
     const errors: string[] = [];
 
-    console.log('BracketValidationService.validateFormData called with:', data);
+    validationLog('Validating bracket form data');
 
     // Type guard check
     if (!isValidBracketFormData(data)) {
@@ -70,7 +71,7 @@ export class BracketValidationService {
       errors.push('Minimum 2 teams required for bracket creation');
     }
 
-    console.log('Validation result:', { isValid: errors.length === 0, errors });
+    validationLog('Validation result:', { isValid: errors.length === 0, errorCount: errors.length });
 
     return {
       isValid: errors.length === 0,
@@ -85,7 +86,7 @@ export class BracketValidationService {
     const errors: string[] = [];
     const invalidTeams: string[] = [];
 
-    console.log('BracketValidationService.validateTeamSelection called with:', teamIds);
+    validationLog('Validating team selection');
 
     if (!Array.isArray(teamIds)) {
       errors.push('Team selection must be an array');
@@ -114,7 +115,7 @@ export class BracketValidationService {
       errors
     };
 
-    console.log('Team validation result:', result);
+    validationLog('Team validation result:', { isValid: result.isValid, invalidCount: invalidTeams.length });
     return result;
   }
 
@@ -122,7 +123,7 @@ export class BracketValidationService {
    * Sanitizes form data to prevent invalid submissions
    */
   static sanitizeFormData(data: unknown): BracketFormData {
-    console.log('BracketValidationService.sanitizeFormData called with:', data);
+    validationLog('Sanitizing bracket form data');
     
     // Type guard check
     if (!isValidBracketFormData(data)) {
@@ -138,7 +139,7 @@ export class BracketValidationService {
         : []
     };
 
-    console.log('Sanitized data:', sanitized);
+    validationLog('Data sanitized:', { teamCount: sanitized.teams.length });
     return sanitized as BracketFormData;
   }
 
@@ -146,7 +147,7 @@ export class BracketValidationService {
    * Comprehensive pre-submission validation
    */
   static validateForSubmission(data: unknown): ValidationResult {
-    console.log('BracketValidationService.validateForSubmission called with:', data);
+    validationLog('Validating for submission');
     
     const sanitizedData = this.sanitizeFormData(data);
     const formValidation = this.validateFormData(sanitizedData);

@@ -6,26 +6,18 @@ import { usePlayoffTeams } from './usePlayoffTeams';
 import { usePlayoffActions } from './usePlayoffActions';
 import { BracketMatchesByType } from "@/services/brackets/types";
 import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/errors";
+import { playoffLog, warnLog } from "@/utils/logger";
 import type { PlayoffViewModel } from "@/utils/playoffs/playoffTypes";
 
 // Local helper to group bracket matches by type
 const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
-  console.log('🔍 groupBracketMatchesByType: Input matches:', matches);
-  
   if (!Array.isArray(matches)) {
-    console.log('🔍 groupBracketMatchesByType: Not an array, returning empty structure');
     return { winners: [], losers: [], finals: [] };
   }
   
   const winners = matches.filter(match => match.matchType === 'winners');
   const losers = matches.filter(match => match.matchType === 'losers');
   const finals = matches.filter(match => match.matchType === 'finals');
-  
-  console.log('🔍 groupBracketMatchesByType: Grouped results:', {
-    winners: winners.length,
-    losers: losers.length,
-    finals: finals.length
-  });
   
   return { winners, losers, finals };
 };
@@ -34,13 +26,12 @@ const groupBracketMatchesByType = (matches: any[]): BracketMatchesByType => {
  * Unified hook for playoff bracket data and management
  */
 export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel {
-  console.log('🔍 usePlayoffViewModel called with bracketId:', bracketId);
-  console.log('🔍 usePlayoffViewModel: Timestamp:', new Date().toISOString());
+  playoffLog('usePlayoffViewModel called with bracketId:', bracketId);
   
   // Defensive: return safe defaults immediately if bracketId is invalid
   if (!bracketId || (typeof bracketId === 'string' && bracketId.trim() === '')) {
     if (import.meta.env.DEV) {
-      console.warn('⚠️ usePlayoffViewModel: Returning safe defaults for invalid bracketId', { bracketId });
+      warnLog('usePlayoffViewModel: Returning safe defaults for invalid bracketId');
     }
     return {
       bracket: null,
@@ -50,7 +41,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
       teams: [],
       teamsLoading: false,
       refetch: async () => {
-        console.warn('⚠️ Cannot refetch with invalid bracketId');
+        warnLog('Cannot refetch with invalid bracketId');
       },
       deleteBracket: async () => {
         throw new Error('Cannot delete bracket: invalid bracketId');
@@ -70,14 +61,6 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   const teamsQuery = usePlayoffTeams();
   const actions = usePlayoffActions();
   
-  // Debug the raw data from each query
-  console.log('🔍 usePlayoffViewModel - Raw bracket data:', bracketQuery.data);
-  console.log('🔍 usePlayoffViewModel - Raw matches data:', matchesQuery.data);
-  console.log('🔍 usePlayoffViewModel - Matches data length:', matchesQuery.data?.length);
-  console.log('🔍 usePlayoffViewModel - Matches query loading:', matchesQuery.isLoading);
-  console.log('🔍 usePlayoffViewModel - Matches query error:', matchesQuery.error);
-  console.log('🔍 usePlayoffViewModel - Teams data:', teamsQuery.data);
-  
   // CRITICAL: Normalize to stable defaults - never return undefined
   const safeMatches = Array.isArray(matchesQuery.data) ? matchesQuery.data : [];
   const safeTeams = Array.isArray(teamsQuery.data) ? teamsQuery.data : [];
@@ -86,22 +69,15 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     matches: safeMatches
   } : null;
   
-  console.log('🔍 usePlayoffViewModel - Combined bracket BEFORE matches attachment:', bracketQuery.data);
-  console.log('🔍 usePlayoffViewModel - Matches to attach:', matchesQuery.data);
-  console.log('🔍 usePlayoffViewModel - Combined bracket AFTER matches attachment:', combinedBracket);
-  console.log('🔍 usePlayoffViewModel - Combined bracket matches length:', combinedBracket?.matches?.length);
-  
   // Process bracket data to separate winners, losers and finals matches
   const bracketMatchesByType: BracketMatchesByType | null = safeMatches.length > 0
     ? groupBracketMatchesByType(safeMatches)
     : null;
   
-  console.log('🔍 usePlayoffViewModel - Bracket matches by type:', bracketMatchesByType);
-  
   // Simplified refetch function - no aggressive cache operations
   const refetch = async () => {
     try {
-      console.log('🔍 usePlayoffViewModel - Starting simple refetch...');
+      playoffLog('Starting refetch...');
       
       // Simple parallel refetch without cache manipulation
       await Promise.all([
@@ -109,9 +85,8 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
         matchesQuery.refetch(),
         teamsQuery.refetch()
       ]);
-      console.log('🔍 usePlayoffViewModel - Simple refetch completed successfully');
+      playoffLog('Refetch completed successfully');
     } catch (err) {
-      console.error('🔍 usePlayoffViewModel - Refetch error:', err);
       logError(err, "usePlayoffViewModel refetch");
       throw new Error(getUIErrorMessage(err, "Failed to refresh data"));
     }
@@ -120,7 +95,7 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
   // Safely convert error to string for consistent interface
   const processedError = convertErrorToString(bracketQuery.error || matchesQuery.error);
   
-  const result = {
+  return {
     // Bracket data with matches combined
     bracket: combinedBracket,
     isLoading: bracketQuery.isLoading || matchesQuery.isLoading,
@@ -136,12 +111,6 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     deleteBracket: actions.deleteBracket,
     updateMatchResult: actions.updateMatchResult
   };
-  
-  console.log('🔍 usePlayoffViewModel - Final result:', result);
-  console.log('🔍 usePlayoffViewModel - Final result bracket matches:', result.bracket?.matches?.length);
-  console.log('🔍 usePlayoffViewModel - Final result isLoading:', result.isLoading);
-  
-  return result;
 }
 
 // Re-export the component hooks for direct use

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
+import { scheduleLog, errorLog } from "@/utils/logger";
 
 export const useScheduleData = () => {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export const useScheduleData = () => {
   const { data: matchesData, isLoading: matchesLoading } = useQuery({
     queryKey: ['matches'],
     queryFn: async () => {
-      console.log("Fetching matches data with team details...");
+      scheduleLog("Fetching matches data");
       
       // Join with v_team_details to get team information using LEFT JOIN instead of INNER JOIN
       // Also fix column name to use divisionname (lowercase) instead of divisionName
@@ -36,23 +37,13 @@ export const useScheduleData = () => {
         .order('date');
         
       if (error) {
-        console.error("Error fetching matches:", error);
+        errorLog("Error fetching matches:", error);
         throw error;
       }
       
-      console.log("Raw match data with team details:", data);
-      console.log("Total matches fetched:", data.length);
-      console.log("Completed matches count:", data.filter(m => m.iscompleted).length);
+      scheduleLog(`Fetched ${data.length} matches (${data.filter(m => m.iscompleted).length} completed)`);
       
       const formattedData = data.map((match): Match => {
-        // Log individual match team data for debugging
-        console.log(`Match ID ${match.id} team data:`, {
-          team1: match.team1,
-          team2: match.team2,
-          team1Type: typeof match.team1,
-          team2Type: typeof match.team2
-        });
-        
         // Properly handle team details based on what Supabase returns
         // This handles both cases where team details might be an array or a direct object
         const team1Details = match.team1 ? (

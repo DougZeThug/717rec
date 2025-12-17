@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { debugLog, errorLog } from '@/utils/logger';
 
 // Define interface for the stored rankings data with timestamp
 interface RankingsData {
@@ -22,12 +23,12 @@ export const usePreviousRankings = () => {
       // Load current rankings (latest calculated values)
       const savedCurrentData = localStorage.getItem('currentRankings');
       
-      console.log("Loading historical and current ranking data");
+      debugLog("Loading historical and current ranking data");
       
       if (savedHistoricalData) {
         try {
           const parsedHistoricalData: RankingsData = JSON.parse(savedHistoricalData);
-          console.log("Loaded HISTORICAL rankings data:", parsedHistoricalData);
+          debugLog("Loaded historical rankings data");
           
           setPreviousRankings(parsedHistoricalData.rankings);
           setLastUpdated(parsedHistoricalData.timestamp);
@@ -36,33 +37,28 @@ export const usePreviousRankings = () => {
           if (savedCurrentData) {
             try {
               const parsedCurrentData: RankingsData = JSON.parse(savedCurrentData);
-              console.log("Loaded CURRENT rankings data:", parsedCurrentData);
               
               // Check if historical data should be updated based on timestamp
               if (shouldUpdateHistoricalData(parsedHistoricalData.timestamp)) {
-                console.log("Historical data needs updating - threshold time has passed");
+                debugLog("Historical data needs updating - threshold time has passed");
                 
                 // Update historical data with the current data
                 localStorage.setItem('previousRankings', savedCurrentData);
                 setPreviousRankings(parsedCurrentData.rankings);
                 setLastUpdated(parsedCurrentData.timestamp);
-                
-                console.log("Historical rankings have been updated with current data");
-              } else {
-                console.log("Historical data is recent enough, keeping for trend comparison");
               }
             } catch (parseError) {
-              console.error('Error parsing current rankings:', parseError);
+              errorLog('Error parsing current rankings:', parseError);
             }
           }
         } catch (parseError) {
-          console.error('Error parsing historical rankings:', parseError);
+          errorLog('Error parsing historical rankings:', parseError);
           // Clear invalid data
           localStorage.removeItem('previousRankings');
           setPreviousRankings({});
         }
       } else {
-        console.log("No historical rankings found. If current rankings exist, they will be used for history");
+        debugLog("No historical rankings found");
         
         // If no historical data but we have current data, use that as baseline
         if (savedCurrentData) {
@@ -71,14 +67,14 @@ export const usePreviousRankings = () => {
             localStorage.setItem('previousRankings', savedCurrentData);
             setPreviousRankings(parsedCurrentData.rankings);
             setLastUpdated(parsedCurrentData.timestamp);
-            console.log("Current rankings promoted to historical rankings (first run)");
+            debugLog("Current rankings promoted to historical rankings (first run)");
           } catch (parseError) {
-            console.error('Error parsing current rankings during promotion:', parseError);
+            errorLog('Error parsing current rankings during promotion:', parseError);
           }
         }
       }
     } catch (error) {
-      console.error('Error loading rankings data:', error);
+      errorLog('Error loading rankings data:', error);
     }
   }, []);
 
@@ -90,7 +86,7 @@ export const usePreviousRankings = () => {
     const now = new Date().getTime();
     const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60);
     
-    console.log(`Hours since last historical update: ${hoursSinceUpdate.toFixed(2)}`);
+    debugLog(`Hours since last historical update: ${hoursSinceUpdate.toFixed(2)}`);
     
     // Only update if sufficient time has passed
     return hoursSinceUpdate > HISTORY_UPDATE_THRESHOLD_HOURS;
