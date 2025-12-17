@@ -82,8 +82,8 @@ export const useScheduleData = () => {
       return formattedData;
     },
     refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    staleTime: 15000
+    refetchOnMount: false, // Don't double-fetch if cache is fresh
+    staleTime: 1000 * 60 * 2, // 2 minutes - schedule rarely changes
   });
 
   // Set up polling to refresh matches data

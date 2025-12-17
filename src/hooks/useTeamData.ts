@@ -81,7 +81,7 @@ export const useTeamData = (divisionId?: string | null, includeHidden?: boolean)
         close_match_losses: team.close_match_losses
       }));
     },
-    staleTime: 10000,
+    staleTime: 1000 * 60 * 5, // 5 minutes - team data only changes when scores are entered
   });
   
   return query;

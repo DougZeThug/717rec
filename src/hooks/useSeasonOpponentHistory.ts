@@ -180,6 +180,6 @@ export const useSeasonOpponentHistory = () => {
         teams: teamsWithOpponents,
       };
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 1000 * 60 * 5, // 5 minutes - opponent history only changes when new matches are added
   });
 };

@@ -99,7 +99,7 @@ export function useCareerRankingsWithHidden() {
       return validRankings.sort((a, b) => b.careerPowerScore - a.careerPowerScore);
     },
     enabled: !!teams && !isLoadingTeams && !teamsError,
-    staleTime: 10000,
+    staleTime: 1000 * 60 * 10, // 10 minutes - career data is extremely static
   });
 
   // Count hidden teams from all teams (not filtered teams)
