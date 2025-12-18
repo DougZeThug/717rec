@@ -100,38 +100,50 @@ export const useBracketData = (bracketId: string | null) => {
         if (bracket.uses_brackets_manager) {
           bracketLog('Step 2 - Fetching from SQL tables (brackets-manager)');
           
-          // Step 3: Fetch stage, matches, participants from SQL tables
-          bracketLog('Step 3 - Fetching stage data');
-          const { data: stages, error: stageError } = await supabase
-            .from('stage')
-            .select('*')
-            .eq('tournament_id', bracketId);
+          // PARALLEL BATCH 1: Fetch stage and participants concurrently (both need bracketId)
+          bracketLog('Parallel Batch 1 - Fetching stage and participants concurrently');
+          const [stageResult, participantsResult] = await Promise.all([
+            supabase.from('stage').select('*').eq('tournament_id', bracketId),
+            supabase.from('participant').select('*').eq('tournament_id', bracketId)
+          ]);
 
-          if (stageError) {
-            errorLog('Stage query error:', stageError);
-            throw stageError;
+          // Check stage result
+          if (stageResult.error) {
+            errorLog('Stage query error:', stageResult.error);
+            throw stageResult.error;
           }
 
-          if (!stages || stages.length === 0) {
+          if (!stageResult.data || stageResult.data.length === 0) {
             bracketLog('No stage found for bracket:', bracketId);
             return null;
           }
 
-          const stage = stages[0];
+          const stage = stageResult.data[0];
           bracketLog('Stage found:', { stageId: stage.id, type: stage.type });
 
-          // Step 3.5: Fetch groups to map group_id to group.number for match types
-          bracketLog('Step 3.5 - Fetching groups');
-          const { data: groups, error: groupError } = await supabase
-            .from('group')
-            .select('*')
-            .eq('stage_id', stage.id);
-
-          if (groupError) {
-            errorLog('Group query error:', groupError);
-            throw groupError;
+          // Check participants result
+          if (participantsResult.error) {
+            errorLog('Participants query error:', participantsResult.error);
+            throw participantsResult.error;
           }
 
+          const participants = participantsResult.data;
+          bracketLog('Participants fetched:', participants?.length || 0);
+
+          // PARALLEL BATCH 2: Fetch groups and matches concurrently (both need stage.id)
+          bracketLog('Parallel Batch 2 - Fetching groups and matches concurrently');
+          const [groupsResult, matchesResult] = await Promise.all([
+            supabase.from('group').select('*').eq('stage_id', stage.id),
+            supabase.from('match').select('*').eq('stage_id', stage.id)
+          ]);
+
+          // Check groups result
+          if (groupsResult.error) {
+            errorLog('Group query error:', groupsResult.error);
+            throw groupsResult.error;
+          }
+
+          const groups = groupsResult.data;
           // Build group_id to group.number mapping
           const groupIdToNumberMap = new Map<number, number>();
           groups?.forEach(group => {
@@ -139,33 +151,14 @@ export const useBracketData = (bracketId: string | null) => {
           });
           bracketLog('Groups mapped:', groupIdToNumberMap.size);
 
-          // Step 4: Fetch matches from SQL and transform opponent fields back to objects
-          bracketLog('Step 4 - Fetching matches');
-          const { data: matches, error: matchError } = await supabase
-            .from('match')
-            .select('*')
-            .eq('stage_id', stage.id);
-
-          if (matchError) {
-            errorLog('Match query error:', matchError);
-            throw matchError;
+          // Check matches result
+          if (matchesResult.error) {
+            errorLog('Match query error:', matchesResult.error);
+            throw matchesResult.error;
           }
 
+          const matches = matchesResult.data;
           bracketLog('Raw matches fetched:', matches?.length || 0);
-
-          // Step 5: Fetch participants
-          bracketLog('Step 5 - Fetching participants');
-          const { data: participants, error: participantsError } = await supabase
-            .from('participant')
-            .select('*')
-            .eq('tournament_id', bracketId);
-
-          if (participantsError) {
-            errorLog('Participants query error:', participantsError);
-            throw participantsError;
-          }
-
-          bracketLog('Participants fetched:', participants?.length || 0);
 
           // Step 6: Build participant to team mapping
           const participantToTeamMap = new Map<number, string>();
