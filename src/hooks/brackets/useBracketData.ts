@@ -1,8 +1,15 @@
-
-
 import { useQuery } from "@tanstack/react-query";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { bracketLog, errorLog, debugLog } from "@/utils/logger";
+
+export type BracketLoadingStep = 'bracket' | 'stage' | 'matches' | 'teams' | 'done';
+
+export interface BracketLoadingProgress {
+  step: BracketLoadingStep;
+  label: string;
+  percent: number;
+}
 
 export interface SimpleBracketData {
   id: string;
@@ -48,10 +55,33 @@ export interface SimpleBracketData {
   stageId?: number;  // Stage ID for realtime subscriptions
 }
 
+// Progress steps configuration
+const LOADING_STEPS: Record<BracketLoadingStep, { label: string; percent: number }> = {
+  bracket: { label: 'Loading bracket info...', percent: 20 },
+  stage: { label: 'Fetching stage & participants...', percent: 50 },
+  matches: { label: 'Loading matches...', percent: 75 },
+  teams: { label: 'Fetching team details...', percent: 90 },
+  done: { label: 'Complete', percent: 100 }
+};
+
 export const useBracketData = (bracketId: string | null) => {
+  const [loadingProgress, setLoadingProgress] = useState<BracketLoadingProgress>({
+    step: 'bracket',
+    label: LOADING_STEPS.bracket.label,
+    percent: LOADING_STEPS.bracket.percent
+  });
+
+  const updateProgress = useCallback((step: BracketLoadingStep) => {
+    setLoadingProgress({
+      step,
+      label: LOADING_STEPS[step].label,
+      percent: LOADING_STEPS[step].percent
+    });
+  }, []);
+
   bracketLog('useBracketData hook called', { bracketId });
   
-  return useQuery({
+  const query = useQuery({
     queryKey: ['bracket-data', bracketId],
     queryFn: async (): Promise<SimpleBracketData | null> => {
       bracketLog('Starting fetch for bracket:', bracketId);
@@ -63,22 +93,23 @@ export const useBracketData = (bracketId: string | null) => {
 
       try {
         // Step 1: Get bracket info with state field
+        updateProgress('bracket');
         bracketLog('Step 1 - Fetching bracket info for ID:', bracketId);
-      const { data: bracket, error: bracketError } = await supabase
-        .from('brackets')
-        .select(`
-          id, 
-          title, 
-          format, 
-          state, 
-          division_id,
-          divisions!inner(display_division, name),
-          challonge_tournament_id, 
-          uses_brackets_manager, 
-          bracket_data
-        `)
-        .eq('id', bracketId)
-        .single();
+        const { data: bracket, error: bracketError } = await supabase
+          .from('brackets')
+          .select(`
+            id, 
+            title, 
+            format, 
+            state, 
+            division_id,
+            divisions!inner(display_division, name),
+            challonge_tournament_id, 
+            uses_brackets_manager, 
+            bracket_data
+          `)
+          .eq('id', bracketId)
+          .single();
 
         if (bracketError) {
           errorLog('Bracket query error:', bracketError);
@@ -101,6 +132,7 @@ export const useBracketData = (bracketId: string | null) => {
           bracketLog('Step 2 - Fetching from SQL tables (brackets-manager)');
           
           // PARALLEL BATCH 1: Fetch stage and participants concurrently (both need bracketId)
+          updateProgress('stage');
           bracketLog('Parallel Batch 1 - Fetching stage and participants concurrently');
           const [stageResult, participantsResult] = await Promise.all([
             supabase.from('stage').select('*').eq('tournament_id', bracketId),
@@ -131,6 +163,7 @@ export const useBracketData = (bracketId: string | null) => {
           bracketLog('Participants fetched:', participants?.length || 0);
 
           // PARALLEL BATCH 2: Fetch groups and matches concurrently (both need stage.id)
+          updateProgress('matches');
           bracketLog('Parallel Batch 2 - Fetching groups and matches concurrently');
           const [groupsResult, matchesResult] = await Promise.all([
             supabase.from('group').select('*').eq('stage_id', stage.id),
@@ -167,6 +200,7 @@ export const useBracketData = (bracketId: string | null) => {
           });
 
           // Step 7: Extract team IDs from participant names (match with teams table)
+          updateProgress('teams');
           const teamNames = participants?.map(p => p.name) || [];
           const { data: teamDetails, error: teamsError } = await supabase
             .from('teams')
@@ -270,6 +304,7 @@ export const useBracketData = (bracketId: string | null) => {
             stageId: stage.id  // Include stageId for realtime subscriptions
           };
 
+          updateProgress('done');
           bracketLog('Final result built from SQL tables:', {
             bracketId: result.id,
             matchesCount: result.matches.length,
@@ -305,4 +340,9 @@ export const useBracketData = (bracketId: string | null) => {
     refetchOnMount: true,
     refetchOnWindowFocus: false
   });
+
+  return {
+    ...query,
+    loadingProgress
+  };
 };

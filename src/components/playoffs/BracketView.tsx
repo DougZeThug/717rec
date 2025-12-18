@@ -2,13 +2,14 @@
 import React, { useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useBracketData } from "@/hooks/brackets/useBracketData";
+import { useBracketData, BracketLoadingProgress } from "@/hooks/brackets/useBracketData";
 import { useBracketCompletion } from "@/hooks/useBracketCompletion";
 import { BracketsViewerComponent } from "./viewer";
 import { FinalStandings } from "./FinalStandings";
 import BracketErrorBoundary from "./BracketErrorBoundary";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { log, bracketLog, errorLog, debugLog } from "@/utils/logger";
 
@@ -87,7 +88,8 @@ const BracketView: React.FC<BracketViewProps> = ({
     data: fetchedBracket, 
     isLoading: isLoadingLegacy, 
     error: legacyError,
-    refetch: refetchBracket
+    refetch: refetchBracket,
+    loadingProgress
   } = useBracketData(bracketId);
   
   useBracketCompletion(bracketId || undefined);
@@ -147,11 +149,14 @@ const BracketView: React.FC<BracketViewProps> = ({
     debugLog('Showing loading state');
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="text-center space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-cornhole-navy" />
-          <div>
-            <p className="font-medium">Loading bracket data...</p>
-            <p className="text-sm text-gray-500 mt-1">This may take a moment</p>
+        <div className="text-center space-y-4 w-full max-w-xs">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <div className="space-y-2">
+            <p className="font-medium text-foreground">{loadingProgress.label}</p>
+            <Progress value={loadingProgress.percent} className="h-2" />
+            <p className="text-xs text-muted-foreground">
+              {loadingProgress.percent}% complete
+            </p>
           </div>
         </div>
       </div>
