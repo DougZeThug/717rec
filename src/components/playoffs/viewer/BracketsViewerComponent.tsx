@@ -395,7 +395,11 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
 
   return (
     <>
-      <div className="w-full h-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background">
+      <div 
+        className="w-full h-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background"
+        role="region"
+        aria-label={`Playoff Bracket: ${bracket?.name || 'Tournament'}`}
+      >
         <div ref={wrapperRef} id="brackets-wrapper" style={{ position: 'relative', height: '100%', minHeight: '350px' }}>
           <div 
             ref={containerRef}

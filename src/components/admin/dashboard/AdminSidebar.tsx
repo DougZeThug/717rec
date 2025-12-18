@@ -124,6 +124,7 @@ const AdminSidebar: React.FC = () => {
             size="icon-sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="ml-auto"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
