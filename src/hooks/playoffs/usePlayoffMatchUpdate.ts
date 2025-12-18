@@ -34,26 +34,43 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         winnerId: team1GameWins > team2GameWins ? 'team1' : 'team2'
       });
       
-      // Fetch match data to determine winner
-      const { data: matchData } = await supabase
-        .from('playoff_matches')
-        .select('team1_id, team2_id')
-        .eq('id', matchId)
+      // For brackets-manager, fetch from the 'match' table (not playoff_matches)
+      const numericMatchId = parseInt(matchId);
+      const { data: bmMatchData, error: bmMatchError } = await supabase
+        .from('match')
+        .select('opponent1_id, opponent2_id, stage_id')
+        .eq('id', numericMatchId)
         .single();
       
-      if (!matchData) {
-        throw new Error('Failed to fetch match data');
+      if (bmMatchError || !bmMatchData) {
+        scoreLog('Failed to fetch brackets-manager match data', { matchId, error: bmMatchError });
+        throw new Error('Failed to fetch match data from brackets-manager table');
       }
 
-      // Handle BYE matches (one team is null) as forfeits
-      const isBye = !matchData.team1_id || !matchData.team2_id;
+      // Get participant data to map opponent IDs to team IDs
+      const opponentIds = [bmMatchData.opponent1_id, bmMatchData.opponent2_id].filter(Boolean);
+      const { data: participants } = await supabase
+        .from('participant')
+        .select('id, name, tournament_id')
+        .in('id', opponentIds);
+
+      // Map opponent IDs to team names for logging (actual team lookup not needed for brackets-manager update)
+      const opponent1Name = participants?.find(p => p.id === bmMatchData.opponent1_id)?.name || 'Unknown';
+      const opponent2Name = participants?.find(p => p.id === bmMatchData.opponent2_id)?.name || 'Unknown';
+      
+      scoreLog('Brackets-manager match participants', { 
+        opponent1: { id: bmMatchData.opponent1_id, name: opponent1Name },
+        opponent2: { id: bmMatchData.opponent2_id, name: opponent2Name }
+      });
+
+      // Handle BYE matches (one opponent is null) as forfeits
+      const isBye = !bmMatchData.opponent1_id || !bmMatchData.opponent2_id;
       if (isBye) {
         scoreLog("BYE match detected - treating as forfeit");
-        // For BYE matches, the scores are already set correctly (winner gets all games)
-        // Just pass through to bracket manager with the forfeit scores
       }
       
-      const winnerId = team1GameWins > team2GameWins ? matchData.team1_id : matchData.team2_id;
+      // For brackets-manager, we use opponent IDs directly (not team UUIDs)
+      const winnerOpponentId = team1GameWins > team2GameWins ? bmMatchData.opponent1_id : bmMatchData.opponent2_id;
       
       scoreLog(`Calling bracketManagerService.updateMatch for Match ${matchId}`, {
         matchId: parseInt(matchId),
@@ -79,33 +96,9 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       
       scoreLog(`usePlayoffMatchUpdate - COMPLETED: Match ${matchId}`);
       
-      // Save individual games
-      if (games && games.length > 0) {
-        if (matchData) {
-          await supabase
-            .from('playoff_games')
-            .delete()
-            .eq('match_id', matchId);
-
-          const gameInserts = games.map((game, index) => {
-            const gameWinnerId = game.team1Score > game.team2Score 
-              ? matchData.team1_id 
-              : matchData.team2_id;
-            
-            return {
-              match_id: matchId,
-              game_number: index + 1,
-              team1_score: game.team1Score,
-              team2_score: game.team2Score,
-              winner_id: gameWinnerId
-            };
-          });
-
-          await supabase
-            .from('playoff_games')
-            .insert(gameInserts);
-        }
-      }
+      // For brackets-manager, game-level data is handled by the library via match_game table
+      // Skip legacy playoff_games table operations
+      scoreLog('Brackets-manager match - game data handled internally');
       
       // Invalidate all match-related queries to ensure fresh data
       await invalidateMatchRelatedQueries(queryClient);
