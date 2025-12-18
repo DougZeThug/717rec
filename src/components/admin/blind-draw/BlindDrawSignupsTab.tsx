@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,17 +23,22 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const BlindDrawSignupsTab: React.FC = () => {
-  // Default to next Thursday
-  const getNextThursday = () => {
-    const today = new Date();
-    // If today is Thursday, use today. Otherwise, get the next Thursday.
-    if (isThursday(today)) {
-      return format(today, "yyyy-MM-dd");
+  // Calculate the appropriate Thursday date
+  const calculateThursdayDate = () => {
+    const now = new Date();
+    // Use getDay() directly: 0=Sunday, 4=Thursday
+    if (now.getDay() === 4) {
+      return format(now, "yyyy-MM-dd");
     }
-    return format(nextThursday(today), "yyyy-MM-dd");
+    return format(nextThursday(now), "yyyy-MM-dd");
   };
 
-  const [selectedDate, setSelectedDate] = useState(getNextThursday());
+  const [selectedDate, setSelectedDate] = useState(calculateThursdayDate);
+
+  // Recalculate date on every mount to handle tab switching
+  useEffect(() => {
+    setSelectedDate(calculateThursdayDate());
+  }, []);
   const { data: signups, isLoading, error } = useBlindDrawSignups(selectedDate);
   const deleteSignup = useDeleteBlindDrawSignup();
   const clearSignups = useClearBlindDrawSignups();
