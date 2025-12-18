@@ -1,9 +1,9 @@
-
 import React, { useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBracketData, BracketLoadingProgress } from "@/hooks/brackets/useBracketData";
 import { useBracketCompletion } from "@/hooks/useBracketCompletion";
+import { useBracketsManagerRealtime } from "@/hooks/brackets/useBracketsManagerRealtime";
 import { BracketsViewerComponent } from "./viewer";
 import { FinalStandings } from "./FinalStandings";
 import BracketErrorBoundary from "./BracketErrorBoundary";
@@ -93,6 +93,17 @@ const BracketView: React.FC<BracketViewProps> = ({
   } = useBracketData(bracketId);
   
   useBracketCompletion(bracketId || undefined);
+  
+  // Add realtime subscription for brackets-manager brackets (auto-fetches stageId if needed)
+  const { realtimeEnabled } = useBracketsManagerRealtime(
+    bracketInfo?.uses_brackets_manager ? bracketId : null
+  );
+  
+  useEffect(() => {
+    if (realtimeEnabled) {
+      bracketLog('BracketView: Realtime subscription active for bracket', { bracketId });
+    }
+  }, [realtimeEnabled, bracketId]);
 
   const handleMatchClick = useCallback((matchId: string) => {
     if (onEditMatch) {

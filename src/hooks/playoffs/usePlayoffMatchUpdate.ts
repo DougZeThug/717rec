@@ -103,6 +103,17 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       // Invalidate all match-related queries to ensure fresh data
       await invalidateMatchRelatedQueries(queryClient);
       
+      // Explicitly invalidate this specific bracket's data and force refetch
+      if (bracket?.id) {
+        scoreLog('Explicitly invalidating bracket cache:', bracket.id);
+        await queryClient.invalidateQueries({ queryKey: ['bracket-data', bracket.id] });
+        await queryClient.invalidateQueries({ queryKey: ['bracket-info', bracket.id] });
+        
+        // Force immediate refetch to ensure UI updates
+        await queryClient.refetchQueries({ queryKey: ['bracket-data', bracket.id] });
+        scoreLog('Bracket cache invalidated and refetched');
+      }
+      
       toast({
         title: "Success",
         description: "Match updated with automatic winner progression",
