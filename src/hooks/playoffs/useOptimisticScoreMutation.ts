@@ -11,6 +11,14 @@ interface CachedMatchSnapshot {
   status: string;
 }
 
+// Helper to match IDs that may have "match-" prefix
+const matchIdMatches = (cachedId: any, targetId: string): boolean => {
+  const cachedStr = cachedId?.toString() || '';
+  const numericCached = cachedStr.replace('match-', '');
+  const numericTarget = targetId.replace('match-', '');
+  return numericCached === numericTarget || cachedStr === targetId;
+};
+
 export const useOptimisticScoreMutation = (bracketId: string | null) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -36,9 +44,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
     // Save snapshot for rollback
     const currentData = queryClient.getQueryData(['bracket-data', bracketId]) as any;
     if (currentData?.matches) {
-      const currentMatch = currentData.matches.find((m: any) => 
-        m.id?.toString() === matchId || m.id === parseInt(matchId)
-      );
+      const currentMatch = currentData.matches.find((m: any) => matchIdMatches(m.id, matchId));
       if (currentMatch) {
         snapshotRef.current = {
           matchId,
@@ -57,7 +63,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       return {
         ...oldData,
         matches: oldData.matches.map((match: any) => {
-          const isMatch = match.id?.toString() === matchId || match.id === parseInt(matchId);
+          const isMatch = matchIdMatches(match.id, matchId);
           if (!isMatch) return match;
 
           // Handle both brackets-manager format and legacy format
@@ -115,7 +121,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       return {
         ...oldData,
         matches: oldData.matches.map((match: any) => {
-          const isMatch = match.id?.toString() === snapshot.matchId || match.id === parseInt(snapshot.matchId);
+          const isMatch = matchIdMatches(match.id, snapshot.matchId);
           if (!isMatch) return match;
 
           if ('opponent1_score' in match || 'opponent1_id' in match) {

@@ -183,7 +183,7 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
       });
     }
     
-  }, [useBracketsManager, toast, queryClient]);
+  }, [useBracketsManager, toast, queryClient, bracket]);
   
   return { updateMatch, useBracketsManager };
 };
