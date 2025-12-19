@@ -22,11 +22,18 @@ const Card = React.forwardRef<
     ? gradients.card.division[division.toLowerCase()] || getDivisionGradientClass(division)
     : gradients.card[variant];
   
+  // Check if this is an interactive card (has onClick or is variant="interactive")
+  const isInteractive = variant === "interactive" || props.onClick;
+  
   return (
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border bg-card text-card-foreground shadow-sm transition-all duration-300",
+        "rounded-lg border bg-card text-card-foreground shadow-sm",
+        // Fast transition for pressed states
+        "transition-all duration-100",
+        // Interactive cards get pressed feedback
+        isInteractive && "cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm",
         isLight ? gradientClass : "",
         isLight ? "!text-[#222222]" : "",
         className

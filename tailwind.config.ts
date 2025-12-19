@@ -198,6 +198,48 @@ export default {
 					'100%': {
 						transform: 'translateX(100%)'
 					}
+				},
+				// New: Page transition animations
+				'page-enter': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(8px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'page-exit': {
+					from: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					},
+					to: {
+						opacity: '0',
+						transform: 'translateY(-8px)'
+					}
+				},
+				// New: Success flash for confirmations
+				'success-flash': {
+					'0%': {
+						backgroundColor: 'transparent'
+					},
+					'50%': {
+						backgroundColor: 'hsl(142 76% 36% / 0.15)'
+					},
+					'100%': {
+						backgroundColor: 'transparent'
+					}
+				},
+				// New: Press feedback ripple
+				'press-feedback': {
+					'0%, 100%': {
+						transform: 'scale(1)'
+					},
+					'50%': {
+						transform: 'scale(0.97)'
+					}
 				}
 			},
 			animation: {
@@ -210,7 +252,12 @@ export default {
 				'entrance-left': 'entrance-left 0.4s ease-out forwards',
 				'entrance-right': 'entrance-right 0.4s ease-out forwards',
 				'soft-pulse': 'soft-pulse 2s infinite ease-in-out',
-				'subtle-bounce': 'subtle-bounce 2s infinite ease-in-out'
+				'subtle-bounce': 'subtle-bounce 2s infinite ease-in-out',
+				// New animations
+				'page-enter': 'page-enter 0.2s ease-out',
+				'page-exit': 'page-exit 0.15s ease-out',
+				'success-flash': 'success-flash 0.4s ease-out',
+				'press-feedback': 'press-feedback 0.15s ease-out'
 			}
 		}
 	},

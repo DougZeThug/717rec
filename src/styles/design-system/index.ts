@@ -8,4 +8,5 @@ export * from './animations';
 export * from './divisions';
 export * from './cards';
 export * from './blueAmber';
+export * from './motion';
 
