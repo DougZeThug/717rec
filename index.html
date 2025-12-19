@@ -11,7 +11,8 @@
     <!-- Preconnect hints for faster resource loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://wcitdamvochthvxvtxyb.supabase.co" />
+    <link rel="preconnect" href="https://wcitdamvochthvxvtxyb.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://wcitdamvochthvxvtxyb.supabase.co" />
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     
     <!-- Preload critical above-the-fold image for faster LCP -->
@@ -28,7 +29,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module" async></script>
+    <script type="module" src="/src/main.tsx" fetchpriority="high"></script>
   </body>
 </html>
