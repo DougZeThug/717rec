@@ -8,16 +8,21 @@ const Footer = () => {
   const { isDark } = useThemeConsistency();
 
   return (
-    <footer className="bg-slate-50 dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800 py-4 transition-colors duration-300">
+    <footer 
+      className="bg-slate-50 dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800 py-4 transition-colors duration-300"
+      style={{ minHeight: '141px', contain: 'layout' }}
+    >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Logo Section */}
-          <div className="flex items-center">
+          <div className="flex items-center" style={{ minWidth: '40px', minHeight: '40px' }}>
             <img 
               src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" 
               alt="717 Rec Logo" 
               width={40}
               height={40}
+              loading="lazy"
+              decoding="async"
               className="h-10 w-10"
             />
           </div>
