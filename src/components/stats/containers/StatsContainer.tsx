@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import { useTeamData } from "@/hooks/useTeamData";
 import { Match } from "@/types";
@@ -9,7 +9,14 @@ import StatsChartsSection from "./StatsChartsSection";
 import FullRankingsSection from "./FullRankingsSection";
 import LoadingStateContainer from "./LoadingStateContainer";
 import CareerRankingsSection from "../career/CareerRankingsSection";
-import { AllTeamsCareerPowerScoreChart } from "../career/AllTeamsCareerPowerScoreChart";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load the chart component to defer loading recharts bundle
+const AllTeamsCareerPowerScoreChart = lazy(() => 
+  import("../career/AllTeamsCareerPowerScoreChart").then(module => ({ 
+    default: module.AllTeamsCareerPowerScoreChart 
+  }))
+);
 
 interface StatsContainerProps {
   matches: Match[];
@@ -47,7 +54,9 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
             
             <StatsChartsSection rankings={rankings} />
 
-            <AllTeamsCareerPowerScoreChart />
+            <Suspense fallback={<Skeleton className="h-64 w-full rounded-xl" />}>
+              <AllTeamsCareerPowerScoreChart />
+            </Suspense>
             
             <CareerRankingsSection />
           </>
