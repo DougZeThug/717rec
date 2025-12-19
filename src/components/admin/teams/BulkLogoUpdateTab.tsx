@@ -13,7 +13,7 @@ type FilterStatus = 'all' | LogoStatus;
 type SortOption = 'name' | 'status';
 
 const BulkLogoUpdateTab: React.FC = () => {
-  const { data: teams, isLoading, refetch } = useTeamData();
+  const { data: teams, isLoading, refetch } = useTeamData(undefined, true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('status');

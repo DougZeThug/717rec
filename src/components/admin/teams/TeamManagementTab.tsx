@@ -21,7 +21,7 @@ import { updateTeamApi } from "@/services/TeamService";
 const TeamManagementTab = () => {
   const { toast } = useToast();
   const { createTeam } = useTeams();
-  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamData();
+  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamData(undefined, true);
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("all");
