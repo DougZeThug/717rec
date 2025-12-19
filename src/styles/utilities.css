@@ -78,3 +78,15 @@
       border-radius: 4px;
     }
   }
+
+  /* Content visibility optimization for below-fold sections */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
+  
+  /* Defer rendering of off-screen content to improve TTI */
+  section:not(:first-of-type) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 400px;
+  }
