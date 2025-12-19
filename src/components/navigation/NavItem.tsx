@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export interface NavItemProps {
@@ -39,20 +40,34 @@ export const NavItem: React.FC<NavItemProps> = ({
       aria-current={isActive ? "page" : undefined}
     >
       <div className="flex flex-col items-center">
-        {icon && <div className={cn("mb-1", isActive && "text-cornhole-navy dark:text-blue-300")}>{icon}</div>}
+        {icon && (
+          <motion.div 
+            className={cn("mb-1", isActive && "text-cornhole-navy dark:text-blue-300")}
+            animate={isActive ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            {icon}
+          </motion.div>
+        )}
         {label && <span className="text-sm font-medium">{label}</span>}
       </div>
-      {isActive && (
-        <span 
-          className={cn(
-            "absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-full",
-            "bg-gradient-to-r from-cornhole-navy via-blue-600 to-amber-500",
-            "w-2/3 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
-            "dark:from-blue-400 dark:via-blue-300 dark:to-amber-400",
-            "transition-all duration-300 ease-out"
-          )}
-        />
-      )}
+      <AnimatePresence>
+        {isActive && (
+          <motion.span 
+            className={cn(
+              "absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-full",
+              "bg-gradient-to-r from-cornhole-navy via-blue-600 to-amber-500",
+              "w-2/3 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
+              "dark:from-blue-400 dark:via-blue-300 dark:to-amber-400"
+            )}
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            exit={{ scaleX: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            layoutId="bottomNavIndicator"
+          />
+        )}
+      </AnimatePresence>
     </Link>
   );
 };
