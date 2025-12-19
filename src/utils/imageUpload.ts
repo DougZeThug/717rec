@@ -62,7 +62,7 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
 export const uploadTeamImage = async (file: File, teamId?: string) => {
   let fileToUpload = file;
   const maxSizeMB = 0.1; // 100KB max size for better performance
-  const maxWidthOrHeight = 300; // Max dimensions 300x300px
+  const maxWidthOrHeight = 128; // Max dimensions 128x128px for avatar-sized images
   
   try {
     // Attempt to compress and resize the image, converting to WebP for better compression
@@ -94,8 +94,8 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
     fileToUpload = file;
   }
 
-  // Generate a unique filename
-  const fileExt = file.name.split('.').pop();
+  // Generate a unique filename with correct extension based on actual file type
+  const fileExt = fileToUpload.type === 'image/webp' ? 'webp' : file.name.split('.').pop();
   const fileName = `${uuidv4()}.${fileExt}`;
   
   // Create path based on team ID if available
