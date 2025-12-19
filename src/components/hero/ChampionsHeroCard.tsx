@@ -210,7 +210,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
           "text-xl md:text-2xl font-bebas uppercase tracking-wide",
           "text-white"
         )}>
-          {card.title}
+          {card.title.replace(/🏆\s*/g, '')}
         </h2>
       </div>
       
