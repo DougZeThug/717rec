@@ -105,7 +105,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                 <TabsTrigger 
                   value="core" 
                   className={cn(
-                    "text-sm transition-all duration-300",
+                    "text-sm whitespace-nowrap transition-all duration-300",
                     getTabGradient("core")
                   )}
                 >
@@ -114,7 +114,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                 <TabsTrigger 
                   value="games" 
                   className={cn(
-                    "text-sm transition-all duration-300",
+                    "text-sm whitespace-nowrap transition-all duration-300",
                     getTabGradient("games")
                   )}
                 >
@@ -123,7 +123,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                 <TabsTrigger 
                   value="advanced" 
                   className={cn(
-                    "text-sm transition-all duration-300",
+                    "text-sm whitespace-nowrap transition-all duration-300",
                     getTabGradient("advanced")
                   )}
                 >
