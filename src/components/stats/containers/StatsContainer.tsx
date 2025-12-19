@@ -18,12 +18,11 @@ interface StatsContainerProps {
 }
 
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
-  const [selectedDivision, setSelectedDivision] = React.useState<string | null>(null);
   const { 
     data: teams, 
     isLoading: isLoadingTeams, 
     error: teamsError,
-  } = useTeamData(selectedDivision);
+  } = useTeamData(null);
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
 
   const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;

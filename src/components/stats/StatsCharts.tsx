@@ -90,8 +90,8 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
               {/* On mobile: swipeable carousel */}
               {isMobile ? (
                 <div className="col-span-1">
-                  <div className="overflow-hidden" ref={emblaRef}>
-                    <div className="flex">
+                  <div className="overflow-hidden will-change-transform" ref={emblaRef}>
+                    <div className="flex touch-pan-y">
                       <div className="flex-[0_0_100%] min-w-0 pr-2">
                         <WinLossChartCard 
                           data={winLossData} 
