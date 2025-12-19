@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Edit, Trash2, Plus, Users, Settings } from "lucide-react";
+import { Search, Edit, Trash2, Plus, Users, Settings, Image } from "lucide-react";
+import BulkLogoUpdateTab from "./BulkLogoUpdateTab";
 import TeamForm from "@/components/teams/TeamForm";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -147,6 +148,10 @@ const TeamManagementTab = () => {
         <TabsList>
           <TabsTrigger value="manage">Manage Teams</TabsTrigger>
           <TabsTrigger value="create">Create Team</TabsTrigger>
+          <TabsTrigger value="logos" className="gap-1.5">
+            <Image className="h-3.5 w-3.5" />
+            Update Logos
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="manage" className="space-y-4">
@@ -275,6 +280,10 @@ const TeamManagementTab = () => {
               />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="logos">
+          <BulkLogoUpdateTab />
         </TabsContent>
       </Tabs>
 
