@@ -33,8 +33,10 @@ export default defineConfig(({ mode }) => ({
       options: {
         preload: 'swap',
         pruneSource: false,
-        inlineThreshold: 0,
+        inlineThreshold: 2000,
         reduceInlineStyles: true,
+        mergeStylesheets: true,
+        additionalStylesheets: [],
       },
     }),
   ].filter(Boolean),
