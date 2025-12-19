@@ -144,6 +144,7 @@ const TeamDetails = () => {
             maxDisplay={12}
             orientation="horizontal"
             className="gap-3"
+            showEmptyState={true}
           />
         </CollapsibleSection>
       )}
