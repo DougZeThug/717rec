@@ -26,6 +26,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
         <img
           src={src}
           alt={alt}
+          loading="lazy"
+          decoding="async"
           className="w-10 h-10 object-contain rounded-none"
           onError={(e) => {
             console.error(`Image load error for ${alt}:`, src);

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo, useTransition } from "react";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import RankingsMobileView from "./RankingsMobileView";
@@ -20,6 +20,7 @@ export interface SortOptions {
 const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = false }) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const [sortOptions, setSortOptions] = useState<SortOptions>(() => {
     const savedSort = localStorage.getItem("rankingsSortOptions");
     if (savedSort) {
@@ -41,27 +42,28 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
     setExpandedTeam(expandedTeam === teamId ? null : teamId);
   };
 
-  // Sort overall rankings by selected criteria
-  const sortedRankings = sortRankings(rankings, sortOptions.field, sortOptions.direction);
+  // Memoize sorted rankings - only recalculate when rankings or sort options change
+  const sortedRankings = useMemo(() => 
+    sortRankings(rankings, sortOptions.field, sortOptions.direction),
+    [rankings, sortOptions.field, sortOptions.direction]
+  );
   
-  // Calculate division-specific ranks
-  const rankingsWithDivisionRanks = sortedRankings.map(ranking => {
-    // Find all teams in this team's division
-    const divisionTeams = sortedRankings.filter(
-      r => r.divisionName === ranking.divisionName
-    );
-    
-    // Sort division teams by the selected criteria
-    const sortedDivisionTeams = sortRankings(divisionTeams, sortOptions.field, sortOptions.direction);
-    
-    // Find this team's position within its division (1-based index)
-    const divisionRank = sortedDivisionTeams.findIndex(r => r.teamId === ranking.teamId) + 1;
-    
-    return {
-      ...ranking,
-      divisionRank: ranking.divisionName ? divisionRank : undefined,
-    };
-  });
+  // Memoize division rank calculations - only recalculate when sorted rankings change
+  const rankingsWithDivisionRanks = useMemo(() => 
+    sortedRankings.map(ranking => {
+      const divisionTeams = sortedRankings.filter(
+        r => r.divisionName === ranking.divisionName
+      );
+      const sortedDivisionTeams = sortRankings(divisionTeams, sortOptions.field, sortOptions.direction);
+      const divisionRank = sortedDivisionTeams.findIndex(r => r.teamId === ranking.teamId) + 1;
+      
+      return {
+        ...ranking,
+        divisionRank: ranking.divisionName ? divisionRank : undefined,
+      };
+    }),
+    [sortedRankings, sortOptions.field, sortOptions.direction]
+  );
 
   const handleSortChange = (field: string) => {
     const newDirection: SortDirection = sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc';
@@ -69,7 +71,11 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
       field,
       direction: newDirection
     };
-    setSortOptions(newSortOptions);
+    
+    // Use startTransition for non-urgent UI update
+    startTransition(() => {
+      setSortOptions(newSortOptions);
+    });
     
     localStorage.setItem("rankingsSortOptions", JSON.stringify(newSortOptions));
   };
