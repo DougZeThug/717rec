@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -108,7 +109,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
           </TableHeader>
           <TableBody>
             {cards.map((card) => (
-              <TableRow key={card.id}>
+              <TableRow key={card.id} className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted">
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <GripVertical className="h-4 w-4 text-muted-foreground/50" />
@@ -173,41 +174,47 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                   <div className="flex justify-end gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => onEdit(card)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <motion.div whileTap={{ scale: 0.9 }}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => onEdit(card)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </motion.div>
                       </TooltipTrigger>
                       <TooltipContent>Edit card</TooltipContent>
                     </Tooltip>
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => handleDuplicate(card)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
+                        <motion.div whileTap={{ scale: 0.9 }}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleDuplicate(card)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </motion.div>
                       </TooltipTrigger>
                       <TooltipContent>Duplicate card</TooltipContent>
                     </Tooltip>
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => handleDelete(card.id)}
-                          disabled={isDeleting}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <motion.div whileTap={{ scale: 0.9 }}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleDelete(card.id)}
+                            disabled={isDeleting}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </motion.div>
                       </TooltipTrigger>
                       <TooltipContent>Delete card</TooltipContent>
                     </Tooltip>

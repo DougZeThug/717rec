@@ -47,7 +47,7 @@ export const CollapsibleSection = ({
   return (
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
       <div className={cn("border rounded-lg bg-card shadow-sm", className)}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
+        <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 active:bg-accent/70 transition-colors">
           <div className="flex items-center gap-2">
             <Icon className={cn("h-4 w-4 md:h-5 md:w-5", iconColor)} />
             <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">

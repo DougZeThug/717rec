@@ -1,5 +1,5 @@
-
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -204,7 +204,7 @@ const TeamManagementTab = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredTeams.map((team) => (
-                      <TableRow key={team.id}>
+                      <TableRow key={team.id} className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted">
                         <TableCell className="font-medium">{team.name}</TableCell>
                         <TableCell>
                           <span className="text-sm">
@@ -241,13 +241,15 @@ const TeamManagementTab = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingTeam(team)}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
+                            <motion.div whileTap={{ scale: 0.9 }}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingTeam(team)}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            </motion.div>
                           </div>
                         </TableCell>
                       </TableRow>
