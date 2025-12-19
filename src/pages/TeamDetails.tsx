@@ -86,7 +86,7 @@ const TeamDetails = () => {
       
       <Button 
         variant="ghost" 
-        className="mb-2 md:mb-4 h-8 px-2 md:h-10 md:px-4" 
+        className="mb-2 md:mb-4 min-h-11 px-3 md:h-10 md:px-4" 
         onClick={() => navigate(-1)}
       >
         <ArrowLeft size={16} className="mr-1 md:mr-2" /> Back
