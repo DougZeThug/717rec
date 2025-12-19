@@ -13,6 +13,7 @@ interface TeamBadgeCollectionProps {
   maxDisplay?: number;
   orientation?: 'horizontal' | 'vertical';
   className?: string;
+  showEmptyState?: boolean;
 }
 
 const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
@@ -20,7 +21,8 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
   size = 'md',
   maxDisplay = 6,
   orientation = 'horizontal',
-  className
+  className,
+  showEmptyState = false
 }) => {
   const { data: badges, isLoading, error } = useTeamBadges(teamId);
 
@@ -47,6 +49,9 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
   }
 
   if (!badges || badges.length === 0) {
+    if (!showEmptyState) {
+      return null;
+    }
     return (
       <div className="text-center py-6">
         <Trophy className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
