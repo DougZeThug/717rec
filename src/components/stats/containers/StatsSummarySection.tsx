@@ -56,7 +56,7 @@ const StatsSummarySection = ({
                 </CardTitle>
                 {!isMobile && (
                   <CardDescription className={cn(
-                    isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter"
+                    isLight ? "text-gray-600 font-medium font-inter" : "text-gray-400 font-inter"
                   )}>
                     Top {compactLimit} teams based on performance
                   </CardDescription>

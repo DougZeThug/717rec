@@ -100,7 +100,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
               // Compact View
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
-                  <span className="text-sm font-bold text-muted-foreground min-w-[24px]">
+                  <span className="text-sm font-bold text-muted-foreground min-w-6">
                     #{index + 1}
                   </span>
                   <Link

@@ -37,11 +37,11 @@ export const DesktopNav = () => {
   
   return (
     <div className={cn(
-      "border-b border-gray-200 dark:border-gray-700 mb-4 py-[16px]",
+      "border-b border-gray-200 dark:border-gray-700 mb-4 py-4",
       "bg-gradient-to-r from-white via-gray-50 to-white",
       "dark:from-gray-800/90 dark:via-gray-800 dark:to-gray-800/90",
     )}>
-      <div className="container mx-auto flex items-center justify-between py-[15px] px-4">
+      <div className="container mx-auto flex items-center justify-between py-4 px-4">
         <div className="flex-1" /> {/* Spacer */}
         
         <div className="flex space-x-2">

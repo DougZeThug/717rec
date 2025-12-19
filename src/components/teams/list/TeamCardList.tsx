@@ -31,7 +31,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
 
   return (
     <motion.div 
-      className="bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl 
+      className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 rounded-xl 
         overflow-hidden h-full font-inter shadow-sm"
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
@@ -51,14 +51,14 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
         <div className="flex flex-col flex-grow p-5">
           <div className="flex justify-between items-start mb-3">
             <Link to={`/teams/${team.id}`} className="hover:underline">
-              <h3 className="font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl text-[#1a1a1a] dark:text-white">
+              <h3 className="font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl text-gray-900 dark:text-white">
                 {team.name}
               </h3>
             </Link>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 -mt-1 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="h-9 w-9 -mt-1 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                   <MoreHorizontal size={18} />
                   <span className="sr-only">Open menu</span>
                 </Button>

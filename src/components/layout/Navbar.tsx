@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
       "dark:from-gray-900 dark:via-gray-900 dark:to-gray-800",
     )}>
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-[8px] md:py-[4px]">
+        <div className="flex justify-between items-center py-2 md:py-1">
           <div className="flex items-center">
             <NavBrand />
           </div>

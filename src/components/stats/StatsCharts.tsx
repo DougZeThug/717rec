@@ -69,7 +69,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                 </CardTitle>
                 {!isMobile && (
                   <CardDescription className={cn(
-                    isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter"
+                    isLight ? "text-gray-600 font-medium font-inter" : "text-gray-400 font-inter"
                   )}>
                     Visual breakdown of team performance metrics
                   </CardDescription>
