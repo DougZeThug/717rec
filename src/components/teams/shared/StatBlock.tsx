@@ -57,7 +57,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   // Apply gradient to the value text based on variant
   const valueClasses = cn(
     "font-mono text-sm sm:text-base font-medium",
-    highlight ? "text-blue-700 dark:text-blue-300" : "text-[#2c2c2c] dark:text-white"
+    highlight ? "text-blue-700 dark:text-blue-300" : "text-gray-800 dark:text-white"
   );
 
   if (orientation === 'horizontal') {

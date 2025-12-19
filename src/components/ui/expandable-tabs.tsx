@@ -69,7 +69,7 @@ export function ExpandableTabs({
   };
 
   const Separator = () => (
-    <div className="mx-1 h-[24px] w-[1.2px] bg-border" aria-hidden="true" />
+    <div className="mx-1 h-6 w-[1.2px] bg-border" aria-hidden="true" />
   );
 
   return (

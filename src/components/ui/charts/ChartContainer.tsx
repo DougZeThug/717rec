@@ -50,7 +50,7 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
           className={cn(
             "flex aspect-video justify-center text-xs font-inter",
             isLight 
-              ? "[&_.recharts-cartesian-axis-tick_text]:!fill-[#222222] [&_.recharts-cartesian-axis-tick_text]:!font-semibold" 
+              ? "[&_.recharts-cartesian-axis-tick_text]:!fill-gray-900 [&_.recharts-cartesian-axis-tick_text]:!font-semibold" 
               : "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
             isLight 
               ? "[&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#ddd]" 
@@ -64,10 +64,10 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
               ? "[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[#ddd]" 
               : "[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border",
             isLight 
-              ? "[&_.recharts-radial-bar-background-sector]:fill-[#f5f5f5]" 
+              ? "[&_.recharts-radial-bar-background-sector]:fill-gray-100" 
               : "[&_.recharts-radial-bar-background-sector]:fill-muted",
             isLight 
-              ? "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[#f5f5f5]/70" 
+              ? "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-gray-100/70" 
               : "[&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted",
             isLight 
               ? "[&_.recharts-reference-line_[stroke='#ccc']]:stroke-[#ddd]" 
@@ -76,8 +76,8 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
             "[&_.recharts-sector]:outline-none",
             "[&_.recharts-surface]:outline-none",
             isLight 
-              ? "bg-white !text-[#111111]" 
-              : "bg-[#111827] text-white",
+              ? "bg-white !text-gray-900" 
+              : "bg-gray-900 text-white",
             className
           )}
           {...props}

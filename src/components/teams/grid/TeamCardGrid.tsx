@@ -28,13 +28,13 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   const isMobile = useIsMobile();
 
   const headerGradient = "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-gray-800/70 dark:via-gray-800/80 dark:to-gray-800/70";
-  const contentGradient = "bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90";
+  const contentGradient = "bg-gradient-to-br from-white to-gray-50/70 dark:from-gray-900 dark:to-gray-900/90";
 
   return (
     <motion.div 
       className={cn(
         "rounded-lg border border-gray-200 dark:border-gray-800/60",
-        "bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white",
+        "bg-white text-gray-900 dark:bg-gray-900 dark:text-white",
         "h-full shadow-sm",
         gradients.card.blueOrange
       )}
@@ -61,7 +61,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline flex-1 min-w-0">
             <h3 className={cn(
-              "font-bebas font-normal uppercase tracking-wide truncate text-[#1a1a1a] dark:text-white",
+              "font-bebas font-normal uppercase tracking-wide truncate text-gray-900 dark:text-white",
               isMobile ? "text-sm" : "text-base sm:text-lg"
             )} title={team.name}>
               {team.name}
@@ -71,7 +71,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           {!isMobile && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 -mr-1 text-gray-500 dark:text-gray-300 hover:text-[#1a1a1a] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 -mr-1 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
                   <MoreHorizontal size={14} />
                   <span className="sr-only">Open menu</span>
                 </Button>

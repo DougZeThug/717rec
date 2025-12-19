@@ -37,7 +37,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   }
 
   return (
-    <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent px-2 sm:px-4">
+    <div className="max-w-7xl mx-auto bg-gray-50 dark:bg-transparent px-2 sm:px-4">
       <StatsPageHeader />
       
       <div className="font-inter">
@@ -64,9 +64,9 @@ const NoTeamsAvailable = () => {
   const isLight = resolvedTheme === "light";
   
   return (
-    <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] font-inter">
+    <Card className="bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:text-white dark:border-none rounded-xl shadow-sm font-inter">
       <CardHeader>
-        <CardTitle className="text-[#1a1a1a] dark:text-white font-bold">No Teams Available</CardTitle>
+        <CardTitle className="text-gray-900 dark:text-white font-bold">No Teams Available</CardTitle>
         <CardDescription className="text-gray-600 dark:text-gray-400 font-light">
           There are no teams in the selected division or no teams have been added yet.
         </CardDescription>

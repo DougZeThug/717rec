@@ -20,10 +20,10 @@ const WinLossChartCard: React.FC<WinLossChartCardProps> = ({
 
   return (
     <AnimatedChartWrapper delay={0}>
-      <Card className="bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm">
+      <Card className="bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:border-0 dark:text-white rounded-xl shadow-sm">
         <CardHeader 
           className={isMobile ? "py-2 px-3" : "pb-1.5"}
-          style={resolvedTheme === "light" ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}
+          style={resolvedTheme === "light" ? { borderBottom: "1px solid hsl(var(--border))", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "hsl(var(--background))" } : {}}
         >
           <CardTitle
             className={`${isMobile ? "text-base" : "text-lg"} font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase`}

@@ -56,7 +56,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
 
   return (
     <div className="overflow-x-auto">
-      <Table className="bg-white text-gray-800 dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-700 rounded-xl shadow-sm">
+      <Table className="bg-white text-gray-800 dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
         <TableHeader>
           <TableRow>
             <TableHead className="w-12 text-sm font-mono font-semibold text-gray-800 dark:text-white tracking-wide">Rank</TableHead>
@@ -171,7 +171,7 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                 </TableRow>
                 {expandedTeam === ranking.teamId && (
                   <TableRow>
-                    <TableCell colSpan={showUnified ? 11 : 10} className="bg-[#f5f5f5] dark:bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
+                    <TableCell colSpan={showUnified ? 11 : 10} className="bg-gray-100 dark:bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
                       <div className="p-4">
                         <HeadToHeadRecords teamId={ranking.teamId} />
                       </div>

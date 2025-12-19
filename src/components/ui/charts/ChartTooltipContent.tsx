@@ -91,7 +91,7 @@ export const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltip
         ref={ref}
         className={cn(
           "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 px-2.5 py-1.5 text-xs shadow-xl",
-          isLight ? "bg-white text-[#111]" : "bg-[#1f2937] text-white",
+          isLight ? "bg-white text-gray-900" : "bg-gray-800 text-white",
           className
         )}
       >

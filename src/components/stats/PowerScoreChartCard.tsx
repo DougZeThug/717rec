@@ -19,13 +19,13 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
   return (
     <AnimatedChartWrapper delay={0.1}>
       <Card className={cn(
-        "bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#20232A] dark:border-0 dark:text-white rounded-xl shadow-sm",
+        "bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:border-0 dark:text-white rounded-xl shadow-sm",
         animations.fadeInSlideUp,
         "animation-delay-200"
       )}>
         <CardHeader 
           className={isMobile ? "py-2 px-3" : "pb-1.5"}
-          style={resolvedTheme === "light" ? { borderBottom: "1px solid #e0e0e0", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "#fff" } : {}}
+          style={resolvedTheme === "light" ? { borderBottom: "1px solid hsl(var(--border))", borderTopLeftRadius: 12, borderTopRightRadius: 12, background: "hsl(var(--background))" } : {}}
         >
           <CardTitle
             className={cn(
