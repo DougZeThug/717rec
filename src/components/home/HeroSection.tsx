@@ -26,7 +26,7 @@ const HeroSection = () => {
             width={96}
             height={96}
             fetchPriority="high"
-            className="h-14 md:h-24 w-auto transition-all duration-200 drop-shadow-sm"
+            className="h-14 md:h-24 w-auto max-w-full transition-all duration-200 drop-shadow-sm"
           />
         </div>
         <h1 className={cn(
@@ -43,14 +43,14 @@ const HeroSection = () => {
         <div className="flex md:hidden w-full max-w-xs mx-auto">
           <Link 
             to="/stats" 
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white/20 backdrop-blur-sm text-white font-medium text-sm rounded-l-lg border border-white/30 border-r-0 hover:bg-white/30 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 min-h-11 bg-white/20 backdrop-blur-sm text-white font-medium text-sm rounded-l-lg border border-white/30 border-r-0 hover:bg-white/30 transition-colors"
           >
             <Trophy size={16} className="shrink-0" />
             Standings
           </Link>
           <Link 
             to="/schedule" 
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white/20 backdrop-blur-sm text-white font-medium text-sm rounded-r-lg border border-white/30 hover:bg-white/30 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 min-h-11 bg-white/20 backdrop-blur-sm text-white font-medium text-sm rounded-r-lg border border-white/30 hover:bg-white/30 transition-colors"
           >
             <Calendar size={16} className="shrink-0" />
             Schedule
