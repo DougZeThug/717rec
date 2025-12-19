@@ -31,7 +31,13 @@ const MatchList: React.FC<MatchListProps> = ({
       {isLoading ? (
         <Skeleton className="h-32 w-full rounded" />
       ) : matches.length === 0 ? (
-        <div className="text-center text-muted-foreground text-sm py-6">No matches found.</div>
+        <div className="text-center py-8">
+          <History className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">No matches found</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            {isPast ? "Match history will appear after games are played" : "No upcoming matches scheduled"}
+          </p>
+        </div>
       ) : (
         <div className="divide-y divide-border">
           {matches.map((match) => (

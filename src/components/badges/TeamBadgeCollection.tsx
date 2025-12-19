@@ -5,6 +5,7 @@ import { useTeamBadges } from '@/hooks/useTeamBadges';
 import { getBadgeConfig } from '@/utils/badgeConfig';
 import { TeamBadge } from './TeamBadge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Trophy } from 'lucide-react';
 
 interface TeamBadgeCollectionProps {
   teamId: string;
@@ -46,7 +47,15 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
   }
 
   if (!badges || badges.length === 0) {
-    return null;
+    return (
+      <div className="text-center py-6">
+        <Trophy className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+        <p className="text-sm text-muted-foreground">No achievements yet</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">
+          Keep competing to earn badges and trophies!
+        </p>
+      </div>
+    );
   }
 
   // Sort badges by priority: championships first, then by date
