@@ -41,11 +41,17 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   const finalAnimationClass = shouldAnimate ? animationClass : '';
 
   return (
-    <div className={cn(
-      'relative min-h-full w-full', 
-      finalAnimationClass, 
-      delayClass[delay]
-    )}>
+    <div 
+      className={cn(
+        'relative', 
+        finalAnimationClass, 
+        delayClass[delay]
+      )}
+      style={{ 
+        // Reserve space to prevent layout shift
+        contain: 'layout style paint',
+      }}
+    >
       {children}
     </div>
   );
