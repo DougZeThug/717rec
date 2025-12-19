@@ -43,7 +43,7 @@ const Index: React.FC = () => {
       compact={isMobile}
       gradientVariant="blueOrange"
     >
-      <PageTransition animation="fadeInSlideDown">
+      <PageTransition animation="fadeInSlideDown" immediate>
         <HeroSection />
       </PageTransition>
       
