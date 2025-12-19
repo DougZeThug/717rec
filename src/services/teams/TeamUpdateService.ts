@@ -25,7 +25,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, "id" | 
   
   // If division_id is provided, validate it exists in the divisions table
   // (Skip validation if division_id is null - meaning no division assigned)
-  if (teamData.division_id !== null) {
+  if (teamData.division_id != null) {
     const { data: divisionExists, error: divCheckError } = await supabase
       .from('divisions')
       .select('id, name')
