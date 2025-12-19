@@ -55,7 +55,8 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
                 {!isMobile && (
                   <CardDescription
                     className={cn(
-                      isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter"
+                      isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter",
+                      "line-clamp-2"
                     )}
                   >
                     Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
