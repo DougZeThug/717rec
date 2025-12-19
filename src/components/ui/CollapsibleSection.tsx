@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from "react";
+import React, { useState, useTransition, ReactNode } from "react";
 import { ChevronDown, LucideIcon } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -36,9 +36,16 @@ export const CollapsibleSection = ({
   errorContent,
 }: CollapsibleSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [, startTransition] = useTransition();
+
+  const handleOpenChange = (open: boolean) => {
+    startTransition(() => {
+      setIsOpen(open);
+    });
+  };
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
       <div className={cn("border rounded-lg bg-card shadow-sm", className)}>
         <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
           <div className="flex items-center gap-2">

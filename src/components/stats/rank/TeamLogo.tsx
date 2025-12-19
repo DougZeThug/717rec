@@ -35,6 +35,8 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
         <img
           src={imageUrl}
           alt={teamName}
+          loading="lazy"
+          decoding="async"
           className="w-10 h-10 object-contain rounded-none"
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';

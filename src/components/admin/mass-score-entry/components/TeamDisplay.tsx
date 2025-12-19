@@ -20,6 +20,8 @@ const TeamDisplay: React.FC<TeamDisplayProps> = ({ team, align = "left" }) => {
         <img
           src={team.logoUrl}
           alt=""
+          loading="lazy"
+          decoding="async"
           className="h-6 w-6 rounded-full object-cover"
         />
       )}

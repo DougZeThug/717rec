@@ -84,6 +84,8 @@ const MatchScoreItem = ({
                 <img 
                   src={teams[match.team1Id].imageUrl} 
                   alt="" 
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     console.error(`Image load error for ${teams[match.team1Id].name}:`, teams[match.team1Id].imageUrl);
@@ -100,6 +102,8 @@ const MatchScoreItem = ({
                 <img 
                   src={teams[match.team2Id].imageUrl} 
                   alt="" 
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-contain"
                   onError={(e) => {
                     console.error(`Image load error for ${teams[match.team2Id].name}:`, teams[match.team2Id].imageUrl);

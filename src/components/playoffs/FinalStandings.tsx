@@ -87,6 +87,8 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
                     <img
                       src={record.teams.logo_url}
                       alt={record.teams.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-8 h-8 rounded-full object-cover"
                     />
                   )}

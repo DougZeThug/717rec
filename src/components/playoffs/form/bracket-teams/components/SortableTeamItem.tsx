@@ -87,6 +87,8 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
             <img
               src={logoUrl}
               alt={`${name} logo`}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-contain"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';

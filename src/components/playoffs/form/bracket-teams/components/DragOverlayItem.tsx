@@ -41,6 +41,8 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({
             <img
               src={logoUrl}
               alt={`${name} logo`}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-contain"
             />
           </div>

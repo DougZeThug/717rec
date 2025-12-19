@@ -29,7 +29,7 @@ export const PlayerChip: React.FC<PlayerChipProps> = ({
         transition-all hover:scale-105 cursor-default ${className}`}
     >
       <Avatar className="h-4 w-4">
-        {avatarUrl && <img src={avatarUrl} alt={playerName} />}
+        {avatarUrl && <img src={avatarUrl} alt={playerName} loading="lazy" decoding="async" />}
         <AvatarFallback className="text-[8px] bg-gray-300 dark:bg-gray-700">
           {getInitials(playerName)}
         </AvatarFallback>

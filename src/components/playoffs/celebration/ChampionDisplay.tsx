@@ -81,6 +81,8 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
                 <img 
                   src={champion.logoUrl || champion.imageUrl} 
                   alt={champion.name} 
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-contain"
                 />
               </div>

@@ -168,6 +168,8 @@ const PowerScoreTrendsCard: React.FC = () => {
                   <img
                     src={trend.logoUrl}
                     alt={trend.teamName}
+                    loading="lazy"
+                    decoding="async"
                     className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                   />
                 )}

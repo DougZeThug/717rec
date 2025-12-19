@@ -154,6 +154,8 @@ const TeamMembershipApprovalTab: React.FC = () => {
                           <img
                             src={membership.user.avatar_url}
                             alt="User"
+                            loading="lazy"
+                            decoding="async"
                             className="w-8 h-8 rounded-full"
                           />
                         ) : (
