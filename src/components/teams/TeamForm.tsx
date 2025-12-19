@@ -21,7 +21,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const [playerNames, setPlayerNames] = useState<string[]>(
     team?.players || ['']
   );
-  const [division, setDivision] = useState<string | null>(team?.division || null);
+  const [division, setDivision] = useState<string | null>(team?.division_id || null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -94,7 +94,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       players: playerNames.filter(name => name.trim() !== ""),
       wins,
       losses,
-      division: divisionValue
+      division_id: divisionValue
     });
   };
 
