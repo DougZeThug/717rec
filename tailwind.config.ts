@@ -92,9 +92,14 @@ export default {
 				}
 			},
 			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				// Unified radius system
+				card: 'var(--radius-card)',      // 12px - cards, dialogs, alerts
+				input: 'var(--radius-input)',    // 10px - buttons, inputs, selects
+				pill: 'var(--radius-pill)',      // pills, badges
+				// Legacy (mapped to new system)
+				lg: 'var(--radius-card)',
+				md: 'var(--radius-input)',
+				sm: 'calc(var(--radius-input) - 4px)'
 			},
 			keyframes: {
 				'accordion-down': {
