@@ -8,12 +8,11 @@ import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Trophy } from "lucide-react";
+import { SectionHeader } from "@/components/ui/CollapsibleSection";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 
 interface TopTeamsProps {
@@ -55,26 +54,21 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
       "dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80",
       animations.fadeIn
     )}>
-      <div className="flex flex-wrap justify-between items-center mb-4 md:mb-6">
-        <div>
-          <h2 className={cn(
-            "text-2xl md:text-3xl font-bebas uppercase tracking-wide",
-            "bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700",
-            "dark:from-blue-400 dark:to-amber-400",
-            "bg-clip-text text-transparent"
-          )}>
-            Top 10 Teams
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">Based on highest power score ranking</p>
-        </div>
-        <Button 
-          asChild 
-          variant="blueOrange"
-          className="shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
-        >
-          <Link to="/teams">View All</Link>
-        </Button>
-      </div>
+      <SectionHeader
+        title="Top 10 Teams"
+        icon={Trophy}
+        iconColor="text-amber-500"
+        description="Based on highest power score ranking"
+        action={
+          <Button 
+            asChild 
+            variant="blueOrange"
+            className="shadow-md hover:shadow-lg transition-all duration-200 font-semibold"
+          >
+            <Link to="/teams">View All</Link>
+          </Button>
+        }
+      />
 
       {/* Mobile: Horizontal Carousel */}
       <div className="block md:hidden">
