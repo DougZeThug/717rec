@@ -55,7 +55,7 @@ export const NavItem: React.FC<NavItemProps> = ({
         {isActive && (
           <motion.span 
             className={cn(
-              "absolute bottom-0 left-1/2 -translate-x-1/2 h-[3px] rounded-full",
+              "absolute bottom-0 left-0 right-0 mx-auto h-[3px] rounded-full origin-center",
               "bg-gradient-to-r from-cornhole-navy via-blue-600 to-amber-500",
               "w-2/3 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
               "dark:from-blue-400 dark:via-blue-300 dark:to-amber-400"
