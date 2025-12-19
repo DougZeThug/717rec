@@ -8,7 +8,7 @@ import PendingScoresCard from "@/components/home/PendingScoresCard";
 import HeroCard from "@/components/hero/HeroCard";
 import HeroCardSkeleton from "@/components/hero/HeroCardSkeleton";
 import PageLayout from "@/components/layout/PageLayout";
-import LoadingState from "@/components/ui/loading-state";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import PageTransition from "@/components/transitions/PageTransition";
 
@@ -21,7 +21,6 @@ const Index: React.FC = () => {
   const { data: heroCards, isLoading: heroCardsLoading } = useHeroCards();
   const isMobile = useIsMobile();
   
-  const isLoading = teamsLoading;
   const hasPendingScores = !pendingScoresLoading && pendingMatches.length > 0;
   
   // Top teams by power score
@@ -31,10 +30,6 @@ const Index: React.FC = () => {
       .sort((a, b) => (b.power_score ?? 0) - (a.power_score ?? 0))
       .slice(0, 10);
   }, [teams]);
-  
-  if (isLoading) {
-    return <LoadingState fullscreen message="Loading league data..." size="lg" />;
-  }
   
   const getDelay = (index: number) => {
     if (index === 0) return 'short' as const;
@@ -74,9 +69,13 @@ const Index: React.FC = () => {
           </PageTransition>
         )}
 
-        <PageTransition animation="fadeInSlideUp" delay="long">
-          <TopTeams teams={topTeams} />
-        </PageTransition>
+        {teamsLoading ? (
+          <div className="h-48 animate-pulse bg-muted/30 rounded-lg" />
+        ) : (
+          <PageTransition animation="fadeInSlideUp" delay="long">
+            <TopTeams teams={topTeams} />
+          </PageTransition>
+        )}
 
         <PageTransition animation="fadeIn" delay="long">
           <Suspense fallback={<div className="h-32" />}>
