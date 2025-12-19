@@ -271,38 +271,38 @@ export const BracketViewport: React.FC<BracketViewportProps> = ({
           size="sm"
           onClick={handleZoomIn}
           disabled={!canZoomIn}
-          className="h-8 w-8 p-0"
+          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
           title="Zoom In (Ctrl/Cmd + +)"
         >
-          <ZoomIn className="h-4 w-4" />
+          <ZoomIn className="h-5 w-5" />
         </Button>
         <Button
           variant="secondary"
           size="sm"
           onClick={handleZoomOut}
           disabled={!canZoomOut}
-          className="h-8 w-8 p-0"
+          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
           title="Zoom Out (Ctrl/Cmd + -)"
         >
-          <ZoomOut className="h-4 w-4" />
+          <ZoomOut className="h-5 w-5" />
         </Button>
         <Button
           variant="secondary"
           size="sm"
           onClick={autoFit}
-          className="h-8 w-8 p-0"
+          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
           title="Fit to Screen (Ctrl/Cmd + 0)"
         >
-          <Maximize2 className="h-4 w-4" />
+          <Maximize2 className="h-5 w-5" />
         </Button>
         <Button
           variant="secondary"
           size="sm"
           onClick={handleReset}
-          className="h-8 w-8 p-0"
+          className="h-10 w-10 min-h-[44px] min-w-[44px] p-0"
           title="Reset View"
         >
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="h-5 w-5" />
         </Button>
       </div>
 

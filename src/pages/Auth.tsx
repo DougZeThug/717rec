@@ -47,13 +47,13 @@ const Auth = () => {
 
   // Footer content with tab switching
   const renderFooter = () => (
-    <p>
+    <p className="py-1">
       {activeTab === "login" ? (
         <>
           Don't have an account?{" "}
           <button
             type="button"
-            className="text-primary hover:underline"
+            className="text-primary hover:underline py-2 px-1 -my-2"
             onClick={() => setActiveTab("signup")}
           >
             Sign up
@@ -64,7 +64,7 @@ const Auth = () => {
           Already have an account?{" "}
           <button
             type="button"
-            className="text-primary hover:underline"
+            className="text-primary hover:underline py-2 px-1 -my-2"
             onClick={() => setActiveTab("login")}
           >
             Login
