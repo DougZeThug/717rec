@@ -13,7 +13,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex min-h-[44px] items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+      "inline-flex min-h-[44px] items-center justify-center rounded-card bg-muted p-1 text-muted-foreground",
       className
     )}
     {...props}
@@ -28,7 +28,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-2 min-h-[42px] text-sm font-medium ring-offset-background",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-input px-3 py-2 min-h-[42px] text-sm font-medium ring-offset-background",
       // Pressed state for tactile feedback
       "active:scale-[0.98] active:bg-accent/30",
       // Fast transition for snappy response

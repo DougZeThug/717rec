@@ -29,7 +29,8 @@ const Card = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border bg-card text-card-foreground shadow-sm",
+        // Unified: rounded-card, border only (no shadow), consistent border color
+        "rounded-card border border-border bg-card text-card-foreground shadow-none",
         // Fast transition for pressed states
         "transition-all duration-100",
         // Interactive cards get pressed feedback
