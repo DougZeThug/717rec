@@ -61,8 +61,8 @@ const isValidCompressedImage = async (file: File): Promise<boolean> => {
  */
 export const uploadTeamImage = async (file: File, teamId?: string) => {
   let fileToUpload = file;
-  const maxSizeMB = 0.1; // 100KB max size for better performance
-  const maxWidthOrHeight = 128; // Max dimensions 128x128px for avatar-sized images
+  const maxSizeMB = 0.15; // 150KB max size for quality at larger dimensions
+  const maxWidthOrHeight = 300; // Max dimensions 300x300px for crisp display on high-DPI screens
   
   try {
     // Attempt to compress and resize the image, converting to WebP for better compression
