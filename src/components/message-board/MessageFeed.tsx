@@ -71,9 +71,16 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
     return (
       <Card className={cn("mb-4 bg-card/50", animations.fadeIn)}>
         <CardContent className="flex flex-col justify-center items-center py-12 text-muted-foreground">
-          <MessageSquare className="h-12 w-12 mb-4 opacity-50" />
-          <p className="font-medium">No messages yet</p>
-          <p className="text-sm mt-1">Be the first to post!</p>
+          <div className="relative mb-4">
+            <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150" />
+            <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 border border-border/50">
+              <MessageSquare className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </div>
+          <p className="font-bebas text-lg tracking-wide">No Messages Yet</p>
+          <p className="text-sm mt-1 text-muted-foreground/70 max-w-xs text-center">
+            Be the first to start a conversation! Share updates, tips, or just say hello.
+          </p>
         </CardContent>
       </Card>
     );

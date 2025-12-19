@@ -82,7 +82,15 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
     }
 
     if (displayRecords.length === 0) {
-      return <div className="text-center py-4 text-muted-foreground">No head-to-head records available</div>;
+      return (
+        <div className="text-center py-8">
+          <Swords className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+          <p className="text-sm font-medium text-muted-foreground">No head-to-head records yet</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            Records will appear after playing against other teams
+          </p>
+        </div>
+      );
     }
 
     return (

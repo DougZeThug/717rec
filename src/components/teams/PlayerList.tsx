@@ -8,8 +8,6 @@ interface PlayerListProps {
 }
 
 const PlayerList = ({ players }: PlayerListProps) => {
-  if (!players?.length) return null;
-
   return (
     <CollapsibleSection
       title="Players"
@@ -17,14 +15,24 @@ const PlayerList = ({ players }: PlayerListProps) => {
       iconColor="text-blue-500"
       defaultOpen={true}
     >
-      <div className="flex flex-wrap gap-2">
-        {players.map((player, index) => (
-          <PlayerChip 
-            key={`${player}-${index}`}
-            playerName={player}
-          />
-        ))}
-      </div>
+      {!players?.length ? (
+        <div className="text-center py-6">
+          <Users className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
+          <p className="text-sm text-muted-foreground">No players registered</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">
+            Player information will appear once added
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {players.map((player, index) => (
+            <PlayerChip 
+              key={`${player}-${index}`}
+              playerName={player}
+            />
+          ))}
+        </div>
+      )}
     </CollapsibleSection>
   );
 };
