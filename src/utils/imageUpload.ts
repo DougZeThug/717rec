@@ -10,12 +10,15 @@ import { warnLog, errorLog } from "@/utils/logger";
  * @returns Promise<boolean> True if valid, false otherwise
  */
 const isValidCompressedImage = async (file: File): Promise<boolean> => {
-  // Check file size (minimum 10KB)
-  const minSizeKB = 10;
-  const fileSizeKB = file.size / 1024;
-  if (fileSizeKB < minSizeKB) {
-    warnLog(`Compressed image too small (${fileSizeKB.toFixed(2)}KB < ${minSizeKB}KB)`);
-    return false;
+  // For WebP, small size is a feature - skip size check for WebP files
+  if (file.type !== 'image/webp') {
+    // Check file size (minimum 3KB for non-WebP)
+    const minSizeKB = 3;
+    const fileSizeKB = file.size / 1024;
+    if (fileSizeKB < minSizeKB) {
+      warnLog(`Compressed image too small (${fileSizeKB.toFixed(2)}KB < ${minSizeKB}KB)`);
+      return false;
+    }
   }
   
   // Verify MIME type
