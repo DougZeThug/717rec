@@ -32,7 +32,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
   return (
     <motion.div 
       className="bg-white text-[#1a1a1a] dark:bg-[#1E1E1E] dark:text-white border border-[#e0e0e0] dark:border-gray-800 rounded-xl 
-        overflow-hidden h-full mb-4 font-inter shadow-sm"
+        overflow-hidden h-full font-inter shadow-sm"
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
