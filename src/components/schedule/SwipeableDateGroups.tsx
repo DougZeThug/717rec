@@ -119,36 +119,48 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
         </button>
       </div>
 
-      {/* Swipeable content */}
-      <div className="overflow-hidden touch-pan-y">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={safeIndex}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={handleDragEnd}
-            className="cursor-grab active:cursor-grabbing"
-          >
-            <DateMatchGroup
-              date={currentGroup.date}
-              matches={currentGroup.matches}
-              isCurrentDay={isToday(currentGroup.date) || isSameDay(currentGroup.date, selectedDate)}
-              isFirstGroup={safeIndex === 0}
-              onEditMatch={onEditMatch}
-              onDeleteMatch={onDeleteMatch}
-            />
-          </motion.div>
-        </AnimatePresence>
+      {/* Swipeable content with peek indicators */}
+      <div className="relative">
+        {/* Left peek indicator */}
+        {canGoPrev && (
+          <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-muted/50 to-transparent z-10 pointer-events-none sm:hidden" />
+        )}
+        
+        <div className="overflow-hidden touch-pan-y">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={safeIndex}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={handleDragEnd}
+              className="cursor-grab active:cursor-grabbing"
+            >
+              <DateMatchGroup
+                date={currentGroup.date}
+                matches={currentGroup.matches}
+                isCurrentDay={isToday(currentGroup.date) || isSameDay(currentGroup.date, selectedDate)}
+                isFirstGroup={safeIndex === 0}
+                onEditMatch={onEditMatch}
+                onDeleteMatch={onDeleteMatch}
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        
+        {/* Right peek indicator */}
+        {canGoNext && (
+          <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-muted/50 to-transparent z-10 pointer-events-none sm:hidden" />
+        )}
       </div>
 
-      {/* Swipe hint for mobile */}
-      <p className="text-center text-xs text-muted-foreground mt-3 sm:hidden">
-        Swipe left or right to navigate dates
+      {/* Swipe hint for mobile - enhanced visibility */}
+      <p className="text-center text-xs text-muted-foreground mt-3 sm:hidden animate-pulse">
+        ← Swipe to see more dates →
       </p>
     </div>
   );

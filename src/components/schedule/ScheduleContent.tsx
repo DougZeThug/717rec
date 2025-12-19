@@ -152,35 +152,37 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-      <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">
-        <TabsTrigger 
-          value="timeslots" 
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 px-2 md:px-6 min-h-[44px] transition-all"
-        >
-          <div className="flex items-center justify-center">
-            <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
-            <span className="text-sm md:text-base md:whitespace-nowrap">Timeslots</span>
-          </div>
-        </TabsTrigger>
-        <TabsTrigger 
-          value="upcoming" 
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition-all"
-        >
-          <div className="flex items-center justify-center">
-            <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
-            <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming</span>
-          </div>
-        </TabsTrigger>
-        <TabsTrigger 
-          value="completed" 
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition-all"
-        >
-          <div className="flex items-center justify-center">
-            <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" />
-            <span className="text-sm md:text-base md:whitespace-nowrap">Completed</span>
-          </div>
-        </TabsTrigger>
-      </TabsList>
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-2 -mx-1 px-1">
+        <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">
+          <TabsTrigger 
+            value="timeslots" 
+            className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 px-2 md:px-6 min-h-[44px] transition-all"
+          >
+            <div className="flex items-center justify-center">
+              <Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="text-sm md:text-base md:whitespace-nowrap">Timeslots</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="upcoming" 
+            className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition-all"
+          >
+            <div className="flex items-center justify-center">
+              <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="completed" 
+            className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition-all"
+          >
+            <div className="flex items-center justify-center">
+              <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" />
+              <span className="text-sm md:text-base md:whitespace-nowrap">Completed</span>
+            </div>
+          </TabsTrigger>
+        </TabsList>
+      </div>
       
       <TabsContent value="timeslots" className="mt-6 dark:bg-gray-900">
         <TimeslotGrouping 

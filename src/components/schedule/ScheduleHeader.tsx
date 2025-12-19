@@ -48,7 +48,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`gap-2 px-3 py-1.5 h-9 rounded-md text-base font-inter tracking-wide shadow-none
+                  className={`gap-2 px-3 h-10 rounded-md text-base font-inter tracking-wide shadow-none
                     ${isLight 
                       ? "border-gray-300 hover:bg-gray-50" 
                       : "border-gray-700 hover:bg-gray-800 text-white"
