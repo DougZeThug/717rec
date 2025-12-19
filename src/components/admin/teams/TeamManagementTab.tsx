@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Edit, Trash2, Plus, Users, Settings } from "lucide-react";
 import TeamForm from "@/components/teams/TeamForm";
 import { Team } from "@/types";
@@ -36,6 +37,26 @@ const TeamManagementTab = () => {
       refetchTeams();
     } catch (error) {
       console.error("Error creating team:", error);
+    }
+  };
+
+  const handleEditTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
+    if (!editingTeam) return;
+    try {
+      await updateTeamApi(editingTeam.id, teamData);
+      toast({
+        title: "Team Updated",
+        description: `${teamData.name} has been successfully updated.`,
+      });
+      setEditingTeam(null);
+      refetchTeams();
+    } catch (error) {
+      console.error("Error updating team:", error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update team. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -256,6 +277,22 @@ const TeamManagementTab = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Team Dialog */}
+      <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Team: {editingTeam?.name}</DialogTitle>
+          </DialogHeader>
+          {editingTeam && (
+            <TeamForm 
+              team={editingTeam}
+              onSubmit={handleEditTeam}
+              onCancel={() => setEditingTeam(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
