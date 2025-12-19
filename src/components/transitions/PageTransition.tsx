@@ -10,12 +10,15 @@ interface PageTransitionProps {
   children: React.ReactNode;
   delay?: 'none' | 'short' | 'medium' | 'long';
   animation?: 'fadeIn' | 'fadeInSlideUp' | 'fadeInSlideDown' | 'entranceLeft' | 'entranceRight';
+  /** Skip animation to improve FCP for above-the-fold content */
+  immediate?: boolean;
 }
 
 export const PageTransition: React.FC<PageTransitionProps> = ({ 
   children, 
   delay = 'none',
-  animation = 'fadeIn'
+  animation = 'fadeIn',
+  immediate = false
 }) => {
   const location = useLocation();
   const { isNavigating } = useNavigation();
@@ -36,8 +39,8 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   // Check if this is an admin route to potentially apply different behavior
   const isAdminRoute = location.pathname === '/admin';
   
-  // Always apply animation for transitions, except when navigating to admin from within the app
-  const shouldAnimate = !isAdminRoute || (isAdminRoute && !isNavigating);
+  // Skip animation for immediate content (improves FCP) or admin routes
+  const shouldAnimate = !immediate && (!isAdminRoute || (isAdminRoute && !isNavigating));
   const finalAnimationClass = shouldAnimate ? animationClass : '';
 
   return (
