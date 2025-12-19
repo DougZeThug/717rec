@@ -58,14 +58,19 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
     }
   };
   
-  // Handle textarea auto-resize
+  // Handle textarea auto-resize - using requestAnimationFrame to prevent forced reflow
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
+    const value = e.target.value;
+    setMessage(value);
     
-    // Auto resize the textarea
+    // Use requestAnimationFrame to batch layout read/write and prevent forced reflow
     const textarea = e.target;
-    textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
+    requestAnimationFrame(() => {
+      textarea.style.height = "auto";
+      requestAnimationFrame(() => {
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      });
+    });
   };
   
   // Check if user is admin (for announcement capability)
