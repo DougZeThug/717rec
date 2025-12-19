@@ -16,7 +16,10 @@
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
     
     <!-- Preload critical above-the-fold image for faster LCP -->
-    <link rel="preload" href="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" as="image" fetchpriority="high" />
+    <link rel="preload" href="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png" as="image" fetchpriority="high" type="image/png" />
+    
+    <!-- Preload critical JS for faster initial render -->
+    <link rel="modulepreload" href="/src/main.tsx" />
     
     <!-- Non-blocking font loading -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
