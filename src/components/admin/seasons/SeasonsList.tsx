@@ -1,5 +1,5 @@
-
 import React from "react";
+import { motion } from "framer-motion";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -83,15 +83,17 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
               </div>
               <div className="flex items-center gap-2">
                 {getStatusBadge(season)}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEditSeason(season)}
-                  className="flex items-center gap-1"
-                >
-                  <Edit className="h-3 w-3" />
-                  Edit
-                </Button>
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEditSeason(season)}
+                    className="flex items-center gap-1"
+                  >
+                    <Edit className="h-3 w-3" />
+                    Edit
+                  </Button>
+                </motion.div>
               </div>
             </div>
           </CardHeader>

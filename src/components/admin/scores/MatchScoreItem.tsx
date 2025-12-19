@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
 import { validateGameScore } from '@/hooks/matches/utils/matchValidationUtils';
 
 interface MatchScoreItemProps {
@@ -165,7 +165,14 @@ const MatchScoreItem = ({
           )}
           
           <Button onClick={handleSubmit} disabled={isSubmitting || !!validationError}>
-            {isSubmitting ? 'Submitting...' : 'Submit Result'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              'Submit Result'
+            )}
           </Button>
         </div>
       </CollapsibleContent>
