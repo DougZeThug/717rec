@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "@/styles/design-system/motion";
+import { motion as motionTokens } from "@/styles/design-system/motion";
 
 type PressType = "button" | "card" | "row" | "tab" | "subtle";
 
@@ -54,23 +54,23 @@ export function usePressedFeedback(
   const getTypeClass = () => {
     switch (type) {
       case "button":
-        return motion.classes.buttonPress;
+        return motionTokens.classes.buttonPress;
       case "card":
-        return motion.classes.cardPress;
+        return motionTokens.classes.cardPress;
       case "row":
-        return motion.classes.rowPress;
+        return motionTokens.classes.rowPress;
       case "tab":
-        return motion.classes.tabPress;
+        return motionTokens.classes.tabPress;
       case "subtle":
-        return motion.classes.subtlePress;
+        return motionTokens.classes.subtlePress;
       default:
-        return motion.classes.buttonPress;
+        return motionTokens.classes.buttonPress;
     }
   };
 
   const className = cn(
     getTypeClass(),
-    withTint && motion.classes.mobileTint,
+    withTint && motionTokens.classes.mobileTint,
     disabled && "pointer-events-none"
   );
 
@@ -94,12 +94,12 @@ export function usePressedFeedback(
  * Use when you just need Tailwind classes without tracking pressed state.
  */
 export function getPressedClasses(type: PressType = "button", withTint = true): string {
-  const baseClass = motion.classes[`${type}Press` as keyof typeof motion.classes] 
-    || motion.classes.buttonPress;
+  const baseClass = motionTokens.classes[`${type}Press` as keyof typeof motionTokens.classes] 
+    || motionTokens.classes.buttonPress;
   
   return cn(
     baseClass,
-    withTint && motion.classes.mobileTint
+    withTint && motionTokens.classes.mobileTint
   );
 }
 
