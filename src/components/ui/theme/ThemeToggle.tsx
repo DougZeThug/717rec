@@ -1,7 +1,12 @@
-
 import React, { useEffect, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Snowflake, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +16,13 @@ interface ThemeToggleProps {
   size?: "default" | "sm" | "lg" | "icon";
 }
 
+const themeOptions = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "System", icon: Monitor },
+  { value: "winter-frozen", label: "Winter", icon: Snowflake },
+] as const;
+
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   className,
   variant = "outline",
@@ -19,44 +31,78 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Once mounted, we can safely show the toggle
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Handle toggle
-  const toggleTheme = () => {
-    const newTheme = resolvedTheme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
-
-  // Don't render anything until mounted to prevent hydration mismatch
   if (!mounted) {
     return null;
   }
 
+  const getCurrentIcon = () => {
+    if (theme === "winter-frozen") {
+      return <Snowflake className="h-5 w-5 text-cyan-400" />;
+    }
+    if (resolvedTheme === "dark") {
+      return <Moon className="h-5 w-5" />;
+    }
+    return <Sun className="h-5 w-5" />;
+  };
+
+  const getButtonClasses = () => {
+    if (theme === "winter-frozen") {
+      return "text-cyan-400 hover:bg-cyan-950/50 border-cyan-800";
+    }
+    if (resolvedTheme === "dark") {
+      return "text-white hover:bg-gray-700 border-gray-600 dark:hover:bg-gray-700/80";
+    }
+    return "text-gray-700 hover:bg-gray-200 border-gray-300";
+  };
+
   return (
-    <Button
-      variant={variant}
-      size={size}
-      onClick={toggleTheme}
-      className={cn(
-        "rounded-full transition-colors duration-300", 
-        resolvedTheme === "dark" 
-          ? "text-white hover:bg-gray-700 border-gray-600 dark:hover:bg-gray-700/80" 
-          : "text-gray-700 hover:bg-gray-200 border-gray-300",
-        className
-      )}
-      aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
-      title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} theme`}
-    >
-      {resolvedTheme === "dark" ? (
-        <Sun className="h-5 w-5" />
-      ) : (
-        <Moon className="h-5 w-5" />
-      )}
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant={variant}
+          size={size}
+          className={cn(
+            "rounded-full transition-colors duration-300",
+            getButtonClasses(),
+            className
+          )}
+          aria-label="Select theme"
+          title="Select theme"
+        >
+          {getCurrentIcon()}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[140px]">
+        {themeOptions.map(({ value, label, icon: Icon }) => (
+          <DropdownMenuItem
+            key={value}
+            onClick={() => {
+              setTheme(value);
+              localStorage.setItem('theme', value);
+            }}
+            className={cn(
+              "flex items-center gap-2 cursor-pointer",
+              theme === value && "bg-accent"
+            )}
+          >
+            <Icon className={cn(
+              "h-4 w-4",
+              value === "winter-frozen" && "text-cyan-500"
+            )} />
+            <span>{label}</span>
+            {value === "winter-frozen" && (
+              <span className="ml-auto text-[10px] text-cyan-500 font-medium">
+                ❄️
+              </span>
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

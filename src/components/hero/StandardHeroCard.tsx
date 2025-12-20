@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { HeroCard } from "@/types/heroCard";
 import { HERO_ICON_MAP } from "@/constants/heroCardPresets";
 import { motion } from "framer-motion";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 interface StandardHeroCardProps {
   card: HeroCard;
@@ -12,6 +13,7 @@ interface StandardHeroCardProps {
 
 const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
   const Icon = card.icon_name ? HERO_ICON_MAP[card.icon_name] : null;
+  const { shouldApplyWinter } = useSeasonalTheme();
 
   const content = (
     <div className="relative flex items-center justify-center gap-3 px-6 py-4">
@@ -23,13 +25,21 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
 
   const baseClasses = cn(
     "group relative block w-full",
-    card.background_color,
-    card.text_color,
     "transition-all duration-200",
     "rounded-xl shadow-md hover:shadow-lg",
-    "border-t-[3px] border-t-blue-500 dark:border-t-blue-400",
     "border border-border/30",
-    "overflow-hidden"
+    "overflow-hidden",
+    shouldApplyWinter
+      ? cn(
+          "frost-card frost-edge",
+          "border-t-[3px] border-t-cyan-400",
+          "text-cyan-50"
+        )
+      : cn(
+          card.background_color,
+          card.text_color,
+          "border-t-[3px] border-t-blue-500 dark:border-t-blue-400"
+        )
   );
 
   const cardWrapper = (children: React.ReactNode) => (
@@ -43,7 +53,6 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
   );
 
   if (card.cta_url) {
-    // Handle both internal and external links
     if (card.cta_url.startsWith('http')) {
       return cardWrapper(
         <a
@@ -52,7 +61,12 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
           rel="noopener noreferrer"
           className={baseClasses}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className={cn(
+            "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+            shouldApplyWinter
+              ? "bg-gradient-to-r from-cyan-500/10 to-transparent"
+              : "bg-gradient-to-r from-white/10 to-transparent"
+          )} />
           {content}
         </a>
       );
@@ -60,7 +74,12 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
     
     return cardWrapper(
       <Link to={card.cta_url} className={baseClasses}>
-        <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+        <div className={cn(
+          "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+          shouldApplyWinter
+            ? "bg-gradient-to-r from-cyan-500/10 to-transparent"
+            : "bg-gradient-to-r from-white/10 to-transparent"
+        )} />
         {content}
       </Link>
     );
@@ -68,7 +87,12 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
 
   return cardWrapper(
     <div className={baseClasses}>
-      <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+      <div className={cn(
+        "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+        shouldApplyWinter
+          ? "bg-gradient-to-r from-cyan-500/10 to-transparent"
+          : "bg-gradient-to-r from-white/10 to-transparent"
+      )} />
       {content}
     </div>
   );

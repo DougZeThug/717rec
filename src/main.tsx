@@ -12,6 +12,7 @@ createRoot(document.getElementById("root")!).render(
   <ThemeProvider 
     attribute="class" 
     defaultTheme="system" 
+    themes={['light', 'dark', 'system', 'winter-frozen']}
     enableSystem={true} 
     disableTransitionOnChange={false}
   >

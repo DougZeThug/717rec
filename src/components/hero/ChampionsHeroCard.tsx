@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { HeroCard } from "@/types/heroCard";
 import { animations } from "@/styles/design-system";
 import { motion } from "framer-motion";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import {
   Carousel,
   CarouselContent,
@@ -22,21 +23,30 @@ interface TeamData {
   image_url: string | null;
 }
 
-// Compact card for mobile carousel
 const ChampionCardCompact: React.FC<{ 
   team: TeamData; 
-  division: string; 
-}> = ({ team, division }) => {
+  division: string;
+  isWinter?: boolean;
+}> = ({ team, division, isWinter }) => {
   return (
     <motion.div 
       whileTap={{ scale: 0.97 }}
-      className="flex flex-col items-center bg-white/10 backdrop-blur-sm rounded-xl p-3 w-[130px]"
+      className={cn(
+        "flex flex-col items-center backdrop-blur-sm rounded-xl p-3 w-[130px]",
+        isWinter ? "bg-amber-900/30" : "bg-white/10"
+      )}
     >
-      <p className="text-[10px] font-bebas uppercase tracking-wide text-white/80 mb-2 text-center">
+      <p className={cn(
+        "text-[10px] font-bebas uppercase tracking-wide mb-2 text-center",
+        isWinter ? "text-amber-200/80" : "text-white/80"
+      )}>
         {division}
       </p>
       <div className="relative mb-2">
-        <div className="ring-2 ring-white/40 rounded-lg p-0.5 bg-white/20">
+        <div className={cn(
+          "ring-2 rounded-lg p-0.5",
+          isWinter ? "ring-amber-400/40 bg-amber-900/30" : "ring-white/40 bg-white/20"
+        )}>
           {team.image_url ? (
             <img
               src={team.image_url}
@@ -50,31 +60,46 @@ const ChampionCardCompact: React.FC<{
               }}
             />
           ) : (
-            <div className="h-14 w-14 rounded-lg bg-white/20 flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-white/70" />
+            <div className={cn(
+              "h-14 w-14 rounded-lg flex items-center justify-center",
+              isWinter ? "bg-amber-900/30" : "bg-white/20"
+            )}>
+              <Trophy className={cn("w-6 h-6", isWinter ? "text-amber-300/70" : "text-white/70")} />
             </div>
           )}
         </div>
-        <div className="absolute -top-1 -right-1 rounded-full p-0.5 bg-white/30 backdrop-blur-sm">
-          <Crown className="w-2.5 h-2.5 text-white" />
+        <div className={cn(
+          "absolute -top-1 -right-1 rounded-full p-0.5 backdrop-blur-sm",
+          isWinter ? "bg-amber-500/40" : "bg-white/30"
+        )}>
+          <Crown className={cn("w-2.5 h-2.5", isWinter ? "text-amber-200" : "text-white")} />
         </div>
       </div>
-      <p className="font-inter font-semibold text-white text-xs text-center line-clamp-2">
+      <p className={cn(
+        "font-inter font-semibold text-xs text-center line-clamp-2",
+        isWinter ? "text-amber-50" : "text-white"
+      )}>
         {team.name}
       </p>
     </motion.div>
   );
 };
 
-// Desktop card with more detail
 const ChampionDisplay: React.FC<{ 
   team: TeamData; 
-  division: string; 
-}> = ({ team, division }) => {
+  division: string;
+  isWinter?: boolean;
+}> = ({ team, division, isWinter }) => {
   return (
-    <div className="flex items-center gap-3 group p-2 rounded-lg hover:bg-white/10 transition-colors duration-200">
+    <div className={cn(
+      "flex items-center gap-3 group p-2 rounded-lg transition-colors duration-200",
+      isWinter ? "hover:bg-amber-800/20" : "hover:bg-white/10"
+    )}>
       <div className="relative">
-        <div className="ring-4 ring-white/40 rounded-lg p-1 bg-white/20 backdrop-blur-sm transition-transform duration-200 group-hover:scale-105">
+        <div className={cn(
+          "ring-4 rounded-lg p-1 backdrop-blur-sm transition-transform duration-200 group-hover:scale-105",
+          isWinter ? "ring-amber-400/40 bg-amber-900/30" : "ring-white/40 bg-white/20"
+        )}>
           {team.image_url ? (
             <img
               src={team.image_url}
@@ -88,21 +113,33 @@ const ChampionDisplay: React.FC<{
               }}
             />
           ) : (
-            <div className="h-20 w-20 rounded-lg bg-white/20 flex items-center justify-center">
-              <Trophy className="w-10 h-10 text-white/70" />
+            <div className={cn(
+              "h-20 w-20 rounded-lg flex items-center justify-center",
+              isWinter ? "bg-amber-900/30" : "bg-white/20"
+            )}>
+              <Trophy className={cn("w-10 h-10", isWinter ? "text-amber-300/70" : "text-white/70")} />
             </div>
           )}
         </div>
-        <div className="absolute -top-1 -right-1 rounded-full p-1 bg-white/30 backdrop-blur-sm">
-          <Crown className="w-3 h-3 text-white" />
+        <div className={cn(
+          "absolute -top-1 -right-1 rounded-full p-1 backdrop-blur-sm",
+          isWinter ? "bg-amber-500/40" : "bg-white/30"
+        )}>
+          <Crown className={cn("w-3 h-3", isWinter ? "text-amber-200" : "text-white")} />
         </div>
       </div>
       
       <div className="flex-1">
-        <p className="text-xs font-bebas uppercase tracking-wide mb-1 text-white/80">
+        <p className={cn(
+          "text-xs font-bebas uppercase tracking-wide mb-1",
+          isWinter ? "text-amber-200/80" : "text-white/80"
+        )}>
           Champion
         </p>
-        <p className="font-inter font-semibold text-white text-sm">
+        <p className={cn(
+          "font-inter font-semibold text-sm",
+          isWinter ? "text-amber-50" : "text-white"
+        )}>
           {team.name}
         </p>
       </div>
@@ -111,6 +148,7 @@ const ChampionDisplay: React.FC<{
 };
 
 const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
+  const { shouldApplyWinter } = useSeasonalTheme();
   const championsMap = card.metadata?.champions as Record<string, string> || {};
   const championIds = Object.values(championsMap);
 
@@ -126,7 +164,6 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
 
       if (error) throw error;
 
-      // Create reverse mapping from team ID to division
       const divisionMap: Record<string, string> = {};
       Object.entries(championsMap).forEach(([division, teamId]) => {
         divisionMap[teamId] = division;
@@ -137,12 +174,17 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
     enabled: championIds.length > 0
   });
 
+  const sectionClasses = cn(
+    "relative overflow-hidden rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6 transition-shadow duration-200",
+    shouldApplyWinter
+      ? "champions-card"
+      : "bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500",
+    animations.fadeIn
+  );
+
   if (isLoading) {
     return (
-      <section className={cn(
-        "bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500 rounded-2xl shadow-2xl p-4 md:p-6",
-        "animate-pulse"
-      )}>
+      <section className={cn(sectionClasses, "animate-pulse")}>
         <div className="h-6 bg-white/20 rounded mb-4 w-48"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {[1, 2, 3, 4].map((i) => (
@@ -164,19 +206,21 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
 
   if (error || !data) {
     return (
-      <section className="bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500 rounded-2xl shadow-2xl p-4 md:p-6">
-        <h2 className="text-xl md:text-2xl font-bold mb-4 flex items-center gap-2 text-white">
+      <section className={sectionClasses}>
+        <h2 className={cn(
+          "text-xl md:text-2xl font-bold mb-4 flex items-center gap-2",
+          shouldApplyWinter ? "text-amber-50" : "text-white"
+        )}>
           <Trophy className="w-6 h-6" />
           Champions - Error Loading
         </h2>
-        <p className="text-white/80">
+        <p className={shouldApplyWinter ? "text-amber-200/80" : "text-white/80"}>
           Unable to load champions. Please try again later.
         </p>
       </section>
     );
   }
 
-  // Sort divisions: Competitive first, Recreational last
   const divisionPriority: Record<string, number> = {
     'Competitive': 1,
     'Intermediate 1': 2,
@@ -195,20 +239,14 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.2 }}
-      className={cn(
-        "relative overflow-hidden",
-        "bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500",
-        "rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6",
-        "transition-shadow duration-200",
-        animations.fadeIn
-      )}
+      className={sectionClasses}
     >
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <Trophy className="w-6 h-6 text-white" />
+        <Trophy className={cn("w-6 h-6", shouldApplyWinter ? "text-amber-200" : "text-white")} />
         <h2 className={cn(
           "text-xl md:text-2xl font-bebas uppercase tracking-wide",
-          "text-white"
+          shouldApplyWinter ? "text-amber-50" : "text-white"
         )}>
           {card.title.replace(/🏆\s*/g, '')}
         </h2>
@@ -225,13 +263,16 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
               
               return (
                 <CarouselItem key={divisionName} className="pl-2 basis-[140px]">
-                  <ChampionCardCompact team={team} division={divisionName} />
+                  <ChampionCardCompact team={team} division={divisionName} isWinter={shouldApplyWinter} />
                 </CarouselItem>
               );
             })}
           </CarouselContent>
         </Carousel>
-        <p className="text-xs text-white/60 text-center mt-3">
+        <p className={cn(
+          "text-xs text-center mt-3",
+          shouldApplyWinter ? "text-amber-200/60" : "text-white/60"
+        )}>
           Swipe to see all champions →
         </p>
       </div>
@@ -245,11 +286,17 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
           if (!team) return null;
           
           return (
-            <div key={divisionName} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
-              <h3 className="text-xs text-white/80 uppercase tracking-wide text-center mb-2 font-bebas">
+            <div key={divisionName} className={cn(
+              "backdrop-blur-sm rounded-xl p-3 md:p-4",
+              shouldApplyWinter ? "bg-amber-900/30" : "bg-white/10"
+            )}>
+              <h3 className={cn(
+                "text-xs uppercase tracking-wide text-center mb-2 font-bebas",
+                shouldApplyWinter ? "text-amber-200/80" : "text-white/80"
+              )}>
                 {divisionName}
               </h3>
-              <ChampionDisplay team={team} division={divisionName} />
+              <ChampionDisplay team={team} division={divisionName} isWinter={shouldApplyWinter} />
             </div>
           );
         })}
