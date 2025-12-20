@@ -1,9 +1,10 @@
-
 import React from 'react';
 import { Team } from '@/types';
 import TeamLogo from '@/components/ui/team/TeamLogo';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Users } from 'lucide-react';
+import { InlineEmptyState } from '@/components/ui/inline-empty-state';
 
 interface TimeBlockTeamsListProps {
   teams: Team[];
@@ -26,9 +27,12 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
 }) => {
   if (teams.length === 0) {
     return (
-      <div className="text-center py-2 text-sm text-muted-foreground">
-        No teams assigned to this block
-      </div>
+      <InlineEmptyState
+        icon={Users}
+        message="No Teams in This Block"
+        description="Load teams for the selected date or assign teams to this time block."
+        className="py-4"
+      />
     );
   }
 

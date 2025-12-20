@@ -1,10 +1,10 @@
-
 import React, { useMemo } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { MatchWithTeams } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import DateMatchGroup from "./components/DateMatchGroup";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface MatchesTableProps {
   matches: MatchWithTeams[];
@@ -68,10 +68,13 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   if (!matches || matches.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">
-            No matches found for the selected filters.
-          </div>
+        <CardContent className="py-0">
+          <EmptyState
+            icon={Search}
+            title="No Matches Found"
+            description="No matches match your current filters. Try adjusting your date range or team selection."
+            className="py-8"
+          />
         </CardContent>
       </Card>
     );
