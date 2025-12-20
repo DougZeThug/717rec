@@ -1,6 +1,8 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
+type SkeletonVariant = "card" | "input" | "pill";
+
 interface ShimmerSkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Width of the skeleton */
   width?: string | number;
@@ -10,19 +12,29 @@ interface ShimmerSkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   circle?: boolean;
   /** Number of skeleton items to render */
   count?: number;
+  /** Radius variant matching design tokens */
+  variant?: SkeletonVariant;
 }
+
+const variantClasses: Record<SkeletonVariant, string> = {
+  card: "rounded-card",
+  input: "rounded-input",
+  pill: "rounded-pill",
+};
 
 /**
  * Enhanced skeleton component with shimmer animation
- * Provides consistent loading states across the app
+ * Uses design system radius tokens for consistency
  */
 const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
-  ({ className, width, height, circle, count = 1, style, ...props }, ref) => {
+  ({ className, width, height, circle, count = 1, variant = "input", style, ...props }, ref) => {
     const skeletonStyle: React.CSSProperties = {
       width: width,
       height: height,
       ...style,
     };
+
+    const radiusClass = circle ? "rounded-full" : variantClasses[variant];
 
     const skeletons = Array.from({ length: count }, (_, i) => (
       <div
@@ -30,7 +42,7 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
         ref={i === 0 ? ref : undefined}
         className={cn(
           "relative overflow-hidden bg-muted",
-          circle ? "rounded-full" : "rounded-md",
+          radiusClass,
           // Base shimmer animation
           "before:absolute before:inset-0",
           "before:-translate-x-full",
@@ -51,7 +63,7 @@ const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
 ShimmerSkeleton.displayName = "ShimmerSkeleton";
 
 /**
- * Skeleton for text lines
+ * Skeleton for text lines - uses 8pt grid spacing
  */
 const TextSkeleton: React.FC<{
   lines?: number;
@@ -63,6 +75,7 @@ const TextSkeleton: React.FC<{
       {Array.from({ length: lines }, (_, i) => (
         <ShimmerSkeleton
           key={i}
+          variant="input"
           className="h-4"
           style={{
             width: i === lines - 1 ? lastLineWidth : "100%",
@@ -90,7 +103,8 @@ const AvatarSkeleton: React.FC<{
 };
 
 /**
- * Skeleton for cards
+ * Skeleton for cards - matches Card component exactly
+ * Uses rounded-card, border-border, 8pt grid spacing
  */
 const CardSkeleton: React.FC<{
   hasImage?: boolean;
@@ -100,21 +114,21 @@ const CardSkeleton: React.FC<{
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card p-4 space-y-4",
+        "rounded-card border border-border bg-card p-4 space-y-4",
         className
       )}
     >
       {hasImage && (
-        <ShimmerSkeleton className="h-40 w-full rounded-md" />
+        <ShimmerSkeleton variant="input" className="h-40 w-full" />
       )}
-      <div className="space-y-3">
-        <ShimmerSkeleton className="h-5 w-3/4" />
+      <div className="space-y-2">
+        <ShimmerSkeleton variant="input" className="h-5 w-3/4" />
         <TextSkeleton lines={2} />
       </div>
       {hasActions && (
         <div className="flex gap-2 pt-2">
-          <ShimmerSkeleton className="h-9 w-20" />
-          <ShimmerSkeleton className="h-9 w-20" />
+          <ShimmerSkeleton variant="input" className="h-10 w-20" />
+          <ShimmerSkeleton variant="input" className="h-10 w-20" />
         </div>
       )}
     </div>
@@ -122,7 +136,7 @@ const CardSkeleton: React.FC<{
 };
 
 /**
- * Skeleton for list items
+ * Skeleton for list items - uses rounded-card, 8pt grid
  */
 const ListItemSkeleton: React.FC<{
   hasAvatar?: boolean;
@@ -132,16 +146,16 @@ const ListItemSkeleton: React.FC<{
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg",
+        "flex items-center gap-4 p-4 rounded-card",
         className
       )}
     >
       {hasAvatar && <AvatarSkeleton size="md" />}
       <div className="flex-1 space-y-2">
-        <ShimmerSkeleton className="h-4 w-1/3" />
-        <ShimmerSkeleton className="h-3 w-1/2" />
+        <ShimmerSkeleton variant="input" className="h-4 w-1/3" />
+        <ShimmerSkeleton variant="input" className="h-4 w-1/2" />
       </div>
-      {hasAction && <ShimmerSkeleton className="h-8 w-16" />}
+      {hasAction && <ShimmerSkeleton variant="input" className="h-10 w-16" />}
     </div>
   );
 };
