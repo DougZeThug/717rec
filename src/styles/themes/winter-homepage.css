@@ -103,12 +103,14 @@
   height: 85px;
   pointer-events: none;
   z-index: 10;
-  /* Use realistic icicle PNG v2 with white/transparent background */
-  background-image: url('/lovable-uploads/icicle-border-v2.png');
+  /* Use realistic icicle PNG with transparency blend */
+  background-image: url('/lovable-uploads/icicle-border-transparent.png');
   background-repeat: repeat-x;
   background-size: auto 85px;
   background-position: center top;
   filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4));
+  /* Use mix-blend-mode to blend the light background with the card */
+  mix-blend-mode: multiply;
 }
 
 /* ==========================================================================
@@ -500,7 +502,7 @@
     0 4px 24px hsla(0, 0%, 0%, 0.35);
 }
 
-/* Realistic icicle decoration using PNG asset v2 */
+/* Realistic icicle decoration using PNG asset with transparency blend */
 .winter-frozen .winter-card-full::before {
   content: '';
   position: absolute;
@@ -510,12 +512,14 @@
   height: 85px;
   pointer-events: none;
   z-index: 10;
-  /* Use realistic icicle PNG v2 with white/transparent background */
-  background-image: url('/lovable-uploads/icicle-border-v2.png');
+  /* Use realistic icicle PNG with transparency blend */
+  background-image: url('/lovable-uploads/icicle-border-transparent.png');
   background-repeat: repeat-x;
   background-size: auto 85px;
   background-position: center top;
   filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4));
+  /* Use mix-blend-mode to blend the light background with the card */
+  mix-blend-mode: multiply;
 }
 
 /* Glowing frost rim at top */
