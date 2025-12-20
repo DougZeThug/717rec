@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, History, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SeasonAccordion from "./SeasonAccordion";
 import { dbLog, errorLog } from "@/utils/logger";
-
+import { EmptyState } from "@/components/ui/empty-state";
+import { useNavigate } from "react-router-dom";
 interface SeasonData {
   team_id: string;
   season_id: string;
@@ -35,6 +36,7 @@ const HistoryPageContent: React.FC = () => {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchHistoricalData();
@@ -91,8 +93,23 @@ const HistoryPageContent: React.FC = () => {
   if (seasons.length === 0) {
     return (
       <Card>
-        <CardContent className="text-center py-8">
-          <p className="text-muted-foreground">No historical seasons found.</p>
+        <CardContent className="py-0">
+          <EmptyState
+            icon={History}
+            title="No Season History Yet"
+            description="Past seasons and champions will appear here once the first season is completed."
+            actions={[
+              {
+                label: "View Current Season",
+                onClick: () => navigate("/schedule"),
+                icon: Calendar,
+              },
+            ]}
+            secondaryLink={{
+              label: "Learn how seasons work",
+              href: "/rules",
+            }}
+          />
         </CardContent>
       </Card>
     );

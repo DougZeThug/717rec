@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, ExternalLink } from "lucide-react";
 
 interface EmptyStateAction {
   label: string;
@@ -11,11 +11,18 @@ interface EmptyStateAction {
   icon?: LucideIcon;
 }
 
+interface SecondaryLink {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
 interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
   description: string;
   actions?: EmptyStateAction[];
+  secondaryLink?: SecondaryLink;
   className?: string;
   iconClassName?: string;
 }
@@ -29,6 +36,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   actions = [],
+  secondaryLink,
   className,
   iconClassName,
 }) => {
@@ -106,9 +114,25 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           })}
         </motion.div>
       )}
+
+      {/* Secondary link */}
+      {secondaryLink && (
+        <motion.a
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.5 }}
+          href={secondaryLink.href}
+          target={secondaryLink.external ? "_blank" : undefined}
+          rel={secondaryLink.external ? "noopener noreferrer" : undefined}
+          className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+        >
+          {secondaryLink.label}
+          {secondaryLink.external && <ExternalLink className="w-3 h-3" />}
+        </motion.a>
+      )}
     </motion.div>
   );
 };
 
 export { EmptyState };
-export type { EmptyStateProps, EmptyStateAction };
+export type { EmptyStateProps, EmptyStateAction, SecondaryLink };

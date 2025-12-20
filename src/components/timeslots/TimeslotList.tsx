@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Table, 
@@ -9,8 +8,9 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Clock } from "lucide-react";
 import { Team, TeamTimeslot } from "@/types";
+import { InlineEmptyState } from "@/components/ui/inline-empty-state";
 
 interface TimeslotListProps {
   timeslots: TeamTimeslot[];
@@ -39,9 +39,11 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
   
   if (timeslots.length === 0) {
     return (
-      <div className="text-center py-6 text-gray-500">
-        No timeslots have been assigned for this date.
-      </div>
+      <InlineEmptyState
+        icon={Clock}
+        message="No Timeslots Assigned"
+        description="Use the form above to assign team timeslots for this date."
+      />
     );
   }
 

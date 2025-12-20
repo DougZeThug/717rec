@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useTeamMembership } from "@/hooks/useTeamMembership";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,8 @@ import {
 import { TeamLogo } from "@/components/shared/TeamLogo";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, LogOut, Clock, CheckCircle, Edit } from "lucide-react";
+import { Loader2, LogOut, Clock, CheckCircle, Edit, Users } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const TeamMembershipSection: React.FC = () => {
   const { membership, availableTeams, isLoading, isFetching, joinTeam, leaveTeam } = useTeamMembership();
@@ -115,6 +115,13 @@ const TeamMembershipSection: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      ) : availableTeams.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No Teams Available"
+          description="There are no teams to join at the moment. Check back later or contact an admin."
+          className="py-8"
+        />
       ) : (
         <div className="space-y-4">
           <div className="grid gap-2">

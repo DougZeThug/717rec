@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageItem from "./MessageItem";
 import { Message } from "@/types/reactions";
@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import { animations, gradients } from "@/styles/design-system";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface MessageFeedProps {
   messages: Message[];
@@ -70,17 +71,13 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
   if (messages.length === 0) {
     return (
       <Card className={cn("mb-4 bg-card/50", animations.fadeIn)}>
-        <CardContent className="flex flex-col justify-center items-center py-12 text-muted-foreground">
-          <div className="relative mb-4">
-            <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150" />
-            <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 border border-border/50">
-              <MessageSquare className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </div>
-          <p className="font-bebas text-lg tracking-wide">No Messages Yet</p>
-          <p className="text-sm mt-1 text-muted-foreground/70 max-w-xs text-center">
-            Be the first to start a conversation! Share updates, tips, or just say hello.
-          </p>
+        <CardContent className="py-0">
+          <EmptyState
+            icon={MessageSquare}
+            title="No Messages Yet"
+            description="Be the first to start a conversation! Share updates, tips, or just say hello."
+            className="py-8"
+          />
         </CardContent>
       </Card>
     );
