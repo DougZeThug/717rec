@@ -507,8 +507,163 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  opacity: 0.08;
+  opacity: 0.1;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23b3e5fc' fill-opacity='0.5'%3E%3Ccircle cx='10' cy='10' r='1'/%3E%3Ccircle cx='30' cy='20' r='0.8'/%3E%3Ccircle cx='50' cy='5' r='1.2'/%3E%3Ccircle cx='20' cy='40' r='0.6'/%3E%3Ccircle cx='45' cy='35' r='1'/%3E%3Ccircle cx='5' cy='55' r='0.8'/%3E%3Ccircle cx='55' cy='50' r='0.7'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 60px 60px;
   z-index: 1;
+}
+
+/* ==========================================================================
+   NAVBAR WINTER - Ice Glass Top Bar
+   ========================================================================== */
+
+.winter-frozen .navbar-winter {
+  background: linear-gradient(180deg, 
+    hsla(222, 47%, 12%, 0.94) 0%,
+    hsla(222, 47%, 8%, 0.96) 100%
+  ) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 2px solid hsla(199, 70%, 55%, 0.4);
+  box-shadow: 
+    inset 0 1px 0 hsla(199, 80%, 80%, 0.15),
+    0 4px 20px hsla(199, 80%, 50%, 0.1),
+    0 2px 8px hsla(0, 0%, 0%, 0.3);
+}
+
+/* Glowing frost edge at navbar bottom */
+.winter-frozen .navbar-winter::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    hsla(199, 89%, 70%, 0.7) 25%,
+    hsla(199, 89%, 85%, 1) 50%, 
+    hsla(199, 89%, 70%, 0.7) 75%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px hsla(199, 89%, 65%, 0.5);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   BOTTOM NAV WINTER - Ice Glass Bottom Bar
+   ========================================================================== */
+
+.winter-frozen .bottom-nav-winter {
+  background: hsla(222, 47%, 10%, 0.94) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 2px solid hsla(199, 70%, 55%, 0.4) !important;
+  border-bottom: none !important;
+  box-shadow: 
+    inset 0 1px 0 hsla(199, 80%, 80%, 0.1),
+    0 -4px 20px hsla(199, 80%, 50%, 0.08),
+    0 -2px 8px hsla(0, 0%, 0%, 0.25);
+}
+
+/* Glowing frost rim at top of bottom nav */
+.winter-frozen .bottom-nav-winter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    hsla(199, 89%, 70%, 0.6) 20%,
+    hsla(199, 89%, 80%, 0.9) 50%, 
+    hsla(199, 89%, 70%, 0.6) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px hsla(199, 89%, 65%, 0.4);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ==========================================================================
+   NAV ITEM WINTER STATES
+   ========================================================================== */
+
+/* Winter active nav item text */
+.winter-frozen .nav-item-winter-active {
+  color: hsl(199, 80%, 85%);
+  text-shadow: 0 0 8px hsla(199, 80%, 70%, 0.4);
+}
+
+/* Winter active indicator bar */
+.winter-frozen .nav-indicator-winter {
+  background: linear-gradient(90deg, 
+    hsla(199, 85%, 55%, 0.7) 0%,
+    hsla(199, 90%, 75%, 1) 50%,
+    hsla(199, 85%, 55%, 0.7) 100%
+  ) !important;
+  box-shadow: 0 0 10px hsla(199, 89%, 65%, 0.6);
+}
+
+/* Ice-glass pill behind active nav item */
+.winter-frozen .nav-pill-winter {
+  background: hsla(199, 60%, 50%, 0.12);
+  border: 1px solid hsla(199, 70%, 60%, 0.2);
+  box-shadow: inset 0 1px 0 hsla(199, 80%, 80%, 0.08);
+}
+
+/* ==========================================================================
+   THEME TOGGLE WINTER - Premium Ice Glass Button
+   ========================================================================== */
+
+.winter-frozen .theme-toggle-winter {
+  transition: all 0.3s ease;
+}
+
+/* ==========================================================================
+   ENHANCED CARD 2-LAYER BORDER SYSTEM
+   ========================================================================== */
+
+.winter-frozen .winter-card-full {
+  /* Outer border: icy blue at 30% opacity */
+  border: 1px solid hsla(199, 70%, 55%, 0.3) !important;
+  
+  /* Enhanced box-shadow for inner hairline + glow */
+  box-shadow: 
+    inset 0 0 0 1px hsla(199, 80%, 80%, 0.12),
+    inset 0 2px 0 0 hsla(199, 80%, 90%, 0.18),
+    0 0 30px hsla(199, 80%, 55%, 0.15),
+    0 4px 20px hsla(0, 0%, 0%, 0.3) !important;
+}
+
+/* Frost corner accents */
+.winter-frozen .frost-corners {
+  position: relative;
+}
+
+.winter-frozen .frost-corners::before,
+.winter-frozen .frost-corners::after {
+  content: '';
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  opacity: 0.6;
+  background: radial-gradient(circle at center, 
+    hsla(199, 80%, 85%, 0.5) 0%,
+    hsla(199, 80%, 75%, 0.2) 40%,
+    transparent 70%
+  );
+  z-index: 12;
+}
+
+.winter-frozen .frost-corners::before {
+  top: -6px;
+  left: -6px;
+}
+
+.winter-frozen .frost-corners::after {
+  top: -6px;
+  right: -6px;
 }

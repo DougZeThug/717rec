@@ -3,6 +3,7 @@ import React from "react";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 // Import component files
 import NavBrand from "./navbar/NavBrand";
@@ -11,6 +12,8 @@ import NavActions from "./navbar/NavActions";
 import MobileMenu from "./navbar/MobileMenu";
 
 const Navbar: React.FC = () => {
+  const { isWinterTheme } = useSeasonalTheme();
+  
   // Base nav items that everyone can see
   const navItems = [
     { label: "Home", href: "/" },
@@ -22,9 +25,11 @@ const Navbar: React.FC = () => {
   
   return (
     <nav className={cn(
-      "text-white shadow-lg sticky top-0 z-50 safe-area-top",
-      "bg-gradient-to-r from-[#0f2647] via-cornhole-navy to-[#1d4068]",
-      "dark:from-gray-900 dark:via-gray-900 dark:to-gray-800",
+      "text-white shadow-lg sticky top-0 z-50 safe-area-top relative",
+      // Default theme
+      !isWinterTheme && "bg-gradient-to-r from-[#0f2647] via-cornhole-navy to-[#1d4068] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800",
+      // Winter theme - ice glass effect
+      isWinterTheme && "navbar-winter"
     )}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-2 md:py-1">
