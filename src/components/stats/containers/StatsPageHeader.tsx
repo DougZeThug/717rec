@@ -1,17 +1,21 @@
-
 import React from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import { animations } from "@/styles/design-system";
 import { cn } from "@/lib/utils";
+import SeasonBadge from "@/components/ui/season-badge";
 
 const StatsPageHeader = () => {
   return (
-    <PageHeader 
-      title="Standings" 
-      description="Current season rankings and performance metrics"
-      className={cn("mt-1", animations.fadeInSlideDown)} 
-      withGradient={true}
-    />
+    <div className={cn("mt-1", animations.fadeInSlideDown)}>
+      <div className="flex justify-center mb-3">
+        <SeasonBadge />
+      </div>
+      <PageHeader 
+        title="Standings" 
+        description="Current season rankings and performance metrics"
+        withGradient={true}
+      />
+    </div>
   );
 };
 

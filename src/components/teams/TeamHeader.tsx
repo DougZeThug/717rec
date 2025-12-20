@@ -1,18 +1,19 @@
-
 import React from "react";
-import { Team } from "@/types";
+import { Team, Match } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { TeamLogo } from "@/components/ui/team/TeamLogo";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { blueAmberHeading } from "@/styles/design-system/blueAmber";
 import { cn } from "@/lib/utils";
+import LastMatchHighlight from "@/components/teams/LastMatchHighlight";
 
 interface TeamHeaderProps {
   team: Team;
   winPercentage?: string;
+  pastMatches?: Match[];
 }
 
-const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
+const TeamHeader = ({ team, winPercentage, pastMatches = [] }: TeamHeaderProps) => {
   return (
     <div className="flex flex-col items-center mb-1 md:mb-4">
       <div className="mb-1 md:mb-4">
@@ -41,6 +42,16 @@ const TeamHeader = ({ team, winPercentage }: TeamHeaderProps) => {
             </Badge>
           )}
         </div>
+
+        {/* Last Match Highlight */}
+        {pastMatches.length > 0 && (
+          <div className="mb-2 md:mb-3">
+            <LastMatchHighlight 
+              teamId={team.id} 
+              pastMatches={pastMatches} 
+            />
+          </div>
+        )}
         
         {/* Team Badges - Trophy Case */}
         <div className="flex justify-center">
