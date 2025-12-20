@@ -38,8 +38,8 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   if (compactView || !isMobile) {
     return (
       <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-        <span>{wins}-{losses}</span>
-        <span className={powerScoreColorClass}>{formatPowerScore(powerScore)}</span>
+        <span className="tabular-nums">{wins}-{losses}</span>
+        <span className={cn("tabular-nums", powerScoreColorClass)}>{formatPowerScore(powerScore)}</span>
       </div>
     );
   }
@@ -51,7 +51,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Record</span>
-          <span className="font-medium text-gray-900 dark:text-white">{wins}-{losses}</span>
+          <span className="font-medium tabular-nums text-gray-900 dark:text-white">{wins}-{losses}</span>
         </div>
         
         <div className="flex flex-col items-center">
@@ -61,7 +61,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
         
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">SOS</span>
-          <span className={cn("font-medium", sosColorClass)}>{sos.toFixed(3)}</span>
+          <span className={cn("font-medium tabular-nums", sosColorClass)}>{sos.toFixed(3)}</span>
         </div>
         
         <div className="flex flex-col items-center">

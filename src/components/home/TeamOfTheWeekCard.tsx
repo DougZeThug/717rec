@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { Star, TrendingUp, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { WeeklyPowerScoreTrend } from "@/types/powerScoreSnapshot";
 import { formatPowerScore } from "@/utils/colors/powerScoreColors";
 import { TeamLogo } from "@/components/shared/TeamLogo";
+import { typeScale } from "@/styles/design-system";
 
 interface TeamOfTheWeekCardProps {
   trend: WeeklyPowerScoreTrend;
@@ -51,10 +53,10 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
 
             {/* Team Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-bebas text-xl md:text-2xl tracking-wide text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
+              <h3 className={cn(typeScale.h2, "text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate")}>
                 {trend.teamName}
               </h3>
-              <Badge variant="secondary" className="text-xs mt-1">
+              <Badge variant="secondary" className={typeScale.caption}>
                 {trend.division}
               </Badge>
             </div>
@@ -63,14 +65,14 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
             <div className="flex flex-col items-end gap-1">
               <div className="flex items-center gap-1.5">
                 <TrendingUp className="h-4 w-4 text-emerald-500" />
-                <span className="text-lg md:text-xl font-bold text-emerald-500">
+                <span className="text-lg md:text-xl font-bold tabular-nums text-emerald-500">
                   +{trend.delta.toFixed(1)}
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className={cn(typeScale.caption, "tabular-nums")}>
                 {formatPowerScore(trend.previousScore)} → {formatPowerScore(trend.currentScore)}
               </span>
-              <span className="text-xs text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs tabular-nums text-emerald-600 dark:text-emerald-400">
                 +{trend.percentChange.toFixed(1)}%
               </span>
             </div>
