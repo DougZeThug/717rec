@@ -17,7 +17,7 @@ export const WinterSnowfall = () => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: 50,
+        zIndex: 5, // Lower z-index so snow stays behind content (cards are z-10+)
         pointerEvents: 'none',
       }}
       snowflakeCount={60}
