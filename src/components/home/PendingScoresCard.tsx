@@ -15,7 +15,7 @@ const PendingScoresCard = () => {
 
   const cardClasses = cn(
     "w-full",
-    shouldApplyWinter && "frost-card frost-edge"
+    shouldApplyWinter && "winter-card-full"
   );
 
   if (isLoading) {

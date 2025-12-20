@@ -25,6 +25,13 @@ const badgeVariants = cva(
           "border-transparent bg-gradient-to-br from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500",
         blueorange:
           "border-transparent bg-gradient-to-br from-blue-500 to-amber-500 text-white hover:from-blue-400 hover:to-amber-400",
+        // Winter theme variants - frosted pills
+        winter:
+          "badge-winter",
+        winterAccent:
+          "badge-winter-accent",
+        winterRank:
+          "badge-rank",
       },
     },
     defaultVariants: {

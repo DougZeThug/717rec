@@ -27,7 +27,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams }) => {
   const sectionClasses = cn(
     "py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4",
     shouldApplyWinter
-      ? "frost-card frost-edge winter-card-surface"
+      ? "winter-card-full winter-card-surface"
       : cn(
           "bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30",
           "dark:from-gray-900 dark:via-gray-900/90 dark:to-gray-900/80"

@@ -28,15 +28,16 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
       transition={{ duration: 0.2 }}
     >
       <div className={cn(
-        "relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200",
+        "relative rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200",
         "border-t-4",
         shouldApplyWinter
           ? cn(
-              "frost-card frost-edge",
+              "winter-card-full overflow-visible",
               "border-t-violet-400",
               "border border-violet-500/20"
             )
           : cn(
+              "overflow-hidden",
               "border-t-amber-500 dark:border-t-amber-400",
               "border border-white/20",
               card.background_color

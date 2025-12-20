@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Star, TrendingUp, ChevronRight } from "lucide-react";
+import { Star, TrendingUp, ChevronRight, Snowflake } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { WeeklyPowerScoreTrend } from "@/types/powerScoreSnapshot";
 import { formatPowerScore } from "@/utils/colors/powerScoreColors";
 import { TeamLogo } from "@/components/shared/TeamLogo";
 import { typeScale } from "@/styles/design-system";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 interface TeamOfTheWeekCardProps {
   trend: WeeklyPowerScoreTrend;
@@ -15,21 +16,47 @@ interface TeamOfTheWeekCardProps {
 }
 
 const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber }) => {
+  const { shouldApplyWinter } = useSeasonalTheme();
+
   return (
-    <Card className="relative overflow-hidden border-amber-500/20 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5">
+    <Card className={cn(
+      "relative overflow-hidden",
+      shouldApplyWinter
+        ? "team-of-week-card winter-card-full"
+        : "border-amber-500/20 bg-gradient-to-br from-amber-500/5 via-background to-orange-500/5"
+    )}>
       {/* Subtle glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-orange-500/10 opacity-50" />
+      <div className={cn(
+        "absolute inset-0 opacity-50",
+        shouldApplyWinter
+          ? "bg-gradient-to-r from-cyan-500/5 via-transparent to-amber-500/5"
+          : "bg-gradient-to-r from-amber-500/10 via-transparent to-orange-500/10"
+      )} />
       
       <CardContent className="relative p-4 md:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            {shouldApplyWinter ? (
+              <Snowflake className="h-4 w-4 text-cyan-400 animate-pulse" />
+            ) : (
+              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+            )}
+            <span className={cn(
+              "text-xs font-semibold uppercase tracking-wider",
+              shouldApplyWinter ? "text-cyan-300" : "text-amber-600 dark:text-amber-400"
+            )}>
               Team of the Week
             </span>
           </div>
-          <Badge variant="outline" className="text-xs border-muted-foreground/30">
+          <Badge 
+            variant={shouldApplyWinter ? "winter" : "outline"} 
+            className={cn(
+              "text-xs",
+              !shouldApplyWinter && "border-muted-foreground/30"
+            )}
+          >
+            {shouldApplyWinter && <Snowflake className="h-3 w-3 mr-1" />}
             Week {weekNumber}
           </Badge>
         </div>
@@ -41,22 +68,39 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
           <div className="flex items-center gap-4 md:gap-6">
             {/* Team Logo with glow */}
             <div className="relative flex-shrink-0">
-              <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className={cn(
+                "absolute inset-0 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                shouldApplyWinter ? "bg-cyan-400/20" : "bg-amber-500/20"
+              )} />
               <TeamLogo 
                 imageUrl={trend.logoUrl} 
                 teamName={trend.teamName}
                 size="lg"
                 rounded
-                className="relative z-10 ring-2 ring-amber-500/20 group-hover:ring-amber-500/40 transition-all duration-300 !w-16 !h-16 !min-w-16 !min-h-16"
+                className={cn(
+                  "relative z-10 transition-all duration-300 !w-16 !h-16 !min-w-16 !min-h-16",
+                  shouldApplyWinter 
+                    ? "ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50"
+                    : "ring-2 ring-amber-500/20 group-hover:ring-amber-500/40"
+                )}
               />
             </div>
 
             {/* Team Info */}
             <div className="flex-1 min-w-0">
-              <h3 className={cn(typeScale.h2, "text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate")}>
+              <h3 className={cn(
+                typeScale.h2, 
+                "transition-colors truncate",
+                shouldApplyWinter 
+                  ? "text-cyan-50 group-hover:text-cyan-300"
+                  : "text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400"
+              )}>
                 {trend.teamName}
               </h3>
-              <Badge variant="secondary" className={typeScale.caption}>
+              <Badge 
+                variant={shouldApplyWinter ? "winterAccent" : "secondary"} 
+                className={typeScale.caption}
+              >
                 {trend.division}
               </Badge>
             </div>
@@ -69,7 +113,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
                   +{trend.delta.toFixed(1)}
                 </span>
               </div>
-              <span className={cn(typeScale.caption, "tabular-nums")}>
+              <span className={cn(typeScale.caption, "tabular-nums", shouldApplyWinter && "text-cyan-200/70")}>
                 {formatPowerScore(trend.previousScore)} → {formatPowerScore(trend.currentScore)}
               </span>
               <span className="text-xs tabular-nums text-emerald-600 dark:text-emerald-400">
@@ -78,7 +122,12 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
             </div>
 
             {/* Arrow */}
-            <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-amber-500 group-hover:translate-x-1 transition-all duration-200 hidden md:block" />
+            <ChevronRight className={cn(
+              "h-5 w-5 group-hover:translate-x-1 transition-all duration-200 hidden md:block",
+              shouldApplyWinter 
+                ? "text-cyan-400/50 group-hover:text-cyan-400"
+                : "text-muted-foreground/50 group-hover:text-amber-500"
+            )} />
           </div>
         </Link>
       </CardContent>

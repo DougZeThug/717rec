@@ -44,7 +44,7 @@ const CallToAction = () => {
     <section className={cn(
       "relative py-8 px-4 mt-6 overflow-hidden border-t border-b rounded-xl",
       shouldApplyWinter
-        ? "frost-card frost-edge border-cyan-500/20"
+        ? "winter-card-full border-cyan-500/20"
         : cn(
             "border-gray-200 dark:border-gray-700/50",
             "bg-gradient-to-br from-blue-50/40 via-white to-orange-50/50",
