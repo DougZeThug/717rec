@@ -89,7 +89,7 @@ const TeamDetails = () => {
         </Button>
         
         {/* Hero Section - Tighter on mobile */}
-        <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
+        <TeamHeader team={team} winPercentage={winPct.toFixed(1)} pastMatches={pastMatches} />
         
         {/* 1. Team Stats */}
         <section id="stats">
