@@ -3,6 +3,7 @@ import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { debugLog } from "@/utils/logger";
 import { cn } from "@/lib/utils";
+import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
 
 interface RankTrendIndicatorProps {
   rankChange?: number;
@@ -25,14 +26,14 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
   if (rankChange === undefined || rankChange === null) {
     return (
       <div className="flex items-center">
-        <Minus size={14} className="text-gray-400" />
+        <Minus size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} className="text-gray-400" />
         <span className="text-gray-400 ml-0.5 text-xs">-</span>
       </div>
     );
   } else if (rankChange === 0) {
     return (
       <div className="flex items-center">
-        <Minus size={14} className="text-gray-500" />
+        <Minus size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} className="text-gray-500" />
         <span className="text-gray-500 ml-0.5 text-xs font-medium">0</span>
       </div>
     );
@@ -59,7 +60,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
             />
           )}
         </AnimatePresence>
-        <TrendingUp size={14} />
+        <TrendingUp size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} />
         <span className="ml-0.5 text-xs font-medium">+{rankChange}</span>
       </motion.div>
     );
@@ -86,7 +87,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
             />
           )}
         </AnimatePresence>
-        <TrendingDown size={14} />
+        <TrendingDown size={ICON_SIZES.sm} strokeWidth={ICON_STROKE.normal} />
         <span className="ml-0.5 text-xs font-medium">{rankChange}</span>
       </motion.div>
     );

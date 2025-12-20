@@ -5,6 +5,7 @@ import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { blueAmber } from "@/styles/design-system";
+import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
 
 interface ChampionDisplayProps {
   championId?: string;
@@ -34,7 +35,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
             ? "bg-gradient-to-r from-amber-100 to-amber-200" 
             : "bg-gradient-to-r from-amber-900/30 to-amber-800/20"
         )}>
-          <Trophy className="w-6 h-6 text-amber-500" />
+          <Trophy size={ICON_SIZES.xl} strokeWidth={ICON_STROKE.light} className="text-amber-500" />
         </div>
         <h3 className={cn(
           "text-xl font-bold mb-2",
