@@ -2,9 +2,12 @@ import React, { lazy, Suspense } from "react";
 import { useTeams } from "@/hooks/useTeams";
 import { usePendingScoresMatches } from "@/hooks/usePendingScoresMatches";
 import { useHeroCards } from "@/hooks/useHeroCards";
+import { useWeeklyPowerScoreTrends } from "@/hooks/useWeeklyPowerScoreTrends";
 import TopTeams from "@/components/home/TopTeams";
 import HeroSection from "@/components/home/HeroSection";
 import PendingScoresCard from "@/components/home/PendingScoresCard";
+import TeamOfTheWeekCard from "@/components/home/TeamOfTheWeekCard";
+import TeamOfTheWeekSkeleton from "@/components/home/TeamOfTheWeekSkeleton";
 import HeroCard from "@/components/hero/HeroCard";
 import HeroCardSkeleton from "@/components/hero/HeroCardSkeleton";
 import PageLayout from "@/components/layout/PageLayout";
@@ -19,9 +22,12 @@ const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading } = useTeams();
   const { matches: pendingMatches, isLoading: pendingScoresLoading } = usePendingScoresMatches();
   const { data: heroCards, isLoading: heroCardsLoading } = useHeroCards();
+  const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 1);
   const isMobile = useIsMobile();
   
   const hasPendingScores = !pendingScoresLoading && pendingMatches.length > 0;
+  const topGainer = trendData?.trends?.[0];
+  const hasTeamOfWeek = !trendLoading && topGainer && topGainer.delta > 0;
   
   // Top teams by power score
   const topTeams = React.useMemo(() => {
@@ -62,6 +68,15 @@ const Index: React.FC = () => {
             </PageTransition>
           ))
         )}
+
+        {/* Team of the Week */}
+        {trendLoading ? (
+          <TeamOfTheWeekSkeleton />
+        ) : hasTeamOfWeek && trendData?.latestWeek ? (
+          <PageTransition animation="fadeInSlideUp" delay="medium">
+            <TeamOfTheWeekCard trend={topGainer} weekNumber={trendData.latestWeek} />
+          </PageTransition>
+        ) : null}
 
         {hasPendingScores && (
           <PageTransition animation="fadeInSlideUp" delay="long">
