@@ -1,22 +1,29 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Trophy, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 const HeroSection = () => {
+  const { shouldApplyWinter } = useSeasonalTheme();
+  
   return (
     <section 
       className={cn(
         "text-white py-6 md:py-16 px-4 transition-all duration-200 relative",
-        "bg-gradient-to-br from-[#0f2647] via-cornhole-navy to-[#1d3761]"
+        shouldApplyWinter
+          ? "hero-winter"
+          : "bg-gradient-to-br from-[#0f2647] via-cornhole-navy to-[#1d3761]"
       )}
       style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 32px)" }}
     >
       
       {/* Simple gradient overlay - just one layer for better performance */}
-      <div className="absolute inset-0 -z-10 opacity-30 bg-gradient-to-b from-black/5 to-transparent" />
+      <div className={cn(
+        "absolute inset-0 -z-10 opacity-30 bg-gradient-to-b from-black/5 to-transparent",
+        shouldApplyWinter && "opacity-0"
+      )} />
       
       <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans relative z-10">
         <div className="flex justify-center mb-3 md:mb-6" style={{ contain: 'layout' }}>
@@ -33,11 +40,14 @@ const HeroSection = () => {
         </div>
         <h1 className={cn(
           "text-2xl md:text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-1 md:mb-2 leading-tight",
-          "text-white"
+          shouldApplyWinter ? "heading-winter" : "text-white"
         )}>
           717Rec
         </h1>
-        <p className="text-base md:text-2xl mb-4 md:mb-8 max-w-2xl mx-auto font-sans font-light italic text-white/90">
+        <p className={cn(
+          "text-base md:text-2xl mb-4 md:mb-8 max-w-2xl mx-auto font-sans font-light italic",
+          shouldApplyWinter ? "text-cyan-100/90" : "text-white/90"
+        )}>
           Where Bags Fly and Beers Flow.
         </p>
         
@@ -45,14 +55,28 @@ const HeroSection = () => {
         <div className="flex md:hidden w-full max-w-xs mx-auto">
           <Link 
             to="/stats" 
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 min-h-11 bg-white/20 backdrop-blur-sm text-white font-medium text-sm rounded-l-lg border border-white/30 border-r-0 hover:bg-white/30 transition-colors"
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-4 min-h-11",
+              "font-medium text-sm rounded-l-lg border transition-colors",
+              "active:scale-[0.98]",
+              shouldApplyWinter
+                ? "bg-cyan-500/20 backdrop-blur-sm text-cyan-50 border-cyan-400/30 border-r-0 hover:bg-cyan-500/30"
+                : "bg-white/20 backdrop-blur-sm text-white border-white/30 border-r-0 hover:bg-white/30"
+            )}
           >
             <Trophy size={16} className="shrink-0" />
             Standings
           </Link>
           <Link 
             to="/schedule" 
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 min-h-11 bg-white/20 backdrop-blur-sm text-white font-medium text-sm rounded-r-lg border border-white/30 hover:bg-white/30 transition-colors"
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-4 min-h-11",
+              "font-medium text-sm rounded-r-lg border transition-colors",
+              "active:scale-[0.98]",
+              shouldApplyWinter
+                ? "bg-cyan-500/20 backdrop-blur-sm text-cyan-50 border-cyan-400/30 hover:bg-cyan-500/30"
+                : "bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30"
+            )}
           >
             <Calendar size={16} className="shrink-0" />
             Schedule
@@ -65,7 +89,10 @@ const HeroSection = () => {
             asChild
             size="lg"
             variant="blueOrange"
-            className="flex items-center gap-2"
+            className={cn(
+              "flex items-center gap-2",
+              shouldApplyWinter && "btn-winter-primary"
+            )}
           >
             <Link to="/stats" className="flex items-center gap-2">
               <Trophy size={20} className="shrink-0" />
@@ -76,7 +103,12 @@ const HeroSection = () => {
             asChild
             size="lg"
             variant="blueOrange" 
-            className="flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30"
+            className={cn(
+              "flex items-center gap-2",
+              shouldApplyWinter
+                ? "btn-winter-secondary"
+                : "bg-white/20 backdrop-blur-sm hover:bg-white/30"
+            )}
           >
             <Link to="/schedule" className="flex items-center gap-2">
               <Calendar size={20} className="shrink-0"/> 

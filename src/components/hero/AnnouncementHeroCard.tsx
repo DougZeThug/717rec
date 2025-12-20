@@ -4,6 +4,7 @@ import { Trophy, ChevronRight, Star, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HeroCard } from "@/types/heroCard";
 import { motion } from "framer-motion";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 interface AnnouncementHeroCardProps {
   card: HeroCard;
@@ -18,6 +19,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => {
   const Icon = card.icon_name ? iconMap[card.icon_name] : Trophy;
+  const { shouldApplyWinter } = useSeasonalTheme();
 
   const content = (
     <motion.div
@@ -27,9 +29,18 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
     >
       <div className={cn(
         "relative overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200",
-        "border-t-4 border-t-amber-500 dark:border-t-amber-400",
-        "border border-white/20",
-        card.background_color
+        "border-t-4",
+        shouldApplyWinter
+          ? cn(
+              "frost-card frost-edge",
+              "border-t-violet-400",
+              "border border-violet-500/20"
+            )
+          : cn(
+              "border-t-amber-500 dark:border-t-amber-400",
+              "border border-white/20",
+              card.background_color
+            )
       )}>
         {/* Static inner glow */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
@@ -44,7 +55,7 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
         
         <div className={cn(
           "relative z-10 flex items-center justify-center gap-3 px-6 py-5",
-          card.text_color
+          shouldApplyWinter ? "text-violet-50" : card.text_color
         )}>
           {Icon && (
             <motion.div
@@ -59,7 +70,10 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
           <div className="text-center">
             <h3 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">{card.title}</h3>
             {card.subtitle && (
-              <p className="text-sm font-inter opacity-90 mt-1">{card.subtitle}</p>
+              <p className={cn(
+                "text-sm font-inter mt-1",
+                shouldApplyWinter ? "text-violet-200/90" : "opacity-90"
+              )}>{card.subtitle}</p>
             )}
           </div>
           

@@ -1,6 +1,6 @@
-
 import React, { ReactNode } from "react";
 import { useThemeConsistency } from "@/hooks/use-theme-consistency";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { animations, gradients } from "@/styles/design-system";
@@ -24,9 +24,15 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   gradientVariant = 'blueOrange'
 }) => {
   const { isDark } = useThemeConsistency();
+  const { shouldApplyWinter, isWinterTheme } = useSeasonalTheme();
   const isMobile = useIsMobile();
   
   const getGradientClass = () => {
+    // Winter theme background for homepage
+    if (shouldApplyWinter) {
+      return "page-winter-bg";
+    }
+    
     if (!withBackground) return "";
     
     switch(gradientVariant) {
@@ -52,11 +58,13 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         isMobile ? (compact ? "py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]" : "py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]") : "py-5 pb-6", 
         "px-1 sm:px-3 md:px-4 lg:px-5",
         animations.fadeIn,
+        // Add winter pattern for homepage
+        shouldApplyWinter && "winter-pattern relative",
         className
       )}
-      style={withBackground && !isDark ? { background: "#f8f8f8" } : {}}
+      style={withBackground && !isDark && !isWinterTheme ? { background: "#f8f8f8" } : {}}
     >
-      <div className="max-w-full w-full">
+      <div className="max-w-full w-full relative z-10">
         {children}
       </div>
     </div>

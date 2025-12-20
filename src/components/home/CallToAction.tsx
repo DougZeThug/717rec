@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { gradients, animations } from "@/styles/design-system";
+import { animations } from "@/styles/design-system";
 import { motion } from "framer-motion";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
-// Define the possible CTA messages
 const ctaMessages = [
   {
     heading: "Join The League Today!",
@@ -29,8 +28,8 @@ const ctaMessages = [
 
 const CallToAction = () => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const { shouldApplyWinter } = useSeasonalTheme();
 
-  // Rotate messages every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % ctaMessages.length);
@@ -43,26 +42,44 @@ const CallToAction = () => {
 
   return (
     <section className={cn(
-      "relative py-8 px-4 mt-6 overflow-hidden border-t border-b",
-      "border-gray-200 dark:border-gray-700/50",
-      "bg-gradient-to-br from-blue-50/40 via-white to-orange-50/50",
-      "dark:from-gray-800/90 dark:via-gray-800/70 dark:to-amber-900/10",
+      "relative py-8 px-4 mt-6 overflow-hidden border-t border-b rounded-xl",
+      shouldApplyWinter
+        ? "frost-card frost-edge border-cyan-500/20"
+        : cn(
+            "border-gray-200 dark:border-gray-700/50",
+            "bg-gradient-to-br from-blue-50/40 via-white to-orange-50/50",
+            "dark:from-gray-800/90 dark:via-gray-800/70 dark:to-amber-900/10"
+          ),
       animations.fadeIn
     )}>
       {/* Enhanced gradient background elements */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50/20 via-transparent to-orange-100/30 dark:from-blue-900/10 dark:to-amber-900/5" />
+      <div className={cn(
+        "absolute inset-0 -z-10",
+        shouldApplyWinter
+          ? "bg-gradient-to-br from-cyan-900/10 via-transparent to-violet-900/10"
+          : "bg-gradient-to-br from-blue-50/20 via-transparent to-orange-100/30 dark:from-blue-900/10 dark:to-amber-900/5"
+      )} />
       
       {/* Animated gradient orbs in the background */}
-      <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-blue-500/5 blur-3xl -z-10" />
-      <div className="absolute bottom-0 left-0 w-60 h-60 rounded-full bg-orange-500/5 blur-3xl -z-10" />
+      <div className={cn(
+        "absolute top-0 right-0 w-40 h-40 rounded-full blur-3xl -z-10",
+        shouldApplyWinter ? "bg-cyan-500/5" : "bg-blue-500/5"
+      )} />
+      <div className={cn(
+        "absolute bottom-0 left-0 w-60 h-60 rounded-full blur-3xl -z-10",
+        shouldApplyWinter ? "bg-violet-500/5" : "bg-orange-500/5"
+      )} />
       
       <div className="max-w-5xl mx-auto text-center">
         <motion.h2 
           className={cn(
-            "text-xl md:text-3xl font-semibold mb-3",
-            "bg-gradient-to-r from-blue-600 via-blue-700 to-amber-600",
-            "dark:from-blue-500 dark:via-blue-400 dark:to-amber-500",
-            "bg-clip-text text-transparent"
+            "text-xl md:text-3xl font-semibold mb-3 bg-clip-text text-transparent",
+            shouldApplyWinter
+              ? "bg-gradient-to-r from-cyan-300 via-cyan-200 to-violet-300"
+              : cn(
+                  "bg-gradient-to-r from-blue-600 via-blue-700 to-amber-600",
+                  "dark:from-blue-500 dark:via-blue-400 dark:to-amber-500"
+                )
           )}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -72,7 +89,10 @@ const CallToAction = () => {
           {currentMessage.heading}
         </motion.h2>
         <motion.p 
-          className="text-base md:text-lg mb-5 max-w-2xl mx-auto text-gray-700 dark:text-gray-300"
+          className={cn(
+            "text-base md:text-lg mb-5 max-w-2xl mx-auto",
+            shouldApplyWinter ? "text-cyan-100/80" : "text-gray-700 dark:text-gray-300"
+          )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -91,16 +111,21 @@ const CallToAction = () => {
             asChild 
             size="lg" 
             className={cn(
-              "shadow-md hover:shadow-lg transition-all duration-200 font-semibold text-white",
-              "bg-gradient-to-br from-blue-600 via-blue-700 to-amber-600/90",
-              "hover:from-blue-500 hover:via-blue-600 hover:to-amber-500/90"
+              "shadow-md hover:shadow-lg transition-all duration-200 font-semibold",
+              shouldApplyWinter
+                ? "btn-winter-primary"
+                : cn(
+                    "text-white",
+                    "bg-gradient-to-br from-blue-600 via-blue-700 to-amber-600/90",
+                    "hover:from-blue-500 hover:via-blue-600 hover:to-amber-500/90"
+                  )
             )}
           >
             <a href={currentMessage.buttonLink}>{currentMessage.buttonText}</a>
           </Button>
         </motion.div>
         
-        {/* Navigation dots - using padding for accessible touch target */}
+        {/* Navigation dots */}
         <div className="flex justify-center gap-0 mt-5">
           {ctaMessages.map((_, index) => (
             <button
@@ -113,8 +138,10 @@ const CallToAction = () => {
                 className={cn(
                   "block w-2 h-2 rounded-full transition-all duration-300",
                   index === currentMessageIndex
-                    ? "bg-blue-600 dark:bg-blue-400 w-6"
-                    : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
+                    ? (shouldApplyWinter ? "bg-cyan-400 w-6" : "bg-blue-600 dark:bg-blue-400 w-6")
+                    : (shouldApplyWinter 
+                        ? "bg-cyan-700 hover:bg-cyan-600" 
+                        : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500")
                 )}
               />
             </button>
