@@ -2,8 +2,8 @@
 import React, { ReactNode } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { typography } from "@/styles/design-system";
-import { blueAmber, blueAmberHeading } from "@/styles/design-system/blueAmber";
+import { typeScale } from "@/styles/design-system";
+import { blueAmberHeading } from "@/styles/design-system/blueAmber";
 
 interface PageHeaderProps {
   title: ReactNode;
@@ -32,20 +32,19 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       className
     )}>
       <h1 className={cn(
-        typography.heading.h1,
-        isMobile ? "text-2xl font-medium" : "text-3xl",
+        typeScale.h1,
+        isMobile && "text-[24px] leading-[28px]",
         withGradient 
           ? blueAmberHeading() 
-          : "text-gray-900 dark:text-white"
+          : "text-foreground"
       )}>
         {title}
       </h1>
       
       {description && (
         <p className={cn(
-          typography.body.default,
-          "text-muted-foreground",
-          isMobile ? "text-sm mt-0.5" : "text-base mt-1"
+          typeScale.body,
+          "text-muted-foreground mt-1"
         )}>
           {description}
         </p>

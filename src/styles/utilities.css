@@ -1,6 +1,30 @@
 
 /* Utilities */
-  /* Safe area utilities with improved fallback values */
+
+/* Numeric typography - prevents column wiggle in tables/standings */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Shorthand utilities for numeric data */
+.text-score {
+  @apply font-bold tabular-nums;
+}
+
+.text-stat {
+  @apply font-medium tabular-nums;
+}
+
+.text-percentage {
+  @apply tabular-nums;
+}
+
+.text-record {
+  @apply font-medium tabular-nums;
+}
+
+/* Safe area utilities with improved fallback values */
   .safe-area-top {
     padding-top: max(0.5rem, var(--sat));
   }

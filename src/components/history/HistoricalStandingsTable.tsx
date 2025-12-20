@@ -84,20 +84,20 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600 dark:text-gray-300">Record:</span>
-                  <span className={cn("ml-2 font-medium", getWinPercentageColor(winPercentage))}>
+                  <span className={cn("ml-2 font-medium tabular-nums", getWinPercentageColor(winPercentage))}>
                     {team.match_wins}-{team.match_losses} ({winPercentage.toFixed(1)}%)
                   </span>
                 </div>
                 <div>
                   <span className="text-gray-600 dark:text-gray-300">Games:</span>
-                  <span className={cn("ml-2 font-medium", getWinPercentageColor(gameWinPercentage))}>
+                  <span className={cn("ml-2 font-medium tabular-nums", getWinPercentageColor(gameWinPercentage))}>
                     {team.game_wins}-{team.game_losses} ({gameWinPercentage.toFixed(1)}%)
                   </span>
                 </div>
                 {team.power_score !== null && (
                   <div>
                     <span className="text-gray-600 dark:text-gray-300">Power Score:</span>
-                    <span className={cn("ml-2 font-medium", getPowerScoreColor(team.power_score * 100))}>
+                    <span className={cn("ml-2 font-medium tabular-nums", getPowerScoreColor(team.power_score * 100))}>
                       {(team.power_score * 100).toFixed(1)}
                     </span>
                   </div>
@@ -105,7 +105,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                 {team.sos !== null && (
                   <div>
                     <span className="text-gray-600 dark:text-gray-300">SOS:</span>
-                    <span className={cn("ml-2 font-medium", getSosColor(team.sos))}>
+                    <span className={cn("ml-2 font-medium tabular-nums", getSosColor(team.sos))}>
                       {team.sos.toFixed(3)}
                     </span>
                   </div>
@@ -171,22 +171,22 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                     </span>
                   </div>
                 </td>
-                <td className="py-2 px-3 text-center font-medium text-slate-900 dark:text-white">
+                <td className="py-2 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
                   {team.match_wins}-{team.match_losses}
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getWinPercentageColor(winPercentage))}>
+                <td className={cn("py-2 px-3 text-center font-medium tabular-nums", getWinPercentageColor(winPercentage))}>
                   {winPercentage.toFixed(1)}%
                 </td>
-                <td className="py-2 px-3 text-center font-medium text-slate-900 dark:text-white">
+                <td className="py-2 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
                   {team.game_wins}-{team.game_losses}
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getWinPercentageColor(gameWinPercentage))}>
+                <td className={cn("py-2 px-3 text-center font-medium tabular-nums", getWinPercentageColor(gameWinPercentage))}>
                   {gameWinPercentage.toFixed(1)}%
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getPowerScoreColor(team.power_score ? team.power_score * 100 : null))}>
+                <td className={cn("py-2 px-3 text-center font-medium tabular-nums", getPowerScoreColor(team.power_score ? team.power_score * 100 : null))}>
                   {team.power_score ? (team.power_score * 100).toFixed(1) : '-'}
                 </td>
-                <td className={cn("py-2 px-3 text-center font-medium", getSosColor(team.sos))}>
+                <td className={cn("py-2 px-3 text-center font-medium tabular-nums", getSosColor(team.sos))}>
                   {team.sos?.toFixed(3) || '-'}
                 </td>
               </tr>

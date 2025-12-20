@@ -97,16 +97,16 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </td>
       )}
       <td className="py-3 px-3 text-center">
-        <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
+        <span className={cn("font-medium tabular-nums", getPowerScoreColor(ranking.powerScore))}>
           {formatPowerScore(ranking.powerScore)}
         </span>
       </td>
-      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">
+      <td className="py-3 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
         {ranking.wins}-{ranking.losses}
       </td>
       <td className="py-3 px-3 text-center">
         <span className={cn(
-          "font-medium",
+          "font-medium tabular-nums",
           winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
           winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
           winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
@@ -115,12 +115,12 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           {winPercentage.toFixed(1)}%
         </span>
       </td>
-      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white hidden md:table-cell">
+      <td className="py-3 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white hidden md:table-cell">
         {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
       </td>
       <td className="py-3 px-3 text-center hidden lg:table-cell">
         <span className={cn(
-          "font-medium",
+          "font-medium tabular-nums",
           gameWinPercentage >= 75 ? "text-green-600 dark:text-green-500" :
           gameWinPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
           gameWinPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
@@ -130,11 +130,11 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </span>
       </td>
       <td className="py-3 px-3 text-center">
-        <span className={cn("font-medium", getSosColor(ranking.sos || 0))}>
+        <span className={cn("font-medium tabular-nums", getSosColor(ranking.sos || 0))}>
           {(ranking.sos || 0).toFixed(3)}
         </span>
       </td>
-      <td className="py-3 px-3 text-center font-medium text-slate-900 dark:text-white">
+      <td className="py-3 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
         {ranking.streak || 'N/A'}
       </td>
       <td className="py-3 px-3 text-center">

@@ -102,10 +102,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </Link>
 
         <div className="flex justify-between mt-2 text-xs">
-          <span className="text-gray-600 dark:text-gray-400">
+          <span className="text-gray-600 dark:text-gray-400 tabular-nums">
             {ranking.wins}-{ranking.losses}
           </span>
-          <span className={cn("font-medium", getPowerScoreColor(ranking.powerScore))}>
+          <span className={cn("font-medium tabular-nums", getPowerScoreColor(ranking.powerScore))}>
             {formatPowerScore(ranking.powerScore)}
           </span>
         </div>
@@ -116,7 +116,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               <div>
                 <p className="text-gray-600 dark:text-gray-400">Win %</p>
                 <p className={cn(
-                  "font-bold",
+                  "font-bold tabular-nums",
                   !hasGames ? "text-gray-500 dark:text-gray-400" :
                   winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
                   winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
@@ -128,7 +128,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
               </div>
               <div>
                 <p className="text-gray-600 dark:text-gray-400">SOS</p>
-                <p className={cn("font-bold", getSosColor(ranking.sos || 0))}>
+                <p className={cn("font-bold tabular-nums", getSosColor(ranking.sos || 0))}>
                   {(ranking.sos || 0).toFixed(3)}
                 </p>
               </div>
@@ -191,14 +191,14 @@ const RankingCard: React.FC<RankingCardProps> = ({
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">Record</p>
-          <p className="text-slate-900 dark:text-white font-bold">
+          <p className="text-slate-900 dark:text-white font-bold tabular-nums">
             {ranking.wins}-{ranking.losses}
           </p>
         </div>
         <div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">Win %</p>
           <p className={cn(
-            "font-bold",
+            "font-bold tabular-nums",
             !hasGames ? "text-gray-500 dark:text-gray-400" :
             winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
             winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
@@ -210,14 +210,14 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
         <div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">Games</p>
-          <p className="text-slate-900 dark:text-white font-bold">
+          <p className="text-slate-900 dark:text-white font-bold tabular-nums">
             {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
           </p>
         </div>
         <div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">Game %</p>
           <p className={cn(
-            "font-bold",
+            "font-bold tabular-nums",
             gameWinPercentage >= 75 ? "text-green-600 dark:text-green-500" :
             gameWinPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
             gameWinPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
@@ -228,13 +228,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </div>
         <div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">Power</p>
-          <p className={cn("font-bold", getPowerScoreColor(ranking.powerScore))}>
+          <p className={cn("font-bold tabular-nums", getPowerScoreColor(ranking.powerScore))}>
             {formatPowerScore(ranking.powerScore)}
           </p>
         </div>
         <div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">SOS</p>
-          <p className={cn("font-bold", getSosColor(ranking.sos || 0))}>
+          <p className={cn("font-bold tabular-nums", getSosColor(ranking.sos || 0))}>
             {(ranking.sos || 0).toFixed(3)}
           </p>
         </div>
