@@ -1,8 +1,9 @@
 
-import React from "react";
+import React, { cloneElement, isValidElement, ReactElement } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { LucideProps } from "lucide-react";
 
 export interface NavItemProps {
   to: string;
@@ -24,6 +25,13 @@ export const NavItem: React.FC<NavItemProps> = ({
   const location = useLocation();
   const isActive = isActiveProp !== undefined ? isActiveProp : location.pathname === to;
 
+  // Clone icon with different stroke width based on active state
+  const styledIcon = isValidElement(icon)
+    ? cloneElement(icon as ReactElement<LucideProps>, {
+        strokeWidth: isActive ? 2.5 : 1.5,
+      })
+    : icon;
+
   return (
     <Link
       to={to}
@@ -33,23 +41,30 @@ export const NavItem: React.FC<NavItemProps> = ({
         "relative text-center",
         "min-h-[44px] min-w-[44px] px-3 py-2", 
         isActive
-          ? "text-cornhole-navy dark:text-white font-medium"
-          : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white",
+          ? "text-primary dark:text-white"
+          : "text-muted-foreground hover:text-foreground",
         className
       )}
       aria-current={isActive ? "page" : undefined}
     >
       <div className="flex flex-col items-center">
-        {icon && (
+        {styledIcon && (
           <motion.div 
-            className={cn("mb-1", isActive && "text-cornhole-navy dark:text-blue-300")}
-            animate={isActive ? { scale: [1, 1.15, 1] } : { scale: 1 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            className={cn("mb-1", isActive && "text-primary dark:text-blue-300")}
+            animate={isActive ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
           >
-            {icon}
+            {styledIcon}
           </motion.div>
         )}
-        {label && <span className="text-sm font-medium">{label}</span>}
+        {label && (
+          <span className={cn(
+            "text-xs transition-all",
+            isActive ? "font-semibold" : "font-normal"
+          )}>
+            {label}
+          </span>
+        )}
       </div>
       <AnimatePresence>
         {isActive && (
