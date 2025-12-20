@@ -51,12 +51,27 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const getButtonClasses = () => {
     if (theme === "winter-frozen") {
-      return "text-cyan-400 hover:bg-cyan-950/50 border-cyan-800";
+      // Premium ice-glass button for winter theme
+      return [
+        "theme-toggle-winter",
+        "bg-[hsla(222,35%,15%,0.9)]",
+        "border-[hsla(199,70%,55%,0.5)]",
+        "shadow-[inset_0_1px_0_hsla(199,80%,80%,0.15),0_0_12px_hsla(199,80%,60%,0.2)]",
+        "hover:shadow-[inset_0_1px_0_hsla(199,80%,80%,0.2),0_0_20px_hsla(199,80%,60%,0.35)]",
+        "hover:border-[hsla(199,70%,65%,0.6)]",
+      ].join(" ");
     }
     if (resolvedTheme === "dark") {
       return "text-white hover:bg-gray-700 border-gray-600 dark:hover:bg-gray-700/80";
     }
     return "text-gray-700 hover:bg-gray-200 border-gray-300";
+  };
+
+  const getIconClasses = () => {
+    if (theme === "winter-frozen") {
+      return "h-5 w-5 text-cyan-400 drop-shadow-[0_0_4px_hsla(199,90%,70%,0.6)]";
+    }
+    return "h-5 w-5";
   };
 
   return (
@@ -66,14 +81,16 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
           variant={variant}
           size={size}
           className={cn(
-            "rounded-full transition-colors duration-300",
+            "rounded-full transition-all duration-300",
             getButtonClasses(),
             className
           )}
           aria-label="Select theme"
           title="Select theme"
         >
-          {getCurrentIcon()}
+          {theme === "winter-frozen" ? (
+            <Snowflake className={getIconClasses()} />
+          ) : getCurrentIcon()}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
