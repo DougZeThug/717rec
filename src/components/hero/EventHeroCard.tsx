@@ -134,7 +134,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
         "border-t-4",
         shouldApplyWinter
           ? cn(
-              "event-card icicle-trim overflow-visible",
+              "event-card winter-card-full overflow-visible",
               "border-t-cyan-400",
               "border border-emerald-500/20"
             )

@@ -85,36 +85,30 @@
 }
 
 /* ==========================================================================
-   REALISTIC ICICLE TRIM - Thick snow ledge + irregular icicles + specular highlights
-   Icicles must look like frozen ice, NOT rain droplets
+   REALISTIC ICICLE TRIM - Using PNG asset for realistic frozen ice effect
    ========================================================================== */
 
 .winter-frozen .icicle-trim {
   position: relative;
-  padding-top: 65px; /* Space for thick snow ledge + angular icicles */
+  padding-top: 70px; /* Space for PNG icicles */
+  margin-top: 15px; /* Allow icicles to extend above */
 }
 
 .winter-frozen .icicle-trim::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: -15px;
   left: 0;
   right: 0;
-  height: 65px;
+  height: 85px;
   pointer-events: none;
   z-index: 10;
-  /* 
-   * ANGULAR ICICLES with sharp tips (not water drops):
-   * - Uses L (line) commands, NOT curves
-   * - Thick at attachment, tapered to sharp point
-   * - Irregular widths, lengths, and spacing
-   * - Thick 14px snow/frost ledge at top
-   */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 65' preserveAspectRatio='xMidYMin slice'%3E%3Cdefs%3E%3ClinearGradient id='snowLedge' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.98'/%3E%3Cstop offset='50%25' stop-color='%23e8f4f8' stop-opacity='0.95'/%3E%3Cstop offset='100%25' stop-color='%23cce7f0' stop-opacity='0.9'/%3E%3C/linearGradient%3E%3ClinearGradient id='ice1' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e8f4f8' stop-opacity='0.95'/%3E%3Cstop offset='30%25' stop-color='%23b3e5fc' stop-opacity='0.88'/%3E%3Cstop offset='70%25' stop-color='%2381d4fa' stop-opacity='0.7'/%3E%3Cstop offset='100%25' stop-color='%2329b6f6' stop-opacity='0.5'/%3E%3C/linearGradient%3E%3ClinearGradient id='ice2' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23f0f9ff' stop-opacity='0.95'/%3E%3Cstop offset='25%25' stop-color='%23e1f5fe' stop-opacity='0.9'/%3E%3Cstop offset='60%25' stop-color='%234fc3f7' stop-opacity='0.65'/%3E%3Cstop offset='100%25' stop-color='%230288d1' stop-opacity='0.4'/%3E%3C/linearGradient%3E%3ClinearGradient id='hl' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.95'/%3E%3Cstop offset='50%25' stop-color='%23ffffff' stop-opacity='0.4'/%3E%3Cstop offset='100%25' stop-color='%23ffffff' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cfilter id='sh'%3E%3CfeDropShadow dx='0' dy='2' stdDeviation='1.5' flood-color='%230c4a6e' flood-opacity='0.25'/%3E%3C/filter%3E%3C/defs%3E%3Crect x='0' y='0' width='400' height='14' fill='url(%23snowLedge)'/%3E%3Crect x='0' y='12' width='400' height='3' fill='%23d4e8f0' opacity='0.6'/%3E%3Cg filter='url(%23sh)'%3E%3Cpath d='M15 14 L20 14 L21 18 L19 20 L20 22 L18 24 L19 44 L17 52 L15 44 L16 24 L14 22 L15 20 L13 18 Z' fill='url(%23ice1)'/%3E%3Cpath d='M16 16 L16 46' stroke='url(%23hl)' stroke-width='1.5'/%3E%3Cpath d='M38 14 L42 14 L43 17 L41 18 L42 28 L40 34 L38 28 L39 18 L37 17 Z' fill='url(%23ice1)'/%3E%3Cpath d='M39 16 L39 30' stroke='url(%23hl)' stroke-width='1'/%3E%3Cpath d='M58 14 L66 14 L68 19 L65 22 L66 24 L64 28 L65 50 L62 62 L59 50 L60 28 L58 24 L59 22 L56 19 Z' fill='url(%23ice2)'/%3E%3Cpath d='M60 17 L60 55' stroke='url(%23hl)' stroke-width='2'/%3E%3Cpath d='M85 14 L89 14 L90 16 L88 17 L89 22 L87 26 L85 22 L86 17 L84 16 Z' fill='url(%23ice1)'/%3E%3Cpath d='M105 14 L112 14 L114 18 L111 21 L112 23 L110 26 L111 46 L108 58 L105 46 L106 26 L104 23 L105 21 L102 18 Z' fill='url(%23ice2)'/%3E%3Cpath d='M107 17 L107 52' stroke='url(%23hl)' stroke-width='1.5'/%3E%3Cpath d='M130 14 L135 14 L136 17 L134 19 L135 32 L133 40 L131 32 L132 19 L130 17 Z' fill='url(%23ice1)'/%3E%3Cpath d='M132 16 L132 36' stroke='url(%23hl)' stroke-width='1'/%3E%3Cpath d='M152 14 L158 14 L160 18 L157 21 L158 48 L155 60 L152 48 L153 21 L150 18 Z' fill='url(%23ice2)'/%3E%3Cpath d='M154 17 L154 54' stroke='url(%23hl)' stroke-width='1.5'/%3E%3Cpath d='M178 14 L182 14 L183 16 L181 17 L182 24 L180 28 L178 24 L179 17 L177 16 Z' fill='url(%23ice1)'/%3E%3Cpath d='M198 14 L207 14 L209 20 L205 24 L206 26 L204 30 L205 52 L202 65 L199 52 L200 30 L198 26 L199 24 L195 20 Z' fill='url(%23ice2)'/%3E%3Cpath d='M201 18 L201 58' stroke='url(%23hl)' stroke-width='2'/%3E%3Cpath d='M225 14 L230 14 L231 17 L229 19 L230 36 L228 45 L226 36 L227 19 L225 17 Z' fill='url(%23ice1)'/%3E%3Cpath d='M227 16 L227 40' stroke='url(%23hl)' stroke-width='1'/%3E%3Cpath d='M248 14 L253 14 L254 17 L252 19 L253 30 L251 36 L249 30 L250 19 L248 17 Z' fill='url(%23ice1)'/%3E%3Cpath d='M268 14 L276 14 L278 19 L274 23 L275 25 L273 29 L274 52 L271 63 L268 52 L269 29 L267 25 L268 23 L264 19 Z' fill='url(%23ice2)'/%3E%3Cpath d='M270 17 L270 56' stroke='url(%23hl)' stroke-width='1.5'/%3E%3Cpath d='M295 14 L299 14 L300 16 L298 18 L299 28 L297 34 L295 28 L296 18 L294 16 Z' fill='url(%23ice1)'/%3E%3Cpath d='M315 14 L322 14 L324 18 L320 22 L321 44 L318 55 L315 44 L316 22 L312 18 Z' fill='url(%23ice2)'/%3E%3Cpath d='M317 17 L317 50' stroke='url(%23hl)' stroke-width='1.5'/%3E%3Cpath d='M340 14 L344 14 L345 16 L343 17 L344 22 L342 26 L340 22 L341 17 L339 16 Z' fill='url(%23ice1)'/%3E%3Cpath d='M358 14 L366 14 L368 19 L364 23 L365 25 L363 29 L364 48 L361 60 L358 48 L359 29 L357 25 L358 23 L354 19 Z' fill='url(%23ice2)'/%3E%3Cpath d='M360 17 L360 54' stroke='url(%23hl)' stroke-width='2'/%3E%3Cpath d='M385 14 L390 14 L391 17 L389 19 L390 38 L388 48 L386 38 L387 19 L385 17 Z' fill='url(%23ice1)'/%3E%3Cpath d='M387 16 L387 42' stroke='url(%23hl)' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E");
+  /* Use realistic icicle PNG v2 with white/transparent background */
+  background-image: url('/lovable-uploads/icicle-border-v2.png');
   background-repeat: repeat-x;
-  background-size: 400px 65px;
+  background-size: auto 85px;
   background-position: center top;
-  filter: drop-shadow(0 4px 8px rgba(79, 195, 247, 0.35));
+  filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4));
 }
 
 /* ==========================================================================
@@ -485,7 +479,7 @@
    ========================================================================== */
 
 /* ==========================================================================
-   UNIFIED WINTER CARD - Realistic icicles + frost + glass
+   UNIFIED WINTER CARD - Realistic icicles using PNG asset
    ========================================================================== */
 
 .winter-frozen .winter-card-full {
@@ -497,7 +491,8 @@
   border: 1px solid hsla(199, 70%, 55%, 0.35);
   border-radius: 12px;
   overflow: visible;
-  padding-top: 55px; /* Space for thick snow ledge + icicles */
+  padding-top: 70px; /* Space for PNG icicles */
+  margin-top: 10px; /* Allow icicles to extend above */
   box-shadow: 
     inset 0 1px 0 0 hsla(199, 80%, 88%, 0.22),
     inset 0 0 24px hsla(199, 80%, 70%, 0.06),
@@ -505,22 +500,22 @@
     0 4px 24px hsla(0, 0%, 0%, 0.35);
 }
 
-/* Realistic icicle decoration - thick snow ledge + specular highlights */
+/* Realistic icicle decoration using PNG asset v2 */
 .winter-frozen .winter-card-full::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: -15px;
   left: 0;
   right: 0;
-  height: 55px;
+  height: 85px;
   pointer-events: none;
   z-index: 10;
-  /* Same realistic icicle SVG as .icicle-trim - with thick snow ledge + specular highlights */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 55' preserveAspectRatio='xMidYMin slice'%3E%3Cdefs%3E%3ClinearGradient id='snowLedge' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.98'/%3E%3Cstop offset='40%25' stop-color='%23e8f4f8' stop-opacity='0.95'/%3E%3Cstop offset='100%25' stop-color='%23b3e5fc' stop-opacity='0.85'/%3E%3C/linearGradient%3E%3ClinearGradient id='iceBodyA' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23e8f4f8' stop-opacity='0.95'/%3E%3Cstop offset='20%25' stop-color='%23b3e5fc' stop-opacity='0.9'/%3E%3Cstop offset='60%25' stop-color='%2381d4fa' stop-opacity='0.75'/%3E%3Cstop offset='100%25' stop-color='%2329b6f6' stop-opacity='0.5'/%3E%3C/linearGradient%3E%3ClinearGradient id='iceBodyB' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23f0f9ff' stop-opacity='0.95'/%3E%3Cstop offset='15%25' stop-color='%23e1f5fe' stop-opacity='0.9'/%3E%3Cstop offset='50%25' stop-color='%234fc3f7' stop-opacity='0.7'/%3E%3Cstop offset='100%25' stop-color='%230288d1' stop-opacity='0.4'/%3E%3C/linearGradient%3E%3ClinearGradient id='specular' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.9'/%3E%3Cstop offset='60%25' stop-color='%23ffffff' stop-opacity='0.3'/%3E%3Cstop offset='100%25' stop-color='%23ffffff' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cfilter id='ledgeShadow'%3E%3CfeDropShadow dx='0' dy='3' stdDeviation='2' flood-color='%23000' flood-opacity='0.15'/%3E%3C/filter%3E%3Cfilter id='iceGlow'%3E%3CfeGaussianBlur stdDeviation='0.8' result='blur'/%3E%3CfeMerge%3E%3CfeMergeNode in='blur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3Crect x='0' y='0' width='400' height='12' rx='2' fill='url(%23snowLedge)' filter='url(%23ledgeShadow)'/%3E%3Cpath d='M18 12 Q22 12 24 16 C26 22 27 34 24 42 Q22 46 20 46 Q18 46 16 42 C13 34 14 22 16 16 Q18 12 18 12' fill='url(%23iceBodyA)' filter='url(%23iceGlow)'/%3E%3Cpath d='M17 14 L16 38' stroke='url(%23specular)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M48 12 Q52 12 55 17 C58 26 60 40 56 50 Q53 55 50 55 Q47 55 44 50 C40 40 42 26 45 17 Q48 12 48 12' fill='url(%23iceBodyB)' filter='url(%23iceGlow)'/%3E%3Cpath d='M47 15 L45 48' stroke='url(%23specular)' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M82 12 Q84 12 85 14 C86 18 86 24 85 28 Q84 30 83 30 Q82 30 81 28 C80 24 80 18 81 14 Q82 12 82 12' fill='url(%23iceBodyA)'/%3E%3Cpath d='M81.5 13 L81 26' stroke='url(%23specular)' stroke-width='1' stroke-linecap='round'/%3E%3Cpath d='M108 12 Q112 12 114 16 C117 24 118 36 115 44 Q112 48 110 48 Q108 48 105 44 C102 36 103 24 106 16 Q108 12 108 12' fill='url(%23iceBodyB)' filter='url(%23iceGlow)'/%3E%3Cpath d='M107 14 L105 42' stroke='url(%23specular)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M138 12 Q140 12 141 15 C142 20 142 28 141 32 Q140 34 139 34 Q138 34 137 32 C136 28 136 20 137 15 Q138 12 138 12' fill='url(%23iceBodyA)'/%3E%3Cpath d='M168 12 Q173 12 176 18 C180 28 182 44 177 53 Q174 55 171 55 Q168 55 165 53 C160 44 162 28 166 18 Q168 12 168 12' fill='url(%23iceBodyB)' filter='url(%23iceGlow)'/%3E%3Cpath d='M167 15 L164 50' stroke='url(%23specular)' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M198 12 Q200 12 201 14 C202 18 202 22 201 25 Q200 27 199 27 Q198 27 197 25 C196 22 196 18 197 14 Q198 12 198 12' fill='url(%23iceBodyA)'/%3E%3Cpath d='M228 12 Q232 12 234 16 C237 24 238 38 235 46 Q232 50 230 50 Q228 50 225 46 C222 38 223 24 226 16 Q228 12 228 12' fill='url(%23iceBodyA)' filter='url(%23iceGlow)'/%3E%3Cpath d='M227 14 L225 44' stroke='url(%23specular)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M258 12 Q261 12 263 15 C265 20 266 28 264 34 Q262 37 260 37 Q258 37 256 34 C254 28 255 20 257 15 Q258 12 258 12' fill='url(%23iceBodyB)'/%3E%3Cpath d='M257 13 L256 32' stroke='url(%23specular)' stroke-width='1' stroke-linecap='round'/%3E%3Cpath d='M288 12 Q293 12 296 18 C300 28 302 42 298 52 Q294 55 291 55 Q288 55 284 52 C280 42 282 28 286 18 Q288 12 288 12' fill='url(%23iceBodyB)' filter='url(%23iceGlow)'/%3E%3Cpath d='M287 15 L284 50' stroke='url(%23specular)' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M322 12 Q324 12 325 14 C326 17 326 22 325 26 Q324 28 323 28 Q322 28 321 26 C320 22 320 17 321 14 Q322 12 322 12' fill='url(%23iceBodyA)'/%3E%3Cpath d='M352 12 Q356 12 358 16 C361 24 362 36 359 44 Q356 48 354 48 Q352 48 349 44 C346 36 347 24 350 16 Q352 12 352 12' fill='url(%23iceBodyA)' filter='url(%23iceGlow)'/%3E%3Cpath d='M351 14 L349 42' stroke='url(%23specular)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M382 12 Q385 12 387 15 C389 20 390 30 388 38 Q386 42 384 42 Q382 42 380 38 C378 30 379 20 381 15 Q382 12 382 12' fill='url(%23iceBodyB)'/%3E%3Cpath d='M381 14 L380 36' stroke='url(%23specular)' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
+  /* Use realistic icicle PNG v2 with white/transparent background */
+  background-image: url('/lovable-uploads/icicle-border-v2.png');
   background-repeat: repeat-x;
-  background-size: 400px 55px;
+  background-size: auto 85px;
   background-position: center top;
-  filter: drop-shadow(0 4px 8px rgba(79, 195, 247, 0.35));
+  filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4));
 }
 
 /* Glowing frost rim at top */
