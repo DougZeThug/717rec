@@ -5,30 +5,28 @@ import { Award, Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NavItem } from "@/components/navigation/NavItem";
-import { useTheme } from "next-themes";
-import { gradients } from "@/styles/design-system";
 import CommandPalette from "@/components/navigation/CommandPalette";
+import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
 
 export const DesktopNav = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { resolvedTheme } = useTheme();
   
   const navItems = [
     {
       path: "/stats",
       label: "Standings",
-      icon: <Award size={18} className="mr-2" />
+      icon: <Award size={ICON_SIZES.lg} className="mr-2" />
     },
     {
       path: "/schedule",
       label: "Schedule",
-      icon: <Calendar size={18} className="mr-2" />
+      icon: <Calendar size={ICON_SIZES.lg} className="mr-2" />
     },
     {
       path: "/teams",
       label: "Teams",
-      icon: <Users size={18} className="mr-2" />
+      icon: <Users size={ICON_SIZES.lg} className="mr-2" />
     }
   ];
 

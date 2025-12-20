@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LucideProps } from "lucide-react";
+import { ICON_STROKE } from "@/styles/icon-system";
 
 export interface NavItemProps {
   to: string;
@@ -25,10 +26,10 @@ export const NavItem: React.FC<NavItemProps> = ({
   const location = useLocation();
   const isActive = isActiveProp !== undefined ? isActiveProp : location.pathname === to;
 
-  // Clone icon with different stroke width based on active state
+  // Clone icon with stroke weight from icon system based on active state
   const styledIcon = isValidElement(icon)
     ? cloneElement(icon as ReactElement<LucideProps>, {
-        strokeWidth: isActive ? 2.5 : 1.5,
+        strokeWidth: isActive ? ICON_STROKE.bold : ICON_STROKE.light,
       })
     : icon;
 

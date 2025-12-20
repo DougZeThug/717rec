@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { BarChart3, Clock, Users, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
 
 interface Section {
   id: string;
@@ -111,7 +112,7 @@ export const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({
                     : "text-muted-foreground"
                 )}
               >
-                <Icon size={16} strokeWidth={isActive ? 2.5 : 1.5} />
+                <Icon size={ICON_SIZES.md} strokeWidth={isActive ? ICON_STROKE.bold : ICON_STROKE.light} />
                 <span className={isActive ? "font-semibold" : "font-normal"}>
                   {label}
                 </span>

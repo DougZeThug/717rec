@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
+import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
 
 interface NavLinksProps {
   isMobile?: boolean;
@@ -43,8 +44,16 @@ const NavLinks: React.FC<NavLinksProps> = ({ isMobile = false, onLinkClick }) =>
             cn(baseClass, isActive && !isMobile ? activeClass : undefined)
           }
         >
-          <item.icon className={cn("h-4 w-4", isMobile ? "mr-3" : "mr-2")} />
-          <span className={isMobile ? "text-base" : ""}>{item.label}</span>
+          {({ isActive }) => (
+            <>
+              <item.icon 
+                size={ICON_SIZES.md} 
+                strokeWidth={isActive ? ICON_STROKE.bold : ICON_STROKE.normal}
+                className={isMobile ? "mr-3" : "mr-2"} 
+              />
+              <span className={isMobile ? "text-base" : ""}>{item.label}</span>
+            </>
+          )}
         </NavLink>
       ))}
     </>

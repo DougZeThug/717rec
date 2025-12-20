@@ -5,6 +5,7 @@ import { Award, Calendar, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NavItem } from "@/components/navigation/NavItem";
 import { cn } from "@/lib/utils";
+import { ICON_SIZES } from "@/styles/icon-system";
 
 export const BottomNav = () => {
   const location = useLocation();
@@ -14,17 +15,17 @@ export const BottomNav = () => {
     {
       path: "/stats",
       label: "Standings",
-      icon: <Award size={24} />
+      icon: <Award size={ICON_SIZES.xl} />
     },
     {
       path: "/schedule",
       label: "Schedule",
-      icon: <Calendar size={24} />
+      icon: <Calendar size={ICON_SIZES.xl} />
     },
     {
       path: "/teams",
       label: "Teams",
-      icon: <Users size={24} />
+      icon: <Users size={ICON_SIZES.xl} />
     }
   ];
 
