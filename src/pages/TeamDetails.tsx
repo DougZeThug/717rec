@@ -17,6 +17,7 @@ import TeamCareerPowerScoreChart from "@/components/teams/TeamCareerPowerScoreCh
 import { teamLog } from "@/utils/logger";
 import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+import TeamDetailsStickyNav from "@/components/teams/TeamDetailsStickyNav";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -71,84 +72,97 @@ const TeamDetails = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-4 md:py-8 space-y-4">
-      {/* Breadcrumbs - hidden on mobile */}
-      <div className="hidden md:block">
-        <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
-      </div>
-      
-      <Button 
-        variant="ghost" 
-        className="mb-2 md:mb-4 min-h-11 px-3 md:h-10 md:px-4" 
-        onClick={() => navigate(-1)}
-      >
-        <ArrowLeft size={16} className="mr-1 md:mr-2" /> Back
-      </Button>
-      
-      {/* Hero Section - Tighter on mobile */}
-      <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
-      
-      {/* 1. Team Stats */}
-      <StatBreakdown
-        wins={team.wins}
-        losses={team.losses}
-        winPercentage={winPct.toFixed(1)}
-        gamesWon={team.game_wins || 0}
-        gamesLost={team.game_losses || 0}
-        gameWinPercentage={gamePct.toFixed(1)}
-        strengthOfSchedule={team.sos?.toFixed(3) || "0.000"}
-        closeMatchLosses={team.close_match_losses || 0}
-        powerScore={team.power_score || 0}
-        rank={teamRank}
-        totalTeams={totalTeams}
-        rankChange={teamRanking?.rankChange}
-        sweeps={sweepStats.sweeps}
-        sweepRate={sweepStats.sweepRate}
-      />
-
-      {/* 2. Players */}
-      <PlayerList players={team.players || []} />
-      
-      {/* 3. Head-to-Head Records */}
-      {teamId && <HeadToHeadRecords teamId={teamId} />}
-      
-      {/* 4. Match History */}
-      <MatchList
-        title="Match History"
-        matches={pastMatches}
-        isLoading={isLoadingMatches}
-        teamId={teamId || ''}
-        isPast={true}
-        highlightWinnerLoser={true}
-        collapsible={true}
-        defaultOpen={false}
-      />
-
-      {/* 5. Career Stats */}
-      {teamId && <TeamTotals teamId={teamId} />}
-
-      {/* 6. Career Power Score Trend */}
-      {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
-      
-      {/* 7. Team Achievements */}
-      {teamId && (
-        <CollapsibleSection
-          title="Team Achievements"
-          icon={Trophy}
-          iconColor="text-amber-500"
-          defaultOpen={false}
+    <>
+      <TeamDetailsStickyNav />
+      <div className="container mx-auto px-4 py-4 md:py-8 space-y-4">
+        {/* Breadcrumbs - hidden on mobile */}
+        <div className="hidden md:block">
+          <AnimatedBreadcrumbs items={breadcrumbs} className="mb-4" />
+        </div>
+        
+        <Button 
+          variant="ghost" 
+          className="mb-2 md:mb-4 min-h-11 px-3 md:h-10 md:px-4" 
+          onClick={() => navigate(-1)}
         >
-          <TeamBadgeCollection
-            teamId={teamId}
-            size="lg"
-            maxDisplay={12}
-            orientation="horizontal"
-            className="gap-3"
-            showEmptyState={true}
+          <ArrowLeft size={16} className="mr-1 md:mr-2" /> Back
+        </Button>
+        
+        {/* Hero Section - Tighter on mobile */}
+        <TeamHeader team={team} winPercentage={winPct.toFixed(1)} />
+        
+        {/* 1. Team Stats */}
+        <section id="stats">
+          <StatBreakdown
+            wins={team.wins}
+            losses={team.losses}
+            winPercentage={winPct.toFixed(1)}
+            gamesWon={team.game_wins || 0}
+            gamesLost={team.game_losses || 0}
+            gameWinPercentage={gamePct.toFixed(1)}
+            strengthOfSchedule={team.sos?.toFixed(3) || "0.000"}
+            closeMatchLosses={team.close_match_losses || 0}
+            powerScore={team.power_score || 0}
+            rank={teamRank}
+            totalTeams={totalTeams}
+            rankChange={teamRanking?.rankChange}
+            sweeps={sweepStats.sweeps}
+            sweepRate={sweepStats.sweepRate}
           />
-        </CollapsibleSection>
-      )}
-    </div>
+
+          {/* 2. Players */}
+          <div className="mt-4">
+            <PlayerList players={team.players || []} />
+          </div>
+        </section>
+        
+        {/* 3. Head-to-Head Records */}
+        <section id="h2h">
+          {teamId && <HeadToHeadRecords teamId={teamId} />}
+        </section>
+        
+        {/* 4. Match History */}
+        <section id="matches">
+          <MatchList
+            title="Match History"
+            matches={pastMatches}
+            isLoading={isLoadingMatches}
+            teamId={teamId || ''}
+            isPast={true}
+            highlightWinnerLoser={true}
+            collapsible={true}
+            defaultOpen={false}
+          />
+        </section>
+
+        {/* 5. Career Stats */}
+        {teamId && <TeamTotals teamId={teamId} />}
+
+        {/* 6. Career Power Score Trend */}
+        {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
+        
+        {/* 7. Team Achievements */}
+        <section id="achievements">
+          {teamId && (
+            <CollapsibleSection
+              title="Team Achievements"
+              icon={Trophy}
+              iconColor="text-amber-500"
+              defaultOpen={false}
+            >
+              <TeamBadgeCollection
+                teamId={teamId}
+                size="lg"
+                maxDisplay={12}
+                orientation="horizontal"
+                className="gap-3"
+                showEmptyState={true}
+              />
+            </CollapsibleSection>
+          )}
+        </section>
+      </div>
+    </>
   );
 };
 

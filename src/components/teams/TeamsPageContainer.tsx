@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from "react";
+import useScrollRestoration from "@/hooks/useScrollRestoration";
 import TeamContainer from "./TeamsContainer";
 import TeamsHeader from "./TeamsHeader";
 import { animations } from "@/styles/design-system";
@@ -19,6 +19,9 @@ export type SortMode = 'rank' | 'alpha';
 
 const TeamsPageContainer: React.FC = () => {
   const isMobile = useIsMobile();
+  
+  // Preserve scroll position when navigating back from team details
+  useScrollRestoration("/teams");
 
   // Initialize display and view modes from local storage or default values
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
