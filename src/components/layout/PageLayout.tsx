@@ -4,6 +4,7 @@ import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { animations, gradients } from "@/styles/design-system";
+import { WinterSnowfall } from "@/components/effects/WinterSnowfall";
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -64,6 +65,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       )}
       style={withBackground && !isDark && !isWinterTheme ? { background: "#f8f8f8" } : {}}
     >
+      {/* Snow effect for winter theme */}
+      <WinterSnowfall />
+      
       <div className="max-w-full w-full relative z-10">
         {children}
       </div>

@@ -13,10 +13,10 @@ const HeroSection = () => {
       className={cn(
         "text-white py-6 md:py-16 px-4 transition-all duration-200 relative",
         shouldApplyWinter
-          ? "hero-winter"
+          ? "hero-winter icicle-trim"
           : "bg-gradient-to-br from-[#0f2647] via-cornhole-navy to-[#1d3761]"
       )}
-      style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 32px)" }}
+      style={{ paddingTop: shouldApplyWinter ? "calc(env(safe-area-inset-top, 0px) + 52px)" : "calc(env(safe-area-inset-top, 0px) + 32px)" }}
     >
       
       {/* Simple gradient overlay - just one layer for better performance */}
