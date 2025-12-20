@@ -28,14 +28,13 @@ const StandardHeroCard: React.FC<StandardHeroCardProps> = ({ card }) => {
     "transition-all duration-200",
     "rounded-xl shadow-md hover:shadow-lg",
     "border border-border/30",
-    "overflow-hidden",
     shouldApplyWinter
       ? cn(
-          "frost-card frost-edge",
-          "border-t-[3px] border-t-cyan-400",
+          "winter-card-full overflow-visible",
           "text-cyan-50"
         )
       : cn(
+          "overflow-hidden",
           card.background_color,
           card.text_color,
           "border-t-[3px] border-t-blue-500 dark:border-t-blue-400"

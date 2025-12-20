@@ -130,15 +130,16 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
       transition={{ duration: 0.2 }}
     >
       <Card className={cn(
-        "relative overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow duration-200",
+        "relative shadow-2xl hover:shadow-3xl transition-shadow duration-200",
         "border-t-4",
         shouldApplyWinter
           ? cn(
-              "event-card",
+              "event-card icicle-trim overflow-visible",
               "border-t-cyan-400",
               "border border-emerald-500/20"
             )
           : cn(
+              "overflow-hidden",
               "border-t-emerald-400 dark:border-t-emerald-500",
               "border border-emerald-200 dark:border-white/20",
               "bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"

@@ -58,8 +58,8 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         isMobile ? (compact ? "py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]" : "py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]") : "py-5 pb-6", 
         "px-1 sm:px-3 md:px-4 lg:px-5",
         animations.fadeIn,
-        // Add winter pattern for homepage
-        shouldApplyWinter && "winter-pattern relative",
+        // Add winter pattern and ice pattern for homepage
+        shouldApplyWinter && "winter-pattern ice-pattern-bg relative",
         className
       )}
       style={withBackground && !isDark && !isWinterTheme ? { background: "#f8f8f8" } : {}}

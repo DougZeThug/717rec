@@ -175,10 +175,10 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
   });
 
   const sectionClasses = cn(
-    "relative overflow-hidden rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6 transition-shadow duration-200",
+    "relative rounded-2xl shadow-2xl hover:shadow-3xl p-4 md:p-6 transition-shadow duration-200",
     shouldApplyWinter
-      ? "champions-card"
-      : "bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500",
+      ? "champions-card icicle-trim overflow-visible"
+      : "overflow-hidden bg-gradient-to-br from-amber-600 via-amber-500 to-yellow-500",
     animations.fadeIn
   );
 
