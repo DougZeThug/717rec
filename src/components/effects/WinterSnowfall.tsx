@@ -17,14 +17,14 @@ export const WinterSnowfall = () => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: 5, // Lower z-index so snow stays behind content (cards are z-10+)
+        zIndex: 5,
         pointerEvents: 'none',
       }}
-      snowflakeCount={60}
-      radius={[0.5, 2.5]}
-      speed={[0.5, 1.5]}
-      wind={[-0.5, 1]}
-      color="rgba(255,255,255,0.85)"
+      snowflakeCount={200}
+      radius={[1, 4]}
+      speed={[0.5, 2.5]}
+      wind={[-1, 2]}
+      color="rgba(255,255,255,0.9)"
     />
   );
 };
