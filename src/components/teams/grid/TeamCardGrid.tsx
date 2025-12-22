@@ -15,6 +15,7 @@ import { MoreHorizontal, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 
 interface TeamCardGridProps {
   team: Team;
@@ -26,17 +27,23 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
   const location = useLocation();
   const isAdminPage = location.pathname.includes('/admin');
   const isMobile = useIsMobile();
+  const { isWinterTheme } = useSeasonalTheme();
 
-  const headerGradient = "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-gray-800/70 dark:via-gray-800/80 dark:to-gray-800/70";
-  const contentGradient = "bg-gradient-to-br from-white to-gray-50/70 dark:from-gray-900 dark:to-gray-900/90";
+  const headerGradient = isWinterTheme 
+    ? "bg-transparent" 
+    : "bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-gray-800/70 dark:via-gray-800/80 dark:to-gray-800/70";
+  const contentGradient = isWinterTheme 
+    ? "bg-transparent" 
+    : "bg-gradient-to-br from-white to-gray-50/70 dark:from-gray-900 dark:to-gray-900/90";
 
   return (
     <motion.div 
       className={cn(
-        "rounded-lg border border-gray-200 dark:border-gray-800/60",
-        "bg-white text-gray-900 dark:bg-gray-900 dark:text-white",
-        "h-full shadow-sm",
-        gradients.card.blueOrange
+        "rounded-lg border h-full shadow-sm",
+        isWinterTheme 
+          ? "winter-card-surface frost-edge border-frost-border/30 text-card-foreground" 
+          : "border-gray-200 dark:border-gray-800/60 bg-white text-gray-900 dark:bg-gray-900 dark:text-white",
+        !isWinterTheme && gradients.card.blueOrange
       )}
       whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
@@ -119,11 +126,21 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
             )}
 
             <div className="grid grid-cols-2 gap-1 text-xs">
-              <div className="rounded p-1.5 bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80">
+              <div className={cn(
+                "rounded p-1.5",
+                isWinterTheme 
+                  ? "bg-white/5 border border-frost-border/20" 
+                  : "bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80"
+              )}>
                 <div className="text-[10px] text-muted-foreground uppercase">Record</div>
                 <span className="font-mono text-sm">{team.wins}-{team.losses}</span>
               </div>
-              <div className="rounded p-1.5 bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80">
+              <div className={cn(
+                "rounded p-1.5",
+                isWinterTheme 
+                  ? "bg-white/5 border border-frost-border/20" 
+                  : "bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80"
+              )}>
                 <div className="text-[10px] text-muted-foreground uppercase">Power</div>
                 <span className="font-mono text-sm">
                   {typeof team.power_score === 'number' ? (team.power_score * 100).toFixed(1) : 'N/A'}

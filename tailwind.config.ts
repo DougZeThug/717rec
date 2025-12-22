@@ -89,6 +89,11 @@ export default {
 					competitive: '#d97706',
 					intermediate: '#3b82f6',
 					recreational: '#10b981',
+				},
+				// Winter theme colors
+				frost: {
+					border: 'hsl(var(--frost-border, 199 60% 50%))',
+					glow: 'hsl(var(--frost-glow, 199 89% 62%))',
 				}
 			},
 			borderRadius: {

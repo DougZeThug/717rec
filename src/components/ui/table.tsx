@@ -2,27 +2,49 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme"
 
 const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
-    <table
-      ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
-      {...props}
-    />
-  </div>
-))
+>(({ className, ...props }, ref) => {
+  const { isWinterTheme } = useSeasonalTheme();
+  
+  return (
+    <div className={cn(
+      "relative w-full overflow-auto rounded-xl",
+      isWinterTheme && "winter-card-surface"
+    )}>
+      <table
+        ref={ref}
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+      />
+    </div>
+  );
+})
 Table.displayName = "Table"
 
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 font-semibold", className)} {...props} />
-))
+>(({ className, ...props }, ref) => {
+  const { isWinterTheme } = useSeasonalTheme();
+  
+  return (
+    <thead 
+      ref={ref} 
+      className={cn(
+        "[&_tr]:border-b font-semibold",
+        isWinterTheme 
+          ? "border-frost-border/30 text-card-foreground" 
+          : "border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100",
+        className
+      )} 
+      {...props} 
+    />
+  );
+})
 TableHeader.displayName = "TableHeader"
 
 const TableBody = React.forwardRef<
@@ -55,18 +77,24 @@ TableFooter.displayName = "TableFooter"
 const TableRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement>
->(({ className, ...props }, ref) => (
-  <tr
-    ref={ref}
-    className={cn(
-      "border-b border-gray-200 dark:border-gray-700 transition-colors",
-      "even:bg-gray-50 dark:even:bg-white/5",
-      "hover:bg-muted/50 data-[state=selected]:bg-muted",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const { isWinterTheme } = useSeasonalTheme();
+  
+  return (
+    <tr
+      ref={ref}
+      className={cn(
+        "border-b transition-colors",
+        isWinterTheme 
+          ? "border-frost-border/20 even:bg-white/5 hover:bg-white/10" 
+          : "border-gray-200 dark:border-gray-700 even:bg-gray-50 dark:even:bg-white/5 hover:bg-muted/50",
+        "data-[state=selected]:bg-muted",
+        className
+      )}
+      {...props}
+    />
+  );
+})
 TableRow.displayName = "TableRow"
 
 const TableHead = React.forwardRef<
