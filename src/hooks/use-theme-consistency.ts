@@ -14,13 +14,12 @@ export const useThemeConsistency = () => {
   useEffect(() => {
     // Check for theme preference at component mount
     const storedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     
     if (!storedTheme) {
-      // If no theme preference stored, default to system preference
-      const defaultTheme = prefersDark ? "dark" : "light";
+      // If no theme preference stored, default to winter-frozen theme
+      const defaultTheme = "winter-frozen";
       setTheme(defaultTheme);
-      log(`Applying stored theme preference: ${defaultTheme}`);
+      log(`Applying default theme: ${defaultTheme}`);
     } else {
       log(`Applying stored theme preference: ${storedTheme}`);
       setTheme(storedTheme);
@@ -37,9 +36,9 @@ export const useThemeConsistency = () => {
       log(`Applying stored theme preference: ${storedTheme}`);
       setTheme(storedTheme);
     } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const defaultTheme = prefersDark ? "dark" : "light";
-      log(`Applying stored theme preference: ${defaultTheme}`);
+      // Default to winter-frozen theme
+      const defaultTheme = "winter-frozen";
+      log(`Applying default theme: ${defaultTheme}`);
       setTheme(defaultTheme);
     }
   };
