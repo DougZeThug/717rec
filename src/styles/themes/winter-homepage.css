@@ -386,30 +386,31 @@
 /* ==========================================================================
    SNOWTOP CAPS FONT - Winter Theme Headers
    Uses the Snowtop Caps font (snow on top of letters) for winter headers
+   Self-hosted font with natural white snow caps - no gradient override needed
    ========================================================================== */
 
-/* Apply Snowtop Caps with snow-on-top gradient to all major headings */
+/* Self-hosted Snowtop Caps font */
+@font-face {
+  font-family: 'Snowtop Caps';
+  src: url('/fonts/SnowtopCaps.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Apply Snowtop Caps to all major headings in winter theme */
+/* Use frost blue color for letter body - white snow caps are built into the font */
 .winter-frozen h1,
 .winter-frozen h2,
 .winter-frozen h3 {
   font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
   letter-spacing: 0.05em;
+  color: #4fc3f7 !important;
+  -webkit-text-fill-color: #4fc3f7 !important;
   
-  /* Snow-on-top gradient effect - white snow at top, frost blue below */
-  background: linear-gradient(180deg, 
-    #ffffff 0%,
-    #ffffff 25%,
-    #81d4fa 35%,
-    #4fc3f7 60%,
-    #29b6f6 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  
-  /* Drop shadow for depth */
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  /* Icy glow effect */
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
+          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Apply to elements using font-bebas class (common for headings) */
@@ -417,18 +418,10 @@
 .winter-frozen [class*="font-bebas"] {
   font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
   letter-spacing: 0.05em;
-  background: linear-gradient(180deg, 
-    #ffffff 0%,
-    #ffffff 25%,
-    #81d4fa 35%,
-    #4fc3f7 60%,
-    #29b6f6 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #4fc3f7 !important;
+  -webkit-text-fill-color: #4fc3f7 !important;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
+          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Apply to font-oswald class as well */
@@ -436,36 +429,20 @@
 .winter-frozen [class*="font-oswald"] {
   font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
   letter-spacing: 0.05em;
-  background: linear-gradient(180deg, 
-    #ffffff 0%,
-    #ffffff 25%,
-    #81d4fa 35%,
-    #4fc3f7 60%,
-    #29b6f6 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #4fc3f7 !important;
+  -webkit-text-fill-color: #4fc3f7 !important;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
+          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Utility class for explicit winter heading usage */
 .winter-frozen .font-snowtop {
   font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
   letter-spacing: 0.05em;
-  background: linear-gradient(180deg, 
-    #ffffff 0%,
-    #ffffff 25%,
-    #81d4fa 35%,
-    #4fc3f7 60%,
-    #29b6f6 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  color: #4fc3f7 !important;
+  -webkit-text-fill-color: #4fc3f7 !important;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
+          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* ==========================================================================
