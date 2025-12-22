@@ -140,7 +140,8 @@ describe('useBracketForm', () => {
       clearErrors: vi.fn(),
       trigger: vi.fn(),
       resetField: vi.fn(),
-      setFocus: vi.fn()
+      setFocus: vi.fn(),
+      subscribe: vi.fn()
     };
   };
 
