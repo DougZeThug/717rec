@@ -133,7 +133,10 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                         </div>
                       )}
                       <span
-                        className="uppercase tracking-wide font-bebas"
+                        className={cn(
+                          "uppercase tracking-wide font-bebas",
+                          isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-white"
+                        )}
                         style={{
                           fontFamily: "'Bebas Neue', 'Arial Narrow', Arial, sans-serif",
                           fontSize: "1.1rem",

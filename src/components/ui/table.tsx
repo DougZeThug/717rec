@@ -50,13 +50,21 @@ TableHeader.displayName = "TableHeader"
 const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <tbody
-    ref={ref}
-    className={cn("[&_tr:last-child]:border-0 text-gray-800 dark:text-gray-100", className)}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const { isWinterTheme } = useSeasonalTheme();
+  
+  return (
+    <tbody
+      ref={ref}
+      className={cn(
+        "[&_tr:last-child]:border-0",
+        isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-gray-100",
+        className
+      )}
+      {...props}
+    />
+  );
+})
 TableBody.displayName = "TableBody"
 
 const TableFooter = React.forwardRef<
@@ -115,13 +123,21 @@ TableHead.displayName = "TableHead"
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
-  <td
-    ref={ref}
-    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0 text-gray-800 dark:text-gray-100", className)}
-    {...props}
-  />
-))
+>(({ className, ...props }, ref) => {
+  const { isWinterTheme } = useSeasonalTheme();
+  
+  return (
+    <td
+      ref={ref}
+      className={cn(
+        "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+        isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-gray-100",
+        className
+      )}
+      {...props}
+    />
+  );
+})
 TableCell.displayName = "TableCell"
 
 const TableCaption = React.forwardRef<
