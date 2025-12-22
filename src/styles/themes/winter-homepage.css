@@ -104,7 +104,7 @@
   pointer-events: none;
   z-index: 10;
   /* Transparent PNG so underlying card colors stay visible */
-  background-image: url('/lovable-uploads/icicle-border-reference.png');
+  background-image: url('/lovable-uploads/icicle-border-transparent-v2.png');
   background-repeat: repeat-x;
   background-size: auto 85px;
   background-position: center top;
@@ -512,7 +512,7 @@
   pointer-events: none;
   z-index: 10;
   /* Transparent PNG so underlying card colors stay visible */
-  background-image: url('/lovable-uploads/icicle-border-reference.png');
+  background-image: url('/lovable-uploads/icicle-border-transparent-v2.png');
   background-repeat: repeat-x;
   background-size: auto 85px;
   background-position: center top;
