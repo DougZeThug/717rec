@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import WinterSection from "@/components/winter/WinterSection";
 
 export type DisplayMode = 'all' | 'grouped';
 export type ViewMode = 'grid' | 'list';
@@ -54,7 +55,7 @@ const TeamsPageContainer: React.FC = () => {
   }, [sortMode]);
 
   return (
-    <div className={cn("space-y-3 sm:space-y-6", animations.fadeIn)}>
+    <WinterSection showIcicles lightIcicles className={cn("space-y-3 sm:space-y-6", animations.fadeIn)}>
       <TeamsHeader 
         title="Teams" 
         description="Browse all teams or view by division"
@@ -141,7 +142,7 @@ const TeamsPageContainer: React.FC = () => {
       </TeamsHeader>
       
       <TeamContainer displayMode={displayMode} viewMode={viewMode} sortMode={sortMode} />
-    </div>
+    </WinterSection>
   );
 };
 

@@ -7,6 +7,7 @@ import SeasonAccordion from "./SeasonAccordion";
 import { dbLog, errorLog } from "@/utils/logger";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useNavigate } from "react-router-dom";
+import WinterSection from "@/components/winter/WinterSection";
 interface SeasonData {
   team_id: string;
   season_id: string;
@@ -116,14 +117,14 @@ const HistoryPageContent: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <WinterSection showIcicles lightIcicles className="space-y-4">
       {seasons.map((season) => (
         <SeasonAccordion
           key={season.id}
           season={season}
         />
       ))}
-    </div>
+    </WinterSection>
   );
 };
 
