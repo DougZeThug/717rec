@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="56" viewBox="0 0 800 56">
+  <defs>
+    <linearGradient id="snowBottomGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E9F3FF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Main snow cap - inverted (bumps face down) -->
+  <path d="M0,56 L0,24 
+           Q25,16 50,20 Q80,10 110,22 Q140,34 170,20 Q200,6 230,18 
+           Q260,30 290,20 Q320,10 350,22 Q380,34 410,20 Q440,6 470,18
+           Q500,30 530,20 Q560,10 590,22 Q620,34 650,20 Q680,6 710,18
+           Q740,30 770,20 Q790,14 800,24
+           L800,56 Z" 
+        fill="url(#snowBottomGrad)"/>
+  
+  <!-- Middle highlight layer -->
+  <path d="M0,56 L0,30 
+           Q25,22 50,26 Q80,16 110,28 Q140,40 170,26 Q200,12 230,24 
+           Q260,36 290,26 Q320,16 350,28 Q380,40 410,26 Q440,12 470,24
+           Q500,36 530,26 Q560,16 590,28 Q620,40 650,26 Q680,12 710,24
+           Q740,36 770,26 Q790,20 800,30
+           L800,56 Z" 
+        fill="#F7FBFF"/>
+  
+  <!-- Top highlight -->
+  <path d="M0,56 L0,38 
+           Q25,30 50,34 Q80,24 110,36 Q140,48 170,34 Q200,20 230,32 
+           Q260,44 290,34 Q320,24 350,36 Q380,48 410,34 Q440,20 470,32
+           Q500,44 530,34 Q560,24 590,36 Q620,48 650,34 Q680,20 710,32
+           Q740,44 770,34 Q790,28 800,38
+           L800,56 Z" 
+        fill="#FFFFFF"/>
+  
+  <!-- Top edge separator line -->
+  <path d="M0,24 
+           Q25,16 50,20 Q80,10 110,22 Q140,34 170,20 Q200,6 230,18 
+           Q260,30 290,20 Q320,10 350,22 Q380,34 410,20 Q440,6 470,18
+           Q500,30 530,20 Q560,10 590,22 Q620,34 650,20 Q680,6 710,18
+           Q740,30 770,20 Q790,14 800,24" 
+        fill="none" stroke="#CFE7FF" stroke-width="0.6" stroke-opacity="0.4"/>
+</svg>

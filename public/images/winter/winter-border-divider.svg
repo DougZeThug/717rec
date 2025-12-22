@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="24" viewBox="0 0 800 24">
+  <defs>
+    <linearGradient id="dividerSnowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E9F3FF"/>
+    </linearGradient>
+    <linearGradient id="miniIcicleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D9F0FF"/>
+      <stop offset="100%" stop-color="#BFE3FF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Thin snow cap -->
+  <path d="M0,0 L0,8 
+           Q20,10 40,9 Q60,11 80,8 Q100,6 120,9 Q140,12 160,9
+           Q180,6 200,9 Q220,11 240,8 Q260,6 280,9 Q300,12 320,9
+           Q340,6 360,9 Q380,11 400,8 Q420,6 440,9 Q460,12 480,9
+           Q500,6 520,9 Q540,11 560,8 Q580,6 600,9 Q620,12 640,9
+           Q660,6 680,9 Q700,11 720,8 Q740,6 760,9 Q780,12 800,8
+           L800,0 Z" 
+        fill="url(#dividerSnowGrad)"/>
+  
+  <!-- Highlight layer -->
+  <path d="M0,0 L0,6 
+           Q20,8 40,7 Q60,9 80,6 Q100,4 120,7 Q140,10 160,7
+           Q180,4 200,7 Q220,9 240,6 Q260,4 280,7 Q300,10 320,7
+           Q340,4 360,7 Q380,9 400,6 Q420,4 440,7 Q460,10 480,7
+           Q500,4 520,7 Q540,9 560,6 Q580,4 600,7 Q620,10 640,7
+           Q660,4 680,7 Q700,9 720,6 Q740,4 760,7 Q780,10 800,6
+           L800,0 Z" 
+        fill="#F7FBFF"/>
+  
+  <!-- Subtle separator -->
+  <path d="M0,8 
+           Q20,10 40,9 Q60,11 80,8 Q100,6 120,9 Q140,12 160,9
+           Q180,6 200,9 Q220,11 240,8 Q260,6 280,9 Q300,12 320,9
+           Q340,6 360,9 Q380,11 400,8 Q420,6 440,9 Q460,12 480,9
+           Q500,6 520,9 Q540,11 560,8 Q580,6 600,9 Q620,12 640,9
+           Q660,6 680,9 Q700,11 720,8 Q740,6 760,9 Q780,12 800,8" 
+        fill="none" stroke="#CFE7FF" stroke-width="0.4" stroke-opacity="0.4"/>
+  
+  <!-- Mini icicles - small and subtle -->
+  <path d="M38,9 Q40,9 41,10 L41,18 Q40.5,21 40,18 L39,10 Q38,9 38,9 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M39.5,10 L39.5,16" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M118,9 Q120,9 121,10 L121,14 Q120.5,17 120,14 L119,10 Q118,9 118,9 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M119.5,10 L119.5,13" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M158,9 Q160,9 161,10 L161,22 Q160.5,24 160,22 L159,10 Q158,9 158,9 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M159.5,10 L159.5,20" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M238,8 Q240,8 241,9 L241,16 Q240.5,19 240,16 L239,9 Q238,8 238,8 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M239.5,9 L239.5,14" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M318,9 Q320,9 321,10 L321,20 Q320.5,23 320,20 L319,10 Q318,9 318,9 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M319.5,10 L319.5,18" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M398,8 Q400,8 401,9 L401,13 Q400.5,15 400,13 L399,9 Q398,8 398,8 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M399.5,9 L399.5,12" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M478,9 Q480,9 481,10 L481,21 Q480.5,24 480,21 L479,10 Q478,9 478,9 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M479.5,10 L479.5,19" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M558,8 Q560,8 561,9 L561,15 Q560.5,18 560,15 L559,9 Q558,8 558,8 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M559.5,9 L559.5,14" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M638,9 Q640,9 641,10 L641,17 Q640.5,20 640,17 L639,10 Q638,9 638,9 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M639.5,10 L639.5,15" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M718,8 Q720,8 721,9 L721,12 Q720.5,14 720,12 L719,9 Q718,8 718,8 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M719.5,9 L719.5,11" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+  
+  <path d="M758,9 Q760,9 761,10 L761,18 Q760.5,21 760,18 L759,10 Q758,9 758,9 Z" fill="url(#miniIcicleGrad)"/>
+  <path d="M759.5,10 L759.5,16" stroke="#FFFFFF" stroke-width="0.6" stroke-opacity="0.28"/>
+</svg>

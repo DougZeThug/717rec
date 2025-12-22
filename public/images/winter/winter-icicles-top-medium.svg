@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="56" viewBox="0 0 800 56">
+  <defs>
+    <linearGradient id="icicleGradMed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BFE3FF"/>
+      <stop offset="35%" stop-color="#D9F0FF"/>
+      <stop offset="65%" stop-color="#D9F0FF"/>
+      <stop offset="100%" stop-color="#BFE3FF"/>
+    </linearGradient>
+    <linearGradient id="snowShadowMed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E9F3FF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Snow cap base - thicker for medium variant -->
+  <path d="M0,0 L0,14 
+           Q25,17 50,15 Q75,18 100,14 Q125,11 150,15 Q175,19 200,16 
+           Q225,13 250,15 Q275,18 300,14 Q325,11 350,15 Q375,19 400,16
+           Q425,13 450,15 Q475,18 500,14 Q525,11 550,15 Q575,19 600,16
+           Q625,13 650,15 Q675,18 700,14 Q725,11 750,15 Q775,19 800,14
+           L800,0 Z" 
+        fill="url(#snowShadowMed)"/>
+  
+  <!-- Snow highlight layer -->
+  <path d="M0,0 L0,11 
+           Q25,14 50,12 Q75,15 100,11 Q125,8 150,12 Q175,16 200,13 
+           Q225,10 250,12 Q275,15 300,11 Q325,8 350,12 Q375,16 400,13
+           Q425,10 450,12 Q475,15 500,11 Q525,8 550,12 Q575,16 600,13
+           Q625,10 650,12 Q675,15 700,11 Q725,8 750,12 Q775,16 800,11
+           L800,0 Z" 
+        fill="#F7FBFF"/>
+  
+  <!-- Separator line -->
+  <path d="M0,14 
+           Q25,17 50,15 Q75,18 100,14 Q125,11 150,15 Q175,19 200,16 
+           Q225,13 250,15 Q275,18 300,14 Q325,11 350,15 Q375,19 400,16
+           Q425,13 450,15 Q475,18 500,14 Q525,11 550,15 Q575,19 600,16
+           Q625,13 650,15 Q675,18 700,14 Q725,11 750,15 Q775,19 800,14" 
+        fill="none" stroke="#CFE7FF" stroke-width="0.6" stroke-opacity="0.4"/>
+  
+  <!-- Icicles - medium length variants -->
+  <path d="M30,15 Q33,15 35,16 L35,38 Q34,44 33,38 L31,16 Q31,15 30,15 Z" fill="url(#icicleGradMed)"/>
+  <path d="M32.5,16 L32.5,36" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M78,17 Q81,17 83,18 L83,32 Q82,36 81,32 L79,18 Q79,17 78,17 Z" fill="url(#icicleGradMed)"/>
+  <path d="M80.5,18 L80.5,30" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M148,14 Q151,14 153,15 L153,48 Q152,54 151,48 L149,15 Q149,14 148,14 Z" fill="url(#icicleGradMed)"/>
+  <path d="M150.5,15 L150.5,46" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M198,16 Q201,16 203,17 L203,42 Q202,48 201,42 L199,17 Q199,16 198,16 Z" fill="url(#icicleGradMed)"/>
+  <path d="M200.5,17 L200.5,40" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M268,15 Q271,15 273,16 L273,30 Q272,34 271,30 L269,16 Q269,15 268,15 Z" fill="url(#icicleGradMed)"/>
+  <path d="M270.5,16 L270.5,28" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M348,14 Q351,14 353,15 L353,50 Q352,56 351,50 L349,15 Q349,14 348,14 Z" fill="url(#icicleGradMed)"/>
+  <path d="M350.5,15 L350.5,48" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M398,16 Q401,16 403,17 L403,36 Q402,42 401,36 L399,17 Q399,16 398,16 Z" fill="url(#icicleGradMed)"/>
+  <path d="M400.5,17 L400.5,34" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M448,14 Q451,14 453,15 L453,44 Q452,50 451,44 L449,15 Q449,14 448,14 Z" fill="url(#icicleGradMed)"/>
+  <path d="M450.5,15 L450.5,42" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M518,15 Q521,15 523,16 L523,28 Q522,32 521,28 L519,16 Q519,15 518,15 Z" fill="url(#icicleGradMed)"/>
+  <path d="M520.5,16 L520.5,26" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M598,16 Q601,16 603,17 L603,46 Q602,52 601,46 L599,17 Q599,16 598,16 Z" fill="url(#icicleGradMed)"/>
+  <path d="M600.5,17 L600.5,44" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M648,14 Q651,14 653,15 L653,34 Q652,40 651,34 L649,15 Q649,14 648,14 Z" fill="url(#icicleGradMed)"/>
+  <path d="M650.5,15 L650.5,32" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M728,15 Q731,15 733,16 L733,40 Q732,46 731,40 L729,16 Q729,15 728,15 Z" fill="url(#icicleGradMed)"/>
+  <path d="M730.5,16 L730.5,38" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+  
+  <path d="M778,14 Q781,14 783,15 L783,26 Q782,30 781,26 L779,15 Q779,14 778,14 Z" fill="url(#icicleGradMed)"/>
+  <path d="M780.5,15 L780.5,24" stroke="#FFFFFF" stroke-width="1" stroke-opacity="0.3"/>
+</svg>
