@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="40" viewBox="0 0 800 40">
+  <defs>
+    <linearGradient id="icicleGradStandalone" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BFE3FF"/>
+      <stop offset="35%" stop-color="#D9F0FF"/>
+      <stop offset="65%" stop-color="#D9F0FF"/>
+      <stop offset="100%" stop-color="#BFE3FF"/>
+    </linearGradient>
+    <linearGradient id="icicleVertStandalone" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D9F0FF"/>
+      <stop offset="100%" stop-color="#BFE3FF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Thin connection bar at top -->
+  <rect x="0" y="0" width="800" height="3" fill="#E9F3FF"/>
+  <rect x="0" y="0" width="800" height="1.5" fill="#F7FBFF"/>
+  
+  <!-- Standalone icicles - varied lengths and spacing -->
+  <path d="M18,3 Q21,3 23,4 L23,28 Q22,34 21,28 L19,4 Q18,3 18,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M20.5,4 L20.5,26" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M58,3 Q61,3 63,4 L63,18 Q62,22 61,18 L59,4 Q58,3 58,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M60.5,4 L60.5,16" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M98,3 Q101,3 103,4 L103,36 Q102,40 101,36 L99,4 Q98,3 98,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M100.5,4 L100.5,34" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M138,3 Q141,3 143,4 L143,24 Q142,30 141,24 L139,4 Q138,3 138,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M140.5,4 L140.5,22" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M178,3 Q181,3 183,4 L183,32 Q182,38 181,32 L179,4 Q178,3 178,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M180.5,4 L180.5,30" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M218,3 Q221,3 223,4 L223,14 Q222,18 221,14 L219,4 Q218,3 218,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M220.5,4 L220.5,12" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M258,3 Q261,3 263,4 L263,28 Q262,34 261,28 L259,4 Q258,3 258,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M260.5,4 L260.5,26" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M298,3 Q301,3 303,4 L303,20 Q302,26 301,20 L299,4 Q298,3 298,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M300.5,4 L300.5,18" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M338,3 Q341,3 343,4 L343,38 Q342,40 341,38 L339,4 Q338,3 338,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M340.5,4 L340.5,36" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M378,3 Q381,3 383,4 L383,26 Q382,32 381,26 L379,4 Q378,3 378,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M380.5,4 L380.5,24" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M418,3 Q421,3 423,4 L423,16 Q422,20 421,16 L419,4 Q418,3 418,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M420.5,4 L420.5,14" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M458,3 Q461,3 463,4 L463,30 Q462,36 461,30 L459,4 Q458,3 458,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M460.5,4 L460.5,28" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M498,3 Q501,3 503,4 L503,22 Q502,28 501,22 L499,4 Q498,3 498,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M500.5,4 L500.5,20" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M538,3 Q541,3 543,4 L543,34 Q542,40 541,34 L539,4 Q538,3 538,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M540.5,4 L540.5,32" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M578,3 Q581,3 583,4 L583,18 Q582,24 581,18 L579,4 Q578,3 578,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M580.5,4 L580.5,16" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M618,3 Q621,3 623,4 L623,28 Q622,34 621,28 L619,4 Q618,3 618,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M620.5,4 L620.5,26" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M658,3 Q661,3 663,4 L663,24 Q662,30 661,24 L659,4 Q658,3 658,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M660.5,4 L660.5,22" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M698,3 Q701,3 703,4 L703,14 Q702,18 701,14 L699,4 Q698,3 698,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M700.5,4 L700.5,12" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M738,3 Q741,3 743,4 L743,32 Q742,38 741,32 L739,4 Q738,3 738,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M740.5,4 L740.5,30" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <path d="M778,3 Q781,3 783,4 L783,20 Q782,26 781,20 L779,4 Q778,3 778,3 Z" fill="url(#icicleVertStandalone)"/>
+  <path d="M780.5,4 L780.5,18" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+</svg>

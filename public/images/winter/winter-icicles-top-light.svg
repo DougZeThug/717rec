@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="40" viewBox="0 0 800 40">
+  <defs>
+    <!-- Icicle gradient -->
+    <linearGradient id="icicleGradLight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BFE3FF"/>
+      <stop offset="35%" stop-color="#D9F0FF"/>
+      <stop offset="65%" stop-color="#D9F0FF"/>
+      <stop offset="100%" stop-color="#BFE3FF"/>
+    </linearGradient>
+    <!-- Snow shadow gradient -->
+    <linearGradient id="snowShadowLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E9F3FF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Snow cap base with gentle bumps - seamless tile -->
+  <path d="M0,0 L0,10 
+           Q20,12 40,11 Q60,13 80,10 Q100,8 120,11 Q140,14 160,12 
+           Q180,10 200,11 Q220,13 240,10 Q260,8 280,11 Q300,14 320,12
+           Q340,10 360,11 Q380,13 400,10 Q420,8 440,11 Q460,14 480,12
+           Q500,10 520,11 Q540,13 560,10 Q580,8 600,11 Q620,14 640,12
+           Q660,10 680,11 Q700,13 720,10 Q740,8 760,11 Q780,14 800,10
+           L800,0 Z" 
+        fill="url(#snowShadowLight)"/>
+  
+  <!-- Snow highlight edge -->
+  <path d="M0,0 L0,8 
+           Q20,10 40,9 Q60,11 80,8 Q100,6 120,9 Q140,12 160,10 
+           Q180,8 200,9 Q220,11 240,8 Q260,6 280,9 Q300,12 320,10
+           Q340,8 360,9 Q380,11 400,8 Q420,6 440,9 Q460,12 480,10
+           Q500,8 520,9 Q540,11 560,8 Q580,6 600,9 Q620,12 640,10
+           Q660,8 680,9 Q700,11 720,8 Q740,6 760,9 Q780,12 800,8
+           L800,0 Z" 
+        fill="#F7FBFF"/>
+  
+  <!-- Subtle separator line -->
+  <path d="M0,10 
+           Q20,12 40,11 Q60,13 80,10 Q100,8 120,11 Q140,14 160,12 
+           Q180,10 200,11 Q220,13 240,10 Q260,8 280,11 Q300,14 320,12
+           Q340,10 360,11 Q380,13 400,10 Q420,8 440,11 Q460,14 480,12
+           Q500,10 520,11 Q540,13 560,10 Q580,8 600,11 Q620,14 640,12
+           Q660,10 680,11 Q700,13 720,10 Q740,8 760,11 Q780,14 800,10" 
+        fill="none" stroke="#CFE7FF" stroke-width="0.5" stroke-opacity="0.4"/>
+  
+  <!-- Icicles - varied lengths, smooth tapered shapes -->
+  <!-- Icicle 1 -->
+  <path d="M45,11 Q47,11 48,12 L48,28 Q47.5,32 47,28 L46,12 Q46,11 45,11 Z" fill="url(#icicleGradLight)"/>
+  <path d="M46.5,12 L46.5,26" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 2 -->
+  <path d="M118,10 Q120,10 121,11 L121,22 Q120.5,25 120,22 L119,11 Q119,10 118,10 Z" fill="url(#icicleGradLight)"/>
+  <path d="M119.5,11 L119.5,20" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 3 -->
+  <path d="M158,12 Q160,12 161,13 L161,34 Q160.5,38 160,34 L159,13 Q159,12 158,12 Z" fill="url(#icicleGradLight)"/>
+  <path d="M159.5,13 L159.5,32" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 4 -->
+  <path d="M238,10 Q240,10 241,11 L241,26 Q240.5,30 240,26 L239,11 Q239,10 238,10 Z" fill="url(#icicleGradLight)"/>
+  <path d="M239.5,11 L239.5,24" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 5 -->
+  <path d="M318,12 Q320,12 321,13 L321,30 Q320.5,34 320,30 L319,13 Q319,12 318,12 Z" fill="url(#icicleGradLight)"/>
+  <path d="M319.5,13 L319.5,28" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 6 -->
+  <path d="M398,10 Q400,10 401,11 L401,20 Q400.5,23 400,20 L399,11 Q399,10 398,10 Z" fill="url(#icicleGradLight)"/>
+  <path d="M399.5,11 L399.5,18" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 7 -->
+  <path d="M478,12 Q480,12 481,13 L481,32 Q480.5,36 480,32 L479,13 Q479,12 478,12 Z" fill="url(#icicleGradLight)"/>
+  <path d="M479.5,13 L479.5,30" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 8 -->
+  <path d="M558,10 Q560,10 561,11 L561,24 Q560.5,28 560,24 L559,11 Q559,10 558,10 Z" fill="url(#icicleGradLight)"/>
+  <path d="M559.5,11 L559.5,22" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 9 -->
+  <path d="M638,12 Q640,12 641,13 L641,28 Q640.5,32 640,28 L639,13 Q639,12 638,12 Z" fill="url(#icicleGradLight)"/>
+  <path d="M639.5,13 L639.5,26" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 10 -->
+  <path d="M718,10 Q720,10 721,11 L721,18 Q720.5,21 720,18 L719,11 Q719,10 718,10 Z" fill="url(#icicleGradLight)"/>
+  <path d="M719.5,11 L719.5,16" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+  
+  <!-- Icicle 11 -->
+  <path d="M758,11 Q760,11 761,12 L761,26 Q760.5,30 760,26 L759,12 Q759,11 758,11 Z" fill="url(#icicleGradLight)"/>
+  <path d="M759.5,12 L759.5,24" stroke="#FFFFFF" stroke-width="0.8" stroke-opacity="0.3"/>
+</svg>
