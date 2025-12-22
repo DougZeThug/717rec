@@ -104,12 +104,12 @@
   pointer-events: none;
   z-index: 10;
   /* Transparent PNG so underlying card colors stay visible */
-  background-image: url('/lovable-uploads/icicle-border-alpha.png');
+  background-image: url('/lovable-uploads/icicle-border-reference.png');
   background-repeat: repeat-x;
   background-size: auto 85px;
   background-position: center top;
-  /* Extra definition so icicles read on dark + busy backgrounds */
-  filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4)) contrast(1.08) saturate(1.05);
+  /* More definition so icicles stay readable across dark + busy backgrounds */
+  filter: drop-shadow(0 6px 18px hsl(var(--primary) / 0.5)) drop-shadow(0 0 12px hsl(var(--primary) / 0.25)) contrast(1.12) saturate(1.1) brightness(1.06);
 }
 
 /* ==========================================================================
@@ -512,12 +512,12 @@
   pointer-events: none;
   z-index: 10;
   /* Transparent PNG so underlying card colors stay visible */
-  background-image: url('/lovable-uploads/icicle-border-alpha.png');
+  background-image: url('/lovable-uploads/icicle-border-reference.png');
   background-repeat: repeat-x;
   background-size: auto 85px;
   background-position: center top;
-  /* Extra definition so icicles read on dark + busy backgrounds */
-  filter: drop-shadow(0 4px 12px rgba(79, 195, 247, 0.4)) contrast(1.08) saturate(1.05);
+  /* More definition so icicles stay readable across dark + busy backgrounds */
+  filter: drop-shadow(0 6px 18px hsl(var(--primary) / 0.5)) drop-shadow(0 0 12px hsl(var(--primary) / 0.25)) contrast(1.12) saturate(1.1) brightness(1.06);
 }
 
 /* Glowing frost rim at top */
