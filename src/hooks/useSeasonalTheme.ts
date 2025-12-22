@@ -2,7 +2,7 @@ import { useTheme } from "next-themes";
 import { useLocation } from "react-router-dom";
 
 /**
- * Hook to detect if winter theme is active and if we're on the homepage
+ * Hook to detect if winter theme is active and provide graduated styling options
  */
 export function useSeasonalTheme() {
   const { theme, resolvedTheme } = useTheme();
@@ -18,8 +18,10 @@ export function useSeasonalTheme() {
     isWinterTheme,
     isHomepage,
     isDark,
-    // Only apply winter styling when on homepage with winter theme
+    // Full winter effects (snowfall, heavy icicles) - homepage only
     shouldApplyWinter: isWinterTheme && isHomepage,
+    // Light winter effects (background, cards, ice pattern) - all pages when winter theme active
+    shouldApplyWinterBase: isWinterTheme,
     // Class to add to containers for winter styling
     winterClass: isWinterTheme ? "winter-frozen" : "",
   };
