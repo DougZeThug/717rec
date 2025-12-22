@@ -1,5 +1,4 @@
-
-import { defineConfig } from "vitest/config";
+import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -39,14 +38,14 @@ export default defineConfig(({ mode }) => ({
         additionalStylesheets: [],
       },
     }),
-  ].filter(Boolean),
+  ].filter(Boolean) as PluginOption[],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
   test: {
-    environment: 'jsdom',  // Switched to jsdom which has better compatibility
+    environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
     include: ['**/__tests__/**/*.{test,spec}.{js,mjs,cjs,ts,mjs,cts,tsx}'],
     globals: true,
