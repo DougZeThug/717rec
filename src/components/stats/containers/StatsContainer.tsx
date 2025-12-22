@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from "react";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
 import { useTeamData } from "@/hooks/useTeamData";
@@ -10,6 +9,7 @@ import FullRankingsSection from "./FullRankingsSection";
 import LoadingStateContainer from "./LoadingStateContainer";
 import CareerRankingsSection from "../career/CareerRankingsSection";
 import { Skeleton } from "@/components/ui/skeleton";
+import WinterSection from "@/components/winter/WinterSection";
 
 // Lazy load the chart component to defer loading recharts bundle
 const AllTeamsCareerPowerScoreChart = lazy(() => 
@@ -44,7 +44,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   }
 
   return (
-    <div className="max-w-7xl mx-auto bg-gray-50 dark:bg-transparent px-2 sm:px-4">
+    <WinterSection showIcicles lightIcicles className="max-w-7xl mx-auto bg-gray-50 dark:bg-transparent px-2 sm:px-4">
       <StatsPageHeader />
       
       <div className="font-inter">
@@ -64,7 +64,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
           <NoTeamsAvailable />
         )}
       </div>
-    </div>
+    </WinterSection>
   );
 };
 

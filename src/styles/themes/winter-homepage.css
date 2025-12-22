@@ -111,6 +111,30 @@
   filter: drop-shadow(0 4px 12px hsla(199, 80%, 70%, 0.3));
 }
 
+/* Light icicle trim for inner pages - smaller, more subtle */
+.winter-frozen .icicle-trim-light {
+  position: relative;
+  padding-top: 32px; /* Smaller space for lighter icicles */
+  margin-top: 6px;
+}
+
+.winter-frozen .icicle-trim-light::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 36px;
+  pointer-events: none;
+  z-index: 10;
+  background-image: url('/images/winter/winter-icicles-top-medium.svg');
+  background-repeat: repeat-x;
+  background-size: 600px 36px;
+  background-position: center top;
+  opacity: 0.7;
+  filter: drop-shadow(0 2px 8px hsla(199, 80%, 70%, 0.2));
+}
+
 /* ==========================================================================
    ENHANCED FROST EDGE - Thick, glowing, visible
    ========================================================================== */

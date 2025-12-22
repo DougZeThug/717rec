@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, CheckCircle, CalendarDays, Trophy, Clock } from "lucide-react";
@@ -10,6 +9,7 @@ import { format, isToday, parseISO, isSameDay } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useNavigate } from "react-router-dom";
+import WinterSection from "@/components/winter/WinterSection";
 
 interface ScheduleContentProps {
   activeTab: string;
@@ -151,8 +151,9 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   };
   
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-2 -mx-1 px-1">
+    <WinterSection showIcicles lightIcicles>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-2 -mx-1 px-1">
         <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">
           <TabsTrigger 
             value="timeslots" 
@@ -195,10 +196,11 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         {renderMatchGroups(true)}
       </TabsContent>
       
-      <TabsContent value="completed" className="mt-6 dark:bg-gray-900">
-        {renderMatchGroups(true)}
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="completed" className="mt-6 dark:bg-gray-900">
+          {renderMatchGroups(true)}
+        </TabsContent>
+      </Tabs>
+    </WinterSection>
   );
 };
 

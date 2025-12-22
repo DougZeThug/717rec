@@ -4,17 +4,21 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import { gradients, getDivisionGradientClass } from "@/styles/design-system"
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme"
 
 interface CardVariantProps {
   variant?: "default" | "subtle" | "highlight" | "elevated" | "interactive";
   division?: string | null;
+  /** Disable winter styling for this card */
+  noWinter?: boolean;
 }
 
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & CardVariantProps
->(({ className, variant = "default", division, ...props }, ref) => {
+>(({ className, variant = "default", division, noWinter = false, ...props }, ref) => {
   const { resolvedTheme } = useTheme();
+  const { isWinterTheme } = useSeasonalTheme();
   const isLight = resolvedTheme === "light";
   
   // Get the appropriate gradient based on variant and division
@@ -24,6 +28,9 @@ const Card = React.forwardRef<
   
   // Check if this is an interactive card (has onClick or is variant="interactive")
   const isInteractive = variant === "interactive" || props.onClick;
+  
+  // Apply winter styling unless disabled
+  const applyWinter = isWinterTheme && !noWinter;
   
   return (
     <div
@@ -35,8 +42,11 @@ const Card = React.forwardRef<
         "transition-all duration-100",
         // Interactive cards get pressed feedback
         isInteractive && "cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm",
-        isLight ? gradientClass : "",
-        isLight ? "!text-[#222222]" : "",
+        // Winter theme: frosted card surface with frost edge
+        applyWinter && "winter-card-surface frost-edge relative",
+        // Light mode gradient (skip when winter theme active)
+        isLight && !applyWinter ? gradientClass : "",
+        isLight && !applyWinter ? "!text-[#222222]" : "",
         className
       )}
       {...props}
