@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import SnowtopText from "@/components/typography/SnowtopText";
 
 const HeroSection = () => {
   const { shouldApplyWinter } = useSeasonalTheme();
@@ -38,12 +39,25 @@ const HeroSection = () => {
             className="h-14 md:h-24 w-auto max-w-full transition-all duration-200 drop-shadow-sm"
           />
         </div>
-        <h1 className={cn(
-          "text-2xl md:text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-1 md:mb-2 leading-tight",
-          shouldApplyWinter ? "heading-winter" : "text-white"
-        )}>
-          717Rec
-        </h1>
+        {shouldApplyWinter ? (
+          <SnowtopText
+            as="h1"
+            className={cn(
+              "text-2xl md:text-5xl lg:text-6xl uppercase tracking-wide font-normal mb-1 md:mb-2 leading-tight"
+            )}
+          >
+            717Rec
+          </SnowtopText>
+        ) : (
+          <h1
+            className={cn(
+              "text-2xl md:text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-1 md:mb-2 leading-tight",
+              "text-white"
+            )}
+          >
+            717Rec
+          </h1>
+        )}
         <p className={cn(
           "text-base md:text-2xl mb-4 md:mb-8 max-w-2xl mx-auto font-sans font-light italic",
           shouldApplyWinter ? "text-cyan-100/90" : "text-white/90"
