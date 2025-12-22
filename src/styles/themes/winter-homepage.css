@@ -398,51 +398,30 @@
   font-display: swap;
 }
 
-/* Apply Snowtop Caps to all major headings in winter theme */
-/* Use frost blue color for letter body - white snow caps are built into the font */
-.winter-frozen h1,
-.winter-frozen h2,
-.winter-frozen h3 {
+/* Apply Snowtop Caps ONLY when explicitly requested.
+   Snowtop Caps uses transparent cutouts for the "snow" area, so a single layer
+   will show the dark background through those cutouts (black-looking snow). */
+.winter-frozen .font-snowtop,
+.font-snowtop {
   font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
   letter-spacing: 0.05em;
-  color: #4fc3f7 !important;
-  -webkit-text-fill-color: #4fc3f7 !important;
-  
-  /* Icy glow effect */
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
-          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-/* Apply to elements using font-bebas class (common for headings) */
-.winter-frozen .font-bebas,
-.winter-frozen [class*="font-bebas"] {
-  font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
-  letter-spacing: 0.05em;
-  color: #4fc3f7 !important;
-  -webkit-text-fill-color: #4fc3f7 !important;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
-          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+/* Helpers used by <SnowtopText /> to create the 2-layer effect */
+.winter-frozen .snowtop-layer-back,
+.snowtop-layer-back {
+  color: hsl(var(--foreground));
+  -webkit-text-fill-color: hsl(var(--foreground));
+  filter:
+    drop-shadow(0 0 3px hsl(var(--foreground) / 0.55))
+    drop-shadow(0 2px 4px hsl(0 0% 0% / 0.35));
 }
 
-/* Apply to font-oswald class as well */
-.winter-frozen .font-oswald,
-.winter-frozen [class*="font-oswald"] {
-  font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
-  letter-spacing: 0.05em;
-  color: #4fc3f7 !important;
-  -webkit-text-fill-color: #4fc3f7 !important;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
-          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-/* Utility class for explicit winter heading usage */
-.winter-frozen .font-snowtop {
-  font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
-  letter-spacing: 0.05em;
-  color: #4fc3f7 !important;
-  -webkit-text-fill-color: #4fc3f7 !important;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5))
-          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+.winter-frozen .snowtop-layer-front,
+.snowtop-layer-front {
+  color: hsl(var(--primary));
+  -webkit-text-fill-color: hsl(var(--primary));
+  filter: drop-shadow(0 0 14px hsl(var(--primary) / 0.18));
 }
 
 /* ==========================================================================
