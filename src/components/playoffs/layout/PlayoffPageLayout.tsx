@@ -9,6 +9,8 @@ import { useViewSelection } from "../hooks/useViewSelection";
 import { usePlayoffHandlers } from "../hooks/usePlayoffHandlers";
 import { usePlayoffViewState } from "../hooks/usePlayoffViewState";
 import { PlayoffPageData } from "../hooks/usePlayoffPageData";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { cn } from "@/lib/utils";
 
 interface PlayoffPageLayoutProps {
   data: PlayoffPageData;
@@ -18,6 +20,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
   const handlers = usePlayoffHandlers(data);
   const view = usePlayoffViewState(data, handlers);
   const selectedView = useViewSelection(data);
+  const { shouldApplyWinterBase, winterClass } = useSeasonalTheme();
   
   // Get stageId from bracket data for realtime subscription
   const stageId = data.bracket?.stageId ?? null;
@@ -47,7 +50,11 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
   }, [handlers.handleSaveMatchScore, data.refetchBrackets]);
 
   return (
-    <div className="min-h-screen cornhole-bg py-8 px-4 md:px-8">
+    <div className={cn(
+      "min-h-screen py-8 px-4 md:px-8",
+      shouldApplyWinterBase ? "page-winter-bg ice-pattern-bg" : "cornhole-bg",
+      winterClass
+    )}>
       <div className="max-w-7xl mx-auto">
         <PlayoffHeader 
           onCreateBracket={view.handleCreateBracket} 
