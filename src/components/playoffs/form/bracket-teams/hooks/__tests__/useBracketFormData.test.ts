@@ -16,15 +16,8 @@ import { useTeams } from '@/hooks/useTeams';
 // Create properly typed mock
 const mockUseTeams = vi.mocked(useTeams);
 
-// Create proper interfaces for mock data
-interface MockTeamsHookReturn {
-  teams: Team[];
-  isLoading: boolean;
-  fetchTeams: ReturnType<typeof vi.fn>;
-  createTeam: ReturnType<typeof vi.fn>;
-  updateTeam: ReturnType<typeof vi.fn>;
-  deleteTeam: ReturnType<typeof vi.fn>;
-}
+// Use type alias for mock to avoid strict type checking on mock functions
+type MockTeamsHookReturn = ReturnType<typeof useTeams>;
 
 describe('useBracketFormData', () => {
   let queryClient: QueryClient;

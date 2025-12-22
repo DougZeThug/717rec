@@ -34,11 +34,16 @@ interface MockFormState {
   disabled: boolean;
 }
 
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
 interface MockBracketFormState {
   form: UseFormReturn<BracketFormValues>;
   isFormValid: boolean;
-  validateForm: ReturnType<typeof vi.fn>;
-  handleSubmit: ReturnType<typeof vi.fn>;
+  validateForm: (data: unknown) => ValidationResult;
+  handleSubmit: () => Promise<void>;
 }
 
 describe('useBracketForm', () => {
