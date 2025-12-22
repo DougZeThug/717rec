@@ -384,6 +384,39 @@
 }
 
 /* ==========================================================================
+   SNOWTOP CAPS FONT - Winter Theme Headers
+   Uses the Snowtop Caps font (snow on top of letters) for winter headers
+   ========================================================================== */
+
+/* Apply Snowtop Caps to all major headings in winter theme */
+.winter-frozen h1,
+.winter-frozen h2,
+.winter-frozen h3 {
+  font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+}
+
+/* Apply to elements using font-bebas class (common for headings) */
+.winter-frozen .font-bebas,
+.winter-frozen [class*="font-bebas"] {
+  font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+}
+
+/* Apply to font-oswald class as well */
+.winter-frozen .font-oswald,
+.winter-frozen [class*="font-oswald"] {
+  font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+}
+
+/* Utility class for explicit winter heading usage */
+.winter-frozen .font-snowtop {
+  font-family: 'Snowtop Caps', 'Bebas Neue', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
    Winter Specific Component Overrides
    ========================================================================== */
 
