@@ -34,6 +34,7 @@ export default {
         oswald: ['Oswald', 'League Spartan', 'Bebas Neue', 'Arial', 'sans-serif'],
         source: ['Source Sans Pro', 'Work Sans', 'system-ui', 'sans-serif'],
         bebas: ['Bebas Neue', 'Arial', 'sans-serif'],
+        snowtop: ['Snowtop Caps', 'Bebas Neue', 'Arial', 'sans-serif'],
       },
       colors: {
 				border: 'hsl(var(--border))',
