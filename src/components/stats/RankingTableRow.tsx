@@ -6,6 +6,7 @@ import { TeamLogo } from "@/components/shared/TeamLogo";
 import RankTrendIndicator from "./RankTrendIndicator";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 interface RankingTableRowProps {
   ranking: Ranking;
@@ -26,10 +27,14 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   showDivision = false,
   rowIndex
 }) => {
+  const { isWinterTheme } = useSeasonalTheme();
   const globalRank = index + 1;
   const divisionRank = ranking.divisionRank;
   const winPercentage = ranking.winPercentage * 100;
   const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
+
+  // Text color based on theme
+  const textColor = isWinterTheme ? "text-card-foreground" : "text-slate-900 dark:text-white";
 
   // Format rank display based on view mode
   const formatRankDisplay = () => {
@@ -48,17 +53,18 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   return (
     <tr 
       className={cn(
-        "border-b border-gray-100 dark:border-slate-700 transition-colors",
-        "even:bg-gray-50 dark:even:bg-white/5",
-        "hover:bg-gray-50 dark:hover:bg-slate-700/50",
-        isExpanded && "bg-blue-50 dark:bg-blue-900/20"
+        "border-b transition-colors",
+        isWinterTheme 
+          ? "border-frost-border/20 even:bg-white/5 hover:bg-white/10" 
+          : "border-gray-100 dark:border-slate-700 even:bg-gray-50 dark:even:bg-white/5 hover:bg-gray-50 dark:hover:bg-slate-700/50",
+        isExpanded && (isWinterTheme ? "bg-frost-primary/20" : "bg-blue-50 dark:bg-blue-900/20")
       )}
       onClick={onToggleExpand}
       style={{ cursor: onToggleExpand ? 'pointer' : 'default' }}
     >
       <td className="py-3 px-3">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-slate-900 dark:text-white min-w-[3rem] whitespace-nowrap">
+          <span className={cn("font-medium min-w-[3rem] whitespace-nowrap", textColor)}>
             {formatRankDisplay()}
           </span>
           {showRankChange && (
@@ -69,7 +75,12 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <td className="py-3 px-3">
         <Link 
           to={`/teams/${ranking.teamId}`}
-          className="flex items-center gap-3 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+          className={cn(
+            "flex items-center gap-3 transition-colors group",
+            isWinterTheme 
+              ? "hover:text-frost-primary" 
+              : "hover:text-blue-600 dark:hover:text-blue-400"
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           <TeamLogo
@@ -79,7 +90,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
             className="flex-shrink-0"
           />
           <div className="flex flex-col min-w-0">
-            <span className="font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate">
+            <span className={cn(
+              "font-medium truncate",
+              textColor,
+              isWinterTheme 
+                ? "group-hover:text-frost-primary" 
+                : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
+            )}>
               {ranking.teamName}
             </span>
             <TeamBadgeCollection 
@@ -92,7 +109,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         </Link>
       </td>
       {showDivision && (
-        <td className="py-3 px-3 text-center text-slate-900 dark:text-white">
+        <td className={cn("py-3 px-3 text-center", textColor)}>
           {ranking.divisionName || 'N/A'}
         </td>
       )}
@@ -101,7 +118,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           {formatPowerScore(ranking.powerScore)}
         </span>
       </td>
-      <td className="py-3 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
+      <td className={cn("py-3 px-3 text-center font-medium tabular-nums", textColor)}>
         {ranking.wins}-{ranking.losses}
       </td>
       <td className="py-3 px-3 text-center">
@@ -115,7 +132,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           {winPercentage.toFixed(1)}%
         </span>
       </td>
-      <td className="py-3 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white hidden md:table-cell">
+      <td className={cn("py-3 px-3 text-center font-medium tabular-nums hidden md:table-cell", textColor)}>
         {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
       </td>
       <td className="py-3 px-3 text-center hidden lg:table-cell">
@@ -134,7 +151,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
           {(ranking.sos || 0).toFixed(3)}
         </span>
       </td>
-      <td className="py-3 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
+      <td className={cn("py-3 px-3 text-center font-medium tabular-nums", textColor)}>
         {ranking.streak || 'N/A'}
       </td>
       <td className="py-3 px-3 text-center">
