@@ -13,6 +13,8 @@ import { SortOptions } from "../RankingsTable";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { getPowerScoreColor } from "@/utils/colors";
 import { getSosColor } from "@/utils/colors";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { cn } from "@/lib/utils";
 
 interface DivisionRankingsTableProps {
   rankings: Ranking[];
@@ -35,6 +37,8 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
   showUnified,
   isLight
 }) => {
+  const { isWinterTheme } = useSeasonalTheme();
+  
   const renderSortIndicator = (field: string) =>
     sortOptions.field === field
       ? sortOptions.direction === "asc"
@@ -44,7 +48,13 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
 
   const SortableHeader = ({ field, children, className }: { field: string, children: React.ReactNode, className?: string }) => (
     <TableHead 
-      className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-medium text-gray-800 dark:text-white font-mono ${className || ''}`}
+      className={cn(
+        "cursor-pointer text-sm font-medium font-mono",
+        isWinterTheme 
+          ? "hover:bg-white/10 text-card-foreground" 
+          : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-white",
+        className
+      )}
       onClick={() => onSortChange(field)}
     >
       <div className="flex items-center justify-center">
@@ -56,17 +66,22 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
 
   return (
     <div className="overflow-x-auto">
-      <Table className="bg-white text-gray-800 dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
+      <Table className={cn(
+        "border rounded-xl shadow-sm",
+        isWinterTheme 
+          ? "bg-transparent border-frost-border/30 text-card-foreground" 
+          : "bg-white text-gray-800 dark:bg-gray-900 dark:text-white border-gray-200 dark:border-gray-700"
+      )}>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12 text-sm font-mono font-semibold text-gray-800 dark:text-white tracking-wide">Rank</TableHead>
-            <TableHead className="text-sm font-semibold font-bebas uppercase tracking-wide text-gray-800 dark:text-white">
+            <TableHead className={cn("w-12 text-sm font-mono font-semibold tracking-wide", isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-white")}>Rank</TableHead>
+            <TableHead className={cn("text-sm font-semibold font-bebas uppercase tracking-wide", isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-white")}>
               Team
             </TableHead>
             {showUnified && (
-              <TableHead className="text-sm font-semibold font-bebas uppercase tracking-wide text-gray-800 dark:text-white">Division</TableHead>
+              <TableHead className={cn("text-sm font-semibold font-bebas uppercase tracking-wide", isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-white")}>Division</TableHead>
             )}
-            <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">
+            <TableHead className={cn("text-center text-sm font-medium font-mono", isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-white")}>
               <div className="flex items-center justify-center gap-1">
                 <span onClick={() => onSortChange('powerScore')} className="cursor-pointer flex items-center">
                   <span className="mr-1 font-mono">Power Score</span> {renderSortIndicator('powerScore')}
@@ -82,8 +97,8 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                 <span>SOS</span>
               </div>
             </SortableHeader>
-            <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">Streak</TableHead>
-            <TableHead className="text-center text-sm font-medium font-mono text-gray-800 dark:text-white">Trend</TableHead>
+            <TableHead className={cn("text-center text-sm font-medium font-mono", isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-white")}>Streak</TableHead>
+            <TableHead className={cn("text-center text-sm font-medium font-mono", isWinterTheme ? "text-card-foreground" : "text-gray-800 dark:text-white")}>Trend</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -171,7 +186,13 @@ const DivisionRankingsTable: React.FC<DivisionRankingsTableProps> = ({
                 </TableRow>
                 {expandedTeam === ranking.teamId && (
                   <TableRow>
-                    <TableCell colSpan={showUnified ? 11 : 10} className="bg-gray-100 dark:bg-gray-900/80 p-0 rounded-b-xl shadow-inner">
+                    <TableCell 
+                      colSpan={showUnified ? 11 : 10} 
+                      className={cn(
+                        "p-0 rounded-b-xl shadow-inner",
+                        isWinterTheme ? "bg-white/5" : "bg-gray-100 dark:bg-gray-900/80"
+                      )}
+                    >
                       <div className="p-4">
                         <HeadToHeadRecords teamId={ranking.teamId} />
                       </div>
