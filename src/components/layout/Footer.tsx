@@ -2,14 +2,22 @@
 import React from "react";
 import { Mail } from "lucide-react";
 import { useThemeConsistency } from "@/hooks/use-theme-consistency";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { cn } from "@/lib/utils";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { isDark } = useThemeConsistency();
+  const { isWinterTheme } = useSeasonalTheme();
 
   return (
     <footer 
-      className="bg-slate-50 dark:bg-slate-900 border-t border-gray-200 dark:border-gray-800 py-4 transition-colors duration-300"
+      className={cn(
+        "border-t py-4 transition-colors duration-300",
+        isWinterTheme 
+          ? "winter-card-surface border-frost-border/30" 
+          : "bg-slate-50 dark:bg-slate-900 border-gray-200 dark:border-gray-800"
+      )}
       style={{ minHeight: '141px', contain: 'layout' }}
     >
       <div className="max-w-7xl mx-auto px-4">
@@ -29,11 +37,17 @@ const Footer = () => {
 
           {/* Contact Section */}
           <div className="text-center md:text-left w-full md:w-auto">
-            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center md:justify-start gap-2 font-inter transition-colors duration-300">
-              <Mail size={16} className="text-gray-600 dark:text-gray-300" />
+            <p className={cn(
+              "text-sm flex items-center justify-center md:justify-start gap-2 font-inter transition-colors duration-300",
+              isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-500 dark:text-gray-400"
+            )}>
+              <Mail size={16} className={isWinterTheme ? "text-[hsl(var(--frost-glow))]" : "text-gray-600 dark:text-gray-300"} />
               <a 
                 href="mailto:admin@717rec.com" 
-                className="hover:text-gray-900 dark:hover:text-white transition-colors font-inter font-medium"
+                className={cn(
+                  "transition-colors font-inter font-medium",
+                  isWinterTheme ? "hover:text-[hsl(var(--foreground))]" : "hover:text-gray-900 dark:hover:text-white"
+                )}
               >
                 admin@717rec.com
               </a>
@@ -42,7 +56,10 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-3 text-center text-[0.85rem] text-gray-600 dark:text-gray-400 font-inter transition-colors duration-300" style={{ fontSize: "0.85rem" }}>
+        <div className={cn(
+          "mt-3 text-center text-[0.85rem] font-inter transition-colors duration-300",
+          isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
+        )} style={{ fontSize: "0.85rem" }}>
           &copy; {currentYear} 717 Rec. All rights reserved.
         </div>
       </div>
