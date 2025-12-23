@@ -104,7 +104,7 @@
   pointer-events: none;
   z-index: 10;
   /* SVG icicles with true transparency */
-  background-image: url('/images/winter/winter-icicles-top-medium.svg');
+  background-image: url('/images/winter/winter-icicles-top-medium.svg?v=3');
   background-repeat: repeat-x;
   background-size: auto 70px;
   background-position: center top;
@@ -127,7 +127,7 @@
   height: 45px;
   pointer-events: none;
   z-index: 10;
-  background-image: url('/images/winter/winter-icicles-top-medium.svg');
+  background-image: url('/images/winter/winter-icicles-top-medium.svg?v=3');
   background-repeat: repeat-x;
   background-size: auto 45px;
   background-position: center top;
@@ -576,7 +576,7 @@
   pointer-events: none;
   z-index: 10;
   /* SVG icicles with true transparency - heavy variant */
-  background-image: url('/images/winter/winter-icicles-top-heavy.svg');
+  background-image: url('/images/winter/winter-icicles-top-heavy.svg?v=3');
   background-repeat: repeat-x;
   background-size: auto 80px;
   background-position: center top;
