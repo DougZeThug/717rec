@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Star, TrendingUp, ChevronRight, Snowflake } from "lucide-react";
+import { Star, TrendingUp, ChevronRight } from "lucide-react";
+import { SeasonalIcon } from "@/components/ui/seasonal-icon";
+import { SnowflakeSparkle } from "@/icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -37,11 +39,12 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            {shouldApplyWinter ? (
-              <Snowflake className="h-4 w-4 text-cyan-400 animate-pulse" />
-            ) : (
-              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-            )}
+            <SeasonalIcon 
+              defaultIcon={Star}
+              winterIcon={SnowflakeSparkle}
+              size={16}
+              className={shouldApplyWinter ? "text-cyan-400 animate-pulse" : "text-amber-500 fill-amber-500"}
+            />
             <span className={cn(
               "text-xs font-semibold uppercase tracking-wider",
               shouldApplyWinter ? "text-cyan-300" : "text-amber-600 dark:text-amber-400"
@@ -56,7 +59,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
               !shouldApplyWinter && "border-muted-foreground/30"
             )}
           >
-            {shouldApplyWinter && <Snowflake className="h-3 w-3 mr-1" />}
+            {shouldApplyWinter && <SnowflakeSparkle size={12} className="mr-1" />}
             Week {weekNumber}
           </Badge>
         </div>

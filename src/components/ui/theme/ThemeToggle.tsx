@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Moon, Sun, Snowflake, Monitor } from "lucide-react";
+import { Moon, Sun, Monitor } from "lucide-react";
+import { SnowflakeSparkle } from "@/icons";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,7 +21,7 @@ const themeOptions = [
   { value: "light", label: "Light", icon: Sun },
   { value: "dark", label: "Dark", icon: Moon },
   { value: "system", label: "System", icon: Monitor },
-  { value: "winter-frozen", label: "Winter", icon: Snowflake },
+  { value: "winter-frozen", label: "Winter", icon: SnowflakeSparkle },
 ] as const;
 
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({
@@ -41,7 +42,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
 
   const getCurrentIcon = () => {
     if (theme === "winter-frozen") {
-      return <Snowflake className="h-5 w-5 text-cyan-400" />;
+      return <SnowflakeSparkle size={20} className="text-cyan-400" />;
     }
     if (resolvedTheme === "dark") {
       return <Moon className="h-5 w-5" />;
@@ -88,9 +89,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
           aria-label="Select theme"
           title="Select theme"
         >
-          {theme === "winter-frozen" ? (
-            <Snowflake className={getIconClasses()} />
-          ) : getCurrentIcon()}
+        {theme === "winter-frozen" ? (
+          <SnowflakeSparkle size={20} className={getIconClasses()} />
+        ) : getCurrentIcon()}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">

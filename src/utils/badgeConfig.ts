@@ -1,14 +1,21 @@
 
 import { LucideIcon, Trophy, Award, Medal, Zap, Target, TrendingUp, Flame, Snowflake, Swords, Sparkles } from 'lucide-react';
 import { BadgeConfig, BadgeType, TeamBadgeEvent } from '@/types/badges';
+import type { WinterGlyphName } from '@/icons';
 
-export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
+// Extended badge config with winter variant support
+export interface ExtendedBadgeConfig extends BadgeConfig {
+  winterGlyph?: WinterGlyphName;
+}
+
+export const badgeConfigs: Record<BadgeType, ExtendedBadgeConfig> = {
   // Championship badges
   recreational_champion: {
     type: 'recreational_champion',
     name: 'Recreational Champion',
     description: 'Winner of the Recreational Division',
     icon: Trophy,
+    winterGlyph: 'frozen-trophy',
     gradient: 'from-yellow-400 to-yellow-600',
     bgColor: 'bg-yellow-100',
     textColor: 'text-yellow-800',
@@ -20,6 +27,7 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
     name: 'Intermediate Champion',
     description: 'Winner of the Intermediate Division',
     icon: Trophy,
+    winterGlyph: 'frozen-trophy',
     gradient: 'from-orange-400 to-orange-600',
     bgColor: 'bg-orange-100',
     textColor: 'text-orange-800',
@@ -31,6 +39,7 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
     name: 'Competitive Champion',
     description: 'Winner of the Competitive Division',
     icon: Trophy,
+    winterGlyph: 'frozen-trophy',
     gradient: 'from-purple-400 to-purple-600',
     bgColor: 'bg-purple-100',
     textColor: 'text-purple-800',
@@ -173,6 +182,7 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
     name: 'Cool Fun Team',
     description: 'Just vibing and having a good time',
     icon: Sparkles,
+    winterGlyph: 'sparkle-frost',
     gradient: 'from-pink-400 to-purple-500',
     bgColor: 'bg-pink-100',
     textColor: 'text-pink-800',
@@ -181,7 +191,7 @@ export const badgeConfigs: Record<BadgeType, BadgeConfig> = {
   }
 };
 
-export const getBadgeConfig = (badgeType: BadgeType, badge?: TeamBadgeEvent): BadgeConfig => {
+export const getBadgeConfig = (badgeType: BadgeType, badge?: TeamBadgeEvent): ExtendedBadgeConfig => {
   const baseConfig = badgeConfigs[badgeType];
   
   // Enhanced color hierarchy for Intermediate division
@@ -238,6 +248,6 @@ export const getBadgeConfig = (badgeType: BadgeType, badge?: TeamBadgeEvent): Ba
   return baseConfig;
 };
 
-export const getBadgesByCategory = (category: BadgeConfig['category']): BadgeConfig[] => {
+export const getBadgesByCategory = (category: BadgeConfig['category']): ExtendedBadgeConfig[] => {
   return Object.values(badgeConfigs).filter(badge => badge.category === category);
 };
