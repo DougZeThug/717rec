@@ -43,8 +43,8 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
-            size="md"
-            className="max-h-[140px] object-contain"
+            size="lg"
+            className="max-h-[160px] object-contain"
           />
         </Link>
 
