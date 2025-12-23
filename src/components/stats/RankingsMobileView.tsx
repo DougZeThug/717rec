@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
 import { debugLog } from "@/utils/logger";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -29,6 +30,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   onSortChange,
   showUnified = false
 }) => {
+  const { isWinterTheme } = useSeasonalTheme();
   const [detailedView, setDetailedView] = useState(() => {
     const savedView = localStorage.getItem("rankingsDetailedView");
     return savedView ? savedView === "true" : false;
@@ -96,7 +98,8 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   onClick={() => onSortChange(field.id)}
                   className={cn(
                     "rounded-lg py-1 px-2 text-xs font-medium transition-all whitespace-nowrap",
-                    sortOptions.field !== field.id && "bg-white hover:bg-gradient-to-br hover:from-blue-50/40 hover:to-orange-50/20 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
+                    isWinterTheme && (sortOptions.field === field.id ? "btn-winter-primary" : "btn-winter-secondary"),
+                    !isWinterTheme && sortOptions.field !== field.id && "bg-white hover:bg-gradient-to-br hover:from-blue-50/40 hover:to-orange-50/20 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
                   )}
                 >
                   {field.label}
@@ -117,7 +120,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
             />
             <Label
               htmlFor="detailed-view"
-              className="text-sm text-gray-700 dark:text-gray-300"
+              className={cn(
+                "text-sm",
+                isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-700 dark:text-gray-300"
+              )}
               onClick={() => toggleViewMode(!detailedView)}
             >
               {detailedView ? "Detailed View" : "Compact View"}
@@ -130,9 +136,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <div key={displayDivision} className="space-y-1">
             {!showUnified && (
               <h3 className={cn(
-                "text-lg font-medium flex items-center font-inter text-gray-900 dark:text-white",
-                "border-l-4 border-blue-500 dark:border-blue-700 pl-2",
-                "bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent"
+                "text-lg font-medium flex items-center font-inter",
+                isWinterTheme
+                  ? "text-[hsl(var(--foreground))] border-l-4 border-[hsl(var(--frost-border))] pl-2 bg-white/5"
+                  : "text-gray-900 dark:text-white border-l-4 border-blue-500 dark:border-blue-700 pl-2 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent"
               )}>
                 {displayDivision}{" "}
                 <span className="ml-2 text-xs text-gray-600 dark:text-gray-400 font-inter">
