@@ -68,8 +68,9 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline flex-1 min-w-0">
             <h3 className={cn(
-              "font-bebas font-normal uppercase tracking-wide truncate text-gray-900 dark:text-white",
-              isMobile ? "text-sm" : "text-base sm:text-lg"
+              "font-bebas font-normal uppercase tracking-wide truncate",
+              isMobile ? "text-sm" : "text-base sm:text-lg",
+              isWinterTheme ? "text-[hsl(var(--foreground))]" : "text-gray-900 dark:text-white"
             )} title={team.name}>
               {team.name}
             </h3>
