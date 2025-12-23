@@ -51,7 +51,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
     >
       <Link to={`/teams/${team.id}`} className="block">
         <div className={cn(
-          "relative flex items-center justify-center",
+          "relative flex items-center justify-center overflow-hidden",
           isMobile ? "h-16 p-2" : "h-24 p-3",
           headerGradient
         )}>
@@ -59,7 +59,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
             size="sm"
-            className={cn("object-contain", isMobile ? "max-h-12" : "max-h-16")}
+            className={cn("object-contain w-auto", isMobile ? "max-h-12" : "max-h-20")}
           />
         </div>
       </Link>
