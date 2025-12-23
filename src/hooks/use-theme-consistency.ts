@@ -10,19 +10,16 @@ import { log } from "@/utils/logger";
 export const useThemeConsistency = () => {
   const { setTheme, theme, resolvedTheme } = useTheme();
   
-  // Run on mount to prevent flicker
+  // Run on mount - one-time migration to winter theme for existing users
   useEffect(() => {
-    // Check for theme preference at component mount
-    const storedTheme = localStorage.getItem("theme");
+    const winterMigrationKey = "winter-theme-migration-2024";
+    const hasBeenMigrated = localStorage.getItem(winterMigrationKey);
     
-    if (!storedTheme) {
-      // If no theme preference stored, default to winter-frozen theme
-      const defaultTheme = "winter-frozen";
-      setTheme(defaultTheme);
-      log(`Applying default theme: ${defaultTheme}`);
-    } else {
-      log(`Applying stored theme preference: ${storedTheme}`);
-      setTheme(storedTheme);
+    if (!hasBeenMigrated) {
+      // One-time migration to winter theme for all users (new and existing)
+      setTheme("winter-frozen");
+      localStorage.setItem(winterMigrationKey, "true");
+      log("Migrated user to winter-frozen theme");
     }
   }, [setTheme]);
   
