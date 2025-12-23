@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
 import { PlayerChip } from "../shared/PlayerChip";
+import { cn } from "@/lib/utils";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 interface TeamCardListProps {
   team: Team;
@@ -26,20 +28,29 @@ interface TeamCardListProps {
 export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEdit }) => {
   const location = useLocation();
   const isAdminPage = location.pathname.includes('/admin');
+  const { isWinterTheme } = useSeasonalTheme();
   const powerScoreColor = getPowerScoreColor(team.power_score);
   const sosColor = getSosColor(team.sos);
 
   return (
     <motion.div 
-      className="team-list-card bg-white text-gray-900 dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 rounded-xl 
-        overflow-hidden h-full font-inter shadow-sm"
+      className={cn(
+        "team-list-card border rounded-xl overflow-hidden h-full font-inter shadow-sm",
+        isWinterTheme 
+          ? "winter-card-surface border-frost-border/30" 
+          : "bg-white text-gray-900 dark:bg-gray-900 dark:text-white border-gray-200 dark:border-gray-800"
+      )}
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
       <div className="flex flex-col md:flex-row h-full">
-        <Link to={`/teams/${team.id}`} className="team-list-card-image w-full md:w-[180px] lg:w-[200px] h-[180px] md:h-auto flex items-center justify-center p-6 
-          bg-gradient-to-br from-blue-50/30 via-white to-orange-50/20 dark:from-gray-800/60 dark:via-black/40 dark:to-gray-800/50">
+        <Link to={`/teams/${team.id}`} className={cn(
+          "team-list-card-image w-full md:w-[180px] lg:w-[200px] h-[180px] md:h-auto flex items-center justify-center p-6",
+          isWinterTheme 
+            ? "bg-white/5" 
+            : "bg-gradient-to-br from-blue-50/30 via-white to-orange-50/20 dark:from-gray-800/60 dark:via-black/40 dark:to-gray-800/50"
+        )}>
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
@@ -51,7 +62,10 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
         <div className="flex flex-col flex-grow p-5">
           <div className="flex justify-between items-start mb-3">
             <Link to={`/teams/${team.id}`} className="hover:underline">
-              <h3 className="font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl text-gray-900 dark:text-white">
+              <h3 className={cn(
+                "font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl",
+                isWinterTheme ? "text-[hsl(var(--foreground))]" : "text-gray-900 dark:text-white"
+              )}>
                 {team.name}
               </h3>
             </Link>
