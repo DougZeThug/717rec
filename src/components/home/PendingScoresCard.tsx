@@ -7,6 +7,7 @@ import { ScoreSubmissionModal } from './ScoreSubmissionModal';
 import { formatDate, formatTime } from './utils';
 import { cn } from '@/lib/utils';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { SnowflakeSparkle, WINTER_ICONS_ENABLED } from '@/icons';
 
 const PendingScoresCard = () => {
   const { matches, isLoading } = usePendingScoresMatches();
@@ -25,6 +26,9 @@ const PendingScoresCard = () => {
           <CardTitle className="flex items-center gap-2">
             <Clock className={cn("h-5 w-5", shouldApplyWinter ? "text-cyan-400" : "text-primary")} />
             Pending Scores
+            {shouldApplyWinter && WINTER_ICONS_ENABLED && (
+              <SnowflakeSparkle size={12} className="text-cyan-400/60" />
+            )}
           </CardTitle>
           <CardDescription className={shouldApplyWinter ? "text-cyan-300/70" : undefined}>
             Matches awaiting score reports
@@ -66,6 +70,9 @@ const PendingScoresCard = () => {
           <CardTitle className="flex items-center gap-2">
             <Clock className={cn("h-5 w-5", shouldApplyWinter ? "text-cyan-400" : "text-primary")} />
             Pending Scores
+            {shouldApplyWinter && WINTER_ICONS_ENABLED && (
+              <SnowflakeSparkle size={12} className="text-cyan-400/60" />
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center py-8">
@@ -88,6 +95,9 @@ const PendingScoresCard = () => {
           <CardTitle className="flex items-center gap-2">
             <Clock className={cn("h-5 w-5", shouldApplyWinter ? "text-cyan-400" : "text-primary")} />
             Pending Scores
+            {shouldApplyWinter && WINTER_ICONS_ENABLED && (
+              <SnowflakeSparkle size={12} className="text-cyan-400/60" />
+            )}
           </CardTitle>
           <CardDescription className={shouldApplyWinter ? "text-cyan-300/70" : undefined}>
             {matches.length} match{matches.length !== 1 ? 'es' : ''} awaiting score reports
