@@ -3,6 +3,14 @@
    BOLD "IN YOUR FACE" WINTER - Icicles, Frost Edges, Ice Patterns
    ========================================================================== */
 
+/* OhSnow Font - Winter replacement for Bebas Neue */
+@font-face {
+  font-family: 'OhSnow';
+  src: url('/fonts/OhSnow.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 /* Winter Theme CSS Variables */
 .winter-frozen {
   /* Core palette - Deep ink navy/charcoal */
@@ -396,6 +404,16 @@
   font-weight: normal;
   font-style: normal;
   font-display: swap;
+}
+
+/* ==========================================================================
+   Winter Font Overrides - OhSnow replaces Bebas Neue in winter mode
+   ========================================================================== */
+
+/* Override font-bebas to use OhSnow in winter mode */
+.winter-frozen .font-bebas {
+  font-family: 'OhSnow', 'Bebas Neue', 'Arial', sans-serif !important;
+  letter-spacing: 0.02em;
 }
 
 /* Apply Snowtop Caps ONLY when explicitly requested.
