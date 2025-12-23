@@ -98,23 +98,23 @@
 
 .winter-frozen .icicle-trim {
   position: relative;
-  padding-top: 60px; /* Space for SVG icicles */
+  padding-top: 50px; /* Space for SVG icicles */
   margin-top: 10px; /* Allow icicles to extend above */
 }
 
 .winter-frozen .icicle-trim::before {
   content: '';
   position: absolute;
-  top: -8px;
+  top: 0;
   left: 0;
   right: 0;
-  height: 70px;
+  height: 60px;
   pointer-events: none;
   z-index: 10;
   /* SVG icicles with true transparency */
   background-image: url('/images/winter/winter-icicles-top-medium.svg?v=3');
   background-repeat: repeat-x;
-  background-size: auto 70px;
+  background-size: auto 60px;
   background-position: center top;
   filter: drop-shadow(0 4px 12px hsla(199, 80%, 70%, 0.3));
 }
@@ -122,24 +122,24 @@
 /* Light icicle trim for inner pages - smaller, more subtle */
 .winter-frozen .icicle-trim-light {
   position: relative;
-  padding-top: 40px; /* Smaller space for lighter icicles */
+  padding-top: 35px; /* Smaller space for lighter icicles */
   margin-top: 6px;
 }
 
 .winter-frozen .icicle-trim-light::before {
   content: '';
   position: absolute;
-  top: -4px;
+  top: 0;
   left: 0;
   right: 0;
-  height: 45px;
+  height: 40px;
   pointer-events: none;
   z-index: 10;
   background-image: url('/images/winter/winter-icicles-top-medium.svg?v=3');
   background-repeat: repeat-x;
-  background-size: auto 45px;
+  background-size: auto 40px;
   background-position: center top;
-  opacity: 0.8;
+  opacity: 0.85;
   filter: drop-shadow(0 2px 8px hsla(199, 80%, 70%, 0.2));
 }
 
@@ -574,7 +574,7 @@
   border: 1px solid hsla(199, 70%, 55%, 0.35);
   border-radius: 12px;
   overflow: visible;
-  padding-top: 60px; /* Space for SVG icicles */
+  padding-top: 50px; /* Space for SVG icicles */
   margin-top: 10px; /* Allow icicles to extend above */
   box-shadow: 
     inset 0 1px 0 0 hsla(199, 80%, 88%, 0.22),
@@ -587,16 +587,16 @@
 .winter-frozen .winter-card-full::before {
   content: '';
   position: absolute;
-  top: -10px;
+  top: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 65px;
   pointer-events: none;
   z-index: 10;
   /* SVG icicles with true transparency - heavy variant */
   background-image: url('/images/winter/winter-icicles-top-heavy.svg?v=3');
   background-repeat: repeat-x;
-  background-size: auto 80px;
+  background-size: auto 65px;
   background-position: center top;
   filter: drop-shadow(0 4px 12px hsla(199, 80%, 70%, 0.3));
 }
