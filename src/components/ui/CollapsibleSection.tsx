@@ -2,7 +2,8 @@ import React, { useState, useTransition, ReactNode } from "react";
 import { ChevronDown, LucideIcon } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { SnowflakeSparkle, WINTER_ICONS_ENABLED } from "@/icons";
 interface CollapsibleSectionProps {
   title: string;
   icon: LucideIcon;
@@ -37,6 +38,7 @@ export const CollapsibleSection = ({
 }: CollapsibleSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [, startTransition] = useTransition();
+  const { shouldApplyWinterBase } = useSeasonalTheme();
 
   const handleOpenChange = (open: boolean) => {
     startTransition(() => {
@@ -53,6 +55,9 @@ export const CollapsibleSection = ({
             <h2 className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
               {title}
             </h2>
+            {shouldApplyWinterBase && WINTER_ICONS_ENABLED && (
+              <SnowflakeSparkle size={12} className="text-cyan-400/60 ml-0.5" />
+            )}
           </div>
           <ChevronDown className={cn(
             "h-5 w-5 text-muted-foreground transition-transform duration-200",
@@ -91,6 +96,8 @@ export const SectionHeader = ({
   className,
   action,
 }: SectionHeaderProps) => {
+  const { shouldApplyWinterBase } = useSeasonalTheme();
+  
   return (
     <div className={cn("flex flex-wrap justify-between items-center mb-4 md:mb-6", className)}>
       <div>
@@ -99,6 +106,9 @@ export const SectionHeader = ({
           <h2 className="text-2xl md:text-3xl font-bebas uppercase tracking-wide bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
             {title}
           </h2>
+          {shouldApplyWinterBase && WINTER_ICONS_ENABLED && (
+            <SnowflakeSparkle size={14} className="text-cyan-400/70 ml-1 animate-pulse" />
+          )}
         </div>
         {description && (
           <p className="text-sm text-muted-foreground mt-1">{description}</p>
