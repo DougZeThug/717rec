@@ -26,6 +26,7 @@ interface MockFormState {
   isSubmitted: boolean;
   isSubmitSuccessful: boolean;
   isValidating: boolean;
+  isReady: boolean;
   submitCount: number;
   touchedFields: Record<string, unknown>;
   dirtyFields: Record<string, unknown>;
@@ -117,6 +118,7 @@ describe('useBracketForm', () => {
       isSubmitted: false,
       isSubmitSuccessful: false,
       isValidating: false,
+      isReady: true,
       submitCount: 0,
       touchedFields: {},
       dirtyFields: {},
