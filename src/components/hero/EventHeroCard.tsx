@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import BlindDrawSignupForm from "@/components/home/BlindDrawSignupForm";
 import { useBlindDrawSignupCount } from "@/hooks/useBlindDrawSignups";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { SeasonalIcon } from "@/components/ui/seasonal-icon";
 
 interface EventHeroCardProps {
   card: HeroCard;
@@ -280,7 +281,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                     : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
                 )}
               >
-                <Trophy className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-amber-300" : "text-amber-300")} />
+                <SeasonalIcon defaultIcon={Trophy} winterGlyph="frozen-trophy" size={20} className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-amber-300" : "text-amber-300")} />
                 <span className={cn(
                   "text-[10px] font-bebas uppercase tracking-wide",
                   shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
@@ -293,7 +294,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
             {pastWinners.length > 0 && (
               <div className="w-full space-y-2">
                 <div className="flex items-center justify-center md:justify-start gap-2">
-                  <Medal className={cn("h-4 w-4", shouldApplyWinter ? "text-amber-300" : "text-amber-300")} />
+                  <SeasonalIcon defaultIcon={Medal} winterGlyph="frozen-trophy" size={16} className={cn("h-4 w-4", shouldApplyWinter ? "text-amber-300" : "text-amber-300")} />
                   <span className="font-bebas uppercase tracking-wide text-sm">Past Winners</span>
                 </div>
                 
