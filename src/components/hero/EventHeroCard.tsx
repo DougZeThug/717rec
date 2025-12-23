@@ -30,6 +30,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
 
   const metadata = card.metadata || {};
+  const isActiveEvent = metadata.is_active_event as boolean ?? false;
   const checkInTimeStr = metadata.check_in_time as string;
   const startTimeStr = metadata.start_time as string;
   const buyIn = metadata.buy_in as string || "$10";
@@ -173,7 +174,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                   <Shuffle className="h-6 w-6 md:h-8 md:w-8" />
                 </motion.div>
                 <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
-                  {card.title}
+                  {isActiveEvent ? card.title : "Blind Draw Results"}
                 </h2>
                 <motion.div
                   initial={{ rotate: 10, opacity: 0 }}
@@ -184,17 +185,19 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                 </motion.div>
               </div>
             
-            {/* Date badge */}
-            <div className={cn(
-              "inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 py-1",
-              shouldApplyWinter ? "bg-cyan-500/20" : "bg-white/20"
-            )}>
-              <Calendar className="h-4 w-4" />
-              <span className="font-inter font-semibold text-sm">{card.subtitle || formatDate(checkInTimeStr)}</span>
-            </div>
+            {/* Date badge - only shown for active events */}
+            {isActiveEvent && (
+              <div className={cn(
+                "inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 py-1",
+                shouldApplyWinter ? "bg-cyan-500/20" : "bg-white/20"
+              )}>
+                <Calendar className="h-4 w-4" />
+                <span className="font-inter font-semibold text-sm">{card.subtitle || formatDate(checkInTimeStr)}</span>
+              </div>
+            )}
 
-            {/* Countdown bar - desktop only in left column */}
-            {startTimeStr && (
+            {/* Countdown bar - desktop only in left column, only for active events */}
+            {isActiveEvent && startTimeStr && (
               <div className="hidden md:block w-full mt-2">
                 <div className="space-y-1">
                   <div className={cn(
@@ -219,76 +222,78 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
 
           {/* Right Column - Event Details & Past Winners */}
           <div className="flex-1 flex flex-col items-center md:items-stretch space-y-3 mt-4 md:mt-0">
-            {/* Event details grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full">
-              <motion.div 
-                whileHover={{ scale: 1.03 }}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
-                  shouldApplyWinter
-                    ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
-                    : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
-                )}
-              >
-                <Clock className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-cyan-300" : "text-yellow-300")} />
-                <span className={cn(
-                  "text-[10px] font-bebas uppercase tracking-wide",
-                  shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
-                )}>Check-in</span>
-                <span className="text-base md:text-lg font-bebas tabular-nums">{formatTime(checkInTimeStr)}</span>
-              </motion.div>
-              
-              <motion.div 
-                whileHover={{ scale: 1.03 }}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
-                  shouldApplyWinter
-                    ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
-                    : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
-                )}
-              >
-                <Clock className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-emerald-300" : "text-green-300")} />
-                <span className={cn(
-                  "text-[10px] font-bebas uppercase tracking-wide",
-                  shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
-                )}>Start</span>
-                <span className="text-base md:text-lg font-bebas tabular-nums">{formatTime(startTimeStr)}</span>
-              </motion.div>
-              
-              <motion.div 
-                whileHover={{ scale: 1.03 }}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
-                  shouldApplyWinter
-                    ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
-                    : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
-                )}
-              >
-                <DollarSign className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-emerald-300" : "text-emerald-300")} />
-                <span className={cn(
-                  "text-[10px] font-bebas uppercase tracking-wide",
-                  shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
-                )}>Buy-in</span>
-                <span className="text-base md:text-lg font-bebas">{buyIn}</span>
-              </motion.div>
-              
-              <motion.div 
-                whileHover={{ scale: 1.03 }}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
-                  shouldApplyWinter
-                    ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
-                    : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
-                )}
-              >
-                <SeasonalIcon defaultIcon={Trophy} winterGlyph="frozen-trophy" size={20} className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-amber-300" : "text-amber-300")} />
-                <span className={cn(
-                  "text-[10px] font-bebas uppercase tracking-wide",
-                  shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
-                )}>Payouts</span>
-                <span className="text-base md:text-lg font-bebas">{payouts}</span>
-              </motion.div>
-            </div>
+            {/* Event details grid - only shown for active events */}
+            {isActiveEvent && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 w-full">
+                <motion.div 
+                  whileHover={{ scale: 1.03 }}
+                  className={cn(
+                    "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
+                    shouldApplyWinter
+                      ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
+                      : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
+                  )}
+                >
+                  <Clock className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-cyan-300" : "text-yellow-300")} />
+                  <span className={cn(
+                    "text-[10px] font-bebas uppercase tracking-wide",
+                    shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
+                  )}>Check-in</span>
+                  <span className="text-base md:text-lg font-bebas tabular-nums">{formatTime(checkInTimeStr)}</span>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.03 }}
+                  className={cn(
+                    "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
+                    shouldApplyWinter
+                      ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
+                      : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
+                  )}
+                >
+                  <Clock className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-emerald-300" : "text-green-300")} />
+                  <span className={cn(
+                    "text-[10px] font-bebas uppercase tracking-wide",
+                    shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
+                  )}>Start</span>
+                  <span className="text-base md:text-lg font-bebas tabular-nums">{formatTime(startTimeStr)}</span>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.03 }}
+                  className={cn(
+                    "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
+                    shouldApplyWinter
+                      ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
+                      : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
+                  )}
+                >
+                  <DollarSign className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-emerald-300" : "text-emerald-300")} />
+                  <span className={cn(
+                    "text-[10px] font-bebas uppercase tracking-wide",
+                    shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
+                  )}>Buy-in</span>
+                  <span className="text-base md:text-lg font-bebas">{buyIn}</span>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.03 }}
+                  className={cn(
+                    "flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all",
+                    shouldApplyWinter
+                      ? "bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40"
+                      : "bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40"
+                  )}
+                >
+                  <SeasonalIcon defaultIcon={Trophy} winterGlyph="frozen-trophy" size={20} className={cn("h-4 w-4 md:h-5 md:w-5", shouldApplyWinter ? "text-amber-300" : "text-amber-300")} />
+                  <span className={cn(
+                    "text-[10px] font-bebas uppercase tracking-wide",
+                    shouldApplyWinter ? "text-cyan-200/80" : "text-white/80"
+                  )}>Payouts</span>
+                  <span className="text-base md:text-lg font-bebas">{payouts}</span>
+                </motion.div>
+              </div>
+            )}
 
             {/* Past Winners */}
             {pastWinners.length > 0 && (
@@ -333,8 +338,8 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               </div>
             )}
 
-            {/* Countdown bar - mobile only */}
-            {startTimeStr && (
+            {/* Countdown bar - mobile only, only for active events */}
+            {isActiveEvent && startTimeStr && (
               <div className="md:hidden w-full max-w-sm mt-2">
                 <div className="space-y-1">
                   <div className={cn(
@@ -356,8 +361,8 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               </div>
             )}
 
-            {/* Signup Form - only for blind-draw events */}
-            {card.slug === 'blind-draw' && eventDate && (
+            {/* Signup Form - only for blind-draw events when active */}
+            {isActiveEvent && card.slug === 'blind-draw' && eventDate && (
               <div className="w-full mt-3 space-y-2">
                 {signupCount !== undefined && signupCount > 0 && (
                   <div className={cn(
