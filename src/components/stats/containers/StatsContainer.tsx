@@ -10,6 +10,8 @@ import LoadingStateContainer from "./LoadingStateContainer";
 import CareerRankingsSection from "../career/CareerRankingsSection";
 import { Skeleton } from "@/components/ui/skeleton";
 import WinterSection from "@/components/winter/WinterSection";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { cn } from "@/lib/utils";
 
 // Lazy load the chart component to defer loading recharts bundle
 const AllTeamsCareerPowerScoreChart = lazy(() => 
@@ -25,6 +27,7 @@ interface StatsContainerProps {
 }
 
 const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
+  const { isWinterTheme } = useSeasonalTheme();
   const { 
     data: teams, 
     isLoading: isLoadingTeams, 
@@ -44,7 +47,14 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   }
 
   return (
-    <WinterSection showIcicles lightIcicles className="max-w-7xl mx-auto bg-gray-50 dark:bg-transparent px-2 sm:px-4">
+    <WinterSection
+      showIcicles
+      lightIcicles
+      className={cn(
+        "max-w-7xl mx-auto px-2 sm:px-4",
+        isWinterTheme ? "bg-transparent" : "bg-gray-50 dark:bg-transparent"
+      )}
+    >
       <StatsPageHeader />
       
       <div className="font-inter">

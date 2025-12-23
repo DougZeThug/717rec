@@ -851,6 +851,33 @@
 }
 
 /* ==========================================================================
+   STANDINGS / STATS - Reduce white surfaces in winter
+   ========================================================================== */
+
+/* Mobile standings controls (sort buttons, headings) */
+.winter-frozen .btn-winter-primary,
+.winter-frozen .btn-winter-secondary {
+  border-radius: 0.75rem;
+}
+
+/* Ensure RankingCard internal “light-mode” utility text colors don’t go dark on winter */
+.winter-frozen .ranking-card .text-slate-900,
+.winter-frozen .ranking-card .text-gray-900,
+.winter-frozen .ranking-card .text-gray-800,
+.winter-frozen .ranking-card .text-gray-700 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.winter-frozen .ranking-card .text-gray-600,
+.winter-frozen .ranking-card .text-gray-500,
+.winter-frozen .ranking-card .text-slate-700,
+.winter-frozen .ranking-card .text-slate-600,
+.winter-frozen .ranking-card .text-slate-500 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+
+/* ==========================================================================
    RANKING CARDS & TEAM LIST CARDS - Winter styling
    ========================================================================== */
 
