@@ -57,7 +57,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
   if (compactView) {
     return (
       <motion.div 
-        className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-3 cursor-pointer"
+        className="ranking-card bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-3 cursor-pointer"
         onClick={handleToggleExpand}
         whileHover={{ scale: 1.01, y: -2 }}
         whileTap={{ scale: 0.98 }}
@@ -141,7 +141,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
   return (
     <motion.div 
-      className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4"
+      className="ranking-card bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4"
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}

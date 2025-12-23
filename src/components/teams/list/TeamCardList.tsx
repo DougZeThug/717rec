@@ -31,14 +31,14 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
 
   return (
     <motion.div 
-      className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 rounded-xl 
+      className="team-list-card bg-white text-gray-900 dark:bg-gray-900 dark:text-white border border-gray-200 dark:border-gray-800 rounded-xl 
         overflow-hidden h-full font-inter shadow-sm"
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
       <div className="flex flex-col md:flex-row h-full">
-        <Link to={`/teams/${team.id}`} className="w-full md:w-[180px] lg:w-[200px] h-[180px] md:h-auto flex items-center justify-center p-6 
+        <Link to={`/teams/${team.id}`} className="team-list-card-image w-full md:w-[180px] lg:w-[200px] h-[180px] md:h-auto flex items-center justify-center p-6 
           bg-gradient-to-br from-blue-50/30 via-white to-orange-50/20 dark:from-gray-800/60 dark:via-black/40 dark:to-gray-800/50">
           <TeamImage 
             imageUrl={team.imageUrl || team.logoUrl} 
