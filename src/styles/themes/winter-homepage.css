@@ -849,3 +849,41 @@
   top: -6px;
   right: -6px;
 }
+
+/* ==========================================================================
+   RANKING CARDS & TEAM LIST CARDS - Winter styling
+   ========================================================================== */
+
+/* Ranking cards on standings page */
+.winter-frozen .ranking-card {
+  background: hsla(222, 45%, 14%, 0.96) !important;
+  border-color: hsla(199, 60%, 50%, 0.3) !important;
+  color: hsl(var(--foreground));
+}
+
+.winter-frozen .ranking-card:hover {
+  border-color: hsla(199, 65%, 55%, 0.45) !important;
+  box-shadow: 0 4px 20px hsla(199, 80%, 60%, 0.15);
+}
+
+/* Team list cards on teams page */
+.winter-frozen .team-list-card {
+  background: hsla(222, 45%, 14%, 0.96) !important;
+  border-color: hsla(199, 60%, 50%, 0.3) !important;
+  color: hsl(var(--foreground));
+}
+
+.winter-frozen .team-list-card:hover {
+  border-color: hsla(199, 65%, 55%, 0.45) !important;
+  box-shadow: 0 4px 20px hsla(199, 80%, 60%, 0.15);
+}
+
+/* Team list card image area */
+.winter-frozen .team-list-card-image {
+  background: linear-gradient(
+    to bottom right,
+    hsla(222, 45%, 16%, 0.9),
+    hsla(222, 40%, 12%, 0.95),
+    hsla(222, 45%, 16%, 0.9)
+  ) !important;
+}
