@@ -4,6 +4,7 @@ import { Trophy, Medal, Award } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useEffect, useRef } from 'react';
 import { log } from '@/utils/logger';
+import { SeasonalIcon } from "@/components/ui/seasonal-icon";
 
 interface FinalStandingsProps {
   bracketId: string;
@@ -56,9 +57,9 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
   if (!standings || standings.length === 0) return null;
 
   const getPlacementIcon = (placement: number) => {
-    if (placement === 1) return <Trophy className="w-5 h-5 text-yellow-500" />;
-    if (placement === 2) return <Medal className="w-5 h-5 text-gray-400" />;
-    if (placement === 3) return <Award className="w-5 h-5 text-amber-600" />;
+    if (placement === 1) return <SeasonalIcon defaultIcon={Trophy} winterGlyph="frozen-trophy" size={20} className="text-yellow-500" />;
+    if (placement === 2) return <SeasonalIcon defaultIcon={Medal} winterGlyph="frozen-trophy" size={20} className="text-gray-400" />;
+    if (placement === 3) return <SeasonalIcon defaultIcon={Award} winterGlyph="frozen-trophy" size={20} className="text-amber-600" />;
     return null;
   };
 
@@ -66,7 +67,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5" />
+          <SeasonalIcon defaultIcon={Trophy} winterGlyph="frozen-trophy" size={20} />
           Final Standings
         </CardTitle>
       </CardHeader>

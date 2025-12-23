@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Star, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SeasonalIcon } from "@/components/ui/seasonal-icon";
 import { Team } from "@/types";
 import { championAnimation } from "../animation/BracketAnimationUtils";
 import { Button } from "@/components/ui/button";
@@ -60,12 +61,16 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
         <div className="flex flex-col items-center text-center">
           <div className="relative mb-4">
             <div className="absolute -top-1 -left-1 w-full h-full flex items-center justify-center">
-              <Star 
+              <SeasonalIcon 
+                defaultIcon={Star}
+                winterGlyph="winter-star"
                 className="h-24 w-24 text-amber-300 dark:text-amber-500 opacity-30" 
                 strokeWidth={1}
               />
             </div>
-            <Trophy 
+            <SeasonalIcon 
+              defaultIcon={Trophy}
+              winterGlyph="frozen-trophy"
               className="h-16 w-16 text-amber-500 dark:text-amber-400" 
               strokeWidth={1.5} 
             />
@@ -88,7 +93,11 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({
               </div>
             ) : (
               <div className="w-24 h-24 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center border-2 border-amber-300 dark:border-amber-700 shadow-md mb-4">
-                <Award className="h-12 w-12 text-amber-500 dark:text-amber-300" />
+                <SeasonalIcon 
+                  defaultIcon={Award}
+                  winterGlyph="frozen-trophy"
+                  className="h-12 w-12 text-amber-500 dark:text-amber-300" 
+                />
               </div>
             )}
             
