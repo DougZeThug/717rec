@@ -11,7 +11,7 @@ import './styles/brackets-viewer-717rec-theme.css' // Theme tweaks last
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider 
     attribute="class" 
-    defaultTheme="system" 
+    defaultTheme="winter-frozen" 
     themes={['light', 'dark', 'system', 'winter-frozen']}
     enableSystem={true} 
     disableTransitionOnChange={false}
