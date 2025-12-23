@@ -10,6 +10,7 @@ import { useTheme } from "next-themes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
+import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 
 interface FullRankingsProps {
   rankings: Ranking[];
@@ -19,6 +20,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
   const [view, setView] = useState<"division" | "all">("division");
   const [isOpen, setIsOpen] = useState(true); // Start uncollapsed
   const { resolvedTheme } = useTheme();
+  const { isWinterTheme } = useSeasonalTheme();
   const isLight = resolvedTheme === "light";
   const isMobile = useIsMobile();
 
@@ -30,15 +32,21 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
       <Card className={cn(
-        "border-t-2 border-blue-300 dark:border-blue-700/80",
-        "shadow-lg hover:shadow-xl transition-shadow duration-300",
-        isLight ? gradients.card.blueOrange : ""
+        "border-t-2 shadow-lg hover:shadow-xl transition-shadow duration-300",
+        isWinterTheme 
+          ? "winter-card-surface border-frost-primary/50" 
+          : "border-blue-300 dark:border-blue-700/80",
+        !isWinterTheme && isLight && gradients.card.blueOrange
       )}>
         <CollapsibleTrigger asChild>
           <CardHeader className={cn(
             isMobile ? "py-2.5 px-3" : "py-4",
-            isLight ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
-            "border-b border-blue-100 dark:border-blue-900/30 rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
+            "rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors",
+            isWinterTheme 
+              ? "bg-frost-primary/5 border-b border-frost-border/30" 
+              : isLight 
+                ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 border-b border-blue-100" 
+                : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80 border-b border-blue-900/30"
           )}>
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -46,7 +54,9 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
                   className={cn(
                     "font-bebas uppercase tracking-wide",
                     isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-                    "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                    isWinterTheme 
+                      ? "text-[hsl(var(--foreground))]" 
+                      : "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
                   )}
                   style={{ letterSpacing: "0.5px" }}
                 >
@@ -55,8 +65,10 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
                 {!isMobile && (
                   <CardDescription
                     className={cn(
-                      isLight ? "!text-[#444444] !font-medium font-inter" : "text-gray-400 font-inter",
-                      "line-clamp-2"
+                      "line-clamp-2 font-inter",
+                      isWinterTheme 
+                        ? "text-[hsl(var(--muted-foreground))]" 
+                        : isLight ? "!text-[#444444] !font-medium" : "text-gray-400"
                     )}
                   >
                     Based on opponent-weighted win percentage, strength of schedule (SOS), and game-level performance
@@ -68,6 +80,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
                 <ChevronDown
                   className={cn(
                     "h-5 w-5 transition-transform",
+                    isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "",
                     isOpen && "rotate-180"
                   )}
                 />
@@ -79,7 +92,9 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
         <CollapsibleContent>
           <CardContent className={cn(
             isMobile ? "p-1 pt-0.5" : "p-2 sm:p-4",
-            "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900"
+            isWinterTheme 
+              ? "bg-transparent" 
+              : "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900"
           )}>
             <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
           </CardContent>
