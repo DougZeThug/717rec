@@ -44,7 +44,7 @@ export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
       setEmailError(null);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setEmailError(error.errors[0].message);
+        setEmailError(error.issues[0].message);
         isValid = false;
       }
     }
@@ -55,7 +55,7 @@ export const useAuthForm = ({ returnTo }: UseAuthFormProps) => {
       setPasswordError(null);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setPasswordError(error.errors[0].message);
+        setPasswordError(error.issues[0].message);
         isValid = false;
       }
     }

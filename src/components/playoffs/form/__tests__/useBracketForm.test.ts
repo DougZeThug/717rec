@@ -75,6 +75,7 @@ describe('useBracketForm', () => {
         divisionId: "",
         format: "Single Elimination" as const,
         teams: [],
+        grandFinalType: "simple" as const,
       };
       
       if (nameOrCallback === undefined) {
@@ -100,12 +101,13 @@ describe('useBracketForm', () => {
         };
       }
       // getValues(fieldName) returns specific field value
-      const formValues: BracketFormValues = {
-        title: "",
-        divisionId: "",
-        format: "Single Elimination" as const,
-        teams: [],
-      };
+        const formValues: BracketFormValues = {
+          title: "",
+          divisionId: "",
+          format: "Single Elimination" as const,
+          teams: [],
+          grandFinalType: "simple" as const,
+        };
       return formValues[fieldName];
     });
 
@@ -200,6 +202,7 @@ describe('useBracketForm', () => {
       divisionId: "div1",
       format: "Single Elimination" as const,
       teams: ["team1", "team2"],
+      grandFinalType: "simple" as const,
     };
     
     // Update the mock to return new values using proper mock implementation
@@ -255,6 +258,7 @@ describe('useBracketForm', () => {
       divisionId: "div2",
       format: "Double Elimination" as const,
       teams: ["team3"],
+      grandFinalType: "double" as const,
     };
     
     const mockWatch = mockForm.watch as any;
