@@ -144,7 +144,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
               )}>
                 <div className="text-[10px] text-muted-foreground uppercase">Power</div>
                 <span className="font-mono text-sm">
-                  {typeof team.power_score === 'number' ? (team.power_score * 100).toFixed(1) : 'N/A'}
+                  {typeof team.power_score === 'number' ? team.power_score.toFixed(1) : 'N/A'}
                 </span>
               </div>
             </div>
