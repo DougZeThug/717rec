@@ -139,7 +139,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                     label="Power Score" 
                     value={
                       <PowerScoreGauge 
-                        score={powerScore / 100} 
+                        score={powerScore} 
                         size="lg" 
                         showLabel={false}
                       />
