@@ -14,13 +14,13 @@ import {
   BarChart3,
   ChevronDown
 } from "lucide-react";
-import { formatPowerScore, getPowerScoreColor, getSosColor, getSweepRateColor } from "@/utils/colors";
+import { getSosColor, getSweepRateColor } from "@/utils/colors";
 import RankTrendIndicator from "@/components/stats/RankTrendIndicator";
 import { useTheme } from "next-themes";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
-import PowerScoreGauge from "@/components/ui/power-score-gauge";
+import { PowerScoreDisplay } from "@/components/ui/PowerScoreDisplay";
 
 interface StatBreakdownProps {
   wins: number;
@@ -63,7 +63,6 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
   const [isOpen, setIsOpen] = useState(true);
   
   // Get appropriate color classes
-  const powerScoreColorClass = getPowerScoreColor(powerScore);
   const sosColorClass = getSosColor(sos);
   
   // Card gradient based on active tab with orange accent
@@ -138,8 +137,10 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                   <StatBlock 
                     label="Power Score" 
                     value={
-                      <PowerScoreGauge 
+                      <PowerScoreDisplay 
                         score={powerScore} 
+                        source="v_team_details"
+                        display="gauge"
                         size="lg" 
                         showLabel={false}
                       />

@@ -6,3 +6,4 @@ export * from '@/utils/colors/thresholds';
 // Keep these in this folder for now (not moved to /colors)
 export * from './calculatePowerScore';
 export * from './getTrendingTeams';
+export * from './normalizePowerScore';

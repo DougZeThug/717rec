@@ -1,10 +1,9 @@
 import React from "react";
-import { formatPowerScore, getPowerScoreColor } from "@/utils/colors";
 import { getSosColor } from "@/utils/colors";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import RankTrendIndicator from "../RankTrendIndicator";
-import PowerScoreGauge from "@/components/ui/power-score-gauge";
+import { PowerScoreDisplay } from "@/components/ui/PowerScoreDisplay";
 
 interface TeamStatsGridProps {
   wins: number;
@@ -32,14 +31,13 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
   compactView = false
 }) => {
   const isMobile = useIsMobile();
-  const powerScoreColorClass = getPowerScoreColor(powerScore);
   const sosColorClass = getSosColor(sos);
 
   if (compactView || !isMobile) {
     return (
       <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
         <span className="tabular-nums">{wins}-{losses}</span>
-        <span className={cn("tabular-nums", powerScoreColorClass)}>{formatPowerScore(powerScore)}</span>
+        <PowerScoreDisplay score={powerScore} source="v_team_details" display="text" className="tabular-nums" />
       </div>
     );
   }
@@ -56,7 +54,7 @@ export const TeamStatsGrid: React.FC<TeamStatsGridProps> = ({
         
         <div className="flex flex-col items-center">
           <span className="text-gray-500 dark:text-gray-400 text-xs">Power</span>
-          <PowerScoreGauge score={powerScore} size="sm" showLabel={false} />
+          <PowerScoreDisplay score={powerScore} source="v_team_details" display="gauge" size="sm" showLabel={false} />
         </div>
         
         <div className="flex flex-col items-center">
