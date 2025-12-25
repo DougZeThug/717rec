@@ -93,7 +93,7 @@
     "uuid": "^13.0.0",
     "vaul": "^1.1.2",
     "vite-plugin-beasties": "^0.3.5",
-    "vitest": "^3.2.4",
+    "vitest": "^4.0.16",
     "zod": "^4.2.1"
   },
   "devDependencies": {
@@ -112,7 +112,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.0",
+    "typescript-eslint": "^8.50.1",
     "vite": "^5.4.1"
   }
 }
