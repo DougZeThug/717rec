@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare } from "lucide-react";
+import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
@@ -31,6 +31,7 @@ const NavLinks: React.FC<NavLinksProps> = ({ isMobile = false, onLinkClick }) =>
     { href: "/playoffs", label: "Playoffs", icon: Trophy },
     { href: "/history", label: "History", icon: Clock },
     { href: "/message-board", label: "Messages", icon: MessageSquare },
+    { href: "/help", label: "Help", icon: HelpCircle },
   ];
 
   return (

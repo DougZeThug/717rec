@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { NavigationProvider } from "@/contexts/NavigationContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PageTransition from "./components/transitions/PageTransition";
@@ -16,6 +17,7 @@ import { routeLog } from "@/utils/logger";
 
 // Lazy load all page components
 const Index = lazy(() => import("./pages/Index"));
+const Help = lazy(() => import("./pages/Help"));
 const TeamsPage = lazy(() => import("./pages/TeamsPage"));
 const TeamDetails = lazy(() => import("./pages/TeamDetails"));
 const Schedule = lazy(() => import("./pages/Schedule"));
@@ -78,6 +80,7 @@ const AppContent = () => {
                 <Route path="/setup-profile" element={<ProfileSetup />} />
                 <Route path="/message-board" element={<MessageBoard />} />
                 <Route path="/my-team" element={<MyTeam />} />
+                <Route path="/help" element={<Help />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
@@ -92,17 +95,19 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <AppContent />
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 

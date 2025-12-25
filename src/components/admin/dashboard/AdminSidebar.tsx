@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shuffle,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ import SeasonManagementTab from "@/components/admin/seasons/SeasonManagementTab"
 import HeroCardsTab from "@/components/admin/hero-cards/HeroCardsTab";
 import BlindDrawSignupsTab from "@/components/admin/blind-draw/BlindDrawSignupsTab";
 import OpponentHistoryTab from "@/components/admin/opponent-history/OpponentHistoryTab";
+import GettingStartedTab from "@/components/admin/help/GettingStartedTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mobile tabs version
@@ -54,6 +56,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: "pending-matches", label: "Pending", icon: Clock, component: <PendingMatchesSection /> },
   { id: "hero-cards", label: "Hero", icon: LayoutGrid, component: <HeroCardsTab /> },
   { id: "blind-draw", label: "Blind Draw", icon: Shuffle, component: <BlindDrawSignupsTab /> },
+  { id: "help", label: "Help", icon: HelpCircle, component: <GettingStartedTab /> },
 ];
 
 const AdminSidebar: React.FC = () => {
