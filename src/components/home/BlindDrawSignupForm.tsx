@@ -32,8 +32,8 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
 
     const result = signupSchema.safeParse({ firstName, lastInitial });
     if (!result.success) {
-      const fieldErrors: { firstName?: string; lastInitial?: string } = {};
-      result.error.errors.forEach((err) => {
+    const fieldErrors: { firstName?: string; lastInitial?: string } = {};
+      result.error.issues.forEach((err) => {
         if (err.path[0] === "firstName") fieldErrors.firstName = err.message;
         if (err.path[0] === "lastInitial") fieldErrors.lastInitial = err.message;
       });
