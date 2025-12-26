@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,7 +13,14 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import AppNavigation from "./components/navigation/AppNavigation";
 import ProtectedAdminRoute from "./components/auth/ProtectedAdminRoute";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { routeLog } from "@/utils/logger";
+import { initSentry } from "@/utils/sentry";
+import { initAnalytics, trackPageView } from "@/utils/analytics";
+
+// Initialize Sentry and Analytics on app load
+initSentry();
+initAnalytics();
 
 // Lazy load all page components
 const Index = lazy(() => import("./pages/Index"));
@@ -31,6 +38,7 @@ const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
 const MessageBoard = lazy(() => import("./pages/MessageBoard"));
 const MyTeam = lazy(() => import("./pages/MyTeam"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,8 +52,11 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const location = useLocation();
   
-  // Log every route change to help debug navigation issues
-  routeLog(`Navigating to: ${location.pathname}`);
+  // Log every route change and track page views
+  useEffect(() => {
+    routeLog(`Navigating to: ${location.pathname}`);
+    trackPageView(location.pathname);
+  }, [location.pathname]);
   
   return (
     <NavigationProvider>
@@ -81,6 +92,7 @@ const AppContent = () => {
                 <Route path="/message-board" element={<MessageBoard />} />
                 <Route path="/my-team" element={<MyTeam />} />
                 <Route path="/help" element={<Help />} />
+                <Route path="/contact" element={<Contact />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
@@ -95,19 +107,21 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <AppContent />
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </HelmetProvider>
+    <ErrorBoundary>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
+                <AppContent />
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </ErrorBoundary>
   );
 };
 
