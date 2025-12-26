@@ -1,7 +1,10 @@
-
 import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from 'next-themes'
 import App from './App.tsx'
+import { initSentry } from './utils/sentry'
+
+// Initialize Sentry for production error tracking
+initSentry();
 
 // CRITICAL: Correct order - Tailwind first, then library, then theme
 import './index.css' // Tailwind base + components + utilities
