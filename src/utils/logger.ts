@@ -35,7 +35,23 @@ export const log = (...args: unknown[]) => {
 };
 
 export const errorLog = (...args: unknown[]) => {
+  // Always log errors in dev mode
   if (shouldLog('error')) console.error('[717REC ERROR]', ...args);
+  
+  // In production, send to Sentry
+  if (!isDev && args.length > 0) {
+    // Dynamically import to avoid circular dependencies
+    import('@/utils/sentry').then(({ captureError, captureMessage }) => {
+      const firstArg = args[0];
+      if (firstArg instanceof Error) {
+        captureError(firstArg, { additionalArgs: args.slice(1) });
+      } else {
+        captureMessage(String(firstArg), 'error');
+      }
+    }).catch(() => {
+      // Sentry not available, silently fail
+    });
+  }
 };
 
 export const warnLog = (...args: unknown[]) => {
