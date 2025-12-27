@@ -1,39 +1,58 @@
-
-import js from "@eslint/js";
-import globals from "globals";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "typescript-eslint";
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-plugin-prettier';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ['dist', 'node_modules', '*.config.js', 'src/integrations/supabase/types.ts'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
     plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+      prettier: prettier,
+      'simple-import-sort': simpleImportSort,
     },
     rules: {
+      // React Hooks
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "error",
+
+      // React Refresh
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+
+      // TypeScript - Keep existing behavior (any is error, unused vars off for now)
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
+
+      // Import Ordering - AUTO-FIXABLE
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
+
+      // Prettier - Format enforcement
+      'prettier/prettier': 'error',
+
+      // General Quality - AUTO-FIXABLE
+      'prefer-const': 'error',
+      'no-var': 'error',
     },
   },
   // More lenient rules for test files
   {
-    files: ["**/__tests__/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}'],
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn", // Allow any in tests but warn
-      "@typescript-eslint/no-unused-vars": "off",
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'off',
     },
-  }
+  },
+  // Apply Prettier config last (disables conflicting ESLint rules)
+  eslintConfigPrettier
 );
