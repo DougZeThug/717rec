@@ -16,13 +16,13 @@ interface TeamHeaderProps {
 const TeamHeader = ({ team, winPercentage, pastMatches = [] }: TeamHeaderProps) => {
   return (
     <div className="flex flex-col items-center mb-1 md:mb-4">
-      <div className="mb-1 md:mb-4">
+      <div className="mb-2 md:mb-4">
         <TeamLogo
           imageUrl={team?.imageUrl || team?.logoUrl}
           teamName={team?.name}
           size="lg"
           rounded={false}
-          className="w-16 h-16 md:w-20 md:h-20"
+          className="w-32 h-32 md:w-40 md:h-40"
         />
       </div>
       <div className="text-center">

@@ -46,7 +46,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
     >
       <div className="flex flex-col md:flex-row h-full">
         <Link to={`/teams/${team.id}`} className={cn(
-          "team-list-card-image w-full md:w-[180px] lg:w-[200px] h-[180px] md:h-auto flex items-center justify-center p-6",
+          "team-list-card-image w-full md:w-[220px] lg:w-[240px] h-[200px] md:h-auto flex items-center justify-center p-4",
           isWinterTheme 
             ? "bg-white/5" 
             : "bg-gradient-to-br from-blue-50/30 via-white to-orange-50/20 dark:from-gray-800/60 dark:via-black/40 dark:to-gray-800/50"
@@ -55,7 +55,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             imageUrl={team.imageUrl || team.logoUrl} 
             teamName={team.name}
             size="lg"
-            className="max-h-[160px] object-contain"
+            className="max-h-[180px] w-full object-contain"
           />
         </Link>
 
