@@ -22,7 +22,7 @@ const TeamHeader = ({ team, winPercentage, pastMatches = [] }: TeamHeaderProps) 
           teamName={team?.name}
           size="lg"
           rounded={false}
-          className="w-32 h-32 md:w-40 md:h-40"
+          className="w-44 h-44 md:w-52 md:h-52"
         />
       </div>
       <div className="text-center">
