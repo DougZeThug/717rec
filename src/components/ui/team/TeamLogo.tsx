@@ -48,8 +48,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
           src={imageUrl}
           alt={teamName}
           className={cn(
-            "object-contain",
-            sizeClasses[size],
+            "w-full h-full object-contain",
             rounded ? "rounded-full" : "rounded-none"
           )}
           onError={(e) => {
@@ -58,10 +57,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
           }}
         />
       ) : (
-        <div className={cn(
-          "flex items-center justify-center text-gray-400 dark:text-gray-600",
-          sizeClasses[size]
-        )}>
+        <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 w-full h-full">
           <span className="text-xs">
             {fallbackText || teamName.substring(0, 2)}
           </span>
