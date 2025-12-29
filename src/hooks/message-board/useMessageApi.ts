@@ -1,3 +1,4 @@
+import { useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Message, MessageCategory } from "@/types/reactions";
 import { toast } from "@/hooks/use-toast";
@@ -8,47 +9,67 @@ import { useTeamMembership } from "@/hooks/useTeamMembership";
 export const useMessageApi = () => {
   const { user, profile } = useAuth();
   const { membership } = useTeamMembership();
+  
+  // Abort controller for cancelling in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchMessages = async (options: MessageQueryOptions = {}) => {
+  const fetchMessages = useCallback(async (options: MessageQueryOptions = {}) => {
     const { limit = 10, olderThan = null, category = null, teamId = null, searchQuery = null } = options;
     
-    // Create a query builder without method chaining initially
-    let query = supabase
-      .from('messages')
-      .select('*');
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    
+    try {
+      // Create a query builder without method chaining initially
+      let query = supabase
+        .from('messages')
+        .select('*')
+        .abortSignal(abortControllerRef.current.signal);
+        
+      // Apply sorting
+      query = query.order('created_at', { ascending: false });
       
-    // Apply sorting
-    query = query.order('created_at', { ascending: false });
-    
-    // Apply limit
-    query = query.limit(limit);
+      // Apply limit
+      query = query.limit(limit);
+        
+      // Apply filters conditionally
+      if (olderThan) {
+        query = query.lt('created_at', olderThan);
+      }
       
-    // Apply filters conditionally
-    if (olderThan) {
-      query = query.lt('created_at', olderThan);
+      if (category) {
+        query = query.eq('category', category);
+      }
+      
+      if (teamId) {
+        query = query.eq('team_id', teamId);
+      }
+      
+      if (searchQuery) {
+        query = query.ilike('content', `%${searchQuery}%`);
+      }
+      
+      // Execute the query
+      const { data, error } = await query;
+      
+      if (error) {
+        throw new Error(`Failed to fetch messages: ${error.message}`);
+      }
+      
+      return data as Message[];
+    } catch (err: any) {
+      // Ignore abort errors - these are intentional cancellations
+      if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+        return [] as Message[];
+      }
+      throw err;
     }
-    
-    if (category) {
-      query = query.eq('category', category);
-    }
-    
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    }
-    
-    if (searchQuery) {
-      query = query.ilike('content', `%${searchQuery}%`);
-    }
-    
-    // Execute the query
-    const { data, error } = await query;
-    
-    if (error) {
-      throw new Error(`Failed to fetch messages: ${error.message}`);
-    }
-    
-    return data as Message[];
-  };
+  }, []);
 
   const createMessage = async (content: string, category: MessageCategory = 'General') => {
     if (!user || !profile?.username) {
