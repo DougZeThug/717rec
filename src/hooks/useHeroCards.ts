@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { HeroCard, HeroCardFormData } from "@/types/heroCard";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 // Hook for fetching visible hero cards (homepage)
 export const useHeroCards = () => {
@@ -58,6 +58,7 @@ export const useHeroCard = (id: string | null) => {
 // Mutations for CRUD operations
 export const useHeroCardMutations = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const createMutation = useMutation({
     mutationFn: async (formData: Omit<HeroCard, 'id' | 'created_at' | 'updated_at'>) => {
@@ -72,10 +73,17 @@ export const useHeroCardMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
-      toast.success('Hero card created successfully');
+      toast({
+        title: 'Success',
+        description: 'Hero card created successfully',
+      });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to create hero card: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: `Failed to create hero card: ${error.message}`,
+        variant: 'destructive',
+      });
     }
   });
 
@@ -93,10 +101,17 @@ export const useHeroCardMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
-      toast.success('Hero card updated successfully');
+      toast({
+        title: 'Success',
+        description: 'Hero card updated successfully',
+      });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update hero card: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: `Failed to update hero card: ${error.message}`,
+        variant: 'destructive',
+      });
     }
   });
 
@@ -111,10 +126,17 @@ export const useHeroCardMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
-      toast.success('Hero card deleted successfully');
+      toast({
+        title: 'Success',
+        description: 'Hero card deleted successfully',
+      });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to delete hero card: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: `Failed to delete hero card: ${error.message}`,
+        variant: 'destructive',
+      });
     }
   });
 
@@ -129,10 +151,17 @@ export const useHeroCardMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
-      toast.success('Visibility updated');
+      toast({
+        title: 'Success',
+        description: 'Visibility updated',
+      });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update visibility: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: `Failed to update visibility: ${error.message}`,
+        variant: 'destructive',
+      });
     }
   });
 

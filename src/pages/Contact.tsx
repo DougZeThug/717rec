@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { trackContactForm } from '@/utils/analytics';
 
 import PageLayout from '@/components/layout/PageLayout';
@@ -56,6 +56,7 @@ const SUBJECT_OPTIONS = [
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -82,10 +83,17 @@ export default function Contact() {
       trackContactForm(data.subject);
       setIsSuccess(true);
       form.reset();
-      toast.success('Message sent successfully!');
+      toast({
+        title: 'Success',
+        description: 'Message sent successfully!',
+      });
     } catch (error) {
       console.error('Contact form error:', error);
-      toast.error('Failed to send message. Please try again.');
+      toast({
+        title: 'Error',
+        description: 'Failed to send message. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 export interface BlindDrawSignup {
   id: string;
@@ -50,6 +50,7 @@ export const useBlindDrawSignups = (eventDate?: string) => {
 // Add a signup (public, no auth required)
 export const useAddBlindDrawSignup = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({
@@ -74,11 +75,18 @@ export const useAddBlindDrawSignup = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
       queryClient.invalidateQueries({ queryKey: ["blind-draw-signup-count"] });
-      toast.success("You're signed up! See you Thursday!");
+      toast({
+        title: "Success",
+        description: "You're signed up! See you Thursday!",
+      });
     },
     onError: (error) => {
       console.error("Signup error:", error);
-      toast.error("Failed to sign up. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to sign up. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 };
@@ -86,6 +94,7 @@ export const useAddBlindDrawSignup = () => {
 // Delete a signup (admin only)
 export const useDeleteBlindDrawSignup = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -98,11 +107,18 @@ export const useDeleteBlindDrawSignup = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
-      toast.success("Signup removed");
+      toast({
+        title: "Success",
+        description: "Signup removed",
+      });
     },
     onError: (error) => {
       console.error("Delete error:", error);
-      toast.error("Failed to remove signup");
+      toast({
+        title: "Error",
+        description: "Failed to remove signup",
+        variant: "destructive",
+      });
     },
   });
 };
@@ -110,6 +126,7 @@ export const useDeleteBlindDrawSignup = () => {
 // Clear all signups for a date (admin only)
 export const useClearBlindDrawSignups = () => {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (eventDate: string) => {
@@ -122,11 +139,18 @@ export const useClearBlindDrawSignups = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blind-draw-signups"] });
-      toast.success("All signups cleared");
+      toast({
+        title: "Success",
+        description: "All signups cleared",
+      });
     },
     onError: (error) => {
       console.error("Clear error:", error);
-      toast.error("Failed to clear signups");
+      toast({
+        title: "Error",
+        description: "Failed to clear signups",
+        variant: "destructive",
+      });
     },
   });
 };
