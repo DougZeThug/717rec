@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,13 +11,19 @@ interface MobileMenuProps {
   navItems: Array<{ label: string; href: string }>;
 }
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
+const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { isAdminAccessGranted } = useAdminAccess();
   
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  // Memoize toggle handler
+  const toggleMenu = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+
+  // Memoize close handler for NavLinks
+  const handleLinkClose = useCallback(() => {
+    setIsOpen(false);
+  }, []);
 
   return (
     <div className="md:hidden">
@@ -50,13 +56,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ navItems }) => {
           >
             <NavLinks 
               isMobile={true} 
-              onLinkClick={() => setIsOpen(false)}
+              onLinkClick={handleLinkClose}
             />
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
-};
+});
+
+MobileMenu.displayName = 'MobileMenu';
 
 export default MobileMenu;

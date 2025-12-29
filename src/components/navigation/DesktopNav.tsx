@@ -1,20 +1,22 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Award, Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NavItem } from "@/components/navigation/NavItem";
 import CommandPalette from "@/components/navigation/CommandPalette";
-import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { ICON_SIZES } from "@/styles/icon-system";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
-export const DesktopNav = () => {
+export const DesktopNav = React.memo(() => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { isWinterTheme } = useSeasonalTheme();
+  // Use base theme hook - no homepage dependency needed
+  const { isWinterTheme } = useSeasonalThemeBase();
   
-  const navItems = [
+  // Memoize navItems to prevent recreating on each render
+  const navItems = useMemo(() => [
     {
       path: "/stats",
       label: "Standings",
@@ -30,7 +32,7 @@ export const DesktopNav = () => {
       label: "Teams",
       icon: <Users size={ICON_SIZES.lg} className="mr-2" />
     }
-  ];
+  ], []);
 
   // Don't render on mobile
   if (isMobile) return null;
@@ -85,6 +87,8 @@ export const DesktopNav = () => {
       </div>
     </div>
   );
-};
+});
+
+DesktopNav.displayName = 'DesktopNav';
 
 export default DesktopNav;

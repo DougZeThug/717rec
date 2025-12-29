@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +18,20 @@ interface UserMenuProps {
   className?: string;
 }
 
-const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
+const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
   const { user, profile, signOut } = useAuth();
   const { membership, isFetching } = useTeamMembership();
   const { isAdminAccessGranted } = useAdminAccess();
   const navigate = useNavigate();
+
+  // Memoize handlers to prevent recreating on each render
+  const handleLoginClick = useCallback(() => {
+    navigate("/auth");
+  }, [navigate]);
+
+  const handleSignOut = useCallback(() => {
+    signOut();
+  }, [signOut]);
 
   if (!user) {
     return (
@@ -31,7 +40,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
           variant="secondary"
           size="sm"
           className="bg-white/20 dark:bg-gray-700 text-white dark:text-white hover:bg-white/10 dark:hover:bg-gray-600 whitespace-nowrap !flex !items-center px-2"
-          onClick={() => navigate("/auth")}
+          onClick={handleLoginClick}
         >
           <LogIn className="h-4 w-4 mr-1" />
           <span className="!block">Login</span>
@@ -103,7 +112,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
         
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-          onClick={() => signOut()}
+          onClick={handleSignOut}
           className="cursor-pointer text-destructive focus:text-destructive"
         >
           <LogOut className="w-4 h-4 mr-2" />
@@ -112,6 +121,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+});
+
+UserMenu.displayName = 'UserMenu';
 
 export default UserMenu;

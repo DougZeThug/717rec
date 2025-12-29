@@ -1,9 +1,7 @@
 
-import React from "react";
-import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { useAuth } from "@/contexts/AuthContext";
+import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 // Import component files
 import NavBrand from "./navbar/NavBrand";
@@ -11,17 +9,18 @@ import NavLinks from "./navbar/NavLinks";
 import NavActions from "./navbar/NavActions";
 import MobileMenu from "./navbar/MobileMenu";
 
-const Navbar: React.FC = () => {
-  const { isWinterTheme } = useSeasonalTheme();
+const Navbar: React.FC = React.memo(() => {
+  // Use base theme hook - no location dependency
+  const { isWinterTheme } = useSeasonalThemeBase();
   
-  // Base nav items that everyone can see
-  const navItems = [
+  // Memoize navItems to prevent recreating on each render
+  const navItems = useMemo(() => [
     { label: "Home", href: "/" },
     { label: "Teams", href: "/teams" },
     { label: "Schedule", href: "/schedule" },
     { label: "Standings", href: "/stats" },
     { label: "Playoffs", href: "/playoffs" },
-  ];
+  ], []);
   
   return (
     <nav className={cn(
@@ -50,6 +49,8 @@ const Navbar: React.FC = () => {
       </div>
     </nav>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
 
 export default Navbar;

@@ -1,19 +1,21 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Award, Calendar, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NavItem } from "@/components/navigation/NavItem";
 import { cn } from "@/lib/utils";
 import { ICON_SIZES } from "@/styles/icon-system";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
-export const BottomNav = () => {
+export const BottomNav = React.memo(() => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { isWinterTheme } = useSeasonalTheme();
+  // Use base theme hook - no homepage dependency needed
+  const { isWinterTheme } = useSeasonalThemeBase();
 
-  const navItems = [
+  // Memoize navItems to prevent recreating on each render
+  const navItems = useMemo(() => [
     {
       path: "/stats",
       label: "Standings",
@@ -29,7 +31,7 @@ export const BottomNav = () => {
       label: "Teams",
       icon: <Users size={ICON_SIZES.xl} />
     }
-  ];
+  ], []);
 
   if (!isMobile) {
     return null;
@@ -66,6 +68,8 @@ export const BottomNav = () => {
       </div>
     </nav>
   );
-};
+});
+
+BottomNav.displayName = 'BottomNav';
 
 export default BottomNav;
