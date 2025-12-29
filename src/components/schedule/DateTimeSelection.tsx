@@ -27,6 +27,7 @@ const DateTimeSelection: React.FC<DateTimeSelectionProps> = ({
         <Input
           id="date"
           type="date"
+          className="h-11"
           value={formatDateForInput(selectedDate)}
           onChange={(e) => setSelectedDate(parseDateFromInput(e.target.value))}
           required
