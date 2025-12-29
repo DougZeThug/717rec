@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Shuffle, Users, Trash2, Calendar, AlertCircle, Loader2 } from "lucide-react";
+import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
 import { format, nextThursday } from "date-fns";
 import {
   useBlindDrawSignups,
@@ -167,19 +168,17 @@ const BlindDrawSignupsTab: React.FC = () => {
                       <td className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell">
                         {format(new Date(signup.created_at), "MMM d, h:mm a")}
                       </td>
-                      <td className="px-2 sm:px-4 py-2 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
+                        <td className="px-2 sm:px-4 py-2 text-right">
+                        <DestructiveIconButton
                           onClick={() => setDeletingSignup({
                             id: signup.id,
                             name: `${signup.first_name} ${signup.last_initial}.`
                           })}
                           disabled={deleteSignup.isPending}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                          title="Remove signup"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        />
                       </td>
                     </tr>
                   ))}

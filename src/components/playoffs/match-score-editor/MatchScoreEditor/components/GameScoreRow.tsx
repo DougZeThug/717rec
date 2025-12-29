@@ -1,10 +1,10 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
 import { MinusCircle } from "lucide-react";
 import { Team } from "@/types";
 import GameScoreInput from "./GameScoreInput";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
 
 interface GameScoreRowProps {
   index: number;
@@ -79,21 +79,13 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
       </div>
       
       {/* Remove Button */}
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
+      <DestructiveIconButton
         onClick={() => onRemoveGame(index)}
         disabled={!canRemove}
-        className={cn(
-          "flex-none h-8 w-8 rounded-lg",
-          "hover:bg-destructive/10 hover:text-destructive",
-          "disabled:opacity-30"
-        )}
-        aria-label={`Remove game ${index + 1}`}
-      >
-        <MinusCircle className="h-4 w-4" />
-      </Button>
+        title={`Remove game ${index + 1}`}
+        icon={<MinusCircle className="h-4 w-4 text-destructive" />}
+        className="flex-none h-8 w-8 rounded-lg"
+      />
     </motion.div>
   );
 };
