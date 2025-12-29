@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Copy, GripVertical } from "lucide-react";
+import { Edit, Trash2, Copy, GripVertical, Loader2 } from "lucide-react";
 import { HeroCard } from "@/types/heroCard";
 import { useHeroCardMutations } from "@/hooks/useHeroCards";
 import { HERO_CARD_COLOR_PRESETS, HERO_CARD_TYPES, TARGET_TYPE_OPTIONS } from "@/constants/heroCardPresets";
@@ -14,6 +14,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface HeroCardsListProps {
   cards: HeroCard[];
@@ -52,15 +62,18 @@ const getColorPresetName = (bgColor: string) => {
 
 const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit }) => {
   const { toggleVisibility, deleteCard, createCard, isDeleting } = useHeroCardMutations();
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
+
+  const cardToDelete = deletingCardId ? cards.find(c => c.id === deletingCardId) : null;
 
   const handleToggleVisibility = async (card: HeroCard) => {
     await toggleVisibility({ id: card.id, is_visible: !card.is_visible });
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Delete this card? This cannot be undone.")) {
-      await deleteCard(id);
-    }
+  const handleConfirmDelete = async () => {
+    if (!deletingCardId) return;
+    await deleteCard(deletingCardId);
+    setDeletingCardId(null);
   };
 
   const handleDuplicate = async (card: HeroCard) => {
@@ -208,7 +221,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => handleDelete(card.id)}
+                            onClick={() => setDeletingCardId(card.id)}
                             disabled={isDeleting}
                             className="text-destructive hover:text-destructive"
                           >
@@ -225,6 +238,37 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog open={!!deletingCardId} onOpenChange={(open) => !open && setDeletingCardId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Hero Card</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{cardToDelete?.title}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   Table, 
   TableBody, 
@@ -8,9 +8,19 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Clock } from "lucide-react";
+import { Trash2, Clock, Loader2 } from "lucide-react";
 import { Team, TeamTimeslot } from "@/types";
 import { InlineEmptyState } from "@/components/ui/inline-empty-state";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface TimeslotListProps {
   timeslots: TeamTimeslot[];
@@ -23,6 +33,9 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
   teams,
   onDelete 
 }) => {
+  const [deletingTimeslotId, setDeletingTimeslotId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Helper function to get team name by ID
   const getTeamName = (teamId: string | null): string => {
     if (!teamId) return 'Unknown Team';
@@ -36,6 +49,21 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
     if (a.timeslot > b.timeslot) return 1;
     return 0;
   });
+
+  const timeslotToDelete = deletingTimeslotId 
+    ? timeslots.find(t => t.id === deletingTimeslotId) 
+    : null;
+
+  const handleConfirmDelete = async () => {
+    if (!deletingTimeslotId) return;
+    setIsDeleting(true);
+    try {
+      await onDelete(deletingTimeslotId);
+      setDeletingTimeslotId(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
   if (timeslots.length === 0) {
     return (
@@ -48,34 +76,69 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Time</TableHead>
-            <TableHead>Team</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedTimeslots.map((timeslot) => (
-            <TableRow key={timeslot.id}>
-              <TableCell className="font-medium">{timeslot.timeslot}</TableCell>
-              <TableCell>{getTeamName(timeslot.team_id)}</TableCell>
-              <TableCell>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => onDelete(timeslot.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              </TableCell>
+    <>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Time</TableHead>
+              <TableHead>Team</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {sortedTimeslots.map((timeslot) => (
+              <TableRow key={timeslot.id}>
+                <TableCell className="font-medium">{timeslot.timeslot}</TableCell>
+                <TableCell>{getTeamName(timeslot.team_id)}</TableCell>
+                <TableCell>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => setDeletingTimeslotId(timeslot.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <AlertDialog open={!!deletingTimeslotId} onOpenChange={(open) => !open && setDeletingTimeslotId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Timeslot</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove the timeslot{timeslotToDelete ? (
+                <> for <strong>{getTeamName(timeslotToDelete.team_id)}</strong> at <strong>{timeslotToDelete.timeslot}</strong></>
+              ) : ''}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                "Remove"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
