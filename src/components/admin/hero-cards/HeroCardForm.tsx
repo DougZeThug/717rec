@@ -334,6 +334,8 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
                   <Input
                     id="sort_order"
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={formData.sort_order}
                     onChange={(e) => handleChange('sort_order', parseInt(e.target.value) || 0)}
                   />

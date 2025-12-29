@@ -131,6 +131,8 @@ const MatchScoreItem = ({
               </p>
               <Input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min="0"
                 value={team1GameWins}
                 onChange={(e) => setTeam1GameWins(e.target.value)}
@@ -143,6 +145,8 @@ const MatchScoreItem = ({
               </p>
               <Input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min="0"
                 value={team2GameWins}
                 onChange={(e) => setTeam2GameWins(e.target.value)}

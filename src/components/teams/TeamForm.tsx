@@ -106,6 +106,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
           <Label htmlFor="name">Team Name</Label>
           <Input
             id="name"
+            autoComplete="organization"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter team name"

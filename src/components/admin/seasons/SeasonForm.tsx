@@ -112,6 +112,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
               <Input
                 id="start_date"
                 type="date"
+                className="h-11"
                 {...register("start_date")}
               />
               {errors.start_date && (
@@ -124,6 +125,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
               <Input
                 id="end_date"
                 type="date"
+                className="h-11"
                 {...register("end_date")}
               />
               {errors.end_date && (

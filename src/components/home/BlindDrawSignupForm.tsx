@@ -83,7 +83,8 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
               placeholder="First Name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-9 text-sm"
+              autoComplete="given-name"
+              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-11 text-base"
               maxLength={30}
             />
             {errors.firstName && (
@@ -97,7 +98,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
               placeholder="L.I."
               value={lastInitial}
               onChange={(e) => setLastInitial(e.target.value.slice(0, 1).toUpperCase())}
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-9 text-sm text-center"
+              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-11 text-base text-center"
               maxLength={1}
             />
             {errors.lastInitial && (
@@ -109,7 +110,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
         <Button
           type="submit"
           disabled={addSignup.isPending}
-          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 h-9 text-sm"
+          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 h-11 text-base"
         >
           {addSignup.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
