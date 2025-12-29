@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useInView } from "react-intersection-observer";
 import { animations, gradients } from "@/styles/design-system";
 import { EmptyState } from "@/components/ui/empty-state";
+import MessageFeedSkeleton from "./MessageFeedSkeleton";
 
 interface MessageFeedProps {
   messages: Message[];
@@ -43,16 +44,7 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(({
   }, [inView, hasMore, onLoadMore, loadingMore]);
 
   if (isLoading && messages.length === 0) {
-    return (
-      <Card className={cn("mb-4 border shadow", gradients.card.subtle)}>
-        <CardContent className="flex justify-center items-center py-12">
-          <div className={cn("flex flex-col items-center", animations.pulse)}>
-            <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-            <p className="text-sm text-muted-foreground">Loading messages...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <MessageFeedSkeleton count={5} />;
   }
   
   if (error) {
