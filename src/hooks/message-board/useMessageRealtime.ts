@@ -10,7 +10,7 @@ export const useMessageRealtime = (
 ) => {
   useEffect(() => {
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('message-board-realtime')
       .on('postgres_changes', 
         {
           event: 'INSERT',

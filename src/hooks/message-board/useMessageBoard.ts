@@ -8,6 +8,7 @@ import { UseMessageBoardResult, FilterOptions, MessageQueryOptions } from "./typ
 
 const PAGE_SIZE = 10;
 const FILTER_DEBOUNCE_MS = 300;
+const MAX_MESSAGES_IN_STATE = 100;
 
 export const useMessageBoard = (): UseMessageBoardResult => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -167,36 +168,47 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     }
   };
   
-  // Set up real-time subscription
-  useMessageRealtime(
-    // On message inserted
-    (newMessage) => {
-      // Only add the message if it matches current filters
-      if (
-        (!filterOptions.category || newMessage.category === filterOptions.category) &&
-        (!filterOptions.teamId || newMessage.team_id === filterOptions.teamId) &&
-        (!filterOptions.searchQuery || newMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
-      ) {
-        setMessages(curr => [newMessage, ...curr]);
-      }
-    },
-    // On message updated
-    (updatedMessage) => {
-      // Only update the message if it matches current filters
-      if (
-        (!filterOptions.category || updatedMessage.category === filterOptions.category) &&
-        (!filterOptions.teamId || updatedMessage.team_id === filterOptions.teamId) &&
-        (!filterOptions.searchQuery || updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
-      ) {
-        setMessages(curr => curr.map(msg => 
-          msg.id === updatedMessage.id ? updatedMessage : msg
-        ));
-      }
-    },
-    // On message deleted
-    (deletedMessage) => {
-      setMessages(curr => curr.filter(msg => msg.id !== deletedMessage.id));
+  // Memoized callback for message inserted
+  const handleMessageInserted = useCallback((newMessage: Message) => {
+    // Only add if matches current filters
+    if (
+      (!filterOptions.category || newMessage.category === filterOptions.category) &&
+      (!filterOptions.teamId || newMessage.team_id === filterOptions.teamId) &&
+      (!filterOptions.searchQuery || newMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
+    ) {
+      setMessages(curr => {
+        const updated = [newMessage, ...curr];
+        // Cap at MAX_MESSAGES_IN_STATE to prevent memory bloat
+        return updated.length > MAX_MESSAGES_IN_STATE 
+          ? updated.slice(0, MAX_MESSAGES_IN_STATE) 
+          : updated;
+      });
     }
+  }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
+
+  // Memoized callback for message updated  
+  const handleMessageUpdated = useCallback((updatedMessage: Message) => {
+    if (
+      (!filterOptions.category || updatedMessage.category === filterOptions.category) &&
+      (!filterOptions.teamId || updatedMessage.team_id === filterOptions.teamId) &&
+      (!filterOptions.searchQuery || updatedMessage.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase()))
+    ) {
+      setMessages(curr => curr.map(msg => 
+        msg.id === updatedMessage.id ? updatedMessage : msg
+      ));
+    }
+  }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
+
+  // Memoized callback for message deleted
+  const handleMessageDeleted = useCallback((deletedMessage: Message) => {
+    setMessages(curr => curr.filter(msg => msg.id !== deletedMessage.id));
+  }, []);
+
+  // Set up real-time subscription with memoized callbacks
+  useMessageRealtime(
+    handleMessageInserted,
+    handleMessageUpdated,
+    handleMessageDeleted
   );
   
   // Refresh messages function

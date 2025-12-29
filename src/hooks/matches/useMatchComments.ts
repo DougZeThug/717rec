@@ -55,7 +55,7 @@ export const useMatchComments = (matchId: string) => {
     if (!matchId) return;
 
     const channel = supabase
-      .channel('match-comments')
+      .channel(`match-comments-${matchId}`)
       .on('postgres_changes', 
         {
           event: 'INSERT',

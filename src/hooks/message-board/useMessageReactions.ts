@@ -70,7 +70,7 @@ export const useMessageReactions = (messageId: string) => {
     if (!messageId) return;
 
     const channel = supabase
-      .channel('message-reactions')
+      .channel(`message-reactions-${messageId}`)
       .on('postgres_changes', 
         {
           event: 'INSERT',
