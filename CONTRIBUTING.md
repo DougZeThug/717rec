@@ -2,6 +2,17 @@
 
 This guide documents the conventions and patterns used in this codebase to ensure consistency across contributions.
 
+## Definition of Done
+
+Before marking any feature or bugfix as complete, ensure it meets the criteria in [Definition of Done](./src/docs/DEFINITION_OF_DONE.md).
+
+**Quick checklist:**
+- [ ] Builds without errors (`npm run build`)
+- [ ] Tests pass (`npm run test`)
+- [ ] Loading/empty/error states handled
+- [ ] Accessible via keyboard
+- [ ] Follows pattern documentation
+
 ## Project Structure
 
 ```
@@ -211,6 +222,7 @@ export const useMyFeature = (id: string) => {
 
 ## Related Documentation
 
+- [Definition of Done](./src/docs/DEFINITION_OF_DONE.md)
 - [Card Patterns](./src/docs/CARD_PATTERNS.md)
 - [Form Patterns](./src/docs/FORM_PATTERNS.md)
 - [Modal Patterns](./src/docs/MODAL_PATTERNS.md)
