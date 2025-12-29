@@ -7,10 +7,10 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Trash2, Clock, Loader2 } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import { Team, TeamTimeslot } from "@/types";
 import { InlineEmptyState } from "@/components/ui/inline-empty-state";
+import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,13 +92,10 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
                 <TableCell className="font-medium">{timeslot.timeslot}</TableCell>
                 <TableCell>{getTeamName(timeslot.team_id)}</TableCell>
                 <TableCell>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <DestructiveIconButton
                     onClick={() => setDeletingTimeslotId(timeslot.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                    title="Remove timeslot"
+                  />
                 </TableCell>
               </TableRow>
             ))}

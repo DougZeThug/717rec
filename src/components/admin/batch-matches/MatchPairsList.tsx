@@ -1,10 +1,8 @@
-
 import React from "react";
 import { Team } from "@/types";
-import { Trash, MoveVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TeamLogo from "@/components/ui/team/TeamLogo";
+import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
 
 export interface MatchPair {
   id: string;
@@ -170,15 +168,11 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
 
             {/* Delete Button */}
             <div className="flex items-end justify-end pb-0.5 mt-auto">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
+              <DestructiveIconButton
                 onClick={() => onRemove(pair.id)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
+                title="Remove match pair"
+                size="sm"
+              />
             </div>
           </div>
         </div>

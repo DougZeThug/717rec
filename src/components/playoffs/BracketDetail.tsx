@@ -130,9 +130,9 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
               
               {onDeleteBracket && (
                 <Button 
-                  variant="outline" 
+                  variant="destructive" 
                   size="sm" 
-                  className="hidden md:flex text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20" 
+                  className="hidden md:flex" 
                   onClick={() => onDeleteBracket(bracketId, bracket.name || "")}
                 >
                   <Trash className="h-4 w-4 mr-2" /> Delete

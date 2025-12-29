@@ -2,7 +2,8 @@ import React from "react";
 import { Team, AutoScheduleMatch } from "@/types/autoSchedule";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash, ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight } from "lucide-react";
+import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
 import TeamLogo from "@/components/ui/team/TeamLogo";
 import { Badge } from "@/components/ui/badge";
 
@@ -176,16 +177,11 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
             </Select>
           </div>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+          <DestructiveIconButton
             onClick={() => onRemove(match.id)}
-            className="text-muted-foreground hover:text-destructive"
             title="Remove match"
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
+            size="sm"
+          />
         </div>
       </div>
     </div>
