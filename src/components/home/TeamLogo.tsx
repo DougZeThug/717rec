@@ -17,9 +17,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
           height={144}
           loading="lazy"
           decoding="async"
-          className="max-h-36 max-w-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-          tabIndex={0}
-          aria-label={`View ${teamName} details`}
+          className="max-h-36 max-w-full object-contain"
           onError={(e) => {
             console.error(`Image load error for ${teamName}:`, imageUrl);
             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';

@@ -50,6 +50,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onToggleExpand && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onToggleExpand();
+    }
+  };
+
   return (
     <tr 
       className={cn(
@@ -57,9 +64,13 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         isWinterTheme 
           ? "border-frost-border/20 even:bg-white/5 hover:bg-white/10" 
           : "border-gray-100 dark:border-slate-700 even:bg-gray-50 dark:even:bg-white/5 hover:bg-gray-50 dark:hover:bg-slate-700/50",
-        isExpanded && (isWinterTheme ? "bg-frost-primary/20" : "bg-blue-50 dark:bg-blue-900/20")
+        isExpanded && (isWinterTheme ? "bg-frost-primary/20" : "bg-blue-50 dark:bg-blue-900/20"),
+        onToggleExpand && "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
       )}
       onClick={onToggleExpand}
+      onKeyDown={handleKeyDown}
+      role={onToggleExpand ? "button" : undefined}
+      tabIndex={onToggleExpand ? 0 : undefined}
       style={{ cursor: onToggleExpand ? 'pointer' : 'default' }}
     >
       <td className="py-3 px-3">
