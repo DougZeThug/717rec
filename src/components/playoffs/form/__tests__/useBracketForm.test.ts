@@ -18,7 +18,7 @@ const mockUseBracketFormState = vi.mocked(useBracketFormState);
 
 // Define proper interfaces for mock data
 interface MockFormState {
-  errors: Record<string, unknown>;
+  errors: Record<string, any>;
   isDirty: boolean;
   isValid: boolean;
   isSubmitting: boolean;
@@ -28,10 +28,10 @@ interface MockFormState {
   isValidating: boolean;
   isReady: boolean;
   submitCount: number;
-  touchedFields: Record<string, unknown>;
-  dirtyFields: Record<string, unknown>;
-  validatingFields: Record<string, unknown>;
-  defaultValues?: Partial<BracketFormValues>;
+  touchedFields: Record<string, any>;
+  dirtyFields: Record<string, any>;
+  validatingFields: Record<string, any>;
+  defaultValues?: any;
   disabled: boolean;
 }
 
@@ -41,7 +41,7 @@ interface ValidationResult {
 }
 
 interface MockBracketFormState {
-  form: UseFormReturn<BracketFormValues>;
+  form: UseFormReturn<any>;
   isFormValid: boolean;
   validateForm: (data: unknown) => ValidationResult;
   handleSubmit: () => Promise<void>;
@@ -57,7 +57,7 @@ describe('useBracketForm', () => {
   const mockOnSubmit = vi.fn();
   
   // Create a complete UseFormReturn mock with proper React Hook Form patterns
-  const createMockForm = (): UseFormReturn<BracketFormValues> => {
+  const createMockForm = (): UseFormReturn<any> => {
     // Create a proper mock watch function that matches UseFormWatch signature
     const mockWatch = vi.fn() as unknown as UseFormWatch<BracketFormValues>;
     
@@ -135,7 +135,7 @@ describe('useBracketForm', () => {
       getValues: mockGetValues,
       reset: vi.fn(),
       handleSubmit: vi.fn(),
-      control: {} as UseFormReturn<BracketFormValues>['control'],
+      control: {} as UseFormReturn<any>['control'],
       register: vi.fn(),
       unregister: vi.fn(),
       formState: mockFormState,

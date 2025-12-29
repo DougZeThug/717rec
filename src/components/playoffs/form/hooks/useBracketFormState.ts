@@ -15,13 +15,14 @@ interface UseBracketFormStateProps {
 export const useBracketFormState = ({ onSubmit }: UseBracketFormStateProps) => {
   const [isFormValid, setIsFormValid] = useState(false);
   
-  const form = useForm<BracketFormValues>({
+  const form = useForm({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
       title: "",
       divisionId: "",
-      format: BRACKET_FORMATS.SINGLE,
-      teams: []
+      format: BRACKET_FORMATS.SINGLE as "Single Elimination",
+      teams: [] as string[],
+      grandFinalType: "simple" as const,
     },
     mode: "onSubmit"
   });

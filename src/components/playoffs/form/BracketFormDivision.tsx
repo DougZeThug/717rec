@@ -3,10 +3,9 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
-import { BracketFormValues } from "./BracketFormSchema";
 
 interface BracketFormDivisionProps {
-  form: UseFormReturn<BracketFormValues>;
+  form: UseFormReturn<any>;
   divisions: { id: string; name: string; display_division?: string }[];
   onDivisionChange: (divisionId: string) => void;
 }

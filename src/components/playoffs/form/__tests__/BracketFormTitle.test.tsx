@@ -10,10 +10,14 @@ import { BracketFormTitle } from '../BracketFormTitle';
 import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
 
 const TestWrapper = () => {
-  const form = useForm<BracketFormValues>({
+  const form = useForm({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
       title: "",
+      divisionId: "",
+      format: "Single Elimination" as const,
+      teams: [] as string[],
+      grandFinalType: "simple" as const,
     },
   });
 

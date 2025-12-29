@@ -39,13 +39,14 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const isExplicitSubmissionRef = React.useRef(false);
   const [teamSeeds, setTeamSeeds] = React.useState<Record<string, number>>({});
 
-  const form = useForm<BracketFormValues>({
+  const form = useForm({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
       title: "",
       divisionId: "",
-      format: "Single Elimination",
-      teams: [],
+      format: "Single Elimination" as const,
+      teams: [] as string[],
+      grandFinalType: "simple" as const,
     },
     mode: "onBlur",
   });

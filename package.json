@@ -18,7 +18,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@ewanmellor/brackets-viewer": "^1.6.911",
     "@g-loot/react-tournament-brackets": "^1.0.31-rc",
-    "@hookform/resolvers": "^3.10.0",
+    "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
