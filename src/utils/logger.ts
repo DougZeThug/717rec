@@ -42,11 +42,17 @@ export const errorLog = (...args: unknown[]) => {
   if (!isDev && args.length > 0) {
     // Dynamically import to avoid circular dependencies
     import('@/utils/sentry').then(({ captureError, captureMessage }) => {
-      const firstArg = args[0];
-      if (firstArg instanceof Error) {
-        captureError(firstArg, { additionalArgs: args.slice(1) });
-      } else {
-        captureMessage(String(firstArg), 'error');
+      // Find Error in any argument position (not just first)
+      const errorArg = args.find(arg => arg instanceof Error);
+      const messageArg = args.find(arg => typeof arg === 'string');
+      
+      if (errorArg instanceof Error) {
+        captureError(errorArg, { 
+          message: messageArg,
+          additionalArgs: args.filter(a => a !== errorArg && a !== messageArg)
+        });
+      } else if (messageArg) {
+        captureMessage(String(messageArg), 'error');
       }
     }).catch(() => {
       // Sentry not available, silently fail

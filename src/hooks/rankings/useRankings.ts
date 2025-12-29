@@ -29,9 +29,14 @@ export const useRankings = () => {
         // Fetch division weights ONCE before processing all teams
         const divisionWeights = await fetchDivisionWeights();
         
-        // Load previous rankings from localStorage
-        const savedRankings = localStorage.getItem("previousRankings");
-        const previousRankings: Record<string, number> = savedRankings ? JSON.parse(savedRankings) : {};
+        // Load previous rankings from localStorage (wrapped in try/catch for iOS Safari private browsing)
+        let previousRankings: Record<string, number> = {};
+        try {
+          const savedRankings = localStorage.getItem("previousRankings");
+          previousRankings = savedRankings ? JSON.parse(savedRankings) : {};
+        } catch {
+          // localStorage unavailable (e.g., iOS Safari private browsing)
+        }
         
         // Create ranking objects for all teams (now synchronous)
         const unsortedRankings = teams.map(team => 

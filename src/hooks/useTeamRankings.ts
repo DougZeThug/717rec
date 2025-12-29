@@ -75,7 +75,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
               return b.winPercentage - a.winPercentage;
             }
             // Tertiary sort by name
-            return a.teamName.localeCompare(b.teamName);
+            return (a.teamName || '').localeCompare(b.teamName || '');
           }
           if (aOriginalPowerScore === null) return 1;  // a goes to end
           if (bOriginalPowerScore === null) return -1; // b goes to end
@@ -89,7 +89,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             return b.winPercentage - a.winPercentage;
           }
           // Tertiary sort by name
-          return a.teamName.localeCompare(b.teamName);
+          return (a.teamName || '').localeCompare(b.teamName || '');
         });
 
         // Update rank changes based on previous rankings
