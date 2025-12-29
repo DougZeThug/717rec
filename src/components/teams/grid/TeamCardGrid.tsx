@@ -79,8 +79,8 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           {!isMobile && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 -mr-1 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
-                  <MoreHorizontal size={14} />
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-1 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                  <MoreHorizontal size={16} />
                   <span className="sr-only">Open menu</span>
                 </Button>
               </DropdownMenuTrigger>
