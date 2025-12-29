@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Team } from '@/types';
 import { TeamImage } from '../shared/TeamImage';
 import { Badge } from '@/components/ui/badge';
@@ -13,9 +12,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { EntityCard } from '@/components/ui/entity-card';
 
 interface TeamCardGridProps {
   team: Team;
@@ -37,18 +36,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
     : "bg-gradient-to-br from-white to-gray-50/70 dark:from-gray-900 dark:to-gray-900/90";
 
   return (
-    <motion.div 
-      className={cn(
-        "rounded-lg border h-full shadow-sm",
-        isWinterTheme 
-          ? "winter-card-surface frost-edge border-frost-border/30 text-card-foreground" 
-          : "border-gray-200 dark:border-gray-800/60 bg-white text-gray-900 dark:bg-gray-900 dark:text-white",
-        !isWinterTheme && gradients.card.blueOrange
-      )}
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-    >
+    <EntityCard division={team.divisionName}>
       <Link to={`/teams/${team.id}`} className="block">
         <div className={cn(
           "relative flex items-center justify-center overflow-hidden",
@@ -68,9 +56,8 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         <div className="flex justify-between items-start">
           <Link to={`/teams/${team.id}`} className="hover:underline flex-1 min-w-0">
             <h3 className={cn(
-              "font-bebas font-normal uppercase tracking-wide truncate",
-              isMobile ? "text-sm" : "text-base sm:text-lg",
-              isWinterTheme ? "text-[hsl(var(--foreground))]" : "text-gray-900 dark:text-white"
+              "font-bebas font-normal uppercase tracking-wide truncate text-foreground",
+              isMobile ? "text-sm" : "text-base sm:text-lg"
             )} title={team.name}>
               {team.name}
             </h3>
@@ -79,7 +66,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           {!isMobile && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-1 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10">
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-1 text-muted-foreground hover:text-foreground hover:bg-muted">
                   <MoreHorizontal size={16} />
                   <span className="sr-only">Open menu</span>
                 </Button>
@@ -151,6 +138,6 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
           </>
         )}
       </div>
-    </motion.div>
+    </EntityCard>
   );
 };
