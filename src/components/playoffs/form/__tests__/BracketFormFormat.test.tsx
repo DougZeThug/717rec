@@ -11,10 +11,14 @@ import { bracketFormSchema, BracketFormValues } from '../BracketFormSchema';
 import { BRACKET_FORMATS } from "@/constants/brackets";
 
 const TestWrapper = () => {
-  const form = useForm<BracketFormValues>({
+  const form = useForm({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
-      format: BRACKET_FORMATS.DOUBLE,
+      title: "",
+      divisionId: "",
+      format: BRACKET_FORMATS.DOUBLE as "Double Elimination",
+      teams: [] as string[],
+      grandFinalType: "simple" as const,
     },
   });
 

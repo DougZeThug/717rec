@@ -9,8 +9,9 @@ export const bracketFormSchema = z.object({
   teams: z.array(z.string())
     .min(2, "At least 2 teams are required")
     .max(32, "Maximum 32 teams allowed"),
-  grandFinalType: z.enum(["simple", "double"]).optional().default("simple"),
+  grandFinalType: z.enum(["simple", "double"]).default("simple"),
   teamSeeds: z.record(z.string(), z.number()).optional(),
 });
 
 export type BracketFormValues = z.infer<typeof bracketFormSchema>;
+export type BracketFormInput = z.input<typeof bracketFormSchema>;

@@ -3,10 +3,9 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
-import { BracketFormValues } from "./BracketFormSchema";
 
 interface BracketFormFormatProps {
-  form: UseFormReturn<BracketFormValues>;
+  form: UseFormReturn<any>;
 }
 
 export const BracketFormFormat: React.FC<BracketFormFormatProps> = ({ form }) => {
