@@ -10,17 +10,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
 interface DeleteMatchDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  isDeleting?: boolean;
 }
 
 const DeleteMatchDialog: React.FC<DeleteMatchDialogProps> = ({
   isOpen,
   onClose,
-  onConfirm
+  onConfirm,
+  isDeleting = false
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -32,9 +35,14 @@ const DeleteMatchDialog: React.FC<DeleteMatchDialogProps> = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-destructive hover:bg-destructive/90">
-            Delete
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onConfirm} 
+            className="bg-destructive hover:bg-destructive/90"
+            disabled={isDeleting}
+          >
+            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

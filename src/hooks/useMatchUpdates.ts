@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [editingMatch, setEditingMatch] = useState<Match | undefined>(undefined);
   const [deleteMatchId, setDeleteMatchId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { updateTeamRecords } = useTeamRecords();
   const queryClient = useQueryClient();
@@ -114,6 +115,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     if (!deleteMatchId) return false;
     
     try {
+      setIsDeleting(true);
       const matchToDelete = matches.find(match => match.id === deleteMatchId);
       
       if (!matchToDelete) {
@@ -174,6 +176,8 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         variant: "destructive"
       });
       return false;
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -192,6 +196,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
   return {
     editingMatch,
     deleteMatchId,
+    isDeleting,
     setEditingMatch,
     setDeleteMatchId,
     handleUpdateMatch,
