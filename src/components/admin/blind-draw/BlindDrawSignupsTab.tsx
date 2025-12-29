@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shuffle, Users, Trash2, Calendar, AlertCircle } from "lucide-react";
-import { format, nextThursday, isThursday } from "date-fns";
+import { Shuffle, Users, Trash2, Calendar, AlertCircle, Loader2 } from "lucide-react";
+import { format, nextThursday } from "date-fns";
 import {
   useBlindDrawSignups,
   useDeleteBlindDrawSignup,
@@ -22,6 +22,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface SignupToDelete {
+  id: string;
+  name: string;
+}
+
 const BlindDrawSignupsTab: React.FC = () => {
   // Calculate the appropriate Thursday date
   const calculateThursdayDate = () => {
@@ -34,6 +39,7 @@ const BlindDrawSignupsTab: React.FC = () => {
   };
 
   const [selectedDate, setSelectedDate] = useState(calculateThursdayDate);
+  const [deletingSignup, setDeletingSignup] = useState<SignupToDelete | null>(null);
 
   // Recalculate date on every mount to handle tab switching
   useEffect(() => {
@@ -45,6 +51,12 @@ const BlindDrawSignupsTab: React.FC = () => {
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedDate(e.target.value);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingSignup) return;
+    await deleteSignup.mutateAsync(deletingSignup.id);
+    setDeletingSignup(null);
   };
 
   if (error) {
@@ -160,7 +172,10 @@ const BlindDrawSignupsTab: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           className="h-8 w-8 p-0"
-                          onClick={() => deleteSignup.mutate(signup.id)}
+                          onClick={() => setDeletingSignup({
+                            id: signup.id,
+                            name: `${signup.first_name} ${signup.last_initial}.`
+                          })}
                           disabled={deleteSignup.isPending}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -179,6 +194,38 @@ const BlindDrawSignupsTab: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Individual signup delete confirmation */}
+      <AlertDialog open={!!deletingSignup} onOpenChange={(open) => !open && setDeletingSignup(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Signup</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove <strong>{deletingSignup?.name}</strong> from the signup list? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteSignup.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+              disabled={deleteSignup.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteSignup.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                "Remove"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
