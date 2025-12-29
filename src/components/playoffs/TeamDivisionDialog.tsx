@@ -1,12 +1,13 @@
 
 import React from "react";
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
+  ResponsiveDialog, 
+  ResponsiveDialogContent, 
+  ResponsiveDialogDescription, 
+  ResponsiveDialogHeader, 
+  ResponsiveDialogTitle,
+  ResponsiveDialogFooter,
+} from "@/components/ui/responsive-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -37,14 +38,14 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
   onTeamDivisionChange
 }) => {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Manage Team Divisions</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent className="sm:max-w-2xl">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Manage Team Divisions</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Assign teams to different divisions for playoff organization.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         
         <div className="max-h-[60vh] overflow-y-auto pr-2">
           {teamsLoading ? (
@@ -58,11 +59,11 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                   <h3 className="text-lg font-semibold">{division} Division</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {teamsByDivision[division]?.map(team => (
-                      <Card key={team.id} className="bg-gray-50">
+                      <Card key={team.id} className="bg-muted/50">
                         <CardContent className="p-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-2">
+                              <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mr-2">
                                 {team.logoUrl ? (
                                   <img 
                                     src={team.logoUrl} 
@@ -72,7 +73,7 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                                     className="w-full h-full object-contain"
                                   />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">No Logo</div>
+                                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">No Logo</div>
                                 )}
                               </div>
                               <span className="truncate max-w-[120px]" title={team.name}>{team.name}</span>
@@ -104,11 +105,11 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                   <h3 className="text-lg font-semibold">Unassigned Teams</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {teamsByDivision["Unassigned"]?.map(team => (
-                      <Card key={team.id} className="bg-gray-50">
+                      <Card key={team.id} className="bg-muted/50">
                         <CardContent className="p-3">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-2">
+                              <div className="w-10 h-10 rounded-full overflow-hidden bg-muted mr-2">
                                 {team.logoUrl ? (
                                   <img 
                                     src={team.logoUrl} 
@@ -118,7 +119,7 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                                     className="w-full h-full object-contain"
                                   />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">No Logo</div>
+                                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-xs">No Logo</div>
                                 )}
                               </div>
                               <span className="truncate max-w-[120px]" title={team.name}>{team.name}</span>
@@ -148,11 +149,11 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
           )}
         </div>
         
-        <div className="flex justify-end">
+        <ResponsiveDialogFooter>
           <Button onClick={() => onOpenChange(false)}>Done</Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };
 
