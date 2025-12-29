@@ -1,12 +1,33 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
+
+const profileSchema = z.object({
+  username: z
+    .string()
+    .min(3, "First name must be at least 3 characters")
+    .regex(/^[a-zA-Z0-9_]+$/, "First name can only contain letters, numbers, and underscores"),
+  fullName: z.string().optional(),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface ProfileFormProps {
   initialUsername: string;
@@ -20,23 +41,23 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   onProfileUpdated,
 }) => {
   const { user } = useAuth();
-  const [username, setUsername] = useState<string>(initialUsername);
-  const [fullName, setFullName] = useState<string>(initialFullName);
-  const [isFormLoading, setIsFormLoading] = useState<boolean>(false);
-  const [usernameError, setUsernameError] = useState<string | null>(null);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
+
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      username: initialUsername,
+      fullName: initialFullName,
+    },
+  });
+
+  const { isSubmitting } = form.formState;
+  const username = form.watch("username");
 
   // Check username availability
   const checkUsernameAvailability = async (value: string) => {
     if (value.length < 3) {
-      setUsernameError("First name must be at least 3 characters");
-      setUsernameAvailable(null);
-      return;
-    }
-    
-    if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      setUsernameError("First name can only contain letters, numbers, and underscores");
       setUsernameAvailable(null);
       return;
     }
@@ -46,7 +67,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       
       // Skip the check if it's their current username
       if (initialUsername === value) {
-        setUsernameError(null);
         setUsernameAvailable(true);
         return;
       }
@@ -59,17 +79,23 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       
       if (error) {
         console.error("Error checking username:", error);
-        setUsernameError("Error checking first name availability");
         setUsernameAvailable(null);
         return;
       }
       
       const isAvailable = !data;
       setUsernameAvailable(isAvailable);
-      setUsernameError(isAvailable ? null : "This name is already taken");
+      
+      if (!isAvailable) {
+        form.setError("username", {
+          type: "manual",
+          message: "This name is already taken",
+        });
+      } else {
+        form.clearErrors("username");
+      }
     } catch (error) {
       console.error("Unexpected error checking username:", error);
-      setUsernameError("Error checking first name availability");
       setUsernameAvailable(null);
     } finally {
       setIsCheckingUsername(false);
@@ -77,7 +103,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   };
 
   // Debounce username checks
-  React.useEffect(() => {
+  useEffect(() => {
     if (!username || username.length < 3) return;
     
     const handler = setTimeout(() => {
@@ -87,28 +113,24 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     return () => clearTimeout(handler);
   }, [username, initialUsername]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
     
-    if (usernameError || !usernameAvailable) {
+    if (!usernameAvailable) {
       toast({
         title: "Invalid first name",
-        description: usernameError || "Please choose another name",
+        description: "Please choose another name",
         variant: "destructive",
       });
       return;
     }
     
     try {
-      setIsFormLoading(true);
-      
       const { error } = await supabase
         .from("profiles")
         .update({
-          username,
-          full_name: fullName || null,
+          username: data.username,
+          full_name: data.fullName || null,
         })
         .eq("id", user.id);
       
@@ -129,60 +151,68 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       onProfileUpdated();
     } catch (error) {
       console.error("Error updating profile:", error);
-    } finally {
-      setIsFormLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="username">
-          First Name <span className="text-destructive">*</span>
-        </Label>
-        <div className="relative">
-          <Input
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="pr-10"
-            placeholder="Enter your first name"
-            disabled={isFormLoading}
-          />
-          {username.length >= 3 && !isCheckingUsername && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              {usernameAvailable === true ? (
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-              ) : usernameAvailable === false ? (
-                <AlertCircle className="h-5 w-5 text-destructive" />
-              ) : null}
-            </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                First Name <span className="text-destructive">*</span>
+              </FormLabel>
+              <div className="relative">
+                <FormControl>
+                  <Input
+                    placeholder="Enter your first name"
+                    className="pr-10"
+                    {...field}
+                  />
+                </FormControl>
+                {field.value.length >= 3 && !isCheckingUsername && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    {usernameAvailable === true ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : usernameAvailable === false ? (
+                      <AlertCircle className="h-5 w-5 text-destructive" />
+                    ) : null}
+                  </div>
+                )}
+              </div>
+              <FormMessage />
+              <FormDescription>This is how you will be identified in the league.</FormDescription>
+            </FormItem>
           )}
-        </div>
-        {usernameError && <p className="text-sm text-destructive">{usernameError}</p>}
-        <p className="text-sm text-muted-foreground">This is how you will be identified in the league.</p>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="fullName">Full Name (Optional)</Label>
-        <Input
-          id="fullName"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          placeholder="Your full name"
-          disabled={isFormLoading}
         />
-        <p className="text-sm text-muted-foreground">Add your full name for better identification</p>
-      </div>
-      
-      <Button
-        type="submit"
-        className="w-full mt-6"
-        disabled={isFormLoading || !!usernameError || username.length < 3}
-      >
-        {isFormLoading ? "Saving..." : "Save Profile"}
-      </Button>
-    </form>
+        
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Your full name" {...field} />
+              </FormControl>
+              <FormMessage />
+              <FormDescription>Add your full name for better identification</FormDescription>
+            </FormItem>
+          )}
+        />
+        
+        <Button
+          type="submit"
+          className="w-full mt-6"
+          disabled={isSubmitting || username.length < 3}
+        >
+          {isSubmitting ? "Saving..." : "Save Profile"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 

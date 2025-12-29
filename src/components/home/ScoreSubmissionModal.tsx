@@ -1,19 +1,37 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Users } from 'lucide-react';
-import { PendingMatch, ScoreSubmission, usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
+import { PendingMatch, usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
 import { formatDate, formatTime } from './utils';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from '@/components/ui/form';
+
+const scoreSubmissionSchema = z.object({
+  submitter_name: z.string().min(1, 'Your name is required'),
+  submitter_team: z.string().optional(),
+  message: z.string().min(1, 'Score report is required'),
+});
+
+type ScoreSubmissionFormData = z.infer<typeof scoreSubmissionSchema>;
 
 interface ScoreSubmissionModalProps {
   match: PendingMatch;
@@ -27,40 +45,42 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
   onClose
 }) => {
   const { submitScore, isSubmitting } = usePendingScoresMatches();
-  const [formData, setFormData] = useState<ScoreSubmission>({
-    submitter_name: '',
-    submitter_team: '',
-    message: ''
+  
+  const form = useForm<ScoreSubmissionFormData>({
+    resolver: zodResolver(scoreSubmissionSchema),
+    defaultValues: {
+      submitter_name: '',
+      submitter_team: '',
+      message: '',
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.submitter_name.trim() || !formData.message.trim()) {
-      return;
-    }
-
-    const success = await submitScore(match.id, formData);
+  const handleSubmit = async (data: ScoreSubmissionFormData) => {
+    const success = await submitScore(match.id, {
+      submitter_name: data.submitter_name,
+      submitter_team: data.submitter_team || '',
+      message: data.message,
+    });
     if (success) {
-      setFormData({ submitter_name: '', submitter_team: '', message: '' });
+      form.reset();
       onClose();
     }
   };
 
   const handleClose = () => {
-    setFormData({ submitter_name: '', submitter_team: '', message: '' });
+    form.reset();
     onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Report Match Score</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={handleClose}>
+      <ResponsiveDialogContent className="sm:max-w-md">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Report Match Score</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Submit a score report for admin review
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         {/* Match Info */}
         <div className="border rounded-lg p-3 bg-muted/50">
@@ -93,61 +113,76 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="submitter_name">Your Name *</Label>
-            <Input
-              id="submitter_name"
-              value={formData.submitter_name}
-              onChange={(e) => setFormData(prev => ({ ...prev, submitter_name: e.target.value }))}
-              placeholder="Enter your name"
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="submitter_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Your Name <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="submitter_team">Your Team (optional)</Label>
-            <Input
-              id="submitter_team"
-              value={formData.submitter_team}
-              onChange={(e) => setFormData(prev => ({ ...prev, submitter_team: e.target.value }))}
-              placeholder="e.g., Team Alpha"
+            <FormField
+              control={form.control}
+              name="submitter_team"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Your Team (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Team Alpha" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="message">Score Report *</Label>
-            <Textarea
-              id="message"
-              value={formData.message}
-              onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-              placeholder="e.g., Team Alpha beat Team Beta 2-1. Great match!"
-              rows={3}
-              required
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Score Report <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="e.g., Team Alpha beat Team Beta 2-1. Great match!"
+                      rows={3}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <p className="text-xs text-muted-foreground">
+                    Include the final score and any relevant details about the match.
+                  </p>
+                </FormItem>
+              )}
             />
-            <p className="text-xs text-muted-foreground">
-              Include the final score and any relevant details about the match.
-            </p>
-          </div>
 
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !formData.submitter_name.trim() || !formData.message.trim()}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <ResponsiveDialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Report'}
+              </Button>
+            </ResponsiveDialogFooter>
+          </form>
+        </Form>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };
