@@ -1,11 +1,11 @@
 
-import React, { cloneElement, isValidElement, ReactElement } from "react";
+import React, { cloneElement, isValidElement, ReactElement, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LucideProps } from "lucide-react";
 import { ICON_STROKE } from "@/styles/icon-system";
-import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 export interface NavItemProps {
   to: string;
@@ -16,7 +16,7 @@ export interface NavItemProps {
   onClick?: () => void;
 }
 
-export const NavItem: React.FC<NavItemProps> = ({
+export const NavItem: React.FC<NavItemProps> = React.memo(({
   to,
   label,
   icon,
@@ -25,15 +25,17 @@ export const NavItem: React.FC<NavItemProps> = ({
   onClick,
 }) => {
   const location = useLocation();
-  const { isWinterTheme } = useSeasonalTheme();
+  // Use base theme hook - no homepage dependency needed
+  const { isWinterTheme } = useSeasonalThemeBase();
   const isActive = isActiveProp !== undefined ? isActiveProp : location.pathname === to;
 
-  // Clone icon with stroke weight from icon system based on active state
-  const styledIcon = isValidElement(icon)
-    ? cloneElement(icon as ReactElement<LucideProps>, {
-        strokeWidth: isActive ? ICON_STROKE.bold : ICON_STROKE.light,
-      })
-    : icon;
+  // Memoize icon cloning to prevent recreating on each render
+  const styledIcon = useMemo(() => {
+    if (!isValidElement(icon)) return icon;
+    return cloneElement(icon as ReactElement<LucideProps>, {
+      strokeWidth: isActive ? ICON_STROKE.bold : ICON_STROKE.light,
+    });
+  }, [icon, isActive]);
 
   return (
     <Link
@@ -103,6 +105,8 @@ export const NavItem: React.FC<NavItemProps> = ({
       </AnimatePresence>
     </Link>
   );
-};
+});
+
+NavItem.displayName = 'NavItem';
 
 export default NavItem;

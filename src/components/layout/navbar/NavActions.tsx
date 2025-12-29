@@ -9,7 +9,7 @@ interface NavActionsProps {
   size?: "default" | "sm";
 }
 
-const NavActions: React.FC<NavActionsProps> = ({ 
+const NavActions: React.FC<NavActionsProps> = React.memo(({ 
   className,
   size = "default" 
 }) => {
@@ -19,6 +19,8 @@ const NavActions: React.FC<NavActionsProps> = ({
       <ThemeToggle size={size} />
     </div>
   );
-};
+});
+
+NavActions.displayName = 'NavActions';
 
 export default NavActions;

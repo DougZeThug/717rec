@@ -2,7 +2,7 @@
 import React from "react";
 import { RouterLink } from "@/components/navigation";
 
-const NavBrand: React.FC = () => {
+const NavBrand: React.FC = React.memo(() => {
   return (
     <RouterLink to="/" className="flex items-center space-x-2 mr-3">
       <img 
@@ -13,6 +13,8 @@ const NavBrand: React.FC = () => {
       <span className="text-xl font-bebas tracking-wider">717Rec</span>
     </RouterLink>
   );
-};
+});
+
+NavBrand.displayName = 'NavBrand';
 
 export default NavBrand;
