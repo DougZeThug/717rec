@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginRequired } from "@/components/auth";
@@ -74,8 +74,12 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
           variant="ghost"
           className="mt-1 mr-1 h-8 w-8 rounded-full p-0 text-primary"
         >
-          <Send className="h-4 w-4" />
-          <span className="sr-only">Send comment</span>
+          {isSubmitting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+          <span className="sr-only">{isSubmitting ? "Sending..." : "Send comment"}</span>
         </Button>
       </div>
     </form>

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { MoreHorizontal, Trash } from "lucide-react";
+import { MoreHorizontal, Trash, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,8 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
   return (
     <div className={cn(
       "py-2 flex group",
-      animations.fadeIn
+      animations.fadeIn,
+      isDeleting && "opacity-50 pointer-events-none"
     )}>
       {/* Comment content */}
       <div className="flex-1 min-w-0">
@@ -63,8 +64,12 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
                 className="h-8 w-8 p-0 rounded-full"
                 disabled={isDeleting}
               >
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MoreHorizontal className="h-4 w-4" />
+                )}
+                <span className="sr-only">{isDeleting ? "Deleting..." : "Open menu"}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36">

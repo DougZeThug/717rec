@@ -65,6 +65,7 @@ const Schedule = () => {
     editingMatch,
     isFormOpen,
     deleteMatchId,
+    isDeleting,
     setEditingMatch,
     setIsFormOpen,
     setDeleteMatchId,
@@ -202,6 +203,7 @@ const Schedule = () => {
         isOpen={deleteMatchId !== null}
         onClose={() => setDeleteMatchId(null)}
         onConfirm={handleDeleteMatchAdapter}
+        isDeleting={isDeleting}
       />
     </PageLayout>
   );
