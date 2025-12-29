@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { X, Plus, Save } from "lucide-react";
 
 const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCancel }) => {
   // Set up time slots with consistent formatting
@@ -270,6 +271,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
         
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>
+            <X className="h-4 w-4 mr-2" />
             Cancel
           </Button>
           <Button 
@@ -277,7 +279,17 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({ match, teams, onSubmit, onCanc
             className="bg-cornhole-navy hover:bg-cornhole-navy/90" 
             disabled={!form.watch("timeSlot")}
           >
-            {match ? "Update Match" : "Create Match"}
+            {match ? (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Update Match
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Match
+              </>
+            )}
           </Button>
         </div>
       </form>

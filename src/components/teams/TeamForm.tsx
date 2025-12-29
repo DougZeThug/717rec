@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Team } from "@/types";
 import { uploadTeamImage } from "@/utils/imageUpload";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Plus, Save, Loader2 } from "lucide-react";
+import { DestructiveIconButton } from "@/components/ui/destructive-icon-button";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDivisions } from "@/hooks/useDivisions";
@@ -188,14 +189,10 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                 placeholder={`Player ${index + 1} name`}
                 className="flex-1"
               />
-              <Button 
-                type="button" 
-                variant="outline" 
+              <DestructiveIconButton
                 onClick={() => handleRemovePlayer(index)}
-                className="shrink-0"
-              >
-                Remove
-              </Button>
+                title="Remove player"
+              />
             </div>
           ))}
           <Button 
@@ -204,16 +201,33 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
             onClick={handleAddPlayer}
             className="mt-2"
           >
+            <Plus className="h-4 w-4 mr-2" />
             Add Player
           </Button>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
+            <X className="h-4 w-4 mr-2" />
             Cancel
           </Button>
           <Button type="submit" disabled={isUploading}>
-            {team ? 'Update Team' : 'Create Team'}
+            {isUploading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Uploading...
+              </>
+            ) : team ? (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Update Team
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Team
+              </>
+            )}
           </Button>
         </div>
       </div>

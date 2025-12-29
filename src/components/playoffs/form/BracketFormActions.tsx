@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
 interface BracketFormActionsProps {
@@ -27,6 +27,7 @@ export const BracketFormActions: React.FC<BracketFormActionsProps> = ({
         onClick={onCancel}
         disabled={isSubmitting}
       >
+        <X className="w-4 h-4 mr-2" />
         Cancel
       </Button>
       <Button
@@ -40,7 +41,10 @@ export const BracketFormActions: React.FC<BracketFormActionsProps> = ({
             Creating...
           </>
         ) : (
-          "Create Bracket"
+          <>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Bracket
+          </>
         )}
       </Button>
     </div>
