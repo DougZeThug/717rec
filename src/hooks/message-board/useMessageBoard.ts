@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Message, MessageCategory } from "@/types/reactions";
 import { useMessageApi } from "./useMessageApi";
@@ -7,6 +7,7 @@ import { useMessageRealtime } from "./useMessageRealtime";
 import { UseMessageBoardResult, FilterOptions, MessageQueryOptions } from "./types";
 
 const PAGE_SIZE = 10;
+const FILTER_DEBOUNCE_MS = 300;
 
 export const useMessageBoard = (): UseMessageBoardResult => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,19 +23,38 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     searchQuery: null
   });
 
+  // Debounce ref for filter changes
+  const filterDebounceRef = useRef<NodeJS.Timeout>();
+
   const { fetchMessages, createMessage, updateMessage: apiUpdateMessage, deleteMessage: apiDeleteMessage } = useMessageApi();
   
-  // Set filter function
+  // Set filter function - shows loading immediately for UX feedback
   const setFilter = useCallback((filter: Partial<FilterOptions>) => {
+    setIsLoading(true); // Immediate feedback
     setFilterOptions(prev => ({
       ...prev,
       ...filter
     }));
   }, []);
 
-  // Effect to refetch messages when filters change
+  // Debounced effect to refetch messages when filters change
   useEffect(() => {
-    fetchInitialMessages();
+    // Clear any pending debounce timer
+    if (filterDebounceRef.current) {
+      clearTimeout(filterDebounceRef.current);
+    }
+    
+    // Set a new debounce timer
+    filterDebounceRef.current = setTimeout(() => {
+      fetchInitialMessages();
+    }, FILTER_DEBOUNCE_MS);
+    
+    // Cleanup on filter change or unmount
+    return () => {
+      if (filterDebounceRef.current) {
+        clearTimeout(filterDebounceRef.current);
+      }
+    };
   }, [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]);
   
   // Fetch initial messages
