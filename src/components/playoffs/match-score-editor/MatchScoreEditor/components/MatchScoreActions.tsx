@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Save } from "lucide-react";
+import { PlusCircle, Save, X } from "lucide-react";
 
 interface MatchScoreActionsProps {
   onAddGame: () => void;
@@ -45,6 +45,7 @@ const MatchScoreActions: React.FC<MatchScoreActionsProps> = ({
       
       <div className="flex justify-end space-x-2 pt-2 border-t">
         <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          <X className="h-4 w-4 mr-1" />
           Cancel
         </Button>
         <Button onClick={onSave} disabled={isSubmitting || hasValidationError}>

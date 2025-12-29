@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, ChevronDown, Settings, Eye, Palette, MousePointer, Type, Target } from "lucide-react";
+import { ArrowLeft, ChevronDown, Settings, Eye, Palette, MousePointer, Type, Target, X, Plus, Save, Loader2 } from "lucide-react";
 import { HeroCard, HeroCardType, HeroCardTargetType, HeroCardFormData } from "@/types/heroCard";
 import { useHeroCardMutations } from "@/hooks/useHeroCards";
 import HeroCardComponent from "@/components/hero/HeroCard";
@@ -459,10 +459,26 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
         {/* Form Actions */}
         <div className="flex justify-end gap-3 pt-6 border-t mt-6">
           <Button type="button" variant="outline" onClick={onClose}>
+            <X className="h-4 w-4 mr-2" />
             Cancel
           </Button>
           <Button type="submit" disabled={isCreating || isUpdating}>
-            {isCreating || isUpdating ? 'Saving...' : card ? 'Save Changes' : 'Create Card'}
+            {isCreating || isUpdating ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : card ? (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Card
+              </>
+            )}
           </Button>
         </div>
       </form>
