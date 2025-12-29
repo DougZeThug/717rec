@@ -58,6 +58,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           buttonVariants({ variant, size, className }),
           // Pressed state: instant scale feedback + subtle shadow change
           "active:scale-[0.97] hover:shadow-md active:shadow-sm",
+          // Subtle hover scale for primary button variants
+          (variant === "default" || variant === "cornhole" || variant === "blue" || variant === "orange") && "hover:scale-[1.02]",
           // Fast transition for snappy response
           "transition-all duration-100"
         )}

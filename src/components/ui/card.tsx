@@ -40,8 +40,8 @@ const Card = React.forwardRef<
         "rounded-card border border-border bg-card text-card-foreground shadow-none",
         // Fast transition for pressed states
         "transition-all duration-100",
-        // Interactive cards get pressed feedback
-        isInteractive && "cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm",
+        // Interactive cards get pressed feedback and focus ring
+        isInteractive && "cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         // Winter theme: frosted card surface with frost edge
         applyWinter && "winter-card-surface frost-edge relative",
         // Light mode gradient (skip when winter theme active)
