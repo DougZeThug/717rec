@@ -6,8 +6,9 @@ import { TeamLogo } from "@/components/shared/TeamLogo";
 import RankTrendIndicator from "./RankTrendIndicator";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";
 import { getPowerScoreColor, getSosColor, formatPowerScore } from "@/utils/colors";
-import { motion } from "framer-motion";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { EntityCard } from "@/components/ui/entity-card";
+
 interface RankingCardProps {
   ranking: Ranking;
   index: number;
@@ -44,10 +45,8 @@ const RankingCard: React.FC<RankingCardProps> = ({
   // Format rank display based on view mode
   const formatRankDisplay = () => {
     if (showDivision) {
-      // Unified view: show only global rank
       return `#${globalRank}`;
     } else {
-      // Division view: show division rank with global rank in parentheses
       if (divisionRank) {
         return `#${divisionRank} (${globalRank})`;
       }
@@ -57,24 +56,14 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
   if (compactView) {
     return (
-      <motion.div 
-        className={cn(
-          "ranking-card rounded-lg border p-3 cursor-pointer",
-          isWinterTheme 
-            ? "winter-card-surface border-frost-border/30" 
-            : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-        )}
+      <EntityCard
+        className={cn("ranking-card p-3 cursor-pointer")}
         onClick={handleToggleExpand}
-        whileHover={{ scale: 1.01, y: -2 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        withGradient={false}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className={cn(
-              "text-sm font-bold whitespace-nowrap",
-              isWinterTheme ? "text-[hsl(var(--foreground))]" : "text-slate-900 dark:text-white"
-            )}>
+            <span className="text-sm font-bold whitespace-nowrap text-foreground">
               {formatRankDisplay()}
             </span>
             {showRankChange && (
@@ -99,19 +88,11 @@ const RankingCard: React.FC<RankingCardProps> = ({
             className="flex-shrink-0"
           />
           <div className="min-w-0 flex-1">
-            <h3 className={cn(
-              "text-sm font-semibold transition-colors truncate",
-              isWinterTheme 
-                ? "text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))]" 
-                : "text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"
-            )}>
+            <h3 className="text-sm font-semibold transition-colors truncate text-foreground group-hover:text-primary">
               {ranking.teamName}
             </h3>
             {showDivision && ranking.divisionName && (
-              <p className={cn(
-                "text-xs",
-                isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-              )}>
+              <p className="text-xs text-muted-foreground">
                 {ranking.divisionName}
               </p>
             )}
@@ -119,10 +100,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
         </Link>
 
         <div className="flex justify-between mt-2 text-xs">
-          <span className={cn(
-            "tabular-nums",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>
+          <span className="tabular-nums text-muted-foreground">
             {ranking.wins}-{ranking.losses}
           </span>
           <span className={cn("font-medium tabular-nums", getPowerScoreColor(ranking.powerScore))}>
@@ -133,16 +111,14 @@ const RankingCard: React.FC<RankingCardProps> = ({
         {isExpanded && (
           <div className={cn(
             "mt-3 pt-3 border-t",
-            isWinterTheme ? "border-frost-border/30" : "border-gray-200 dark:border-slate-700"
+            isWinterTheme ? "border-frost-border/30" : "border-border"
           )}>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <p className={cn(
-                  isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-                )}>Win %</p>
+                <p className="text-muted-foreground">Win %</p>
                 <p className={cn(
                   "font-bold tabular-nums",
-                  !hasGames ? "text-gray-500 dark:text-gray-400" :
+                  !hasGames ? "text-muted-foreground" :
                   winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
                   winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
                   winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
@@ -152,9 +128,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
                 </p>
               </div>
               <div>
-                <p className={cn(
-                  isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-                )}>SOS</p>
+                <p className="text-muted-foreground">SOS</p>
                 <p className={cn("font-bold tabular-nums", getSosColor(ranking.sos || 0))}>
                   {(ranking.sos || 0).toFixed(3)}
                 </p>
@@ -162,28 +136,15 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </div>
           </div>
         )}
-      </motion.div>
+      </EntityCard>
     );
   }
 
   return (
-    <motion.div 
-      className={cn(
-        "ranking-card rounded-lg border p-4",
-        isWinterTheme 
-          ? "winter-card-surface border-frost-border/30" 
-          : "bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700"
-      )}
-      whileHover={{ scale: 1.01, y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-    >
+    <EntityCard className="ranking-card p-4" withGradient={false}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className={cn(
-            "text-lg font-bold whitespace-nowrap",
-            isWinterTheme ? "text-[hsl(var(--foreground))]" : "text-slate-900 dark:text-white"
-          )}>
+          <span className="text-lg font-bold whitespace-nowrap text-foreground">
             {formatRankDisplay()}
           </span>
           {showRankChange && (
@@ -208,18 +169,10 @@ const RankingCard: React.FC<RankingCardProps> = ({
           className="flex-shrink-0"
         />
         <div className="min-w-0">
-          <h3 className={cn(
-            "font-semibold transition-colors truncate",
-            isWinterTheme 
-              ? "text-[hsl(var(--foreground))] group-hover:text-[hsl(var(--primary))]" 
-              : "text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400"
-          )}>
+          <h3 className="font-semibold transition-colors truncate text-foreground group-hover:text-primary">
             {ranking.teamName}
           </h3>
-          <p className={cn(
-            "text-sm",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>
+          <p className="text-sm text-muted-foreground">
             {ranking.divisionName}
           </p>
         </div>
@@ -227,25 +180,16 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className={cn(
-            "font-medium",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>Record</p>
-          <p className={cn(
-            "font-bold tabular-nums",
-            isWinterTheme ? "text-[hsl(var(--foreground))]" : "text-slate-900 dark:text-white"
-          )}>
+          <p className="font-medium text-muted-foreground">Record</p>
+          <p className="font-bold tabular-nums text-foreground">
             {ranking.wins}-{ranking.losses}
           </p>
         </div>
         <div>
-          <p className={cn(
-            "font-medium",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>Win %</p>
+          <p className="font-medium text-muted-foreground">Win %</p>
           <p className={cn(
             "font-bold tabular-nums",
-            !hasGames ? "text-gray-500 dark:text-gray-400" :
+            !hasGames ? "text-muted-foreground" :
             winPercentage >= 75 ? "text-green-600 dark:text-green-500" :
             winPercentage >= 60 ? "text-blue-600 dark:text-blue-500" :
             winPercentage >= 40 ? "text-orange-500 dark:text-orange-400" :
@@ -255,22 +199,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </p>
         </div>
         <div>
-          <p className={cn(
-            "font-medium",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>Games</p>
-          <p className={cn(
-            "font-bold tabular-nums",
-            isWinterTheme ? "text-[hsl(var(--foreground))]" : "text-slate-900 dark:text-white"
-          )}>
+          <p className="font-medium text-muted-foreground">Games</p>
+          <p className="font-bold tabular-nums text-foreground">
             {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
           </p>
         </div>
         <div>
-          <p className={cn(
-            "font-medium",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>Game %</p>
+          <p className="font-medium text-muted-foreground">Game %</p>
           <p className={cn(
             "font-bold tabular-nums",
             gameWinPercentage >= 75 ? "text-green-600 dark:text-green-500" :
@@ -282,25 +217,19 @@ const RankingCard: React.FC<RankingCardProps> = ({
           </p>
         </div>
         <div>
-          <p className={cn(
-            "font-medium",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>Power</p>
+          <p className="font-medium text-muted-foreground">Power</p>
           <p className={cn("font-bold tabular-nums", getPowerScoreColor(ranking.powerScore))}>
             {formatPowerScore(ranking.powerScore)}
           </p>
         </div>
         <div>
-          <p className={cn(
-            "font-medium",
-            isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-600 dark:text-gray-400"
-          )}>SOS</p>
+          <p className="font-medium text-muted-foreground">SOS</p>
           <p className={cn("font-bold tabular-nums", getSosColor(ranking.sos || 0))}>
             {(ranking.sos || 0).toFixed(3)}
           </p>
         </div>
       </div>
-    </motion.div>
+    </EntityCard>
   );
 };
 

@@ -1,23 +1,19 @@
-
 import React from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Ranking } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Bolt, Trophy, Scale, Star } from "lucide-react";
 import { formatPowerScore } from "@/utils/colors";
-import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { SummaryCard } from "@/components/ui/summary-card";
+import { listStyles } from "@/styles/design-system/lists";
 
 interface StatsSummaryCardsProps {
   rankings: Ranking[];
   theme?: string;
 }
 
-const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
+const StatsSummaryCards = ({ rankings }: StatsSummaryCardsProps) => {
   const isMobile = useIsMobile();
-  const { theme: currentTheme } = useTheme();
-  const isLight = currentTheme === "light" || theme === "light";
 
   const getHighestWinPercentage = () => {
     if (!rankings || rankings.length === 0) return { percentage: 0, teamName: 'No teams' };
@@ -60,19 +56,11 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
   };
 
   const highestWinPercentage = getHighestWinPercentage();
-  const mostWins = getMostWins();
   const highestSOS = getHighestSOS();
   const highestPowerScore = getHighestPowerScore();
 
-  // Improved styling for better mobile display
-  const iconSize = isMobile ? 20 : 22; 
-  const cardGap = isMobile ? 'gap-3 mb-3' : 'gap-4';
-  const titleClass = "uppercase tracking-wide text-xs font-medium text-gray-700 dark:text-gray-300 font-inter";
-  const statVal = `font-mono ${isMobile ? 'text-base sm:text-lg' : 'text-xl'} font-bold`;
-  const descriptionClass = `text-gray-500 dark:text-gray-400 ${isMobile ? 'text-xs' : 'text-xs'} font-medium truncate max-w-[120px]`;
-
   // Color coding for highlight values
-  const getColorFor = (type: string, value: number) => {
+  const getValueClass = (type: string, value: number) => {
     if (type === "power") {
       if (value >= 75) return "text-green-600 dark:text-green-500";
       if (value >= 60) return "text-blue-500 dark:text-blue-400";
@@ -85,7 +73,7 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
       if (value >= 0.40) return "text-orange-500 dark:text-orange-400";
       return "text-red-500 dark:text-red-400";
     }
-    if (type === "win" || type === "percentage") {
+    if (type === "percentage") {
       if (value >= 75) return "text-green-600 dark:text-green-500";
       if (value >= 60) return "text-blue-500 dark:text-blue-400";
       if (value >= 40) return "text-orange-500 dark:text-orange-400";
@@ -94,121 +82,62 @@ const StatsSummaryCards = ({ rankings, theme }: StatsSummaryCardsProps) => {
     return "";
   };
 
-  // Card style with subtle gradients
-  const getCardStyle = (index: number) => {
-    const baseStyle = "p-4 rounded-xl border shadow-sm";
-    
-    if (isLight) {
-      const gradients = [
-        "bg-gradient-to-br from-amber-50 to-amber-100",  // Trophy
-        "bg-gradient-to-br from-green-50 to-green-100",  // Win %
-        "bg-gradient-to-br from-blue-50 to-blue-100",    // SOS
-        "bg-gradient-to-br from-purple-50 to-purple-100" // Power
-      ];
-      return `${baseStyle} ${gradients[index]}`;
-    } else {
-      return `${baseStyle} bg-gray-800/80 border-gray-700`;
-    }
-  };
-
-  // Animation variants for cards
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.4,
-        ease: "easeOut" as const
-      }
-    })
-  };
-
   return (
-    <div className={`w-full grid ${isMobile ? 'grid-cols-1 xs:grid-cols-2' : 'grid-cols-2 md:grid-cols-4'} ${cardGap}`}>
-      <motion.div
-        custom={0}
-        initial="hidden"
-        animate="visible"
-        variants={cardVariants}
-        className={getCardStyle(0)}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`flex items-center justify-center bg-amber-500/15 rounded-full w-10 h-10`}>
-            <Trophy size={iconSize} className="text-amber-500" />
-          </div>
-          <div className="flex-1">
-            <h3 className={titleClass}>Total Teams</h3>
-            <p className="font-mono text-lg font-bold text-gray-900 dark:text-white">
-              {rankings ? rankings.length : 0}
-            </p>
-          </div>
-        </div>
-      </motion.div>
+    <div className={cn("w-full mb-3 md:mb-4", listStyles.grid.stats)}>
+      <SummaryCard
+        icon={Trophy}
+        iconColor="text-amber-500"
+        iconBgColor="bg-amber-500/15"
+        title="Total Teams"
+        value={rankings ? rankings.length : 0}
+        gradient="amber"
+        index={0}
+      />
 
-      <motion.div
-        custom={1}
-        initial="hidden"
-        animate="visible"
-        variants={cardVariants}
-        className={getCardStyle(1)}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`flex items-center justify-center bg-green-500/15 rounded-full w-10 h-10`}>
-            <Star size={iconSize} className="text-green-500" />
-          </div>
-          <div className="flex-1">
-            <h3 className={titleClass}>Highest Win %</h3>
-            <p className={cn(statVal, getColorFor("percentage", Number(highestWinPercentage.percentage)))}>
-              {highestWinPercentage.percentage}%
-            </p>
-            <p className={descriptionClass} title={highestWinPercentage.teamName}>{highestWinPercentage.teamName}</p>
-          </div>
-        </div>
-      </motion.div>
+      <SummaryCard
+        icon={Star}
+        iconColor="text-green-500"
+        iconBgColor="bg-green-500/15"
+        title="Highest Win %"
+        value={
+          <span className={getValueClass("percentage", Number(highestWinPercentage.percentage))}>
+            {highestWinPercentage.percentage}%
+          </span>
+        }
+        description={highestWinPercentage.teamName}
+        gradient="green"
+        index={1}
+      />
 
-      <motion.div
-        custom={2}
-        initial="hidden"
-        animate="visible"
-        variants={cardVariants}
-        className={getCardStyle(2)}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`flex items-center justify-center bg-blue-500/15 rounded-full w-10 h-10`}>
-            <Scale size={iconSize} className="text-blue-500" />
-          </div>
-          <div className="flex-1">
-            <h3 className={titleClass}>Highest SOS</h3>
-            <p className={cn(statVal, getColorFor("sos", Number(highestSOS.sos)))}>
-              {highestSOS.sos}
-            </p>
-            <p className={descriptionClass} title={highestSOS.teamName}>{highestSOS.teamName}</p>
-          </div>
-        </div>
-      </motion.div>
+      <SummaryCard
+        icon={Scale}
+        iconColor="text-blue-500"
+        iconBgColor="bg-blue-500/15"
+        title="Highest SOS"
+        value={
+          <span className={getValueClass("sos", Number(highestSOS.sos))}>
+            {highestSOS.sos}
+          </span>
+        }
+        description={highestSOS.teamName}
+        gradient="blue"
+        index={2}
+      />
 
-      <motion.div
-        custom={3}
-        initial="hidden"
-        animate="visible"
-        variants={cardVariants}
-        className={getCardStyle(3)}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`flex items-center justify-center bg-purple-500/15 rounded-full w-10 h-10`}>
-            <Bolt size={iconSize} className="text-purple-500" />
-          </div>
-          <div className="flex-1">
-            <h3 className={titleClass}>Highest Power</h3>
-            <p className={cn(statVal, getColorFor("power", Number(highestPowerScore.score)))}>
-              {formatPowerScore(highestPowerScore.score)}
-            </p>
-            <p className={descriptionClass} title={highestPowerScore.teamName}>{highestPowerScore.teamName}</p>
-          </div>
-        </div>
-      </motion.div>
+      <SummaryCard
+        icon={Bolt}
+        iconColor="text-purple-500"
+        iconBgColor="bg-purple-500/15"
+        title="Highest Power"
+        value={
+          <span className={getValueClass("power", Number(highestPowerScore.score))}>
+            {formatPowerScore(highestPowerScore.score)}
+          </span>
+        }
+        description={highestPowerScore.teamName}
+        gradient="purple"
+        index={3}
+      />
     </div>
   );
 };
