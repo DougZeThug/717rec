@@ -1,6 +1,16 @@
 
 /* Utilities */
 
+/* Accessible focus ring - WCAG 2.1 AA compliant */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+/* High contrast focus ring for dark backgrounds */
+.focus-ring-light {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent;
+}
+
 /* Numeric typography - prevents column wiggle in tables/standings */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
