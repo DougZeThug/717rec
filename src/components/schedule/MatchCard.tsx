@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Pencil, Timer, Trash2 } from "lucide-react";
@@ -107,20 +107,20 @@ const MatchCard: React.FC<MatchCardProps> = ({
     return () => clearInterval(intervalId);
   }, [match.date, isCompleted]);
 
-  const getScoreStyle = (isWinner: boolean) => cn(
+  const getScoreStyle = useCallback((isWinner: boolean) => cn(
     "text-2xl font-black tracking-wide tabular-nums transition-all duration-500",
     scoreAnimation && "animate-scale-in",
     isWinner 
       ? isLight ? "text-green-600" : "text-green-500"
       : isLight ? "text-gray-600" : "text-gray-400"
-  );
+  ), [scoreAnimation, isLight]);
 
-  const getTeamStyle = (isWinner: boolean) => cn(
+  const getTeamStyle = useCallback((isWinner: boolean) => cn(
     "truncate",
     isWinner 
       ? isLight ? "text-green-600 font-medium" : "text-green-500 font-medium"
       : isLight ? "text-gray-600" : "text-gray-400"
-  );
+  ), [isLight]);
 
   // Determine whether to show interactions (only for completed matches)
   const shouldShowInteractions = showInteractions && isCompleted;

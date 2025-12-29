@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import PageLayout from "@/components/layout/PageLayout";
 import PageTransition from "@/components/transitions/PageTransition";
 import { useMessageBoard } from "@/hooks/useMessageBoard";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { animations, gradients } from "@/styles/design-system";
 import { MessageSquare } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+
 const MessageBoard: React.FC = () => {
   const {
     messages,
@@ -27,11 +28,10 @@ const MessageBoard: React.FC = () => {
     filterOptions,
     setFilter
   } = useMessageBoard();
-  const {
-    user
-  } = useAuth();
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const handleRefresh = async () => {
+  const { user } = useAuth();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await refreshMessages();
@@ -48,7 +48,7 @@ const MessageBoard: React.FC = () => {
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [refreshMessages]);
   return <PageLayout>
       <PageTransition animation="fadeInSlideDown">
         <div className="container max-w-4xl mx-auto pb-20 md:pb-24 px-px">

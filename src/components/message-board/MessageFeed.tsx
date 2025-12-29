@@ -20,7 +20,7 @@ interface MessageFeedProps {
   loadingMore: boolean;
 }
 
-const MessageFeed: React.FC<MessageFeedProps> = ({ 
+const MessageFeed: React.FC<MessageFeedProps> = React.memo(({ 
   messages, 
   isLoading, 
   error, 
@@ -123,6 +123,8 @@ const MessageFeed: React.FC<MessageFeedProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+MessageFeed.displayName = "MessageFeed";
 
 export default MessageFeed;

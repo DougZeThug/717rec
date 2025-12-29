@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContextType } from "@/types/auth";
 import { useAuth as useAuthHook } from "@/hooks/useAuth";
@@ -9,7 +9,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuthHook();
 
-  const value: AuthContextType = {
+  const value: AuthContextType = useMemo(() => ({
     session: auth.session,
     user: auth.user,
     profile: auth.profile,
@@ -23,7 +23,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshProfile: auth.refreshProfile,
     authError: auth.authError,
     clearAuthError: auth.clearAuthError,
-  };
+  }), [
+    auth.session,
+    auth.user,
+    auth.profile,
+    auth.isLoading,
+    auth.authInitialized,
+    auth.signIn,
+    auth.signUp,
+    auth.signInWithGoogle,
+    auth.signInWithGoogleNative,
+    auth.signOut,
+    auth.refreshProfile,
+    auth.authError,
+    auth.clearAuthError,
+  ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
