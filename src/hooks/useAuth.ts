@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Session, User, WeakPasswordReasons } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,10 +31,10 @@ export const useAuth = () => {
   const [authError, setAuthError] = useState<string | null>(null);
 
   // Clear auth error
-  const clearAuthError = () => setAuthError(null);
+  const clearAuthError = useCallback(() => setAuthError(null), []);
 
   // Handle auth errors with toast
-  const handleAuthError = (error: Error, context: string) => {
+  const handleAuthError = useCallback((error: Error, context: string) => {
     const errorMessage = error.message || `An error occurred during ${context}`;
     setAuthError(errorMessage);
     errorLog(`Error during ${context}:`, error);
@@ -46,10 +46,10 @@ export const useAuth = () => {
     });
     
     return errorMessage;
-  };
+  }, []);
 
   // Fetch user profile
-  const fetchProfile = async (userId: string): Promise<UserProfile | null> => {
+  const fetchProfile = useCallback(async (userId: string): Promise<UserProfile | null> => {
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -67,21 +67,21 @@ export const useAuth = () => {
       errorLog("Unexpected error fetching profile:", error);
       return null;
     }
-  };
+  }, []);
 
   // Check if user needs profile setup
-  const checkProfileSetup = (profileData: UserProfile | null) => {
+  const checkProfileSetup = useCallback((profileData: UserProfile | null) => {
     if (profileData && !profileData.username) {
       navigate("/setup-profile");
     }
-  };
+  }, [navigate]);
 
   // Refresh current user's profile
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (!user) return;
     const profileData = await fetchProfile(user.id);
     setProfile(profileData);
-  };
+  }, [user, fetchProfile]);
 
   // Initialize auth state
   useEffect(() => {
@@ -183,7 +183,7 @@ export const useAuth = () => {
   }, []);
 
   // Sign in with email/password
-  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
+  const signIn = useCallback(async (email: string, password: string): Promise<AuthResponse> => {
     try {
       clearAuthError();
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
@@ -213,10 +213,10 @@ export const useAuth = () => {
       
       return { user: null, session: null, weakPassword: null };
     }
-  };
+  }, [clearAuthError, ensureThemeConsistency, handleAuthError]);
 
   // Sign up with email/password
-  const signUp = async (email: string, password: string): Promise<AuthResponse> => {
+  const signUp = useCallback(async (email: string, password: string): Promise<AuthResponse> => {
     try {
       clearAuthError();
       const { error, data } = await supabase.auth.signUp({ email, password });
@@ -254,10 +254,10 @@ export const useAuth = () => {
       
       return { user: null, session: null, weakPassword: null };
     }
-  };
+  }, [clearAuthError, ensureThemeConsistency, handleAuthError]);
 
   // Sign out
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       clearAuthError();
       const { error } = await supabase.auth.signOut();
@@ -277,10 +277,10 @@ export const useAuth = () => {
       }
       throw error;
     }
-  };
+  }, [clearAuthError, handleAuthError, navigate]);
 
   // Sign in with Google (OAuth)
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     try {
       clearAuthError();
       const { error } = await supabase.auth.signInWithOAuth({
@@ -299,10 +299,10 @@ export const useAuth = () => {
       }
       throw error;
     }
-  };
+  }, [clearAuthError, handleAuthError]);
 
   // Sign in with Google Native (mobile)
-  const signInWithGoogleNative = async () => {
+  const signInWithGoogleNative = useCallback(async () => {
     try {
       clearAuthError();
       
@@ -331,7 +331,7 @@ export const useAuth = () => {
       
       return { success: false, error };
     }
-  };
+  }, [clearAuthError, ensureThemeConsistency, handleAuthError]);
 
   return {
     // State

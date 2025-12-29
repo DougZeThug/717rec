@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ranking } from "@/types";
 import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/colors";
@@ -20,11 +20,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
 
-  const handleTeamClick = (teamId: string) => {
+  const handleTeamClick = useCallback((teamId: string) => {
     navigate(`/teams/${teamId}`);
-  };
+  }, [navigate]);
 
-  const getRankStyles = (index: number) => {
+  const getRankStyles = useCallback((index: number) => {
     if (isLight) {
       if (index === 0) return "bg-gradient-to-r from-amber-100 to-amber-200/80 !font-bold text-gray-900 shadow-sm";
       if (index === 1) return "bg-gradient-to-r from-slate-100 to-blue-100/70 !font-bold text-gray-900 shadow-sm";
@@ -36,7 +36,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
       if (index === 2) return "bg-gradient-to-r from-orange-900/30 to-orange-800/20 font-bold text-white";
       return "bg-gray-800/30 text-white";
     }
-  };
+  }, [isLight]);
 
   if (isMobile) {
     return (

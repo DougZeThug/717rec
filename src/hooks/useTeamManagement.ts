@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Team } from "@/types";
 import { useTeams } from "@/hooks/useTeams";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,7 @@ export function useTeamManagement() {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const handleUpdateTeam = async (teamData: Omit<Team, "id" | "created_at">) => {
+  const handleUpdateTeam = useCallback(async (teamData: Omit<Team, "id" | "created_at">) => {
     if (!teamToEdit) return;
     try {
       await updateTeam(teamToEdit.id, teamData);
@@ -22,9 +22,9 @@ export function useTeamManagement() {
     } catch (error) {
       errorLog("Error updating team:", error);
     }
-  };
+  }, [teamToEdit, updateTeam]);
 
-  const handleDeleteTeam = async () => {
+  const handleDeleteTeam = useCallback(async () => {
     if (!deleteTeamId) return;
     
     setIsDeleting(true);
@@ -45,9 +45,9 @@ export function useTeamManagement() {
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [deleteTeamId, deleteTeam, toast]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await fetchTeams();
@@ -60,7 +60,7 @@ export function useTeamManagement() {
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [fetchTeams, toast]);
 
   return {
     teams,
