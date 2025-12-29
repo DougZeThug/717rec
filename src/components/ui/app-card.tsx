@@ -119,10 +119,18 @@ export const AppCard: React.FC<AppCardProps> = ({
       </Link>
     );
   } else if (isClickable) {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        onClick();
+      }
+    };
+
     return (
       <Card 
         className={cardStyles} 
         onClick={onClick} 
+        onKeyDown={handleKeyDown}
         role="button" 
         tabIndex={0}
       >

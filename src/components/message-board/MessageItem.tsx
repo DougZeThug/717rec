@@ -95,6 +95,13 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
     }
   }, [showOptions]);
   
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (isAuthor && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      handleDesktopClick();
+    }
+  };
+
   return (
     <>
       <Card 
@@ -103,10 +110,14 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
           isAuthor ? gradients.card.highlight : gradients.card.default,
           isAuthor ? "hover:shadow-md" : "",
           isAnnouncement ? "border-blue-300 dark:border-blue-800" : "",
+          isAuthor ? "focus:outline-none focus:ring-2 focus:ring-primary" : "",
           animations.fadeIn
         )}
         {...longPressHandlers}
         onClick={isAuthor ? handleDesktopClick : undefined}
+        onKeyDown={isAuthor ? handleCardKeyDown : undefined}
+        role={isAuthor ? "button" : undefined}
+        tabIndex={isAuthor ? 0 : undefined}
       >
         <CardContent className="p-3">
           <MessageHeader 

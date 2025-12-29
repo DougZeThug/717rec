@@ -24,6 +24,13 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
     navigate(`/teams/${teamId}`);
   }, [navigate]);
 
+  const handleRowKeyDown = useCallback((e: React.KeyboardEvent, teamId: string) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleTeamClick(teamId);
+    }
+  }, [handleTeamClick]);
+
   const getRankStyles = useCallback((index: number) => {
     if (isLight) {
       if (index === 0) return "bg-gradient-to-r from-amber-100 to-amber-200/80 !font-bold text-gray-900 shadow-sm";
@@ -42,10 +49,12 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
     return (
       <div className="space-y-2">
         {rankings.map((team, index) => (
-          <div
+          <button
+            type="button"
             key={team.teamId}
             onClick={() => handleTeamClick(team.teamId)}
             className={cn(
+              "w-full text-left",
               getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-white dark:bg-gray-800 dark:border-gray-700"),
               index < 3 ? "shadow-sm" : "",
               index === 0 ? "border-amber-200 dark:border-amber-800/40" : "",
@@ -98,7 +107,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 </div>
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     );
@@ -146,6 +155,8 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
           {rankings.map((team, index) => (
             <TableRow
               key={team.teamId}
+              role="button"
+              tabIndex={0}
               className={cn(
                 getRowInteractionStyles("cursor-pointer font-inter"),
                 isLight && index % 2 === 0 ? "bg-white" : "",
@@ -155,9 +166,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 index === 0 ? "border-l-4 border-amber-400 dark:border-amber-600" : "",
                 index === 1 ? "border-l-4 border-blue-400 dark:border-blue-600" : "",
                 index === 2 ? "border-l-4 border-orange-400 dark:border-orange-600" : "",
-                "hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5"
+                "hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5",
+                "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
               )}
               onClick={() => handleTeamClick(team.teamId)}
+              onKeyDown={(e) => handleRowKeyDown(e, team.teamId)}
             >
               <TableCell
                 className={cn(getRankStyles(index), "font-mono text-lg")}
