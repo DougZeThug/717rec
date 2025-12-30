@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import ProtectedAdminRoute from '../ProtectedAdminRoute';
 
 // Mock the auth context
@@ -27,8 +27,8 @@ vi.mock('@/utils/logger', () => ({
 
 // Mock Navigate component to track redirects
 const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
   return {
     ...actual,
     Navigate: ({ to }: { to: string }) => {

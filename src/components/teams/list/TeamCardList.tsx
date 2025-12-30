@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Team } from "@/types";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { motion } from "framer-motion";
 import { TeamImage } from "../shared/TeamImage";
 import { StatBlock } from "../shared/StatBlock";

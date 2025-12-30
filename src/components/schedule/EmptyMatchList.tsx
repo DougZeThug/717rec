@@ -1,7 +1,7 @@
 import React from "react";
 import { CalendarX, Calendar, Search } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 interface EmptyMatchListProps {
   searchTerm: string;

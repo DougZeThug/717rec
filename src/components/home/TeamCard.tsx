@@ -1,6 +1,6 @@
 import React from "react";
 import { Team } from "@/types";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { useTheme } from "next-themes";
 import { TeamLogo } from "./TeamLogo";
 import { TeamStats } from "./TeamStats";

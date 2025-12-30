@@ -8,7 +8,7 @@ import TimeslotGrouping from "./TimeslotGrouping";
 import { format, isToday, parseISO, isSameDay } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import WinterSection from "@/components/winter/WinterSection";
 
 interface ScheduleContentProps {

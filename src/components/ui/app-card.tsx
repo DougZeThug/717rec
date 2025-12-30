@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "./card";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { getCardStyle } from "@/styles/design-system";
 import { gradients } from "@/styles/design-system";
 import { useThemeConsistency } from "@/hooks/use-theme-consistency";

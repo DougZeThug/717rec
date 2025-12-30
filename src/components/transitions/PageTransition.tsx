@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { useNavigation } from '@/contexts/NavigationContext';
 import { routeLog } from "@/utils/logger";
 

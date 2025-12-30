@@ -5,7 +5,7 @@ import { Team } from "@/types";
 import BracketForm from "./BracketForm";
 import { BracketFormValues } from "./form/BracketFormSchema";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { BracketValidationService } from "@/services/brackets/validation/BracketValidationService";
 import { BracketFormData } from "@/services/brackets/types/BracketFormData";
 import { createBracket } from "@/services/bracket-creator";

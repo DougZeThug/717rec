@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { TeamTimeslot } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, Calendar } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { animations, getDivisionStyles } from "@/styles/design-system";
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";

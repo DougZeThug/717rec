@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Match } from "@/types";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";

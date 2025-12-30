@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { useEffect } from "react";
 import { FileQuestion, Home, ArrowLeft } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";

@@ -9,7 +9,7 @@ import TimeslotList from "@/components/timeslots/TimeslotList";
 import { useTimeslots } from "@/hooks/useTimeslots";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
-import { Navigate } from "react-router-dom";
+import { Navigate } from "react-router";
 import { ByeWeekService } from "@/services/timeslots/ByeWeekService";
 
 export default function Timeslots() {

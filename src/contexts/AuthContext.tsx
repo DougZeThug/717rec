@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 import { AuthContextType } from "@/types/auth";
 import { useAuth as useAuthHook } from "@/hooks/useAuth";
 

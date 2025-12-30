@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, LinkProps, useNavigate } from 'react-router-dom';
+import { Link, LinkProps, useNavigate } from 'react-router';
 import { cn } from "@/lib/utils";
 
 export interface RouterLinkProps extends Omit<LinkProps, 'onClick'> {
