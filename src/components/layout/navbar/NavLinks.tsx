@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare, HelpCircle, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminAccess } from "@/hooks/useAdminAccess";

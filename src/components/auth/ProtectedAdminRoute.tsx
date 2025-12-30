@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { toast } from "@/hooks/use-toast";

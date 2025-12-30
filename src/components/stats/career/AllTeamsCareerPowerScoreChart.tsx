@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';

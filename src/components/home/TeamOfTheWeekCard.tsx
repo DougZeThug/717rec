@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Star, TrendingUp, ChevronRight } from "lucide-react";
 import { SeasonalIcon } from "@/components/ui/seasonal-icon";
 import { SnowflakeSparkle } from "@/icons";

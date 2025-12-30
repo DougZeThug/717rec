@@ -1,6 +1,6 @@
 import React from "react";
 import { Team } from "@/types";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { TeamLogo } from "./TeamLogo";
 import { cn } from "@/lib/utils";
 import { blueAmberHeading } from "@/styles/design-system/blueAmber";

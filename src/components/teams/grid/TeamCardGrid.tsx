@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { Team } from '@/types';
 import { TeamImage } from '../shared/TeamImage';
 import { Badge } from '@/components/ui/badge';

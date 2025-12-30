@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { CareerRanking } from '@/types/career';
 import { CareerSortOptions } from './CareerRankingsTable';
 import { Card, CardContent } from '@/components/ui/card';

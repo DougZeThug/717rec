@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import { Award, Calendar, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { NavItem } from "@/components/navigation/NavItem";

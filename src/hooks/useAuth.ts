@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Session, User, WeakPasswordReasons } from "@supabase/supabase-js";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useThemeConsistency } from "@/hooks/use-theme-consistency";
 import { toast } from "@/hooks/use-toast";

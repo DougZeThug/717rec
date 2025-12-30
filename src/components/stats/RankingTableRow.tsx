@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { Ranking } from "@/types";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { TeamLogo } from "@/components/shared/TeamLogo";
 import RankTrendIndicator from "./RankTrendIndicator";
 import TeamBadgeCollection from "@/components/badges/TeamBadgeCollection";

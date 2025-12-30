@@ -1,6 +1,6 @@
 
 import React, { cloneElement, isValidElement, ReactElement, useMemo } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LucideProps } from "lucide-react";

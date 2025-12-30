@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { User, LogOut, Settings, LogIn, Shield } from "lucide-react";
 import { useTeamMembership } from "@/hooks/useTeamMembership";
 import { useAdminAccess } from "@/hooks/useAdminAccess";

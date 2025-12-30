@@ -6,7 +6,7 @@ import { formatPowerScore, getPowerScoreColor, getSosColor } from "@/utils/color
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { getRowInteractionStyles } from "@/styles/interactionUtils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useTheme } from "next-themes";
 import { gradients } from "@/styles/design-system";
 

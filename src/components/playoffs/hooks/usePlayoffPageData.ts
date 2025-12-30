@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlayoffData } from "@/hooks/usePlayoffViewModel.compat";
