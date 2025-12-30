@@ -11,8 +11,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  DotProps
 } from "recharts";
+import type { Props as DotProps } from "recharts/types/shape/Dot";
 import { TrendingUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";

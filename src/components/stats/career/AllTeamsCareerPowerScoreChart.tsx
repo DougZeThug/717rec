@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, TooltipProps } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import type { TooltipProps } from 'recharts';
 import { useAllTeamsCareerPowerScores, TeamCareerData } from '@/hooks/useAllTeamsCareerPowerScores';
 import { getTeamColor } from '@/utils/colors/teamColors';
 import { useTheme } from 'next-themes';
@@ -40,7 +41,9 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
     });
 };
 
-interface CustomTooltipProps extends TooltipProps<number, string> {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: ReadonlyArray<any>;
   teamsData?: TeamCareerData[];
   selectedTeamIds: string[];
 }
