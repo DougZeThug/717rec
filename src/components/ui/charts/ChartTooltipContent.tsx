@@ -1,17 +1,20 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
+import type { TooltipContentProps as RechartsTooltipContentProps } from "recharts";
 import { cn } from "@/lib/utils";
 import { useChart } from "./ChartContainer";
 import { useTheme } from "next-themes";
 import { getPayloadConfigFromPayload } from "./utils/tooltipUtils";
 
-// Use Pick instead of extends to avoid conflicting property definitions
-interface ChartTooltipContentProps extends 
-  Pick<React.ComponentProps<typeof RechartsPrimitive.Tooltip>, 
-    'active' | 'payload' | 'label' | 'labelFormatter' | 'formatter'>,
-  Omit<React.HTMLAttributes<HTMLDivElement>, 'label' | 'content'>  
-{
+type TooltipPayload = NonNullable<RechartsTooltipContentProps<number | string, string>['payload']>[number];
+
+interface ChartTooltipContentProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'label' | 'content'> {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string | number;
+  labelFormatter?: (label: string | number, payload: TooltipPayload[]) => React.ReactNode;
+  formatter?: (value: number | string, name: string, item: TooltipPayload, index: number, payload: TooltipPayload[]) => React.ReactNode;
   hideLabel?: boolean;
   hideIndicator?: boolean;
   indicator?: "line" | "dot" | "dashed";
@@ -105,7 +108,7 @@ export const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltip
 
             return (
               <div
-                key={item.dataKey}
+                key={String(item.dataKey ?? item.name ?? index)}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
                   isLight ? "[&>svg]:text-gray-500" : "[&>svg]:text-gray-300",
