@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Trophy, EyeOff, Eye } from 'lucide-react';
+import { ChevronDown, Trophy, EyeOff, Eye, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useCareerRankingsWithHidden } from '@/hooks/useCareerRankingsWithHidden';
 import CareerRankingsTable from './CareerRankingsTable';
 import { Switch } from '@/components/ui/switch';
@@ -10,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from 'next-themes';
 import { gradients } from '@/styles/design-system';
+import { exportCareerStatsToCSV } from '@/utils/exportUtils';
 
 const CareerRankingsSection: React.FC = () => {
   const isMobile = useIsMobile();
@@ -105,6 +107,20 @@ const CareerRankingsSection: React.FC = () => {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+                )}
+                {isOpen && careerRankings && careerRankings.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      exportCareerStatsToCSV(careerRankings);
+                    }}
+                    className="h-8 px-2"
+                    title="Export to CSV"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
                 )}
                 <ChevronDown 
                   className={cn(

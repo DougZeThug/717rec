@@ -1,8 +1,8 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import RankingsTable from "./RankingsTable";
 import { Ranking } from "@/types";
 import ViewToggle from "./ViewToggle";
@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import { exportStandingsToCSV } from "@/utils/exportUtils";
 
 interface FullRankingsProps {
   rankings: Ranking[];
@@ -77,6 +78,20 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
               </div>
               <div className="flex items-center gap-2 ml-auto">
                 {isOpen && <ViewToggle view={view} onViewChange={setView} />}
+                {isOpen && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      exportStandingsToCSV(sortedRankings);
+                    }}
+                    className="h-8 px-2"
+                    title="Export to CSV"
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                )}
                 <ChevronDown
                   className={cn(
                     "h-5 w-5 transition-transform",
