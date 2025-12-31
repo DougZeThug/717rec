@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TeamLogo } from "@/components/shared/TeamLogo";
 import { getPowerScoreColor, getSosColor } from "@/utils/colors";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface SeasonData {
   team_id: string;
@@ -37,6 +38,7 @@ const getWinPercentageColor = (percentage: number): string => {
 
 const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ teams }) => {
   const isMobile = useIsMobile();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   if (isMobile) {
     return (
@@ -53,9 +55,18 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
             <div
               key={team.team_id}
               className={cn(
-                "bg-gray-50 dark:bg-slate-700/50 rounded-lg p-3",
-                team.champion && "ring-2 ring-yellow-400 dark:ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20",
-                team.runner_up && "ring-2 ring-gray-400 dark:ring-gray-500 bg-gray-100 dark:bg-gray-900/20"
+                "rounded-lg p-3",
+                isWinterTheme 
+                  ? cn(
+                      "bg-white/5 border border-white/10",
+                      team.champion && "ring-2 ring-yellow-400/50 bg-yellow-500/10",
+                      team.runner_up && "ring-2 ring-gray-400/50 bg-white/10"
+                    )
+                  : cn(
+                      "bg-gray-50 dark:bg-slate-700/50",
+                      team.champion && "ring-2 ring-yellow-400 dark:ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20",
+                      team.runner_up && "ring-2 ring-gray-400 dark:ring-gray-500 bg-gray-100 dark:bg-gray-900/20"
+                    )
               )}
             >
               <div className="flex items-center justify-between mb-2">
@@ -122,7 +133,10 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-200 dark:border-slate-600">
+          <tr className={cn(
+            "border-b",
+            isWinterTheme ? "border-white/10" : "border-gray-200 dark:border-slate-600"
+          )}>
             <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Rank</th>
             <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Team</th>
             <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-300">W-L</th>
@@ -146,9 +160,18 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
               <tr
                 key={team.team_id}
                 className={cn(
-                  "border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50",
-                  team.champion && "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30",
-                  team.runner_up && "bg-gray-100 dark:bg-gray-900/20 hover:bg-gray-200 dark:hover:bg-gray-900/30"
+                  "border-b",
+                  isWinterTheme 
+                    ? cn(
+                        "border-white/5 hover:bg-white/5",
+                        team.champion && "bg-yellow-500/10 hover:bg-yellow-500/15",
+                        team.runner_up && "bg-white/5 hover:bg-white/10"
+                      )
+                    : cn(
+                        "border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50",
+                        team.champion && "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30",
+                        team.runner_up && "bg-gray-100 dark:bg-gray-900/20 hover:bg-gray-200 dark:hover:bg-gray-900/30"
+                      )
                 )}
               >
                 <td className="py-2 px-3 text-gray-600 dark:text-gray-300">#{team.playoff_rank || '-'}</td>

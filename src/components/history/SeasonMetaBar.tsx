@@ -1,6 +1,8 @@
 
 import React from "react";
 import { Calendar, Award, TrendingUp, Target } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface Season {
   id: string;
@@ -32,8 +34,10 @@ interface SeasonMetaBarProps {
 }
 
 const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => {
+  const { isWinterTheme } = useSeasonalThemeBase();
+  
   // Calculate season awards
-  const mostWins = seasonData.reduce((max, team) => 
+  const mostWins = seasonData.reduce((max, team) =>
     team.match_wins > max.match_wins ? team : max, 
     seasonData[0] || { match_wins: 0, team_name: 'N/A' }
   );
@@ -53,7 +57,12 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-700/50 rounded-xl p-4 border border-gray-200 dark:border-slate-600">
+    <div className={cn(
+      "rounded-xl p-4 border",
+      isWinterTheme 
+        ? "bg-white/5 border-white/10" 
+        : "bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600"
+    )}>
       <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
         <Award className="w-4 h-4" />
         Season Awards
@@ -92,7 +101,10 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
       </div>
       
       {season.end_date && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600">
+        <div className={cn(
+          "mt-3 pt-3 border-t",
+          isWinterTheme ? "border-white/10" : "border-gray-200 dark:border-slate-600"
+        )}>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Season completed on {new Date(season.end_date).toLocaleDateString()}
           </p>
