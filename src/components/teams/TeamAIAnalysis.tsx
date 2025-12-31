@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { useTeamAIAnalysis, TeamAnalysis } from "@/hooks/useTeamAIAnalysis";
+import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -58,11 +59,13 @@ const AnalysisSkeleton = () => (
 const AnalysisContent = ({ 
   analysis, 
   onRefresh, 
-  isRefetching 
+  isRefetching,
+  isAdmin
 }: { 
   analysis: TeamAnalysis; 
   onRefresh: () => void;
   isRefetching: boolean;
+  isAdmin: boolean;
 }) => (
   <motion.div 
     className="space-y-4 p-4"
@@ -70,19 +73,21 @@ const AnalysisContent = ({
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.3 }}
   >
-    {/* Header with confidence and refresh */}
+    {/* Header with confidence and conditional refresh */}
     <div className="flex items-center justify-between flex-wrap gap-2">
       <ConfidenceBadge confidence={analysis.confidence} />
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onRefresh}
-        disabled={isRefetching}
-        className="text-xs h-7"
-      >
-        <RefreshCw className={cn("h-3 w-3 mr-1", isRefetching && "animate-spin")} />
-        Regenerate
-      </Button>
+      {isAdmin && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRefresh}
+          disabled={isRefetching}
+          className="text-xs h-7"
+        >
+          <RefreshCw className={cn("h-3 w-3 mr-1", isRefetching && "animate-spin")} />
+          Regenerate
+        </Button>
+      )}
     </div>
 
     {/* Overall Assessment */}
@@ -159,21 +164,28 @@ const AnalysisContent = ({
   </motion.div>
 );
 
-const ErrorState = ({ error, onRetry }: { error: Error; onRetry: () => void }) => (
+const ErrorState = ({ error, onRetry, isAdmin }: { error: Error; onRetry: () => void; isAdmin: boolean }) => (
   <div className="p-4 flex flex-col items-center justify-center text-center space-y-3">
     <AlertCircle className="h-8 w-8 text-destructive/60" />
     <div>
       <p className="text-sm font-medium text-destructive">Failed to generate analysis</p>
       <p className="text-xs text-muted-foreground mt-1">{error.message}</p>
     </div>
-    <Button variant="outline" size="sm" onClick={onRetry}>
-      Try Again
-    </Button>
+    {isAdmin ? (
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        Try Again
+      </Button>
+    ) : (
+      <p className="text-xs text-muted-foreground">
+        Please contact an admin to refresh the analysis.
+      </p>
+    )}
   </div>
 );
 
 const TeamAIAnalysis: React.FC<TeamAIAnalysisProps> = ({ teamId, teamName }) => {
   const { data: analysis, isLoading, error, refetch, isRefetching } = useTeamAIAnalysis(teamId);
+  const { isAdminAccessGranted } = useAdminAccess();
 
   return (
     <section id="ai-analysis">
@@ -186,12 +198,13 @@ const TeamAIAnalysis: React.FC<TeamAIAnalysisProps> = ({ teamId, teamName }) => 
         {isLoading ? (
           <AnalysisSkeleton />
         ) : error ? (
-          <ErrorState error={error as Error} onRetry={() => refetch()} />
+          <ErrorState error={error as Error} onRetry={() => refetch()} isAdmin={isAdminAccessGranted} />
         ) : analysis ? (
           <AnalysisContent 
             analysis={analysis} 
             onRefresh={() => refetch()}
             isRefetching={isRefetching}
+            isAdmin={isAdminAccessGranted}
           />
         ) : null}
       </CollapsibleSection>
