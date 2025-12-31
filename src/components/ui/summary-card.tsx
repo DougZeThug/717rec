@@ -33,7 +33,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
 
   const gradientClass = isLight 
     ? cardGradients[gradient] || cardGradients.default
-    : "bg-gray-800/80 border-gray-700";
+    : "bg-card border-border";
 
   return (
     <motion.div

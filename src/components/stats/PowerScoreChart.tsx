@@ -46,8 +46,8 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const CustomPowerScoreTooltip = ({ active, payload }: any) => {
     if (!active || !payload || !payload.length) return null;
     return (
-      <div className="rounded-md shadow-lg p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-        <p className="text-gray-800 dark:text-white font-semibold mb-1">{payload[0].payload.name}</p>
+      <div className="rounded-md shadow-lg p-2 bg-popover border border-border">
+        <p className="text-popover-foreground font-semibold mb-1">{payload[0].payload.name}</p>
         <p className="text-sm" style={{ color: colors.powerScore.bar, fontWeight: 500 }}>
           Power Score: {formatPowerScore(payload[0].value)}
         </p>

@@ -48,20 +48,15 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`gap-2 px-3 h-10 rounded-md text-base font-inter tracking-wide shadow-none
-                    ${isLight 
-                      ? "border-gray-300 hover:bg-gray-50" 
-                      : "border-gray-700 hover:bg-gray-800 text-white"
-                    }
-                  `}
+                  className="gap-2 px-3 h-10 rounded-md text-base font-inter tracking-wide shadow-none border-border hover:bg-muted"
                 >
-                  <Calendar className={`h-4 w-4 ${isLight ? "text-gray-500" : "text-gray-400"}`} />
-                  <span className={`text-base font-inter tracking-wide ${!isLight ? "text-white" : ""}`}>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-base font-inter tracking-wide text-foreground">
                     {format(selectedDate, 'MMMM d, yyyy')}
                   </span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 shadow-md border dark:bg-gray-800 dark:border-gray-700" align="end">
+              <PopoverContent className="w-auto p-0 shadow-md border border-border bg-popover" align="end">
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}

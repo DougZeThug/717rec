@@ -55,7 +55,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             onClick={() => handleTeamClick(team.teamId)}
             className={cn(
               "w-full text-left",
-              getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-white dark:bg-gray-800 dark:border-gray-700"),
+              getRowInteractionStyles("flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-card border-border"),
               index < 3 ? "shadow-sm" : "",
               index === 0 ? "border-amber-200 dark:border-amber-800/40" : "",
               index === 1 ? "border-blue-200 dark:border-blue-800/40" : "",
@@ -74,22 +74,22 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center space-x-2">
-                  {team.imageUrl && (
-                    <div className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
-                      <img
-                        src={team.imageUrl}
-                        alt={team.teamName}
-                        className="w-8 h-8 rounded-none object-contain"
-                      />
-                    </div>
-                  )}
-                  <span className="font-bebas tracking-wide uppercase text-base text-gray-900 dark:text-white">
+                    {team.imageUrl && (
+                      <div className="w-8 h-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border">
+                        <img
+                          src={team.imageUrl}
+                          alt={team.teamName}
+                          className="w-8 h-8 rounded-none object-contain"
+                        />
+                      </div>
+                    )}
+                  <span className="font-bebas tracking-wide uppercase text-base text-foreground">
                     {team.teamName}
                   </span>
                 </div>
                 <div className="flex items-center space-x-4 text-sm font-mono mt-0.5">
-                  <span className="text-gray-900 dark:text-white">{team.wins}-{team.losses}</span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-foreground">{team.wins}-{team.losses}</span>
+                  <span className="text-foreground">
                     {team.wins + team.losses > 0 ? `${(team.winPercentage * 100).toFixed(1)}%` : '—'}
                   </span>
                   <span className={cn(
@@ -116,7 +116,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   return (
     <div className="overflow-x-auto">
       <Table className={cn(
-        "bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow-sm",
+        "bg-card border border-border rounded-xl shadow-sm",
         "border-t-2 border-t-blue-300 dark:border-t-blue-700/70"
       )}>
         <TableHeader>
@@ -125,27 +125,27 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             "border-b border-blue-200/70 dark:border-blue-900/30"
           )}>
             <TableHead
-              className="w-10 font-mono tracking-wide text-gray-700 dark:text-gray-200"
+              className="w-10 font-mono tracking-wide text-muted-foreground"
             >
               Rank
             </TableHead>
             <TableHead
-              className="font-semibold uppercase tracking-wide font-bebas text-gray-700 dark:text-gray-200"
+              className="font-semibold uppercase tracking-wide font-bebas text-muted-foreground"
             >
               Team
             </TableHead>
             <TableHead
-              className="text-center font-mono text-gray-700 dark:text-gray-200"
+              className="text-center font-mono text-muted-foreground"
             >
               Record
             </TableHead>
             <TableHead
-              className="text-center font-mono text-gray-700 dark:text-gray-200"
+              className="text-center font-mono text-muted-foreground"
             >
               Win %
             </TableHead>
             <TableHead
-              className="text-center font-mono text-gray-700 dark:text-gray-200"
+              className="text-center font-mono text-muted-foreground"
             >
               Power Score
             </TableHead>
@@ -182,7 +182,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               <TableCell>
                 <div className="flex items-center space-x-3 min-w-0">
                   {team.imageUrl && (
-                    <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0 border border-gray-200 dark:border-gray-700">
+                    <div className="w-8 h-8 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border border-border">
                       <img
                         src={team.imageUrl}
                         alt={team.teamName}
@@ -192,7 +192,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                   )}
                   <span
                     className={cn(
-                      "font-bebas tracking-wide uppercase text-base text-gray-900 dark:text-white",
+                      "font-bebas tracking-wide uppercase text-base text-foreground",
                       index < 3 && "text-lg"
                     )}
                   >
@@ -201,14 +201,14 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 </div>
               </TableCell>
               <TableCell
-                className="text-center font-mono text-gray-900 dark:text-white"
+                className="text-center font-mono text-foreground"
               >
                 <span>
                   {team.wins}-{team.losses}
                 </span>
               </TableCell>
               <TableCell
-                className="text-center font-mono text-gray-900 dark:text-white"
+                className="text-center font-mono text-foreground"
               >
                 <span>
                   {team.wins + team.losses > 0 ? `${(team.winPercentage * 100).toFixed(1)}%` : '—'}

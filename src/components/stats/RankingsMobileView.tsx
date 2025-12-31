@@ -99,7 +99,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   className={cn(
                     "rounded-lg py-1 px-2 text-xs font-medium transition-all whitespace-nowrap",
                     isWinterTheme && (sortOptions.field === field.id ? "btn-winter-primary" : "btn-winter-secondary"),
-                    !isWinterTheme && sortOptions.field !== field.id && "bg-white hover:bg-gradient-to-br hover:from-blue-50/40 hover:to-orange-50/20 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
+                    !isWinterTheme && sortOptions.field !== field.id && "bg-card hover:bg-accent/50 text-foreground border-border"
                   )}
                 >
                   {field.label}
@@ -122,7 +122,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
               htmlFor="detailed-view"
               className={cn(
                 "text-sm",
-                isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-gray-700 dark:text-gray-300"
+                isWinterTheme ? "text-[hsl(var(--muted-foreground))]" : "text-muted-foreground"
               )}
               onClick={() => toggleViewMode(!detailedView)}
             >
@@ -139,10 +139,10 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                 "text-lg font-medium flex items-center font-inter",
                 isWinterTheme
                   ? "text-[hsl(var(--foreground))] border-l-4 border-[hsl(var(--frost-border))] pl-2 bg-white/5"
-                  : "text-gray-900 dark:text-white border-l-4 border-blue-500 dark:border-blue-700 pl-2 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent"
+                  : "text-foreground border-l-4 border-blue-500 dark:border-blue-700 pl-2 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent"
               )}>
                 {displayDivision}{" "}
-                <span className="ml-2 text-xs text-gray-600 dark:text-gray-400 font-inter">
+                <span className="ml-2 text-xs text-muted-foreground font-inter">
                   ({divisionRankings.length})
                 </span>
               </h3>

@@ -58,9 +58,9 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
 
   if (isLoading) {
     return (
-      <Card className="bg-gray-50">
+      <Card className="bg-muted">
         <CardContent className="pt-6 pb-4">
-          <p className="text-gray-500 text-center">Loading timeslot information...</p>
+          <p className="text-muted-foreground text-center">Loading timeslot information...</p>
         </CardContent>
       </Card>
     );
@@ -68,12 +68,12 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
 
   if (timeslots.length === 0) {
     return (
-      <Card className="bg-gray-50">
+      <Card className="bg-muted">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">This Week's Timeslot</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-gray-500">No timeslots assigned this week</p>
+          <p className="text-muted-foreground">No timeslots assigned this week</p>
         </CardContent>
       </Card>
     );
@@ -90,7 +90,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
             <Clock className="h-4 w-4 text-blue-500" />
             <div>
               <p className="font-medium">{timeslot.timeslot}</p>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-muted-foreground">
                 {format(new Date(timeslot.match_date), 'EEE, MMM d')}
               </p>
             </div>

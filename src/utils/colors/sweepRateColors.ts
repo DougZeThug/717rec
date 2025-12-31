@@ -10,7 +10,7 @@
  */
 export const getSweepRateColor = (rate: number | null | undefined): string => {
   if (rate === null || rate === undefined) {
-    return "text-gray-400 dark:text-gray-500";
+    return "text-muted-foreground";
   }
 
   // Elite dominance - Gold

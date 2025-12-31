@@ -93,7 +93,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
     <>
       <div className="border rounded-md p-2 h-[200px] overflow-y-auto">
         {isLoadingData ? (
-          <p className="text-center py-4 text-gray-500">Loading teams and calculating rankings...</p>
+          <p className="text-center py-4 text-muted-foreground">Loading teams and calculating rankings...</p>
         ) : filteredTeams.length > 0 ? (
           <div className="space-y-2">
             {filteredTeams.map((team) => {
@@ -105,7 +105,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
                   className={`flex items-center p-2 rounded cursor-pointer ${
                     isTeamSelected(team.id) 
                       ? 'bg-cornhole-green/20 border border-cornhole-green' 
-                      : 'hover:bg-gray-100'
+                      : 'hover:bg-muted'
                   }`}
                   onClick={() => handleToggle(team.id)}
                 >
@@ -121,7 +121,7 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">{team.name || 'Unnamed Team'}</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       Power: {team.powerScore > 0 ? team.powerScore.toFixed(1) : 'TBD'}
                     </div>
                   </div>
@@ -133,12 +133,12 @@ const TeamSelectionList: React.FC<TeamSelectionListProps> = ({
             })}
           </div>
         ) : (
-          <p className="text-center py-4 text-gray-500">
+          <p className="text-center py-4 text-muted-foreground">
             {divisionName ? `No teams found in ${divisionName} division` : 'No teams available'}
           </p>
         )}
       </div>
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-muted-foreground">
         Selected: {selectedIds.length} teams
         {maxTeams && ` (max: ${maxTeams})`}
         <br />

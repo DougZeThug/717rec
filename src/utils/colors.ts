@@ -7,7 +7,7 @@ export { formatPowerScore, getPowerScoreColor } from '@/utils/colors/powerScoreC
 // FIXED: Corrected SOS color mapping - higher SOS (harder schedule) = red, lower SOS (easier schedule) = green
 export const getSosColor = (sos: number | null | undefined): string => {
   if (sos === null || sos === undefined) {
-    return "text-gray-400 dark:text-gray-500";
+    return "text-muted-foreground";
   }
   
   // Higher SOS means tougher schedule (red), lower means easier (green)
@@ -20,7 +20,7 @@ export const getSosColor = (sos: number | null | undefined): string => {
 // Sweep rate color mapping - higher sweep rate (more dominant) = better colors
 export const getSweepRateColor = (rate: number | null | undefined): string => {
   if (rate === null || rate === undefined) {
-    return "text-gray-400 dark:text-gray-500";
+    return "text-muted-foreground";
   }
 
   // Elite dominance - Gold
