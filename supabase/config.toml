@@ -25,6 +25,9 @@ verify_jwt = true
 [functions.capture-power-snapshots]
 verify_jwt = false
 
+[functions.analyze-team]
+verify_jwt = false
+
 [storage]
 enabled = true
 port = 54323
