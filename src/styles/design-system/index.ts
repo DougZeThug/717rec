@@ -11,4 +11,5 @@ export * from './blueAmber';
 export * from './motion';
 export * from './tokens';
 export * from './lists';
+export * from './semanticColors';
 

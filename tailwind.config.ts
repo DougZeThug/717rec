@@ -32,10 +32,9 @@ export default {
         inter: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
         oswald: ['Oswald', 'League Spartan', 'Bebas Neue', 'Arial', 'sans-serif'],
-        source: ['Source Sans Pro', 'Work Sans', 'system-ui', 'sans-serif'],
         bebas: ['Bebas Neue', 'Arial', 'sans-serif'],
+        // TODO: Load Snowtop Caps font file if keeping this feature
         snowtop: ['Snowtop Caps', 'Bebas Neue', 'Arial', 'sans-serif'],
-        ohsnow: ['OhSnow', 'Bebas Neue', 'Arial', 'sans-serif'],
       },
       colors: {
 				border: 'hsl(var(--border))',
