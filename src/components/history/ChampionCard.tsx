@@ -3,6 +3,7 @@ import React from "react";
 import { Crown, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getPowerScoreColor, getSosColor } from "@/utils/colors";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface SeasonData {
   team_id: string;
@@ -32,17 +33,21 @@ const getWinPercentageColor = (percentage: number): string => {
 };
 
 const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
+  const { isWinterTheme } = useSeasonalThemeBase();
   const winPercentage = team.match_wins + team.match_losses > 0 
     ? (team.match_wins / (team.match_wins + team.match_losses)) * 100 
     : 0;
 
   return (
     <div className={cn(
-      "relative bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20",
-      "border-4 border-yellow-400 dark:border-yellow-500",
-      "rounded-2xl p-4 mb-4",
-      "shadow-lg shadow-yellow-100 dark:shadow-yellow-900/20",
-      "overflow-hidden"
+      "relative rounded-2xl p-4 mb-4 overflow-hidden",
+      isWinterTheme 
+        ? "bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border-2 border-yellow-400/50 shadow-lg shadow-yellow-500/10" 
+        : cn(
+            "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20",
+            "border-4 border-yellow-400 dark:border-yellow-500",
+            "shadow-lg shadow-yellow-100 dark:shadow-yellow-900/20"
+          )
     )}>
       {/* Confetti background pattern */}
       <div className="absolute inset-0 opacity-10 dark:opacity-5">
@@ -55,7 +60,12 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
 
       <div className="relative flex items-center gap-4">
         <div className="relative">
-          <div className="ring-4 ring-amber-400 dark:ring-amber-500 rounded-lg p-1 bg-white dark:bg-slate-700">
+          <div className={cn(
+            "ring-4 rounded-lg p-1",
+            isWinterTheme 
+              ? "ring-amber-400/50 bg-slate-800/80" 
+              : "ring-amber-400 dark:ring-amber-500 bg-white dark:bg-slate-700"
+          )}>
             {team.team_logo_url || team.team_image_url ? (
               <img
                 src={team.team_logo_url || team.team_image_url || ''}
@@ -66,7 +76,10 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
                 }}
               />
             ) : (
-              <div className="h-16 w-16 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <div className={cn(
+                "h-16 w-16 rounded-lg flex items-center justify-center",
+                isWinterTheme ? "bg-slate-700/80" : "bg-gray-100 dark:bg-gray-800"
+              )}>
                 <Trophy className="w-8 h-8 text-yellow-500" />
               </div>
             )}

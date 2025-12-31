@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getHistoryDivisionDisplayName, sortHistoryDivisions } from "@/utils/historyDivisionUtils";
 import { dbLog, errorLog } from "@/utils/logger";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface Season {
   id: string;
@@ -113,6 +114,7 @@ interface SeasonAccordionProps {
 const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: seasonData, isLoading, error, refetch, isRefetching } = useSeasonData(season.id, true);
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -167,15 +169,24 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
   const dateRange = formatDateRange();
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-slate-700">
+    <div className={cn(
+      "rounded-2xl shadow-lg overflow-hidden border",
+      isWinterTheme 
+        ? "frost-card winter-card-surface border-[hsla(199,60%,50%,0.2)]" 
+        : "bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700"
+    )}>
       <button
         onClick={handleToggle}
         className={cn(
           "w-full p-4 md:p-6 text-left transition-all duration-200",
-          "hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-amber-50/30",
-          "dark:hover:from-slate-700/50 dark:hover:to-slate-700/30",
           "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset",
-          isExpanded && "bg-gradient-to-r from-blue-50/30 to-amber-50/20 dark:from-slate-700/40 dark:to-slate-700/20"
+          isWinterTheme 
+            ? cn("hover:bg-white/5", isExpanded && "bg-white/5")
+            : cn(
+                "hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-amber-50/30",
+                "dark:hover:from-slate-700/50 dark:hover:to-slate-700/30",
+                isExpanded && "bg-gradient-to-r from-blue-50/30 to-amber-50/20 dark:from-slate-700/40 dark:to-slate-700/20"
+              )
         )}
         aria-expanded={isExpanded}
       >
@@ -183,9 +194,13 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center",
-              hasChampions 
-                ? "bg-gradient-to-br from-yellow-100 to-amber-200 dark:from-yellow-900/40 dark:to-amber-800/40" 
-                : "bg-gray-100 dark:bg-gray-700"
+              isWinterTheme
+                ? hasChampions 
+                  ? "bg-gradient-to-br from-yellow-500/30 to-amber-500/20" 
+                  : "bg-white/10"
+                : hasChampions 
+                  ? "bg-gradient-to-br from-yellow-100 to-amber-200 dark:from-yellow-900/40 dark:to-amber-800/40" 
+                  : "bg-gray-100 dark:bg-gray-700"
             )}>
               <Trophy className={cn(
                 "w-5 h-5",
@@ -252,7 +267,10 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="p-4 md:p-6 pt-0 border-t border-gray-200 dark:border-slate-600">
+            <div className={cn(
+              "p-4 md:p-6 pt-0 border-t",
+              isWinterTheme ? "border-white/10" : "border-gray-200 dark:border-slate-600"
+            )}>
               {isLoading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (

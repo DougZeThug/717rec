@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface SeasonData {
   team_id: string;
@@ -33,6 +35,7 @@ interface DivisionPanelProps {
 const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(true);
+  const { isWinterTheme } = useSeasonalThemeBase();
   
   // Collapse divisions on mobile after initial mount
   useEffect(() => {
@@ -59,10 +62,17 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
   });
 
   return (
-    <div className="space-y-3 border-b pb-6 last:border-b-0">
+    <div className={cn(
+      "space-y-3 pb-6 last:border-b-0",
+      isWinterTheme ? "border-b border-white/10" : "border-b"
+    )}>
       <div 
-        className="flex justify-between items-center cursor-pointer bg-gray-50/50 dark:bg-gray-900/50 
-          rounded-lg px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
+        className={cn(
+          "flex justify-between items-center cursor-pointer rounded-lg px-4 py-3 transition-colors",
+          isWinterTheme 
+            ? "bg-white/5 hover:bg-white/10 border border-white/10" 
+            : "bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800/70"
+        )}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
