@@ -62,10 +62,8 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         "hover:border-[hsla(199,70%,65%,0.6)]",
       ].join(" ");
     }
-    if (resolvedTheme === "dark") {
-      return "text-white hover:bg-gray-700 border-gray-600 dark:hover:bg-gray-700/80";
-    }
-    return "text-gray-700 hover:bg-gray-200 border-gray-300";
+    // Use semantic tokens for light/dark
+    return "text-foreground hover:bg-muted border-border";
   };
 
   const getIconClasses = () => {
