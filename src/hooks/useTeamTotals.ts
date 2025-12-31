@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface DivisionRecord {
+  wins: number;
+  losses: number;
+}
+
 interface TeamTotals {
   career_match_wins: number;
   career_match_losses: number;
@@ -15,6 +20,11 @@ interface TeamTotals {
   career_sweep_rate: number;
   career_sweeps: number;
   career_sos: number;
+  division_records: {
+    competitive: DivisionRecord;
+    intermediate: DivisionRecord;
+    recreational: DivisionRecord;
+  };
 }
 
 const calculateCareerPowerScore = async (
@@ -141,7 +151,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     return null;
   }
 
-  // Get current season matches (not yet in team_season_stats)
+  // Get current season matches with opponent team info for division lookup
   const { data: currentMatches, error: matchError } = await supabase
     .from('matches')
     .select(`
@@ -151,7 +161,9 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
       team2_game_wins,
       team1_id,
       team2_id,
-      season_id
+      season_id,
+      team1:teams!matches_team1_id_fkey(id, divisions(name)),
+      team2:teams!matches_team2_id_fkey(id, divisions(name))
     `)
     .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
     .eq('iscompleted', true);
@@ -375,6 +387,53 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     teamDivisionWeight
   );
 
+  // Helper to categorize division into tier
+  const categorizeDivision = (divisionName: string | null): 'competitive' | 'intermediate' | 'recreational' | null => {
+    if (!divisionName) return null;
+    const name = divisionName.toLowerCase();
+    if (name.includes('competitive')) return 'competitive';
+    if (name.includes('intermediate') || name === 'cuspers') return 'intermediate';
+    if (name.includes('recreational')) return 'recreational';
+    return null;
+  };
+
+  // Initialize division records
+  const division_records = {
+    competitive: { wins: 0, losses: 0 },
+    intermediate: { wins: 0, losses: 0 },
+    recreational: { wins: 0, losses: 0 }
+  };
+
+  // Add historical season stats to division records (the team's own division each season)
+  if (seasonStats) {
+    for (const stat of seasonStats) {
+      const tier = categorizeDivision(stat.division_name);
+      if (tier) {
+        division_records[tier].wins += stat.match_wins || 0;
+        division_records[tier].losses += stat.match_losses || 0;
+      }
+    }
+  }
+
+  // Add current season matches based on opponent's division
+  if (currentMatches) {
+    for (const match of currentMatches) {
+      const isTeam1 = match.team1_id === teamId;
+      const opponentDivision = isTeam1 
+        ? (match.team2 as any)?.divisions?.name 
+        : (match.team1 as any)?.divisions?.name;
+      const tier = categorizeDivision(opponentDivision);
+      
+      if (tier) {
+        if (match.winner_id === teamId) {
+          division_records[tier].wins++;
+        } else if (match.loser_id === teamId) {
+          division_records[tier].losses++;
+        }
+      }
+    }
+  }
+
   return {
     career_match_wins,
     career_match_losses,
@@ -388,7 +447,8 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     career_power_score,
     career_sweep_rate,
     career_sweeps,
-    career_sos
+    career_sos,
+    division_records
   };
 };
 
