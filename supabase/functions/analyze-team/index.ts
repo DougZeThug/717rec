@@ -45,7 +45,9 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch team details
+    console.log('Fetching data for team:', teamId);
+
+    // Fetch team details from v_team_details
     const { data: teamData, error: teamError } = await supabase
       .from('v_team_details')
       .select('*')
@@ -60,35 +62,77 @@ serve(async (req) => {
       );
     }
 
-    // Fetch recent matches (last 10)
-    const { data: matchesData, error: matchesError } = await supabase
+    const teamName = teamData.name; // Correct field name from v_team_details
+    console.log('Team name:', teamName);
+
+    // Fetch current season matches from matches table
+    const { data: currentMatches, error: currentMatchesError } = await supabase
       .from('matches')
       .select(`
-        id,
-        date,
-        team1_id,
-        team2_id,
-        team1_score,
-        team2_score,
-        team1_game_wins,
-        team2_game_wins,
-        winner_id,
-        iscompleted
+        id, date, team1_id, team2_id, team1_score, team2_score,
+        team1_game_wins, team2_game_wins, winner_id, iscompleted
       `)
       .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
       .eq('iscompleted', true)
       .order('date', { ascending: false })
-      .limit(10);
+      .limit(15);
 
-    if (matchesError) {
-      console.error('Error fetching matches:', matchesError);
+    if (currentMatchesError) {
+      console.error('Error fetching current matches:', currentMatchesError);
     }
+    console.log('Current season matches found:', currentMatches?.length || 0);
 
-    // Get team names for matches
+    // Fetch historical matches from matches_archive
+    const { data: archivedMatches, error: archivedError } = await supabase
+      .from('matches_archive')
+      .select(`
+        id, date, team1_id, team2_id, team1_score, team2_score,
+        team1_game_wins, team2_game_wins, winner_id, iscompleted
+      `)
+      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+      .eq('iscompleted', true)
+      .order('date', { ascending: false })
+      .limit(50);
+
+    if (archivedError) {
+      console.error('Error fetching archived matches:', archivedError);
+    }
+    console.log('Archived matches found:', archivedMatches?.length || 0);
+
+    // Fetch head-to-head records from v_head_to_head view
+    const { data: h2hData, error: h2hError } = await supabase
+      .from('v_head_to_head')
+      .select('*')
+      .eq('team_id', teamId);
+
+    if (h2hError) {
+      console.error('Error fetching H2H data:', h2hError);
+    }
+    console.log('H2H records found:', h2hData?.length || 0);
+
+    // Fetch playoff team records
+    const { data: playoffRecords, error: playoffError } = await supabase
+      .from('playoff_team_records')
+      .select('*')
+      .eq('team_id', teamId);
+
+    if (playoffError) {
+      console.error('Error fetching playoff records:', playoffError);
+    }
+    console.log('Playoff records found:', playoffRecords?.length || 0);
+
+    // Collect all team IDs for name lookup
     const teamIds = new Set<string>();
-    matchesData?.forEach(m => {
+    currentMatches?.forEach(m => {
       if (m.team1_id) teamIds.add(m.team1_id);
       if (m.team2_id) teamIds.add(m.team2_id);
+    });
+    archivedMatches?.forEach(m => {
+      if (m.team1_id) teamIds.add(m.team1_id);
+      if (m.team2_id) teamIds.add(m.team2_id);
+    });
+    h2hData?.forEach(h => {
+      if (h.opponent_id) teamIds.add(h.opponent_id);
     });
 
     const { data: teamsData } = await supabase
@@ -101,8 +145,8 @@ serve(async (req) => {
       teamNameMap[t.id] = t.name;
     });
 
-    // Format matches for AI
-    const recentMatches = matchesData?.map(m => {
+    // Format current season matches
+    const formatMatch = (m: any) => {
       const isTeam1 = m.team1_id === teamId;
       const opponentId = isTeam1 ? m.team2_id : m.team1_id;
       const won = m.winner_id === teamId;
@@ -114,43 +158,52 @@ serve(async (req) => {
       return {
         opponent: teamNameMap[opponentId] || 'Unknown',
         result: won ? 'W' : 'L',
-        matchScore: `${teamScore}-${oppScore}`,
-        gameScore: `${teamGames}-${oppGames}`,
+        matchScore: `${teamScore || 0}-${oppScore || 0}`,
+        gameScore: `${teamGames || 0}-${oppGames || 0}`,
         date: m.date
       };
-    }) || [];
+    };
 
-    // Calculate head-to-head summary from matches
-    const h2hStats: Record<string, { opponent: string; wins: number; losses: number }> = {};
-    matchesData?.forEach(m => {
-      const isTeam1 = m.team1_id === teamId;
-      const opponentId = isTeam1 ? m.team2_id : m.team1_id;
-      const won = m.winner_id === teamId;
-      const oppName = teamNameMap[opponentId] || 'Unknown';
-      
-      if (!h2hStats[opponentId]) {
-        h2hStats[opponentId] = { opponent: oppName, wins: 0, losses: 0 };
-      }
-      if (won) {
-        h2hStats[opponentId].wins++;
-      } else {
-        h2hStats[opponentId].losses++;
-      }
-    });
+    const recentMatches = currentMatches?.map(formatMatch) || [];
+    const historicalMatches = archivedMatches?.map(formatMatch) || [];
 
-    const headToHead = Object.values(h2hStats);
+    // Format H2H data from view
+    const headToHead = h2hData?.map(h => ({
+      opponent: teamNameMap[h.opponent_id] || 'Unknown',
+      wins: h.wins || 0,
+      losses: h.losses || 0,
+      winPct: h.win_percentage ? (h.win_percentage * 100).toFixed(0) : '0'
+    })) || [];
 
-    // Determine confidence level
-    const matchCount = matchesData?.length || 0;
+    // Format playoff history
+    const playoffHistory = playoffRecords?.map(p => ({
+      placement: p.placement,
+      wins: p.wins || 0,
+      losses: p.losses || 0,
+      gameWins: p.game_wins || 0,
+      gameLosses: p.game_losses || 0
+    })) || [];
+
+    // Calculate total data points for confidence
+    const currentMatchCount = currentMatches?.length || 0;
+    const archivedMatchCount = archivedMatches?.length || 0;
+    const h2hCount = h2hData?.length || 0;
+    const totalDataPoints = currentMatchCount + archivedMatchCount + h2hCount;
+
     let confidence: 'high' | 'medium' | 'low' = 'low';
-    if (matchCount >= 8) confidence = 'high';
-    else if (matchCount >= 4) confidence = 'medium';
+    if (totalDataPoints >= 15 || (currentMatchCount >= 5 && h2hCount >= 3)) {
+      confidence = 'high';
+    } else if (totalDataPoints >= 6 || currentMatchCount >= 3) {
+      confidence = 'medium';
+    }
+
+    console.log('Confidence level:', confidence, '- Total data points:', totalDataPoints);
 
     // Check if we have enough data
-    if (matchCount < 2) {
+    if (currentMatchCount < 1 && archivedMatchCount < 3) {
       return new Response(
         JSON.stringify({
-          overall: `${teamData.team_name} has limited match data available. More games are needed for a comprehensive analysis.`,
+          overall: `${teamName} has limited match data available. More games are needed for a comprehensive analysis.`,
           strengths: ['Team roster is established'],
           weaknesses: ['Insufficient data for detailed analysis'],
           trends: 'Not enough matches to establish trends.',
@@ -161,36 +214,50 @@ serve(async (req) => {
       );
     }
 
-    // Build prompt for OpenAI
+    // Count championship wins
+    const championships = playoffHistory.filter(p => p.placement === 1).length;
+    const runnerUps = playoffHistory.filter(p => p.placement === 2).length;
+
+    // Build comprehensive prompt for OpenAI
     const prompt = `Analyze this cornhole team's performance and provide insights:
 
-TEAM: ${teamData.team_name}
+TEAM: ${teamName}
 
-SEASON STATS:
+CURRENT SEASON STATS:
 - Record: ${teamData.wins || 0} wins, ${teamData.losses || 0} losses (${((teamData.win_percentage || 0) * 100).toFixed(1)}% win rate)
 - Games: ${teamData.game_wins || 0} won, ${teamData.game_losses || 0} lost (${((teamData.game_win_percentage || 0) * 100).toFixed(1)}% game win rate)
 - Power Score: ${teamData.power_score?.toFixed(2) || 'N/A'}
 - Strength of Schedule: ${teamData.sos?.toFixed(3) || 'N/A'}
 - Close Match Losses: ${teamData.close_match_losses || 0}
+- Current Rank: #${teamData.rank || 'N/A'}
 
-RECENT MATCHES (most recent first):
-${recentMatches.map((m, i) => `${i + 1}. vs ${m.opponent}: ${m.result} (Match: ${m.matchScore}, Games: ${m.gameScore})`).join('\n')}
+PLAYOFF/CHAMPIONSHIP HISTORY:
+- Championships Won: ${championships}
+- Runner-up Finishes: ${runnerUps}
+- Total Playoff Appearances: ${playoffHistory.length}
+${playoffHistory.length > 0 ? playoffHistory.map(p => `  - Placement: ${p.placement}${p.placement === 1 ? ' (Champion!)' : p.placement === 2 ? ' (Runner-up)' : ''}, Record: ${p.wins}-${p.losses}`).join('\n') : '- No playoff history yet'}
 
-HEAD-TO-HEAD RECORDS:
-${headToHead.map(h => `- vs ${h.opponent}: ${h.wins}W-${h.losses}L`).join('\n')}
+CURRENT SEASON MATCHES (${recentMatches.length} games, most recent first):
+${recentMatches.length > 0 ? recentMatches.map((m, i) => `${i + 1}. vs ${m.opponent}: ${m.result} (Match: ${m.matchScore}, Games: ${m.gameScore})`).join('\n') : 'No current season matches yet'}
+
+CAREER HEAD-TO-HEAD RECORDS (all-time):
+${headToHead.length > 0 ? headToHead.map(h => `- vs ${h.opponent}: ${h.wins}W-${h.losses}L (${h.winPct}%)`).join('\n') : 'No head-to-head data available'}
+
+HISTORICAL MATCHES (from previous seasons, ${historicalMatches.length} games):
+${historicalMatches.slice(0, 10).map((m, i) => `${i + 1}. vs ${m.opponent}: ${m.result} (Match: ${m.matchScore}, Games: ${m.gameScore})`).join('\n') || 'No archived matches'}
 
 Provide a JSON response with exactly this structure:
 {
-  "overall": "2-3 sentence overall assessment of the team",
+  "overall": "2-3 sentence overall assessment considering both current form AND historical performance/championships",
   "strengths": ["strength 1", "strength 2", "strength 3"],
   "weaknesses": ["weakness 1", "weakness 2"],
-  "trends": "1-2 sentences about current form and trajectory",
-  "rivalryInsights": "1 sentence about notable H2H matchups or null if not enough data"
+  "trends": "1-2 sentences about current form and trajectory based on recent matches",
+  "rivalryInsights": "1 sentence about notable H2H matchups, dominant opponents, or struggles - reference specific teams if data available, or null if insufficient data"
 }
 
-Be specific and use the actual stats. Focus on actionable insights for a recreational cornhole league.`;
+Be specific and reference actual stats, team names, and achievements. ${championships > 0 ? 'Highlight their championship pedigree!' : ''} Focus on actionable insights for a recreational cornhole league.`;
 
-    console.log('Calling OpenAI with prompt for team:', teamData.team_name);
+    console.log('Calling OpenAI with prompt for team:', teamName);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -250,7 +317,7 @@ Be specific and use the actual stats. Focus on actionable insights for a recreat
     // Add confidence level
     analysis.confidence = confidence;
 
-    console.log('Analysis generated successfully for team:', teamData.team_name);
+    console.log('Analysis generated successfully for team:', teamName);
 
     return new Response(
       JSON.stringify(analysis),
