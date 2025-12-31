@@ -172,7 +172,7 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     console.error('Error fetching current matches:', matchError);
   }
 
-  // Get archived matches for career sweep rate calculation
+  // Get archived matches for career sweep rate calculation and division records
   const { data: archivedMatches, error: archivedError } = await supabase
     .from('matches_archive')
     .select(`
@@ -181,7 +181,8 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
       team1_game_wins,
       team2_game_wins,
       team1_id,
-      team2_id
+      team2_id,
+      season_id
     `)
     .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
     .eq('iscompleted', true);
@@ -189,6 +190,11 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   if (archivedError) {
     console.error('Error fetching archived matches:', archivedError);
   }
+
+  // Fetch all team_season_stats to build opponent division lookup map
+  const { data: allTeamSeasonStats } = await supabase
+    .from('team_season_stats')
+    .select('team_id, season_id, division_name');
 
 
   // Get playoff matches with bracket information
@@ -404,18 +410,37 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     recreational: { wins: 0, losses: 0 }
   };
 
-  // Add historical season stats to division records (the team's own division each season)
-  if (seasonStats) {
-    for (const stat of seasonStats) {
-      const tier = categorizeDivision(stat.division_name);
-      if (tier) {
-        division_records[tier].wins += stat.match_wins || 0;
-        division_records[tier].losses += stat.match_losses || 0;
+  // Build lookup map: "teamId_seasonId" -> division_name for opponent division lookup
+  const teamDivisionMap = new Map<string, string>();
+  if (allTeamSeasonStats) {
+    for (const stat of allTeamSeasonStats) {
+      if (stat.team_id && stat.season_id && stat.division_name) {
+        teamDivisionMap.set(`${stat.team_id}_${stat.season_id}`, stat.division_name);
       }
     }
   }
 
-  // Add current season matches based on opponent's division
+  // Process archived matches - look up opponent's division at time of match
+  if (archivedMatches) {
+    for (const match of archivedMatches) {
+      const isTeam1 = match.team1_id === teamId;
+      const opponentId = isTeam1 ? match.team2_id : match.team1_id;
+      if (!opponentId || !match.season_id) continue;
+      
+      const opponentDivision = teamDivisionMap.get(`${opponentId}_${match.season_id}`);
+      const tier = categorizeDivision(opponentDivision || null);
+      
+      if (tier) {
+        if (match.winner_id === teamId) {
+          division_records[tier].wins++;
+        } else if (match.loser_id === teamId) {
+          division_records[tier].losses++;
+        }
+      }
+    }
+  }
+
+  // Add current season matches based on opponent's current division
   if (currentMatches) {
     for (const match of currentMatches) {
       const isTeam1 = match.team1_id === teamId;
