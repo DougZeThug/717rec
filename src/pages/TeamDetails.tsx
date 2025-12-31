@@ -18,6 +18,7 @@ import { teamLog } from "@/utils/logger";
 import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import TeamDetailsStickyNav from "@/components/teams/TeamDetailsStickyNav";
+import TeamAIAnalysis from "@/components/teams/TeamAIAnalysis";
 
 const TeamDetails = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -115,6 +116,9 @@ const TeamDetails = () => {
             <PlayerList players={team.players || []} />
           </div>
         </section>
+
+        {/* AI-Powered Team Analysis */}
+        {teamId && <TeamAIAnalysis teamId={teamId} teamName={team.name} />}
         
         {/* 3. Head-to-Head Records */}
         <section id="h2h">
