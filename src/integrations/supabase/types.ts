@@ -2514,6 +2514,112 @@ export type Database = {
           },
         ]
       }
+      team_analysis: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          overall: string | null
+          rivalry_insights: string | null
+          strengths: string[] | null
+          team_id: string
+          trends: string | null
+          updated_at: string
+          updated_by: string | null
+          weaknesses: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          overall?: string | null
+          rivalry_insights?: string | null
+          strengths?: string[] | null
+          team_id: string
+          trends?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          weaknesses?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          overall?: string | null
+          rivalry_insights?: string | null
+          strengths?: string[] | null
+          team_id?: string
+          trends?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          weaknesses?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team1_id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team2_id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_analysis_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: true
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_badge_events: {
         Row: {
           awarded_at: string
