@@ -15,7 +15,7 @@ interface TeamTotals {
   career_playoff_losses: number;
   championships: number;
   runner_ups: number;
-  playoff_finishes: Array<{ rank: number; season_name: string }>;
+  playoff_finishes: Array<{ rank: number; season_name: string; division_name: string }>;
   career_power_score: number;
   career_sweep_rate: number;
   career_sweeps: number;
@@ -378,7 +378,8 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     ?.filter(stat => stat.playoff_rank)
     .map(stat => ({
       rank: stat.playoff_rank!,
-      season_name: stat.seasons?.name || 'Unknown Season'
+      season_name: stat.seasons?.name || 'Unknown Season',
+      division_name: stat.division_name || 'Unknown'
     }))
     .sort((a, b) => a.rank - b.rank) || [];
 

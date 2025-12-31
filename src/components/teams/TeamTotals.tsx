@@ -212,9 +212,9 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
             {totals.playoff_finishes.slice(0, 8).map((finish, index) => (
               <div
                 key={index}
-                className="px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground"
+                className="px-3 py-1.5 rounded-full text-sm font-medium bg-muted text-muted-foreground"
               >
-                #{finish.rank}
+                #{finish.rank} <span className="text-xs opacity-70">({finish.division_name})</span>
               </div>
             ))}
           </div>
