@@ -37,9 +37,9 @@
   --muted: 222 25% 16%;
   --muted-foreground: 210 20% 65%;
   
-  /* Accent - Aurora violet (sparingly) */
-  --accent: 270 60% 65%;
-  --accent-foreground: 210 40% 96%;
+  /* Accent - Ice glass blue (matches winter theme) */
+  --accent: 199 50% 25%;
+  --accent-foreground: 199 80% 90%;
   
   /* Destructive */
   --destructive: 0 62.8% 30.6%;
