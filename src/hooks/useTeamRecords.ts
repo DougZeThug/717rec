@@ -89,7 +89,8 @@ export const useTeamRecords = () => {
       
       // Force invalidate all relevant queries to ensure data freshness across the app
       const queriesToInvalidate = [
-        'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches'
+        'rankings', 'teams', 'matches', 'teamStats', 'team', 'team-matches',
+        'seasonStats', 'historicalSeasons', 'careerPowerScores'
       ];
       
       for (const queryKey of queriesToInvalidate) {

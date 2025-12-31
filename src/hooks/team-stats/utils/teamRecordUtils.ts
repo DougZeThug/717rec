@@ -29,6 +29,13 @@ export async function applyMatchResult(
     }
 
     scoreLog("Team stats updated successfully");
+
+    // Also refresh team_season_stats for historical accuracy
+    const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
+    if (seasonStatsError) {
+      errorLog("Failed to refresh season stats:", seasonStatsError);
+      // Non-fatal - continue
+    }
     
     return true;
   } catch (error) {
