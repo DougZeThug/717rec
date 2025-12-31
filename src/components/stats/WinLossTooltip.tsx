@@ -23,8 +23,8 @@ const WinLossTooltip: React.FC<WinLossTooltipProps> = ({
       : label; // fallback to label
 
   return (
-    <div className="rounded-md shadow-lg p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-      <p className="text-gray-800 dark:text-white font-semibold mb-1">{tooltipName}</p>
+    <div className="rounded-md shadow-lg p-2 bg-popover border border-border">
+      <p className="text-popover-foreground font-semibold mb-1">{tooltipName}</p>
       {payload.map((entry: any, idx: number) => (
         <p key={`tooltip-${idx}`} style={{ color: entry.color }} className="m-0 text-sm">
           {entry.name}: {entry.value}
