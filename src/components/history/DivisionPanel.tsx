@@ -76,9 +76,15 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <h4 className="text-lg font-semibold text-slate-900 dark:text-white">
+          <h4 className={cn(
+            "text-lg font-semibold",
+            isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+          )}>
             {divisionName}
-            <span className="ml-2 text-gray-500 dark:text-gray-400 text-base font-normal">
+            <span className={cn(
+              "ml-2 text-base font-normal",
+              isWinterTheme ? "text-white/60" : "text-gray-500 dark:text-gray-400"
+            )}>
               ({teams.length})
             </span>
           </h4>

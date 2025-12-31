@@ -209,16 +209,25 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg md:text-xl font-bebas uppercase tracking-wide text-slate-900 dark:text-white">
+                <h3 className={cn(
+                  "text-lg md:text-xl font-bebas uppercase tracking-wide",
+                  isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+                )}>
                   {season.name}
                 </h3>
                 {dateRange && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400 font-inter">
+                  <span className={cn(
+                    "text-xs font-inter",
+                    isWinterTheme ? "text-white/60" : "text-gray-500 dark:text-gray-400"
+                  )}>
                     ({dateRange})
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
+              <div className={cn(
+                "flex items-center gap-3 text-sm flex-wrap",
+                isWinterTheme ? "text-white/60" : "text-gray-500 dark:text-gray-400"
+              )}>
                 {isLoading ? (
                   <span className="text-gray-400 text-xs">Loading...</span>
                 ) : (
@@ -252,7 +261,8 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
             </div>
           </div>
           <ChevronDown className={cn(
-            "w-5 h-5 text-gray-400 transition-transform duration-200",
+            "w-5 h-5 transition-transform duration-200",
+            isWinterTheme ? "text-white/50" : "text-gray-400",
             isExpanded && "rotate-180"
           )} />
         </div>

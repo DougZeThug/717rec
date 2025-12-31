@@ -92,28 +92,40 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-            <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300 uppercase tracking-wide">
+            <span className={cn(
+              "text-sm font-medium uppercase tracking-wide",
+              isWinterTheme ? "text-yellow-300" : "text-yellow-700 dark:text-yellow-300"
+            )}>
               Division Champion
             </span>
           </div>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+          <h3 className={cn(
+            "text-xl font-bold mb-2",
+            isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+          )}>
             {team.team_name}
           </h3>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <p className="text-gray-600 dark:text-gray-300 font-medium">Record</p>
-              <p className="text-slate-900 dark:text-white font-bold">
+              <p className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>Record</p>
+              <p className={cn(
+                "font-bold",
+                isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+              )}>
                 {team.match_wins}-{team.match_losses}
               </p>
             </div>
             <div>
-              <p className="text-gray-600 dark:text-gray-300 font-medium">Games</p>
-              <p className="text-slate-900 dark:text-white font-bold">
+              <p className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>Games</p>
+              <p className={cn(
+                "font-bold",
+                isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+              )}>
                 {team.game_wins}-{team.game_losses}
               </p>
             </div>
             <div>
-              <p className="text-gray-600 dark:text-gray-300 font-medium">Win %</p>
+              <p className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>Win %</p>
               <p className={cn("font-bold", getWinPercentageColor(winPercentage))}>
                 {winPercentage.toFixed(1)}%
               </p>
@@ -122,10 +134,13 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
           
           {/* Additional stats if available */}
           {(team.power_score !== null || team.sos !== null) && (
-            <div className="grid grid-cols-2 gap-4 text-sm mt-3 pt-3 border-t border-yellow-200 dark:border-yellow-700/50">
+            <div className={cn(
+              "grid grid-cols-2 gap-4 text-sm mt-3 pt-3 border-t",
+              isWinterTheme ? "border-yellow-400/30" : "border-yellow-200 dark:border-yellow-700/50"
+            )}>
               {team.power_score !== null && (
                 <div>
-                  <p className="text-gray-600 dark:text-gray-300 font-medium">Power Score</p>
+                  <p className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>Power Score</p>
                   <p className={cn("font-bold", getPowerScoreColor(team.power_score * 100))}>
                     {(team.power_score * 100).toFixed(1)}
                   </p>
@@ -133,7 +148,7 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ team }) => {
               )}
               {team.sos !== null && (
                 <div>
-                  <p className="text-gray-600 dark:text-gray-300 font-medium">SOS</p>
+                  <p className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>SOS</p>
                   <p className={cn("font-bold", getSosColor(team.sos))}>
                     {team.sos.toFixed(3)}
                   </p>
