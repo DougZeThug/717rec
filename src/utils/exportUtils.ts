@@ -74,3 +74,106 @@ export const exportHeadToHeadToCSV = (
   
   downloadFile(csv, filename);
 };
+
+/**
+ * Export current standings to CSV
+ */
+export const exportStandingsToCSV = (
+  rankings: Array<{
+    teamName: string;
+    divisionName?: string | null;
+    wins: number;
+    losses: number;
+    winPercentage: number;
+    gamesWon: number;
+    gamesLost: number;
+    gameWinPercentage: number;
+    powerScore: number;
+    sos: number;
+  }>
+): void => {
+  const data = rankings.map((r, index) => ({
+    rank: index + 1,
+    team: r.teamName,
+    division: r.divisionName || '',
+    record: `${r.wins}-${r.losses}`,
+    win_pct: (r.winPercentage * 100).toFixed(1),
+    game_record: `${r.gamesWon}-${r.gamesLost}`,
+    game_win_pct: (r.gameWinPercentage * 100).toFixed(1),
+    power_score: r.powerScore.toFixed(2),
+    sos: r.sos.toFixed(3),
+  }));
+
+  const columns = [
+    { key: 'rank' as const, header: 'Rank' },
+    { key: 'team' as const, header: 'Team' },
+    { key: 'division' as const, header: 'Division' },
+    { key: 'record' as const, header: 'Record' },
+    { key: 'win_pct' as const, header: 'Win %' },
+    { key: 'game_record' as const, header: 'Game Record' },
+    { key: 'game_win_pct' as const, header: 'Game Win %' },
+    { key: 'power_score' as const, header: 'Power Score' },
+    { key: 'sos' as const, header: 'SOS' },
+  ];
+
+  const csv = arrayToCSV(data, columns);
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `Current_Standings_${date}.csv`;
+  
+  downloadFile(csv, filename);
+};
+
+/**
+ * Export career statistics to CSV
+ */
+export const exportCareerStatsToCSV = (
+  rankings: Array<{
+    teamName: string;
+    divisionName?: string | null;
+    careerMatchWins: number;
+    careerMatchLosses: number;
+    careerWinPercentage: number;
+    careerGameWins: number;
+    careerGameLosses: number;
+    careerGameWinPercentage: number;
+    careerPlayoffWins: number;
+    careerPlayoffLosses: number;
+    championships: number;
+    runnerUps: number;
+    careerPowerScore: number;
+  }>
+): void => {
+  const data = rankings.map((r, index) => ({
+    rank: index + 1,
+    team: r.teamName,
+    division: r.divisionName || '',
+    match_record: `${r.careerMatchWins}-${r.careerMatchLosses}`,
+    match_win_pct: (r.careerWinPercentage * 100).toFixed(1),
+    game_record: `${r.careerGameWins}-${r.careerGameLosses}`,
+    game_win_pct: (r.careerGameWinPercentage * 100).toFixed(1),
+    playoff_record: `${r.careerPlayoffWins}-${r.careerPlayoffLosses}`,
+    championships: r.championships,
+    runner_ups: r.runnerUps,
+    career_power_score: r.careerPowerScore.toFixed(2),
+  }));
+
+  const columns = [
+    { key: 'rank' as const, header: 'Rank' },
+    { key: 'team' as const, header: 'Team' },
+    { key: 'division' as const, header: 'Division' },
+    { key: 'match_record' as const, header: 'Match Record' },
+    { key: 'match_win_pct' as const, header: 'Match Win %' },
+    { key: 'game_record' as const, header: 'Game Record' },
+    { key: 'game_win_pct' as const, header: 'Game Win %' },
+    { key: 'playoff_record' as const, header: 'Playoff Record' },
+    { key: 'championships' as const, header: 'Championships' },
+    { key: 'runner_ups' as const, header: 'Runner-Ups' },
+    { key: 'career_power_score' as const, header: 'Career Power Score' },
+  ];
+
+  const csv = arrayToCSV(data, columns);
+  const date = new Date().toISOString().split('T')[0];
+  const filename = `Career_Statistics_${date}.csv`;
+  
+  downloadFile(csv, filename);
+};
