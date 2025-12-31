@@ -1,5 +1,5 @@
 import React from "react";
-import { Trophy, Award, Target, TrendingUp, Zap, Scale, Wind, BarChart } from "lucide-react";
+import { Trophy, Award, Target, TrendingUp, Zap, Scale, Wind, BarChart, Shield, Users, Star } from "lucide-react";
 import { useTeamTotals } from "@/hooks/useTeamTotals";
 import { getPowerScoreColor, getSosColor, getSweepRateColor } from "@/utils/colors";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -51,6 +51,29 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
       </CollapsibleSection>
     );
   }
+
+  // Calculate win percentage for division records
+  const getWinPct = (wins: number, losses: number): string => {
+    const total = wins + losses;
+    if (total === 0) return '-';
+    return ((wins / total) * 100).toFixed(0) + '%';
+  };
+
+  const getWinPctColor = (wins: number, losses: number): string => {
+    const total = wins + losses;
+    if (total === 0) return 'text-muted-foreground';
+    const pct = (wins / total) * 100;
+    if (pct >= 60) return 'text-emerald-500';
+    if (pct >= 50) return 'text-blue-500';
+    if (pct >= 40) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  const hasDivisionRecords = totals.division_records && (
+    totals.division_records.competitive.wins + totals.division_records.competitive.losses > 0 ||
+    totals.division_records.intermediate.wins + totals.division_records.intermediate.losses > 0 ||
+    totals.division_records.recreational.wins + totals.division_records.recreational.losses > 0
+  );
 
   return (
     <CollapsibleSection
@@ -127,6 +150,58 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
           </div>
         </div>
       </div>
+
+      {hasDivisionRecords && (
+        <div className="mt-4 md:mt-6 pt-4 border-t border-border">
+          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground mb-3 block">
+            Records by Division
+          </span>
+          <div className="grid grid-cols-3 gap-3 md:gap-4">
+            {totals.division_records.competitive.wins + totals.division_records.competitive.losses > 0 && (
+              <div className="flex flex-col p-3 rounded-lg bg-muted/50 border border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Shield size={14} className="text-red-500" />
+                  <span className="text-xs font-medium text-muted-foreground">Competitive</span>
+                </div>
+                <div className="font-mono text-base md:text-lg font-semibold tabular-nums">
+                  {totals.division_records.competitive.wins}-{totals.division_records.competitive.losses}
+                </div>
+                <span className={`text-xs font-medium ${getWinPctColor(totals.division_records.competitive.wins, totals.division_records.competitive.losses)}`}>
+                  {getWinPct(totals.division_records.competitive.wins, totals.division_records.competitive.losses)}
+                </span>
+              </div>
+            )}
+            {totals.division_records.intermediate.wins + totals.division_records.intermediate.losses > 0 && (
+              <div className="flex flex-col p-3 rounded-lg bg-muted/50 border border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Users size={14} className="text-blue-500" />
+                  <span className="text-xs font-medium text-muted-foreground">Intermediate</span>
+                </div>
+                <div className="font-mono text-base md:text-lg font-semibold tabular-nums">
+                  {totals.division_records.intermediate.wins}-{totals.division_records.intermediate.losses}
+                </div>
+                <span className={`text-xs font-medium ${getWinPctColor(totals.division_records.intermediate.wins, totals.division_records.intermediate.losses)}`}>
+                  {getWinPct(totals.division_records.intermediate.wins, totals.division_records.intermediate.losses)}
+                </span>
+              </div>
+            )}
+            {totals.division_records.recreational.wins + totals.division_records.recreational.losses > 0 && (
+              <div className="flex flex-col p-3 rounded-lg bg-muted/50 border border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Star size={14} className="text-green-500" />
+                  <span className="text-xs font-medium text-muted-foreground">Recreational</span>
+                </div>
+                <div className="font-mono text-base md:text-lg font-semibold tabular-nums">
+                  {totals.division_records.recreational.wins}-{totals.division_records.recreational.losses}
+                </div>
+                <span className={`text-xs font-medium ${getWinPctColor(totals.division_records.recreational.wins, totals.division_records.recreational.losses)}`}>
+                  {getWinPct(totals.division_records.recreational.wins, totals.division_records.recreational.losses)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {totals.playoff_finishes && totals.playoff_finishes.length > 0 && (
         <div className="mt-4 md:mt-6 pt-4 border-t border-border">
