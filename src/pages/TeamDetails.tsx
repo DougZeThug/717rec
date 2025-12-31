@@ -14,6 +14,7 @@ import HeadToHeadRecords from "@/components/stats/HeadToHeadRecords";
 import TeamTotals from "@/components/teams/TeamTotals";
 import { calculateSweepRate } from "@/utils/teamDetailsUtils/sweepRateUtils";
 import TeamCareerPowerScoreChart from "@/components/teams/TeamCareerPowerScoreChart";
+import TeamAdvancedStatsSection from "@/components/teams/TeamAdvancedStatsSection";
 import { teamLog } from "@/utils/logger";
 import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -141,6 +142,9 @@ const TeamDetails = () => {
 
         {/* 5. Career Stats */}
         {teamId && <TeamTotals teamId={teamId} />}
+
+        {/* 6. Advanced Stats - Season-by-Season Breakdown */}
+        {teamId && <TeamAdvancedStatsSection teamId={teamId} />}
 
         {/* 6. Career Power Score Trend */}
         {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
