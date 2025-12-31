@@ -107,9 +107,17 @@ export const useMatchUpdates = () => {
         scoreLog(`Team record update result: ${updateResult ? "success" : "failure"}`);
       }
 
+      // Refresh team_season_stats to keep historical data in sync
+      const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
+      if (seasonStatsError) {
+        warnLog('Failed to refresh season stats:', seasonStatsError);
+        // Non-fatal - the view-based stats are still correct
+      }
+
       // Invalidate queries to ensure fresh data throughout the app
       const queriesToInvalidate = [
-        'matches', 'teams', 'rankings', 'teamStats', 'team', 'team-matches'
+        'matches', 'teams', 'rankings', 'teamStats', 'team', 'team-matches',
+        'seasonStats', 'historicalSeasons', 'careerPowerScores'
       ];
       
       for (const queryKey of queriesToInvalidate) {
