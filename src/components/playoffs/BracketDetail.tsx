@@ -89,7 +89,8 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           <div>
             <CardTitle className={cn(
               blueAmber.text.heading,
-              "text-2xl font-bold tracking-tight"
+              "text-2xl font-bold tracking-tight",
+              "heading-winter"
             )}>
               {bracket.name}
             </CardTitle>

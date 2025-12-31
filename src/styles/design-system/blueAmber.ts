@@ -6,10 +6,11 @@ import { cn } from "@/lib/utils";
  */
 export const blueAmber = {
   // Text gradients for headings and important text
+  // heading-winter class allows winter CSS to override
   text: {
-    heading: "bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-300",
-    headingSubtle: "bg-gradient-to-br from-blue-500/90 to-amber-500/80 bg-clip-text text-transparent",
-    accent: "bg-gradient-to-br from-blue-700 to-amber-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400",
+    heading: "bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-300 heading-winter",
+    headingSubtle: "bg-gradient-to-br from-blue-500/90 to-amber-500/80 bg-clip-text text-transparent heading-winter",
+    accent: "bg-gradient-to-br from-blue-700 to-amber-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400 heading-winter",
   },
   
   // Border gradients for cards and containers
@@ -58,9 +59,10 @@ export const blueAmber = {
 };
 
 // Helper utility to apply blue-amber heading style to any element
+// Winter theme overrides this via CSS (.winter-frozen .heading-winter)
 export function blueAmberHeading(className?: string) {
   return cn(
-    "font-bebas uppercase tracking-wide bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-300",
+    "font-bebas uppercase tracking-wide bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-300 heading-winter",
     className
   );
 }
@@ -72,3 +74,14 @@ export function blueAmberInteractive(className?: string) {
     className
   );
 }
+
+// Winter text gradient class exports for direct use
+export const winterText = {
+  heading: "text-gradient-winter-heading heading-winter",
+  accent: "text-gradient-winter-accent",
+  subtle: "text-gradient-winter-subtle",
+  glow: "text-gradient-winter-glow",
+};
+
+// Winter active toggle style
+export const winterToggleActive = "toggle-winter-active";

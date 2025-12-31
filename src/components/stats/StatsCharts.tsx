@@ -61,7 +61,8 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                   className={cn(
                     "font-bebas uppercase tracking-wide",
                     isMobile ? "text-lg" : "text-xl sm:text-2xl",
-                    "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400"
+                    "bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400",
+                    "heading-winter"
                   )}
                   style={{ letterSpacing: "0.5px" }}
                 >

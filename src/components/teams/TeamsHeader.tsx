@@ -14,7 +14,8 @@ const TeamsHeader: React.FC<TeamsHeaderProps> = ({ title, description, children 
         <h1 className={cn(
           "font-bebas text-2xl sm:text-3xl md:text-4xl tracking-wide uppercase",
           "bg-gradient-to-br from-blue-600 to-amber-500 bg-clip-text text-transparent",
-          "dark:from-blue-400 dark:to-amber-300"
+          "dark:from-blue-400 dark:to-amber-300",
+          "heading-winter"
         )}>
           {title}
         </h1>

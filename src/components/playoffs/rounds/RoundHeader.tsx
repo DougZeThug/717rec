@@ -61,7 +61,7 @@ const RoundHeader: React.FC<RoundHeaderProps> = ({
         animationFillMode: 'forwards'
       }}
     >
-      <div className={blueAmber.text.heading}>
+      <div className={cn(blueAmber.text.heading, "heading-winter")}>
         {type === 'finals' 
           ? `${getTypeLabel()}${parseInt(round) > 1 ? ' - Game ' + round : ''}`
           : `Round ${round}`
