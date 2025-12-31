@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -35,10 +35,10 @@ serve(async (req) => {
       );
     }
 
-    if (!openAIApiKey) {
-      console.error('OPENAI_API_KEY is not configured');
+    if (!lovableApiKey) {
+      console.error('LOVABLE_API_KEY is not configured');
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        JSON.stringify({ error: 'Lovable API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -257,16 +257,16 @@ Provide a JSON response with exactly this structure:
 
 Be specific and reference actual stats, team names, and achievements. ${championships > 0 ? 'Highlight their championship pedigree!' : ''} Focus on actionable insights for a recreational cornhole league.`;
 
-    console.log('Calling OpenAI with prompt for team:', teamName);
+    console.log('Calling Lovable AI Gateway for team:', teamName);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { 
             role: 'system', 
@@ -274,14 +274,13 @@ Be specific and reference actual stats, team names, and achievements. ${champion
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
         max_tokens: 500,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('Lovable AI Gateway error:', response.status, errorText);
       return new Response(
         JSON.stringify({ error: 'Failed to generate analysis' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -302,7 +301,7 @@ Be specific and reference actual stats, team names, and achievements. ${champion
         throw new Error('No JSON found in response');
       }
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError, content);
+      console.error('Error parsing AI response:', parseError, content);
       // Fallback response
       analysis = {
         overall: content.substring(0, 200) || 'Analysis generated successfully.',
