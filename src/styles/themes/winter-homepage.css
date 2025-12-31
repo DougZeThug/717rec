@@ -912,68 +912,49 @@
    WINTER TEXT GRADIENTS - Icy replacements for blue-amber gradients
    ========================================================================== */
 
-/* Primary winter heading gradient - Cyan to Ice Blue */
-.winter-frozen .text-gradient-winter-heading,
-.winter-frozen .heading-winter {
-  background: linear-gradient(135deg, 
-    hsl(187, 80%, 72%) 0%,
-    hsl(201, 90%, 85%) 50%,
-    hsl(187, 75%, 70%) 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+/* Primary winter heading gradient - Applied to elements that already have gradient text setup */
+.winter-frozen .heading-winter.bg-clip-text,
+.winter-frozen .heading-winter[class*="bg-gradient"],
+.winter-frozen .text-gradient-winter-heading {
+  --tw-gradient-from: hsl(187, 80%, 72%) !important;
+  --tw-gradient-to: hsl(187, 75%, 70%) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), hsl(201, 90%, 85%), var(--tw-gradient-to) !important;
+  background-image: linear-gradient(135deg, var(--tw-gradient-stops)) !important;
+}
+
+/* Also target elements with the blueAmber text.heading class pattern */
+.winter-frozen [class*="from-blue-600"][class*="to-amber-500"].heading-winter,
+.winter-frozen [class*="from-blue-800"][class*="to-amber-700"].heading-winter,
+.winter-frozen [class*="from-blue-400"][class*="to-amber-400"].heading-winter,
+.winter-frozen [class*="from-blue-800"][class*="via-blue-700"][class*="to-amber-700"].heading-winter {
+  --tw-gradient-from: hsl(187, 80%, 72%) !important;
+  --tw-gradient-to: hsl(187, 75%, 70%) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), hsl(201, 90%, 85%), var(--tw-gradient-to) !important;
+  background-image: linear-gradient(135deg, var(--tw-gradient-stops)) !important;
 }
 
 /* Accent winter gradient - Cyan to Violet shimmer */
 .winter-frozen .text-gradient-winter-accent {
-  background: linear-gradient(135deg,
-    hsl(187, 70%, 80%) 0%,
-    hsl(270, 60%, 75%) 40%,
-    hsl(187, 75%, 72%) 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+  --tw-gradient-from: hsl(187, 70%, 80%) !important;
+  --tw-gradient-to: hsl(187, 75%, 72%) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), hsl(270, 60%, 75%), var(--tw-gradient-to) !important;
+  background-image: linear-gradient(135deg, var(--tw-gradient-stops)) !important;
 }
 
 /* Subtle winter gradient - Slate to Cyan */
 .winter-frozen .text-gradient-winter-subtle {
-  background: linear-gradient(135deg,
-    hsl(215, 20%, 85%) 0%,
-    hsl(187, 70%, 80%) 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+  --tw-gradient-from: hsl(215, 20%, 85%) !important;
+  --tw-gradient-to: hsl(187, 70%, 80%) !important;
+  background-image: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to)) !important;
 }
 
 /* Glowing winter gradient - For champion displays with frost glow */
-.winter-frozen .text-gradient-winter-glow {
-  background: linear-gradient(135deg,
-    hsl(187, 80%, 68%) 0%,
-    hsl(199, 80%, 72%) 100%
-  ) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+.winter-frozen .text-gradient-winter-glow.bg-clip-text,
+.winter-frozen .text-gradient-winter-glow[class*="bg-gradient"] {
+  --tw-gradient-from: hsl(187, 80%, 68%) !important;
+  --tw-gradient-to: hsl(199, 80%, 72%) !important;
+  background-image: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to)) !important;
   filter: drop-shadow(0 0 8px hsla(199, 89%, 75%, 0.4));
-}
-
-/* Override all blue-amber gradients in winter mode */
-.winter-frozen .bg-gradient-to-br.from-blue-600.to-amber-500,
-.winter-frozen .bg-gradient-to-br.from-blue-800.to-amber-700,
-.winter-frozen .bg-gradient-to-br.from-blue-400.to-amber-400,
-.winter-frozen .bg-gradient-to-br.from-blue-800.via-blue-700.to-amber-700 {
-  background: linear-gradient(135deg, 
-    hsl(187, 80%, 72%) 0%,
-    hsl(201, 90%, 85%) 50%,
-    hsl(187, 75%, 70%) 100%
-  ) !important;
 }
 
 /* Winter active toggle buttons - Icy blue instead of blue-amber */
