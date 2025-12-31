@@ -395,13 +395,21 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
   );
 
   // Helper to categorize division into tier
+  // Maps "Hidden" to competitive since it has weight 1.0
   const categorizeDivision = (divisionName: string | null): 'competitive' | 'intermediate' | 'recreational' | null => {
     if (!divisionName) return null;
     const name = divisionName.toLowerCase();
-    if (name.includes('competitive')) return 'competitive';
+    if (name.includes('competitive') || name.includes('hidden')) return 'competitive';
     if (name.includes('intermediate') || name === 'cuspers') return 'intermediate';
     if (name.includes('recreational')) return 'recreational';
     return null;
+  };
+  
+  // Helper to get tier from bracket division weight (for playoff matches)
+  const getTierFromWeight = (weight: number): 'competitive' | 'intermediate' | 'recreational' => {
+    if (weight >= 0.89) return 'competitive';
+    if (weight >= 0.40) return 'intermediate';
+    return 'recreational';
   };
 
   // Initialize division records
@@ -456,6 +464,21 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
         } else if (match.loser_id === teamId) {
           division_records[tier].losses++;
         }
+      }
+    }
+  }
+
+  // Add playoff matches based on bracket division weight
+  if (playoffMatches) {
+    for (const match of playoffMatches) {
+      if (!match.bracket_id) continue;
+      const bracketWeight = bracketDivisionWeights[match.bracket_id] || 0.85;
+      const tier = getTierFromWeight(bracketWeight);
+      
+      if (match.winner_id === teamId) {
+        division_records[tier].wins++;
+      } else if (match.loser_id === teamId) {
+        division_records[tier].losses++;
       }
     }
   }
