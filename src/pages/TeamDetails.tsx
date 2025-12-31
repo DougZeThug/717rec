@@ -122,7 +122,7 @@ const TeamDetails = () => {
         
         {/* 3. Head-to-Head Records */}
         <section id="h2h">
-          {teamId && <HeadToHeadRecords teamId={teamId} />}
+          {teamId && <HeadToHeadRecords teamId={teamId} teamName={team.name} />}
         </section>
         
         {/* 4. Match History */}

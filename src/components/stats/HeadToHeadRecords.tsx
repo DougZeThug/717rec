@@ -4,19 +4,21 @@ import { useHeadToHead } from "@/hooks/useHeadToHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Search, Calendar, Trophy, X, Swords } from "lucide-react";
+import { ArrowUpDown, Search, Calendar, Trophy, X, Swords, Download } from "lucide-react";
+import { exportHeadToHeadToCSV } from "@/utils/exportUtils";
 import { OpponentHistoryModal } from "./OpponentHistoryModal";
 import { format } from "date-fns";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 
 interface HeadToHeadRecordsProps {
   teamId: string;
+  teamName?: string;
 }
 
 type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game_wins';
 type SortDirection = 'asc' | 'desc';
 
-const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
+const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName = 'Team' }) => {
   const navigate = useNavigate();
   const { data: records, isLoading, error } = useHeadToHead(teamId);
   const [searchTerm, setSearchTerm] = useState("");
@@ -105,6 +107,15 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId }) => {
               className="pl-8"
             />
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportHeadToHeadToCSV(filteredRecords, teamName)}
+            className="flex-shrink-0"
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Export CSV
+          </Button>
         </div>
         {filteredRecords.length === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
