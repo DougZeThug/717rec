@@ -71,7 +71,10 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-6">
+                  <span className={cn(
+                    "text-sm font-medium w-6",
+                    isWinterTheme ? "text-white/60" : "text-gray-500 dark:text-gray-400"
+                  )}>
                     #{team.playoff_rank || '-'}
                   </span>
                   {team.champion && (
@@ -86,7 +89,10 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                     size="sm"
                     className="flex-shrink-0"
                   />
-                  <span className="font-semibold text-slate-900 dark:text-white">
+                  <span className={cn(
+                    "font-semibold",
+                    isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+                  )}>
                     {team.team_name}
                   </span>
                 </div>
@@ -94,20 +100,20 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
               
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-600 dark:text-gray-300">Record:</span>
+                  <span className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>Record:</span>
                   <span className={cn("ml-2 font-medium tabular-nums", getWinPercentageColor(winPercentage))}>
                     {team.match_wins}-{team.match_losses} ({winPercentage.toFixed(1)}%)
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600 dark:text-gray-300">Games:</span>
+                  <span className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>Games:</span>
                   <span className={cn("ml-2 font-medium tabular-nums", getWinPercentageColor(gameWinPercentage))}>
                     {team.game_wins}-{team.game_losses} ({gameWinPercentage.toFixed(1)}%)
                   </span>
                 </div>
                 {team.power_score !== null && (
                   <div>
-                    <span className="text-gray-600 dark:text-gray-300">Power Score:</span>
+                    <span className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>Power Score:</span>
                     <span className={cn("ml-2 font-medium tabular-nums", getPowerScoreColor(team.power_score * 100))}>
                       {(team.power_score * 100).toFixed(1)}
                     </span>
@@ -115,7 +121,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                 )}
                 {team.sos !== null && (
                   <div>
-                    <span className="text-gray-600 dark:text-gray-300">SOS:</span>
+                    <span className={isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"}>SOS:</span>
                     <span className={cn("ml-2 font-medium tabular-nums", getSosColor(team.sos))}>
                       {team.sos.toFixed(3)}
                     </span>
@@ -137,14 +143,38 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
             "border-b",
             isWinterTheme ? "border-white/10" : "border-gray-200 dark:border-slate-600"
           )}>
-            <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Rank</th>
-            <th className="text-left py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Team</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-300">W-L</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Win %</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Games</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Game %</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Power</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600 dark:text-gray-300">SOS</th>
+            <th className={cn(
+              "text-left py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>Rank</th>
+            <th className={cn(
+              "text-left py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>Team</th>
+            <th className={cn(
+              "text-center py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>W-L</th>
+            <th className={cn(
+              "text-center py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>Win %</th>
+            <th className={cn(
+              "text-center py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>Games</th>
+            <th className={cn(
+              "text-center py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>Game %</th>
+            <th className={cn(
+              "text-center py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>Power</th>
+            <th className={cn(
+              "text-center py-2 px-3 font-medium",
+              isWinterTheme ? "text-white/70" : "text-gray-600 dark:text-gray-300"
+            )}>SOS</th>
           </tr>
         </thead>
         <tbody>
@@ -174,7 +204,10 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                       )
                 )}
               >
-                <td className="py-2 px-3 text-gray-600 dark:text-gray-300">#{team.playoff_rank || '-'}</td>
+                <td className={cn(
+                  "py-2 px-3",
+                  isWinterTheme ? "text-white/60" : "text-gray-600 dark:text-gray-300"
+                )}>#{team.playoff_rank || '-'}</td>
                 <td className="py-2 px-3">
                   <div className="flex items-center gap-2">
                     {team.champion && (
@@ -189,18 +222,27 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
                       size="sm"
                       className="flex-shrink-0"
                     />
-                    <span className="font-medium text-slate-900 dark:text-white">
+                    <span className={cn(
+                      "font-medium",
+                      isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+                    )}>
                       {team.team_name}
                     </span>
                   </div>
                 </td>
-                <td className="py-2 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
+                <td className={cn(
+                  "py-2 px-3 text-center font-medium tabular-nums",
+                  isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+                )}>
                   {team.match_wins}-{team.match_losses}
                 </td>
                 <td className={cn("py-2 px-3 text-center font-medium tabular-nums", getWinPercentageColor(winPercentage))}>
                   {winPercentage.toFixed(1)}%
                 </td>
-                <td className="py-2 px-3 text-center font-medium tabular-nums text-slate-900 dark:text-white">
+                <td className={cn(
+                  "py-2 px-3 text-center font-medium tabular-nums",
+                  isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
+                )}>
                   {team.game_wins}-{team.game_losses}
                 </td>
                 <td className={cn("py-2 px-3 text-center font-medium tabular-nums", getWinPercentageColor(gameWinPercentage))}>
