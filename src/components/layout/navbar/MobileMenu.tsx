@@ -37,6 +37,7 @@ const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems }) => {
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           <motion.div
+            layout={false}
             animate={{ rotate: isOpen ? 90 : 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
