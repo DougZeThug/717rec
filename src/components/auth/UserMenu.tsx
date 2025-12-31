@@ -39,7 +39,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
         <Button
           variant="secondary"
           size="sm"
-          className="bg-white/20 dark:bg-gray-700 text-white dark:text-white hover:bg-white/10 dark:hover:bg-gray-600 whitespace-nowrap !flex !items-center px-2"
+          className="whitespace-nowrap !flex !items-center px-2"
           onClick={handleLoginClick}
         >
           <LogIn className="h-4 w-4 mr-1" />

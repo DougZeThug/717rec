@@ -15,9 +15,9 @@ const buttonVariants = cva(
         destructive:
           "bg-gradient-to-br from-destructive to-destructive/90 text-destructive-foreground hover:from-destructive/90 hover:to-destructive/80",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground dark:border-gray-600 dark:hover:bg-gray-800/50 dark:hover:border-gray-500",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: gradients.button.secondary,
-        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-gray-800/70 dark:text-gray-200 dark:hover:text-white",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         cornhole: gradients.button.primary,
         blue: gradients.button.blue,
