@@ -705,22 +705,15 @@
   z-index: 1;
 }
 
-/* Ice crystals sparkle effect on hover */
-.winter-frozen .navbar-winter:hover::after {
-  animation: frost-shimmer 2s ease-in-out infinite;
+/* GPU acceleration for smooth transitions */
+.winter-frozen .navbar-winter {
+  will-change: transform;
 }
 
-@keyframes frost-shimmer {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-    box-shadow: 
-      0 0 25px hsla(199, 89%, 80%, 1),
-      0 0 50px hsla(199, 89%, 70%, 0.5),
-      0 0 80px hsla(199, 89%, 60%, 0.3);
-  }
+/* Subtle hover glow instead of animation */
+.winter-frozen .navbar-winter:hover::after {
+  opacity: 0.9;
+  transition: opacity 0.2s ease-out;
 }
 
 /* ==========================================================================
