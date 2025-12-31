@@ -46,7 +46,8 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
         </div>
         <h3 className={cn(
           "text-xl font-bold mb-2",
-          blueAmber.text.heading
+          blueAmber.text.heading,
+          "text-gradient-winter-glow"
         )}>
           Tournament Champion
         </h3>

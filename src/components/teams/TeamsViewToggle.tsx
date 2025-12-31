@@ -26,7 +26,7 @@ const TeamsViewToggle: React.FC<TeamsViewToggleProps> = ({
         className={cn(
           "text-xs sm:text-sm transition-all duration-200",
           viewMode === "grid" ? 
-            "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500" : 
+            "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500 toggle-winter-active" : 
             "hover:bg-gradient-to-br hover:from-blue-50 hover:to-orange-50/30 dark:hover:from-gray-700 dark:hover:to-gray-800 dark:text-gray-300 dark:hover:text-white"
         )}
       >
@@ -39,7 +39,7 @@ const TeamsViewToggle: React.FC<TeamsViewToggleProps> = ({
         className={cn(
           "text-xs sm:text-sm transition-all duration-200",
           viewMode === "list" ? 
-            "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500" : 
+            "bg-gradient-to-br from-blue-600 to-amber-600 text-white dark:from-blue-600 dark:to-amber-700 dark:text-white dark:border dark:border-blue-500 toggle-winter-active" : 
             "hover:bg-gradient-to-br hover:from-blue-50 hover:to-orange-50/30 dark:hover:from-gray-700 dark:hover:to-gray-800 dark:text-gray-300 dark:hover:text-white"
         )}
       >
