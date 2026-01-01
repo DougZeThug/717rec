@@ -38,7 +38,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         const calculatedRankings = teamsToUse.map((team): Ranking => {
           // Calculate streak from matches
           const streak = calculateStreak(team.id, matchesToUse);
-          const previousRank = previousRankings[team.id];
+          const previousRank = previousRankings?.[team.id];
           
           // Use the power_score from v_team_details (NULL for teams with no matches)
           return {

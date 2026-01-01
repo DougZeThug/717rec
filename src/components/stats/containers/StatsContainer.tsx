@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import WinterSection from "@/components/winter/WinterSection";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import { cn } from "@/lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Lazy load the chart component to defer loading recharts bundle
 const AllTeamsCareerPowerScoreChart = lazy(() => 
@@ -78,28 +79,20 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
   );
 };
 
-const NoTeamsAvailable = () => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
-  
-  return (
-    <Card className="bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:text-white dark:border-none rounded-xl shadow-sm font-inter">
-      <CardHeader>
-        <CardTitle className="text-gray-900 dark:text-white font-bold">No Teams Available</CardTitle>
-        <CardDescription className="text-gray-600 dark:text-gray-400 font-light">
-          There are no teams in the selected division or no teams have been added yet.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-700 dark:text-gray-300 font-inter">
-          Try selecting a different division or add teams to view statistics.
-        </p>
-      </CardContent>
-    </Card>
-  );
-};
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTheme } from "next-themes";
+const NoTeamsAvailable = () => (
+  <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-sm font-inter">
+    <CardHeader>
+      <CardTitle className="font-bold">No Teams Available</CardTitle>
+      <CardDescription>
+        There are no teams in the selected division or no teams have been added yet.
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <p className="text-muted-foreground font-inter">
+        Try selecting a different division or add teams to view statistics.
+      </p>
+    </CardContent>
+  </Card>
+);
 
 export default StatsContainer;
