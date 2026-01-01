@@ -1,8 +1,10 @@
 import React from "react";
 import { Trophy, Award, Target, TrendingUp, Zap, Scale, Wind, BarChart, Shield, Users, Star } from "lucide-react";
 import { useTeamTotals } from "@/hooks/useTeamTotals";
+import { useLeaguePercentiles } from "@/hooks/useLeaguePercentiles";
 import { getPowerScoreColor, getSosColor, getSweepRateColor } from "@/utils/colors";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+import { PercentileFromResult } from "@/components/ui/PercentileBadge";
 
 interface TeamTotalsProps {
   teamId: string;
@@ -10,6 +12,9 @@ interface TeamTotalsProps {
 
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
   const { totals, isLoading } = useTeamTotals(teamId);
+  const { getTeamPercentiles, isLoading: percentilesLoading } = useLeaguePercentiles();
+  
+  const percentiles = getTeamPercentiles(teamId);
 
   if (isLoading) {
     return (
@@ -85,9 +90,10 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Career Record</span>
-          <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center">
-            <Trophy size={16} className="text-emerald-500 mr-2" />
+          <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center gap-2">
+            <Trophy size={16} className="text-emerald-500 flex-shrink-0" />
             {totals.career_match_wins}-{totals.career_match_losses}
+            {percentiles && <PercentileFromResult result={percentiles.winPercentage} statName="Win %" />}
           </div>
         </div>
 
@@ -125,16 +131,17 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
 
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Career Power Score</span>
-          <div className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center ${getPowerScoreColor(totals.career_power_score)}`}>
-            <Zap size={16} className="mr-2" />
+          <div className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getPowerScoreColor(totals.career_power_score)}`}>
+            <Zap size={16} className="flex-shrink-0" />
             {totals.career_power_score.toFixed(1)}
+            {percentiles && <PercentileFromResult result={percentiles.powerScore} statName="Power Score" />}
           </div>
         </div>
 
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Career Sweep Rate</span>
-          <div className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center ${getSweepRateColor(totals.career_sweep_rate)}`}>
-            <Wind size={16} className="mr-2" />
+          <div className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getSweepRateColor(totals.career_sweep_rate)}`}>
+            <Wind size={16} className="flex-shrink-0" />
             {totals.career_sweep_rate.toFixed(1)}%
           </div>
           <span className="text-xs tabular-nums text-muted-foreground mt-1">
@@ -144,9 +151,12 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId }) => {
 
         <div className="flex flex-col">
           <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">Career SOS</span>
-          <div className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center ${totals.career_sos > 0 ? getSosColor(totals.career_sos) : 'text-muted-foreground'}`}>
-            <Scale size={16} className="mr-2" />
+          <div className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${totals.career_sos > 0 ? getSosColor(totals.career_sos) : 'text-muted-foreground'}`}>
+            <Scale size={16} className="flex-shrink-0" />
             {totals.career_match_wins + totals.career_match_losses > 0 ? totals.career_sos.toFixed(3) : 'N/A'}
+            {percentiles && totals.career_match_wins + totals.career_match_losses > 0 && (
+              <PercentileFromResult result={percentiles.sos} statName="Strength of Schedule" />
+            )}
           </div>
         </div>
       </div>

@@ -9,6 +9,8 @@ import { getPowerScoreColor, getSosColor } from '@/utils/colors';
 import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
 import { cn } from '@/lib/utils';
+import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
+import { PercentileBadge } from '@/components/ui/PercentileBadge';
 
 interface CareerRankingsMobileViewProps {
   rankings: CareerRanking[];
@@ -24,6 +26,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
   showHidden = false
 }) => {
   const [isCompactView, setIsCompactView] = useState(false);
+  const { getTeamPercentiles } = useLeaguePercentiles();
   const formatPercentage = (value: number) => {
     return `${(value * 100).toFixed(1)}%`;
   };
@@ -186,16 +189,31 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
                   )}>
                     {ranking.careerPowerScore.toFixed(1)}
                   </span>
+                  {getTeamPercentiles(ranking.teamId)?.powerScore && (
+                    <PercentileBadge 
+                      percentile={getTeamPercentiles(ranking.teamId)!.powerScore.percentile}
+                      rank={getTeamPercentiles(ranking.teamId)!.powerScore.rank}
+                      total={getTeamPercentiles(ranking.teamId)!.powerScore.total}
+                      size="xs"
+                      statName="Power Score"
+                    />
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Career Record</p>
-                    <p className="font-medium">
+                    <p className="font-medium flex items-center gap-1.5">
                       {ranking.careerMatchWins}-{ranking.careerMatchLosses} 
                       <span className={getWinPercentageColor(ranking.careerWinPercentage)}>
                         ({formatPercentage(ranking.careerWinPercentage)})
                       </span>
+                      {getTeamPercentiles(ranking.teamId)?.winPercentage && (
+                        <PercentileBadge 
+                          percentile={getTeamPercentiles(ranking.teamId)!.winPercentage.percentile}
+                          size="xs"
+                        />
+                      )}
                     </p>
                   </div>
                   <div>
