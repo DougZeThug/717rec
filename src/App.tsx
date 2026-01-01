@@ -38,6 +38,7 @@ const MessageBoard = lazy(() => import("./pages/MessageBoard"));
 const MyTeam = lazy(() => import("./pages/MyTeam"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Contact = lazy(() => import("./pages/Contact"));
+const Compare = lazy(() => import("./pages/Compare"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -92,6 +93,7 @@ const AppContent = () => {
                 <Route path="/my-team" element={<MyTeam />} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/compare" element={<Compare />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
