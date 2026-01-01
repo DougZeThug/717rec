@@ -8,6 +8,8 @@ import { getPowerScoreColor, getSosColor } from '@/utils/colors';
 import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/championshipColors';
 import { cn } from '@/lib/utils';
+import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
+import { PercentileBadge } from '@/components/ui/PercentileBadge';
 
 interface CareerRankingsDesktopViewProps {
   rankings: CareerRanking[];
@@ -22,6 +24,7 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
   onSortChange,
   showHidden = false
 }) => {
+  const { getTeamPercentiles } = useLeaguePercentiles();
   const getSortIcon = (field: string) => {
     if (sortOptions.field !== field) return null;
     return sortOptions.direction === 'desc' ? 
@@ -134,7 +137,18 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                 {ranking.careerMatchWins}-{ranking.careerMatchLosses}
               </TableCell>
               <TableCell className={cn("text-center", getWinPercentageColor(ranking.careerWinPercentage))}>
-                {formatPercentage(ranking.careerWinPercentage)}
+                <div className="flex items-center justify-center gap-1.5">
+                  {formatPercentage(ranking.careerWinPercentage)}
+                  {getTeamPercentiles(ranking.teamId)?.winPercentage && (
+                    <PercentileBadge 
+                      percentile={getTeamPercentiles(ranking.teamId)!.winPercentage.percentile}
+                      rank={getTeamPercentiles(ranking.teamId)!.winPercentage.rank}
+                      total={getTeamPercentiles(ranking.teamId)!.winPercentage.total}
+                      size="xs"
+                      statName="Win %"
+                    />
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-center">
                 {ranking.careerGameWins}-{ranking.careerGameLosses}
@@ -155,12 +169,23 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                 {ranking.runnerUps > 0 ? ranking.runnerUps : '-'}
               </TableCell>
               <TableCell className="text-center">
-                <span className={cn(
-                  "font-bold px-2 py-1 rounded text-sm",
-                  getPowerScoreColor(ranking.careerPowerScore)
-                )}>
-                  {ranking.careerPowerScore.toFixed(1)}
-                </span>
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className={cn(
+                    "font-bold px-2 py-1 rounded text-sm",
+                    getPowerScoreColor(ranking.careerPowerScore)
+                  )}>
+                    {ranking.careerPowerScore.toFixed(1)}
+                  </span>
+                  {getTeamPercentiles(ranking.teamId)?.powerScore && (
+                    <PercentileBadge 
+                      percentile={getTeamPercentiles(ranking.teamId)!.powerScore.percentile}
+                      rank={getTeamPercentiles(ranking.teamId)!.powerScore.rank}
+                      total={getTeamPercentiles(ranking.teamId)!.powerScore.total}
+                      size="xs"
+                      statName="Power Score"
+                    />
+                  )}
+                </div>
               </TableCell>
               <TableCell className="text-center">
                 <span className={cn("font-mono", getSosColor(ranking.careerSos))}>
