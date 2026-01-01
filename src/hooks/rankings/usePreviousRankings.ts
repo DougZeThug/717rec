@@ -12,7 +12,7 @@ interface RankingsData {
 // Minimum time (in hours) before updating historical rankings
 const HISTORY_UPDATE_THRESHOLD_HOURS = 12;
 
-export const usePreviousRankings = () => {
+export const usePreviousRankings = (): { previousRankings: Record<string, number>; lastUpdated: string | null } => {
   const [previousRankings, setPreviousRankings] = useState<Record<string, number>>({});
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
@@ -92,5 +92,5 @@ export const usePreviousRankings = () => {
     return hoursSinceUpdate > HISTORY_UPDATE_THRESHOLD_HOURS;
   };
 
-  return { previousRankings, lastUpdated };
+  return { previousRankings: previousRankings ?? {}, lastUpdated };
 };
