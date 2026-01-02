@@ -27,6 +27,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isProfileLoading, setIsProfileLoading] = useState<boolean>(false);
   const [authInitialized, setAuthInitialized] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -105,6 +106,7 @@ export const useAuth = () => {
           
           // Use setTimeout to prevent Supabase auth deadlocks
           setTimeout(async () => {
+            setIsProfileLoading(true);
             try {
               const profileData = await fetchProfile(currentSession.user.id);
               authLog("Profile loaded successfully:", { 
@@ -126,6 +128,8 @@ export const useAuth = () => {
                   variant: "destructive",
                 });
               }
+            } finally {
+              setIsProfileLoading(false);
             }
           }, 0);
         }
@@ -149,12 +153,15 @@ export const useAuth = () => {
         if (currentSession?.user) {
           ensureThemeConsistency();
           
+          setIsProfileLoading(true);
           try {
             const profileData = await fetchProfile(currentSession.user.id);
             setProfile(profileData);
             checkProfileSetup(profileData);
           } catch (profileError) {
             errorLog("Error fetching initial profile:", profileError);
+          } finally {
+            setIsProfileLoading(false);
           }
         }
         
@@ -339,6 +346,7 @@ export const useAuth = () => {
     user,
     profile,
     isLoading,
+    isProfileLoading,
     authInitialized,
     authError,
     // Actions
