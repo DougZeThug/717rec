@@ -38,19 +38,22 @@ const calculateCareerPowerScore = async (
 ): Promise<number> => {
   // Career Power Score = weighted average of season power scores + playoff bonuses
   
-  // Get historical season power scores from team_season_stats
-  const { data: seasonStats } = await supabase
-    .from('team_season_stats')
-    .select('power_score, match_wins, match_losses')
-    .eq('team_id', teamId)
-    .not('power_score', 'is', null);
+  // Fetch season stats and current team data in parallel
+  const [seasonStatsResult, currentTeamDataResult] = await Promise.all([
+    supabase
+      .from('team_season_stats')
+      .select('power_score, match_wins, match_losses')
+      .eq('team_id', teamId)
+      .not('power_score', 'is', null),
+    supabase
+      .from('v_team_details')
+      .select('power_score, wins, losses')
+      .eq('team_id', teamId)
+      .single()
+  ]);
 
-  // Get current season data from v_team_details
-  const { data: currentTeamData } = await supabase
-    .from('v_team_details')
-    .select('power_score, wins, losses')
-    .eq('team_id', teamId)
-    .single();
+  const seasonStats = seasonStatsResult.data;
+  const currentTeamData = currentTeamDataResult.data;
 
   // Calculate weighted average of season power scores (no division penalties)
   let totalWeightedScore = 0;
@@ -120,101 +123,111 @@ const calculateCareerPowerScore = async (
 };
 
 export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
-  // Get team's current division weight for playoff bonus scaling
-  const { data: teamData } = await supabase
-    .from('teams')
-    .select('divisions(division_weight)')
-    .eq('id', teamId)
-    .single();
-  
-  const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
+  // Fetch all independent queries in parallel for better performance
+  const [
+    teamDataResult,
+    seasonStatsResult,
+    currentMatchesResult,
+    archivedMatchesResult,
+    allTeamSeasonStatsResult,
+    playoffMatchesResult
+  ] = await Promise.all([
+    // Get team's current division weight for playoff bonus scaling
+    supabase
+      .from('teams')
+      .select('divisions(division_weight)')
+      .eq('id', teamId)
+      .single(),
+    // Get career stats from team_season_stats with division info
+    supabase
+      .from('team_season_stats')
+      .select(`
+        match_wins,
+        match_losses,
+        game_wins,
+        game_losses,
+        champion,
+        runner_up,
+        playoff_rank,
+        sos,
+        division_name,
+        seasons!inner(name)
+      `)
+      .eq('team_id', teamId),
+    // Get current season matches with opponent team info for division lookup
+    supabase
+      .from('matches')
+      .select(`
+        winner_id,
+        loser_id,
+        team1_game_wins,
+        team2_game_wins,
+        team1_id,
+        team2_id,
+        season_id,
+        team1:teams!matches_team1_id_fkey(id, divisions(name)),
+        team2:teams!matches_team2_id_fkey(id, divisions(name))
+      `)
+      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+      .eq('iscompleted', true),
+    // Get archived matches for career sweep rate calculation and division records
+    supabase
+      .from('matches_archive')
+      .select(`
+        winner_id,
+        loser_id,
+        team1_game_wins,
+        team2_game_wins,
+        team1_id,
+        team2_id,
+        season_id
+      `)
+      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+      .eq('iscompleted', true),
+    // Fetch all team_season_stats to build opponent division lookup map
+    supabase
+      .from('team_season_stats')
+      .select('team_id, season_id, division_name'),
+    // Get playoff matches with bracket information
+    supabase
+      .from('playoff_matches')
+      .select(`
+        winner_id,
+        loser_id,
+        team1_score,
+        team2_score,
+        team1_id,
+        team2_id,
+        bracket_id
+      `)
+      .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
+      .not('winner_id', 'is', null)
+  ]);
 
-  // Get career stats from team_season_stats with division info
-  const { data: seasonStats, error: seasonError } = await supabase
-    .from('team_season_stats')
-    .select(`
-      match_wins,
-      match_losses,
-      game_wins,
-      game_losses,
-      champion,
-      runner_up,
-      playoff_rank,
-      sos,
-      division_name,
-      seasons!inner(name)
-    `)
-    .eq('team_id', teamId);
+  // Destructure results
+  const teamData = teamDataResult.data;
+  const seasonStats = seasonStatsResult.data;
+  const currentMatches = currentMatchesResult.data;
+  const archivedMatches = archivedMatchesResult.data;
+  const allTeamSeasonStats = allTeamSeasonStatsResult.data;
+  const playoffMatches = playoffMatchesResult.data;
 
-  if (seasonError) {
-    console.error('Error fetching team season stats:', seasonError);
+  // Handle errors
+  if (seasonStatsResult.error) {
+    console.error('Error fetching team season stats:', seasonStatsResult.error);
     return null;
   }
-
-  // Get current season matches with opponent team info for division lookup
-  const { data: currentMatches, error: matchError } = await supabase
-    .from('matches')
-    .select(`
-      winner_id,
-      loser_id,
-      team1_game_wins,
-      team2_game_wins,
-      team1_id,
-      team2_id,
-      season_id,
-      team1:teams!matches_team1_id_fkey(id, divisions(name)),
-      team2:teams!matches_team2_id_fkey(id, divisions(name))
-    `)
-    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-    .eq('iscompleted', true);
-
-  if (matchError) {
-    console.error('Error fetching current matches:', matchError);
+  if (currentMatchesResult.error) {
+    console.error('Error fetching current matches:', currentMatchesResult.error);
   }
-
-  // Get archived matches for career sweep rate calculation and division records
-  const { data: archivedMatches, error: archivedError } = await supabase
-    .from('matches_archive')
-    .select(`
-      winner_id,
-      loser_id,
-      team1_game_wins,
-      team2_game_wins,
-      team1_id,
-      team2_id,
-      season_id
-    `)
-    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-    .eq('iscompleted', true);
-
-  if (archivedError) {
-    console.error('Error fetching archived matches:', archivedError);
+  if (archivedMatchesResult.error) {
+    console.error('Error fetching archived matches:', archivedMatchesResult.error);
   }
-
-  // Fetch all team_season_stats to build opponent division lookup map
-  const { data: allTeamSeasonStats } = await supabase
-    .from('team_season_stats')
-    .select('team_id, season_id, division_name');
-
-
-  // Get playoff matches with bracket information
-  const { data: playoffMatches, error: playoffError } = await supabase
-    .from('playoff_matches')
-    .select(`
-      winner_id,
-      loser_id,
-      team1_score,
-      team2_score,
-      team1_id,
-      team2_id,
-      bracket_id
-    `)
-    .or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`)
-    .not('winner_id', 'is', null);
-
-  if (playoffError) {
-    console.error('Error fetching playoff matches:', playoffError);
+  if (playoffMatchesResult.error) {
+    console.error('Error fetching playoff matches:', playoffMatchesResult.error);
   }
+  
+  const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
 
 
   // Get bracket division weights for competitive playoff detection
