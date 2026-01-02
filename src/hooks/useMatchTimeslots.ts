@@ -109,7 +109,7 @@ export const useMatchTimeslots = (date: Date | null) => {
         
         scheduleLog('Grouped timeslots:', sortedGrouped);  
         setGroupedTimeslots(sortedGrouped);
-      } catch (error: any) {
+      } catch (error) {
         errorLog('Error fetching timeslots:', error);
       } finally {
         setIsLoading(false);

@@ -33,11 +33,11 @@ export function useTeamMutations() {
         description: `${updatedTeam.name} has been successfully updated.`,
       });
       return updatedTeam;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating team:", error);
       let errorMessage = "Failed to update team. Please try again.";
       
-      if (error?.message) {
+      if (error instanceof Error && error.message) {
         if (error.message.includes("division_id")) {
           errorMessage = "Invalid division selected. Please choose a valid division.";
         } else if (error.message.includes("not found")) {

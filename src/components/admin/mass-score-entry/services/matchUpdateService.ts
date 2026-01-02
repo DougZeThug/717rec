@@ -41,7 +41,7 @@ export const useMatchUpdateService = () => {
       }
 
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Error updating match ${match.id}:`, error);
       return false;
     }

@@ -61,7 +61,7 @@ export const useMatchSubmission = () => {
       });
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
       errorLog('[useMatchSubmission] Error updating scores:', error);
       toast({
         title: 'Error',

@@ -43,10 +43,11 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
         description: `${season.name} is now the active season`,
       });
       onClose();
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to activate season';
       toast({
         title: "Error",
-        description: error.message || "Failed to activate season",
+        description: message,
         variant: "destructive",
       });
     } finally {

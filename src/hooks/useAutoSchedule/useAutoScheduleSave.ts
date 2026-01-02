@@ -149,11 +149,12 @@ export function useAutoScheduleSave() {
       queryClient.invalidateQueries({ queryKey: ['schedule'] });
 
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save matches to database';
       errorLog('Error saving matches:', error);
       toast({
         title: "Error Saving Matches",
-        description: error.message || "Failed to save matches to database",
+        description: message,
         variant: "destructive"
       });
       return false;

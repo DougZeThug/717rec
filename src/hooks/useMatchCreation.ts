@@ -86,11 +86,12 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
       queryClient.invalidateQueries({ queryKey: ['matches'] });
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       console.error("Error creating match:", error);
       toast({
         title: "Error",
-        description: `Failed to create match: ${error.message}`,
+        description: `Failed to create match: ${message}`,
         variant: "destructive"
       });
       return false;

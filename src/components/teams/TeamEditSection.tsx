@@ -59,11 +59,12 @@ const TeamEditSection: React.FC = () => {
 
       setIsEditing(false);
       await refreshMembership(); // Refresh to get updated team data
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update team details';
       console.error("Error updating team:", error);
       toast({
         title: "Update Failed",
-        description: error.message || "Failed to update team details",
+        description: message,
         variant: "destructive",
       });
     } finally {

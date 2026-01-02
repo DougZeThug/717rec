@@ -100,11 +100,12 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       invalidateAllDataQueries();
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       console.error("Error updating match:", error);
       toast({
         title: "Error",
-        description: `Failed to update match: ${error.message}`,
+        description: `Failed to update match: ${message}`,
         variant: "destructive"
       });
       return false;
@@ -168,11 +169,12 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       invalidateAllDataQueries();
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       console.error("Error deleting match:", error);
       toast({
         title: "Error", 
-        description: `Failed to delete match: ${error.message}`,
+        description: `Failed to delete match: ${message}`,
         variant: "destructive"
       });
       return false;

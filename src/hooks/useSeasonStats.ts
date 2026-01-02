@@ -37,7 +37,7 @@ export function useSeasonStats() {
       
       setSeasons(uniqueSeasons);
       return uniqueSeasons;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching seasons:", error);
       toast({
         title: "Error",
@@ -79,7 +79,7 @@ export function useSeasonStats() {
       
       setSeasonStats(statsWithTeamNames);
       return statsWithTeamNames;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching season stats:", error);
       toast({
         title: "Error",
