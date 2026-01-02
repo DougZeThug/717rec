@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useBracketData, BracketLoadingProgress } from "@/hooks/brackets/useBracketData";
+import { useBracketData } from "@/hooks/brackets/useBracketData";
 import { useBracketCompletion } from "@/hooks/useBracketCompletion";
 import { useBracketsManagerRealtime } from "@/hooks/brackets/useBracketsManagerRealtime";
 import { BracketsViewerComponent } from "./viewer";
@@ -12,11 +12,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { log, bracketLog, errorLog, debugLog } from "@/utils/logger";
+import type { BracketViewData, hasMatches, hasTeams } from "@/types/playoff";
+import type { PlayoffTeam, PlayoffBracket } from "@/utils/playoffs/playoffTypes";
 
 interface BracketViewProps {
   bracketId: string;
-  bracket?: any;
-  teams?: any[];
+  bracket?: BracketViewData;
+  teams?: PlayoffTeam[];
   onEditMatch?: (matchId: string) => void;
 }
 
@@ -217,10 +219,12 @@ const BracketView: React.FC<BracketViewProps> = ({
     );
   }
 
-  if (!isJsonbBracket && (!displayBracket.matches || !Array.isArray(displayBracket.matches))) {
+  const bracketMatches = 'matches' in displayBracket ? displayBracket.matches : undefined;
+  
+  if (!isJsonbBracket && (!bracketMatches || !Array.isArray(bracketMatches))) {
     errorLog('CRITICAL - Bracket exists but matches is not an array!', {
       bracket: displayBracket,
-      matchesProperty: displayBracket.matches
+      matchesProperty: bracketMatches
     });
     
     return (
@@ -236,7 +240,7 @@ const BracketView: React.FC<BracketViewProps> = ({
   bracketLog('About to render BracketsViewerComponent:', {
     isJsonbBracket,
     bracketId: displayBracket.id,
-    matchesCount: displayBracket.matches?.length || 0
+    matchesCount: bracketMatches?.length || 0
   });
 
   bracketLog('Rendering BracketsViewerComponent');
@@ -250,8 +254,9 @@ const BracketView: React.FC<BracketViewProps> = ({
       <BracketErrorBoundary bracketId={bracketId}>
         {displayBracket && displayBracket.id ? (
           <BracketsViewerComponent
-            bracket={displayBracket}
-            teams={displayBracket.teams || displayTeams}
+            // Cast needed due to union type from multiple data sources
+            bracket={displayBracket as unknown as Parameters<typeof BracketsViewerComponent>[0]['bracket']}
+            teams={'teams' in displayBracket && displayBracket.teams ? displayBracket.teams : displayTeams}
             onMatchClick={handleMatchClick}
           />
         ) : (

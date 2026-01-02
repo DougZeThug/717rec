@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useEffect, useRef } from 'react';
 import { log } from '@/utils/logger';
 import { SeasonalIcon } from "@/components/ui/seasonal-icon";
+import type { TeamStanding } from "@/types/schedule";
 
 interface FinalStandingsProps {
   bracketId: string;
@@ -73,7 +74,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {standings.map((record: any) => (
+          {standings.map((record: TeamStanding) => (
             <div
               key={record.teams.id}
               className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent"

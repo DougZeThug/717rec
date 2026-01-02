@@ -1,14 +1,14 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MatchQualityMetrics } from "@/types/autoSchedule";
 import { Database, Save, AlertCircle } from "lucide-react";
+import type { ScheduledMatch } from "@/types/schedule";
 
 interface ExportTabProps {
   selectedDate: Date | null;
-  generatedMatches: any[] | null;
+  generatedMatches: ScheduledMatch[] | null;
   matchQualityMetrics?: MatchQualityMetrics | null;
   onApplySchedule?: () => void;
   onSaveSchedule?: () => Promise<boolean>;

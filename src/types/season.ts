@@ -11,6 +11,8 @@ export interface Season {
   start_date?: string | null;
   end_date?: string | null;
   created_at: string;
+  champion_team_id?: string | null;
+  runner_up_team_id?: string | null;
 }
 
 export interface SeasonStats {
