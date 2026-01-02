@@ -4,6 +4,7 @@ import TeamDisplay from "./components/TeamDisplay";
 import ScoreSection from "./components/ScoreSection";
 import MatchStatusSection from "./components/MatchStatusSection";
 import { Switch } from "@/components/ui/switch";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { scoreLog } from "@/utils/logger";
 
 interface MatchRowProps {
@@ -21,14 +22,17 @@ interface MatchRowProps {
 const MatchRow: React.FC<MatchRowProps> = ({
   match,
   index,
-  isSubmitting = false,
-  hasError = false,
+  isSubmitting: propIsSubmitting = false,
+  hasError: propHasError = false,
   errorMessage,
   onScoreChange,
   onGameWinsChange,
   onMarkCompleted,
   onClearError
 }) => {
+  // Use match state for optimistic updates, fallback to props
+  const isSubmitting = match.isSubmitting || propIsSubmitting;
+  const hasError = match.submitError || propHasError;
   scoreLog(`MatchRow render for match ${match.id}:`, {
     matchId: match.id,
     index: index,
@@ -50,8 +54,26 @@ const MatchRow: React.FC<MatchRowProps> = ({
   };
 
   return (
-    <div className={`p-4 rounded-lg bg-background border ${hasError ? 'border-destructive' : 'border-border'}`}>
+    <div className={`p-4 rounded-lg bg-background border transition-colors ${
+      isSubmitting ? 'border-primary/50 bg-primary/5' : 
+      hasError ? 'border-destructive' : 
+      'border-border'
+    }`}>
       <div className="space-y-4">
+        {/* Submission Status Indicator */}
+        {isSubmitting && (
+          <div className="flex items-center gap-2 text-sm text-primary">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Submitting...</span>
+          </div>
+        )}
+        {hasError && !isSubmitting && (
+          <div className="flex items-center gap-2 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <span>Submission failed - please retry</span>
+          </div>
+        )}
+        
         {/* Team Names Display */}
         <div className="flex justify-between gap-4">
           <TeamDisplay team={match.team1} align="left" />
