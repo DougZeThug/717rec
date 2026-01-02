@@ -41,3 +41,39 @@ export interface BadgeConfig {
   isPermanent: boolean;
   category: 'championship' | 'performance' | 'streak';
 }
+
+/**
+ * Strongly-typed badge metadata for different badge types
+ */
+export interface ChampionshipBadgeMetadata {
+  season_name: string;
+  division_name: string;
+  playoff_wins?: number;
+  playoff_losses?: number;
+}
+
+export interface KingSlayerBadgeMetadata {
+  defeated_team_id: string;
+  defeated_team_name: string;
+  match_id: string;
+  season_name: string;
+}
+
+export interface StreakBadgeMetadata {
+  streak_length: number;
+  start_date: string;
+  end_date?: string;
+}
+
+export interface PerformanceBadgeMetadata {
+  stat_value: number;
+  threshold: number;
+  period: 'season' | 'career';
+}
+
+export type BadgeMetadata = 
+  | ChampionshipBadgeMetadata 
+  | KingSlayerBadgeMetadata 
+  | StreakBadgeMetadata 
+  | PerformanceBadgeMetadata
+  | Record<string, unknown>;

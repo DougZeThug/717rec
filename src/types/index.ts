@@ -146,3 +146,20 @@ export * from './chart';
 export * from './match';
 export * from './admin';
 export * from './career';
+export * from './season';
+export type {
+  OpponentSlot,
+  BracketMatch,
+  BracketStage,
+  BracketRound,
+  BracketGroup,
+  BracketParticipant,
+  DatabaseMatch,
+} from './bracket';
+export type {
+  BadgeMetadata,
+  ChampionshipBadgeMetadata,
+  KingSlayerBadgeMetadata,
+  StreakBadgeMetadata,
+  PerformanceBadgeMetadata,
+} from './badges';
