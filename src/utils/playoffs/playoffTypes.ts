@@ -94,11 +94,35 @@ export interface MatchResult {
   games?: PlayoffGame[];
 }
 
+/**
+ * Match display data used in bracket visualization
+ */
+export interface BracketMatchDisplay {
+  id: string;
+  round: number;
+  position: number;
+  team1Id: string | null;
+  team2Id: string | null;
+  team1Score: number | null;
+  team2Score: number | null;
+  team1GameWins: number | null;
+  team2GameWins: number | null;
+  winnerId: string | null;
+  loserId: string | null;
+  matchType: PlayoffMatchType;
+  status: 'pending' | 'in_progress' | 'completed';
+  bestOf: number;
+  team1Seed?: number | null;
+  team2Seed?: number | null;
+  nextWinMatchId?: string | null;
+  nextLoseMatchId?: string | null;
+}
+
 export type BracketMatchesByType = {
-  winners: any[][];
-  losers: any[][];
-  finals: any[];
-  playIn?: any[][];
+  winners: BracketMatchDisplay[][];
+  losers: BracketMatchDisplay[][];
+  finals: BracketMatchDisplay[];
+  playIn?: BracketMatchDisplay[][];
 };
 
 // Legacy type aliases for backward compatibility
