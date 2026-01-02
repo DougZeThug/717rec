@@ -1,15 +1,6 @@
 
-/**
- * @deprecated This file now re-exports from the modular career hooks.
- * Import directly from '@/hooks/career' for new code.
- * 
- * Original 532-line god hook has been refactored into:
- * - src/utils/career/*.ts - Pure calculation functions
- * - src/hooks/career/useCareerData.ts - Data fetching
- * - src/hooks/career/useTeamTotalsComputed.ts - Composed hook
- */
-
-import { fetchCareerData } from './career/useCareerData';
+import { useQuery } from "@tanstack/react-query";
+import { fetchCareerData } from "./useCareerData";
 import {
   TeamTotals,
   PlayoffFinish,
@@ -23,17 +14,11 @@ import {
   calculateCareerPowerScore,
 } from "@/utils/career";
 
-// Backward compatibility - re-export hook from new modular structure
-export { useTeamTotalsComputed as useTeamTotals } from './career/useTeamTotalsComputed';
-
-// Re-export types for backward compatibility
-export type { TeamTotals, DivisionRecord, DivisionRecords } from '@/utils/career/types';
-
 /**
- * Backward compatible fetchTeamTotals function.
- * Fetches raw career data and computes totals.
+ * Computes team career totals from raw career data.
+ * Uses parallel database fetch + pure calculation functions.
  */
-export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
+const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => {
   const careerData = await fetchCareerData(teamId);
   
   if (!careerData) {
@@ -138,5 +123,26 @@ export const fetchTeamTotals = async (teamId: string): Promise<TeamTotals | null
     ...sweepStats,
     career_sos,
     division_records
+  };
+};
+
+/**
+ * Hook for fetching and computing team career totals.
+ * Uses modular calculation utilities for testability.
+ */
+export const useTeamTotalsComputed = (teamId: string) => {
+  const query = useQuery({
+    queryKey: ['team-totals', teamId],
+    queryFn: () => teamId ? computeTeamTotals(teamId) : Promise.resolve(null),
+    enabled: !!teamId,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
+  });
+
+  return {
+    totals: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
   };
 };
