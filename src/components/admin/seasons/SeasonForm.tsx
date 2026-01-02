@@ -76,10 +76,11 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
       }
       
       onClose();
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save season';
       toast({
         title: "Error",
-        description: error.message || "Failed to save season",
+        description: message,
         variant: "destructive",
       });
     }

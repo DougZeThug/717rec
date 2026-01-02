@@ -189,12 +189,12 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         onBracketCreated(bracket);
       }
       
-    } catch (error: any) {
+    } catch (error) {
       errorLog("E2E bracket creation failed:", error);
       
       let errorMessage = "Failed to create bracket. Check your internet or try again.";
       
-      if (error?.message) {
+      if (error instanceof Error && error.message) {
         if (error.message.includes("network") || error.message.includes("fetch")) {
           errorMessage = "Network Error: Please check your internet connection and try again";
         } else if (error.message.includes("validation")) {

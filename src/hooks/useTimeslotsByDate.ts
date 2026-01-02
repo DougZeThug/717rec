@@ -60,7 +60,7 @@ export const useTimeslotsByDate = (date: Date | null) => {
         })) || [];
         
         setTimeslots(formattedData);
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching timeslots:', error);
       } finally {
         setIsLoading(false);

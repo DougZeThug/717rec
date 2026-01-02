@@ -16,8 +16,9 @@ export const useFiltersState = () => {
 
       if (error) throw error;
       setBrackets(data || []);
-    } catch (error: any) {
-      errorLog("Error fetching brackets:", error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      errorLog("Error fetching brackets:", message);
     }
   };
 

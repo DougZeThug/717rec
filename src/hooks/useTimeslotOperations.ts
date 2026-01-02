@@ -54,7 +54,7 @@ export const useTimeslotOperations = () => {
       })) || [];
       
       return formattedData;
-    } catch (error: any) {
+    } catch (error) {
       errorLog('Error fetching timeslots:', error);
       throw error;
     }
@@ -93,11 +93,12 @@ export const useTimeslotOperations = () => {
       
       return formattedData;
       
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error adding timeslot:', error);
       toast({
         title: "Error",
-        description: `Failed to assign timeslot: ${error.message || 'Unknown error'}`,
+        description: `Failed to assign timeslot: ${message}`,
         variant: "destructive"
       });
       throw error;
@@ -117,11 +118,12 @@ export const useTimeslotOperations = () => {
         throw error;
       }
       
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error deleting timeslot:', error);
       toast({
         title: "Error",
-        description: `Failed to remove timeslot: ${error.message || 'Unknown error'}`,
+        description: `Failed to remove timeslot: ${message}`,
         variant: "destructive"
       });
       throw error;
@@ -170,11 +172,12 @@ export const useTimeslotOperations = () => {
       
       return formattedData;
       
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error in batch assignment:', error);
       toast({
         title: "Error",
-        description: `Failed to batch assign timeslots: ${error.message || 'Unknown error'}`,
+        description: `Failed to batch assign timeslots: ${message}`,
         variant: "destructive"
       });
       throw error;

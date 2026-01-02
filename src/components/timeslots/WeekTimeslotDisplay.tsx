@@ -46,7 +46,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
         }
         
         setTimeslots(data || []);
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error fetching week timeslots:', error);
       } finally {
         setIsLoading(false);

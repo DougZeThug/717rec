@@ -23,8 +23,9 @@ export const useScoreEntryData = () => {
 
       if (error) throw error;
       setBrackets(data || []);
-    } catch (error: any) {
-      console.error("Error fetching brackets:", error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error fetching brackets:", message);
     }
   };
 
@@ -116,11 +117,12 @@ export const useScoreEntryData = () => {
       });
 
       setMatches(formattedMatches);
-    } catch (error: any) {
-      console.error("Error fetching matches:", error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error fetching matches:", message);
       toast({
         title: "Error",
-        description: `Failed to fetch matches: ${error.message}`,
+        description: `Failed to fetch matches: ${message}`,
         variant: "destructive"
       });
     } finally {
@@ -214,11 +216,12 @@ export const useScoreEntryData = () => {
 
       // Refresh the matches list
       fetchMatches();
-    } catch (error: any) {
-      console.error("Error updating matches:", error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error updating matches:", message);
       toast({
         title: "Error",
-        description: `Failed to update matches: ${error.message}`,
+        description: `Failed to update matches: ${message}`,
         variant: "destructive"
       });
     } finally {

@@ -51,10 +51,11 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
         description: `${season.name} has been archived`,
       });
       onClose();
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to archive season';
       toast({
         title: "Error",
-        description: error.message || "Failed to archive season",
+        description: message,
         variant: "destructive",
       });
     } finally {

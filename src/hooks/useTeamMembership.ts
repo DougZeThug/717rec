@@ -158,11 +158,12 @@ export function useTeamMembership() {
       
       // Refresh membership data
       await fetchMembership();
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Please try again later';
       console.error("Error joining team:", error);
       toast({
         title: "Failed to submit request",
-        description: error.message || "Please try again later",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -187,11 +188,12 @@ export function useTeamMembership() {
         title: "Left Team",
         description: "You've successfully left the team",
       });
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Please try again later';
       console.error("Error leaving team:", error);
       toast({
         title: "Failed to leave team",
-        description: error.message || "Please try again later",
+        description: message,
         variant: "destructive",
       });
     } finally {

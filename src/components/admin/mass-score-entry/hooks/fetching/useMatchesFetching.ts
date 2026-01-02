@@ -41,11 +41,12 @@ export const useMatchesFetching = () => {
       if (error) throw error;
 
       return data.map(transformDatabaseMatchToMatchWithTeams) as MatchWithTeams[];
-    } catch (error: any) {
-      errorLog("Error fetching matches:", error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      errorLog("Error fetching matches:", message);
       toast({
         title: "Error",
-        description: `Failed to fetch matches: ${error.message}`,
+        description: `Failed to fetch matches: ${message}`,
         variant: "destructive"
       });
       return [];

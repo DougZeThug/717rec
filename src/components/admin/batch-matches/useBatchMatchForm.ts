@@ -161,10 +161,11 @@ export const useBatchMatchForm = (teams: Team[]) => {
       setSelectedDate(null);
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: "Error",
-        description: error.message,
+        description: message,
         variant: "destructive"
       });
       errorLog("Error creating matches:", error);

@@ -34,7 +34,7 @@ export const updateMatchInDatabase = async (match: MatchWithTeams): Promise<bool
     }
 
     return true;
-  } catch (error: any) {
+  } catch (error) {
     errorLog(`Error in updateMatchInDatabase for match ${match.id}:`, error);
     return false;
   }

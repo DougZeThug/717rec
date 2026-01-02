@@ -109,11 +109,12 @@ export const useScoreSubmission = (
           errorLog("Error refreshing matches:", error);
         }
       }
-    } catch (error: any) {
-      errorLog("[useScoreSubmission] Error in batch update:", error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      errorLog("[useScoreSubmission] Error in batch update:", message);
       toast({
         title: "Error",
-        description: `Failed to update matches: ${error.message}`,
+        description: `Failed to update matches: ${message}`,
         variant: "destructive"
       });
     } finally {
