@@ -48,11 +48,12 @@ export class TimeslotService {
         success: true,
         data: formattedData
       };
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Unexpected error fetching timeslots:', error);
       return { 
         success: false, 
-        error: `Unexpected error: ${error.message || 'Unknown error'}` 
+        error: `Unexpected error: ${message}` 
       };
     }
   }
@@ -118,11 +119,12 @@ export class TimeslotService {
         success: true,
         data: formattedData
       };
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error adding back-to-back timeslot:', error);
       return { 
         success: false, 
-        error: `Failed to assign back-to-back timeslot: ${error.message || 'Unknown error'}` 
+        error: `Failed to assign back-to-back timeslot: ${message}` 
       };
     }
   }
@@ -195,11 +197,12 @@ export class TimeslotService {
       }
       
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error deleting timeslot:', error);
       return { 
         success: false, 
-        error: `Failed to remove timeslot: ${error.message || 'Unknown error'}` 
+        error: `Failed to remove timeslot: ${message}` 
       };
     }
   }
@@ -224,7 +227,16 @@ export class TimeslotService {
       const formattedDate = format(date, 'yyyy-MM-dd');
       
       // Create timeslot entries for all teams (2 entries per team)
-      const allTimeslotData: any[] = [];
+      interface TimeslotInsert {
+        match_date: string;
+        team_id: string;
+        timeslot: string;
+        is_back_to_back: boolean;
+        pair_slot: string;
+        match_sequence: number;
+      }
+      
+      const allTimeslotData: TimeslotInsert[] = [];
       
       teamIds.forEach(teamId => {
         allTimeslotData.push(
@@ -268,11 +280,12 @@ export class TimeslotService {
         success: true,
         data: formattedData
       };
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error in batch back-to-back assignment:', error);
       return { 
         success: false, 
-        error: `Failed to batch assign back-to-back timeslots: ${error.message || 'Unknown error'}` 
+        error: `Failed to batch assign back-to-back timeslots: ${message}` 
       };
     }
   }
