@@ -1,16 +1,69 @@
 import { CrudInterface, DataTypes, OmitId } from 'brackets-manager';
 import { supabase } from '@/integrations/supabase/client';
 import { bracketLog, errorLog } from '@/utils/logger';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 type Id = number | string;
 
 /**
+ * Opponent slot in brackets-manager format
+ */
+interface BmOpponentSlot {
+  id: number | null;
+  position?: number;
+  score?: number | null;
+  result?: 'win' | 'loss' | 'draw' | null;
+}
+
+/**
+ * Match in brackets-manager format (nested opponent objects)
+ */
+interface BmMatch {
+  id?: number;
+  number?: number;
+  stage_id?: number;
+  group_id?: number;
+  round_id?: number;
+  child_count?: number;
+  status?: number;
+  opponent1?: BmOpponentSlot | null;
+  opponent2?: BmOpponentSlot | null;
+}
+
+/**
+ * Match in database format (flattened columns)
+ */
+interface DbMatch {
+  id?: number;
+  number?: number;
+  stage_id?: number;
+  group_id?: number;
+  round_id?: number;
+  child_count?: number;
+  status?: number;
+  opponent1_id?: number | null;
+  opponent1_score?: number | null;
+  opponent1_result?: string | null;
+  opponent2_id?: number | null;
+  opponent2_score?: number | null;
+  opponent2_result?: string | null;
+}
+
+/**
+ * Participant cache entry
+ */
+interface ParticipantCacheEntry {
+  position: number;
+  name: string;
+}
+
+/**
  * Helper: Extract specific fields from object for logging
  */
-function pick(obj: any, keys: string[]): any {
-  const result: any = {};
+function pick<T extends Record<string, unknown>>(obj: T | null | undefined, keys: string[]): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
   keys.forEach(k => {
-    result[k] = obj?.[k];
+    result[k] = obj?.[k as keyof T];
   });
   return result;
 }
@@ -18,10 +71,10 @@ function pick(obj: any, keys: string[]): any {
 /**
  * Helper: Defensive merge to prevent null from overwriting filled opponent slots
  */
-function mergeOpponentSlots(prev: any, patch: any): any {
+function mergeOpponentSlots(prev: DbMatch | null, patch: DbMatch): DbMatch {
   const out = { ...patch };
   
-  for (const slot of ['opponent1_id', 'opponent2_id']) {
+  for (const slot of ['opponent1_id', 'opponent2_id'] as const) {
     if (slot in patch) {
       const incoming = patch[slot];
       // If incoming is null but previous slot has a value, don't overwrite
@@ -40,7 +93,8 @@ function mergeOpponentSlots(prev: any, patch: any): any {
  * Implements the CrudInterface to work directly with Supabase SQL tables
  */
 export class SupabaseSqlStorage implements CrudInterface {
-  private participantCache: Map<number, { position: number; name: string }> = new Map();
+  private participantCache: Map<number, ParticipantCacheEntry> = new Map();
+  
   /**
    * Load participants into cache for a tournament
    * Call this before bracket operations to ensure position data is available
@@ -48,14 +102,15 @@ export class SupabaseSqlStorage implements CrudInterface {
   async loadParticipantsForTournament(tournamentId: string): Promise<void> {
     const participants = await this.internalSelect('participant', { 
       tournament_id: tournamentId 
-    } as any);
+    } as Partial<DataTypes['participant']>);
     
     const participantArray = Array.isArray(participants) ? participants : [participants];
     
     bracketLog(`Loading ${participantArray.length} participants into cache for tournament ${tournamentId}`);
     
     for (const p of participantArray) {
-      const participant = p as any;
+      // Cast to extended type that includes position from our database schema
+      const participant = p as DataTypes['participant'] & { position?: number };
       if (participant.id && typeof participant.id === 'number') {
         this.participantCache.set(participant.id, {
           position: participant.position ?? 0,
@@ -76,13 +131,20 @@ export class SupabaseSqlStorage implements CrudInterface {
   }
 
   /**
+   * Get Supabase client with proper typing
+   */
+  private getClient(): SupabaseClient {
+    return supabase;
+  }
+
+  /**
    * Internal select method that bypasses cache loading
    */
   private async internalSelect<T extends keyof DataTypes>(
     table: T,
     filter?: Partial<DataTypes[T]> | Id
   ): Promise<DataTypes[T][] | DataTypes[T]> {
-    const client = supabase as any;
+    const client = this.getClient();
     let query = client.from(table).select('*');
     
     if (filter !== undefined) {
@@ -91,7 +153,8 @@ export class SupabaseSqlStorage implements CrudInterface {
         const { data, error } = await query.single();
         
         if (error) throw error;
-        return table === 'match' ? this.transformMatchFromDb(data) : data;
+        // For match table, transform from DB format; cast to DataTypes[T] since TypeScript can't infer the conditional
+        return (table === 'match' ? this.transformMatchFromDb(data as DbMatch) : data) as DataTypes[T];
       } else {
         Object.entries(filter).forEach(([key, value]) => {
           query = query.eq(key, value);
@@ -102,7 +165,10 @@ export class SupabaseSqlStorage implements CrudInterface {
     const { data, error } = await query;
     if (error) throw error;
     
-    const transformedData = table === 'match' ? (data || []).map(item => this.transformMatchFromDb(item)) : (data || []);
+    const rawData = (data || []) as DbMatch[];
+    const transformedData = table === 'match' 
+      ? rawData.map(item => this.transformMatchFromDb(item)) 
+      : (data || []);
     return transformedData as DataTypes[T][];
   }
 
@@ -110,8 +176,8 @@ export class SupabaseSqlStorage implements CrudInterface {
    * Transform match data from brackets-manager format to SQL format
    * Flattens opponent1/opponent2 objects into separate columns
    */
-  private transformMatchToDb(data: any): any {
-    const transformed: any = { ...data };
+  private transformMatchToDb(data: BmMatch): DbMatch {
+    const transformed: DbMatch = { ...data };
     
     // Handle opponent1 - always transform, even if null/undefined
     if ('opponent1' in data) {
@@ -125,7 +191,7 @@ export class SupabaseSqlStorage implements CrudInterface {
         transformed.opponent1_score = null;
         transformed.opponent1_result = null;
       }
-      delete transformed.opponent1; // Always delete the opponent1 field
+      delete (transformed as BmMatch).opponent1; // Always delete the opponent1 field
     }
     
     // Handle opponent2 - always transform, even if null/undefined
@@ -140,7 +206,7 @@ export class SupabaseSqlStorage implements CrudInterface {
         transformed.opponent2_score = null;
         transformed.opponent2_result = null;
       }
-      delete transformed.opponent2; // Always delete the opponent2 field
+      delete (transformed as BmMatch).opponent2; // Always delete the opponent2 field
     }
     
     return transformed;
@@ -151,8 +217,8 @@ export class SupabaseSqlStorage implements CrudInterface {
    * Re-inflates separate columns into opponent1/opponent2 objects
    * Includes position field from participant cache for proper bracket routing
    */
-  private transformMatchFromDb(data: any): any {
-    const transformed: any = { ...data };
+  private transformMatchFromDb(data: DbMatch): BmMatch {
+    const transformed: BmMatch & DbMatch = { ...data };
     
     // Re-inflate opponent1 with position from cache
     if ('opponent1_id' in data || 'opponent1_score' in data || 'opponent1_result' in data) {
@@ -163,7 +229,7 @@ export class SupabaseSqlStorage implements CrudInterface {
         id: opponentId ?? null,
         position: cached?.position ?? undefined,
         score: data.opponent1_score ?? null,
-        result: data.opponent1_result ?? null
+        result: data.opponent1_result as BmOpponentSlot['result'] ?? null
       };
       delete transformed.opponent1_id;
       delete transformed.opponent1_score;
@@ -179,7 +245,7 @@ export class SupabaseSqlStorage implements CrudInterface {
         id: opponentId ?? null,
         position: cached?.position ?? undefined,
         score: data.opponent2_score ?? null,
-        result: data.opponent2_result ?? null
+        result: data.opponent2_result as BmOpponentSlot['result'] ?? null
       };
       delete transformed.opponent2_id;
       delete transformed.opponent2_score;
@@ -192,9 +258,9 @@ export class SupabaseSqlStorage implements CrudInterface {
   /**
    * Transform data for database storage based on table type
    */
-  private transformDataForDb<T extends keyof DataTypes>(table: T, data: any): any {
+  private transformDataForDb<T extends keyof DataTypes>(table: T, data: Partial<DataTypes[T]>): Partial<DataTypes[T]> | DbMatch {
     if (table === 'match') {
-      return this.transformMatchToDb(data);
+      return this.transformMatchToDb(data as unknown as BmMatch);
     }
     return data;
   }
@@ -215,18 +281,18 @@ export class SupabaseSqlStorage implements CrudInterface {
   async insert<T extends keyof DataTypes>(table: T, values: OmitId<DataTypes[T]>[]): Promise<boolean>;
   
   async insert<T extends keyof DataTypes>(table: T, values: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]): Promise<number | boolean> {
-    const client = supabase as any;
+    const client = this.getClient();
     const isArray = Array.isArray(values);
     const items = isArray ? values : [values];
     
     bracketLog(`Insert ${items.length} row(s) into ${table}`);
     
     // Transform data for database storage
-    const transformedItems = items.map(item => this.transformDataForDb(table, item));
+    const transformedItems = items.map(item => this.transformDataForDb(table, item as Partial<DataTypes[T]>));
     
     const { data, error } = await client
       .from(table)
-      .insert(transformedItems)
+      .insert(transformedItems as Record<string, unknown>[])
       .select('id');
     
     if (error) {
@@ -240,7 +306,8 @@ export class SupabaseSqlStorage implements CrudInterface {
     if (isArray) {
       return true;
     } else {
-      return (data && data[0]) ? data[0].id : 0;
+      const insertedData = data as Array<{ id: number }> | null;
+      return (insertedData && insertedData[0]) ? insertedData[0].id : 0;
     }
   }
 
@@ -253,7 +320,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     filter: Partial<DataTypes[T]> | Id,
     values: Partial<DataTypes[T]>
   ): Promise<boolean> {
-    const client = supabase as any;
+    const client = this.getClient();
     
     // Transform data for database storage
     let transformedValues = this.transformDataForDb(table, values);
@@ -262,18 +329,20 @@ export class SupabaseSqlStorage implements CrudInterface {
     
     // ⭐ DEFENSIVE MERGE: Prevent null from overwriting filled opponent slots
     if (table === 'match' && ('opponent1' in values || 'opponent2' in values)) {
-      const matchId = typeof filter === 'number' || typeof filter === 'string' ? filter : (filter as any).id;
+      const matchId = typeof filter === 'number' || typeof filter === 'string' 
+        ? filter 
+        : (filter as { id?: Id }).id;
       const { data: currentMatch } = await client
         .from('match')
         .select('id, opponent1_id, opponent2_id, opponent1_result, opponent2_result, round_id, group_id, number, status')
-        .eq('id', matchId)
+        .eq('id', matchId as number)
         .single();
       
       // Apply defensive merge
-      transformedValues = mergeOpponentSlots(currentMatch, transformedValues);
+      transformedValues = mergeOpponentSlots(currentMatch as DbMatch | null, transformedValues as DbMatch);
     }
     
-    let query = client.from(table).update(transformedValues);
+    let query = client.from(table).update(transformedValues as Record<string, unknown>);
     
     if (typeof filter === 'number' || typeof filter === 'string') {
       query = query.eq('id', filter);
@@ -300,7 +369,7 @@ export class SupabaseSqlStorage implements CrudInterface {
   async delete<T extends keyof DataTypes>(table: T, filter: Partial<DataTypes[T]>): Promise<boolean>;
   
   async delete<T extends keyof DataTypes>(table: T, filter?: Partial<DataTypes[T]>): Promise<boolean> {
-    const client = supabase as any;
+    const client = this.getClient();
     let query = client.from(table).delete();
     
     bracketLog(`Delete from ${table}`, { filter });
