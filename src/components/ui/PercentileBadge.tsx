@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { getPercentileTier, formatPercentileText, PercentileResult } from '@/utils/percentileUtils';
+import { getPercentileTier, formatOrdinal, PercentileResult } from '@/utils/percentileUtils';
 import {
   Tooltip,
   TooltipContent,
@@ -42,12 +42,11 @@ export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
   statName,
 }) => {
   const tier = getPercentileTier(percentile);
-  const displayText = showLabel 
-    ? formatPercentileText(percentile, rank, total)
-    : `${percentile}%`;
+  // Display rank as ordinal (1st, 2nd, 3rd) instead of percentile
+  const displayText = rank ? formatOrdinal(rank) : `${percentile}%`;
 
   const tooltipText = rank && total 
-    ? `Ranks #${rank} of ${total} teams${statName ? ` in ${statName}` : ''}`
+    ? `Ranked ${formatOrdinal(rank)} of ${total} teams${statName ? ` in ${statName}` : ''}`
     : `${percentile}th percentile${statName ? ` in ${statName}` : ''}`;
 
   const badge = (

@@ -44,6 +44,15 @@ export function calculatePercentile(
 }
 
 /**
+ * Format a number as an ordinal (1st, 2nd, 3rd, etc.)
+ */
+export function formatOrdinal(n: number): string {
+  const suffixes = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+}
+
+/**
  * Get display text for percentile (e.g., "Top 5%", "85th")
  */
 export function formatPercentileText(percentile: number, rank?: number, total?: number): string {
