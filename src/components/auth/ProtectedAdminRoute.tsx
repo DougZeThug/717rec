@@ -13,58 +13,35 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   const { user, authInitialized, profile } = useAuth();
   const { isAdminAccessGranted, isLoading } = useAdminAccess();
   const location = useLocation();
-  const [showAccessDenied, setShowAccessDenied] = useState(false);
-  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
+  const [hasShownDeniedToast, setHasShownDeniedToast] = useState(false);
   
-  // Log whenever component mounts or updates
+  // Log state changes for debugging
   useEffect(() => {
-    authLog("ProtectedAdminRoute - Mount/Update", {
+    authLog("ProtectedAdminRoute - State", {
       authInitialized,
       userEmail: user?.email,
       isAdmin: isAdminAccessGranted,
-      isLoading
+      isLoading,
+      hasProfile: !!profile
     });
-    
-    // Only show admin access debug message if user exists and initial auth check is complete
-    if (authInitialized && user) {
-      if (isAdminAccessGranted) {
-        authLog(`Admin access GRANTED for ${user.email}`);
-        // Clear any previous access denied toasts
-        setShowAccessDenied(false);
-      } else if (!isLoading && initialCheckComplete) {
-        // Only show access denied after loading is complete AND we've waited for profile
-        authLog(`Admin access DENIED for ${user.email}`);
-        setShowAccessDenied(true);
-      }
-    }
-  }, [authInitialized, user, isAdminAccessGranted, isLoading, profile, initialCheckComplete]);
-
-  // Add a delay before considering initial check complete to give time for profile loading
-  useEffect(() => {
-    if (authInitialized && user) {
-      const timer = setTimeout(() => {
-        authLog("Initial check timeout complete");
-        setInitialCheckComplete(true);
-      }, 1000); // 1 second delay
-      
-      return () => clearTimeout(timer);
-    }
-  }, [authInitialized, user]);
+  }, [authInitialized, user, isAdminAccessGranted, isLoading, profile]);
   
-  // Show toast if access denied (after initial checks are complete)
+  // Show toast once when access is denied (after all loading completes)
   useEffect(() => {
-    if (showAccessDenied) {
+    if (!isLoading && authInitialized && user && !isAdminAccessGranted && !hasShownDeniedToast) {
+      authLog(`Admin access DENIED for ${user.email}`);
       toast({
         title: "Access Denied", 
         description: "You do not have admin privileges",
         variant: "destructive"
       });
+      setHasShownDeniedToast(true);
     }
-  }, [showAccessDenied]);
+  }, [isLoading, authInitialized, user, isAdminAccessGranted, hasShownDeniedToast]);
 
-  // Still loading auth or admin status
+  // Still loading auth or profile
   if (!authInitialized || isLoading) {
-    authLog("Loading state");
+    authLog("Loading state - waiting for auth/profile");
     return (
       <div className="container mx-auto py-8 px-4 flex items-center justify-center h-[60vh]">
         <div className="text-center">
@@ -81,14 +58,14 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
     return <Navigate to="/auth" state={{ returnTo: location.pathname }} replace />;
   }
   
-  // Logged in but not an admin and initial check is done
-  if (!isAdminAccessGranted && initialCheckComplete) {
+  // Logged in but not an admin
+  if (!isAdminAccessGranted) {
     authLog("Not admin, redirecting to home");
     return <Navigate to="/" replace />;
   }
   
-  // User is logged in and has admin access or we're still waiting for the final check
-  authLog("Access granted or still checking, rendering admin content");
+  // User has admin access
+  authLog("Admin access granted, rendering content");
   return <>{children}</>;
 };
 

@@ -5,7 +5,7 @@ import { authLog, warnLog } from '@/utils/logger';
 
 export const useAdminAccess = () => {
   const [isAdminAccessGranted, setIsAdminAccessGranted] = useState(false);
-  const { user, profile, authInitialized } = useAuth();
+  const { user, profile, authInitialized, isProfileLoading } = useAuth();
   
   // Check admin access whenever the user/profile changes
   useEffect(() => {
@@ -55,6 +55,6 @@ export const useAdminAccess = () => {
     checkAdminAccess,
     requestAdminAccess,
     revokeAdminAccess,
-    isLoading: !authInitialized
+    isLoading: !authInitialized || isProfileLoading
   };
 };
