@@ -1,11 +1,10 @@
-
 import { MatchWithTeams } from "../types";
 import { updateMatchInDatabase } from "./matchUpdateCore";
-import { useTeamRecordUpdate } from "./teamRecordUpdate";
+import { useTeamRecordUpdate } from "@/hooks/matches/useTeamRecordUpdate";
 import { useToast } from "@/hooks/use-toast";
 
 export const useMatchUpdateService = () => {
-  const { updateTeamRecordsForMatch } = useTeamRecordUpdate();
+  const { updateTeamStats } = useTeamRecordUpdate();
   const { toast } = useToast();
 
   const updateMatch = async (match: MatchWithTeams): Promise<boolean> => {
@@ -32,7 +31,7 @@ export const useMatchUpdateService = () => {
         const winnerGameWins = parseInt(String(winnerId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)) || 0;
         const loserGameWins = parseInt(String(loserId === match.team1Id ? match.team1_game_wins : match.team2_game_wins)) || 0;
               
-        await updateTeamRecordsForMatch(
+        await updateTeamStats(
           winnerId,
           loserId,
           teams,

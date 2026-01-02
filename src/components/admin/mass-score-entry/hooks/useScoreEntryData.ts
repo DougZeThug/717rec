@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useMatchesState } from "./state/useMatchesState";
 import { useFiltersState } from "./state/useFiltersState";
-import { useMatchSubmission } from "./submission/useMatchSubmission";
+import { useMatchSubmission } from "@/hooks/matches/useMatchSubmission";
 import { useMatchesFetching } from "./fetching/useMatchesFetching";
 import { useMatchScores } from "./useMatchScores";
 import { useErrorHandling } from "./error/useErrorHandling";
@@ -93,30 +93,62 @@ export const useScoreEntryData = () => {
 
     scoreLog(`Found ${validMatches.length} valid matches to submit`);
     setSubmitting(true);
+    
+    // Optimistic update: mark matches as submitting
+    const validMatchIds = validMatches.map(m => m.id);
+    setMatches(prev => prev.map(m => 
+      validMatchIds.includes(m.id) 
+        ? { ...m, isSubmitting: true, submitError: false } 
+        : m
+    ));
 
     try {
-      let successCount = 0;
+      // Submit all matches in parallel and track results
+      const results = await Promise.allSettled(
+        validMatches.map(match => 
+          handleSubmitScore({
+            matchId: match.id,
+            team1Score: match.team1Score ?? 0,
+            team2Score: match.team2Score ?? 0,
+            team1GameWins: match.team1_game_wins ?? 0,
+            team2GameWins: match.team2_game_wins ?? 0
+          })
+        )
+      );
 
-      for (const match of validMatches) {
-        const success = await handleSubmitScore({
-          matchId: match.id,
-          team1Score: match.team1Score ?? 0,
-          team2Score: match.team2Score ?? 0,
-          team1GameWins: match.team1_game_wins ?? 0,
-          team2GameWins: match.team2_game_wins ?? 0
-        });
+      // Determine which submissions succeeded/failed
+      const failedIds: string[] = [];
+      const succeededIds: string[] = [];
+      
+      results.forEach((result, index) => {
+        const matchId = validMatches[index].id;
+        if (result.status === 'rejected' || (result.status === 'fulfilled' && !result.value)) {
+          failedIds.push(matchId);
+        } else {
+          succeededIds.push(matchId);
+        }
+      });
 
-        if (success) successCount++;
-      }
+      // Update UI state based on results
+      setMatches(prev => prev.map(m => {
+        if (succeededIds.includes(m.id)) {
+          return { ...m, isSubmitting: false, isEdited: false, submitError: false };
+        }
+        if (failedIds.includes(m.id)) {
+          return { ...m, isSubmitting: false, isEdited: true, submitError: true };
+        }
+        return m;
+      }));
 
-      if (successCount > 0) {
+      if (succeededIds.length > 0) {
         toast({
           title: "✅ Matches Submitted",
-          description: `${successCount} match(es) successfully submitted.`
+          description: `${succeededIds.length} match(es) successfully submitted.${failedIds.length > 0 ? ` ${failedIds.length} failed.` : ''}`
         });
 
         await invalidateMatchRelatedQueries(queryClient);
-        await fetchMatches(filters);
+        const fetchedMatches = await fetchMatches(filters);
+        setMatches(fetchedMatches);
       } else {
         toast({
           title: "Error",
@@ -127,6 +159,14 @@ export const useScoreEntryData = () => {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       errorLog("Error submitting matches:", error);
+      
+      // Rollback all on catastrophic error
+      setMatches(prev => prev.map(m => 
+        validMatchIds.includes(m.id) 
+          ? { ...m, isSubmitting: false, isEdited: true, submitError: true } 
+          : m
+      ));
+      
       toast({
         title: "Error",
         description: `Failed to submit matches: ${errorMessage}`,

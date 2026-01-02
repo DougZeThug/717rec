@@ -17,6 +17,8 @@ export interface MatchWithTeams extends Match {
   id: string;
   isEdited?: boolean;
   isValid?: boolean;
+  isSubmitting?: boolean;
+  submitError?: boolean;
   winnerId?: string | null;
   loserId?: string | null;
   round_number?: number;
