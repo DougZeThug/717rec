@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Calendar, Trophy, Archive } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { Season } from "@/types/season";
 
 interface SeasonsListProps {
-  seasons: any[] | undefined;
+  seasons: Season[] | undefined;
   isLoading: boolean;
-  onEditSeason: (season: any) => void;
+  onEditSeason: (season: Season) => void;
 }
 
 const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSeason }) => {
@@ -44,7 +45,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
     );
   }
 
-  const getStatusBadge = (season: any) => {
+  const getStatusBadge = (season: Season) => {
     if (season.is_active) {
       return <Badge variant="default" className="bg-green-500">Active</Badge>;
     } else if (season.is_archived) {
@@ -54,7 +55,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
     }
   };
 
-  const getStatusIcon = (season: any) => {
+  const getStatusIcon = (season: Season) => {
     if (season.is_active) {
       return <Calendar className="h-4 w-4 text-green-500" />;
     } else if (season.is_archived) {

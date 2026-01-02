@@ -147,6 +147,8 @@ export * from './match';
 export * from './admin';
 export * from './career';
 export * from './season';
+export * from './schedule';
+export * from './playoff';
 export type {
   OpponentSlot,
   BracketMatch,
