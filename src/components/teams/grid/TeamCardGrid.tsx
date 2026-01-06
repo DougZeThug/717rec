@@ -40,7 +40,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
       <Link to={`/teams/${team.id}`} className="block">
         <div className={cn(
           "relative flex items-center justify-center overflow-hidden",
-          isMobile ? "h-16 p-2" : "h-24 p-3",
+          isMobile ? "h-20 p-4" : "h-24 p-3",
           headerGradient
         )}>
           <TeamImage 
