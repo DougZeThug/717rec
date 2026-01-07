@@ -1,7 +1,4 @@
-import { Team } from "./index";
-
-// Re-export Team for convenience
-export type { Team };
+import type { Team } from "./index";
 
 export interface TeamPair {
   team1: Team;

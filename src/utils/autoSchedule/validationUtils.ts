@@ -1,4 +1,4 @@
-import { AutoScheduleMatch, Team } from '@/types/autoSchedule';
+import { AutoScheduleMatch, Team } from '@/types';
 import { errorLog, log } from '@/utils/logger';
 
 export interface CrossBlockViolation {

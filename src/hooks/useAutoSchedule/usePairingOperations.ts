@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, MatchQualityMetrics, AutoScheduleMatch, Team } from '@/types/autoSchedule';
+import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, MatchQualityMetrics, AutoScheduleMatch, Team } from '@/types';
 import { usePairingGenerator } from '@/hooks/usePairingGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { validateScheduleDate } from '@/utils/autoSchedule/dateUtils';

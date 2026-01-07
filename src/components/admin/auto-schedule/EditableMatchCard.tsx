@@ -1,5 +1,5 @@
 import React from "react";
-import { Team, AutoScheduleMatch } from "@/types/autoSchedule";
+import { Team, AutoScheduleMatch } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeftRight } from "lucide-react";

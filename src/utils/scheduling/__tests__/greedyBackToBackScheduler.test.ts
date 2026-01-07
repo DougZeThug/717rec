@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateScheduleGreedy, GreedySchedulerInput } from '../greedyBackToBackScheduler';
-import { Team } from '@/types/autoSchedule';
+import { Team } from '@/types';
 
 // Helper to create mock teams
 function createMockTeam(id: string, name: string, division: string, tier: number = 1): Team {

@@ -1,4 +1,4 @@
-import { AutoScheduleMatch, Team } from "@/types/autoSchedule";
+import { AutoScheduleMatch, Team } from "@/types";
 import { haveTeamsPlayedBefore } from "./matchHistoryService";
 import { warnLog } from "@/utils/logger";
 
