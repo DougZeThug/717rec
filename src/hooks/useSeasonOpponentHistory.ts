@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { errorLog, warnLog } from "@/utils/logger";
 
 interface OpponentRecord {
   opponentId: string;
@@ -38,7 +39,7 @@ export const useSeasonOpponentHistory = () => {
         .single();
 
       if (seasonError || !activeSeason) {
-        console.error("No active season found:", seasonError);
+        warnLog("No active season found:", seasonError);
         return null;
       }
 
@@ -57,7 +58,7 @@ export const useSeasonOpponentHistory = () => {
         .is("bracket_id", null); // Regular season only - no bracket/playoff matches
 
       if (matchesError) {
-        console.error("Error fetching matches:", matchesError);
+        errorLog("Error fetching matches:", matchesError);
         throw matchesError;
       }
 
@@ -75,7 +76,7 @@ export const useSeasonOpponentHistory = () => {
         `);
 
       if (teamsError) {
-        console.error("Error fetching teams:", teamsError);
+        errorLog("Error fetching teams:", teamsError);
         throw teamsError;
       }
 

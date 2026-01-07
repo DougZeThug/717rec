@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { MessageReaction, ReactionCount } from "@/types/reactions";
+import { errorLog } from "@/utils/logger";
 
 export const useMessageReactions = (messageId: string) => {
   const [reactions, setReactions] = useState<MessageReaction[]>([]);
@@ -54,7 +55,7 @@ export const useMessageReactions = (messageId: string) => {
         
         setReactions(data || []);
       } catch (err) {
-        console.error('Error fetching reactions:', err);
+        errorLog('Error fetching reactions:', err);
       } finally {
         setIsLoading(false);
       }
@@ -138,7 +139,7 @@ export const useMessageReactions = (messageId: string) => {
       }
       
     } catch (err) {
-      console.error('Error adding reaction:', err);
+      errorLog('Error adding reaction:', err);
       toast({
         title: "Error",
         description: "Failed to add reaction",
@@ -163,7 +164,7 @@ export const useMessageReactions = (messageId: string) => {
       }
       
     } catch (err) {
-      console.error('Error removing reaction:', err);
+      errorLog('Error removing reaction:', err);
       toast({
         title: "Error",
         description: "Failed to remove reaction",

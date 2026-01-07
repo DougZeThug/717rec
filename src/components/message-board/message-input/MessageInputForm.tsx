@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { animations } from "@/styles/design-system";
 import CategorySelector from "./CategorySelector";
 import CharacterCounter from "./CharacterCounter";
+import { errorLog } from "@/utils/logger";
 
 interface MessageInputFormProps {
   onSend: (content: string, category: MessageCategory) => Promise<void>;
@@ -52,7 +53,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
       await onSend(message.trim(), category);
       setMessage("");
     } catch (error) {
-      console.error("Error sending message:", error);
+      errorLog("Error sending message:", error);
     } finally {
       setIsSending(false);
     }

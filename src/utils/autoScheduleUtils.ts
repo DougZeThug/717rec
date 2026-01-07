@@ -2,6 +2,7 @@
 import { Match, Team } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import { errorLog, scheduleLog } from "@/utils/logger";
 
 /**
  * Structure to represent a team pairing with compatibility score
@@ -60,7 +61,7 @@ export async function getTeamsByTimeBlock(date: Date, timeBlock: string): Promis
     .eq('timeslot', TIME_BLOCKS[timeBlock].main);
 
   if (error) {
-    console.error('Error fetching teams by time block:', error);
+    errorLog('Error fetching teams by time block:', error);
     throw error;
   }
 
@@ -101,13 +102,13 @@ export async function haveTeamsPlayed(team1Id: string, team2Id: string): Promise
       .limit(1);
 
     if (error) {
-      console.error('Error checking if teams have played:', error);
+      errorLog('Error checking if teams have played:', error);
       throw error;
     }
 
     return data && data.length > 0;
   } catch (error) {
-    console.error('Error in haveTeamsPlayed:', error);
+    errorLog('Error in haveTeamsPlayed:', error);
     // Return false as a fallback to avoid blocking match generation
     return false;
   }

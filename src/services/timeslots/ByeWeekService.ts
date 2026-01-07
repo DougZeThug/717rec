@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { TeamTimeslot } from "@/types/timeslots";
 import { format } from "date-fns";
+import { errorLog } from "@/utils/logger";
 
 export class ByeWeekService {
   /**
@@ -39,7 +40,7 @@ export class ByeWeekService {
       .single();
 
     if (error) {
-      console.error('Error assigning bye week:', error);
+      errorLog('Error assigning bye week:', error);
       throw new Error(`Failed to assign bye week: ${error.message}`);
     }
 
@@ -91,7 +92,7 @@ export class ByeWeekService {
       `);
 
     if (error) {
-      console.error('Error batch assigning bye weeks:', error);
+      errorLog('Error batch assigning bye weeks:', error);
       throw new Error(`Failed to batch assign bye weeks: ${error.message}`);
     }
 
@@ -118,7 +119,7 @@ export class ByeWeekService {
       .eq('timeslot', 'BYE');
 
     if (error) {
-      console.error('Error removing bye week:', error);
+      errorLog('Error removing bye week:', error);
       throw new Error(`Failed to remove bye week: ${error.message}`);
     }
   }

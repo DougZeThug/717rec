@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { errorLog } from "@/utils/logger";
 
 // Define interface for the team power score data
 export interface TeamPowerScoreData {
@@ -40,7 +41,7 @@ export const useTeamPowerScores = () => {
         setPowerScores(scoreMap);
         setTeamNames(nameMap);
       } catch (err) {
-        console.error("Error fetching team power scores:", err);
+        errorLog("Error fetching team power scores:", err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
         setIsLoading(false);

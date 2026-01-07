@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { errorLog } from "@/utils/logger";
 
 export interface MatchReaction {
   id: string;
@@ -68,7 +69,7 @@ export const useMatchReactions = (matchId: string) => {
         
         setReactions(data || []);
       } catch (err) {
-        console.error('Error fetching match reactions:', err);
+        errorLog('Error fetching match reactions:', err);
       } finally {
         setIsLoading(false);
       }
@@ -160,7 +161,7 @@ export const useMatchReactions = (matchId: string) => {
         }
       }
     } catch (err) {
-      console.error('Error toggling reaction:', err);
+      errorLog('Error toggling reaction:', err);
       toast({
         title: "Error",
         description: "Failed to update reaction",

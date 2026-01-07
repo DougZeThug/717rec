@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { bracketManagerService } from '@/services/brackets/manager';
 import { useToast } from '@/hooks/use-toast';
-import { log } from '@/utils/logger';
+import { log, errorLog } from '@/utils/logger';
 
 export function useBracketCompletion(bracketId: string | undefined) {
   const { toast } = useToast();
@@ -38,7 +38,7 @@ export function useBracketCompletion(bracketId: string | undefined) {
                 description: "Final standings have been calculated.",
               });
             } catch (error) {
-              console.error("Failed to calculate final standings:", error);
+              errorLog("Failed to calculate final standings:", error);
               toast({
                 title: "Standings Calculation Failed",
                 description: "Could not calculate final placements. Please refresh.",

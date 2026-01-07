@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { errorLog, matchLog } from "@/utils/logger";
 
 export interface PendingMatch {
   id: string;
@@ -54,7 +55,7 @@ export function usePendingScoresMatches() {
       
       setMatches(transformedMatches);
     } catch (error) {
-      console.error('Error fetching pending matches:', error);
+      errorLog('Error fetching pending matches:', error);
       toast({
         title: 'Error',
         description: 'Failed to load pending matches. Please try again.',
@@ -86,7 +87,7 @@ export function usePendingScoresMatches() {
 
       return true;
     } catch (error) {
-      console.error('Error submitting score:', error);
+      errorLog('Error submitting score:', error);
       toast({
         title: 'Error',
         description: 'Failed to submit score. Please try again.',

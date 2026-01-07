@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { bracketLog, successLog, failureLog } from "@/utils/logger";
+import { bracketLog, successLog, failureLog, warnLog, errorLog } from "@/utils/logger";
 import { bracketManagerService } from "@/services/brackets/manager";
 import type { BracketRecord } from "@/types/bracketRecord";
 
@@ -28,7 +28,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       .in('team_id', teams.map(t => t.id));
       
     if (teamError) {
-      console.warn("Failed to fetch team details for seeding, using provided order:", teamError);
+      warnLog("Failed to fetch team details for seeding, using provided order:", teamError);
     }
     
     // Sort teams by ranking (same logic as useTeamRankings) and assign seeds
@@ -126,7 +126,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       .insert(participantInserts);
 
     if (participantsError) {
-      console.error("Failed to insert participants:", participantsError);
+      errorLog("Failed to insert participants:", participantsError);
       // Don't throw - bracket is already created, just log the error
     }
 
@@ -162,7 +162,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     
   } catch (error) {
     // Log full error details
-    console.error("Bracket creation error - full context:", {
+    errorLog("Bracket creation error - full context:", {
       error,
       errorType: error?.constructor?.name,
       errorMessage: (error as any)?.message,

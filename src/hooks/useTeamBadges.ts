@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { TeamBadgeEvent, BadgeType } from '@/types/badges';
 import { Json } from '@/integrations/supabase/types';
+import { errorLog } from '@/utils/logger';
 
 /**
  * Raw badge data from Supabase
@@ -46,7 +47,7 @@ export const useTeamBadges = (teamId: string) => {
         .order('awarded_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching team badges:', error);
+        errorLog('Error fetching team badges:', error);
         throw error;
       }
 
@@ -67,7 +68,7 @@ export const useAllTeamBadges = () => {
         .order('awarded_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching all team badges:', error);
+        errorLog('Error fetching all team badges:', error);
         throw error;
       }
 
@@ -88,7 +89,7 @@ export const useSeasonBadges = (seasonId: string) => {
         .order('awarded_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching season badges:', error);
+        errorLog('Error fetching season badges:', error);
         throw error;
       }
 

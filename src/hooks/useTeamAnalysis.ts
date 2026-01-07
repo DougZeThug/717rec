@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { errorLog } from "@/utils/logger";
 
 export interface TeamAnalysis {
   id: string;
@@ -39,7 +40,7 @@ export const useTeamAnalysis = (teamId: string | undefined) => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching team analysis:', error);
+        errorLog('Error fetching team analysis:', error);
         throw error;
       }
 
@@ -99,7 +100,7 @@ export const useTeamAnalysis = (teamId: string | undefined) => {
       });
     },
     onError: (error) => {
-      console.error('Error saving team analysis:', error);
+      errorLog('Error saving team analysis:', error);
       toast({
         title: "Error saving analysis",
         description: error.message,

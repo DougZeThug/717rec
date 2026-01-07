@@ -128,6 +128,10 @@ export const chartLog = (...args: unknown[]) =>
 export const validationLog = (...args: unknown[]) =>
   log('✓ Validation:', ...args);
 
+// Image loading operations (used in onError handlers)
+export const imageErrorLog = (teamName: string, imageUrl: string | null | undefined) =>
+  warnLog('🖼️ Image:', `Failed to load image for ${teamName}:`, imageUrl || 'no URL');
+
 // Cache operations
 export const cacheLog = (...args: unknown[]) =>
   log('💨 Cache:', ...args);
