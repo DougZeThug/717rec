@@ -58,7 +58,7 @@ export class HeadToHeadService {
         duration: `${(endTime - startTime).toFixed(2)}ms`,
         teamId
       });
-      return [];
+      throw error;
     }
   }
 
@@ -89,7 +89,7 @@ export class HeadToHeadService {
 
       if (error) {
         errorLog('RPC Error:', error);
-        return null;
+        throw error;
       }
 
       const endTime = performance.now();

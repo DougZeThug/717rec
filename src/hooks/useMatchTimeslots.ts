@@ -9,6 +9,7 @@ import { scheduleLog, errorLog } from "@/utils/logger";
 export const useMatchTimeslots = (date: Date | null) => {
   const [timeslots, setTimeslots] = useState<TeamTimeslot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [groupedTimeslots, setGroupedTimeslots] = useState<Record<string, TeamTimeslot[]>>({});
   const queryClient = useQueryClient();
   
@@ -33,6 +34,7 @@ export const useMatchTimeslots = (date: Date | null) => {
       }
       
       setIsLoading(true);
+      setError(null);
       
       try {
         // Format date as YYYY-MM-DD for database queries
@@ -109,8 +111,9 @@ export const useMatchTimeslots = (date: Date | null) => {
         
         scheduleLog('Grouped timeslots:', sortedGrouped);  
         setGroupedTimeslots(sortedGrouped);
-      } catch (error) {
-        errorLog('Error fetching timeslots:', error);
+      } catch (err) {
+        errorLog('Error fetching timeslots:', err);
+        setError('Failed to load timeslots');
       } finally {
         setIsLoading(false);
       }
@@ -197,5 +200,5 @@ export const useMatchTimeslots = (date: Date | null) => {
     return () => clearInterval(intervalId);
   }, [date, queryClient]);
 
-  return { timeslots, groupedTimeslots, isLoading };
+  return { timeslots, groupedTimeslots, isLoading, error };
 };

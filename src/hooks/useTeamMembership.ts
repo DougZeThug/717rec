@@ -21,6 +21,7 @@ export function useTeamMembership() {
   const [isFetching, setIsFetching] = useState(true);
   const [membership, setMembership] = useState<TeamMembershipData | null>(null);
   const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch current team membership if user is logged in
   useEffect(() => {
@@ -35,7 +36,8 @@ export function useTeamMembership() {
     
     try {
       setIsFetching(true);
-      const { data, error } = await supabase
+      setError(null);
+      const { data, error: fetchError } = await supabase
         .from("team_memberships")
         .select(`
           id,
@@ -50,7 +52,7 @@ export function useTeamMembership() {
         .eq("user_id", user.id)
         .maybeSingle();
       
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       
       if (data) {
         // Transform the data to match the Team interface
@@ -70,8 +72,9 @@ export function useTeamMembership() {
       } else {
         setMembership(null);
       }
-    } catch (error) {
-      console.error("Error fetching team membership:", error);
+    } catch (err) {
+      console.error("Error fetching team membership:", err);
+      setError("Failed to load team membership");
     } finally {
       setIsFetching(false);
     }
@@ -206,6 +209,7 @@ export function useTeamMembership() {
     availableTeams,
     isLoading,
     isFetching,
+    error,
     joinTeam,
     leaveTeam,
     refreshMembership: fetchMembership
