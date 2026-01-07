@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { BadgeProcessingService } from '@/services/BadgeProcessingService';
+import { FailedBadgeOperationsService } from '@/services/FailedBadgeOperationsService';
 import { matchLog, badgeLog, errorLog, warnLog } from "@/utils/logger";
 
 export interface UpdateMatchScoreParams {
@@ -83,25 +83,46 @@ export const updateMatchScore = async ({
   matchLog('Match updated successfully:', data);
 
   // Process all badges for both teams after match completion
-  try {
-    // Process streak badges first
-    const badgeResult = await BadgeProcessingService.processMatchBadges(team1_id, team2_id);
-    badgeLog('Badge processing completed:', badgeResult);
+  // Each badge type is processed independently to avoid cascading failures
+  const badgeOperations = [
+    {
+      type: 'match_badges' as const,
+      params: { team1Id: team1_id, team2Id: team2_id },
+      execute: () => BadgeProcessingService.processMatchBadges(team1_id, team2_id),
+    },
+    {
+      type: 'kingslayer' as const,
+      params: { winnerId, loserId },
+      execute: () => BadgeProcessingService.processKingslayerBadge(winnerId, loserId),
+    },
+    {
+      type: 'clutch_performer' as const,
+      params: { winnerId, team1GameWins, team2GameWins },
+      execute: () => BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins),
+    },
+    {
+      type: 'consistent_performer' as const,
+      params: { winnerId },
+      execute: () => BadgeProcessingService.processConsistentPerformerBadge(winnerId),
+    },
+  ];
 
-    // Process kingslayer badge separately
-    const kingslayerResult = await BadgeProcessingService.processKingslayerBadge(winnerId, loserId);
-    badgeLog('Kingslayer badge processing completed:', kingslayerResult);
-
-    // Process clutch performer badge for the winner
-    const clutchResult = await BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins);
-    badgeLog('Clutch performer badge processing completed:', clutchResult);
-
-    // Process consistent performer badge for the winner
-    const consistentResult = await BadgeProcessingService.processConsistentPerformerBadge(winnerId);
-    badgeLog('Consistent performer badge processing completed:', consistentResult);
-  } catch (badgeError) {
-    warnLog('Badge processing failed (non-critical):', badgeError);
-    // Don't throw here - badge processing failure shouldn't prevent match completion
+  // Process each badge operation independently
+  for (const operation of badgeOperations) {
+    try {
+      const result = await operation.execute();
+      badgeLog(`${operation.type} badge processing completed:`, result);
+    } catch (badgeError) {
+      warnLog(`${operation.type} badge processing failed:`, badgeError);
+      
+      // Queue the failed operation for retry and admin notification
+      FailedBadgeOperationsService.queueFailedOperation(
+        operation.type,
+        operation.params,
+        badgeError instanceof Error ? badgeError : new Error(String(badgeError)),
+        matchId
+      );
+    }
   }
 
   return {
