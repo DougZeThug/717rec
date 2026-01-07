@@ -42,7 +42,7 @@
  * ```
  */
 
-import { Team } from '@/types/autoSchedule';
+import { Team } from '@/types';
 import { scheduleLog, warnLog } from '@/utils/logger';
 
 export interface GreedySchedulerInput {

@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics, AutoScheduleMatch, Team } from "@/types/autoSchedule";
+import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics, AutoScheduleMatch, Team } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Eye, RotateCcw } from "lucide-react";

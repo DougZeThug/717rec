@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Team, AutoScheduleMatch } from "@/types/autoSchedule";
+import { Team, AutoScheduleMatch } from "@/types";
 import { ValidationResult } from "@/utils/autoSchedule/validation";
 import EditableMatchCard from "./EditableMatchCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";

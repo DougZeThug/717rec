@@ -165,3 +165,43 @@ export type {
   StreakBadgeMetadata,
   PerformanceBadgeMetadata,
 } from './badges';
+
+// Auto-schedule types
+export * from './autoSchedule';
+
+// Message board / reactions types
+export * from './reactions';
+
+// Hero card types
+export * from './heroCard';
+
+// Extended timeslot types (TeamTimeslot is defined inline above)
+export type {
+  TimeslotGroup,
+  BackToBackTimeslotGroup,
+  TimeslotOperationResult,
+  TimeslotFilterOptions,
+  BackToBackAssignmentOptions,
+} from './timeslots';
+
+// Power score types
+export * from './powerScoreTrends';
+export * from './powerScoreSnapshot';
+
+// Team advanced stats types
+export * from './teamAdvancedStats';
+
+// Dual block types
+export * from './dualBlock';
+
+// Head-to-head types
+export * from './headToHead';
+
+// Auth types
+export * from './auth';
+
+// User types
+export * from './user';
+
+// Team career power score types
+export * from './teamCareerPowerScore';
