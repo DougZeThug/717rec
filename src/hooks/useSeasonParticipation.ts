@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveSeason } from "./useSeasons";
+import { errorLog } from "@/utils/logger";
 
 export type ParticipationStatus = 'PLAYING' | 'NOT_PLAYING';
 
@@ -30,7 +31,7 @@ export const useConfirmationSeason = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching confirmation season:', error);
+        errorLog('Error fetching confirmation season:', error);
         throw error;
       }
 
@@ -54,7 +55,7 @@ export const useTeamParticipation = (seasonId: string | undefined, teamId: strin
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching participation:', error);
+        errorLog('Error fetching participation:', error);
         throw error;
       }
 
@@ -77,7 +78,7 @@ export const useSeasonParticipations = (seasonId: string | undefined) => {
         .eq('season_id', seasonId);
 
       if (error) {
-        console.error('Error fetching participations:', error);
+        errorLog('Error fetching participations:', error);
         throw error;
       }
 

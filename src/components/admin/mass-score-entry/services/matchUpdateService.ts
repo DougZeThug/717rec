@@ -2,6 +2,7 @@ import { MatchWithTeams } from "../types";
 import { updateMatchInDatabase } from "./matchUpdateCore";
 import { useTeamRecordUpdate } from "@/hooks/matches/useTeamRecordUpdate";
 import { useToast } from "@/hooks/use-toast";
+import { errorLog } from "@/utils/logger";
 
 export const useMatchUpdateService = () => {
   const { updateTeamStats } = useTeamRecordUpdate();
@@ -42,7 +43,7 @@ export const useMatchUpdateService = () => {
 
       return true;
     } catch (error) {
-      console.error(`Error updating match ${match.id}:`, error);
+      errorLog(`Error updating match ${match.id}:`, error);
       return false;
     }
   };

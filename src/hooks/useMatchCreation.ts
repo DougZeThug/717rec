@@ -6,6 +6,7 @@ import { Match, Team } from "@/types";
 import { createDateWithTime } from "@/components/schedule/form-utils";
 import { normalizeTimeFormat } from "@/utils/timeUtils";
 import { useQueryClient } from "@tanstack/react-query";
+import { errorLog, warnLog } from "@/utils/logger";
 
 export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -30,7 +31,7 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
         .maybeSingle();
       
       if (seasonError) {
-        console.error('Error fetching active season:', seasonError);
+        warnLog('Error fetching active season:', seasonError);
       }
       
       // Create the match in Supabase
@@ -88,7 +89,7 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error("Error creating match:", error);
+      errorLog("Error creating match:", error);
       toast({
         title: "Error",
         description: `Failed to create match: ${message}`,

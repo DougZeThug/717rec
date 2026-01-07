@@ -1,6 +1,7 @@
 
 import { useMemo } from "react";
 import type { Team } from "@/types";
+import { errorLog } from "@/utils/logger";
 
 export const useFilteredTeams = (
   allTeams: Team[],
@@ -32,7 +33,7 @@ export const useFilteredTeams = (
 
       return filteredByDivisionName;
     } catch (error) {
-      console.error("Error filtering teams by division:", error);
+      errorLog("Error filtering teams by division:", error);
       return allTeams || [];
     }
   }, [allTeams, divisionFilter]);

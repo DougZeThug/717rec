@@ -12,6 +12,7 @@ import { BracketFormTeamsContainer } from "./form/bracket-teams/components/Brack
 import { bracketFormSchema, BracketFormValues } from "./form/BracketFormSchema";
 import { Team, Division } from "@/types";
 import { Users } from "lucide-react";
+import { errorLog } from "@/utils/logger";
 
 const isPowerOf2 = (n: number) => n > 0 && (n & (n - 1)) === 0;
 
@@ -107,7 +108,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
     
     // Additional validation before submission
     if (!data.teams || data.teams.length < 2) {
-      console.error("BracketForm: Insufficient teams selected - blocking submission");
+      errorLog("BracketForm: Insufficient teams selected - blocking submission");
       return;
     }
 

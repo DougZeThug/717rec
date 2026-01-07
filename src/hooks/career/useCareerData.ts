@@ -6,6 +6,7 @@ import {
   ArchivedMatchData, 
   PlayoffMatchData 
 } from "@/utils/career/types";
+import { errorLog, warnLog } from "@/utils/logger";
 
 interface TeamData {
   divisions: { division_weight: number } | null;
@@ -116,19 +117,19 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
 
   // Handle critical error
   if (seasonStatsResult.error) {
-    console.error('Error fetching team season stats:', seasonStatsResult.error);
+    errorLog('Error fetching team season stats:', seasonStatsResult.error);
     return null;
   }
 
   // Log non-critical errors
   if (currentMatchesResult.error) {
-    console.error('Error fetching current matches:', currentMatchesResult.error);
+    warnLog('Error fetching current matches:', currentMatchesResult.error);
   }
   if (archivedMatchesResult.error) {
-    console.error('Error fetching archived matches:', archivedMatchesResult.error);
+    warnLog('Error fetching archived matches:', archivedMatchesResult.error);
   }
   if (playoffMatchesResult.error) {
-    console.error('Error fetching playoff matches:', playoffMatchesResult.error);
+    warnLog('Error fetching playoff matches:', playoffMatchesResult.error);
   }
 
   const teamData = teamDataResult.data as TeamData | null;

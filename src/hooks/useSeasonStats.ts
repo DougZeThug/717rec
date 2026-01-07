@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { errorLog } from "@/utils/logger";
 
 export interface SeasonStat {
   season_id: string;
@@ -38,7 +39,7 @@ export function useSeasonStats() {
       setSeasons(uniqueSeasons);
       return uniqueSeasons;
     } catch (error) {
-      console.error("Error fetching seasons:", error);
+      errorLog("Error fetching seasons:", error);
       toast({
         title: "Error",
         description: "Failed to fetch seasons.",
@@ -80,7 +81,7 @@ export function useSeasonStats() {
       setSeasonStats(statsWithTeamNames);
       return statsWithTeamNames;
     } catch (error) {
-      console.error("Error fetching season stats:", error);
+      errorLog("Error fetching season stats:", error);
       toast({
         title: "Error",
         description: "Failed to fetch season stats.",

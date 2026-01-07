@@ -1,7 +1,7 @@
 import { BracketsManager } from "brackets-manager";
 import { SupabaseSqlStorage } from "./SupabaseSqlStorage";
 import { supabase } from "@/integrations/supabase/client";
-import { bracketLog, successLog, failureLog, errorLog } from "@/utils/logger";
+import { bracketLog, successLog, failureLog, errorLog, warnLog } from "@/utils/logger";
 import { matchUpdateQueue } from "./MatchUpdateQueue";
 
 /**
@@ -696,7 +696,7 @@ export class BracketManagerService {
       
       return { canUpdate: true };
     } catch (error) {
-      console.error('Error checking match update status:', error);
+      errorLog('Error checking match update status:', error);
       return { canUpdate: false, reason: 'Error checking match status' };
     }
   }
@@ -712,7 +712,7 @@ export class BracketManagerService {
       const stages = await this.storage.select('stage', { tournament_id: bracketId } as any);
       
       if (!stages || (Array.isArray(stages) && stages.length === 0)) {
-        console.warn('No stages found for bracket:', bracketId);
+        warnLog('No stages found for bracket:', bracketId);
         return;
       }
 
@@ -730,7 +730,7 @@ export class BracketManagerService {
       const participants = await this.storage.select('participant', { tournament_id: bracketId } as any);
       
       if (!participants) {
-        console.error("No participants found for bracket:", bracketId);
+        errorLog("No participants found for bracket:", bracketId);
         return;
       }
 
@@ -751,7 +751,7 @@ export class BracketManagerService {
           });
 
         if (error) {
-          console.error("Error updating playoff team records:", error);
+          errorLog("Error updating playoff team records:", error);
           throw error;
         }
 
@@ -865,9 +865,9 @@ export class BracketManagerService {
 
       return { ok: true, meta };
     } catch (error) {
-      console.error('Error checking BYE match eligibility:', error);
+      errorLog('Error checking BYE match eligibility:', error);
       return { 
-        ok: false, 
+        ok: false,
         reason: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
       };
     }

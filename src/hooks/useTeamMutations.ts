@@ -2,6 +2,7 @@
 import { Team } from "@/types";
 import { createTeamApi, updateTeamApi, deleteTeamApi } from "@/services/TeamService";
 import { useToast } from "@/hooks/use-toast";
+import { errorLog } from "@/utils/logger";
 
 export function useTeamMutations() {
   const { toast } = useToast();
@@ -15,7 +16,7 @@ export function useTeamMutations() {
       });
       return newTeam;
     } catch (error) {
-      console.error("Error creating team:", error);
+      errorLog("Error creating team:", error);
       toast({
         title: "Error",
         description: "Failed to create team. Please try again.",
@@ -34,7 +35,7 @@ export function useTeamMutations() {
       });
       return updatedTeam;
     } catch (error) {
-      console.error("Error updating team:", error);
+      errorLog("Error updating team:", error);
       let errorMessage = "Failed to update team. Please try again.";
       
       if (error instanceof Error && error.message) {
@@ -59,7 +60,7 @@ export function useTeamMutations() {
       await deleteTeamApi(teamId);
       return true;
     } catch (error) {
-      console.error("Error deleting team:", error);
+      errorLog("Error deleting team:", error);
       throw error;
     }
   };

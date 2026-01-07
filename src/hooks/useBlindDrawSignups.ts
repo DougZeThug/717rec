@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { errorLog } from "@/utils/logger";
 
 export interface BlindDrawSignup {
   id: string;
@@ -81,7 +82,7 @@ export const useAddBlindDrawSignup = () => {
       });
     },
     onError: (error) => {
-      console.error("Signup error:", error);
+      errorLog("Signup error:", error);
       toast({
         title: "Error",
         description: "Failed to sign up. Please try again.",
@@ -113,7 +114,7 @@ export const useDeleteBlindDrawSignup = () => {
       });
     },
     onError: (error) => {
-      console.error("Delete error:", error);
+      errorLog("Delete error:", error);
       toast({
         title: "Error",
         description: "Failed to remove signup",
@@ -145,7 +146,7 @@ export const useClearBlindDrawSignups = () => {
       });
     },
     onError: (error) => {
-      console.error("Clear error:", error);
+      errorLog("Clear error:", error);
       toast({
         title: "Error",
         description: "Failed to clear signups",
