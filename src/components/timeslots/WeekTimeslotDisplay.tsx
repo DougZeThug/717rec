@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Clock } from "lucide-react";
 import { TeamTimeslot } from "@/types";
+import { LoadingState } from "@/components/ui/loading-state";
 
 interface WeekTimeslotDisplayProps {
   teamId: string;
@@ -60,7 +60,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
     return (
       <Card className="bg-muted">
         <CardContent className="pt-6 pb-4">
-          <p className="text-muted-foreground text-center">Loading timeslot information...</p>
+          <LoadingState variant="section" message="Loading timeslots..." />
         </CardContent>
       </Card>
     );

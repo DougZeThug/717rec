@@ -9,6 +9,7 @@ import { exportHeadToHeadToCSV } from "@/utils/exportUtils";
 import { OpponentHistoryModal } from "./OpponentHistoryModal";
 import { format } from "date-fns";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+import { LoadingState } from "@/components/ui/loading-state";
 
 interface HeadToHeadRecordsProps {
   teamId: string;
@@ -76,7 +77,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({ teamId, teamName 
 
   const renderContent = () => {
     if (isLoading) {
-      return <div className="text-center py-4 text-muted-foreground">Loading head-to-head records...</div>;
+      return <LoadingState variant="section" message="Loading records..." />;
     }
 
     if (error) {

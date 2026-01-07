@@ -2,6 +2,7 @@ import React, { CSSProperties, useCallback } from "react";
 import { Match } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { History } from "lucide-react";
+import { InlineEmptyState } from "@/components/ui/inline-empty-state";
 import TeamGameScoreRow from "./TeamGameScoreRow";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { VirtualizedList } from "@/components/ui/VirtualizedList";
@@ -65,13 +66,13 @@ const MatchList: React.FC<MatchListProps> = ({
       {isLoading ? (
         <Skeleton className="h-32 w-full rounded" />
       ) : matches.length === 0 ? (
-        <div className="text-center py-8">
-          <History className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-          <p className="text-sm font-medium text-muted-foreground">No matches found</p>
-          <p className="text-xs text-muted-foreground/70 mt-1">
-            {isPast ? "Match history will appear after games are played" : "No upcoming matches scheduled"}
-          </p>
-        </div>
+        <InlineEmptyState
+          icon={History}
+          message={isPast ? "No Match History" : "No Upcoming Matches"}
+          description={isPast 
+            ? "Match history will appear after games are played" 
+            : "No upcoming matches scheduled"}
+        />
       ) : shouldVirtualize ? (
         <VirtualizedList
           items={matches}
