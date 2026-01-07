@@ -5,6 +5,7 @@ import { Message, MessageCategory } from "@/types/reactions";
 import { useMessageApi } from "./useMessageApi";
 import { useMessageRealtime } from "./useMessageRealtime";
 import { UseMessageBoardResult, FilterOptions, MessageQueryOptions } from "./types";
+import { errorLog } from "@/utils/logger";
 
 const PAGE_SIZE = 10;
 const FILTER_DEBOUNCE_MS = 300;
@@ -74,7 +75,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       setMessages(data || []);
       setHasMore(data.length === PAGE_SIZE);
     } catch (err) {
-      console.error('Error fetching messages:', err);
+      errorLog('Error fetching messages:', err);
       setError('Failed to load messages');
     } finally {
       setIsLoading(false);
@@ -114,7 +115,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       }
       
     } catch (err) {
-      console.error('Error loading more messages:', err);
+      errorLog('Error loading more messages:', err);
       toast({
         title: "Error loading messages",
         description: "Could not load additional messages. Please try again.",
@@ -130,7 +131,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     try {
       await createMessage(content, category);
     } catch (err) {
-      console.error('Error posting message:', err);
+      errorLog('Error posting message:', err);
       // Error is already handled in the API function
     }
   };
@@ -151,7 +152,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
           : msg
       ));
     } catch (err) {
-      console.error('Error updating message:', err);
+      errorLog('Error updating message:', err);
       // Error is already handled in the API function
     }
   };
@@ -163,7 +164,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       // Optimistic UI update
       setMessages(curr => curr.filter(msg => msg.id !== messageId));
     } catch (err) {
-      console.error('Error deleting message:', err);
+      errorLog('Error deleting message:', err);
       // Error is already handled in the API function
     }
   };

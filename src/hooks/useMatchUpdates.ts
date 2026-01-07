@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from "@/types";
 import { useTeamRecords } from "./useTeamRecords";
 import { useQueryClient } from "@tanstack/react-query";
+import { errorLog, warnLog } from "@/utils/logger";
 
 export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[]) => void) => {
   const [editingMatch, setEditingMatch] = useState<Match | undefined>(undefined);
@@ -102,7 +102,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error("Error updating match:", error);
+      errorLog("Error updating match:", error);
       toast({
         title: "Error",
         description: `Failed to update match: ${message}`,
@@ -147,7 +147,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         // Refresh team_season_stats to keep career data in sync
         const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
         if (seasonStatsError) {
-          console.warn('Failed to refresh season stats:', seasonStatsError);
+          warnLog('Failed to refresh season stats:', seasonStatsError);
           // Non-fatal - continue with deletion
         }
       }
@@ -178,7 +178,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error("Error deleting match:", error);
+      errorLog("Error deleting match:", error);
       toast({
         title: "Error", 
         description: `Failed to delete match: ${message}`,

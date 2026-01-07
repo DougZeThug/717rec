@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { BracketFormat } from "@/constants/brackets";
+import { errorLog } from "@/utils/logger";
 
 /**
  * Service for bracket update operations
@@ -29,7 +29,7 @@ export class BracketUpdateService {
       
       if (error) throw error;
     } catch (error) {
-      console.error("Error updating bracket:", error);
+      errorLog("Error updating bracket:", error);
       throw error;
     }
   }

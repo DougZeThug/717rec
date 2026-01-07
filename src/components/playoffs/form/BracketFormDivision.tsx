@@ -1,8 +1,8 @@
-
 import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
+import { errorLog } from "@/utils/logger";
 
 interface BracketFormDivisionProps {
   form: UseFormReturn<any>;
@@ -63,7 +63,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
       // Call the parent handler
       onDivisionChange(divisionId);
     } catch (error) {
-      console.error("BracketFormDivision: Error handling division change:", error);
+      errorLog("BracketFormDivision: Error handling division change:", error);
     }
   };
 

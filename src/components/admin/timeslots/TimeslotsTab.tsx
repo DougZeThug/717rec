@@ -12,6 +12,7 @@ import { useTeamsQuery } from "@/hooks/teams";
 import { useToast } from "@/hooks/use-toast";
 import { ByeWeekService } from "@/services/timeslots/ByeWeekService";
 import { Team } from "@/types";
+import { errorLog } from "@/utils/logger";
 
 const TimeslotsTab = () => {
   const { toast } = useToast();
@@ -45,7 +46,7 @@ const TimeslotsTab = () => {
         });
       }
     } catch (error) {
-      console.error("Error assigning timeslot:", error);
+      errorLog("Error assigning timeslot:", error);
       toast({
         title: "Error",
         description: "Failed to assign timeslot. Please try again.",
@@ -72,7 +73,7 @@ const TimeslotsTab = () => {
         });
       }
     } catch (error) {
-      console.error("Error during batch assignment:", error);
+      errorLog("Error during batch assignment:", error);
       toast({
         title: "Error",
         description: "Failed to assign timeslots. Please try again.",
@@ -102,7 +103,7 @@ const TimeslotsTab = () => {
         });
       }
     } catch (error) {
-      console.error("Error removing timeslot:", error);
+      errorLog("Error removing timeslot:", error);
       toast({
         title: "Error",
         description: "Failed to remove timeslot. Please try again.",
