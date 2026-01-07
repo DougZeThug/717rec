@@ -1,9 +1,11 @@
-import React from "react";
+import React, { CSSProperties, useCallback } from "react";
 import { Match } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { History } from "lucide-react";
 import TeamGameScoreRow from "./TeamGameScoreRow";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+import { VirtualizedList } from "@/components/ui/VirtualizedList";
+import { useVirtualization } from "@/hooks/useVirtualization";
 
 interface MatchListProps {
   matches: Match[];
@@ -16,6 +18,25 @@ interface MatchListProps {
   defaultOpen?: boolean;
 }
 
+// Row component for virtualized list
+const VirtualizedMatchRow: React.FC<{
+  match: Match;
+  style: CSSProperties;
+  teamId: string;
+  highlightWinnerLoser: boolean;
+  isLast: boolean;
+}> = ({ match, style, teamId, highlightWinnerLoser, isLast }) => {
+  return (
+    <div style={style} className={isLast ? '' : 'border-b border-border'}>
+      <TeamGameScoreRow
+        match={match}
+        teamId={teamId}
+        highlightWinnerLoser={highlightWinnerLoser}
+      />
+    </div>
+  );
+};
+
 const MatchList: React.FC<MatchListProps> = ({
   matches,
   isLoading,
@@ -26,6 +47,19 @@ const MatchList: React.FC<MatchListProps> = ({
   collapsible = false,
   defaultOpen = true
 }) => {
+  const { shouldVirtualize } = useVirtualization({ itemCount: matches.length, threshold: 20 });
+
+  const renderRow = useCallback((match: Match, index: number, style: CSSProperties) => (
+    <VirtualizedMatchRow
+      key={match.id}
+      match={match}
+      style={style}
+      teamId={teamId}
+      highlightWinnerLoser={highlightWinnerLoser}
+      isLast={index === matches.length - 1}
+    />
+  ), [teamId, highlightWinnerLoser, matches.length]);
+
   const matchContent = (
     <>
       {isLoading ? (
@@ -38,6 +72,14 @@ const MatchList: React.FC<MatchListProps> = ({
             {isPast ? "Match history will appear after games are played" : "No upcoming matches scheduled"}
           </p>
         </div>
+      ) : shouldVirtualize ? (
+        <VirtualizedList
+          items={matches}
+          rowHeight={72}
+          height={Math.min(matches.length * 72, 400)}
+          renderRow={renderRow}
+          overscanCount={3}
+        />
       ) : (
         <div className="divide-y divide-border">
           {matches.map((match) => (
