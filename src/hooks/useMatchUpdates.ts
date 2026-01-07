@@ -143,6 +143,13 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
         if (reverseError) {
           throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
         }
+        
+        // Refresh team_season_stats to keep career data in sync
+        const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
+        if (seasonStatsError) {
+          console.warn('Failed to refresh season stats:', seasonStatsError);
+          // Non-fatal - continue with deletion
+        }
       }
       
       // Delete the match from Supabase
@@ -189,6 +196,7 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     queryClient.invalidateQueries({ queryKey: ['teams'] });
     queryClient.invalidateQueries({ queryKey: ['rankings'] });
     queryClient.invalidateQueries({ queryKey: ['teamStats'] });
+    queryClient.invalidateQueries({ queryKey: ['team-totals'] });
     
     // Also invalidate single team queries that might be open in team details pages
     queryClient.invalidateQueries({ queryKey: ['team'] }); 
