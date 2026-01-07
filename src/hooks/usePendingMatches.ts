@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from '@/types';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
-
+import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
 export function usePendingMatches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Record<string, Team>>({});
@@ -91,7 +91,10 @@ export function usePendingMatches() {
     try {
       const winnerId = winnerTeamIndex === 1 ? match.team1Id : match.team2Id;
       const loserId = winnerTeamIndex === 1 ? match.team2Id : match.team1Id;
+      const winnerGameWins = winnerTeamIndex === 1 ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
+      const loserGameWins = winnerTeamIndex === 1 ? (match.team2_game_wins || 0) : (match.team1_game_wins || 0);
 
+      // Update match with winner/loser
       const { error } = await supabase
         .from('matches')
         .update({
@@ -102,20 +105,8 @@ export function usePendingMatches() {
 
       if (error) throw error;
       
-      // Update team win/loss records
-      await supabase
-        .from('teams')
-        .update({
-          wins: teams[winnerId].wins + 1
-        })
-        .eq('id', winnerId);
-        
-      await supabase
-        .from('teams')
-        .update({
-          losses: teams[loserId].losses + 1
-        })
-        .eq('id', loserId);
+      // Use atomic RPC to update team stats (prevents race conditions)
+      await applyMatchResult(winnerId, loserId, winnerGameWins, loserGameWins);
 
       toast({
         title: 'Result Approved',
