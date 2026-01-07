@@ -27,9 +27,13 @@ export const getHiddenDivisionId = async (): Promise<string | null> => {
     .eq('name', 'Hidden')
     .single();
     
-  if (error || !data) {
+  if (error) {
     console.error('Error fetching hidden division:', error);
-    return null;
+    throw error;
+  }
+  
+  if (!data) {
+    return null; // No hidden division exists - this is valid
   }
   
   return data.id;

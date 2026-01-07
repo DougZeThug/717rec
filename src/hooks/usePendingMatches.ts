@@ -7,6 +7,7 @@ export function usePendingMatches() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [teams, setTeams] = useState<Record<string, Team>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
@@ -17,6 +18,7 @@ export function usePendingMatches() {
 
   const fetchPendingMatches = async () => {
     try {
+      setError(null);
       // Get matches that are completed but have a tie (winnerId is null)
       const { data, error } = await supabase
         .from('matches')
@@ -49,8 +51,9 @@ export function usePendingMatches() {
       }));
       
       setMatches(transformedMatches);
-    } catch (error) {
-      console.error('Error fetching pending matches:', error);
+    } catch (err) {
+      console.error('Error fetching pending matches:', err);
+      setError('Failed to load pending matches');
       toast({
         title: 'Error',
         description: 'Failed to load pending matches. Please try again.',
@@ -191,9 +194,11 @@ export function usePendingMatches() {
     matches,
     teams,
     isLoading,
+    error,
     openItems,
     toggleItem,
     handleApproveResult,
-    handleMarkAsTie
+    handleMarkAsTie,
+    refetch: fetchPendingMatches
   };
 }

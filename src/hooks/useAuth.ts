@@ -60,7 +60,7 @@ export const useAuth = () => {
 
       if (error) {
         errorLog("Error fetching profile:", error);
-        return null;
+        throw error;
       }
       
       return data as UserProfile;
