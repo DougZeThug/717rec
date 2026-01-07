@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAutoScheduleState } from './useAutoScheduleState';
@@ -7,12 +6,11 @@ import { usePairingOperations } from './usePairingOperations';
 import { useAutoScheduleSave } from './useAutoScheduleSave';
 import { useEditableMatches } from './useEditableMatches';
 import { formatDate } from './utils';
-import { TimeBlockTeamsMap } from '@/types/autoSchedule';
-import { useTeamFetching } from '@/hooks/useTeamFetching';
+import { useTeamsMap } from '@/hooks/teams';
 
 export function useAutoSchedule() {
   const { toast } = useToast();
-  const { teams } = useTeamFetching();
+  const { teams } = useTeamsMap();
   
   // Get state management
   const {

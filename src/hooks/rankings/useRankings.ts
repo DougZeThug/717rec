@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { Ranking } from "@/types";
-import { useTeamsData } from "../useTeamsData";
+import { useTeamsArray } from "@/hooks/teams";
 import { useRankingsData } from "./useRankingsData";
 import { createRankingObject } from "@/utils/rankingUtils/createRankingObject";
 import { sortAndUpdateRankings } from "@/utils/rankingUtils/sortAndUpdateRankings";
@@ -13,7 +12,7 @@ export const useRankings = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const { teams, isLoading: teamsLoading } = useTeamsData();
+  const { teams, isLoading: teamsLoading } = useTeamsArray();
   const { latestMatches, matchesLoading } = useRankingsData();
 
   useEffect(() => {

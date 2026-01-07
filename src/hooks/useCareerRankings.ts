@@ -1,11 +1,11 @@
 import { CareerRanking } from '@/types/career';
-import { useTeamData } from './useTeamData';
+import { useTeamsQuery } from './teams';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTeamTotals } from './useTeamTotals';
 import { warnLog, errorLog } from '@/utils/logger';
 
 export function useCareerRankings() {
-  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamData();
+  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery();
 
   return useQuery({
     queryKey: ['careerRankings', teams?.map(t => t.id)],

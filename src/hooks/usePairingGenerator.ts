@@ -1,12 +1,11 @@
 import { useState, useCallback } from 'react';
-import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult, DualBlockConfig, TeamPairing, Team } from '@/types/autoSchedule';
+import { TeamPairingMap, TimeBlockTeamsMap, AlgorithmConfig, PairingResult, TeamPairing } from '@/types/autoSchedule';
 import { generatePairingsWithBlossom } from '@/utils/autoSchedule/blossomPairingAlgorithm';
 import { calculateDivisionOnlyCompatibility } from '@/utils/autoSchedule/compatibilityUtils';
-import { useTeamFetching } from './useTeamFetching';
+import { useTeamsMap } from './teams';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { haveTeamsPlayedBefore, fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
-import { generateDualBlockPairings } from '@/utils/autoSchedule/dualBlock';
 import { generateScheduleGreedy } from '@/utils/scheduling/greedyBackToBackScheduler';
 import { getPairConfig } from '@/utils/autoSchedule/constants';
 import { scheduleLog, errorLog, warnLog } from '@/utils/logger';
@@ -19,7 +18,7 @@ export const usePairingGenerator = () => {
   const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>({});
   const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>([]);
   const [teamBlockMap, setTeamBlockMap] = useState<Record<string, string>>({});
-  const { teams } = useTeamFetching();
+  const { teams } = useTeamsMap();
   const { toast } = useToast();
 
   /**
@@ -51,8 +50,8 @@ export const usePairingGenerator = () => {
       // Use provided block map or build one from timeBlockTeams
       const blockMap = providedTeamBlockMap || {};
       if (!providedTeamBlockMap) {
-        Object.entries(timeBlockTeams).forEach(([blockKey, teams]) => {
-          teams?.forEach(team => {
+        Object.entries(timeBlockTeams).forEach(([blockKey, teamsInBlock]) => {
+          teamsInBlock?.forEach(team => {
             blockMap[team.id] = blockKey;
           });
         });
@@ -61,7 +60,7 @@ export const usePairingGenerator = () => {
       
       scheduleLog("Generating match pairings for:", {
         date: normalizeDate(date, 'generateMatchPairings'),
-        teamCount: Object.values(timeBlockTeams).reduce((sum, teams) => sum + teams.length, 0),
+        teamCount: Object.values(timeBlockTeams).reduce((sum, teamsInBlock) => sum + teamsInBlock.length, 0),
         config,
         blockMapSize: Object.keys(blockMap).length
       });
@@ -91,8 +90,8 @@ export const usePairingGenerator = () => {
         
         // Fetch season history once for all teams
         const allTeamIds = new Set<string>();
-        Object.values(timeBlockTeams).forEach(teams => {
-          teams?.forEach(team => allTeamIds.add(team.id));
+        Object.values(timeBlockTeams).forEach(teamsInBlock => {
+          teamsInBlock?.forEach(team => allTeamIds.add(team.id));
         });
         const historyPairs = await fetchSeasonHistoryForTeams(Array.from(allTeamIds));
         scheduleLog(`Season History Loaded: ${historyPairs.length} pairs`);
@@ -207,21 +206,21 @@ export const usePairingGenerator = () => {
         
       } else {
         // Standard single-block pairing algorithm
-        for (const [block, teams] of Object.entries(timeBlockTeams)) {
+        for (const [block, teamsInBlock] of Object.entries(timeBlockTeams)) {
           // Skip empty blocks
-          if (!teams || teams.length < 2) {
+          if (!teamsInBlock || teamsInBlock.length < 2) {
             scheduleLog(`Skipping empty block: ${block}`);
             continue;
           }
           
           // Skip blocks with odd number of teams (warn the user)
-          if (teams.length % 2 !== 0) {
-            warnLog(`Block ${block} has odd number of teams (${teams.length}). One team will be unmatched.`);
+          if (teamsInBlock.length % 2 !== 0) {
+            warnLog(`Block ${block} has odd number of teams (${teamsInBlock.length}). One team will be unmatched.`);
           }
           
           // Generate pairings for this time block
-          scheduleLog(`Generating pairings for ${block} block with ${teams.length} teams`);
-          const blockPairings = await generatePairingsWithBlossom(teams, {
+          scheduleLog(`Generating pairings for ${block} block with ${teamsInBlock.length} teams`);
+          const blockPairings = await generatePairingsWithBlossom(teamsInBlock, {
             avoidRematches: config.avoidRematches,
             haveTeamsPlayedFn: haveTeamsPlayedBefore,
             getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
@@ -238,7 +237,7 @@ export const usePairingGenerator = () => {
             pairedTeamIds.add(pair.team2.id);
           });
           
-          const blockUnmatchedTeams = teams
+          const blockUnmatchedTeams = teamsInBlock
             .filter(team => !pairedTeamIds.has(team.id))
             .map(team => team.id);
           

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CareerRanking } from '@/types/career';
-import { useTeamData } from './useTeamData';
+import { useTeamsQuery } from './teams';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTeamTotals } from './useTeamTotals';
 import { warnLog, errorLog } from '@/utils/logger';
@@ -20,10 +20,10 @@ export function useCareerRankingsWithHidden() {
   }, [showHidden]);
 
   // Always fetch all teams to count hidden teams
-  const { data: allTeams } = useTeamData(null, true);
+  const { data: allTeams } = useTeamsQuery({ includeHidden: true });
   
   // Fetch teams based on toggle state
-  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamData(null, showHidden);
+  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery({ includeHidden: showHidden });
 
   const toggleShowHidden = () => {
     setShowHidden(!showHidden);
