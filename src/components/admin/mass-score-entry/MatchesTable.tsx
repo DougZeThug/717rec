@@ -3,8 +3,9 @@ import { format } from "date-fns";
 import { MatchWithTeams } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import DateMatchGroup from "./components/DateMatchGroup";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import MatchesTableSkeleton from "./MatchesTableSkeleton";
 
 interface MatchesTableProps {
   matches: MatchWithTeams[];
@@ -57,12 +58,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
   }, [indexedMatches]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-lg">Loading matches...</span>
-      </div>
-    );
+    return <MatchesTableSkeleton />;
   }
 
   if (!matches || matches.length === 0) {
