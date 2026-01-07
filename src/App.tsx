@@ -16,6 +16,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { routeLog } from "@/utils/logger";
 import { initSentry } from "@/utils/sentry";
 import { initAnalytics, trackPageView } from "@/utils/analytics";
+import { preloadCoreRoutes } from "@/utils/routePrefetch";
 
 // Initialize Sentry and Analytics on app load
 initSentry();
@@ -57,6 +58,11 @@ const AppContent = () => {
     routeLog(`Navigating to: ${location.pathname}`);
     trackPageView(location.pathname);
   }, [location.pathname]);
+
+  // Preload core routes after initial render
+  useEffect(() => {
+    preloadCoreRoutes();
+  }, []);
   
   return (
     <NavigationProvider>

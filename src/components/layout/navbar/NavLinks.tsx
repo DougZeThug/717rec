@@ -4,6 +4,7 @@ import { Home, Users, Calendar, BarChart3, Trophy, Clock, MessageSquare, HelpCir
 import { cn } from "@/lib/utils";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { ICON_SIZES, ICON_STROKE } from "@/styles/icon-system";
+import { prefetchRoute } from "@/utils/routePrefetch";
 
 interface NavLinksProps {
   isMobile?: boolean;
@@ -42,6 +43,9 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
           key={item.label}
           to={item.href}
           onClick={handleLinkClick}
+          onMouseEnter={() => prefetchRoute(item.href)}
+          onFocus={() => prefetchRoute(item.href)}
+          onTouchStart={() => prefetchRoute(item.href)}
           className={({ isActive }) =>
             cn(baseClass, isActive && !isMobile ? activeClass : undefined)
           }

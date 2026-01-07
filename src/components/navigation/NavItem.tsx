@@ -1,11 +1,11 @@
-
-import React, { cloneElement, isValidElement, ReactElement, useMemo } from "react";
+import React, { cloneElement, isValidElement, ReactElement, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { LucideProps } from "lucide-react";
 import { ICON_STROKE } from "@/styles/icon-system";
 import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
+import { prefetchRoute } from "@/utils/routePrefetch";
 
 export interface NavItemProps {
   to: string;
@@ -29,6 +29,11 @@ export const NavItem: React.FC<NavItemProps> = React.memo(({
   const { isWinterTheme } = useSeasonalThemeBase();
   const isActive = isActiveProp !== undefined ? isActiveProp : location.pathname === to;
 
+  // Prefetch route on hover/touch for faster navigation
+  const handlePrefetch = useCallback(() => {
+    prefetchRoute(to);
+  }, [to]);
+
   // Memoize icon cloning to prevent recreating on each render
   const styledIcon = useMemo(() => {
     if (!isValidElement(icon)) return icon;
@@ -41,6 +46,9 @@ export const NavItem: React.FC<NavItemProps> = React.memo(({
     <Link
       to={to}
       onClick={onClick}
+      onMouseEnter={handlePrefetch}
+      onFocus={handlePrefetch}
+      onTouchStart={handlePrefetch}
       className={cn(
         "flex items-center justify-center transition-all duration-300 touch-manipulation",
         "relative text-center",
