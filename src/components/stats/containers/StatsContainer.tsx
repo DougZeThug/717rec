@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { useTeamRankings } from "@/hooks/useTeamRankings";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { Match } from "@/types";
 import StatsErrorState from "../StatsErrorState";
 import StatsPageHeader from "./StatsPageHeader";
@@ -33,7 +33,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     data: teams, 
     isLoading: isLoadingTeams, 
     error: teamsError,
-  } = useTeamData(null);
+  } = useTeamsQuery();
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
 
   const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;

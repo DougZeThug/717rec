@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router";
 import { Helmet } from "react-helmet-async";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { useTeamComparison } from "@/hooks/useTeamComparison";
 import { TeamCompareSelector } from "@/components/compare/TeamCompareSelector";
 import { TeamComparisonView } from "@/components/compare/TeamComparisonView";
@@ -11,7 +11,7 @@ import { Scale } from "lucide-react";
 
 const Compare: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: teams, isLoading: teamsLoading } = useTeamData();
+  const { data: teams, isLoading: teamsLoading } = useTeamsQuery();
   
   const [team1, setTeam1] = useState<Team | null>(null);
   const [team2, setTeam2] = useState<Team | null>(null);

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Search, Image, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import { Team } from "@/types";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { getLogoStatus, LogoStatus } from "@/utils/logoStatusUtils";
 import TeamLogoCard from "./TeamLogoCard";
 
@@ -13,7 +13,7 @@ type FilterStatus = 'all' | LogoStatus;
 type SortOption = 'name' | 'status';
 
 const BulkLogoUpdateTab: React.FC = () => {
-  const { data: teams, isLoading, refetch } = useTeamData(undefined, true);
+  const { data: teams, isLoading, refetch } = useTeamsQuery({ includeHidden: true });
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('status');

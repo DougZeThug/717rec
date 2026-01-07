@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import TimeslotAssignment from "@/components/timeslots/TimeslotAssignment";
 import TimeslotList from "@/components/timeslots/TimeslotList";
 import { useTimeslots } from "@/hooks/useTimeslots";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { Navigate } from "react-router";
 import { ByeWeekService } from "@/services/timeslots/ByeWeekService";
@@ -15,7 +15,7 @@ import { errorLog } from "@/utils/logger";
 
 export default function Timeslots() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const { data: teams, isLoading: isLoadingTeams } = useTeamData();
+  const { data: teams, isLoading: isLoadingTeams } = useTeamsQuery();
   const { timeslots, isLoading, addTimeslot, deleteTimeslot, batchAssignTimeslots, refreshTimeslots } = useTimeslots(selectedDate);
   const { toast } = useToast();
   const { isAdminAccessGranted, isLoading: isAdminLoading } = useAdminAccess();

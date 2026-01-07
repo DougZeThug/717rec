@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import TimeslotAssignment from "@/components/timeslots/TimeslotAssignment";
 import TimeslotList from "@/components/timeslots/TimeslotList";
 import { useTimeslots } from "@/hooks/useTimeslots";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { useToast } from "@/hooks/use-toast";
 import { ByeWeekService } from "@/services/timeslots/ByeWeekService";
 import { Team } from "@/types";
@@ -17,9 +17,7 @@ const TimeslotsTab = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
-  const teamQuery = useTeamData();
-  const teams = teamQuery.data || [];
-  const isLoadingTeams = teamQuery.isLoading;
+  const { data: teams = [], isLoading: isLoadingTeams } = useTeamsQuery();
   
   const { 
     timeslots, 

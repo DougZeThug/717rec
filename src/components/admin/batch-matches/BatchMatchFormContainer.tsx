@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { useBatchMatchForm } from "./useBatchMatchForm";
 import { DateSelectionSection } from "./DateSelectionSection";
 import { MatchPairsSection } from "./MatchPairsSection";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/loading-state";
 
 const BatchMatchFormContainer = () => {
-  const { data: teams, isLoading } = useTeamData();
+  const { data: teams, isLoading } = useTeamsQuery();
   const { toast } = useToast();
   const [isAutoAssigning, setIsAutoAssigning] = React.useState(false);
   const [showAutoSchedule, setShowAutoSchedule] = React.useState(false);
