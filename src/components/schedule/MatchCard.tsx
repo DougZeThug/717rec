@@ -2,17 +2,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Pencil, Timer, Trash2 } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
 import { Skeleton } from "@/components/ui/skeleton";
 import { animations, gradients, typography, elevation } from "@/styles/design-system";
-import { Progress } from "@/components/ui/progress";
 import { TeamLogo } from "@/components/ui/team";
 import { MatchInteractions } from "@/components/matches";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { MatchHeadToHead } from "./MatchHeadToHead";
+import MatchCountdown from "./MatchCountdown";
 
 interface MatchCardProps {
   match: Match;
@@ -33,8 +33,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const { isAdminAccessGranted } = useAdminAccess();
   const isLight = resolvedTheme === "light";
   const [scoreAnimation, setScoreAnimation] = useState(false);
-  const [countdownText, setCountdownText] = useState("");
-  const [countdownPercent, setCountdownPercent] = useState(100);
 
   // Check if team details are loading
   const isTeam1Loading = !match.team1Details;
@@ -62,50 +60,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
       return () => clearTimeout(timer);
     }
   }, [match.team1Score, match.team2Score]);
-
-  // Countdown timer for upcoming matches
-  useEffect(() => {
-    if (isCompleted || !match.date) return;
-
-    const matchDate = new Date(match.date);
-    const now = new Date();
-    
-    // Only show countdown if match is in the future
-    if (matchDate <= now) return;
-
-    const updateCountdown = () => {
-      const now = new Date();
-      const diff = matchDate.getTime() - now.getTime();
-      
-      if (diff <= 0) {
-        setCountdownText("Starting now!");
-        setCountdownPercent(0);
-        return;
-      }
-      
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      
-      // Calculate percentage for progress bar (using 12 hours max for more responsive feedback)
-      const maxDiff = 12 * 60 * 60 * 1000; // 12 hours in ms
-      const percentage = Math.max(0, Math.min(100, (diff / maxDiff) * 100));
-      setCountdownPercent(100 - percentage); // Invert so it fills up as time gets closer
-      
-      if (days > 0) {
-        setCountdownText(`${days}d ${hours}h until match`);
-      } else if (hours > 0) {
-        setCountdownText(`${hours}h ${minutes}m until match`);
-      } else {
-        setCountdownText(`${minutes}m until match`);
-      }
-    };
-    
-    updateCountdown();
-    const intervalId = setInterval(updateCountdown, 60000); // Update every minute
-    
-    return () => clearInterval(intervalId);
-  }, [match.date, isCompleted]);
 
   const getScoreStyle = useCallback((isWinner: boolean) => cn(
     "text-2xl font-black tracking-wide tabular-nums transition-all duration-500",
@@ -255,15 +209,9 @@ const MatchCard: React.FC<MatchCardProps> = ({
             team2Name={team2Name}
           />
           
-          {/* Countdown for upcoming matches */}
-          {!isCompleted && countdownText && (
-            <div className="mt-1 space-y-1">
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <Timer className="h-3 w-3" />
-                <span>{countdownText}</span>
-              </div>
-              <Progress value={countdownPercent} className="h-1" />
-            </div>
+          {/* Countdown for upcoming matches - isolated to prevent parent re-renders */}
+          {!isCompleted && match.date && (
+            <MatchCountdown matchDate={match.date} />
           )}
 
           {/* Action buttons - Admin can manage all matches, non-admins only incomplete matches */}
