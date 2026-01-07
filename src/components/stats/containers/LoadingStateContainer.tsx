@@ -6,12 +6,12 @@ import { TeamListSkeleton } from "@/components/teams/TeamListSkeleton";
 
 const LoadingStateContainer = () => {
   return (
-    <div className="max-w-7xl mx-auto bg-[#fafafa] dark:bg-transparent px-2 sm:px-4">
+    <div className="max-w-7xl mx-auto bg-background px-2 sm:px-4">
       <div className="mt-2 mb-1">
         <Skeleton className="h-8 w-64 mb-4" />
       </div>
       <div className="font-inter">
-        <Card className="mb-4 bg-white text-[#1a1a1a] border border-[#e0e0e0] dark:bg-[#1E1E1E] dark:text-white dark:border-none rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-0">
+        <Card className="mb-4 bg-card text-card-foreground border border-border rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-0">
           <CardHeader className="pb-1.5 rounded-t-xl">
             <Skeleton className="h-6 w-48 mb-2" />
             <Skeleton className="h-4 w-72" />
@@ -41,7 +41,7 @@ const LoadingStateContainer = () => {
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Array.from({ length: 4 }).map((_, idx) => (
-              <Card key={idx} className="bg-white dark:bg-[#1E1E1E]">
+              <Card key={idx} className="bg-card">
                 <CardHeader className="p-4 pb-0">
                   <Skeleton className="h-5 w-24 mb-1" />
                   <Skeleton className="h-7 w-16" />
@@ -56,7 +56,7 @@ const LoadingStateContainer = () => {
 
         <div className="mb-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="bg-white dark:bg-[#1E1E1E] border border-[#e0e0e0] dark:border-gray-800">
+            <Card className="bg-card border border-border">
               <CardHeader>
                 <Skeleton className="h-6 w-48 mb-2" />
               </CardHeader>
@@ -64,7 +64,7 @@ const LoadingStateContainer = () => {
                 <Skeleton className="h-64 w-full" />
               </CardContent>
             </Card>
-            <Card className="bg-white dark:bg-[#1E1E1E] border border-[#e0e0e0] dark:border-gray-800">
+            <Card className="bg-card border border-border">
               <CardHeader>
                 <Skeleton className="h-6 w-48 mb-2" />
               </CardHeader>
@@ -76,7 +76,7 @@ const LoadingStateContainer = () => {
         </div>
 
         <div>
-          <Card className="bg-white dark:bg-[#1E1E1E]">
+          <Card className="bg-card">
             <CardHeader>
               <Skeleton className="h-6 w-48 mb-2" />
             </CardHeader>
