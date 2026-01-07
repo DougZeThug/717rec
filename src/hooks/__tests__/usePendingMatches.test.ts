@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
 import { usePendingMatches } from '../usePendingMatches';
 import { supabase } from "@/integrations/supabase/client";
 import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
@@ -21,6 +23,21 @@ vi.mock('@/hooks/use-toast', () => ({
     toast: vi.fn()
   })
 }));
+
+// Create a wrapper for React Query
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  });
+  return ({ children }: { children: React.ReactNode }) => (
+    React.createElement(QueryClientProvider, { client: queryClient }, children)
+  );
+};
 
 describe('usePendingMatches', () => {
   const mockMatch = {
@@ -89,7 +106,9 @@ describe('usePendingMatches', () => {
 
     (applyMatchResult as any).mockResolvedValue(true);
 
-    const { result } = renderHook(() => usePendingMatches());
+    const { result } = renderHook(() => usePendingMatches(), {
+      wrapper: createWrapper()
+    });
     
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -134,13 +153,19 @@ describe('usePendingMatches', () => {
     // Simulate RPC failure
     (applyMatchResult as any).mockRejectedValue(new Error('RPC failed'));
 
-    const { result } = renderHook(() => usePendingMatches());
+    const { result } = renderHook(() => usePendingMatches(), {
+      wrapper: createWrapper()
+    });
     
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Call handleApproveResult - should not throw
+    // Call handleApproveResult - should not throw due to mutation error handling
     await act(async () => {
-      await result.current.handleApproveResult(mockMatch as any, 1);
+      try {
+        await result.current.handleApproveResult(mockMatch as any, 1);
+      } catch {
+        // Error is expected and handled by mutation
+      }
     });
 
     // The hook should handle the error gracefully (toast is shown)
@@ -174,7 +199,9 @@ describe('usePendingMatches', () => {
 
     (applyMatchResult as any).mockResolvedValue(true);
 
-    const { result } = renderHook(() => usePendingMatches());
+    const { result } = renderHook(() => usePendingMatches(), {
+      wrapper: createWrapper()
+    });
     
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { errorLog, matchLog } from "@/utils/logger";
@@ -22,26 +22,28 @@ export interface ScoreSubmission {
 }
 
 export function usePendingScoresMatches() {
-  const [matches, setMatches] = useState<PendingMatch[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchPendingMatches();
-  }, []);
-
-  const fetchPendingMatches = async () => {
-    try {
-      setIsLoading(true);
+  const { data: matches = [], isLoading, refetch } = useQuery<PendingMatch[]>({
+    queryKey: ['matches', 'pending-scores'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('v_pending_matches')
         .select('*')
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        errorLog('Error fetching pending matches:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load pending matches. Please try again.',
+          variant: 'destructive',
+        });
+        throw error;
+      }
 
-      const transformedMatches: PendingMatch[] = (data || []).map(match => ({
+      return (data || []).map(match => ({
         id: match.id,
         team1_id: match.team1_id || '',
         team2_id: match.team2_id || '',
@@ -52,23 +54,12 @@ export function usePendingScoresMatches() {
         date: match.date || '',
         location: match.location || ''
       }));
-      
-      setMatches(transformedMatches);
-    } catch (error) {
-      errorLog('Error fetching pending matches:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load pending matches. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 
-  const submitScore = async (matchId: string, submission: ScoreSubmission) => {
-    try {
-      setIsSubmitting(true);
+  const submitMutation = useMutation({
+    mutationFn: async ({ matchId, submission }: { matchId: string; submission: ScoreSubmission }) => {
       const { error } = await supabase
         .from('score_submissions')
         .insert({
@@ -79,31 +70,40 @@ export function usePendingScoresMatches() {
         });
 
       if (error) throw error;
-
+      return true;
+    },
+    onSuccess: () => {
       toast({
         title: 'Score Submitted',
         description: 'Your score report has been submitted for admin review.',
       });
-
-      return true;
-    } catch (error) {
+      // Optionally invalidate queries if needed
+      queryClient.invalidateQueries({ queryKey: ['matches', 'pending-scores'] });
+    },
+    onError: (error) => {
       errorLog('Error submitting score:', error);
       toast({
         title: 'Error',
         description: 'Failed to submit score. Please try again.',
         variant: 'destructive',
       });
+    },
+  });
+
+  const submitScore = async (matchId: string, submission: ScoreSubmission): Promise<boolean> => {
+    try {
+      await submitMutation.mutateAsync({ matchId, submission });
+      return true;
+    } catch {
       return false;
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return {
     matches,
     isLoading,
-    isSubmitting,
+    isSubmitting: submitMutation.isPending,
     submitScore,
-    refetch: fetchPendingMatches
+    refetch
   };
 }

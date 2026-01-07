@@ -1,26 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Match, Team } from '@/types';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 import { applyMatchResult } from '@/hooks/team-stats/utils/teamRecordUtils';
+
 export function usePendingMatches() {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [teams, setTeams] = useState<Record<string, Team>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchPendingMatches();
-    fetchTeams();
-  }, []);
-
-  const fetchPendingMatches = async () => {
-    try {
-      setError(null);
-      // Get matches that are completed but have a tie (winnerId is null)
+  // Fetch pending matches (completed but no winner = ties)
+  const { data: matches = [], isLoading, error: queryError, refetch } = useQuery<Match[]>({
+    queryKey: ['matches', 'pending'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('matches')
         .select('*')
@@ -28,34 +22,41 @@ export function usePendingMatches() {
         .is('winner_id', null)
         .order('date');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching pending matches:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load pending matches. Please try again.',
+          variant: 'destructive',
+        });
+        throw error;
+      }
 
-      const transformedMatches = transformDatabaseMatches(data || [], { normalizeDate: false });
-      setMatches(transformedMatches);
-    } catch (err) {
-      console.error('Error fetching pending matches:', err);
-      setError('Failed to load pending matches');
-      toast({
-        title: 'Error',
-        description: 'Failed to load pending matches. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      return transformDatabaseMatches(data || [], { normalizeDate: false });
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 
-  const fetchTeams = async () => {
-    try {
+  // Fetch teams
+  const { data: teams = {} } = useQuery<Record<string, Team>>({
+    queryKey: ['teams', 'map'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('v_team_details')
         .select('*');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching teams:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load teams. Please try again.',
+          variant: 'destructive',
+        });
+        throw error;
+      }
       
       const teamsMap: Record<string, Team> = {};
       data?.forEach(team => {
-        // Transform database team to match our Team interface
         teamsMap[team.team_id] = {
           id: team.team_id,
           name: team.name,
@@ -76,19 +77,14 @@ export function usePendingMatches() {
         };
       });
       
-      setTeams(teamsMap);
-    } catch (error) {
-      console.error('Error fetching teams:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load teams. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
+      return teamsMap;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-  const handleApproveResult = async (match: Match, winnerTeamIndex: 1 | 2) => {
-    try {
+  // Mutation for approving match results
+  const approveMutation = useMutation({
+    mutationFn: async ({ match, winnerTeamIndex }: { match: Match; winnerTeamIndex: 1 | 2 }) => {
       const winnerId = winnerTeamIndex === 1 ? match.team1Id : match.team2Id;
       const loserId = winnerTeamIndex === 1 ? match.team2Id : match.team1Id;
       const winnerGameWins = winnerTeamIndex === 1 ? (match.team1_game_wins || 0) : (match.team2_game_wins || 0);
@@ -107,27 +103,29 @@ export function usePendingMatches() {
       
       // Use atomic RPC to update team stats (prevents race conditions)
       await applyMatchResult(winnerId, loserId, winnerGameWins, loserGameWins);
-
+    },
+    onSuccess: () => {
       toast({
         title: 'Result Approved',
         description: 'Match result has been successfully approved.',
       });
-      
-      // Refresh the matches list
-      fetchPendingMatches();
-    } catch (error) {
+      // Invalidate all match-related queries
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    },
+    onError: (error) => {
       console.error('Error approving result:', error);
       toast({
         title: 'Error',
         description: 'Failed to approve result. Please try again.',
         variant: 'destructive',
       });
-    }
-  };
+    },
+  });
 
-  const handleMarkAsTie = async (matchId: string) => {
-    try {
-      // For ties, we keep both winnerId and loserId as null
+  // Mutation for marking as tie
+  const tieMutation = useMutation({
+    mutationFn: async (matchId: string) => {
       const { error } = await supabase
         .from('matches')
         .update({
@@ -137,22 +135,30 @@ export function usePendingMatches() {
         .eq('id', matchId);
 
       if (error) throw error;
-
+    },
+    onSuccess: () => {
       toast({
         title: 'Match Marked as Tie',
         description: 'Match has been successfully marked as a tie.',
       });
-      
-      // Refresh the matches list - this match will still show in the list as it's a tie
-      fetchPendingMatches();
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+    },
+    onError: (error) => {
       console.error('Error marking as tie:', error);
       toast({
         title: 'Error',
         description: 'Failed to mark match as tie. Please try again.',
         variant: 'destructive',
       });
-    }
+    },
+  });
+
+  const handleApproveResult = async (match: Match, winnerTeamIndex: 1 | 2) => {
+    await approveMutation.mutateAsync({ match, winnerTeamIndex });
+  };
+
+  const handleMarkAsTie = async (matchId: string) => {
+    await tieMutation.mutateAsync(matchId);
   };
 
   const toggleItem = (id: string) => {
@@ -166,11 +172,11 @@ export function usePendingMatches() {
     matches,
     teams,
     isLoading,
-    error,
+    error: queryError?.message ?? null,
     openItems,
     toggleItem,
     handleApproveResult,
     handleMarkAsTie,
-    refetch: fetchPendingMatches
+    refetch
   };
 }
