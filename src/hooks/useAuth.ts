@@ -104,9 +104,11 @@ export const useAuth = () => {
           authLog(`Fetching profile for event: ${event}, user: ${currentSession.user.email}`);
           ensureThemeConsistency();
           
+          // Set loading state BEFORE setTimeout to prevent race condition
+          setIsProfileLoading(true);
+          
           // Use setTimeout to prevent Supabase auth deadlocks
           setTimeout(async () => {
-            setIsProfileLoading(true);
             try {
               const profileData = await fetchProfile(currentSession.user.id);
               authLog("Profile loaded successfully:", { 
