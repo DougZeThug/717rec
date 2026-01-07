@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { errorLog } from "@/utils/logger";
 
@@ -10,46 +9,40 @@ export interface TeamPowerScoreData {
   power_score: number;
 }
 
-export const useTeamPowerScores = () => {
-  const [powerScores, setPowerScores] = useState<Record<string, number>>({});
-  const [teamNames, setTeamNames] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+interface PowerScoreResult {
+  powerScores: Record<string, number>;
+  teamNames: Record<string, string>;
+}
 
-  useEffect(() => {
-    const fetchPowerScores = async () => {
-      try {
-        setIsLoading(true);
+export const useTeamPowerScores = () => {
+  const { data, isLoading, error } = useQuery<PowerScoreResult, Error>({
+    queryKey: ['team-power-scores'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('v_team_details')
+        .select('team_id, name, power_score');
         
-        const { data, error } = await supabase
-          .from('v_team_details')
-          .select('team_id, name, power_score');
-          
-        if (error) {
-          throw error;
-        }
-        
-        // Create mappings for power scores and team names
-        const scoreMap: Record<string, number> = {};
-        const nameMap: Record<string, string> = {};
-        
-        data?.forEach((team: TeamPowerScoreData) => {
-          scoreMap[team.team_id] = team.power_score;
-          nameMap[team.team_id] = team.name;
-        });
-        
-        setPowerScores(scoreMap);
-        setTeamNames(nameMap);
-      } catch (err) {
-        errorLog("Error fetching team power scores:", err);
-        setError(err instanceof Error ? err : new Error('Unknown error'));
-      } finally {
-        setIsLoading(false);
+      if (error) {
+        errorLog("Error fetching team power scores:", error);
+        throw error;
       }
-    };
-    
-    fetchPowerScores();
-  }, []);
+      
+      // Create mappings for power scores and team names
+      const scoreMap: Record<string, number> = {};
+      const nameMap: Record<string, string> = {};
+      
+      data?.forEach((team: TeamPowerScoreData) => {
+        scoreMap[team.team_id] = team.power_score;
+        nameMap[team.team_id] = team.name;
+      });
+      
+      return { powerScores: scoreMap, teamNames: nameMap };
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes - power scores don't change frequently
+  });
+  
+  const powerScores = data?.powerScores ?? {};
+  const teamNames = data?.teamNames ?? {};
   
   // Get power score by team ID
   const getTeamPowerScore = (teamId: string | null): number | undefined => {
@@ -69,6 +62,6 @@ export const useTeamPowerScores = () => {
     getTeamPowerScore,
     getTeamName,
     isLoading,
-    error
+    error: error ?? null
   };
 };
