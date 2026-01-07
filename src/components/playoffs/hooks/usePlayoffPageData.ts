@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
@@ -150,33 +150,37 @@ export function usePlayoffPageData(): PlayoffPageData {
     });
   }, [allBrackets, bracketsLoading]);
   
-  const typesafeBracketsByDivision: Record<string, PlayoffBracket[]> = {};
-  try {
-    if (bracketsByDivision) {
-      Object.keys(bracketsByDivision).forEach(div => {
-        const divisionBrackets = bracketsByDivision[div];
-        if (Array.isArray(divisionBrackets)) {
-          typesafeBracketsByDivision[div] = divisionBrackets.map(b => ({
-            ...b,
-            matches: Array.isArray(b.matches) ? b.matches : [],
-            id: b.id || crypto.randomUUID(), 
-            state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
-            format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
-          }));
-        } else {
-          typesafeBracketsByDivision[div] = [];
-        }
-      });
+  // Memoize derived data transformations to prevent recalculation on every render
+  const typesafeBracketsByDivision = useMemo<Record<string, PlayoffBracket[]>>(() => {
+    const result: Record<string, PlayoffBracket[]> = {};
+    try {
+      if (bracketsByDivision) {
+        Object.keys(bracketsByDivision).forEach(div => {
+          const divisionBrackets = bracketsByDivision[div];
+          if (Array.isArray(divisionBrackets)) {
+            result[div] = divisionBrackets.map(b => ({
+              ...b,
+              matches: Array.isArray(b.matches) ? b.matches : [],
+              id: b.id || crypto.randomUUID(), 
+              state: (b.state || BRACKET_STATES.PENDING) as BracketState, 
+              format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat 
+            }));
+          } else {
+            result[div] = [];
+          }
+        });
+      }
+    } catch (err) {
+      const errorMessage = getUIErrorMessage(err, "Failed to process bracket data");
+      logError(err, "typesafeBracketsByDivision processing");
+      setError(errorMessage);
     }
-  } catch (err) {
-    const errorMessage = getUIErrorMessage(err, "Failed to process bracket data");
-    logError(err, "typesafeBracketsByDivision processing");
-    setError(errorMessage);
-  }
+    return result;
+  }, [bracketsByDivision]);
 
   const isLoading = bracketsLoading || divisionsLoading;
   
-  const allBracketsData = (() => {
+  const allBracketsData = useMemo<PlayoffBracket[]>(() => {
     try {
       if (!Array.isArray(allBrackets)) {
         return [];
@@ -192,9 +196,9 @@ export function usePlayoffPageData(): PlayoffPageData {
       logError(err, "allBracketsData processing");
       return [];
     }
-  })();
+  }, [allBrackets]);
   
-  const availableDivisions = (() => {
+  const availableDivisions = useMemo<string[]>(() => {
     try {
       if (!Array.isArray(divisions)) {
         return [];
@@ -210,7 +214,7 @@ export function usePlayoffPageData(): PlayoffPageData {
       logError(err, "availableDivisions processing");
       return [];
     }
-  })();
+  }, [divisions]);
 
   const deleteBracket = useCallback(async (bracketId: string, bracketName: string) => {
     playoffLog('Deleting bracket:', { bracketId, bracketName });
