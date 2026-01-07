@@ -11,6 +11,7 @@ import { getTrendColor, getTrendArrow } from "@/utils/colors/trendColors";
 import { getPowerScoreColor } from "@/utils/colors/powerScoreColors";
 import { TrendingUp, TrendingDown, Calendar, CalendarDays } from "lucide-react";
 import AnimatedChartWrapper from "@/components/ui/animated-chart-wrapper";
+import { LoadingState } from "@/components/ui/loading-state";
 
 type ViewMode = 'weekly' | 'seasonal';
 
@@ -131,9 +132,7 @@ const PowerScoreTrendsCard: React.FC = () => {
 
       <CardContent className={isMobile ? "p-2 pt-2" : "p-4 pt-3"}>
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-muted-foreground">Loading trends...</div>
-          </div>
+          <LoadingState variant="section" message="Loading trends..." />
         ) : viewMode === 'weekly' && !hasWeeklyData ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Calendar className="h-8 w-8 text-muted-foreground mb-2" />

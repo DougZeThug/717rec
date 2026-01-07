@@ -12,6 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from 'next-themes';
 import { gradients } from '@/styles/design-system';
 import { exportCareerStatsToCSV } from '@/utils/exportUtils';
+import { LoadingState } from '@/components/ui/loading-state';
 
 const CareerRankingsSection: React.FC = () => {
   const isMobile = useIsMobile();
@@ -136,10 +137,7 @@ const CareerRankingsSection: React.FC = () => {
         <CollapsibleContent>
           <CardContent className="p-2 sm:p-4 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900">
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2">Loading career statistics...</span>
-              </div>
+              <LoadingState variant="section" message="Loading career stats..." />
             ) : careerRankings && careerRankings.length > 0 ? (
               <CareerRankingsTable rankings={careerRankings} showHidden={showHidden} />
             ) : (

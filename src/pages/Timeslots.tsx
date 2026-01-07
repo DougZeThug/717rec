@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -11,6 +10,7 @@ import { useTeamData } from "@/hooks/useTeamData";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { Navigate } from "react-router";
 import { ByeWeekService } from "@/services/timeslots/ByeWeekService";
+import { LoadingState } from "@/components/ui/loading-state";
 
 export default function Timeslots() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -154,7 +154,7 @@ export default function Timeslots() {
             </CardHeader>
             <CardContent>
               {isLoadingTeams ? (
-                <div className="text-center py-4">Loading teams...</div>
+                <LoadingState variant="section" message="Loading teams..." />
               ) : (
                 <TimeslotAssignment 
                   selectedDate={selectedDate}
@@ -173,7 +173,7 @@ export default function Timeslots() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="text-center py-4">Loading timeslots...</div>
+                <LoadingState variant="section" message="Loading timeslots..." />
               ) : (
                 <TimeslotList 
                   timeslots={timeslots}

@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { useScoreSubmissions } from "@/hooks/useScoreSubmissions";
 import ScoreSubmissionsList from "@/components/admin/scores/ScoreSubmissionsList";
+import { LoadingState } from "@/components/ui/loading-state";
 
 const PendingMatchesSection = () => {
   const {
@@ -12,7 +12,7 @@ const PendingMatchesSection = () => {
   } = useScoreSubmissions();
 
   if (isLoading) {
-    return <div>Loading score submissions...</div>;
+    return <LoadingState variant="section" message="Loading submissions..." />;
   }
 
   return (

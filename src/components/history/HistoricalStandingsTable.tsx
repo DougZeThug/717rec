@@ -1,5 +1,6 @@
 import React, { CSSProperties, useCallback } from "react";
-import { Crown, Medal } from "lucide-react";
+import { Crown, Medal, Trophy } from "lucide-react";
+import { InlineEmptyState } from "@/components/ui/inline-empty-state";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TeamLogo } from "@/components/shared/TeamLogo";
@@ -221,6 +222,16 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
   const isMobile = useIsMobile();
   const { isWinterTheme } = useSeasonalThemeBase();
   const { shouldVirtualize } = useVirtualization({ itemCount: teams.length, threshold: 30 });
+
+  if (teams.length === 0) {
+    return (
+      <InlineEmptyState
+        icon={Trophy}
+        message="No Standings Available"
+        description="Team standings will appear once match data is recorded for this season."
+      />
+    );
+  }
 
   const renderMobileRow = useCallback((team: SeasonData, _index: number, style: CSSProperties) => (
     <MobileTeamRow 

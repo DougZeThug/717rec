@@ -4,6 +4,7 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import { BracketsManagerMatchEditor } from '../match-score-editor/BracketsManagerMatchEditor';
+import { LoadingState } from '@/components/ui/loading-state';
 
 // Dynamic script loader for brackets-viewer (loads only when needed)
 const BRACKETS_VIEWER_URL = 'https://cdn.jsdelivr.net/npm/brackets-viewer@1.8.1/dist/brackets-viewer.min.js';
@@ -417,9 +418,7 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
           />
         </div>
         {!isInitialized && (
-          <div className="text-center p-8">
-            <p className="text-sm text-muted-foreground">Loading bracket...</p>
-          </div>
+          <LoadingState variant="section" message="Loading bracket..." />
         )}
       </div>
 

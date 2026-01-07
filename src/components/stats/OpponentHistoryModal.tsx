@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useOpponentHistory } from "@/hooks/useHeadToHead";
 import { format } from "date-fns";
 import { MapPin, Calendar } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 
 interface OpponentHistoryModalProps {
   isOpen: boolean;
@@ -93,7 +94,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
         <div>
           <h3 className="text-lg font-semibold mb-4">Recent Matches</h3>
           {isLoading ? (
-            <div className="text-center py-4">Loading matches...</div>
+            <LoadingState variant="section" message="Loading matches..." />
           ) : matches.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">No matches found</div>
           ) : (
