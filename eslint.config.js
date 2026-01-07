@@ -29,8 +29,16 @@ export default tseslint.config(
       // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
-      // TypeScript - Keep existing behavior (any is error, unused vars off for now)
-      '@typescript-eslint/no-unused-vars': 'off',
+      // TypeScript
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'error',
 
       // Import Ordering - AUTO-FIXABLE
