@@ -1,30 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { authLog, warnLog } from '@/utils/logger';
 
 export const useAdminAccess = () => {
-  const [isAdminAccessGranted, setIsAdminAccessGranted] = useState(false);
   const { user, profile, authInitialized, isProfileLoading } = useAuth();
-  
-  // Check admin access whenever the user/profile changes
+
+  // Derive admin access synchronously to avoid race conditions with effects/state.
+  const isAdminAccessGranted =
+    authInitialized && !!user && profile?.is_admin === true;
+
+  // Log state changes for debugging (dev-only via logger)
   useEffect(() => {
-    if (authInitialized && user && profile) {
-      // SECURITY: Only check server-side admin status from profile
-      const isAdmin = profile.is_admin === true;
-      setIsAdminAccessGranted(isAdmin);
-      
-      authLog('Admin access check:', {
-        userId: user.id,
-        isAdmin,
-        profileData: profile
-      });
-    } else if (authInitialized) {
-      // If auth is initialized but we don't have BOTH user AND profile, revoke access
-      // This covers: no user logged in, OR user logged in but profile is null/failed to load
-      setIsAdminAccessGranted(false);
-    }
-  }, [user, profile, authInitialized]);
+    if (!authInitialized) return;
+
+    authLog('Admin access derived:', {
+      userId: user?.id,
+      userEmail: user?.email,
+      hasProfile: !!profile,
+      isAdmin: isAdminAccessGranted,
+    });
+  }, [authInitialized, user?.id, user?.email, profile, isAdminAccessGranted]);
 
   // DEPRECATED: This function is no longer needed and always returns false
   const checkAdminAccess = (inputCode: string) => {
@@ -50,8 +46,8 @@ export const useAdminAccess = () => {
     });
   };
 
-  return { 
-    isAdminAccessGranted, 
+  return {
+    isAdminAccessGranted,
     checkAdminAccess,
     requestAdminAccess,
     revokeAdminAccess,
