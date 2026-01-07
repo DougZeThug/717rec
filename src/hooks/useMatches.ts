@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
+import { transformDatabaseMatches } from "@/utils/matchTransformers";
 import { errorLog } from "@/utils/logger";
 
 export const useMatches = () => {
@@ -22,28 +22,7 @@ export const useMatches = () => {
           throw error;
         }
 
-        const formattedMatches = data.map((match): Match => ({
-          id: match.id,
-          team1Id: match.team1_id || '',
-          team2Id: match.team2_id || '',
-          team1Score: match.team1_score,
-          team2Score: match.team2_score,
-          date: match.date || match.created_at,
-          location: match.location || '',
-          iscompleted: match.iscompleted || false,
-          winnerId: match.winner_id,
-          loserId: match.loser_id,
-          round_number: match.round_number,
-          position: match.position,
-          bracket_id: match.bracket_id,
-          match_type: match.match_type,
-          next_match_id: match.next_match_id,
-          next_loser_match_id: match.next_loser_match_id,
-          best_of: match.best_of,
-          team1_game_wins: match.team1_game_wins,
-          team2_game_wins: match.team2_game_wins
-        }));
-
+        const formattedMatches = transformDatabaseMatches(data, { normalizeDate: false });
         setMatches(formattedMatches);
       } catch (err) {
         errorLog("Error fetching matches:", err);

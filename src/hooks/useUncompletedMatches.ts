@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from '@/types';
-import { transformMatchData } from '@/utils/matchDataTransformer';
+import { transformDatabaseMatches } from '@/utils/matchTransformers';
 import { useMatchScoresState } from './matches/useMatchScoresState';
 import { useMatchSubmission } from './matches/useMatchSubmission';
 import { useTeamsMap } from './teams';
@@ -33,7 +33,7 @@ export function useUncompletedMatches() {
 
       if (error) throw error;
       
-      const transformedMatches = (data || []).map(transformMatchData);
+      const transformedMatches = transformDatabaseMatches(data || []);
       setMatches(transformedMatches);
       initializeScores(transformedMatches);
     } catch (error) {
