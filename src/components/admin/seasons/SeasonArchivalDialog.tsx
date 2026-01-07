@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   AlertDialog,
@@ -10,13 +9,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Trophy, AlertTriangle } from "lucide-react";
 import { useSeasonMutations } from "@/hooks/useSeasonMutations";
-import { useTeamsData } from "@/hooks/useTeamsData";
+import { useTeamsArray } from "@/hooks/teams";
 import { toast } from "@/hooks/use-toast";
 
 interface SeasonArchivalDialogProps {
@@ -30,7 +28,7 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({
   onClose,
   season,
 }) => {
-  const { teams } = useTeamsData();
+  const { teams } = useTeamsArray();
   const { archiveSeason } = useSeasonMutations();
   const [isArchiving, setIsArchiving] = useState(false);
   const [championId, setChampionId] = useState<string>("");

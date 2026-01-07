@@ -1,7 +1,6 @@
-
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useDivisions } from '@/hooks/useDivisions';
-import { useTeamsData } from '@/hooks/useTeamsData';
+import { useTeamsArray } from '@/hooks/teams';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +11,6 @@ import type { PlayoffBracket, PlayoffMatch } from "@/utils/playoffs/playoffTypes
 
 // Helper type aliases
 type PlayoffMatchRow = Database["public"]["Tables"]["playoff_matches"]["Row"];
-type MatchRow = Database["public"]["Tables"]["matches"]["Row"];
 type BracketRow = Database["public"]["Tables"]["brackets"]["Row"];
 type DivisionRow = Database["public"]["Tables"]["divisions"]["Row"];
 
@@ -53,7 +51,7 @@ export const usePlayoffData = (isAdmin: boolean = false) => {
   const { divisions, isLoading: divisionsLoading } = useDivisions();
   
   // Fetch teams data to populate teamsByDivision
-  const { teams, isLoading: teamsLoading } = useTeamsData();
+  const { teams, isLoading: teamsLoading } = useTeamsArray();
 
   // Fetch brackets data from Supabase with matches included
   const { data: brackets = [], isLoading: bracketsLoading, error: bracketsError, refetch: refetchBrackets } = useQuery({

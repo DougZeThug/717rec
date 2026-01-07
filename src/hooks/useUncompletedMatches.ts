@@ -5,7 +5,7 @@ import { Match } from '@/types';
 import { transformMatchData } from '@/utils/matchDataTransformer';
 import { useMatchScoresState } from './matches/useMatchScoresState';
 import { useMatchSubmission } from './matches/useMatchSubmission';
-import { useTeamFetching } from './matches/useTeamFetching';
+import { useTeamsMap } from './teams';
 import { errorLog } from "@/utils/logger";
 
 export function useUncompletedMatches() {
@@ -15,7 +15,7 @@ export function useUncompletedMatches() {
   const { toast } = useToast();
   const { scores, initializeScores, handleScoreChange } = useMatchScoresState(matches);
   const { handleSubmitScore } = useMatchSubmission();
-  const { teams, fetchTeams } = useTeamFetching();
+  const { teams, refetch: fetchTeams } = useTeamsMap();
 
   useEffect(() => {
     fetchUncompletedMatches();
