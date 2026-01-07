@@ -1,9 +1,8 @@
-
 import React from "react";
-import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { TeamTimeslot } from "@/types";
+import TeamDayTimeslotSkeleton from "./TeamDayTimeslotSkeleton";
 
 interface TeamDayTimeslotProps {
   teamId: string;
@@ -22,7 +21,7 @@ const TeamDayTimeslot: React.FC<TeamDayTimeslotProps> = ({
   const teamTimeslot = timeslots.find(ts => ts.team_id === teamId);
   
   if (isLoading) {
-    return <div className="text-xs text-gray-400">Loading...</div>;
+    return <TeamDayTimeslotSkeleton />;
   }
   
   if (!teamTimeslot) {

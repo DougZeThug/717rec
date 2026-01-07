@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import SignupsListSkeleton from "./SignupsListSkeleton";
 
 interface SignupToDelete {
   id: string;
@@ -141,7 +142,7 @@ const BlindDrawSignupsTab: React.FC = () => {
 
           {/* Signups list */}
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <SignupsListSkeleton />
           ) : signups && signups.length > 0 ? (
             <div className="border rounded-lg overflow-hidden">
               <table className="w-full">

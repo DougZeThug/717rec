@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getHistoryDivisionDisplayName, sortHistoryDivisions } from "@/utils/historyDivisionUtils";
 import { dbLog, errorLog } from "@/utils/logger";
+import SeasonAccordionSkeleton from "./SeasonAccordionSkeleton";
 import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface Season {
@@ -229,7 +230,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
                 isWinterTheme ? "text-white/60" : "text-gray-500 dark:text-gray-400"
               )}>
                 {isLoading ? (
-                  <span className="text-gray-400 text-xs">Loading...</span>
+                  <span className="text-gray-400 text-xs animate-pulse">•••</span>
                 ) : (
                   <>
                     {champions.length > 0 && (
@@ -282,14 +283,7 @@ const SeasonAccordion: React.FC<SeasonAccordionProps> = ({ season }) => {
               isWinterTheme ? "border-white/10" : "border-gray-200 dark:border-slate-600"
             )}>
               {isLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2"></div>
-                      <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                    </div>
-                  ))}
-                </div>
+                <SeasonAccordionSkeleton />
               ) : error ? (
                 <div className="text-center py-8">
                   <div className="text-red-600 dark:text-red-400 mb-4">

@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 import { log } from '@/utils/logger';
 import { SeasonalIcon } from "@/components/ui/seasonal-icon";
 import type { TeamStanding } from "@/types/schedule";
-
+import FinalStandingsSkeleton from "./FinalStandingsSkeleton";
 interface FinalStandingsProps {
   bracketId: string;
   show?: boolean;
@@ -54,7 +54,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
   });
 
   if (!show) return null;
-  if (isLoading) return <div>Loading standings...</div>;
+  if (isLoading) return <FinalStandingsSkeleton />;
   if (!standings || standings.length === 0) return null;
 
   const getPlacementIcon = (placement: number) => {
