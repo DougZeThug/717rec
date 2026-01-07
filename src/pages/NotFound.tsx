@@ -2,13 +2,14 @@ import { useLocation, useNavigate } from "react-router";
 import { useEffect } from "react";
 import { FileQuestion, Home, ArrowLeft } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { routeLog } from "@/utils/logger";
 
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.error(
+    routeLog(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );

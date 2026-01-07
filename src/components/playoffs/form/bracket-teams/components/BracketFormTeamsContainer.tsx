@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Division, Team } from '@/types';
 import { BracketFormTeamsContainerProps, ProcessedTeam } from '../types';
@@ -11,6 +10,7 @@ import { TeamSelectionEmpty } from './TeamSelectionEmpty';
 import { TeamSelectionForm } from './TeamSelectionForm';
 import { isTeamArray, isDivisionArray, isDivisionIdValid } from '@/utils/typeGuards';
 import { useToast } from '@/hooks/use-toast';
+import { warnLog } from "@/utils/logger";
 
 /**
  * Main container component for bracket team selection
@@ -31,7 +31,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   // Runtime validation of props using type guards
   const validDivisions = React.useMemo(() => {
     if (!isDivisionArray(divisions)) {
-      console.warn('BracketFormTeamsContainer: Invalid divisions prop, using empty array');
+      warnLog('BracketFormTeamsContainer: Invalid divisions prop, using empty array');
       return [];
     }
     return divisions;
@@ -39,7 +39,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
 
   const validTeamsProp = React.useMemo(() => {
     if (teamsProp !== undefined && !isTeamArray(teamsProp)) {
-      console.warn('BracketFormTeamsContainer: Invalid teams prop, ignoring');
+      warnLog('BracketFormTeamsContainer: Invalid teams prop, ignoring');
       return undefined;
     }
     return teamsProp;

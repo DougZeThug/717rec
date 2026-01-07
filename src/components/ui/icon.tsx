@@ -16,6 +16,7 @@ import {
   WINTER_ICONS_ENABLED,
 } from "@/icons";
 import type { IconName } from "@/icons";
+import { warnLog } from "@/utils/logger";
 
 export interface IconProps extends Omit<LucideProps, 'size' | 'strokeWidth'> {
   /** The Lucide icon component to render (direct usage) */
@@ -93,7 +94,7 @@ export const Icon: React.FC<IconProps> = ({
   }
   
   if (!ResolvedIcon) {
-    console.warn(`Icon: No icon found for name="${name}" or icon prop`);
+    warnLog(`Icon: No icon found for name="${name}" or icon prop`);
     return null;
   }
   

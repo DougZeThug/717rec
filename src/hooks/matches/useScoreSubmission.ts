@@ -6,6 +6,7 @@ import { updateMatchScore } from "./utils/matchDatabaseUtils";
 import { invalidateMatchRelatedQueries } from "./utils/queryCacheUtils";
 import { SubmitScoreParams } from "./types/matchSubmissionTypes";
 import { useScoreValidation } from "./validation/useScoreValidation";
+import { errorLog } from "@/utils/logger";
 
 export const useMatchSubmission = () => {
   const { toast } = useToast();
@@ -64,7 +65,7 @@ export const useMatchSubmission = () => {
       
       return true;
     } catch (error) {
-      console.error('[useMatchSubmission] Error updating scores:', error);
+      errorLog('[useMatchSubmission] Error updating scores:', error);
       toast({
         title: 'Error',
         description: 'Failed to update scores. Please try again.',

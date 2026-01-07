@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TeamTimeslot } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { errorLog } from "@/utils/logger";
 
 export const useTimeslotsByDate = (date: Date | null) => {
   const formattedDate = date ? format(date, 'yyyy-MM-dd') : null;
@@ -33,7 +34,7 @@ export const useTimeslotsByDate = (date: Date | null) => {
         .eq('match_date', formattedDate);
       
       if (error) {
-        console.error('Error fetching timeslots:', error);
+        errorLog('Error fetching timeslots:', error);
         throw error;
       }
       

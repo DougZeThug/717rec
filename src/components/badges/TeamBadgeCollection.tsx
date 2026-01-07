@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useTeamBadges } from '@/hooks/useTeamBadges';
@@ -6,6 +5,7 @@ import { getBadgeConfig } from '@/utils/badgeConfig';
 import { TeamBadge } from './TeamBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trophy } from 'lucide-react';
+import { errorLog } from "@/utils/logger";
 
 interface TeamBadgeCollectionProps {
   teamId: string;
@@ -44,7 +44,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
   }
 
   if (error) {
-    console.error('Error loading badges:', error);
+    errorLog('Error loading badges:', error);
     return null;
   }
 

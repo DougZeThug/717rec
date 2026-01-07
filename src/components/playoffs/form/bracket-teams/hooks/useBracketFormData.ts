@@ -5,6 +5,7 @@ import { useSeedValidation } from "@/hooks/playoffs/useSeedValidation";
 import { Division } from '@/types';
 import { BracketFormDataResult, ProcessedTeam, SeedValidationState } from '../types';
 import { assignMixedSeeds } from '../utils/seedAssignment';
+import { errorLog } from "@/utils/logger";
 
 /**
  * Hook for managing bracket form data including team rankings and division mapping
@@ -114,7 +115,7 @@ export const useBracketFormData = (
       
       return { processedTeams: processed, processingError: null };
     } catch (error) {
-      console.error('Error processing team data:', error);
+      errorLog('Error processing team data:', error);
       return { 
         processedTeams: [], 
         processingError: error instanceof Error ? error.message : 'Failed to process team data'

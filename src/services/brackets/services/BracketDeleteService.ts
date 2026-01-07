@@ -1,5 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
+import { errorLog } from "@/utils/logger";
 
 /**
  * Service for bracket deletion operations
@@ -26,7 +26,7 @@ export class BracketDeleteService {
       
       if (bracketError) throw bracketError;
     } catch (error) {
-      console.error("Error deleting bracket:", error);
+      errorLog("Error deleting bracket:", error);
       throw error;
     }
   }
