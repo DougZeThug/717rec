@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { LoadingState } from "@/components/ui/loading-state";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
 import { TimeBlockTeamsMap } from "@/types/autoSchedule";
@@ -18,7 +18,7 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
   selectedDate, 
   onTeamsAssigned 
 }) => {
-  const { data: teams, isLoading } = useTeamData();
+  const { data: teams, isLoading } = useTeamsQuery();
   const { toast } = useToast();
   const [selectedTimeBlock, setSelectedTimeBlock] = useState<string>("");
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);

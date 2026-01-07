@@ -22,7 +22,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 }) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const navigate = useNavigate();
-  const { data: teams } = useTeamData();
+  const { data: teams } = useTeamsQuery();
 
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;

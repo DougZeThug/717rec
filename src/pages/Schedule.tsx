@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
 import { useScheduleData } from "@/hooks/useScheduleData";
@@ -50,7 +50,7 @@ const Schedule = () => {
     });
   }, [selectedDate]);
   
-  const { data: teams, isLoading: teamsLoading } = useTeamData();
+  const { data: teams, isLoading: teamsLoading } = useTeamsQuery();
   const { 
     matchesData, 
     matchesLoading, 

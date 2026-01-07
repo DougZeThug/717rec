@@ -14,7 +14,7 @@ import TeamForm from "@/components/teams/TeamForm";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTeams } from "@/hooks/useTeams";
-import { useTeamData } from "@/hooks/useTeamData";
+import { useTeamsQuery } from "@/hooks/teams";
 import { useDivisions } from "@/hooks/useDivisions";
 import { updateTeamApi } from "@/services/TeamService";
 import { errorLog } from "@/utils/logger";
@@ -22,7 +22,7 @@ import { errorLog } from "@/utils/logger";
 const TeamManagementTab = () => {
   const { toast } = useToast();
   const { createTeam } = useTeams();
-  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamData(undefined, true);
+  const { data: teams, isLoading: isLoadingTeams, refetch: refetchTeams } = useTeamsQuery({ includeHidden: true });
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("all");
