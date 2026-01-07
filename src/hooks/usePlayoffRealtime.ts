@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { PlayoffMatch } from '@/types';
+import { transformRealtimePlayoffMatch } from '@/utils/matchTransformers';
 import { playoffLog } from '@/utils/logger';
 
 export function usePlayoffRealtime(bracketId: string | null) {
@@ -27,26 +27,8 @@ export function usePlayoffRealtime(bracketId: string | null) {
         (payload) => {
           playoffLog('Match updated:', payload.new.id);
           
-          // Transform database match to app format
-          const updatedMatch = {
-            id: payload.new.id,
-            round: payload.new.round,
-            position: payload.new.position,
-            matchType: payload.new.match_type,
-            team1Id: payload.new.team1_id,
-            team2Id: payload.new.team2_id,
-            team1Score: payload.new.team1_score,
-            team2Score: payload.new.team2_score,
-            team1GameWins: payload.new.team1_game_wins,
-            team2GameWins: payload.new.team2_game_wins,
-            winnerId: payload.new.winner_id,
-            loserId: payload.new.loser_id,
-            bestOf: payload.new.best_of,
-            team1Seed: payload.new.team1_seed,
-            team2Seed: payload.new.team2_seed,
-            nextWinMatchId: payload.new.next_win_match_id,
-            nextLoseMatchId: payload.new.next_lose_match_id
-          } as PlayoffMatch;
+          // Transform database match to app format using centralized transformer
+          const updatedMatch = transformRealtimePlayoffMatch(payload.new);
           
           setLastUpdatedMatch(updatedMatch);
           
