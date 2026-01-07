@@ -967,3 +967,46 @@
   border-color: hsla(199, 70%, 60%, 0.5) !important;
   box-shadow: 0 0 12px hsla(199, 80%, 55%, 0.3);
 }
+
+/* ==========================================================================
+   GLOBAL LIGHT BACKGROUND OVERRIDES - Convert to dark ice-glass
+   Catches any hardcoded bg-white, bg-slate-50, bg-gray-50 etc. in components
+   ========================================================================== */
+
+/* Override hardcoded light backgrounds */
+.winter-frozen .bg-white:not(.preserve-light),
+.winter-frozen .bg-slate-50:not(.preserve-light),
+.winter-frozen .bg-gray-50:not(.preserve-light),
+.winter-frozen .bg-gray-100:not(.preserve-light),
+.winter-frozen .bg-slate-100:not(.preserve-light) {
+  background-color: hsl(222, 35%, 12%) !important;
+  border-color: hsla(199, 60%, 50%, 0.2) !important;
+}
+
+/* Override gray-200 used in tab lists */
+.winter-frozen .bg-gray-200 {
+  background-color: hsla(222, 30%, 15%, 0.9) !important;
+  border: 1px solid hsla(199, 60%, 50%, 0.2) !important;
+}
+
+/* Override dark mode suffixed patterns in active states */
+.winter-frozen [class*="data-[state=active]:bg-white"],
+.winter-frozen [class*="dark:data-[state=active]:bg-gray-800"] {
+  --tw-bg-opacity: 1;
+}
+
+.winter-frozen [data-state="active"].data-\\[state\\=active\\]\\:bg-white,
+.winter-frozen [data-state="active"][class*="data-[state=active]:bg-white"] {
+  background-color: hsla(222, 35%, 18%, 0.95) !important;
+  border-color: hsla(199, 60%, 50%, 0.3) !important;
+}
+
+/* Tab content areas */
+.winter-frozen .dark\\:bg-gray-900 {
+  background-color: transparent !important;
+}
+
+/* Override loading state containers */
+.winter-frozen .dark\\:bg-\\[\\#1E1E1E\\] {
+  background-color: hsl(222, 35%, 12%) !important;
+}

@@ -26,7 +26,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
 }) => {
   if (pairs.length === 0) {
     return (
-      <div className="text-center py-6 border rounded-lg bg-slate-50 dark:bg-slate-900 text-muted-foreground">
+      <div className="text-center py-6 border rounded-lg bg-card text-muted-foreground">
         <p>No match pairs added yet</p>
         <p className="text-sm mt-1">Add teams to create match pairings</p>
       </div>
@@ -55,7 +55,7 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
   return (
     <div className="space-y-3">
       {pairs.map(pair => (
-        <div key={pair.id} className="p-3 border rounded-lg bg-white dark:bg-slate-950 shadow-sm">
+        <div key={pair.id} className="p-3 border rounded-lg bg-card shadow-sm">
           <div className="flex flex-col md:flex-row gap-3">
             {/* Team 1 Selection */}
             <div className="flex-1">

@@ -159,8 +159,8 @@ const TimeslotsTab = () => {
             {isLoadingTimeslots ? (
               <p>Loading timeslots...</p>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-md border">
-                <TimeslotList 
+              <div className="bg-card p-4 rounded-md border border-border">
+                <TimeslotList
                   timeslots={timeslots} 
                   teams={teams}
                   onDelete={handleTimeslotDelete}
