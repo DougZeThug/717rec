@@ -4,6 +4,7 @@ import StandardHeroCard from "./StandardHeroCard";
 import ChampionsHeroCard from "./ChampionsHeroCard";
 import EventHeroCard from "./EventHeroCard";
 import AnnouncementHeroCard from "./AnnouncementHeroCard";
+import ParticipationHeroCard from "./ParticipationHeroCard";
 
 interface HeroCardProps {
   card: HeroCardType;
@@ -17,6 +18,8 @@ const HeroCard: React.FC<HeroCardProps> = ({ card }) => {
       return <EventHeroCard card={card} />;
     case 'announcement':
       return <AnnouncementHeroCard card={card} />;
+    case 'participation':
+      return <ParticipationHeroCard />;
     default:
       return <StandardHeroCard card={card} />;
   }

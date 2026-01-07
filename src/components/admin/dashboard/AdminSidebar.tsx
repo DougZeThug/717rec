@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Shuffle,
   HelpCircle,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ import HeroCardsTab from "@/components/admin/hero-cards/HeroCardsTab";
 import BlindDrawSignupsTab from "@/components/admin/blind-draw/BlindDrawSignupsTab";
 import OpponentHistoryTab from "@/components/admin/opponent-history/OpponentHistoryTab";
 import GettingStartedTab from "@/components/admin/help/GettingStartedTab";
+import SeasonParticipationTab from "@/components/admin/participation/SeasonParticipationTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Mobile tabs version
@@ -52,6 +54,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: "matchups", label: "Matchups", icon: Users2, component: <OpponentHistoryTab /> },
   { id: "scores", label: "Scores", icon: ListChecks, component: <MassScoresTab /> },
   { id: "seasons", label: "Season", icon: Calendar, component: <SeasonManagementTab /> },
+  { id: "participation", label: "Participation", icon: ClipboardCheck, component: <SeasonParticipationTab /> },
   { id: "teams", label: "Teams", icon: Users, component: <TeamManagementTab /> },
   { id: "pending-matches", label: "Pending", icon: Clock, component: <PendingMatchesSection /> },
   { id: "hero-cards", label: "Hero", icon: LayoutGrid, component: <HeroCardsTab /> },
