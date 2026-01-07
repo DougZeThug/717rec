@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { errorLog, warnLog } from "@/utils/logger";
 
 export interface MatchComment {
   id: string;
@@ -38,7 +39,7 @@ export const useMatchComments = (matchId: string) => {
         
         setComments(data || []);
       } catch (err) {
-        console.error('Error fetching match comments:', err);
+        errorLog('Error fetching match comments:', err);
         setError('Failed to load comments');
       } finally {
         setIsLoading(false);
@@ -97,7 +98,7 @@ export const useMatchComments = (matchId: string) => {
         .single();
       
       if (profileError) {
-        console.error('Error fetching profile:', profileError);
+        warnLog('Error fetching profile:', profileError);
       }
       
       // Get the user's team membership
@@ -108,7 +109,7 @@ export const useMatchComments = (matchId: string) => {
         .maybeSingle();
         
       if (membershipError) {
-        console.error('Error fetching team membership:', membershipError);
+        warnLog('Error fetching team membership:', membershipError);
       }
       
       // Prepare data for insertion
@@ -137,7 +138,7 @@ export const useMatchComments = (matchId: string) => {
       
       return data;
     } catch (err) {
-      console.error('Error adding comment:', err);
+      errorLog('Error adding comment:', err);
       toast({
         title: "Error",
         description: "Failed to post comment",
@@ -165,7 +166,7 @@ export const useMatchComments = (matchId: string) => {
       setComments(curr => curr.filter(c => c.id !== commentId));
       return true;
     } catch (err) {
-      console.error('Error removing comment:', err);
+      errorLog('Error removing comment:', err);
       toast({
         title: "Error",
         description: "Failed to delete comment",

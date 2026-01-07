@@ -5,6 +5,7 @@ import TeamForm from "@/components/teams/TeamForm";
 import { Team } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTeams } from "@/hooks/useTeams";
+import { errorLog } from "@/utils/logger";
 
 const TeamsTab = () => {
   const { toast } = useToast();
@@ -18,7 +19,7 @@ const TeamsTab = () => {
         description: `${newTeam.name} has been successfully created.`,
       });
     } catch (error) {
-      console.error("Error creating team:", error);
+      errorLog("Error creating team:", error);
     }
   };
 

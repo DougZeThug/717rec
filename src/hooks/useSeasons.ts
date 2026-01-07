@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { errorLog } from "@/utils/logger";
 
 export const useSeasons = () => {
   return useQuery({
@@ -12,7 +13,7 @@ export const useSeasons = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching seasons:', error);
+        errorLog('Error fetching seasons:', error);
         throw error;
       }
 
@@ -32,7 +33,7 @@ export const useActiveSeason = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching active season:', error);
+        errorLog('Error fetching active season:', error);
         throw error;
       }
 

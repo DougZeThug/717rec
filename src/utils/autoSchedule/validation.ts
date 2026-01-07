@@ -1,5 +1,6 @@
 import { AutoScheduleMatch, Team } from "@/types/autoSchedule";
 import { haveTeamsPlayedBefore } from "./matchHistoryService";
+import { warnLog } from "@/utils/logger";
 
 export interface ValidationResult {
   isValid: boolean;
@@ -108,7 +109,7 @@ async function checkForRematches(matches: AutoScheduleMatch[], errors: Validatio
         });
       }
     } catch (error) {
-      console.error(`Error checking rematch for match ${match.id}:`, error);
+      warnLog(`Error checking rematch for match ${match.id}:`, error);
     }
   });
 

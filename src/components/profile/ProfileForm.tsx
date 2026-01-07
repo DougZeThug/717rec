@@ -18,6 +18,7 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import { errorLog } from "@/utils/logger";
 
 const profileSchema = z.object({
   username: z
@@ -78,7 +79,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         .maybeSingle();
       
       if (error) {
-        console.error("Error checking username:", error);
+        errorLog("Error checking username:", error);
         setUsernameAvailable(null);
         return;
       }
@@ -95,7 +96,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         form.clearErrors("username");
       }
     } catch (error) {
-      console.error("Unexpected error checking username:", error);
+      errorLog("Unexpected error checking username:", error);
       setUsernameAvailable(null);
     } finally {
       setIsCheckingUsername(false);
@@ -150,7 +151,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       
       onProfileUpdated();
     } catch (error) {
-      console.error("Error updating profile:", error);
+      errorLog("Error updating profile:", error);
     }
   };
 

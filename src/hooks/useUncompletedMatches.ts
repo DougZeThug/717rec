@@ -6,6 +6,7 @@ import { transformMatchData } from '@/utils/matchDataTransformer';
 import { useMatchScoresState } from './matches/useMatchScoresState';
 import { useMatchSubmission } from './matches/useMatchSubmission';
 import { useTeamFetching } from './matches/useTeamFetching';
+import { errorLog } from "@/utils/logger";
 
 export function useUncompletedMatches() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -36,7 +37,7 @@ export function useUncompletedMatches() {
       setMatches(transformedMatches);
       initializeScores(transformedMatches);
     } catch (error) {
-      console.error('Error fetching uncompleted matches:', error);
+      errorLog('Error fetching uncompleted matches:', error);
       toast({
         title: 'Error',
         description: 'Failed to load matches. Please try again.',

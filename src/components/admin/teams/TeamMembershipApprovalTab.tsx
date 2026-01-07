@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { TeamLogo } from "@/components/shared/TeamLogo";
 import { CheckCircle, XCircle, Clock, Loader2, Users } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { errorLog } from "@/utils/logger";
 
 interface PendingMembership {
   id: string;
@@ -59,7 +60,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
       if (error) throw error;
       setPendingMemberships(data || []);
     } catch (error) {
-      console.error("Error fetching pending memberships:", error);
+      errorLog("Error fetching pending memberships:", error);
       toast({
         title: "Error",
         description: "Failed to load pending team memberships",
@@ -100,7 +101,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
           : "The membership request has been rejected",
       });
     } catch (error) {
-      console.error("Error updating membership:", error);
+      errorLog("Error updating membership:", error);
       toast({
         title: "Error",
         description: "Failed to update membership status",

@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PowerScoreTrend, TrendDirection } from "@/types/powerScoreTrends";
+import { warnLog } from "@/utils/logger";
 
 export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: number = 10) => {
   return useQuery({
@@ -38,7 +39,7 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
         .not('power_score', 'is', null);
 
       if (currentError || !currentData) {
-        console.error('Error fetching current season data:', currentError);
+        warnLog('Error fetching current season data:', currentError);
         return [];
       }
 
@@ -50,7 +51,7 @@ export const usePowerScoreTrends = (direction: TrendDirection = 'up', limit: num
         .not('power_score', 'is', null);
 
       if (previousError || !previousData) {
-        console.error('Error fetching previous season data:', previousError);
+        warnLog('Error fetching previous season data:', previousError);
         return [];
       }
 

@@ -9,6 +9,7 @@ import { uploadTeamImage } from "@/utils/imageUpload";
 import { updateTeamApi } from "@/services/TeamService";
 import { useToast } from "@/hooks/use-toast";
 import { TeamLogo } from "@/components/shared/TeamLogo";
+import { errorLog } from "@/utils/logger";
 
 interface TeamLogoCardProps {
   team: Team;
@@ -41,7 +42,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
       setTimeout(() => setJustUpdated(false), 2000);
       onUpdate();
     } catch (error) {
-      console.error("Error uploading logo:", error);
+      errorLog("Error uploading logo:", error);
       toast({
         title: "Upload Failed",
         description: "Failed to upload logo. Please try again.",

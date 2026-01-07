@@ -1,5 +1,6 @@
 
 import React from "react";
+import { imageErrorLog } from "@/utils/logger";
 
 interface TeamLogoProps {
   imageUrl: string | undefined | null;
@@ -19,7 +20,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({ imageUrl, teamName }) => {
           decoding="async"
           className="max-h-36 max-w-full object-contain"
           onError={(e) => {
-            console.error(`Image load error for ${teamName}:`, imageUrl);
+            imageErrorLog(teamName, imageUrl);
             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
           }}
         />
