@@ -11,7 +11,7 @@ import { PlayoffBracket, BracketFormat, BracketState } from "@/utils/playoffs/pl
 import { BRACKET_FORMATS, BRACKET_STATES } from "@/constants/brackets";
 import { getUIErrorMessage, logError, convertErrorToString } from "@/utils/errors";
 import { supabase } from "@/integrations/supabase/client";
-import { authLog, bracketLog, playoffLog, cacheLog, errorLog, debugLog } from "@/utils/logger";
+import { bracketLog, playoffLog, cacheLog, errorLog } from "@/utils/logger";
 
 export interface PlayoffPageData {
   profile: any;
@@ -51,21 +51,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const isAdmin = profile?.is_admin || false;
   
   useEffect(() => {
-    authLog('Authentication state:', {
-      user: user ? { id: user.id, email: user.email } : null,
-      profile: profile ? { id: profile.id, is_admin: profile.is_admin } : null,
-      isAdmin
-    });
-  }, [user, profile, isAdmin]);
-
-  useEffect(() => {
     const bracketParam = searchParams.get('bracket');
-    
-    debugLog('URL Parameter Analysis:', {
-      bracketParam,
-      selectedBracketId,
-      allParams: Array.from(searchParams.entries())
-    });
     
     if (bracketParam && bracketParam !== selectedBracketId) {
       bracketLog('Setting bracket ID from URL:', bracketParam);
@@ -108,19 +94,6 @@ export function usePlayoffPageData(): PlayoffPageData {
     refetch: refetchSelectedBracket
   } = useBracketData(selectedBracketId);
   
-  useEffect(() => {
-    bracketLog('useBracketData hook state:', {
-      selectedBracketId,
-      selectedBracket: selectedBracket ? {
-        id: selectedBracket.id,
-        matchesCount: selectedBracket.matches?.length,
-        state: selectedBracket.state
-      } : null,
-      selectedBracketLoading,
-      selectedBracketError: selectedBracketError?.message
-    });
-  }, [selectedBracketId, selectedBracket, selectedBracketLoading, selectedBracketError]);
-  
   const { data: teamsData, isLoading: teamsLoading } = usePlayoffTeams();
 
   const { 
@@ -139,16 +112,6 @@ export function usePlayoffPageData(): PlayoffPageData {
     refetchBrackets: originalRefetchBrackets,
     error: bracketsDataError
   } = usePlayoffData(isAdmin);
-  
-  useEffect(() => {
-    playoffLog('Brackets overview data:', {
-      allBrackets: allBrackets ? {
-        count: allBrackets.length,
-        ids: allBrackets.map(b => b.id)
-      } : null,
-      bracketsLoading
-    });
-  }, [allBrackets, bracketsLoading]);
   
   // Memoize derived data transformations to prevent recalculation on every render
   const typesafeBracketsByDivision = useMemo<Record<string, PlayoffBracket[]>>(() => {
@@ -306,17 +269,6 @@ export function usePlayoffPageData(): PlayoffPageData {
 
   const finalDivisionsError = convertErrorToString(divisionsError);
   const finalBracketsError = convertErrorToString(bracketsDataError);
-
-  useEffect(() => {
-    debugLog('usePlayoffPageData final state:', {
-      selectedBracketId,
-      bracket: selectedBracket ? {
-        id: selectedBracket.id,
-        matchesCount: selectedBracket.matches?.length
-      } : null,
-      isLoading
-    });
-  }, [selectedBracketId, selectedBracket, isLoading]);
 
   return {
     profile,
