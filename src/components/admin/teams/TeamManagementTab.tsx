@@ -17,6 +17,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { useTeamData } from "@/hooks/useTeamData";
 import { useDivisions } from "@/hooks/useDivisions";
 import { updateTeamApi } from "@/services/TeamService";
+import { errorLog } from "@/utils/logger";
 
 const TeamManagementTab = () => {
   const { toast } = useToast();
@@ -37,7 +38,7 @@ const TeamManagementTab = () => {
       });
       refetchTeams();
     } catch (error) {
-      console.error("Error creating team:", error);
+      errorLog("Error creating team:", error);
     }
   };
 
@@ -52,7 +53,7 @@ const TeamManagementTab = () => {
       setEditingTeam(null);
       refetchTeams();
     } catch (error) {
-      console.error("Error updating team:", error);
+      errorLog("Error updating team:", error);
       toast({
         title: "Update Failed",
         description: "Failed to update team. Please try again.",
@@ -78,7 +79,7 @@ const TeamManagementTab = () => {
       });
       refetchTeams();
     } catch (error) {
-      console.error("Error updating team division:", error);
+      errorLog("Error updating team division:", error);
       toast({
         title: "Update Failed",
         description: "Failed to update team division. Please try again.",

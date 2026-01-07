@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Clock } from "lucide-react";
 import { TeamTimeslot } from "@/types";
 import { LoadingState } from "@/components/ui/loading-state";
+import { errorLog } from "@/utils/logger";
 
 interface WeekTimeslotDisplayProps {
   teamId: string;
@@ -47,7 +48,7 @@ const WeekTimeslotDisplay: React.FC<WeekTimeslotDisplayProps> = ({
         
         setTimeslots(data || []);
       } catch (error) {
-        console.error('Error fetching week timeslots:', error);
+        errorLog('Error fetching week timeslots:', error);
       } finally {
         setIsLoading(false);
       }

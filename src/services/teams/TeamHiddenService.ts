@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { errorLog } from "@/utils/logger";
 
 /**
  * Service for managing teams in the hidden division
@@ -28,7 +29,7 @@ export const getHiddenDivisionId = async (): Promise<string | null> => {
     .single();
     
   if (error) {
-    console.error('Error fetching hidden division:', error);
+    errorLog('Error fetching hidden division:', error);
     throw error;
   }
   
@@ -85,7 +86,7 @@ export const hideTeam = async (teamId: string): Promise<HideTeamResult> => {
       .eq('id', teamId);
       
     if (updateError) {
-      console.error('Error hiding team:', updateError);
+      errorLog('Error hiding team:', updateError);
       return {
         success: false,
         message: 'Failed to hide team'
@@ -99,7 +100,7 @@ export const hideTeam = async (teamId: string): Promise<HideTeamResult> => {
     };
     
   } catch (error) {
-    console.error('Error in hideTeam:', error);
+    errorLog('Error in hideTeam:', error);
     return {
       success: false,
       message: 'An unexpected error occurred'
@@ -149,7 +150,7 @@ export const unhideTeam = async (teamId: string, targetDivisionId: string): Prom
       .eq('id', teamId);
       
     if (updateError) {
-      console.error('Error unhiding team:', updateError);
+      errorLog('Error unhiding team:', updateError);
       return {
         success: false,
         message: 'Failed to unhide team'
@@ -163,7 +164,7 @@ export const unhideTeam = async (teamId: string, targetDivisionId: string): Prom
     };
     
   } catch (error) {
-    console.error('Error in unhideTeam:', error);
+    errorLog('Error in unhideTeam:', error);
     return {
       success: false,
       message: 'An unexpected error occurred'
@@ -190,7 +191,7 @@ export const getHiddenTeams = async () => {
     return { data: data || [], error };
     
   } catch (error) {
-    console.error('Error fetching hidden teams:', error);
+    errorLog('Error fetching hidden teams:', error);
     return { data: [], error };
   }
 };
@@ -214,7 +215,7 @@ export const isTeamHidden = async (teamId: string): Promise<boolean> => {
     return data.division_id === hiddenDivisionId;
     
   } catch (error) {
-    console.error('Error checking if team is hidden:', error);
+    errorLog('Error checking if team is hidden:', error);
     return false;
   }
 };

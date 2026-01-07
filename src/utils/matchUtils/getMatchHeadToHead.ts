@@ -1,5 +1,6 @@
 import { HeadToHeadService } from "@/services/HeadToHeadService";
 import type { HeadToHeadRecord } from "@/types/headToHead";
+import { errorLog } from "@/utils/logger";
 
 export interface MatchHeadToHeadResult {
   team1Wins: number;
@@ -51,7 +52,7 @@ export const getMatchHeadToHead = async (
       team2GameWins: opponentRecord.game_losses,
     };
   } catch (error) {
-    console.error('Error fetching head-to-head record:', error);
+    errorLog('Error fetching head-to-head record:', error);
     return null;
   }
 };

@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router";
 import { cn } from "@/lib/utils";
+import { imageErrorLog } from "@/utils/logger";
 
 export interface TeamLogoProps {
   imageUrl: string | null | undefined;
@@ -52,7 +53,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
             rounded ? "rounded-full" : "rounded-none"
           )}
           onError={(e) => {
-            console.error(`Image load error for ${teamName}:`, imageUrl);
+            imageErrorLog(teamName, imageUrl);
             (e.target as HTMLImageElement).style.display = 'none';
           }}
         />

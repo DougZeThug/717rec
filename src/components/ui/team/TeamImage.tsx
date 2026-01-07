@@ -2,6 +2,7 @@
 import React from "react";
 import { Link } from "react-router";
 import { cn } from "@/lib/utils";
+import { imageErrorLog } from "@/utils/logger";
 
 export interface TeamImageProps {
   imageUrl: string | null | undefined;
@@ -56,7 +57,7 @@ export const TeamImage: React.FC<TeamImageProps> = ({
   );
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error(`Image load error for ${teamName}:`, imageUrl);
+    imageErrorLog(teamName, imageUrl);
     
     // Make the image invisible
     (e.target as HTMLImageElement).style.display = 'none';

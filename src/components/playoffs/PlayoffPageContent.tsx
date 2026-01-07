@@ -7,6 +7,7 @@ import DivisionBracketsCard from "@/components/playoffs/DivisionBracketsCard";
 import EmptyBracketState from "@/components/playoffs/EmptyBracketState";
 import { ChallongeFallback } from "@/components/playoffs/embeds/ChallongeFallback";
 import { PlayoffBracket } from "@/utils/playoffs/playoffTypes";
+import { warnLog } from "@/utils/logger";
 
 interface PlayoffPageContentProps {
   availableDivisions: string[];
@@ -44,7 +45,7 @@ const PlayoffPageContent: React.FC<PlayoffPageContentProps> = ({
       await onRefreshData();
       setLastRefreshTime(new Date());
     } catch (error) {
-      console.error("Failed to refresh data:", error);
+      warnLog("Failed to refresh data:", error);
       // Show user-friendly error without throwing
     } finally {
       setIsRefreshing(false);

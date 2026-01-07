@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Match } from "@/types";
+import { errorLog } from "@/utils/logger";
 
 export const useMatches = () => {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -45,7 +46,7 @@ export const useMatches = () => {
 
         setMatches(formattedMatches);
       } catch (err) {
-        console.error("Error fetching matches:", err);
+        errorLog("Error fetching matches:", err);
         setError(err as Error);
       } finally {
         setIsLoading(false);

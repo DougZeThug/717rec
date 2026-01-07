@@ -3,6 +3,7 @@ import React from "react";
 import { Link } from "react-router";
 import { Match, Team } from "@/types";
 import { getCardInteractionStyles } from "@/styles/interactionUtils";
+import { imageErrorLog } from "@/utils/logger";
 
 interface MatchCardProps {
   match: Match;
@@ -30,7 +31,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
           decoding="async"
           className="w-10 h-10 object-contain rounded-none"
           onError={(e) => {
-            console.error(`Image load error for ${alt}:`, src);
+            imageErrorLog(alt, src);
             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300&h=300&fit=crop';
           }}
         />
