@@ -10,6 +10,20 @@ import { errorLog } from "@/utils/logger";
 const PAGE_SIZE = 10;
 const FILTER_DEBOUNCE_MS = 300;
 const MAX_MESSAGES_IN_STATE = 100;
+const MESSAGE_FILTER_KEY = "messageBoardFilters";
+
+// Helper to load persisted filters
+const loadPersistedFilters = (): FilterOptions => {
+  try {
+    const saved = sessionStorage.getItem(MESSAGE_FILTER_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return { category: null, teamId: null, searchQuery: null };
+};
 
 export const useMessageBoard = (): UseMessageBoardResult => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -18,12 +32,8 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   
-  // Filter state
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    category: null,
-    teamId: null,
-    searchQuery: null
-  });
+  // Filter state - initialize from sessionStorage
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>(loadPersistedFilters);
 
   // Debounce ref for filter changes
   const filterDebounceRef = useRef<NodeJS.Timeout>();
@@ -33,10 +43,12 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   // Set filter function - shows loading immediately for UX feedback
   const setFilter = useCallback((filter: Partial<FilterOptions>) => {
     setIsLoading(true); // Immediate feedback
-    setFilterOptions(prev => ({
-      ...prev,
-      ...filter
-    }));
+    setFilterOptions(prev => {
+      const newOptions = { ...prev, ...filter };
+      // Persist to sessionStorage
+      sessionStorage.setItem(MESSAGE_FILTER_KEY, JSON.stringify(newOptions));
+      return newOptions;
+    });
   }, []);
 
   // Debounced effect to refetch messages when filters change

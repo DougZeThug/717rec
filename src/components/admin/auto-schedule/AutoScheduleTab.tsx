@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useAutoSchedule } from "@/hooks/useAutoSchedule/index";
 import AutoScheduleHeader from "./AutoScheduleHeader";
 import DateSettingsPanel from "./DateSettingsPanel";
@@ -69,6 +69,22 @@ const AutoScheduleTab = () => {
   useEffect(() => {
     scheduleLog(`Auto schedule tab changed to: ${activeTab}`);
   }, [activeTab]);
+
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedEdits) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    
+    if (hasUnsavedEdits) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+    
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedEdits]);
   
   // Handle manual team assignment
   const handleManualTeamAssign = (updatedTeams: TimeBlockTeamsMap) => {

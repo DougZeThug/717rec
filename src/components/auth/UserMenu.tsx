@@ -23,6 +23,12 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
   const { membership, isFetching } = useTeamMembership();
   const { isAdminAccessGranted } = useAdminAccess();
   const navigate = useNavigate();
+  const [open, setOpen] = React.useState(false);
+
+  // Close dropdown when clicking a menu item
+  const handleMenuItemClick = useCallback(() => {
+    setOpen(false);
+  }, []);
 
   // Memoize handlers to prevent recreating on each render
   const handleLoginClick = useCallback(() => {
@@ -50,7 +56,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative text-base font-normal p-1" size="sm">
           <User className="h-4 w-4 mr-1" />
@@ -70,7 +76,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
         
         {isAdminAccessGranted && (
           <>
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
               <Link to="/admin" className="cursor-pointer flex items-center">
                 <Shield className="w-4 h-4 mr-2" />
                 Admin Panel
@@ -81,14 +87,14 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
         )}
         
         {membership && membership.team ? (
-          <DropdownMenuItem asChild>
+          <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
             <Link to={`/teams/${membership.team_id}`} className="cursor-pointer flex items-center">
               <User className="w-4 h-4 mr-2" />
               My Team
             </Link>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem asChild>
+          <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
             <Link to="/my-team" className="cursor-pointer flex items-center">
               <User className="w-4 h-4 mr-2" />
               Join a Team
@@ -96,14 +102,14 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className }) => {
           </DropdownMenuItem>
         )}
         
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
           <Link to="/message-board" className="cursor-pointer flex items-center">
             <Settings className="w-4 h-4 mr-2" />
             Message Board
           </Link>
         </DropdownMenuItem>
         
-        <DropdownMenuItem asChild>
+        <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
           <Link to="/setup-profile" className="cursor-pointer flex items-center">
             <Settings className="w-4 h-4 mr-2" />
             Edit Profile
