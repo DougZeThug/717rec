@@ -165,10 +165,10 @@ const DesktopTeamRow: React.FC<{
       )}
     >
       <div className={cn(
-        "py-2 px-3 w-16",
+        "py-2 px-2 w-14 text-center flex-shrink-0",
         isWinterTheme ? "text-white/60" : "text-gray-600 dark:text-gray-300"
       )}>#{team.playoff_rank || '-'}</div>
-      <div className="py-2 px-3 flex-1 min-w-0">
+      <div className="py-2 px-2 flex-1 min-w-[120px]">
         <div className="flex items-center gap-2">
           {team.champion && (
             <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
@@ -191,28 +191,25 @@ const DesktopTeamRow: React.FC<{
         </div>
       </div>
       <div className={cn(
-        "py-2 px-3 text-center font-medium tabular-nums w-20",
+        "py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0",
         isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
       )}>
         {team.match_wins}-{team.match_losses}
       </div>
-      <div className={cn("py-2 px-3 text-center font-medium tabular-nums w-20", getWinPercentageColor(winPercentage))}>
+      <div className={cn("py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0", getWinPercentageColor(winPercentage))}>
         {winPercentage.toFixed(1)}%
       </div>
       <div className={cn(
-        "py-2 px-3 text-center font-medium tabular-nums w-24",
+        "py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0",
         isWinterTheme ? "text-white" : "text-slate-900 dark:text-white"
       )}>
         {team.game_wins}-{team.game_losses}
       </div>
-      <div className={cn("py-2 px-3 text-center font-medium tabular-nums w-20", getWinPercentageColor(gameWinPercentage))}>
+      <div className={cn("py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0", getWinPercentageColor(gameWinPercentage))}>
         {gameWinPercentage.toFixed(1)}%
       </div>
-      <div className={cn("py-2 px-3 text-center font-medium tabular-nums w-20", getPowerScoreColor(team.power_score ? team.power_score * 100 : null))}>
+      <div className={cn("py-2 px-2 text-center font-medium tabular-nums w-14 flex-shrink-0", getPowerScoreColor(team.power_score ? team.power_score * 100 : null))}>
         {team.power_score ? (team.power_score * 100).toFixed(1) : '-'}
-      </div>
-      <div className={cn("py-2 px-3 text-center font-medium tabular-nums w-20", getSosColor(team.sos))}>
-        {team.sos?.toFixed(3) || '-'}
       </div>
     </div>
   );
@@ -284,14 +281,13 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
       "flex items-center border-b text-sm font-medium",
       isWinterTheme ? "border-white/10 text-white/70" : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300"
     )}>
-      <div className="py-2 px-3 w-16">Rank</div>
-      <div className="py-2 px-3 flex-1">Team</div>
-      <div className="py-2 px-3 text-center w-20">W-L</div>
-      <div className="py-2 px-3 text-center w-20">Win %</div>
-      <div className="py-2 px-3 text-center w-24">Games</div>
-      <div className="py-2 px-3 text-center w-20">Game %</div>
-      <div className="py-2 px-3 text-center w-20">Power</div>
-      <div className="py-2 px-3 text-center w-20">SOS</div>
+      <div className="py-2 px-2 w-14 text-center flex-shrink-0">Rank</div>
+      <div className="py-2 px-2 flex-1 min-w-[120px]">Team</div>
+      <div className="py-2 px-2 text-center w-16 flex-shrink-0">W-L</div>
+      <div className="py-2 px-2 text-center w-16 flex-shrink-0">Win %</div>
+      <div className="py-2 px-2 text-center w-16 flex-shrink-0">Games</div>
+      <div className="py-2 px-2 text-center w-16 flex-shrink-0">Game %</div>
+      <div className="py-2 px-2 text-center w-14 flex-shrink-0">Power</div>
     </div>
   );
 
