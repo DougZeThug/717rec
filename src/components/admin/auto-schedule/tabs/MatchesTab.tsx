@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { TeamPairingMap, TimeBlockTeamsMap, MatchQualityMetrics, AutoScheduleMatch, Team } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Eye, RotateCcw } from "lucide-react";
+import { Edit, Eye, RotateCcw, Save, Loader2 } from "lucide-react";
 import ScheduleMatchesPreview from "@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview";
 import EditableMatchList from "@/components/admin/auto-schedule/EditableMatchList";
 import { ValidationResult } from "@/utils/autoSchedule/validation";
@@ -22,6 +22,8 @@ interface MatchesTabProps {
   matchQualityMetrics: MatchQualityMetrics | null;
   dualMatchMode?: boolean;
   onApplySchedule?: () => void;
+  onSaveSchedule?: () => Promise<boolean>;
+  isSaving?: boolean;
   // Edit mode props
   isEditMode?: boolean;
   onToggleEditMode?: () => void;
@@ -44,6 +46,8 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   matchQualityMetrics,
   dualMatchMode,
   onApplySchedule,
+  onSaveSchedule,
+  isSaving = false,
   isEditMode = false,
   onToggleEditMode,
   editableMatches = [],
@@ -162,6 +166,26 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
             >
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset
+            </Button>
+          )}
+          
+          {isEditMode && hasUnsavedEdits && onSaveSchedule && (
+            <Button
+              size="sm"
+              onClick={onSaveSchedule}
+              disabled={isSaving || validation?.isValid === false}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Matches
+                </>
+              )}
             </Button>
           )}
           {dualMatchMode && (
