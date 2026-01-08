@@ -168,7 +168,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               ) : (
                 <span className={cn(
                   getTeamStyle(team1IsWinner),
-                  typography.special.stat
+                  "font-sans text-sm"
                 )}>
                   ({match.team1_game_wins || 0}) {team1Name}
                 </span>
@@ -193,7 +193,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
               ) : (
                 <span className={cn(
                   getTeamStyle(team2IsWinner),
-                  typography.special.stat
+                  "font-sans text-sm"
                 )}>
                   ({match.team2_game_wins || 0}) {team2Name}
                 </span>
