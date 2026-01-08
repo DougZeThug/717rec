@@ -10,6 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { TeamLogo } from "@/components/ui/team";
 import { AppCard } from "@/components/ui/app-card";
 import LoadingState from "@/components/ui/loading-state";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface TimeslotGroupingProps {
   groupedTimeslots: Record<string, TeamTimeslot[]>;
@@ -20,6 +21,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
   groupedTimeslots, 
   isLoading 
 }) => {
+  const { isWinterTheme } = useSeasonalThemeBase();
   // Track which timeslots are expanded
   const [expandedTimeslots, setExpandedTimeslots] = useState<Record<string, boolean>>(() => {
     // Initialize only the first timeslot as expanded
@@ -129,8 +131,10 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                             <Link 
                               to={`/teams/${teamTimeslot.team_id}`}
                               className={cn(
-                                "font-medium text-cornhole-navy dark:text-white truncate",
-                                "hover:underline transition-all duration-200"
+                                "font-medium truncate hover:underline transition-all duration-200",
+                                isWinterTheme 
+                                  ? "text-[hsl(210,40%,96%)]" 
+                                  : "text-cornhole-navy dark:text-white"
                               )}
                             >
                               {teamTimeslot.teams.name}
@@ -227,8 +231,10 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                             <Link 
                               to={`/teams/${teamTimeslot.team_id}`}
                               className={cn(
-                                "font-medium text-orange-800 dark:text-orange-200 truncate",
-                                "hover:underline transition-all duration-200"
+                                "font-medium truncate hover:underline transition-all duration-200",
+                                isWinterTheme 
+                                  ? "text-orange-300" 
+                                  : "text-orange-800 dark:text-orange-200"
                               )}
                             >
                               {teamTimeslot.teams.name}

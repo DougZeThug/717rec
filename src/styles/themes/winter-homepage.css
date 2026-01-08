@@ -1052,6 +1052,11 @@
   background-color: hsl(222, 30%, 15%) !important;
 }
 
+/* Override cornhole-navy text color - needs to be light in winter */
+.winter-frozen .text-cornhole-navy:not(.preserve-light) {
+  color: hsl(210, 40%, 96%) !important;
+}
+
 /* Override gray-200 used in tab lists */
 .winter-frozen .bg-gray-200 {
   background-color: hsla(222, 30%, 15%, 0.9) !important;
