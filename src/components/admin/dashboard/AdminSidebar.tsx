@@ -197,19 +197,16 @@ const AdminSidebar: React.FC = () => {
         </ScrollArea>
       </motion.aside>
 
-      {/* Content area */}
+      {/* Content area - all tabs stay mounted to preserve state */}
       <div className="flex-1 min-w-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+        {adminMenuItems.map((item) => (
+          <div
+            key={item.id}
+            className={cn(activeTab === item.id ? "block" : "hidden")}
           >
-            {activeItem?.component}
-          </motion.div>
-        </AnimatePresence>
+            {item.component}
+          </div>
+        ))}
       </div>
     </div>
   );
