@@ -6,6 +6,7 @@ import { TimeBlockHeader } from "./TimeBlockHeader";
 import { MatchPairingItem } from "./MatchPairingItem";
 import { TeamPairingMap } from "@/types/autoSchedule";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface ScheduleMatchesPreviewProps {
   pairings: TeamPairingMap;
@@ -20,6 +21,7 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
   isGenerating,
   dualMatchMode
 }) => {
+  const { isWinterTheme } = useSeasonalThemeBase();
   // Check if we have any pairings
   const hasPairings = Object.values(pairings).some(blockPairings => blockPairings?.length > 0);
   
@@ -85,9 +87,13 @@ const ScheduleMatchesPreview: React.FC<ScheduleMatchesPreviewProps> = ({
       </div>
       
       {dualMatchMode && teamsWithIncompleteMatches.length > 0 && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-800 mb-2">
+        <div className={`p-3 border rounded-md text-sm mb-2 ${
+          isWinterTheme 
+            ? 'bg-amber-900/30 border-amber-500/40 text-amber-200' 
+            : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+        }`}>
           <p className="font-medium">Some teams are not scheduled for both time blocks:</p>
-          <p className="text-xs mt-1">This usually happens with an odd number of teams or when compatibility constraints couldn't be satisfied.</p>
+          <p className="text-xs mt-1 opacity-80">This usually happens with an odd number of teams or when compatibility constraints couldn't be satisfied.</p>
         </div>
       )}
       

@@ -994,6 +994,64 @@
   border-color: hsla(199, 60%, 50%, 0.25) !important;
 }
 
+/* ==========================================================================
+   SEMANTIC COLORED BACKGROUNDS - Override light amber, green, yellow, blue
+   ========================================================================== */
+
+.winter-frozen .bg-amber-50:not(.preserve-light),
+.winter-frozen .bg-amber-100:not(.preserve-light) {
+  background-color: hsla(38, 80%, 40%, 0.2) !important;
+}
+
+.winter-frozen .bg-green-50:not(.preserve-light) {
+  background-color: hsla(142, 70%, 35%, 0.15) !important;
+}
+
+.winter-frozen .bg-yellow-50:not(.preserve-light) {
+  background-color: hsla(45, 80%, 40%, 0.2) !important;
+}
+
+.winter-frozen .bg-blue-50:not(.preserve-light) {
+  background-color: hsla(210, 70%, 40%, 0.15) !important;
+}
+
+/* Override corresponding border colors */
+.winter-frozen .border-amber-300:not(.preserve-light),
+.winter-frozen .border-amber-200:not(.preserve-light) {
+  border-color: hsla(38, 70%, 50%, 0.4) !important;
+}
+
+.winter-frozen .border-green-200:not(.preserve-light) {
+  border-color: hsla(142, 60%, 45%, 0.3) !important;
+}
+
+.winter-frozen .border-yellow-200:not(.preserve-light) {
+  border-color: hsla(45, 70%, 50%, 0.4) !important;
+}
+
+/* Override light semantic text colors for alerts */
+.winter-frozen .text-yellow-800:not(.preserve-light),
+.winter-frozen .text-amber-800:not(.preserve-light) {
+  color: hsl(45, 90%, 75%) !important;
+}
+
+.winter-frozen .text-green-800:not(.preserve-light) {
+  color: hsl(142, 70%, 70%) !important;
+}
+
+.winter-frozen .text-blue-800:not(.preserve-light) {
+  color: hsl(210, 80%, 75%) !important;
+}
+
+/* Override gray-100 backgrounds in admin panels */
+.winter-frozen .bg-gray-100:not(.preserve-light) {
+  background-color: hsl(222, 30%, 18%) !important;
+}
+
+.winter-frozen .bg-gray-50:not(.preserve-light) {
+  background-color: hsl(222, 30%, 15%) !important;
+}
+
 /* Override gray-200 used in tab lists */
 .winter-frozen .bg-gray-200 {
   background-color: hsla(222, 30%, 15%, 0.9) !important;

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Users } from 'lucide-react';
 import { InlineEmptyState } from '@/components/ui/inline-empty-state';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 
 interface TimeBlockTeamsListProps {
   teams: Team[];
@@ -25,6 +26,7 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
   onSelectAll,
   onDeselectAll
 }) => {
+  const { isWinterTheme } = useSeasonalThemeBase();
   if (teams.length === 0) {
     return (
       <InlineEmptyState
@@ -71,7 +73,11 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
               key={team.id} 
               className={`
                 flex items-center gap-2 p-2 border rounded-md transition-colors
-                ${isUnmatched ? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20' : ''}
+                ${isUnmatched 
+                  ? isWinterTheme 
+                    ? 'border-amber-500/40 bg-amber-900/30' 
+                    : 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20' 
+                  : ''}
                 ${isInteractive ? 'cursor-pointer hover:bg-accent/50' : ''}
                 ${isSelected ? 'bg-primary/10 border-primary' : ''}
               `}
@@ -95,7 +101,11 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
                 {isUnmatched && (
                   <Badge 
                     variant="outline" 
-                    className="text-xs mt-1 bg-amber-100 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800"
+                    className={`text-xs mt-1 ${
+                      isWinterTheme 
+                        ? 'bg-amber-900/50 border-amber-500/40 text-amber-200' 
+                        : 'bg-amber-100 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800'
+                    }`}
                   >
                     Unmatched
                   </Badge>
