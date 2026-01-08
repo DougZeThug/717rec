@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useTeams } from "@/hooks/useTeams";
+import { useTeamsArray } from "@/hooks/teams";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import {
   useConfirmationSeason,
@@ -30,7 +30,7 @@ import { format } from "date-fns";
 
 const ParticipationHeroCard: React.FC = () => {
   const { shouldApplyWinter } = useSeasonalTheme();
-  const { teams, isLoading: teamsLoading } = useTeams();
+  const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: true });
   const { data: season, isLoading: seasonLoading } = useConfirmationSeason();
   
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
