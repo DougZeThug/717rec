@@ -124,16 +124,16 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                         "touch-manipulation"
                       )}
                     >
-                      <div className="flex items-center min-w-0 flex-1">
-                        <TeamLogo 
-                          imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
-                          teamName={teamTimeslot.teams?.name || "Unknown Team"}
-                          teamId={teamTimeslot.team_id}
-                          size="sm"
-                          clickable={true}
-                          className="mr-6 shrink-0"
-                        />
-                        
+                      <div className="flex items-center min-w-0 flex-1 gap-8">
+                        <div className="shrink-0">
+                          <TeamLogo 
+                            imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
+                            teamName={teamTimeslot.teams?.name || "Unknown Team"}
+                            teamId={teamTimeslot.team_id}
+                            size="sm"
+                            clickable={true}
+                          />
+                        </div>
                         <div className="flex flex-col min-w-0">
                           {teamTimeslot.teams?.name ? (
                             <Link 
@@ -238,16 +238,16 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                         "touch-manipulation"
                       )}
                     >
-                      <div className="flex items-center min-w-0 flex-1">
-                        <TeamLogo 
-                          imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
-                          teamName={teamTimeslot.teams?.name || "Unknown Team"}
-                          teamId={teamTimeslot.team_id}
-                          size="sm"
-                          clickable={true}
-                          className="mr-6 shrink-0"
-                        />
-                        
+                      <div className="flex items-center min-w-0 flex-1 gap-8">
+                        <div className="shrink-0">
+                          <TeamLogo 
+                            imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
+                            teamName={teamTimeslot.teams?.name || "Unknown Team"}
+                            teamId={teamTimeslot.team_id}
+                            size="sm"
+                            clickable={true}
+                          />
+                        </div>
                         <div className="flex flex-col min-w-0">
                           {teamTimeslot.teams?.name ? (
                             <Link 
