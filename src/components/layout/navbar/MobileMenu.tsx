@@ -1,5 +1,6 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +15,12 @@ interface MobileMenuProps {
 const MobileMenu: React.FC<MobileMenuProps> = React.memo(({ navItems }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { isAdminAccessGranted } = useAdminAccess();
+  const location = useLocation();
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
   
   // Memoize toggle handler
   const toggleMenu = useCallback(() => {

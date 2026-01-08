@@ -11,12 +11,21 @@ interface PlayoffAdminSectionProps {
   onEditMatch: (matchId: string, quickEdit: boolean) => void;
 }
 
+const PLAYOFF_ADMIN_TAB_KEY = "playoffAdminActiveTab";
+
 const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({ 
   bracket,
   teams, 
   onEditMatch
 }) => {
-  const [activeTab, setActiveTab] = useState("matches");
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem(PLAYOFF_ADMIN_TAB_KEY) || "matches";
+  });
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    sessionStorage.setItem(PLAYOFF_ADMIN_TAB_KEY, tabId);
+  };
   
   // Group matches by type for the different tabs
   const winnerMatches = bracket.matches.filter(m => m.matchType === "winners");
@@ -26,7 +35,7 @@ const PlayoffAdminSection: React.FC<PlayoffAdminSectionProps> = ({
   
   return (
     <Card className="border rounded-lg overflow-hidden">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="matches">All Matches</TabsTrigger>
           <TabsTrigger value="winners">Winners Bracket</TabsTrigger>

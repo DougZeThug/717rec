@@ -37,8 +37,16 @@ const Schedule = () => {
   };
   
   const [selectedDate, setSelectedDate] = useState<Date>(getUpcomingThursday());
-  const [activeTab, setActiveTab] = useState("timeslots");
+  const SCHEDULE_TAB_KEY = "scheduleActiveTab";
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem(SCHEDULE_TAB_KEY) || "timeslots";
+  });
   const hasInitializedTab = useRef(false);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    sessionStorage.setItem(SCHEDULE_TAB_KEY, tabId);
+  };
   
   // Log date for debugging
   useEffect(() => {
@@ -98,26 +106,26 @@ const Schedule = () => {
     
     // If selected date is in the past, default to completed
     if (selected < today) {
-      setActiveTab("completed");
+      handleTabChange("completed");
       return;
     }
     
     // For today or future dates:
     // Priority 1: If there are upcoming matches, show upcoming tab
     if (upcomingMatches && upcomingMatches.length > 0) {
-      setActiveTab("upcoming");
+      handleTabChange("upcoming");
       return;
     }
     
     // Priority 2: If there are timeslots, show timeslots tab
     const hasTimeslots = Object.keys(groupedTimeslots).length > 0;
     if (hasTimeslots) {
-      setActiveTab("timeslots");
+      handleTabChange("timeslots");
       return;
     }
     
     // Default fallback to timeslots
-    setActiveTab("timeslots");
+    handleTabChange("timeslots");
   }, [selectedDate, matchesLoading, timeslotsLoading, upcomingMatches, groupedTimeslots]);
 
   // Handle date selection with proper normalization
@@ -176,7 +184,7 @@ const Schedule = () => {
         ) : (
           <ScheduleContent 
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleTabChange}
             filteredMatches={filteredMatches}
             teams={teams || []}
             selectedDate={selectedDate}
