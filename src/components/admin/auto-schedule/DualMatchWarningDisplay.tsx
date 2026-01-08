@@ -4,6 +4,7 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DualBlockValidationResult } from '@/utils/autoSchedule/dualBlock/types';
 import { Badge } from '@/components/ui/badge';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 
 interface DualMatchWarningDisplayProps {
   validation?: DualBlockValidationResult;
@@ -18,6 +19,7 @@ const DualMatchWarningDisplay: React.FC<DualMatchWarningDisplayProps> = ({
   teamsInBothBlocks = 0,
   totalTeams = 0
 }) => {
+  const { isWinterTheme } = useSeasonalThemeBase();
   // No issues to display
   if (!validation && duplicateOpponentsCount === 0) {
     return null;
@@ -31,7 +33,11 @@ const DualMatchWarningDisplay: React.FC<DualMatchWarningDisplayProps> = ({
   // If no issues found and all teams in both blocks, show success
   if (!hasDuplicates && !hasOverbooked && teamsInBothBlocks === totalTeams && totalTeams > 0) {
     return (
-      <Alert className="mt-4 border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20">
+      <Alert className={`mt-4 ${
+        isWinterTheme 
+          ? 'border-green-500/40 bg-green-900/20' 
+          : 'border-green-300 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+      }`}>
         <Info className="h-4 w-4 text-green-500" />
         <AlertTitle>Optimal Dual Match Schedule</AlertTitle>
         <AlertDescription>
@@ -42,11 +48,19 @@ const DualMatchWarningDisplay: React.FC<DualMatchWarningDisplayProps> = ({
   }
   
   // If there are issues, show warnings
+  const getAlertClasses = () => {
+    if (isWinterTheme) {
+      return hasDuplicates 
+        ? "border-amber-500/40 bg-amber-900/20" 
+        : "border-[hsl(199,60%,40%,0.3)] bg-[hsl(222,30%,15%)]";
+    }
+    return hasDuplicates 
+      ? "border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20" 
+      : "border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20";
+  };
+
   return (
-    <Alert className={`mt-4 ${
-      hasDuplicates ? "border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20" :
-      "border-blue-300 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20"
-    }`}>
+    <Alert className={`mt-4 ${getAlertClasses()}`}>
       {hasDuplicates ? (
         <AlertTriangle className="h-4 w-4 text-amber-500" />
       ) : (

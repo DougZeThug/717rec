@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { AlertTriangle, Info, CheckCircle } from "lucide-react";
 import TeamLogo from "@/components/ui/team/TeamLogo";
 import { TIME_BLOCKS } from "@/utils/autoSchedule/constants";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface MatchPairingItemProps {
   pairing: TeamPairing;
@@ -19,20 +20,27 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
   blockName,
   isDualMatchMode
 }) => {
+  const { isWinterTheme } = useSeasonalThemeBase();
+  
   // Determine UI state based on compatibility score and match history
   const isWarning = pairing.compatibilityScore < 5 || pairing.hasPlayedBefore;
   const timeslot = index % 2 === 0 
     ? TIME_BLOCKS[blockName]?.main 
     : TIME_BLOCKS[blockName]?.secondary;
 
+  const getCardClasses = () => {
+    if (isWinterTheme) {
+      return isWarning
+        ? 'border-amber-500/40 bg-amber-900/30'
+        : 'border-[hsl(199,60%,40%,0.3)] bg-[hsl(222,30%,15%)]';
+    }
+    return isWarning 
+      ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20' 
+      : 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10';
+  };
+
   return (
-    <div 
-      className={`p-3 border rounded-md ${
-        isWarning 
-          ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20' 
-          : 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10'
-      }`}
-    >
+    <div className={`p-3 border rounded-md ${getCardClasses()}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium">Match {index + 1}</span>
         <TooltipProvider>
@@ -46,7 +54,9 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
                 ) : (
                   <CheckCircle className="h-4 w-4 text-green-500" />
                 )}
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-gray-100 dark:bg-gray-800'
+                }`}>
                   Score: {pairing.compatibilityScore.toFixed(1)}/10
                 </span>
               </div>
