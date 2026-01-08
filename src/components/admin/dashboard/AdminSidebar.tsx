@@ -62,9 +62,18 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: "help", label: "Help", icon: HelpCircle, component: <GettingStartedTab /> },
 ];
 
+const STORAGE_KEY = "adminActiveTab";
+
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
-  const [activeTab, setActiveTab] = useState("timeslots");
+  const [activeTab, setActiveTab] = useState(() => {
+    return sessionStorage.getItem(STORAGE_KEY) || "timeslots";
+  });
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    sessionStorage.setItem(STORAGE_KEY, tabId);
+  };
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -77,7 +86,7 @@ const AdminSidebar: React.FC = () => {
   // Mobile: Use tabs with labels
   if (isMobile) {
     return (
-      <Tabs defaultValue="timeslots" className="space-y-3">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-3">
         <TabsList className="grid grid-cols-4 gap-1 h-auto p-1.5 bg-muted/50">
           {adminMenuItems.map((item) => (
             <TabsTrigger 
@@ -168,7 +177,7 @@ const AdminSidebar: React.FC = () => {
             {filteredItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => handleTabChange(item.id)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all",
                   "hover:bg-accent hover:text-accent-foreground",
