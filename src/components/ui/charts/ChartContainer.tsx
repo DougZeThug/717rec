@@ -4,6 +4,7 @@ import * as RechartsPrimitive from "recharts";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { ChartStyle } from "./ChartStyle";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 export type ChartConfig = {
   [k in string]: {
@@ -40,7 +41,8 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
     const uniqueId = React.useId();
     const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
     const { resolvedTheme } = useTheme();
-    const isLight = resolvedTheme === "light";
+    const { isWinterTheme } = useSeasonalThemeBase();
+    const isLight = !isWinterTheme && resolvedTheme === "light";
 
     return (
       <ChartContext.Provider value={{ config }}>
@@ -75,9 +77,11 @@ export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerPro
             "[&_.recharts-sector[stroke='#fff']]:stroke-transparent",
             "[&_.recharts-sector]:outline-none",
             "[&_.recharts-surface]:outline-none",
-            isLight 
-              ? "bg-white !text-gray-900" 
-              : "bg-gray-900 text-white",
+            isWinterTheme
+              ? "bg-[hsl(var(--card))] text-[hsl(var(--foreground))]"
+              : isLight 
+                ? "bg-white !text-gray-900" 
+                : "bg-gray-900 text-white",
             className
           )}
           {...props}

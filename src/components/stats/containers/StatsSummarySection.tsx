@@ -9,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { gradients } from "@/styles/design-system";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface StatsSummarySectionProps {
   rankings: Ranking[];
@@ -22,7 +23,8 @@ const StatsSummarySection = ({
   const [isOpen, setIsOpen] = React.useState(true);
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === 'light';
+  const { isWinterTheme } = useSeasonalThemeBase();
+  const isLight = !isWinterTheme && resolvedTheme === 'light';
 
   const compactLimit = isMobile ? 5 : 5;
   
@@ -32,15 +34,25 @@ const StatsSummarySection = ({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
       <Card className={cn(
-        "border-t-2 border-blue-300 dark:border-blue-700/80",
+        "border-t-2",
+        isWinterTheme 
+          ? "border-frost-border/50 bg-[hsl(var(--card))]" 
+          : "border-blue-300 dark:border-blue-700/80",
         "shadow-lg hover:shadow-xl transition-shadow duration-300",
         isLight ? gradients.card.blueOrange : ""
       )}>
         <CollapsibleTrigger asChild>
           <CardHeader className={cn(
             isMobile ? "py-2.5 px-3" : "py-4",
-            isLight ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
-            "border-b border-blue-100 dark:border-blue-900/30 rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
+            isWinterTheme 
+              ? "bg-[hsl(var(--card))]" 
+              : isLight 
+                ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" 
+                : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
+            isWinterTheme 
+              ? "border-b border-frost-border/30" 
+              : "border-b border-blue-100 dark:border-blue-900/30",
+            "rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
           )}>
             <div className="flex items-center justify-between">
               <div>
@@ -76,7 +88,9 @@ const StatsSummarySection = ({
         <CollapsibleContent>
           <CardContent className={cn(
             isMobile ? "p-3" : "p-4",
-            "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900"
+            isWinterTheme 
+              ? "bg-[hsl(var(--card))]" 
+              : "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900"
           )}>
             {isNewSeason && (
               <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50">

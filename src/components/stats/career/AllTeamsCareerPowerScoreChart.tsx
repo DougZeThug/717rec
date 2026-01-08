@@ -13,6 +13,7 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { gradients } from '@/styles/design-system';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 
 const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   if (!teamsData) return [];
@@ -90,14 +91,15 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, teamsDat
 
 export const AllTeamsCareerPowerScoreChart: React.FC = () => {
   const { data: teamsData, isLoading } = useAllTeamsCareerPowerScores();
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
+  const { isWinterTheme } = useSeasonalThemeBase();
   const isDark = theme === 'dark';
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
 
   const chartData = useMemo(() => transformDataForChart(teamsData), [teamsData]);
-  const isLight = theme !== 'dark';
+  const isLight = !isWinterTheme && resolvedTheme === 'light';
 
   const teamOptions = useMemo(
     () => teamsData?.map(t => ({
@@ -128,15 +130,25 @@ export const AllTeamsCareerPowerScoreChart: React.FC = () => {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-4">
       <Card className={cn(
-        "border-t-2 border-blue-300 dark:border-blue-700/80",
+        "border-t-2",
+        isWinterTheme 
+          ? "border-frost-border/50 bg-[hsl(var(--card))]" 
+          : "border-blue-300 dark:border-blue-700/80",
         "shadow-lg hover:shadow-xl transition-shadow duration-300",
         isLight ? gradients.card.blueOrange : ""
       )}>
         <CollapsibleTrigger className="w-full">
           <CardHeader className={cn(
             isMobile ? "py-2.5 px-3" : "py-4",
-            isLight ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
-            "border-b border-blue-100 dark:border-blue-900/30 rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
+            isWinterTheme 
+              ? "bg-[hsl(var(--card))]" 
+              : isLight 
+                ? "bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30" 
+                : "bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80",
+            isWinterTheme 
+              ? "border-b border-frost-border/30" 
+              : "border-b border-blue-100 dark:border-blue-900/30",
+            "rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors"
           )}>
             <div className="flex items-center justify-between">
               <div className="text-left">

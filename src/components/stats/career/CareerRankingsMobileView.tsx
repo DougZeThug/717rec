@@ -11,6 +11,7 @@ import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/champions
 import { cn } from '@/lib/utils';
 import { useLeaguePercentiles } from '@/hooks/useLeaguePercentiles';
 import { PercentileBadge } from '@/components/ui/PercentileBadge';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 
 interface CareerRankingsMobileViewProps {
   rankings: CareerRanking[];
@@ -27,6 +28,7 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
 }) => {
   const [isCompactView, setIsCompactView] = useState(false);
   const { getTeamPercentiles } = useLeaguePercentiles();
+  const { isWinterTheme } = useSeasonalThemeBase();
   const formatPercentage = (value: number) => {
     return `${(value * 100).toFixed(1)}%`;
   };
@@ -64,7 +66,10 @@ const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
             </Button>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
+        <div className={cn(
+          "flex flex-wrap gap-2 p-2 rounded-lg",
+          isWinterTheme ? "bg-[hsl(var(--secondary))]" : "bg-muted/50"
+        )}>
         <Button
           variant={sortOptions.field === 'careerPowerScore' ? 'default' : 'outline'}
           size="sm"
