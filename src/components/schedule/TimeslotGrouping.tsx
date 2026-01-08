@@ -124,7 +124,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                         "touch-manipulation"
                       )}
                     >
-                      <div className="flex items-center min-w-0 flex-1 gap-8">
+                      <div className="flex items-center min-w-0 flex-1 gap-6">
                         <div className="shrink-0">
                           <TeamLogo 
                             imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
@@ -238,7 +238,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                         "touch-manipulation"
                       )}
                     >
-                      <div className="flex items-center min-w-0 flex-1 gap-8">
+                      <div className="flex items-center min-w-0 flex-1 gap-6">
                         <div className="shrink-0">
                           <TeamLogo 
                             imageUrl={teamTimeslot.teams?.logo_url || teamTimeslot.teams?.image_url}
