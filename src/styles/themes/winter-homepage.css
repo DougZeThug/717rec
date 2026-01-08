@@ -983,6 +983,17 @@
   border-color: hsla(199, 60%, 50%, 0.2) !important;
 }
 
+/* Override light gradient backgrounds (from-white, from-blue-50, etc.) */
+.winter-frozen [class*="from-white"]:not(.preserve-light),
+.winter-frozen [class*="from-blue-50"]:not(.preserve-light),
+.winter-frozen [class*="from-gray-50"]:not(.preserve-light),
+.winter-frozen [class*="via-blue-50"]:not(.preserve-light),
+.winter-frozen [class*="via-white"]:not(.preserve-light) {
+  background-image: none !important;
+  background-color: hsl(222, 30%, 15%) !important;
+  border-color: hsla(199, 60%, 50%, 0.25) !important;
+}
+
 /* Override gray-200 used in tab lists */
 .winter-frozen .bg-gray-200 {
   background-color: hsla(222, 30%, 15%, 0.9) !important;

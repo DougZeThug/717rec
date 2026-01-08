@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface AnimatedRankNumberProps {
   rank: number;
@@ -14,8 +15,17 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
   showFlash = true,
 }) => {
   const [flashColor, setFlashColor] = useState<"green" | "red" | null>(null);
+  const { isWinterTheme } = useSeasonalThemeBase();
   
   const getRankStyles = (index: number) => {
+    // Winter theme: Use darker backgrounds with icy borders
+    if (isWinterTheme) {
+      if (index === 1) return "bg-amber-900/50 text-amber-300 font-bold border border-amber-500/30"; // Gold
+      if (index === 2) return "bg-slate-700/60 text-slate-200 font-bold border border-slate-500/30"; // Silver
+      if (index === 3) return "bg-orange-900/50 text-orange-300 font-bold border border-orange-500/30"; // Bronze
+      return "bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]";
+    }
+    
     if (index === 1) return "bg-amber-100 text-amber-800 font-bold dark:bg-amber-900/50 dark:text-amber-300"; // Gold
     if (index === 2) return "bg-slate-100 text-slate-700 font-bold dark:bg-slate-800 dark:text-slate-300"; // Silver
     if (index === 3) return "bg-orange-100 text-orange-800 font-bold dark:bg-orange-900/50 dark:text-orange-300"; // Bronze
