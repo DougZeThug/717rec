@@ -131,7 +131,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                           teamId={teamTimeslot.team_id}
                           size="sm"
                           clickable={true}
-                          className="mr-4 shrink-0"
+                          className="mr-6 shrink-0"
                         />
                         
                         <div className="flex flex-col min-w-0">
@@ -139,7 +139,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                             <Link 
                               to={`/teams/${teamTimeslot.team_id}`}
                               className={cn(
-                                "font-bebas text-lg truncate hover:underline transition-all duration-200",
+                                "font-medium text-base truncate hover:underline transition-all duration-200",
                                 isWinterTheme 
                                   ? "text-[hsl(210,40%,96%)]" 
                                   : "text-cornhole-navy dark:text-white"
@@ -245,7 +245,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                           teamId={teamTimeslot.team_id}
                           size="sm"
                           clickable={true}
-                          className="mr-4 shrink-0"
+                          className="mr-6 shrink-0"
                         />
                         
                         <div className="flex flex-col min-w-0">
@@ -253,7 +253,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                             <Link 
                               to={`/teams/${teamTimeslot.team_id}`}
                               className={cn(
-                                "font-bebas text-lg truncate hover:underline transition-all duration-200",
+                                "font-medium text-base truncate hover:underline transition-all duration-200",
                                 isWinterTheme 
                                   ? "text-orange-300" 
                                   : "text-orange-800 dark:text-orange-200"
