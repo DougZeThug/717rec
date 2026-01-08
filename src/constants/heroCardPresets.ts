@@ -156,6 +156,7 @@ export const HERO_CARD_TYPES = [
   { id: 'champions', name: 'Champions Highlight', description: 'Feature season winners' },
   { id: 'event', name: 'Event Promo', description: 'Events with countdowns & details' },
   { id: 'announcement', name: 'Announcement', description: 'Important league news' },
+  { id: 'request', name: 'Team Request Form', description: 'Allow teams to submit schedule requests' },
 ] as const;
 
 export const TARGET_TYPE_OPTIONS = [
