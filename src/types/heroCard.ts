@@ -1,5 +1,5 @@
 export type HeroCardTargetType = 'none' | 'team' | 'division' | 'season';
-export type HeroCardType = 'standard' | 'champions' | 'event' | 'announcement' | 'participation';
+export type HeroCardType = 'standard' | 'champions' | 'event' | 'announcement' | 'participation' | 'request';
 
 export interface HeroCard {
   id: string;

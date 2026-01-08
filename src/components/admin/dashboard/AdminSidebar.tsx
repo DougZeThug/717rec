@@ -16,11 +16,13 @@ import {
   Shuffle,
   HelpCircle,
   ClipboardCheck,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 
 import TeamManagementTab from "@/components/admin/teams/TeamManagementTab";
@@ -35,7 +37,9 @@ import BlindDrawSignupsTab from "@/components/admin/blind-draw/BlindDrawSignupsT
 import OpponentHistoryTab from "@/components/admin/opponent-history/OpponentHistoryTab";
 import GettingStartedTab from "@/components/admin/help/GettingStartedTab";
 import SeasonParticipationTab from "@/components/admin/participation/SeasonParticipationTab";
+import RequestsTab from "@/components/admin/requests/RequestsTab";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePendingRequestsCount } from "@/hooks/useTeamRequests";
 
 // Mobile tabs version
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -55,6 +59,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: "scores", label: "Scores", icon: ListChecks, component: <MassScoresTab /> },
   { id: "seasons", label: "Season", icon: Calendar, component: <SeasonManagementTab /> },
   { id: "participation", label: "Participation", icon: ClipboardCheck, component: <SeasonParticipationTab /> },
+  { id: "requests", label: "Requests", icon: Inbox, component: <RequestsTab /> },
   { id: "teams", label: "Teams", icon: Users, component: <TeamManagementTab /> },
   { id: "pending-matches", label: "Pending", icon: Clock, component: <PendingMatchesSection /> },
   { id: "hero-cards", label: "Hero", icon: LayoutGrid, component: <HeroCardsTab /> },
@@ -66,6 +71,7 @@ const STORAGE_KEY = "adminActiveTab";
 
 const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
+  const { data: pendingRequestsCount } = usePendingRequestsCount();
   const [activeTab, setActiveTab] = useState(() => {
     return sessionStorage.getItem(STORAGE_KEY) || "timeslots";
   });
@@ -190,14 +196,21 @@ const AdminSidebar: React.FC = () => {
                 <item.icon className="h-5 w-5 shrink-0" />
                 <AnimatePresence>
                   {!isCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="truncate"
-                    >
-                      {item.label}
-                    </motion.span>
+                    <>
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="truncate flex-1 text-left"
+                      >
+                        {item.label}
+                      </motion.span>
+                      {item.id === "requests" && pendingRequestsCount !== undefined && pendingRequestsCount > 0 && (
+                        <Badge variant="destructive" className="ml-auto text-xs px-1.5 py-0.5 min-w-[20px] h-5">
+                          {pendingRequestsCount}
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </AnimatePresence>
               </button>
