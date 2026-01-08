@@ -211,6 +211,9 @@ const DesktopTeamRow: React.FC<{
       <div className={cn("py-2 px-2 text-center font-medium tabular-nums w-14 flex-shrink-0", getPowerScoreColor(team.power_score ? team.power_score * 100 : null))}>
         {team.power_score ? (team.power_score * 100).toFixed(1) : '-'}
       </div>
+      <div className={cn("py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0", getSosColor(team.sos))}>
+        {team.sos?.toFixed(3) || '-'}
+      </div>
     </div>
   );
 };
@@ -288,6 +291,7 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
       <div className="py-2 px-2 text-center w-16 flex-shrink-0">Games</div>
       <div className="py-2 px-2 text-center w-16 flex-shrink-0">Game %</div>
       <div className="py-2 px-2 text-center w-14 flex-shrink-0">Power</div>
+      <div className="py-2 px-2 text-center w-16 flex-shrink-0">SOS</div>
     </div>
   );
 
