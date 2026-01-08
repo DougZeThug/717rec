@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
+import { useSeasonalThemeBase } from "@/hooks/useSeasonalTheme";
 
 interface StatBlockProps {
   label: string;
@@ -24,12 +24,16 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   highlight = false,
   variant = 'default'
 }) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === "light";
+  const { isWinterTheme, isDark } = useSeasonalThemeBase();
   
   // Get gradient based on variant
   const getGradient = () => {
     if (gradient) return gradient;
+    
+    // Winter theme: Use dark ice-glass gradients
+    if (isWinterTheme) {
+      return "bg-gradient-to-br from-[hsl(222,30%,18%)] via-[hsl(222,35%,15%)] to-[hsl(222,40%,12%)]";
+    }
     
     switch (variant) {
       case 'blue':
@@ -48,16 +52,28 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   const baseClasses = cn(
     getGradient(), 
     "p-2 sm:p-3 rounded-lg text-left transition-all duration-200 hover:shadow-md border",
-    highlight ? "shadow-md border-blue-200 dark:border-blue-900/40" : "border-gray-200 dark:border-gray-700/50",
-    isLight ? "border-gray-200" : "border-gray-700/50"
+    isWinterTheme 
+      ? "border-[hsl(199,60%,50%,0.3)]"
+      : highlight 
+        ? "shadow-md border-blue-200 dark:border-blue-900/40" 
+        : "border-gray-200 dark:border-gray-700/50"
   );
   
-  const labelClasses = "font-inter uppercase text-[10px] sm:text-xs tracking-widest text-gray-600 dark:text-gray-400";
+  const labelClasses = cn(
+    "font-inter uppercase text-[10px] sm:text-xs tracking-widest",
+    isWinterTheme 
+      ? "text-[hsl(210,20%,65%)]" 
+      : "text-gray-600 dark:text-gray-400"
+  );
   
   // Apply gradient to the value text based on variant
   const valueClasses = cn(
     "font-mono text-sm sm:text-base font-medium",
-    highlight ? "text-blue-700 dark:text-blue-300" : "text-gray-800 dark:text-white"
+    isWinterTheme
+      ? "text-[hsl(210,40%,96%)]"
+      : highlight 
+        ? "text-blue-700 dark:text-blue-300" 
+        : "text-gray-800 dark:text-white"
   );
 
   if (orientation === 'horizontal') {
