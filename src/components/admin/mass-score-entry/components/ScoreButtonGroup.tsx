@@ -95,7 +95,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
           />
         ))}
       </div>
-      <div className="text-xs text-center text-gray-500">
+      <div className="text-xs text-center text-muted-foreground">
         (First number represents Team 1's game wins)
       </div>
     </div>

@@ -37,11 +37,11 @@ const MatchApprovalItem = ({
       onOpenChange={onToggle}
       className="border rounded-md overflow-hidden"
     >
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-slate-50">
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-secondary">
         <div className="flex items-center">
           {isOpen ? <ChevronDown className="h-4 w-4 mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
           <div className="flex items-center">
-            <div className="w-6 h-6 overflow-hidden bg-gray-100 mr-2">
+            <div className="w-6 h-6 overflow-hidden bg-muted mr-2">
               {team1Image && (
                 <img 
                   src={team1Image} 
@@ -56,7 +56,7 @@ const MatchApprovalItem = ({
             <span>
               {team1?.name || 'Team 1'} vs 
             </span>
-            <div className="w-6 h-6 overflow-hidden bg-gray-100 mx-2">
+            <div className="w-6 h-6 overflow-hidden bg-muted mx-2">
               {team2Image && (
                 <img 
                   src={team2Image} 
@@ -73,12 +73,12 @@ const MatchApprovalItem = ({
             </span>
           </div>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-muted-foreground">
           {new Date(match.date).toLocaleDateString()}
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="p-4 border-t bg-slate-50">
+        <div className="p-4 border-t bg-secondary">
           <div className="flex justify-between items-center mb-4">
             <div className="text-center">
               <p className="font-medium">{teams[match.team1Id]?.name || 'Team 1'}</p>
