@@ -104,13 +104,21 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
             
             <CollapsibleContent>
               <div className="p-4">
-                <div className="space-y-1">
+                <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
                   {teams.map((teamTimeslot, teamIndex) => (
                     <div 
                       key={teamTimeslot.id} 
                       className={cn(
-                        "flex items-center justify-between p-3 rounded-md",
-                        "hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150",
+                        "flex items-center justify-between p-3",
+                        // Alternating row shading
+                        teamIndex % 2 === 1 && (isWinterTheme 
+                          ? "bg-white/5" 
+                          : "bg-gray-50 dark:bg-white/5"),
+                        // Hover state
+                        isWinterTheme 
+                          ? "hover:bg-white/10" 
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800",
+                        "transition-colors duration-150",
                         animations.fadeInSlideUp,
                         `animation-delay-${teamIndex * 100 + 100}`,
                         "touch-manipulation"
@@ -123,7 +131,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                           teamId={teamTimeslot.team_id}
                           size="sm"
                           clickable={true}
-                          className="mr-3 shrink-0"
+                          className="mr-4 shrink-0"
                         />
                         
                         <div className="flex flex-col min-w-0">
@@ -131,7 +139,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                             <Link 
                               to={`/teams/${teamTimeslot.team_id}`}
                               className={cn(
-                                "font-medium truncate hover:underline transition-all duration-200",
+                                "font-bebas text-lg truncate hover:underline transition-all duration-200",
                                 isWinterTheme 
                                   ? "text-[hsl(210,40%,96%)]" 
                                   : "text-cornhole-navy dark:text-white"
@@ -203,14 +211,28 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
             </CollapsibleTrigger>
             
             <CollapsibleContent>
-              <div className="p-4 bg-orange-50 dark:bg-orange-900/10">
-                <div className="space-y-1">
+              <div className={cn(
+                "p-4",
+                isWinterTheme ? "bg-orange-900/20" : "bg-orange-50 dark:bg-orange-900/10"
+              )}>
+                <div className={cn(
+                  "divide-y",
+                  isWinterTheme ? "divide-orange-500/20" : "divide-orange-200 dark:divide-orange-700/50"
+                )}>
                   {teams.map((teamTimeslot, teamIndex) => (
                     <div 
                       key={teamTimeslot.id} 
                       className={cn(
-                        "flex items-center justify-between p-3 rounded-md",
-                        "hover:bg-orange-100 dark:hover:bg-orange-800/20 transition-colors duration-150",
+                        "flex items-center justify-between p-3",
+                        // Alternating row shading
+                        teamIndex % 2 === 1 && (isWinterTheme 
+                          ? "bg-orange-900/20" 
+                          : "bg-orange-100/50 dark:bg-orange-800/10"),
+                        // Hover state
+                        isWinterTheme 
+                          ? "hover:bg-orange-900/30" 
+                          : "hover:bg-orange-100 dark:hover:bg-orange-800/20",
+                        "transition-colors duration-150",
                         animations.fadeInSlideUp,
                         `animation-delay-${teamIndex * 100 + 100}`,
                         "touch-manipulation"
@@ -223,7 +245,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                           teamId={teamTimeslot.team_id}
                           size="sm"
                           clickable={true}
-                          className="mr-3 shrink-0"
+                          className="mr-4 shrink-0"
                         />
                         
                         <div className="flex flex-col min-w-0">
@@ -231,7 +253,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                             <Link 
                               to={`/teams/${teamTimeslot.team_id}`}
                               className={cn(
-                                "font-medium truncate hover:underline transition-all duration-200",
+                                "font-bebas text-lg truncate hover:underline transition-all duration-200",
                                 isWinterTheme 
                                   ? "text-orange-300" 
                                   : "text-orange-800 dark:text-orange-200"
@@ -242,7 +264,10 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
                           ) : (
                             <span className="text-gray-500 dark:text-gray-400 truncate">Unknown Team</span>
                           )}
-                          <span className="text-xs text-orange-600 dark:text-orange-300">Not playing this week</span>
+                          <span className={cn(
+                            "text-xs",
+                            isWinterTheme ? "text-orange-400" : "text-orange-600 dark:text-orange-300"
+                          )}>Not playing this week</span>
                         </div>
                       </div>
                       
