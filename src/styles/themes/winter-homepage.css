@@ -1010,3 +1010,50 @@
 .winter-frozen .dark\\:bg-\\[\\#1E1E1E\\] {
   background-color: hsl(222, 35%, 12%) !important;
 }
+
+/* ==========================================================================
+   GLOBAL TEXT COLOR OVERRIDES - Convert dark text to light for winter theme
+   Catches hardcoded text-gray-*, text-slate-* that appear dark on winter bg
+   ========================================================================== */
+
+/* Dark text colors → foreground */
+.winter-frozen .text-gray-900:not(.preserve-light),
+.winter-frozen .text-gray-800:not(.preserve-light),
+.winter-frozen .text-gray-700:not(.preserve-light),
+.winter-frozen .text-slate-900:not(.preserve-light),
+.winter-frozen .text-slate-800:not(.preserve-light),
+.winter-frozen .text-slate-700:not(.preserve-light),
+.winter-frozen .text-black:not(.preserve-light),
+.winter-frozen .text-zinc-900:not(.preserve-light),
+.winter-frozen .text-zinc-800:not(.preserve-light),
+.winter-frozen .text-zinc-700:not(.preserve-light) {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Muted text colors → muted-foreground */
+.winter-frozen .text-gray-600:not(.preserve-light),
+.winter-frozen .text-gray-500:not(.preserve-light),
+.winter-frozen .text-gray-400:not(.preserve-light),
+.winter-frozen .text-slate-600:not(.preserve-light),
+.winter-frozen .text-slate-500:not(.preserve-light),
+.winter-frozen .text-slate-400:not(.preserve-light),
+.winter-frozen .text-zinc-600:not(.preserve-light),
+.winter-frozen .text-zinc-500:not(.preserve-light),
+.winter-frozen .text-zinc-400:not(.preserve-light) {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Override hover:bg-slate-50 triggers (collapsible triggers in admin) */
+.winter-frozen .hover\:bg-slate-50:hover {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+/* Override bg-slate-50 (collapsible content in admin) */
+.winter-frozen .bg-slate-50:not(.preserve-light) {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+/* Override bg-gray-100 for image placeholders */
+.winter-frozen .bg-gray-100:not(.preserve-light) {
+  background-color: hsl(var(--muted)) !important;
+}

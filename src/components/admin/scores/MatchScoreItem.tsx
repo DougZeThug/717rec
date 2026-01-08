@@ -75,11 +75,11 @@ const MatchScoreItem = ({
       onOpenChange={onToggle}
       className="border rounded-md overflow-hidden"
     >
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-slate-50">
+      <CollapsibleTrigger className="flex items-center justify-between w-full p-4 text-left hover:bg-secondary">
         <div className="flex items-center">
           {isOpen ? <ChevronDown className="h-4 w-4 mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />}
           <div className="flex items-center">
-            <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 mr-2">
+            <div className="w-6 h-6 rounded overflow-hidden bg-muted mr-2">
               {teams[match.team1Id]?.imageUrl && (
                 <img 
                   src={teams[match.team1Id].imageUrl} 
@@ -97,7 +97,7 @@ const MatchScoreItem = ({
             <span>
               {teams[match.team1Id]?.name || 'Team 1'} vs 
             </span>
-            <div className="w-6 h-6 rounded overflow-hidden bg-gray-100 mx-2">
+            <div className="w-6 h-6 rounded overflow-hidden bg-muted mx-2">
               {teams[match.team2Id]?.imageUrl && (
                 <img 
                   src={teams[match.team2Id].imageUrl} 
@@ -117,13 +117,13 @@ const MatchScoreItem = ({
             </span>
           </div>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-muted-foreground">
           {new Date(match.date || '').toLocaleDateString()}
         </div>
       </CollapsibleTrigger>
       
       <CollapsibleContent>
-        <div className="p-4 border-t bg-slate-50">
+        <div className="p-4 border-t bg-secondary">
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <p className="text-sm font-medium mb-1">
@@ -156,7 +156,7 @@ const MatchScoreItem = ({
           </div>
           
           {match.best_of && match.best_of > 1 && (
-            <div className="mb-4 text-sm text-gray-500">
+            <div className="mb-4 text-sm text-muted-foreground">
               Best of {match.best_of} - First to {Math.ceil(match.best_of / 2)} wins
             </div>
           )}

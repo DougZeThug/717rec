@@ -21,7 +21,7 @@ const EditScoresSection = () => {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-muted-foreground mb-4">
         Submit scores for matches that have been completed. This will automatically update team records.
       </p>
       
