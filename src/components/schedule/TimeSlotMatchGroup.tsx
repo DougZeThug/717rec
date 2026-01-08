@@ -4,6 +4,7 @@ import { Match } from "@/types";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MatchCard from "./MatchCard";
+import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
@@ -39,7 +40,12 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
           "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
         )}
       >
-        <span className="font-medium">{timeSlot}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{timeSlot}</span>
+          <Badge variant="secondary" className="text-xs px-2 py-0.5">
+            {matches.length} {matches.length === 1 ? 'match' : 'matches'}
+          </Badge>
+        </div>
         <ChevronDown 
           className={cn(
             "h-4 w-4 transition-transform duration-200",
