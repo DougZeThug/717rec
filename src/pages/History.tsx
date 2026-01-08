@@ -6,8 +6,10 @@ import HistoryPageContent from "@/components/history/HistoryPageContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PageTransition from "@/components/transitions/PageTransition";
 import AnimatedBreadcrumbs from "@/components/navigation/AnimatedBreadcrumbs";
+import useScrollRestoration from "@/hooks/useScrollRestoration";
 
 const History: React.FC = () => {
+  useScrollRestoration("/history");
   const isMobile = useIsMobile();
   
   return (

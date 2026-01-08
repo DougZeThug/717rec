@@ -15,6 +15,8 @@ interface AdminViewProps {
   data: PlayoffPageData;
 }
 
+const PLAYOFF_VIEW_TAB_KEY = "playoffViewActiveTab";
+
 const AdminView: React.FC<AdminViewProps> = ({ 
   bracketDialogOpen,
   setBracketDialogOpen,
@@ -23,14 +25,21 @@ const AdminView: React.FC<AdminViewProps> = ({
   data
 }) => {
   const handlers = usePlayoffHandlers(data);
-  const [activeTab, setActiveTab] = React.useState("brackets");
+  const [activeTab, setActiveTab] = React.useState(() => {
+    return sessionStorage.getItem(PLAYOFF_VIEW_TAB_KEY) || "brackets";
+  });
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    sessionStorage.setItem(PLAYOFF_VIEW_TAB_KEY, tabId);
+  };
 
   const handleCreateBracketClick = () => {
     onCreateBracket();
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="brackets" className="space-y-4">
+    <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="brackets" className="space-y-4">
       <TabsList>
         <TabsTrigger value="brackets">Brackets</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
