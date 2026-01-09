@@ -40,9 +40,7 @@ import SeasonParticipationTab from "@/components/admin/participation/SeasonParti
 import RequestsTab from "@/components/admin/requests/RequestsTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePendingRequestsCount } from "@/hooks/useTeamRequests";
-
-// Mobile tabs version
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AdminMobileNav from "./AdminMobileNav";
 
 interface AdminMenuItem {
   id: string;
@@ -89,39 +87,26 @@ const AdminSidebar: React.FC = () => {
 
   const activeItem = adminMenuItems.find((item) => item.id === activeTab);
 
-  // Mobile: Use horizontally scrollable tabs
+  // Mobile: Use grouped collapsible navigation
   if (isMobile) {
     return (
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-3">
-        <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
-          <TabsList className="inline-flex gap-1 h-auto p-1.5 bg-muted/50 w-max min-w-full">
-            {adminMenuItems.map((item) => (
-              <TabsTrigger 
-                key={item.id} 
-                value={item.id} 
-                className="flex flex-col items-center gap-0.5 py-1.5 px-2.5 text-[10px] uppercase tracking-wide min-h-0 shrink-0 relative"
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="leading-tight text-center whitespace-nowrap">{item.label.split(' ')[0]}</span>
-                {item.id === "requests" && pendingRequestsCount !== undefined && pendingRequestsCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-1 -right-1 text-[8px] px-1 py-0 min-w-[14px] h-[14px]"
-                  >
-                    {pendingRequestsCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-
+      <div className="space-y-4">
+        <AdminMobileNav
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          pendingRequestsCount={pendingRequestsCount}
+        />
+        
+        {/* Content - render active tab */}
         {adminMenuItems.map((item) => (
-          <TabsContent key={item.id} value={item.id} className="space-y-3">
+          <div
+            key={item.id}
+            className={cn(activeTab === item.id ? "block" : "hidden")}
+          >
             {item.component}
-          </TabsContent>
+          </div>
         ))}
-      </Tabs>
+      </div>
     );
   }
 
