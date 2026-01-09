@@ -11,6 +11,8 @@ export const TEAMS_QUERY_KEY = "teams" as const;
 export interface TeamsQueryOptions {
   divisionId?: string | null;
   includeHidden?: boolean;
+  /** When false, the query will not execute. Useful for lazy loading. */
+  enabled?: boolean;
 }
 
 // Raw row type from v_team_details view
@@ -144,6 +146,7 @@ export function useTeamsQuery(
     queryKey: buildQueryKey(options),
     queryFn: () => fetchTeams(options),
     staleTime: 1000 * 60 * 5, // 5 minutes - team data only changes when scores are entered
+    enabled: options?.enabled !== false, // Default to true unless explicitly disabled
   });
 }
 

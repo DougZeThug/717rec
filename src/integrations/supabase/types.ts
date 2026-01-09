@@ -3964,6 +3964,18 @@ export type Database = {
           team_id: string
         }[]
       }
+      get_batch_head_to_head: {
+        Args: { p_team_pairs: Json }
+        Returns: {
+          team1_game_wins: number
+          team1_id: string
+          team1_wins: number
+          team2_game_wins: number
+          team2_id: string
+          team2_wins: number
+          total_matches: number
+        }[]
+      }
       get_blind_draw_signup_count: {
         Args: { p_event_date: string }
         Returns: number

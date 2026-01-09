@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { Match } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,13 +5,13 @@ import { Check, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { TransitionLink } from '@/components/transitions/TransitionLink';
-import { Skeleton } from "@/components/ui/skeleton";
-import { animations, gradients, typography, elevation } from "@/styles/design-system";
+import { animations, gradients, elevation } from "@/styles/design-system";
 import { TeamLogo } from "@/components/ui/team";
 import { MatchInteractions } from "@/components/matches";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { MatchHeadToHead } from "./MatchHeadToHead";
 import MatchCountdown from "./MatchCountdown";
+import type { HeadToHeadData } from "@/hooks/useBatchHeadToHead";
 
 interface MatchCardProps {
   match: Match;
@@ -20,6 +19,10 @@ interface MatchCardProps {
   onEdit?: (match: Match) => void;
   onDelete?: (matchId: string) => void;
   showInteractions?: boolean;
+  /** Pre-fetched H2H data from batch query */
+  prefetchedH2H?: HeadToHeadData | null;
+  /** Whether batch H2H data is still loading */
+  isBatchH2HLoading?: boolean;
 }
 
 const MatchCard: React.FC<MatchCardProps> = ({ 
@@ -27,22 +30,20 @@ const MatchCard: React.FC<MatchCardProps> = ({
   isCompleted,
   onEdit,
   onDelete,
-  showInteractions = true
+  showInteractions = true,
+  prefetchedH2H,
+  isBatchH2HLoading = false,
 }) => {
   const { resolvedTheme } = useTheme();
   const { isAdminAccessGranted } = useAdminAccess();
   const isLight = resolvedTheme === "light";
   const [scoreAnimation, setScoreAnimation] = useState(false);
 
-  // Check if team details are loading
-  const isTeam1Loading = !match.team1Details;
-  const isTeam2Loading = !match.team2Details;
-
-  const team1Name = isTeam1Loading ? "" : match.team1Details?.name || "Unknown Team";
-  const team2Name = isTeam2Loading ? "" : match.team2Details?.name || "Unknown Team";
-
-  const team1Logo = isTeam1Loading ? '' : match.team1Details?.image_url || '';
-  const team2Logo = isTeam2Loading ? '' : match.team2Details?.image_url || '';
+  // Team details are embedded in match data from the query
+  const team1Name = match.team1Details?.name || "Unknown Team";
+  const team2Name = match.team2Details?.name || "Unknown Team";
+  const team1Logo = match.team1Details?.image_url || '';
+  const team2Logo = match.team2Details?.image_url || '';
 
   const team1IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team1Score > match.team2Score;
   const team2IsWinner = isCompleted && match.team1Score !== undefined && match.team2Score !== undefined && match.team2Score > match.team1Score;
@@ -160,19 +161,15 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 team1IsWinner && "font-semibold"
               )}
             >
-              {team1IsWinner && !isTeam1Loading && (
+              {team1IsWinner && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              {isTeam1Loading ? (
-                <Skeleton className="h-6 w-full" />
-              ) : (
-                <span className={cn(
-                  getTeamStyle(team1IsWinner),
-                  "font-sans text-sm"
-                )}>
-                  ({match.team1_game_wins || 0}) {team1Name}
-                </span>
-              )}
+              <span className={cn(
+                getTeamStyle(team1IsWinner),
+                "font-sans text-sm"
+              )}>
+                ({match.team1_game_wins || 0}) {team1Name}
+              </span>
             </TransitionLink>
 
             <div className="w-4"></div>
@@ -185,28 +182,26 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 team2IsWinner && "font-semibold"
               )}
             >
-              {team2IsWinner && !isTeam2Loading && (
+              {team2IsWinner && (
                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
-              {isTeam2Loading ? (
-                <Skeleton className="h-6 w-full" />
-              ) : (
-                <span className={cn(
-                  getTeamStyle(team2IsWinner),
-                  "font-sans text-sm"
-                )}>
-                  ({match.team2_game_wins || 0}) {team2Name}
-                </span>
-              )}
+              <span className={cn(
+                getTeamStyle(team2IsWinner),
+                "font-sans text-sm"
+              )}>
+                ({match.team2_game_wins || 0}) {team2Name}
+              </span>
             </TransitionLink>
           </div>
           
-          {/* Head-to-Head Record */}
+          {/* Head-to-Head Record - uses prefetched data when available */}
           <MatchHeadToHead 
             team1Id={match.team1Id}
             team2Id={match.team2Id}
             team1Name={team1Name}
             team2Name={team2Name}
+            prefetchedData={prefetchedH2H}
+            isBatchLoading={isBatchH2HLoading}
           />
           
           {/* Countdown for upcoming matches - isolated to prevent parent re-renders */}

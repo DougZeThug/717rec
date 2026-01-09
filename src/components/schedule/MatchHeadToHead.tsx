@@ -1,25 +1,45 @@
 import React from "react";
 import { useMatchHeadToHead } from "@/hooks/useMatchHeadToHead";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { HeadToHeadData } from "@/hooks/useBatchHeadToHead";
 
 interface MatchHeadToHeadProps {
   team1Id: string | null;
   team2Id: string | null;
   team1Name: string;
   team2Name: string;
+  /** Pre-fetched H2H data from batch query - if provided, skips individual query */
+  prefetchedData?: HeadToHeadData | null;
+  /** Whether the parent is still loading batch data */
+  isBatchLoading?: boolean;
 }
 
 /**
  * Displays head-to-head record between two teams
  * Shows as a small text line under the match card
+ * 
+ * Supports two modes:
+ * 1. Prefetched data from useBatchHeadToHead (preferred for lists)
+ * 2. Individual fetch via useMatchHeadToHead (fallback)
  */
 export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
   team1Id,
   team2Id,
   team1Name,
   team2Name,
+  prefetchedData,
+  isBatchLoading = false,
 }) => {
-  const { data, isLoading, isFirstMeeting } = useMatchHeadToHead(team1Id, team2Id);
+  // Only use individual hook if no prefetched data provided
+  const shouldFetchIndividually = prefetchedData === undefined && !isBatchLoading;
+  const { data: individualData, isLoading: individualLoading } = useMatchHeadToHead(
+    shouldFetchIndividually ? team1Id : null,
+    shouldFetchIndividually ? team2Id : null
+  );
+
+  // Use prefetched data if available, otherwise fall back to individual query
+  const data = prefetchedData !== undefined ? prefetchedData : individualData;
+  const isLoading = isBatchLoading || (shouldFetchIndividually && individualLoading);
 
   if (isLoading) {
     return <Skeleton className="h-4 w-32 mx-auto" />;
@@ -28,6 +48,9 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
   if (!data) {
     return null;
   }
+
+  // Check if this is first meeting
+  const isFirstMeeting = 'isFirstMeeting' in data ? data.isFirstMeeting : data.totalMatches === 0;
 
   // Format the display text
   const getDisplayText = (): string => {
