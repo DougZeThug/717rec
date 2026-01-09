@@ -1,0 +1,289 @@
+
+import React, { useState, useMemo } from "react";
+import {
+  Users,
+  Users2,
+  Clock,
+  Calendar,
+  ListChecks,
+  Sparkles,
+  CalendarClock,
+  Timer,
+  LayoutGrid,
+  Search,
+  Shuffle,
+  HelpCircle,
+  ClipboardCheck,
+  Inbox,
+  X,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+interface AdminMenuItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+}
+
+interface TabGroup {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  tabs: string[];
+}
+
+const adminMenuItems: AdminMenuItem[] = [
+  { id: "timeslots", label: "Timeslots", icon: Timer },
+  { id: "batch-matches", label: "Match Creation", icon: Sparkles },
+  { id: "auto-schedule", label: "Auto Schedule", icon: CalendarClock },
+  { id: "matchups", label: "Matchups", icon: Users2 },
+  { id: "scores", label: "Scores", icon: ListChecks },
+  { id: "seasons", label: "Season", icon: Calendar },
+  { id: "participation", label: "Participation", icon: ClipboardCheck },
+  { id: "requests", label: "Requests", icon: Inbox },
+  { id: "teams", label: "Teams", icon: Users },
+  { id: "pending-matches", label: "Pending", icon: Clock },
+  { id: "hero-cards", label: "Hero Cards", icon: LayoutGrid },
+  { id: "blind-draw", label: "Blind Draw", icon: Shuffle },
+  { id: "help", label: "Help", icon: HelpCircle },
+];
+
+const tabGroups: TabGroup[] = [
+  {
+    id: "scheduling",
+    label: "Scheduling",
+    icon: CalendarClock,
+    tabs: ["timeslots", "batch-matches", "auto-schedule"],
+  },
+  {
+    id: "scores-stats",
+    label: "Scores & Stats",
+    icon: ListChecks,
+    tabs: ["scores", "matchups", "pending-matches"],
+  },
+  {
+    id: "teams-players",
+    label: "Teams & Players",
+    icon: Users,
+    tabs: ["teams", "requests", "participation"],
+  },
+  {
+    id: "settings",
+    label: "Settings & Content",
+    icon: LayoutGrid,
+    tabs: ["seasons", "hero-cards", "blind-draw", "help"],
+  },
+];
+
+interface AdminMobileNavProps {
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+  pendingRequestsCount?: number;
+}
+
+const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
+  activeTab,
+  onTabChange,
+  pendingRequestsCount = 0,
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const getActiveGroup = (tabId: string): string => {
+    for (const group of tabGroups) {
+      if (group.tabs.includes(tabId)) {
+        return group.id;
+      }
+    }
+    return tabGroups[0].id;
+  };
+
+  const getTabItem = (tabId: string): AdminMenuItem | undefined => {
+    return adminMenuItems.find((item) => item.id === tabId);
+  };
+
+  const getGroupBadgeCount = (group: TabGroup): number => {
+    if (group.tabs.includes("requests") && pendingRequestsCount > 0) {
+      return pendingRequestsCount;
+    }
+    return 0;
+  };
+
+  const filteredItems = useMemo(() => {
+    if (!searchQuery) return [];
+    return adminMenuItems.filter((item) =>
+      item.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  const handleTabSelect = (tabId: string) => {
+    onTabChange(tabId);
+    setSearchQuery("");
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search admin sections..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 pr-9 h-10"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Quick Access */}
+      <div className="pb-3 border-b border-border">
+        <p className="text-xs text-muted-foreground mb-2 px-1 font-medium uppercase tracking-wide">
+          Quick Access
+        </p>
+        <div className="flex gap-2">
+          <Button
+            variant={activeTab === "scores" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTabSelect("scores")}
+            className="flex-1 h-10"
+          >
+            <ListChecks className="h-4 w-4 mr-2" />
+            Scores
+          </Button>
+          <Button
+            variant={activeTab === "timeslots" ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleTabSelect("timeslots")}
+            className="flex-1 h-10"
+          >
+            <Timer className="h-4 w-4 mr-2" />
+            Timeslots
+          </Button>
+        </div>
+      </div>
+
+      {/* Search Results (flat list) */}
+      {searchQuery ? (
+        <div className="space-y-1">
+          {filteredItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No sections found
+            </p>
+          ) : (
+            filteredItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleTabSelect(item.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm transition-colors",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  activeTab === item.id
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-foreground"
+                )}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.id === "requests" && pendingRequestsCount > 0 && (
+                  <Badge variant="destructive" className="text-xs">
+                    {pendingRequestsCount}
+                  </Badge>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Grouped Accordion Navigation */
+        <ScrollArea className="max-h-[60vh]">
+          <Accordion
+            type="multiple"
+            defaultValue={[getActiveGroup(activeTab)]}
+            className="space-y-1"
+          >
+            {tabGroups.map((group) => {
+              const GroupIcon = group.icon;
+              const groupBadge = getGroupBadgeCount(group);
+              const hasActiveTab = group.tabs.includes(activeTab);
+
+              return (
+                <AccordionItem
+                  key={group.id}
+                  value={group.id}
+                  className="border border-border rounded-lg overflow-hidden"
+                >
+                  <AccordionTrigger
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 hover:no-underline hover:bg-accent/50 text-sm",
+                      hasActiveTab && "bg-primary/5"
+                    )}
+                  >
+                    <GroupIcon className="h-4 w-4 shrink-0" />
+                    <span className="flex-1 text-left font-medium">
+                      {group.label}
+                    </span>
+                    {groupBadge > 0 && (
+                      <Badge variant="destructive" className="text-xs mr-2">
+                        {groupBadge}
+                      </Badge>
+                    )}
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-0">
+                    <div className="border-t border-border">
+                      {group.tabs.map((tabId) => {
+                        const tab = getTabItem(tabId);
+                        if (!tab) return null;
+                        const TabIcon = tab.icon;
+
+                        return (
+                          <button
+                            key={tabId}
+                            onClick={() => handleTabSelect(tabId)}
+                            className={cn(
+                              "w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors",
+                              "hover:bg-accent hover:text-accent-foreground",
+                              "border-b border-border last:border-b-0",
+                              activeTab === tabId
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            <TabIcon className="h-4 w-4 shrink-0" />
+                            <span className="flex-1 text-left">{tab.label}</span>
+                            {tabId === "requests" && pendingRequestsCount > 0 && (
+                              <Badge variant="destructive" className="text-xs">
+                                {pendingRequestsCount}
+                              </Badge>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        </ScrollArea>
+      )}
+    </div>
+  );
+};
+
+export default AdminMobileNav;
