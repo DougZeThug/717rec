@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import WinterSection from "@/components/winter/WinterSection";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 import { cn } from "@/lib/utils";
+import { useTeamMembership } from "@/hooks/useTeamMembership";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Lazy load the chart component to defer loading recharts bundle
@@ -35,6 +36,10 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     error: teamsError,
   } = useTeamsQuery();
   const { rankings, isLoading: isLoadingRankings } = useTeamRankings(teams, matches);
+  const { membership } = useTeamMembership();
+  
+  // Only pass myTeamId if user has approved membership
+  const myTeamId = membership?.is_approved ? membership.team_id : null;
 
   const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
@@ -61,7 +66,7 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       <div className="font-inter">
         {rankings.length > 0 ? (
           <>
-            <FullRankingsSection rankings={rankings} />
+            <FullRankingsSection rankings={rankings} myTeamId={myTeamId} />
             
             <StatsChartsSection rankings={rankings} />
 

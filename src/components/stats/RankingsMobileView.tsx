@@ -1,10 +1,9 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Ranking } from "@/types";
 import RankingCard from "./RankingCard";
 import { SortOptions } from "./RankingsTable";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, ArrowUp, Bolt, Scale } from "lucide-react";
+import { ArrowDown, ArrowUp, Bolt, Scale, Search, User } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -12,6 +11,7 @@ import { gradients } from "@/styles/design-system";
 import { debugLog } from "@/utils/logger";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
+import TeamSearchDrawer from "./TeamSearchDrawer";
 
 interface RankingsMobileViewProps {
   rankings: Ranking[];
@@ -20,6 +20,7 @@ interface RankingsMobileViewProps {
   sortOptions: SortOptions;
   onSortChange: (field: string) => void;
   showUnified?: boolean;
+  myTeamId?: string | null;
 }
 
 const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
@@ -28,13 +29,17 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
   toggleExpand,
   sortOptions,
   onSortChange,
-  showUnified = false
+  showUnified = false,
+  myTeamId
 }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const [detailedView, setDetailedView] = useState(() => {
     const savedView = localStorage.getItem("rankingsDetailedView");
     return savedView ? savedView === "true" : false;
   });
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [highlightedTeamId, setHighlightedTeamId] = useState<string | null>(null);
+  const teamRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Enhanced logging to debug ranking data
   useEffect(() => {
@@ -58,6 +63,30 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
       );
     }
   }, [rankings]);
+
+  const scrollToTeam = useCallback((teamId: string) => {
+    const element = teamRefs.current.get(teamId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedTeamId(teamId);
+      // Clear highlight after animation
+      setTimeout(() => setHighlightedTeamId(null), 2000);
+    }
+  }, []);
+
+  const handleFindMyTeam = useCallback(() => {
+    if (myTeamId) {
+      scrollToTeam(myTeamId);
+    } else {
+      setSearchOpen(true);
+    }
+  }, [myTeamId, scrollToTeam]);
+
+  const handleTeamSelect = useCallback((teamId: string) => {
+    setSearchOpen(false);
+    // Small delay to let drawer close animation start
+    setTimeout(() => scrollToTeam(teamId), 150);
+  }, [scrollToTeam]);
 
   const sortableFields = [
     { id: 'powerScore', label: (<><Bolt size={16} className="inline-block mr-1" />Power</>) },
@@ -154,6 +183,9 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                   return (
                     <motion.div
                       key={ranking.teamId}
+                      ref={(el) => {
+                        if (el) teamRefs.current.set(ranking.teamId, el);
+                      }}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
@@ -165,6 +197,11 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                         damping: 30
                       }}
                       layout
+                      className={cn(
+                        "transition-all duration-300",
+                        highlightedTeamId === ranking.teamId && 
+                        "ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg animate-pulse"
+                      )}
                     >
                       <RankingCard
                         ranking={ranking}
@@ -182,6 +219,39 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Find My Team FAB */}
+      <Button
+        variant="default"
+        size="sm"
+        className={cn(
+          "fixed bottom-20 right-4 z-30 rounded-full shadow-lg px-4",
+          isWinterTheme
+            ? "bg-frost-primary hover:bg-frost-primary/90 text-white"
+            : "bg-primary hover:bg-primary/90"
+        )}
+        onClick={handleFindMyTeam}
+      >
+        {myTeamId ? (
+          <>
+            <User className="h-4 w-4 mr-2" />
+            My Team
+          </>
+        ) : (
+          <>
+            <Search className="h-4 w-4 mr-2" />
+            Find Team
+          </>
+        )}
+      </Button>
+
+      {/* Team Search Drawer */}
+      <TeamSearchDrawer
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        rankings={rankings}
+        onTeamSelect={handleTeamSelect}
+      />
     </div>
   );
 };
