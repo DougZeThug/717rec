@@ -94,7 +94,7 @@ const TeamDetails = () => {
         <TeamHeader team={team} winPercentage={winPct.toFixed(1)} pastMatches={pastMatches} />
         
         {/* 1. Team Stats */}
-        <section id="stats">
+        <section id="stats" className="scroll-mt-20">
           <StatBreakdown
             wins={team.wins}
             losses={team.losses}
@@ -119,15 +119,17 @@ const TeamDetails = () => {
         </section>
 
         {/* Team Analysis */}
-        {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
+        <section id="analysis" className="scroll-mt-20">
+          {teamId && <TeamAnalysis teamId={teamId} teamName={team.name} />}
+        </section>
         
         {/* 3. Head-to-Head Records */}
-        <section id="h2h">
+        <section id="h2h" className="scroll-mt-20">
           {teamId && <HeadToHeadRecords teamId={teamId} teamName={team.name} />}
         </section>
         
         {/* 4. Match History */}
-        <section id="matches">
+        <section id="matches" className="scroll-mt-20">
           <MatchList
             title="Match History"
             matches={pastMatches}
@@ -141,16 +143,18 @@ const TeamDetails = () => {
         </section>
 
         {/* 5. Career Stats */}
-        {teamId && <TeamTotals teamId={teamId} />}
+        <section id="career" className="scroll-mt-20">
+          {teamId && <TeamTotals teamId={teamId} />}
 
-        {/* 6. Advanced Stats - Season-by-Season Breakdown */}
-        {teamId && <TeamAdvancedStatsSection teamId={teamId} />}
+          {/* 6. Advanced Stats - Season-by-Season Breakdown */}
+          {teamId && <TeamAdvancedStatsSection teamId={teamId} />}
 
-        {/* 6. Career Power Score Trend */}
-        {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
+          {/* Career Power Score Trend */}
+          {teamId && <TeamCareerPowerScoreChart teamId={teamId} />}
+        </section>
         
         {/* 7. Team Achievements */}
-        <section id="achievements">
+        <section id="achievements" className="scroll-mt-20">
           {teamId && (
             <CollapsibleSection
               title="Team Achievements"
