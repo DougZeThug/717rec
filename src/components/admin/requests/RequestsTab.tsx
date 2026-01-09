@@ -134,7 +134,7 @@ const RequestsTab: React.FC = () => {
 
                   {/* Actions for pending requests */}
                   {request.status === "PENDING" && (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
                       <Button
                         size="sm"
                         variant="outline"

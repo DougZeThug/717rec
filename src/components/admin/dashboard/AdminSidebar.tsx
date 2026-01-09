@@ -89,22 +89,32 @@ const AdminSidebar: React.FC = () => {
 
   const activeItem = adminMenuItems.find((item) => item.id === activeTab);
 
-  // Mobile: Use tabs with labels
+  // Mobile: Use horizontally scrollable tabs
   if (isMobile) {
     return (
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-3">
-        <TabsList className="grid grid-cols-4 gap-1 h-auto p-1.5 bg-muted/50">
-          {adminMenuItems.map((item) => (
-            <TabsTrigger 
-              key={item.id} 
-              value={item.id} 
-              className="flex flex-col items-center gap-0.5 py-1.5 px-1 text-[10px] uppercase tracking-wide min-h-0"
-            >
-              <item.icon className="h-4 w-4" />
-              <span className="leading-tight text-center">{item.label.split(' ')[0]}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+          <TabsList className="inline-flex gap-1 h-auto p-1.5 bg-muted/50 w-max min-w-full">
+            {adminMenuItems.map((item) => (
+              <TabsTrigger 
+                key={item.id} 
+                value={item.id} 
+                className="flex flex-col items-center gap-0.5 py-1.5 px-2.5 text-[10px] uppercase tracking-wide min-h-0 shrink-0 relative"
+              >
+                <item.icon className="h-4 w-4" />
+                <span className="leading-tight text-center whitespace-nowrap">{item.label.split(' ')[0]}</span>
+                {item.id === "requests" && pendingRequestsCount !== undefined && pendingRequestsCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 text-[8px] px-1 py-0 min-w-[14px] h-[14px]"
+                  >
+                    {pendingRequestsCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         {adminMenuItems.map((item) => (
           <TabsContent key={item.id} value={item.id} className="space-y-3">
