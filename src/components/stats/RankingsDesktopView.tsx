@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Ranking } from "@/types";
 import { SortOptions } from "./RankingsTable";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -26,17 +26,19 @@ const RankingsDesktopView: React.FC<RankingsDesktopViewProps> = ({
 }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
-  
-  // Split into display divisions or display unified - using divisionName which now contains display_division
-  const rankingsByDivision = showUnified 
-    ? { "All Teams": rankings }
-    : rankings.reduce((acc, ranking) => {
-        // Use divisionName which now contains the display_division value
-        const displayDivision = ranking.divisionName || "Unassigned";
-        if (!acc[displayDivision]) acc[displayDivision] = [];
-        acc[displayDivision].push(ranking);
-        return acc;
-      }, {} as Record<string, Ranking[]>);
+
+  // PERFORMANCE: Memoize division grouping to prevent reduce re-execution on every render
+  const rankingsByDivision = useMemo(() => {
+    return showUnified
+      ? { "All Teams": rankings }
+      : rankings.reduce((acc, ranking) => {
+          // Use divisionName which now contains the display_division value
+          const displayDivision = ranking.divisionName || "Unassigned";
+          if (!acc[displayDivision]) acc[displayDivision] = [];
+          acc[displayDivision].push(ranking);
+          return acc;
+        }, {} as Record<string, Ranking[]>);
+  }, [rankings, showUnified]);
       
   return (
     <div className="font-inter">

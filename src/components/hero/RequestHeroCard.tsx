@@ -360,4 +360,5 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   );
 };
 
-export default RequestHeroCard;
+// PERFORMANCE: Wrap in React.memo to prevent unnecessary re-renders (363 lines component)
+export default React.memo(RequestHeroCard);

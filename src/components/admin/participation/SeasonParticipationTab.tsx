@@ -64,12 +64,17 @@ const SeasonParticipationTab: React.FC = () => {
     return teamsWithStatus.filter((t) => t.status === statusFilter);
   }, [teamsWithStatus, statusFilter]);
 
-  // Counts
+  // PERFORMANCE: Count statuses in single pass instead of 3 separate filters
   const counts = useMemo(() => {
-    const playing = teamsWithStatus.filter((t) => t.status === 'PLAYING').length;
-    const notPlaying = teamsWithStatus.filter((t) => t.status === 'NOT_PLAYING').length;
-    const noResponse = teamsWithStatus.filter((t) => t.status === 'NO_RESPONSE').length;
-    return { playing, notPlaying, noResponse, total: teamsWithStatus.length };
+    return teamsWithStatus.reduce(
+      (acc, team) => {
+        if (team.status === 'PLAYING') acc.playing++;
+        else if (team.status === 'NOT_PLAYING') acc.notPlaying++;
+        else acc.noResponse++;
+        return acc;
+      },
+      { playing: 0, notPlaying: 0, noResponse: 0, total: teamsWithStatus.length }
+    );
   }, [teamsWithStatus]);
 
   const handleExportCsv = () => {

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { TeamTimeslot } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronRight, Calendar } from "lucide-react";
@@ -60,9 +60,14 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({
     );
   }
 
-  // Separate bye weeks from regular timeslots
-  const regularTimeslots = Object.entries(groupedTimeslots).filter(([timeslot]) => timeslot !== "BYE");
-  const byeWeekTimeslots = Object.entries(groupedTimeslots).filter(([timeslot]) => timeslot === "BYE");
+  // PERFORMANCE: Memoize timeslot separation to prevent repeated Object.entries() and filter() calls
+  const { regularTimeslots, byeWeekTimeslots } = useMemo(() => {
+    const entries = Object.entries(groupedTimeslots);
+    return {
+      regularTimeslots: entries.filter(([timeslot]) => timeslot !== "BYE"),
+      byeWeekTimeslots: entries.filter(([timeslot]) => timeslot === "BYE")
+    };
+  }, [groupedTimeslots]);
   
   return (
     <div className="space-y-4">

@@ -77,21 +77,25 @@ export const usePlayoffActions = () => {
       
       if (matchError) throw matchError;
       
-      // Update games if provided
+      // Update games if provided - batch upsert for performance
       if (games && games.length > 0) {
-        for (const game of games) {
-          if (game.id) {
-            await supabase
-              .from('playoff_games')
-              .upsert({
-                id: game.id,
-                match_id: matchId,
-                game_number: game.gameNumber || 1,
-                team1_score: game.team1Score,
-                team2_score: game.team2Score,
-                winner_id: game.winnerId
-              });
-          }
+        const gamesToUpsert = games
+          .filter(game => game.id)
+          .map(game => ({
+            id: game.id,
+            match_id: matchId,
+            game_number: game.gameNumber || 1,
+            team1_score: game.team1Score,
+            team2_score: game.team2Score,
+            winner_id: game.winnerId
+          }));
+
+        if (gamesToUpsert.length > 0) {
+          const { error: gamesError } = await supabase
+            .from('playoff_games')
+            .upsert(gamesToUpsert);
+
+          if (gamesError) throw gamesError;
         }
       }
       

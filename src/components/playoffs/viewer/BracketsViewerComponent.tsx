@@ -37,7 +37,8 @@ interface BracketsViewerComponentProps {
   onMatchClick?: (matchId: string) => void;
 }
 
-export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = ({
+// PERFORMANCE: Wrap in React.memo to prevent unnecessary re-renders (437 lines component)
+const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   bracket,
   teams,
   onMatchClick
@@ -435,3 +436,5 @@ export const BracketsViewerComponent: React.FC<BracketsViewerComponentProps> = (
     </>
   );
 };
+
+export const BracketsViewerComponent = React.memo(BracketsViewerComponentInner);

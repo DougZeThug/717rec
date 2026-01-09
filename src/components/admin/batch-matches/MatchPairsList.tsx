@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useCallback } from "react";
 import { Team } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TeamLogo from "@/components/ui/team/TeamLogo";
@@ -24,21 +24,8 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
   onUpdate,
   onRemove
 }) => {
-  if (pairs.length === 0) {
-    return (
-      <div className="text-center py-6 border rounded-lg bg-card text-muted-foreground">
-        <p>No match pairs added yet</p>
-        <p className="text-sm mt-1">Add teams to create match pairings</p>
-      </div>
-    );
-  }
-
-  const getTeamById = (id: string | null) => {
-    if (!id) return null;
-    return teams.find(t => t.id === id) || null;
-  };
-
-  const timeSlotOptions = [
+  // PERFORMANCE: Memoize timeslot options to prevent recreation on every render
+  const timeSlotOptions = useMemo(() => [
     '5:00 PM',
     '5:30 PM',
     '6:00 PM',
@@ -50,7 +37,22 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
     '9:00 PM',
     '9:30 PM',
     '10:00 PM'
-  ];
+  ], []);
+
+  // PERFORMANCE: Memoize getTeamById function to prevent recreation on every render
+  const getTeamById = useCallback((id: string | null) => {
+    if (!id) return null;
+    return teams.find(t => t.id === id) || null;
+  }, [teams]);
+
+  if (pairs.length === 0) {
+    return (
+      <div className="text-center py-6 border rounded-lg bg-card text-muted-foreground">
+        <p>No match pairs added yet</p>
+        <p className="text-sm mt-1">Add teams to create match pairings</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

@@ -386,4 +386,5 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   );
 };
 
-export default EventHeroCard;
+// PERFORMANCE: Wrap in React.memo to prevent unnecessary re-renders (389 lines component)
+export default React.memo(EventHeroCard);
