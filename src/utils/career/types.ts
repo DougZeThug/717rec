@@ -42,6 +42,7 @@ export interface SeasonStats {
   division_name: string | null;
   power_score?: number | null;
   seasons?: { name: string } | null;
+  season_id?: string | null;
 }
 
 export interface MatchData {
