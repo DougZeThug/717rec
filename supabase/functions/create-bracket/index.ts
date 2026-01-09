@@ -535,7 +535,7 @@ serve(async (req) => {
         log(`[CHALLONGE] Successfully added participant:`, participantData.participant?.name || 'Unknown');
       } catch (error) {
         errorLog(`[CHALLONGE] Failed to add participant ${participant.name}:`, error);
-        throw new Error(`Failed to add participant ${participant.name}: ${error.message}`);
+        throw new Error(`Failed to add participant ${participant.name}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
