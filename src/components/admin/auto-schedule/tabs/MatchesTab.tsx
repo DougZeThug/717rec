@@ -225,7 +225,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
         <div className="space-y-4">
           {dualMatchMode && dualBlockMetrics && (
             <>
-              <div className="grid grid-cols-4 gap-3 mt-2 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mt-2 mb-4">
                 <div className="bg-muted/50 p-3 rounded-md text-center">
                   <div className="text-lg font-semibold">{dualBlockMetrics.teamsWithBothMatches}</div>
                   <div className="text-xs text-muted-foreground">Teams With Both Matches</div>

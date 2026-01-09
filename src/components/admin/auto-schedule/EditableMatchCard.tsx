@@ -57,10 +57,10 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
       )}
       
       <div className="flex flex-col gap-3">
-        {/* Team Selections */}
-        <div className="flex items-center gap-3">
+        {/* Team Selections - Stack on mobile, row on desktop */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Team 1 */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="text-xs text-muted-foreground mb-1 block">Team 1</label>
             <Select
               value={match.team1Id || ''}
@@ -73,7 +73,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                       <TeamLogo 
                         imageUrl={team1.imageUrl || ''}
                         teamName={team1.name}
-                        className="h-4 w-4"
+                        className="h-4 w-4 shrink-0"
                       />
                       <span className="truncate">{team1.name}</span>
                     </div>
@@ -101,20 +101,20 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
             </Select>
           </div>
 
-          {/* Swap Button */}
+          {/* Swap Button - Rotate icon on mobile */}
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => onSwapTeams(match.id)}
-            className="mt-5"
+            className="self-center sm:mt-5 shrink-0"
             title="Swap teams"
           >
-            <ArrowLeftRight className="h-4 w-4" />
+            <ArrowLeftRight className="h-4 w-4 rotate-90 sm:rotate-0" />
           </Button>
 
           {/* Team 2 */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="text-xs text-muted-foreground mb-1 block">Team 2</label>
             <Select
               value={match.team2Id || ''}
@@ -127,7 +127,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                       <TeamLogo 
                         imageUrl={team2.imageUrl || ''}
                         teamName={team2.name}
-                        className="h-4 w-4"
+                        className="h-4 w-4 shrink-0"
                       />
                       <span className="truncate">{team2.name}</span>
                     </div>
