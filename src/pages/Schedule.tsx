@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTeamsQuery } from "@/hooks/teams";
 import { useMatchManagement } from "@/hooks/useMatchManagement";
 import { useMatchTimeslots } from "@/hooks/useMatchTimeslots";
 import { useScheduleData } from "@/hooks/useScheduleData";
+import { useMatchDates } from "@/hooks/useMatchDates";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import ScheduleContent from "@/components/schedule/ScheduleContent";
 import DeleteMatchDialog from "@/components/schedule/DeleteMatchDialog";
@@ -65,6 +66,9 @@ const Schedule = () => {
     upcomingMatches, 
     completedMatches 
   } = useScheduleData();
+  
+  // Get dates that have matches for the date strip
+  const matchDates = useMatchDates(matchesData);
   
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
@@ -191,6 +195,7 @@ const Schedule = () => {
           setSearchTerm={setSearchTerm}
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
+          matchDates={matchDates}
         />
 
         {/* Matches section with Timeslots tab */}
