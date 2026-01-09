@@ -4,11 +4,14 @@ import { usePendingScoresMatches } from "@/hooks/usePendingScoresMatches";
 import { useHeroCards } from "@/hooks/useHeroCards";
 import { useWeeklyPowerScoreTrends } from "@/hooks/useWeeklyPowerScoreTrends";
 import { useConfirmationSeason } from "@/hooks/useSeasonParticipation";
+import { useMyNextMatch } from "@/hooks/useMyNextMatch";
 import TopTeams from "@/components/home/TopTeams";
 import HeroSection from "@/components/home/HeroSection";
 import PendingScoresCard from "@/components/home/PendingScoresCard";
 import TeamOfTheWeekCard from "@/components/home/TeamOfTheWeekCard";
 import TeamOfTheWeekSkeleton from "@/components/home/TeamOfTheWeekSkeleton";
+import MyNextMatchCard from "@/components/home/MyNextMatchCard";
+import MyNextMatchSkeleton from "@/components/home/MyNextMatchSkeleton";
 import HeroCard from "@/components/hero/HeroCard";
 import HeroCardSkeleton from "@/components/hero/HeroCardSkeleton";
 import ParticipationHeroCard from "@/components/hero/ParticipationHeroCard";
@@ -26,6 +29,7 @@ const Index: React.FC = () => {
   const { data: heroCards, isLoading: heroCardsLoading } = useHeroCards();
   const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 1);
   const { data: confirmationSeason } = useConfirmationSeason();
+  const myNextMatch = useMyNextMatch();
   const isMobile = useIsMobile();
   
   const hasPendingScores = !pendingScoresLoading && pendingMatches.length > 0;
@@ -58,6 +62,20 @@ const Index: React.FC = () => {
       </PageTransition>
       
       <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
+        {/* My Next Match - shown for authenticated users with a team */}
+        {myNextMatch.isLoading ? (
+          <MyNextMatchSkeleton />
+        ) : myNextMatch.hasTeamMembership && myNextMatch.nextMatch && myNextMatch.myTeam && myNextMatch.opponent ? (
+          <PageTransition animation="fadeInSlideUp" delay="short">
+            <MyNextMatchCard
+              match={myNextMatch.nextMatch}
+              myTeam={myNextMatch.myTeam}
+              opponent={myNextMatch.opponent}
+              weekNumber={myNextMatch.weekNumber}
+            />
+          </PageTransition>
+        ) : null}
+
         {/* Season Participation Card - shown when confirmation is open */}
         {showParticipationCard && (
           <PageTransition animation="fadeInSlideUp" delay="short">
