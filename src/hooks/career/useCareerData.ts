@@ -27,6 +27,7 @@ export interface CareerData {
   teamDivisionMap: Map<string, string>;
   bracketDivisionWeights: Record<string, number>;
   teamDivisionWeight: number;
+  currentSeasonId: string | null;
 }
 
 /**
@@ -49,7 +50,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
       .select('divisions(division_weight)')
       .eq('id', teamId)
       .single(),
-    // Get career stats from team_season_stats with division info
+    // Get career stats from team_season_stats with division info and season_id
     supabase
       .from('team_season_stats')
       .select(`
@@ -62,6 +63,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
         playoff_rank,
         sos,
         division_name,
+        season_id,
         seasons!inner(name)
       `)
       .eq('team_id', teamId),
@@ -173,6 +175,11 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     }
   }
 
+  // Determine current active season ID from currentMatches
+  const currentSeasonId = currentMatches && currentMatches.length > 0 
+    ? currentMatches[0].season_id 
+    : null;
+
   return {
     teamData,
     seasonStats,
@@ -181,6 +188,7 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     playoffMatches,
     teamDivisionMap,
     bracketDivisionWeights,
-    teamDivisionWeight
+    teamDivisionWeight,
+    currentSeasonId
   };
 };

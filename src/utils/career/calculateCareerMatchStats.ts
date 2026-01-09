@@ -5,22 +5,33 @@ interface CareerMatchStatsInput {
   seasonStats: SeasonStats[] | null;
   currentMatches: MatchData[] | null;
   teamId: string;
+  currentSeasonId?: string | null;
 }
 
 /**
  * Calculates career match and game statistics for a team.
  * Aggregates historical season stats + current season matches.
+ * 
+ * IMPORTANT: To avoid double-counting, we exclude the current active season
+ * from seasonStats (since currentMatches already contains those matches).
  */
 export const calculateCareerMatchStats = ({
   seasonStats,
   currentMatches,
-  teamId
+  teamId,
+  currentSeasonId
 }: CareerMatchStatsInput): CareerMatchStatsResult => {
-  // Start with historical season stats
-  let career_match_wins = seasonStats?.reduce((sum, stat) => sum + (stat.match_wins || 0), 0) || 0;
-  let career_match_losses = seasonStats?.reduce((sum, stat) => sum + (stat.match_losses || 0), 0) || 0;
-  let career_game_wins = seasonStats?.reduce((sum, stat) => sum + (stat.game_wins || 0), 0) || 0;
-  let career_game_losses = seasonStats?.reduce((sum, stat) => sum + (stat.game_losses || 0), 0) || 0;
+  // Filter out current season from historical stats to avoid double-counting
+  // (current season matches are counted separately from the matches table)
+  const historicalStats = currentSeasonId 
+    ? seasonStats?.filter(stat => stat.season_id !== currentSeasonId) 
+    : seasonStats;
+
+  // Start with historical season stats (excluding current season)
+  let career_match_wins = historicalStats?.reduce((sum, stat) => sum + (stat.match_wins || 0), 0) || 0;
+  let career_match_losses = historicalStats?.reduce((sum, stat) => sum + (stat.match_losses || 0), 0) || 0;
+  let career_game_wins = historicalStats?.reduce((sum, stat) => sum + (stat.game_wins || 0), 0) || 0;
+  let career_game_losses = historicalStats?.reduce((sum, stat) => sum + (stat.game_losses || 0), 0) || 0;
 
   // Add current season matches
   if (currentMatches) {
