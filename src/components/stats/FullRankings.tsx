@@ -15,9 +15,10 @@ import { exportStandingsToCSV } from "@/utils/exportUtils";
 
 interface FullRankingsProps {
   rankings: Ranking[];
+  myTeamId?: string | null;
 }
 
-const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
+const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
   const [view, setView] = useState<"division" | "all">("division");
   const [isOpen, setIsOpen] = useState(true); // Start uncollapsed
   const { resolvedTheme } = useTheme();
@@ -111,7 +112,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings }) => {
               ? "bg-transparent" 
               : "bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900"
           )}>
-            <RankingsTable rankings={sortedRankings} showUnified={view === "all"} />
+            <RankingsTable rankings={sortedRankings} showUnified={view === "all"} myTeamId={myTeamId} />
           </CardContent>
         </CollapsibleContent>
       </Card>

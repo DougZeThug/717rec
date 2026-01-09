@@ -9,6 +9,7 @@ import { sortRankings } from "@/utils/rankingUtils";
 interface RankingsTableProps {
   rankings: Ranking[];
   showUnified?: boolean;
+  myTeamId?: string | null;
 }
 
 export type SortDirection = 'asc' | 'desc';
@@ -17,7 +18,7 @@ export interface SortOptions {
   direction: SortDirection;
 }
 
-const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = false }) => {
+const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = false, myTeamId }) => {
   const isMobile = useIsMobile();
   const [expandedTeam, setExpandedTeam] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -89,6 +90,7 @@ const RankingsTable: React.FC<RankingsTableProps> = ({ rankings, showUnified = f
         sortOptions={sortOptions}
         onSortChange={handleSortChange}
         showUnified={showUnified}
+        myTeamId={myTeamId}
       />
     );
   }
