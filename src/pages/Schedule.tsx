@@ -58,7 +58,7 @@ const Schedule = () => {
     });
   }, [selectedDate]);
   
-  const { data: teams, isLoading: teamsLoading } = useTeamsQuery();
+  // Match data includes team details via JOIN - no separate teams query needed for display
   const { 
     matchesData, 
     matchesLoading, 
@@ -67,6 +67,12 @@ const Schedule = () => {
   } = useScheduleData();
   
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
+
+  // Lazy load teams only when form dialog is open (for team selection dropdown)
+  const [shouldLoadTeams, setShouldLoadTeams] = useState(false);
+  const { data: teams, isLoading: teamsLoading } = useTeamsQuery({ 
+    enabled: shouldLoadTeams 
+  });
 
   const {
     matches,
@@ -81,6 +87,15 @@ const Schedule = () => {
     handleUpdateMatch,
     handleDeleteMatch
   } = useMatchManagement(matchesData || []);
+
+  // Trigger teams loading when form is about to open
+  const handleOpenForm = (match?: typeof editingMatch) => {
+    setShouldLoadTeams(true);
+    if (match) {
+      setEditingMatch(match);
+    }
+    setIsFormOpen(true);
+  };
 
   // Reset initialization flag when date changes
   useEffect(() => {
@@ -165,8 +180,8 @@ const Schedule = () => {
   const handleUpdateMatchAdapter = (matchData: any) => handleUpdateMatch(matchData, teams || []);
   const handleDeleteMatchAdapter = () => handleDeleteMatch(teams || []);
 
-  // Consider both matches and teams loading states
-  const isLoading = matchesLoading || teamsLoading;
+  // Only wait for matches - teams are lazy loaded for form
+  const isLoading = matchesLoading;
 
   return (
     <PageLayout withBackground={true} gradientVariant="blueOrange">
@@ -190,10 +205,7 @@ const Schedule = () => {
             selectedDate={selectedDate}
             groupedTimeslots={groupedTimeslots}
             timeslotsLoading={timeslotsLoading}
-            onEditMatch={(match) => {
-              setEditingMatch(match);
-              setIsFormOpen(true);
-            }}
+            onEditMatch={(match) => handleOpenForm(match)}
             onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
           />
         )}
@@ -205,6 +217,7 @@ const Schedule = () => {
         match={editingMatch}
         teams={teams || []}
         onSubmit={editingMatch ? handleUpdateMatchAdapter : handleCreateMatchAdapter}
+        isLoadingTeams={teamsLoading}
       />
       
       <DeleteMatchDialog 

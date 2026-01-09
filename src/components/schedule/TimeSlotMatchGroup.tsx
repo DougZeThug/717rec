@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useMemo } from "react";
 import { Match } from "@/types";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger
 } from "@/components/ui/collapsible";
+import { useBatchHeadToHead } from "@/hooks/useBatchHeadToHead";
 
 interface TimeSlotMatchGroupProps {
   timeSlot: string;
@@ -27,6 +27,18 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
   isFirstTimeSlot = false
 }) => {
   const [isOpen, setIsOpen] = React.useState(isFirstTimeSlot);
+  
+  // Extract all team pairs for batch H2H query
+  const teamPairs = useMemo(() => 
+    matches.map(match => ({
+      team1Id: match.team1Id,
+      team2Id: match.team2Id
+    })),
+    [matches]
+  );
+  
+  // Batch fetch H2H data for all matches in this time slot
+  const { getHeadToHead, isLoading: isH2HLoading } = useBatchHeadToHead(teamPairs);
   
   return (
     <Collapsible
@@ -62,6 +74,8 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
               isCompleted={!!match.iscompleted}
               onEdit={onEditMatch}
               onDelete={onDeleteMatch}
+              prefetchedH2H={getHeadToHead(match.team1Id, match.team2Id)}
+              isBatchH2HLoading={isH2HLoading}
             />
           ))}
         </div>
