@@ -45,8 +45,15 @@ export const useScrollRestoration = (routeKey?: string) => {
     return () => window.removeEventListener("scroll", throttledScroll);
   }, [key]);
 
-  // Restore scroll position on mount
+  // Restore scroll position on mount (only when navigating back)
   useEffect(() => {
+    // Check if this is a back/forward navigation
+    const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+    const isBackNavigation = navEntries.length > 0 && navEntries[0].type === "back_forward";
+    
+    // Only restore on back/forward navigation
+    if (!isBackNavigation) return;
+    
     try {
       const positions = JSON.parse(
         sessionStorage.getItem(SCROLL_POSITIONS_KEY) || "{}"
@@ -55,14 +62,25 @@ export const useScrollRestoration = (routeKey?: string) => {
       
       if (savedPosition !== undefined && savedPosition > 0) {
         isRestoring.current = true;
-        // Small delay to ensure content has rendered
-        requestAnimationFrame(() => {
-          window.scrollTo(0, savedPosition);
-          // Reset flag after scroll completes
-          setTimeout(() => {
-            isRestoring.current = false;
-          }, 100);
-        });
+        // Wait for content to render before restoring scroll
+        // Use multiple frames to ensure layout is complete
+        const restoreScroll = () => {
+          // Only scroll if document height can accommodate the position
+          if (document.documentElement.scrollHeight >= savedPosition) {
+            window.scrollTo(0, savedPosition);
+            setTimeout(() => {
+              isRestoring.current = false;
+            }, 100);
+          } else {
+            // Content not ready yet, try again
+            requestAnimationFrame(restoreScroll);
+          }
+        };
+        
+        // Start after a short delay to allow initial render
+        setTimeout(() => {
+          requestAnimationFrame(restoreScroll);
+        }, 50);
       }
     } catch (e) {
       // Ignore storage errors
