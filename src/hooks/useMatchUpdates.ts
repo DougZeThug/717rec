@@ -78,7 +78,35 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
       // If match is newly completed or winner changed, update team records
       if ((isNowCompleted && !wasCompleted) || (isNowCompleted && winnerChanged)) {
         if (updatedMatch.winnerId && updatedMatch.loserId) {
-          // Determine game wins for winner and loser based on who won
+          
+          // If winner changed on already-completed match, reverse old stats first
+          if (wasCompleted && winnerChanged && editingMatch.winnerId && editingMatch.loserId) {
+            const oldWinnerGameWins = editingMatch.winnerId === editingMatch.team1Id
+              ? (editingMatch.team1_game_wins || 0)
+              : (editingMatch.team2_game_wins || 0);
+            const oldLoserGameWins = editingMatch.loserId === editingMatch.team1Id
+              ? (editingMatch.team1_game_wins || 0)
+              : (editingMatch.team2_game_wins || 0);
+
+            const { error: reverseError } = await supabase.rpc('reverse_team_stats', {
+              p_winner_id: editingMatch.winnerId,
+              p_loser_id: editingMatch.loserId,
+              p_winner_game_wins: oldWinnerGameWins,
+              p_loser_game_wins: oldLoserGameWins
+            });
+
+            if (reverseError) {
+              throw new Error(`Failed to reverse team stats: ${reverseError.message}`);
+            }
+
+            // Refresh team_season_stats to keep career data in sync
+            const { error: seasonStatsError } = await supabase.rpc('upsert_team_season_stats');
+            if (seasonStatsError) {
+              warnLog('Failed to refresh season stats after reversal:', seasonStatsError);
+            }
+          }
+
+          // Now apply the new stats
           const winnerGameWins = updatedMatch.winnerId === updatedMatch.team1Id 
             ? (updatedMatch.team1_game_wins || 0) 
             : (updatedMatch.team2_game_wins || 0);
