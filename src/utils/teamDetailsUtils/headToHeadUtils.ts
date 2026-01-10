@@ -29,7 +29,7 @@ export const calculateHeadToHead = (teamId: string, allTeams: Team[], allMatches
       if (opponentId && result[opponentId]) {
         if (match.winnerId === teamId) {
           result[opponentId].wins += 1;
-        } else if (match.loserId === teamId) {
+        } else if (match.winnerId === opponentId) {
           result[opponentId].losses += 1;
         }
       }
