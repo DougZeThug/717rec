@@ -54,12 +54,16 @@ export const normalizeDate = (date: Date | string | null, context: string = 'unk
         // It's an ISO string, extract just the date part
         const simpleDateString = date.split('T')[0];
         
-        timezoneLog(`[${context}] Extracted date from ISO string:`, {
-          original: date,
-          simplified: simpleDateString
-        });
-        
-        return simpleDateString;
+        // Validate the extracted string matches YYYY-MM-DD format
+        if (/^\d{4}-\d{2}-\d{2}$/.test(simpleDateString)) {
+          timezoneLog(`[${context}] Extracted date from ISO string:`, {
+            original: date,
+            simplified: simpleDateString
+          });
+          
+          return simpleDateString;
+        }
+        // If invalid, fall through to parsing logic below
       }
       
       // It might already be a simple date string
