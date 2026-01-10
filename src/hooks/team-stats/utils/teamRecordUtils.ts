@@ -8,6 +8,16 @@ export async function applyMatchResult(
   winnerGameWins: number,
   loserGameWins: number
 ) {
+  // Validate that winner and loser are different teams
+  if (winnerId === loserId) {
+    const errorMsg = 'Winner and loser must be different teams';
+    errorLog('Invalid applyMatchResult call - same team ID for winner and loser:', { 
+      winnerId, 
+      loserId 
+    });
+    throw new Error(errorMsg);
+  }
+
   // Convert parameters to numbers to ensure proper math
   const winnerGameWinsNum = Number(winnerGameWins || 0);
   const loserGameWinsNum = Number(loserGameWins || 0);

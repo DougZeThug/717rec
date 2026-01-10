@@ -85,4 +85,15 @@ describe('Team Stats Updates', () => {
     
     await expect(applyMatchResult('winner-id', 'loser-id', 2, 1)).rejects.toEqual({ message: 'Test error' });
   });
+
+  it('should throw an error when winnerId equals loserId', async () => {
+    const sameTeamId = 'abc123';
+
+    await expect(
+      applyMatchResult(sameTeamId, sameTeamId, 2, 1)
+    ).rejects.toThrow('Winner and loser must be different teams');
+
+    // Verify RPC was never called
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
 });
