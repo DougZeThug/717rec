@@ -41,6 +41,7 @@ export const fetchDivisionWeights = async (): Promise<DivisionWeightsMap> => {
     
     if (error) {
       errorLog('Error fetching division weights:', error);
+      cachePromise = null; // Clear promise so next call will retry
       return new Map();
     }
     
